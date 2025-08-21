@@ -1,0 +1,45 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+       http://www.liquibase.org/xml/ns/dbchangelog
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="insert-usuarios-roles" author="mathias">
+        <insert tableName="usuario">
+            <column name="email" value="analista@utec.edu.uy"/>
+            <column name="nombre" value="Usuario Analista"/>
+            <column name="password" value="$2a$12$Y4j1fXvIQDvts1Qep3qi2e3RNKJZxiWZsD0YqGddxU6R1XeJttwYm"/>
+            <column name="rol_app" value="ANALISTA"/>
+        </insert>
+
+        <insert tableName="usuario">
+            <column name="email" value="docente@utec.edu.uy"/>
+            <column name="nombre" value="Usuario Docente"/>
+            <column name="password" value="$2a$12$Y4j1fXvIQDvts1Qep3qi2e3RNKJZxiWZsD0YqGddxU6R1XeJttwYm"/>
+            <column name="rol_app" value="DOCENTE"/>
+        </insert>
+
+        <insert tableName="usuario">
+            <column name="email" value="estudiante@utec.edu.uy"/>
+            <column name="nombre" value="Usuario Estudiante"/>
+            <column name="password" value="$2a$12$Y4j1fXvIQDvts1Qep3qi2e3RNKJZxiWZsD0YqGddxU6R1XeJttwYm"/>
+            <column name="rol_app" value="ESTUDIANTE"/>
+        </insert>
+
+        <insert tableName="usuario">
+            <column name="email" value="externo@utec.edu.uy"/>
+            <column name="nombre" value="Usuario Externo"/>
+            <column name="password" value="$2a$12$Y4j1fXvIQDvts1Qep3qi2e3RNKJZxiWZsD0YqGddxU6R1XeJttwYm"/>
+            <column name="rol_app" value="EXTERNO"/>
+        </insert>
+
+        <insert tableName="usuario">
+            <column name="email" value="admin@utec.edu.uy"/>
+            <column name="nombre" value="Usuario Admin"/>
+            <column name="password" value="$2a$12$Y4j1fXvIQDvts1Qep3qi2e3RNKJZxiWZsD0YqGddxU6R1XeJttwYm"/>
+            <column name="rol_app" value="ADMIN"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

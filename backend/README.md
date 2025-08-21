@@ -191,47 +191,6 @@ Authorization: Bearer <jwt_token>
 - **Memoria**: Mínimo 2GB RAM
 
 
-### Comandos de Despliegue
-```bash
-# Compilar
-mvn clean package
-
-# Ejecutar en desarrollo
-mvn spring-boot:run
-
-# Ejecutar JAR
-java -jar target/usm-backend-1.0.0.jar
-
-# Con Docker
-docker-compose up -d
-```
-
-## 🧪 Testing
-
-### Ejecutar Tests
-```bash
-# Tests unitarios
-mvn test
-
-# Tests de integración
-mvn verify
-
-# Cobertura
-mvn jacoco:report
-```
-
-### Tipos de Tests
-- **Unit Tests**: Servicios y lógica de negocio
-- **Integration Tests**: Repositorios y controladores
-- **Security Tests**: Autenticación y autorización
-- **API Tests**: Endpoints REST
-
-## 📚 Documentación Adicional
-
-- **Swagger UI**: `/swagger-ui.html` (en desarrollo)
-- **Actuator**: `/actuator` para monitoreo
-- **Health Check**: `/actuator/health`
-
 ## 🤝 Contribución
 
 ### Convenciones de Código
@@ -240,13 +199,6 @@ mvn jacoco:report
 - **Constantes**: UPPER_SNAKE_CASE (`MAX_CAPACIDAD`)
 - **Paquetes**: minúsculas (`com.utec.reservas.service`)
 
-### Flujo de Desarrollo
-1. Crear rama desde `main`
-2. Implementar funcionalidad
-3. Agregar tests
-4. Crear Pull Request
-5. Code Review
-6. Merge a `main`
 
 ## 📞 Contacto y Soporte
 
@@ -255,17 +207,6 @@ mvn jacoco:report
 - **Institución**: Universidad Tecnológica del Uruguay (UTEC)
 - **Versión**: 1.0 (Julio/Agosto 2025)
 
-## 📝 Changelog
 
-### v1.0 (Julio/Agosto 2025)
-- ✅ Creación inicial del backend
-- ✅ Arquitectura en capas implementada
-- ✅ Sistema de autenticación SSO
-- ✅ API REST completa
-- ✅ Base de datos PostgreSQL
-- ✅ Control de solapamientos
-- ✅ Sistema de roles y permisos
-
----
 
 **Nota**: Este es un README inicial que puede ser actualizado conforme evolucione el proyecto. Para más detalles técnicos, consultar la documentación completa del backend.

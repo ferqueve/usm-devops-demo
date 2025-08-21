@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Crear tabla usuario -->
+    <changeSet id="001" author="mathi">
+        <createTable tableName="usuario">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints notNullConstraintName="nn_usuario_email" uniqueConstraintName="uk_usuario_email"/>
+            </column>
+            <column name="nombre" type="VARCHAR(100)">
+                <constraints notNullConstraintName="nn_usuario_nombre"/>
+            </column>
+            <column name="rol_app" type="VARCHAR(20)">
+                <constraints notNullConstraintName="nn_usuario_rol_app" checkConstraint="rol_app IN ('ANALISTA','DOCENTE','ESTUDIANTE','EXTERNO','ADMIN')"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_usuario_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_usuario_updated_at"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Crear tabla salon -->
+    <changeSet id="002" author="mathi">
+        <createTable tableName="salon">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nombre" type="VARCHAR(100)">
+                <constraints notNullConstraintName="nn_salon_nombre"/>
+            </column>
+            <column name="capacidad" type="INT">
+                <constraints notNullConstraintName="nn_salon_capacidad"/>
+            </column>
+            <column name="imagen_url" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_salon_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_salon_updated_at"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Crear tabla inventario_item -->
+    <changeSet id="003" author="mathi">
+        <createTable tableName="inventario_item">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="salon_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_inventario_salon_id" foreignKeyName="fk_inventario_salon" references="salon(id)"/>
+            </column>
+            <column name="tipo" type="VARCHAR(50)">
+                <constraints notNullConstraintName="nn_inventario_tipo"/>
+            </column>
+            <column name="cantidad" type="INT">
+                <constraints notNullConstraintName="nn_inventario_cantidad" checkConstraint="cantidad >= 0"/>
+            </column>
+            <column name="activo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints notNullConstraintName="nn_inventario_activo"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Crear tabla reserva -->
+    <changeSet id="004" author="mathi">
+        <createTable tableName="reserva">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="salon_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_reserva_salon_id" foreignKeyName="fk_reserva_salon" references="salon(id)"/>
+            </column>
+            <column name="usuario_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_reserva_usuario_id" foreignKeyName="fk_reserva_usuario" references="usuario(id)"/>
+            </column>
+            <column name="inicio" type="TIMESTAMP">
+                <constraints notNullConstraintName="nn_reserva_inicio"/>
+            </column>
+            <column name="fin" type="TIMESTAMP">
+                <constraints notNullConstraintName="nn_reserva_fin"/>
+            </column>
+            <column name="estado" type="VARCHAR(20)">
+                <constraints notNullConstraintName="nn_reserva_estado" checkConstraint="estado IN ('PENDIENTE','APROBADO','CANCELADO')"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_reserva_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_reserva_updated_at"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Crear tabla evento_externo -->
+    <changeSet id="005" author="mathi">
+        <createTable tableName="evento_externo">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="reserva_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_evento_reserva_id" uniqueConstraintName="uk_evento_reserva_id" foreignKeyName="fk_evento_reserva" references="reserva(id)"/>
+            </column>
+            <column name="organizador" type="VARCHAR(100)"/>
+            <column name="descripcion" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Crear tabla recomendacion -->
+    <changeSet id="006" author="mathi">
+        <createTable tableName="recomendacion">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="usuario_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_recomendacion_usuario_id" foreignKeyName="fk_recomendacion_usuario" references="usuario(id)"/>
+            </column>
+            <column name="salon_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_recomendacion_salon_id" foreignKeyName="fk_recomendacion_salon" references="salon(id)"/>
+            </column>
+            <column name="puntaje" type="NUMERIC(5,2)" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_recomendacion_puntaje"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_recomendacion_updated_at"/>
+            </column>
+        </createTable>
+        
+        <addUniqueConstraint tableName="recomendacion" columnNames="usuario_id, salon_id" constraintName="uk_recomendacion_usuario_salon"/>
+    </changeSet>
+
+    <!-- Crear tabla audit_log -->
+    <changeSet id="007" author="mathi">
+        <createTable tableName="audit_log">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="entidad" type="VARCHAR(50)">
+                <constraints notNullConstraintName="nn_audit_entidad"/>
+            </column>
+            <column name="entidad_id" type="INT">
+                <constraints notNullConstraintName="nn_audit_entidad_id"/>
+            </column>
+            <column name="accion" type="VARCHAR(20)">
+                <constraints notNullConstraintName="nn_audit_accion" checkConstraint="accion IN ('CREATE','UPDATE','DELETE')"/>
+            </column>
+            <column name="usuario_id" type="BIGINT">
+                <constraints foreignKeyName="fk_audit_usuario" references="usuario(id)"/>
+            </column>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_audit_timestamp"/>
+            </column>
+            <column name="datos_previos" type="JSONB"/>
+            <column name="datos_nuevos" type="JSONB"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
