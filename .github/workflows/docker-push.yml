@@ -22,11 +22,11 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: tuusuario/utec-backend:latest
+          tags: mathiaspena/utec-backend:latest
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: tuusuario/utec-frontend:latest
+          tags: mathiaspena/utec-frontend:latest
