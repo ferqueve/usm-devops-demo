@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants';
-import { ApiResponse } from '../types';
+import type { ApiResponse } from '../types';
 
 /**
  * Clase para manejar las llamadas a la API
