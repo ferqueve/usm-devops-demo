@@ -1,12 +1,13 @@
 package com.utec.backend.service;
 
+import com.utec.backend.common.exception.AuthenticationException;
+import com.utec.backend.common.exception.UsuarioNotFoundException;
 import com.utec.backend.dto.usuarios.CambioRolDto;
 import com.utec.backend.dto.usuarios.UsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
-import com.utec.backend.exception.UsuarioNotFoundException;
-import com.utec.backend.model.Usuario;
+import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,17 +15,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioResponseDto registrarUsuario(Usuario usuario) {
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new AuthenticationException("El email ya está registrado");
         }
         
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));

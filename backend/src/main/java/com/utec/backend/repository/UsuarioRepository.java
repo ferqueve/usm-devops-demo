@@ -1,8 +1,9 @@
 package com.utec.backend.repository;
 
-import com.utec.backend.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.utec.backend.model.entity.Usuario;
 
 import java.util.Optional;
 

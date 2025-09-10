@@ -1,6 +1,4 @@
-package com.utec.backend.dto.usuarios;
-
-import com.utec.backend.model.entity.Usuario.RolApp;
+package com.utec.backend.security.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioResponseDto {
-    private Long id;
+public class AuthenticationResponse {
+    private String token;
+    private String refreshToken;
     private String email;
     private String nombre;
-    private RolApp rolApp;
+    private String rol;
+    private Long expiresIn;
 }

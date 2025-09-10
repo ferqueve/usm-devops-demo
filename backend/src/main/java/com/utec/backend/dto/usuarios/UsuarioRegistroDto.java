@@ -1,7 +1,8 @@
 package com.utec.backend.dto.usuarios;
 
-import com.utec.backend.model.Usuario.RolApp;
-import com.utec.backend.validation.annotations.ValidEmail;
+import com.utec.backend.model.entity.Usuario.RolApp;
+
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UsuarioRegistroDto {
     @NotBlank(message = "El email es obligatorio")
-    @ValidEmail
+    @Email(message = "El email no es válido")
     private String email;
     
     @NotBlank(message = "El nombre es obligatorio")

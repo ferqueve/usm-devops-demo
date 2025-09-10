@@ -1,4 +1,4 @@
-package com.utec.backend.model;
+package com.utec.backend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,28 +11,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "salon")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class Salon {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "email", nullable = false, unique = true, length = 255)
-    private String email;
-    
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
     
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
+    @Column(name = "capacidad", nullable = false)
+    private Integer capacidad;
     
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol_app", nullable = false, length = 20)
-    private RolApp rolApp;
+    @Column(name = "imagen_url", columnDefinition = "TEXT")
+    private String imagenUrl;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -43,17 +39,12 @@ public class Usuario {
     private LocalDateTime updatedAt;
     
     // Relaciones
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "salon", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InventarioItem> inventarioItems;
+    
+    @OneToMany(mappedBy = "salon", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reserva> reservas;
     
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "salon", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Recomendacion> recomendaciones;
-    
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AuditLog> auditLogs;
-    
-    // Enumeración para roles
-    public enum RolApp {
-        ANALISTA, DOCENTE, ESTUDIANTE, EXTERNO, ADMIN
-    }
 }

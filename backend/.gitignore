@@ -31,3 +31,28 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### ===== CONFIGURACIONES SENSIBLES =====
+# Archivos de configuración con datos sensibles
+application-prod.properties
+application*.properties
+
+# Archivos de configuración de base de datos
+db-config.properties
+database.properties
+
+# Archivos de certificados y claves
+*.p12
+*.pem
+*.key
+*.crt
+*.jks
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
+temp/

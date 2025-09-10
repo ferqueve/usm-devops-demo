@@ -1,4 +1,4 @@
-package com.utec.backend.exception;
+package com.utec.backend.common.exception;
 
 public class UsuarioNotFoundException extends RuntimeException {
     public UsuarioNotFoundException(String message) {

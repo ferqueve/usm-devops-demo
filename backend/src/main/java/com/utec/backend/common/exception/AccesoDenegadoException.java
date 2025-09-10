@@ -1,4 +1,4 @@
-package com.utec.backend.exception;
+package com.utec.backend.common.exception;
 
 public class AccesoDenegadoException extends RuntimeException {
     public AccesoDenegadoException(String message) {
