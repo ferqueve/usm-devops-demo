@@ -1,6 +1,7 @@
 // Barrel exports para componentes
 export * from './ui';
-export { default as DashboardLayout } from './layouts/DashboardLayout';
+export * from './public/login';
+export { default as DashboardLayout } from './layouts/DashboardLayout/DashboardLayout';
 export { default as Dashboard } from './dashboard';
 export { default as Calendar } from './calendar';
 export { default as Reservations } from './reservations';

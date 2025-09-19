@@ -1,5 +1,4 @@
-import React from 'react';
-import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { DashboardLayout } from '@/components/layouts';
 import Calendar from '@/components/calendar';
 
 // Página del calendario

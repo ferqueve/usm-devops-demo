@@ -1,5 +1,4 @@
-import React from 'react';
-import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { DashboardLayout } from '@/components/layouts';
 import Rooms from '@/components/rooms';
 
 // Página de salones

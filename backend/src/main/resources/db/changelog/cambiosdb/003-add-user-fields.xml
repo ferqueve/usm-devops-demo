@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Agregar campo verificado a la tabla usuario -->
+    <changeSet id="003-001" author="mathi">
+        <addColumn tableName="usuario">
+            <column name="verificado" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints notNullConstraintName="nn_usuario_verificado"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar campo oauth_prov a la tabla usuario -->
+    <changeSet id="003-002" author="mathi">
+        <addColumn tableName="usuario">
+            <column name="oauth_prov" type="VARCHAR(20)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar campo deleted_at para soft delete -->
+    <changeSet id="003-003" author="mathi">
+        <addColumn tableName="usuario">
+            <column name="deleted_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Modificar campo password para que sea nullable -->
+    <changeSet id="003-004" author="mathi">
+        <dropNotNullConstraint tableName="usuario" columnName="password" columnDataType="varchar(255)"/>
+    </changeSet>
+
+</databaseChangeLog>

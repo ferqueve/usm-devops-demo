@@ -1,5 +1,4 @@
-import React from 'react';
-import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { DashboardLayout } from '@/components/layouts';
 import Settings from '@/components/settings';
 
 // Página de configuración

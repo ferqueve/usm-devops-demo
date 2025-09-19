@@ -1,2 +1,3 @@
 // Barrel exports para layouts
-export { default as DashboardLayout } from './DashboardLayout';
+export { DashboardLayout } from './DashboardLayout/DashboardLayout';
+export { AuthLayout } from './AuthLayout/AuthLayout';

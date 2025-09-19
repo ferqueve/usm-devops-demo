@@ -12,7 +12,7 @@ import type { SidebarMenuItem } from "@/lib/types/dashboard";
 export const sidebarMenuItems: SidebarMenuItem[] = [
   {
     id: "dashboard",
-    label: "Dashboard",
+    label: "Inicio",
     icon: Home,
     href: "/dashboard",
     isActive: true

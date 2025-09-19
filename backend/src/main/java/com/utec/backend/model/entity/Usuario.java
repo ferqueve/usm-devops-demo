@@ -26,12 +26,18 @@ public class Usuario {
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
     
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = true, length = 255)
     private String password;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "rol_app", nullable = false, length = 20)
     private RolApp rolApp;
+    
+    @Column(name = "verificado", nullable = false)
+    private Boolean verificado = false;
+    
+    @Column(name = "oauth_prov", nullable = true, length = 20)
+    private String oauthProv;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -40,6 +46,9 @@ public class Usuario {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+    
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
     
     // Relaciones
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

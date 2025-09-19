@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { RoleProtectedRoute } from '@/components/auth';
-import LoginPage from './app/login/page';
+import AuthPage from './app/public/auth/page';
+import { AuthLayout } from './components/layouts';
 import DashboardPage from './app/dashboard/page';
 import CalendarPage from './app/calendar/page';
 import ReservationsPage from './app/reservations/page';
@@ -16,10 +17,22 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Ruta de login */}
+      {/* Rutas de autenticación */}
       <Route 
-        path="/login" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
+        path="/auth" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <AuthLayout>
+            <AuthPage />
+          </AuthLayout>
+        )} 
+      />
+      <Route 
+        path="/auth/register" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <AuthLayout>
+            <AuthPage />
+          </AuthLayout>
+        )} 
       />
       
       {/* Rutas protegidas del dashboard */}
@@ -80,13 +93,13 @@ function AppRoutes() {
       {/* Ruta raíz - redirección inteligente */}
       <Route 
         path="/" 
-        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
+        element={<Navigate to={isAuthenticated ? "/dashboard" : "/auth"} replace />} 
       />
       
-      {/* Ruta 404 - redirigir a dashboard si autenticado, sino a login */}
+      {/* Ruta 404 - redirigir a dashboard si autenticado, sino a auth */}
       <Route 
         path="*" 
-        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
+        element={<Navigate to={isAuthenticated ? "/dashboard" : "/auth"} replace />} 
       />
     </Routes>
   );

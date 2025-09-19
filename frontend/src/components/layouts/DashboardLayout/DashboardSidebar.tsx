@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -74,7 +74,7 @@ export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebar
             <SidebarMenuButton asChild>
               <Link to="/dashboard" className="flex items-center gap-2">
                 <Building2 className="size-4" />
-                <span className="text-base font-semibold">UTEC Space Manager</span>
+                <span className="text-base font-utec-brand">USM</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

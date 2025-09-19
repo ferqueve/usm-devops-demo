@@ -4,7 +4,9 @@
 			"path": "."
 		}
 	],
-	"settings": {},
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive"
+	},
 	"extensions": {
 		"recommendations": [
 			"bradlc.vscode-tailwindcss",

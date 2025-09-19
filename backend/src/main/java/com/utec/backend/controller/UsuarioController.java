@@ -1,14 +1,11 @@
 package com.utec.backend.controller;
 
 import com.utec.backend.dto.usuarios.CambioRolDto;
-import com.utec.backend.dto.usuarios.UsuarioRegistroDto;
 import com.utec.backend.dto.usuarios.UsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
-import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,17 +19,6 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    @PostMapping("/registro")
-    public ResponseEntity<UsuarioResponseDto> registrarUsuario(@Valid @RequestBody UsuarioRegistroDto registroDto) {
-        Usuario usuario = new Usuario();
-        usuario.setEmail(registroDto.getEmail());
-        usuario.setNombre(registroDto.getNombre());
-        usuario.setPassword(registroDto.getPassword());
-        usuario.setRolApp(registroDto.getRolApp());
-
-        UsuarioResponseDto usuarioRegistrado = usuarioService.registrarUsuario(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRegistrado);
-    }
 
     @GetMapping("/me")
     public ResponseEntity<UsuarioResponseDto> obtenerPerfilPropio(Principal principal) {

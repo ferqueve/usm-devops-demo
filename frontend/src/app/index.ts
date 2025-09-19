@@ -1,5 +1,5 @@
 // Exportaciones de páginas desde app
-export { default as LoginPage } from './login/page';
+export { default as LoginPage } from './public/login/page';
 export { default as DashboardPage } from './dashboard/page';
 export { default as CalendarPage } from './calendar/page';
 export { default as ReservationsPage } from './reservations/page';

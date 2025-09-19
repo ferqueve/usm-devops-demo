@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import type { ReactNode } from 'react';
 import { APP_CONFIG, storageUtils, errorUtils, validationUtils } from '@/lib/utils/constants';
 import { authApi } from '@/lib/api';
-import type { LoginRequest } from '@/lib/api';
+import type { LoginRequest, RegisterRequest } from '@/lib/api';
 
 // Tipos para el contexto de autenticación
 interface AuthContextType {
@@ -14,6 +14,13 @@ interface AuthContextType {
     rol: string;
   } | null;
   login: (credentials?: { email: string; password: string }) => Promise<void>;
+  register: (userData: { 
+    nombre: string; 
+    apellido: string; 
+    email: string; 
+    password: string; 
+    confirmPassword: string;
+  }) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
 }
@@ -153,6 +160,70 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  // Función de registro con manejo de errores
+  const register = useCallback(async (userData: { 
+    nombre: string; 
+    apellido: string; 
+    email: string; 
+    password: string; 
+    confirmPassword: string;
+  }) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Validar datos
+      const { nombre, apellido, email, password, confirmPassword } = userData;
+      
+      if (validationUtils.isEmpty(nombre) || validationUtils.isEmpty(apellido)) {
+        throw new Error('Nombre y apellido son requeridos');
+      }
+      
+      if (validationUtils.isEmpty(email) || validationUtils.isEmpty(password)) {
+        throw new Error('Email y contraseña son requeridos');
+      }
+      
+      if (!validationUtils.isValidEmail(email)) {
+        throw new Error('Email inválido');
+      }
+      
+      if (!validationUtils.isValidPassword(password)) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres');
+      }
+      
+      if (password !== confirmPassword) {
+        throw new Error('Las contraseñas no coinciden');
+      }
+
+      // Preparar datos para el backend
+      const registerRequest: RegisterRequest = {
+        nombre,
+        apellido,
+        email,
+        password,
+        confirmPassword
+      };
+      
+      // Llamar a la API del backend
+      const response = await authApi.register(registerRequest);
+      
+      if (response.success && response.data) {
+        // Registro exitoso - mostrar mensaje de éxito
+        console.log('Usuario registrado exitosamente:', response.data);
+        // No hacer login automático, el usuario debe hacer login manualmente
+      } else {
+        throw new Error(response.error || 'Error en el registro');
+      }
+      
+    } catch (err) {
+      const errorMessage = errorUtils.getErrorMessage(err);
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Función de logout con limpieza
   const logout = useCallback(async () => {
     try {
@@ -191,6 +262,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     user,
     login,
+    register,
     logout,
     error
   };

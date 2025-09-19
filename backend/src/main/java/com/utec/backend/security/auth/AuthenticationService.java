@@ -7,7 +7,9 @@ import com.utec.backend.security.jwt.TokenBlacklistService;
 import com.utec.backend.security.service.CustomUserDetailsService;
 import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
+import com.utec.backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
@@ -24,6 +27,7 @@ public class AuthenticationService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService userDetailsService;
+    private final EmailService emailService;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         // Autenticar usuario - Spring Security manejará las excepciones automáticamente
@@ -66,10 +70,25 @@ public class AuthenticationService {
         usuario.setNombre(request.getNombre());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRolApp(Usuario.RolApp.ESTUDIANTE); // Rol por defecto
+        usuario.setRolApp(Usuario.RolApp.EXTERNO); // Rol por defecto para usuarios registrados
+        usuario.setVerificado(false); // Inicialmente no verificado
+        usuario.setOauthProv(null); // Registro manual, no OAuth
 
         // Guardar usuario
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        // Enviar email de verificación
+        try {
+            boolean emailEnviado = emailService.verificarConfiguracionEmail(usuarioGuardado.getEmail());
+            if (emailEnviado) {
+                log.info("Email de verificación enviado exitosamente al usuario: {}", usuarioGuardado.getEmail());
+            } else {
+                log.warn("No se pudo enviar el email de verificación al usuario: {}", usuarioGuardado.getEmail());
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de verificación al usuario {}: {}", usuarioGuardado.getEmail(), e.getMessage());
+            // No lanzamos excepción para no interrumpir el registro, solo logueamos el error
+        }
 
         return new RegisterResponse(
             "Usuario registrado exitosamente",
@@ -137,4 +156,5 @@ public class AuthenticationService {
             throw new AuthenticationException("Error al refrescar token: " + e.getMessage());
         }
     }
+
 }

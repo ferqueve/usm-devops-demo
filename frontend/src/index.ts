@@ -1,8 +1,8 @@
 // Exportaciones de layouts
-export { default as DashboardLayout } from '@/components/layouts/DashboardLayout';
+export { DashboardLayout } from '@/components/layouts';
 
 // Exportaciones de páginas principales
-export { default as LoginPage } from '@/app/login/page';
+export { default as LoginPage } from '@/app/public/login/page';
 export { default as DashboardPage } from '@/app/dashboard/page';
 export { default as CalendarPage } from '@/app/calendar/page';
 export { default as ReservationsPage } from '@/app/reservations/page';
@@ -11,8 +11,7 @@ export { default as StatisticsPage } from '@/app/statistics/page';
 export { default as SettingsPage } from '@/app/settings/page';
 
 // Exportaciones de componentes del dashboard
-export { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
-export { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+export { DashboardSidebar, DashboardHeader } from '@/components/layouts/DashboardLayout';
 
 // Exportaciones de componentes principales
 export { default as Dashboard } from '@/components/dashboard';

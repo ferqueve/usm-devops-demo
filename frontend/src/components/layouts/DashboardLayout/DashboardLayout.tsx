@@ -4,8 +4,7 @@ import {
   SidebarProvider,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardSidebar, DashboardHeader } from './index';
 import { useAuth } from "@/contexts/AuthContext";
 import type { ReactNode } from 'react';
 
@@ -16,7 +15,7 @@ interface DashboardLayoutProps {
 }
 
 // Layout reutilizable para todas las páginas del dashboard
-export default function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
+export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
   const location = useLocation();
   const { logout } = useAuth();
 

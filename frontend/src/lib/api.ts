@@ -4,6 +4,14 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface LoginResponse {
   token: string;
   refreshToken: string;
@@ -11,6 +19,17 @@ export interface LoginResponse {
   nombre: string;
   rol: string;
   expiresIn: number;
+}
+
+export interface RegisterResponse {
+  message: string;
+  usuario: {
+    id: number;
+    nombre: string;
+    apellido: string;
+    email: string;
+    rol: string;
+  };
 }
 
 export interface ApiResponse<T> {
@@ -69,6 +88,14 @@ export const authApi = {
     return apiRequest<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
+    });
+  },
+
+  // Registro
+  async register(userData: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
+    return apiRequest<RegisterResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
     });
   },
 
