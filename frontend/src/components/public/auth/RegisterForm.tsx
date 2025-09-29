@@ -2,13 +2,19 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { EmailVerificationMessage } from "./EmailVerificationMessage"
+import { authApi } from "@/lib/api"
 
 export function RegisterForm({
   className,
   onRegister,
   isLoading = false,
+  showSuccessMessage = false,
+  userEmail = "",
+  onBackToLogin,
+  onResendEmail,
   ...props
 }: React.ComponentProps<"form"> & { 
   onRegister?: (userData: { 
@@ -19,6 +25,10 @@ export function RegisterForm({
     confirmPassword: string;
   }) => Promise<void>;
   isLoading?: boolean;
+  showSuccessMessage?: boolean;
+  userEmail?: string;
+  onBackToLogin?: () => void;
+  onResendEmail?: () => void;
 }) {
   const [formData, setFormData] = useState({
     nombre: "",
@@ -27,7 +37,32 @@ export function RegisterForm({
     password: "",
     confirmPassword: ""
   });
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Timer para el cooldown del reenvío
+  useEffect(() => {
+    let interval: number;
+    if (resendCooldown > 0) {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            setResendMessage("");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
+
+  // Iniciar cooldown cuando se muestra el mensaje de éxito
+  useEffect(() => {
+    if (showSuccessMessage && resendCooldown === 0) {
+      setResendCooldown(40);
+    }
+  }, [showSuccessMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +76,6 @@ export function RegisterForm({
     if (onRegister) {
       try {
         await onRegister(formData);
-        setShowSuccess(true);
         // Limpiar formulario
         setFormData({
           nombre: "",
@@ -60,28 +94,49 @@ export function RegisterForm({
     setFormData(prev => ({ ...prev, [field]: value }));
   }
 
-  // Si se muestra éxito, mostrar mensaje
-  if (showSuccess) {
+  const handleResendEmail = async () => {
+    if (!userEmail) {
+      setResendMessage("No hay email disponible para reenviar");
+      return;
+    }
+
+    if (resendCooldown > 0) {
+      return; // No hacer nada si está en cooldown
+    }
+
+    try {
+      setResendMessage("Enviando...");
+      const response = await authApi.resendVerificationEmail(userEmail);
+      
+      if (response.success) {
+        setResendMessage("Se ha reenviado el email de verificación");
+        setResendCooldown(40); // 40 segundos de cooldown
+      } else {
+        setResendMessage("Error al reenviar el email");
+      }
+    } catch (error) {
+      setResendMessage("Error al reenviar el email");
+    }
+  };
+
+
+  // Si debe mostrar mensaje de éxito, renderizar el componente separado
+  if (showSuccessMessage) {
     return (
-      <div className={cn("flex flex-col gap-6", className)}>
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-green-600">¡Cuenta creada!</h1>
-            <p className="text-muted-foreground text-sm mt-2">
-              Tu cuenta ha sido registrada exitosamente. Ahora puedes iniciar sesión.
+      <div>
+        <EmailVerificationMessage
+          onBackToLogin={onBackToLogin}
+          onResendEmail={handleResendEmail}
+          className={className}
+          resendCooldown={resendCooldown}
+        />
+        {resendMessage && resendCooldown === 0 && (
+          <div className="mt-3 p-2 text-center text-sm">
+            <p className="text-gray-600">
+              {resendMessage}
             </p>
           </div>
-          <Link to="/auth">
-            <Button className="w-full">
-              Ir a Iniciar Sesión
-            </Button>
-          </Link>
-        </div>
+        )}
       </div>
     );
   }

@@ -17,6 +17,10 @@ services:
     container_name: spring_backend
     env_file:
       - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:
@@ -27,7 +31,9 @@ services:
     build: ./frontend
     container_name: react_frontend
     ports:
-      - "3000:3000"
+      - "5173:5173"
+    environment:
+      - DEV_MODE=${DEV_MODE:-dev:network}
     depends_on:
       - backend
     restart: unless-stopped

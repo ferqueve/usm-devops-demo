@@ -5,7 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import com.utec.backend.security.config.Constants;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,16 +29,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                   HttpServletResponse response, 
                                   FilterChain filterChain) throws ServletException, IOException {
         
-        final String authHeader = request.getHeader(Constants.AUTHORIZATION_HEADER);
+        final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
 
-        if (authHeader == null || !authHeader.startsWith(Constants.BEARER_PREFIX)) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(Constants.BEARER_PREFIX.length());
+        jwt = authHeader.substring("Bearer ".length());
         
         // Verificar si el token está en blacklist
         if (tokenBlacklistService.isTokenBlacklisted(jwt)) {

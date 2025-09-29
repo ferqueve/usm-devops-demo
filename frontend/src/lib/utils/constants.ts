@@ -17,7 +17,7 @@ export const APP_CONFIG = {
     SETTINGS: '/settings',
   },
   API: {
-    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
     TIMEOUT: 10000,
   },
 } as const;

@@ -23,8 +23,11 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final UsuarioRepository usuarioRepository;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:}")
     private String fromEmail;
+
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
 
     /**
      * Verifica la configuración de email enviando un email de prueba
@@ -86,6 +89,52 @@ public class EmailService {
             }
         } catch (Exception e) {
             log.error("Error al verificar usuario con email {}: {}", email, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Envía email de verificación con enlace
+     *
+     * @param to Email del destinatario
+     * @param verificationToken Token de verificación
+     * @return true si se envió correctamente, false en caso contrario
+     */
+    public boolean enviarEmailVerificacion(String to, String verificationToken) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Verifica tu cuenta - UTEC Space Manager");
+            
+            String verificationUrl = frontendUrl + "/auth/verify?token=" + verificationToken;
+            
+            helper.setText("""
+                ¡Bienvenido a UTEC Space Manager!
+                
+                Para completar tu registro, por favor verifica tu email haciendo clic en el siguiente enlace:
+                
+                {verificationUrl}
+                
+                Este enlace expirará en 24 horas.
+                
+                Si no solicitaste este registro, puedes ignorar este email.
+                
+                Saludos,
+                Equipo UTEC Space Manager
+                """.replace("{verificationUrl}", verificationUrl), false);
+
+            mailSender.send(message);
+            log.info("Email de verificación enviado exitosamente a: {}", to);
+            return true;
+
+        } catch (MessagingException e) {
+            log.error("Error al enviar email de verificación a {}: {}", to, e.getMessage());
+            return false;
+        } catch (Exception e) {
+            log.error("Error inesperado al enviar email de verificación: {}", e.getMessage());
             return false;
         }
     }
