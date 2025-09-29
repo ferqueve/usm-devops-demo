@@ -23,6 +23,9 @@ interface AuthContextType {
   }) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
+  registrationSuccess: boolean;
+  setRegistrationSuccess: (success: boolean) => void;
+  lastRegisteredEmail: string;
 }
 
 // Tipos para las props del provider
@@ -41,6 +44,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [lastRegisteredEmail, setLastRegisteredEmail] = useState("");
   const [user, setUser] = useState<{
     email: string;
     nombre: string;
@@ -98,6 +103,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     checkAuthStatus();
+  }, []);
+
+  // Escuchar evento de logout automático desde apiRequest
+  useEffect(() => {
+    const handleAutoLogout = () => {
+      console.log('Auto-logout detectado, limpiando estado...');
+      setUser(null);
+      setIsAuthenticated(false);
+      setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    };
+
+    window.addEventListener('auth:logout', handleAutoLogout);
+    
+    return () => {
+      window.removeEventListener('auth:logout', handleAutoLogout);
+    };
   }, []);
 
   // Función de login con manejo de errores
@@ -208,9 +229,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authApi.register(registerRequest);
       
       if (response.success && response.data) {
-        // Registro exitoso - mostrar mensaje de éxito
-        console.log('Usuario registrado exitosamente:', response.data);
-        // No hacer login automático, el usuario debe hacer login manualmente
+        // Registro exitoso - mostrar mensaje de verificación de email
+        setLastRegisteredEmail(email);
+        setRegistrationSuccess(true);
+        setError(null);
       } else {
         throw new Error(response.error || 'Error en el registro');
       }
@@ -264,7 +286,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     register,
     logout,
-    error
+    error,
+    registrationSuccess,
+    setRegistrationSuccess,
+    lastRegisteredEmail
   };
 
   return (

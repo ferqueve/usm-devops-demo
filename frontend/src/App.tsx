@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { RoleProtectedRoute } from '@/components/auth';
 import AuthPage from './app/public/auth/page';
+import VerifyEmailPage from './app/auth/verify/page';
 import { AuthLayout } from './components/layouts';
 import DashboardPage from './app/dashboard/page';
 import CalendarPage from './app/calendar/page';
@@ -31,6 +32,15 @@ function AppRoutes() {
         element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
           <AuthLayout>
             <AuthPage />
+          </AuthLayout>
+        )} 
+      />
+      
+      <Route 
+        path="/auth/verify" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <AuthLayout>
+            <VerifyEmailPage />
           </AuthLayout>
         )} 
       />

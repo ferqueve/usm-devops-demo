@@ -1,102 +1,25 @@
-# Compiled class file
-*.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-#Build folders
-target/
-build/
-
-#Maven
-!.mvm/wrapper/maven-wrapper.jar
-
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# Spring boot / config
-application.properties
-application*.properties
-application.yml
-*.keystore
-*.jks
-
-#VS Code
-.vscode/
-.history/
-
-#Cursor
-*.code-workspace
-.code-workspace
-
-# Temporary files
-*.tpm
-*.swp
-*~
-
-# Docker
-docker-compose.override.yml
+# ===== CONFIGURACIÓN SENSIBLE =====
 .env
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
-
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.npm
-.yarn-integrity
-
-# Frontend build
-frontend/dist/
-frontend/build/
-frontend/.next/
-frontend/out/
-
-# Environment variables
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# IDE
-.idea/
-*.swp
-*.swo# Compiled class file
-*.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-#Build folders
+# ===== BACKEND (Spring Boot) =====
+# Build
+backend/target/
+backend/build/
 target/
 build/
 
-#Maven
-!.mvm/wrapper/maven-wrapper.jar
+# Maven
+backend/.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# Package Files #
+# Compiled files
+*.class
 *.jar
 *.war
 *.nar
@@ -105,25 +28,80 @@ build/
 *.tar.gz
 *.rar
 
-# Spring boot / config
-application.properties
+# Spring Boot config (solo archivos locales)
+application-local.properties
+application-*.local.properties
 application.yml
 *.keystore
 *.jks
 
-#VS Code
-.vscode/
-.history/
+# Certificados y claves
+*.p12
+*.pem
+*.key
+*.crt
 
-# Temporary files
-*.tpm
+# ===== FRONTEND (React/Vite) =====
+# Dependencies
+frontend/node_modules/
+node_modules/
+frontend/.npm
+frontend/.yarn-integrity
+.npm
+.yarn-integrity
+
+# Build
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+frontend/.next/
+frontend/out/
+dist/
+dist-ssr/
+
+# ===== LOGS =====
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== IDE =====
+.vscode/
+.idea/
+.history/
 *.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+
+# Cursor
+*.code-workspace
+.code-workspace
+
+# ===== TEMPORALES =====
+*.tmp
+*.temp
+temp/
+*.tpm
 *~
 
-# Docker
+# ===== DOCKER =====
 docker-compose.override.yml
-.env
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# ===== JAVA =====
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Virtual machine crash logs
 hs_err_pid*
 replay_pid*

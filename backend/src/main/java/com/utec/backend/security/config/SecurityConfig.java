@@ -1,8 +1,8 @@
 package com.utec.backend.security.config;
 
 import com.utec.backend.security.jwt.JwtAuthenticationFilter;
-import static com.utec.backend.security.config.Constants.*;
 import lombok.RequiredArgsConstructor;
+import static com.utec.backend.security.config.Constants.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,16 +50,16 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas
-                .requestMatchers(PUBLIC_PATHS).permitAll()
+                .requestMatchers("/api/v1/auth/**", "/actuator/**", "/error").permitAll()
 
                 // Rutas protegidas por rol
-                .requestMatchers(ADMIN_ONLY_PATHS).hasRole(ROLE_ADMIN)
-                .requestMatchers(ADMIN_ANALISTA_PATHS).hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
-                .requestMatchers(ADMIN_ANALISTA_DOCENTE_PATHS).hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE)
-                .requestMatchers(ADMIN_ANALISTA_DOCENTE_ESTUDIANTE_PATHS).hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE)
+                .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/api/v1/salones/**", "/api/v1/salones/*/inventario/**", "/api/v1/estadisticas/**", "/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
+                .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE)
+                .requestMatchers("/api/v1/calendario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE)
 
                 // Rutas autenticadas generales
-                .requestMatchers(AUTHENTICATED_PATHS).authenticated()
+                .requestMatchers("/api/v1/recomendaciones/**").authenticated()
 
                 // Cualquier otra ruta requiere autenticación
                 .anyRequest().authenticated()

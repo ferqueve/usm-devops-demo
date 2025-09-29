@@ -39,6 +39,11 @@ public class AuthenticationService {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
 
+        // Verificar si el usuario ha verificado su email
+        if (!usuario.getVerificado()) {
+            throw new AuthenticationException("Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada.");
+        }
+
         // Generar tokens JWT reales
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String token = jwtService.generateToken(userDetails);
@@ -57,17 +62,19 @@ public class AuthenticationService {
     public RegisterResponse register(RegisterRequest request) {
         // Validar que las contraseñas coincidan
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new AuthenticationException("Las contraseñas no coinciden");
+            throw new AuthenticationException("Las contraseñas no coinciden. Verifica que hayas escrito la misma contraseña en ambos campos.");
         }
 
         // Verificar si el usuario ya existe
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new AuthenticationException("El email ya está registrado");
+            throw new AuthenticationException("Ya existe una cuenta registrada con este email");
         }
 
         // Crear nuevo usuario
         Usuario usuario = new Usuario();
-        usuario.setNombre(request.getNombre());
+        // Combinar nombre y apellido en un solo campo
+        String nombreCompleto = request.getNombre() + " " + request.getApellido();
+        usuario.setNombre(nombreCompleto);
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setRolApp(Usuario.RolApp.EXTERNO); // Rol por defecto para usuarios registrados
@@ -77,9 +84,10 @@ public class AuthenticationService {
         // Guardar usuario
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        // Enviar email de verificación
+        // Generar y enviar email de verificación
         try {
-            boolean emailEnviado = emailService.verificarConfiguracionEmail(usuarioGuardado.getEmail());
+            String verificationToken = jwtService.generateVerificationToken(usuarioGuardado.getEmail());
+            boolean emailEnviado = emailService.enviarEmailVerificacion(usuarioGuardado.getEmail(), verificationToken);
             if (emailEnviado) {
                 log.info("Email de verificación enviado exitosamente al usuario: {}", usuarioGuardado.getEmail());
             } else {
@@ -98,8 +106,8 @@ public class AuthenticationService {
     }
 
     public void logout(String authHeader) {
-        if (authHeader != null && authHeader.startsWith(com.utec.backend.security.config.Constants.BEARER_PREFIX)) {
-            String token = authHeader.substring(com.utec.backend.security.config.Constants.BEARER_PREFIX.length());
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring("Bearer ".length());
             // Agregar token a blacklist
             tokenBlacklistService.blacklistToken(token);
         }
@@ -107,8 +115,8 @@ public class AuthenticationService {
 
     public boolean verifyToken(String authHeader) {
         try {
-            if (authHeader != null && authHeader.startsWith(com.utec.backend.security.config.Constants.BEARER_PREFIX)) {
-                String token = authHeader.substring(com.utec.backend.security.config.Constants.BEARER_PREFIX.length());
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring("Bearer ".length());
                 
                 // Verificar si está en blacklist
                 if (tokenBlacklistService.isTokenBlacklisted(token)) {
@@ -154,6 +162,51 @@ public class AuthenticationService {
             }
         } catch (Exception e) {
             throw new AuthenticationException("Error al refrescar token: " + e.getMessage());
+        }
+    }
+
+    public boolean verifyEmail(String token) {
+        try {
+            String email = jwtService.extractUsernameFromVerificationToken(token);
+            if (email != null) {
+                Usuario usuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+                
+                usuario.setVerificado(true);
+                usuarioRepository.save(usuario);
+                log.info("Usuario {} verificado exitosamente", email);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            log.error("Error al verificar email con token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean resendVerificationEmail(String email) {
+        try {
+            Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+            
+            if (usuario.getVerificado()) {
+                log.warn("Usuario {} ya está verificado", email);
+                return false;
+            }
+            
+            String verificationToken = jwtService.generateVerificationToken(email);
+            boolean emailEnviado = emailService.enviarEmailVerificacion(email, verificationToken);
+            
+            if (emailEnviado) {
+                log.info("Email de verificación reenviado exitosamente al usuario: {}", email);
+                return true;
+            } else {
+                log.warn("No se pudo reenviar el email de verificación al usuario: {}", email);
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("Error al reenviar email de verificación al usuario {}: {}", email, e.getMessage());
+            return false;
         }
     }
 

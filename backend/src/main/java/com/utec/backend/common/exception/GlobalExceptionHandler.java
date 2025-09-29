@@ -57,14 +57,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleBadCredentialsException(BadCredentialsException ex) {
         log.error("Credenciales inválidas: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Credenciales inválidas"));
+                .body(ApiResponse.error("Email o contraseña incorrectos"));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         log.error("Usuario no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error("Usuario no encontrado"));
+                .body(ApiResponse.error("No encontramos una cuenta con ese email"));
     }
 
     @ExceptionHandler(AuthenticationException.class)

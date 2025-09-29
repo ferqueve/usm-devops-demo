@@ -1,11 +1,10 @@
-import { LoginForm } from '@/components/public/login';
-import { RegisterForm } from '@/components/public/register/RegisterForm';
+import { LoginForm, RegisterForm } from '@/components/public/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function AuthPage() {
-  const { login, register, isAuthenticated, isLoading, error } = useAuth();
+  const { login, register, isAuthenticated, isLoading, error, registrationSuccess, setRegistrationSuccess, lastRegisteredEmail } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -23,26 +22,46 @@ export default function AuthPage() {
   // Determinar qué componente mostrar basado en la ruta
   const isRegisterRoute = location.pathname === '/auth/register';
   
+  // Función para volver al login
+  const handleBackToLogin = () => {
+    // Iniciar animación de salida del mensaje
+    setIsAnimating(true);
+    
+    // Después de la animación, cambiar a login
+    setTimeout(() => {
+      setRegistrationSuccess(false);
+      setCurrentView('login');
+      setIsAnimating(false);
+      navigate('/auth');
+    }, 200);
+  };
+  
   // Manejar cambio de vista con animación
   useEffect(() => {
+    // Si hay registro exitoso, no cambiar la vista
+    if (registrationSuccess) {
+      setCurrentView('register');
+      return;
+    }
+    
     const targetView = isRegisterRoute ? 'register' : 'login';
     
     if (targetView !== currentView) {
       // Iniciar animación de salida
       setIsAnimating(true);
       
-      // Después de 300ms (duración de la animación), cambiar la vista
+      // Después de 200ms (duración de la animación), cambiar la vista
       setTimeout(() => {
         setCurrentView(targetView);
         setIsAnimating(false);
-      }, 300);
+      }, 200);
     }
-  }, [isRegisterRoute, currentView]);
+  }, [isRegisterRoute, currentView, registrationSuccess]);
 
   return (
     <>
-      {/* Mostrar error si existe */}
-      {error && (
+      {/* Mostrar error si existe (solo si no hay registro exitoso) */}
+      {error && !registrationSuccess && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
           <p className="text-sm text-destructive">{error}</p>
         </div>
@@ -50,7 +69,7 @@ export default function AuthPage() {
       
       {/* Componente con animación controlada */}
       <div
-        className={`transition-opacity duration-300 ease-in-out ${
+        className={`transition-opacity duration-200 ease-in-out ${
           isAnimating ? 'opacity-0' : 'opacity-100'
         }`}
       >
@@ -58,6 +77,12 @@ export default function AuthPage() {
           <RegisterForm 
             onRegister={register} 
             isLoading={isLoading}
+            showSuccessMessage={registrationSuccess}
+            userEmail={lastRegisteredEmail}
+            onBackToLogin={handleBackToLogin}
+            onResendEmail={async () => {
+              // Esta función se manejará desde el RegisterForm
+            }}
           />
         ) : (
           <LoginForm 

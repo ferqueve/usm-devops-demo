@@ -24,7 +24,7 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    @Value("${jwt.refresh-expiration:86400000}") // 24 horas por defecto
+    @Value("${jwt.refresh-expiration:86400000}")
     private long refreshExpiration;
 
     public String extractUsername(String token) {
@@ -104,5 +104,44 @@ public class JwtService {
 
     public long getRefreshExpirationTime() {
         return refreshExpiration;
+    }
+
+    public String generateVerificationToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "verification");
+        return buildToken(claims, email, 900000L); // 15 minutos
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, String email, long expiration) {
+        return Jwts
+                .builder()
+                .setClaims(extraClaims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractUsernameFromVerificationToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String type = claims.get("type", String.class);
+            if ("verification".equals(type)) {
+                return claims.getSubject();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean isVerificationTokenValid(String token) {
+        try {
+            String email = extractUsernameFromVerificationToken(token);
+            return email != null && !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
