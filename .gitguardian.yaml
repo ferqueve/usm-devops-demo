@@ -17,8 +17,8 @@ secrets-engine-version: 2
 
 # Patrones específicos a ignorar
 matches-ignore:
-  - name: JWT test secret
-    match: dGVzdC1zZWNyZXQta2V5LWZvci1qdW5pdC10ZXN0cy11dGVjLXNwYWNlLW1hbmFnZXItdGhpcy1pcy1hLXZlcnktbG9uZy1zZWNyZXQta2V5LWZvci10ZXN0aW5nLXB1cnBvc2VzLW9ubHk=
+  - name: JWT test secret (dummy)
+    match: ZHVtbXktdGVzdC1zZWNyZXQtZHVtbXktdGVzdC0zMmM=
   - name: Test email credentials
     match: test@utec.edu.uy
 
