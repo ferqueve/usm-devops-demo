@@ -1,0 +1,24 @@
+# GitGuardian configuration for UTEC Space Manager
+# Ignora secretos de testing que NO se usan en producción
+
+version: 2
+
+# Excluir archivos y directorios de test del escaneo
+paths-ignore:
+  - "**/src/test/**"
+  - "**/*test*.properties"
+  - "**/application-test.properties"
+  - "**/TestSecurityConfig.java"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+
+# Configuración del motor de secretos
+secrets-engine-version: 2
+
+# Patrones específicos a ignorar
+matches-ignore:
+  - name: JWT test secret
+    match: dGVzdC1zZWNyZXQta2V5LWZvci1qdW5pdC10ZXN0cy11dGVjLXNwYWNlLW1hbmFnZXItdGhpcy1pcy1hLXZlcnktbG9uZy1zZWNyZXQta2V5LWZvci10ZXN0aW5nLXB1cnBvc2VzLW9ubHk=
+  - name: Test email credentials
+    match: test@utec.edu.uy
+
