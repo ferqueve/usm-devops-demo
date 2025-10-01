@@ -27,18 +27,55 @@ function getLocalIP() {
   return 'localhost'; // fallback
 }
 
+// Leer GOOGLE_CLIENT_ID del .env raíz o del entorno (Docker)
+let googleClientId = process.env.VITE_GOOGLE_CLIENT_ID || '';
+if (!googleClientId) {
+  const rootEnvPath = path.join(__dirname, '..', '..', '.env');
+  if (fs.existsSync(rootEnvPath)) {
+    const rootEnvContent = fs.readFileSync(rootEnvPath, 'utf-8');
+    const match = rootEnvContent.match(/GOOGLE_CLIENT_ID=(.+)/);
+    if (match) {
+      googleClientId = match[1].trim();
+    }
+  }
+}
+
+// Determinar host a usar
+// En Docker: usar 'backend' (nombre del servicio en docker-compose)
+// En Local: usar IP detectada
+let host;
+const inDocker = fs.existsSync('/.dockerenv');
+
+if (inDocker) {
+  // En Docker, siempre usar el nombre del servicio backend
+  host = 'backend';
+  console.log(`🐳 Docker detectado - usando host: ${host}`);
+} else {
+  // En local, usar IP detectada
+  host = getLocalIP();
+  console.log(`🌐 IP detectada: ${host}`);
+}
+
 // Generar contenido del .env
-const localIP = getLocalIP();
-const envContent = `# Configuración automática para desarrollo en red local
-# IP detectada: ${localIP} - ${new Date().toLocaleString()}
-VITE_API_URL=http://${localIP}:8080/api/v1
-VITE_FRONTEND_URL=http://${localIP}:5173
+let envContent = `# Configuración automática para desarrollo
+# Host: ${host} - ${new Date().toLocaleString()}
+
+VITE_API_URL=http://${host}:8080/api/v1
+VITE_FRONTEND_URL=http://${host}:5173
 `;
+
+// Agregar Google Client ID si existe
+if (googleClientId) {
+  envContent += `\n# Google OAuth (copiado desde .env raíz)\n`;
+  envContent += `VITE_GOOGLE_CLIENT_ID=${googleClientId}\n`;
+}
 
 // Escribir archivo .env
 const envPath = path.join(__dirname, '..', '.env');
 fs.writeFileSync(envPath, envContent);
 
-console.log(`🌐 IP detectada automáticamente: ${localIP}`);
-console.log(`📝 Frontend: http://${localIP}:5173`);
-console.log(`🔗 API: http://${localIP}:8080/api/v1`);
+console.log(`📝 Frontend: http://${host}:5173`);
+console.log(`🔗 API: http://${host}:8080/api/v1`);
+if (googleClientId) {
+  console.log(`🔐 Google OAuth configurado`);
+}

@@ -65,11 +65,12 @@ src/main/java/com/utec/reservas/
 
 ### ✅ Autenticación y Autorización
 - **Registro de usuarios**: Con validación de email
-- **Login/Logout**: JWT con access y refresh tokens
-- **Verificación de email**: Sistema de códigos de verificación
+- **Login tradicional**: Email + contraseña con JWT
+- **Login con Google OAuth**: Autenticación social
 - **Refresh tokens**: Renovación automática de sesiones
 - **Token blacklist**: Invalidación de tokens en logout
-- **Roles**: Admin, Analista, Docente, Estudiante, Externo
+- **Verificación de email**: Sistema de códigos de verificación
+- **Roles**: Admin, Analista, Docente, Estudiante, Externo (asignados por la app)
 
 ### ✅ Gestión de Usuarios
 - Obtener perfil propio
@@ -110,6 +111,7 @@ src/main/java/com/utec/reservas/
 |--------|----------|-------------|
 | `POST` | `/auth/register` | Registro de nuevo usuario |
 | `POST` | `/auth/login` | Login con email y contraseña |
+| `POST` | `/oauth2/google` | **Login con Google OAuth** |
 | `POST` | `/auth/logout` | Cerrar sesión (invalida token) |
 | `POST` | `/auth/refresh` | Refrescar access token |
 | `GET` | `/auth/verify` | Verificar si token es válido |
@@ -171,6 +173,39 @@ Authorization: Bearer <jwt_token>
 | **Eventos Externos** | ✅ | ✅ | ✅ | ❌ | ✅ |
 | **Estadísticas** | ✅ | ✅ | ❌ | ❌ | ❌ |
 
+## 🔐 Configuración de Google OAuth
+
+### Obtener Credenciales
+
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
+2. Crea o selecciona un proyecto
+3. Ve a **"APIs & Services" > "Credentials"**
+4. Clic en **"Create Credentials" > "OAuth 2.0 Client ID"**
+5. Configura:
+   - **Application type:** Web application
+   - **Authorized JavaScript origins:** `http://localhost:5173`
+   - **Authorized redirect URIs:** `http://localhost:5173/auth/callback/google`
+6. Copia el **Client ID** y **Client Secret**
+7. Agrégalos a tu archivo `backend/.env`:
+   ```env
+   GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=tu-client-secret
+   ```
+
+### Flujo de Autenticación OAuth
+
+1. Usuario hace clic en "Iniciar con Google" en el frontend
+2. Frontend recibe token de Google
+3. Frontend envía token a `POST /api/v1/oauth2/google`
+4. Backend verifica el token con Google API
+5. Backend busca o crea el usuario:
+   - Si es nuevo: crea con rol `EXTERNO` y `verificado=true`
+   - Si existe: vincula cuenta OAuth
+6. Backend genera JWT tokens y los retorna
+7. Usuario queda autenticado
+
+**Nota:** Los roles se asignan desde la aplicación, Google solo provee la identidad.
+
 ## 🚀 Despliegue y Configuración
 
 ### Requisitos del Sistema
@@ -178,6 +213,20 @@ Authorization: Bearer <jwt_token>
 - **Maven**: 3.6+
 - **PostgreSQL**: 15+
 - **Memoria**: Mínimo 2GB RAM
+
+### Configurar Variables de Entorno
+
+```bash
+cd backend
+
+# Copiar archivo de ejemplo
+cp .env.example .env
+
+# Editar con tus credenciales
+nano .env  # o usa tu editor preferido
+```
+
+Ver sección [Configuración](#configuración-de-google-oauth) para obtener credenciales de Google.
 
 ### Ejecutar Aplicación
 
@@ -209,6 +258,8 @@ cd backend
 - ✅ **AuthenticationServiceTest** (13 tests) - Autenticación
 - ✅ **UsuarioControllerTest** (7 tests) - Endpoints de usuarios
 - ✅ **AuthenticationControllerTest** (12 tests) - Endpoints de auth
+
+**Nota:** Los tests de OAuth requieren configuración adicional de mocks para Google API.
 
 Ver documentación completa en: [src/test/README.md](src/test/README.md)
 

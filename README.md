@@ -13,7 +13,9 @@ Sistema de gestión de reservas de espacios para la Universidad Tecnológica del
 **UTEC Space Manager** es una aplicación web completa para la gestión de espacios y reservas en la Universidad Tecnológica del Uruguay. El sistema permite:
 
 - ✅ Autenticación segura con JWT y verificación de email
+- ✅ **Login con Google OAuth** (autenticación social)
 - ✅ Gestión de usuarios con roles (Admin, Docente, Analista, Estudiante, Externo)
+- ✅ Arquitectura separada por servicios (backend/frontend independientes)
 - 🚧 Gestión de salones y recursos (próximamente)
 - 🚧 Sistema de reservas con control de solapamientos (próximamente)
 - 🚧 Calendario interactivo (próximamente)
@@ -76,7 +78,9 @@ Sistema de gestión de reservas de espacios para la Universidad Tecnológica del
 git clone https://github.com/tu-usuario/UTEC---PF---USM-UTEC-Space-Manager-.git
 cd UTEC---PF---USM-UTEC-Space-Manager-
 
-# Crear archivo .env con variables de entorno (ver ejemplo abajo)
+# Configurar variables de entorno
+cp .env.example .env
+# Edita el archivo .env con tus credenciales
 
 # Levantar todos los servicios
 docker-compose up -d
@@ -97,6 +101,10 @@ docker-compose logs -f
 ```bash
 cd backend
 
+# Configurar variables de entorno
+cp .env.example .env
+# Edita backend/.env con tus credenciales
+
 # Compilar e instalar dependencias
 ./mvnw clean install
 
@@ -114,13 +122,16 @@ cd backend
 ```bash
 cd frontend
 
+# Configurar variables de entorno (opcional, se genera automáticamente)
+cp .env.example .env
+
 # Instalar dependencias
 npm install
 
 # Ejecutar en desarrollo (solo localhost)
 npm run dev
 
-# Ejecutar accesible desde la red local
+# Ejecutar accesible desde la red local (auto-detecta IP)
 npm run dev:network
 
 # Build de producción
@@ -131,39 +142,192 @@ npm run build
 
 ---
 
+## 🚀 Flujos de Levantamiento
+
+### 1. **Local Local** (Solo localhost)
+```bash
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# Backend (Terminal 1)
+cd backend
+./mvnw spring-boot:run
+
+# Frontend (Terminal 2)  
+cd frontend
+npm run dev
+```
+
+**Características:**
+- ✅ Solo accesible desde `localhost`
+- ✅ Frontend: `http://localhost:5173`
+- ✅ Backend: `http://localhost:8080`
+- ✅ Base de datos: PostgreSQL local o Docker solo para BD
+
+### 2. **Local Red** (Accesible desde red local)
+```bash
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# Backend (Terminal 1)
+cd backend
+./mvnw spring-boot:run
+
+# Frontend (Terminal 2) - Auto-detecta IP
+cd frontend
+npm run dev:network
+```
+
+**Características:**
+- ✅ Accesible desde otros dispositivos en la red local
+- ✅ Frontend: `http://192.168.x.x:5173` (IP detectada automáticamente)
+- ✅ Backend: `http://192.168.x.x:8080`
+- ✅ Usa el script `setup-env.js` que detecta tu IP automáticamente
+
+### 3. **Docker Local** (Todo en Docker, solo localhost)
+```bash
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+# IMPORTANTE: Cambiar DEV_MODE=dev en .env
+
+# Levantar todos los servicios
+docker-compose up -d
+```
+
+**Características:**
+- ✅ Todo containerizado (PostgreSQL + Backend + Frontend)
+- ✅ Solo accesible desde `localhost`
+- ✅ Frontend: `http://localhost:5173`
+- ✅ Backend: `http://localhost:8080`
+- ✅ Base de datos: `localhost:5432`
+
+### 4. **Docker Red** (Todo en Docker, accesible desde red)
+```bash
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+# IMPORTANTE: Cambiar DEV_MODE=dev:network en .env
+
+# Levantar todos los servicios
+docker-compose up -d
+```
+
+**Características:**
+- ✅ Todo containerizado
+- ✅ Accesible desde otros dispositivos en la red
+- ✅ Frontend: `http://192.168.x.x:5173`
+- ✅ Backend: `http://192.168.x.x:8080`
+- ✅ Usa `DEV_MODE=dev:network` para habilitar acceso desde red
+
+---
+
 ## 🔧 Configuración
 
-### Variables de Entorno
+### Arquitectura de Variables de Entorno
 
-#### Backend (.env o variables de sistema)
+El proyecto utiliza una arquitectura **separada por servicio** con tres archivos `.env`:
+
+```
+Proyecto/
+├── .env                  ← Docker Compose (orquestación)
+├── backend/.env          ← Backend (desarrollo local)
+└── frontend/.env         ← Frontend (generado automáticamente)
+```
+
+Cada carpeta incluye un archivo `.env.example` como plantilla.
+
+### Variables de Entorno por Servicio
+
+#### 📄 `.env` (Raíz - Docker Compose)
 
 ```env
 # Base de datos
+POSTGRES_DB=utec_db
+POSTGRES_USER=ut_user
+POSTGRES_PASSWORD=tu_password_seguro
+
+# Google OAuth
+GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=tu-client-secret
+
+# JWT
+JWT_SECRET=tu-secreto-super-seguro-256-bits
+
+# Email
+MAIL_USERNAME=tu-email@gmail.com
+MAIL_PASSWORD=tu-app-password
+
+# URLs
+FRONTEND_URL=http://localhost:5173
+
+# Docker
+DEV_MODE=dev:network
+```
+
+#### 📄 `backend/.env` (Backend - Desarrollo Local)
+
+```env
+# Base de datos local
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/utec_db
-SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_USERNAME=ut_user
 SPRING_DATASOURCE_PASSWORD=tu_password
+
+# Configuración
+SPRING_PROFILES_ACTIVE=dev
+SERVER_PORT=8080
+
+# Google OAuth (mismas credenciales que en .env raíz)
+GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=tu-client-secret
 
 # JWT
 JWT_SECRET=tu-secreto-super-seguro-256-bits
 JWT_EXPIRATION=3600000
-JWT_REFRESH_EXPIRATION=86400000
+JWT_REFRESH_EXPIRATION=2592000000
 
 # Email
-SPRING_MAIL_HOST=smtp.gmail.com
-SPRING_MAIL_PORT=587
-SPRING_MAIL_USERNAME=tu-email@gmail.com
-SPRING_MAIL_PASSWORD=tu-app-password
+MAIL_USERNAME=tu-email@gmail.com
+MAIL_PASSWORD=tu-app-password
 
-# Perfil activo
-SPRING_PROFILES_ACTIVE=dev
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
 ```
 
-#### Frontend (frontend/.env)
+#### 📄 `frontend/.env` (Frontend - Generado Automáticamente)
+
+Este archivo se genera automáticamente con el script `setup-env.js`:
 
 ```env
-VITE_API_URL=http://localhost:8080/api/v1
-VITE_APP_NAME=UTEC Space Manager
+# Generado automáticamente por npm run dev o npm run dev:network
+# En Docker: usa 'backend' para comunicación entre contenedores
+# En Local: usa IP detectada automáticamente
+VITE_API_URL=http://backend:8080/api/v1  # o http://192.168.x.x:8080/api/v1
+VITE_FRONTEND_URL=http://localhost:5173   # o http://192.168.x.x:5173
+VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
+
+**Nota:** El `VITE_GOOGLE_CLIENT_ID` se copia automáticamente desde `.env` raíz. El host se detecta automáticamente según el entorno (Docker vs Local).
+
+### 🔐 Configuración de Google OAuth
+
+Para habilitar el login con Google, necesitas configurar OAuth 2.0:
+
+1. **Ve a [Google Cloud Console](https://console.cloud.google.com/)**
+2. Crea o selecciona un proyecto
+3. **Habilita la API de Google+** (opcional pero recomendado)
+4. Ve a **"APIs & Services" > "Credentials"**
+5. Clic en **"Create Credentials" > "OAuth 2.0 Client ID"**
+6. Configura:
+   - **Application type:** Web application
+   - **Authorized JavaScript origins:** `http://localhost:5173`
+   - **Authorized redirect URIs:** `http://localhost:5173/auth/callback/google`
+7. Copia el **Client ID** y **Client Secret**
+8. Pégalos en tus archivos `.env` correspondientes
+
+**Importante:** El `GOOGLE_CLIENT_ID` debe ser el mismo en todos los archivos `.env`.
 
 ---
 

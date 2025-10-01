@@ -16,11 +16,8 @@ RUN npm ci
 # Copiar código fuente
 COPY . .
 
-# Ejecutar script de configuración de entorno
-RUN npm run setup-env
-
 # Exponer puerto 5173 (puerto por defecto de Vite)
 EXPOSE 5173
 
-# Comando para desarrollo - configurable
+# Comando para desarrollo - ejecuta setup-env.js al arrancar el contenedor
 CMD ["sh", "-c", "npm run ${DEV_MODE:-dev:network}"]

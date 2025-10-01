@@ -88,6 +88,62 @@ services:
 
 ---
 
+## 🔑 Arquitectura de Variables de Entorno
+
+### Estrategia de Configuración
+
+El proyecto utiliza una arquitectura **separada por servicio** con archivos `.env` independientes:
+
+```
+Proyecto/
+├── .env                    ← Docker Compose (orquestación)
+├── .env.example            ← Plantilla para Docker
+├── backend/
+│   ├── .env                ← Backend (desarrollo local)
+│   └── .env.example        ← Plantilla backend
+└── frontend/
+    ├── .env                ← Frontend (auto-generado)
+    └── .env.example        ← Plantilla frontend
+```
+
+### `.env` (Raíz)
+**Propósito:** Variables para Docker Compose  
+**Usado por:** `docker-compose.yml`  
+**Contiene:**
+- Credenciales de PostgreSQL
+- Secretos compartidos (Google OAuth, JWT, Email)
+- URLs y configuración Docker
+
+### `backend/.env`
+**Propósito:** Configuración para desarrollo local del backend  
+**Usado por:** Spring Boot cuando se ejecuta localmente  
+**Contiene:**
+- Configuración de base de datos local
+- Google OAuth credentials
+- Secretos JWT y Email
+- Frontend URL (para CORS)
+
+### `frontend/.env`
+**Propósito:** Variables del frontend  
+**Generado automáticamente:** Por `scripts/setup-env.js`  
+**Contiene:**
+- `VITE_API_URL` (auto-detecta IP de red)
+- `VITE_GOOGLE_CLIENT_ID` (copiado desde `.env` raíz)
+
+### Archivos `.env.example`
+**Propósito:** Plantillas de configuración (commiteadas al repositorio)  
+**Uso:** 
+```bash
+cp .env.example .env
+# Editar .env con credenciales reales
+```
+
+**Seguridad:**
+- ✅ `.env.example` → Commiteado (sin secretos)
+- ❌ `.env` → En `.gitignore` (con secretos)
+
+---
+
 ## 🔐 Configuración de Git
 
 ### Archivos de Seguridad
@@ -175,8 +231,10 @@ backend/
 │   │   │   ├── model/entity/       # Entidades JPA
 │   │   │   ├── dto/                # Data Transfer Objects
 │   │   │   ├── security/           # Configuración de seguridad
-│   │   │   │   ├── auth/           # Autenticación
-│   │   │   │   ├── jwt/            # JWT tokens
+│   │   │   │   ├── auth/           # Autenticación (DTOs, Controllers)
+│   │   │   │   ├── jwt/            # JWT tokens (generación, validación)
+│   │   │   │   ├── oauth/          # Google OAuth (OAuth2Service, OAuthController)
+│   │   │   │   ├── service/        # Servicios de seguridad
 │   │   │   │   └── config/         # Configuración de Spring Security
 │   │   │   └── common/             # Utilidades y excepciones
 │   │   └── resources/
