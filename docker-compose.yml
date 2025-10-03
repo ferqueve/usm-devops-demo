@@ -15,17 +15,10 @@ services:
   backend:
     build: ./backend
     container_name: spring_backend
+    env_file:
+      - backend/.env
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - JWT_SECRET=${JWT_SECRET}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - FRONTEND_URL=${FRONTEND_URL}
     ports:
       - "8080:8080"
     depends_on:
@@ -37,10 +30,8 @@ services:
     container_name: react_frontend
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_URL=http://backend:8080/api/v1
-      - VITE_FRONTEND_URL=http://localhost:5173
-      - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+    env_file:
+      - frontend/.env
     depends_on:
       - backend
     restart: unless-stopped

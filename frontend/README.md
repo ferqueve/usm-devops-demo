@@ -51,13 +51,12 @@ npm run dev
 # Red local (accesible desde otros dispositivos)
 npm run dev:network
 
-# Solo configuración de entorno
-npm run setup-env
+# Variables de entorno en frontend/.env (editar manualmente)
 ```
 
 **Acceso:** 
 - Local: http://localhost:5173
-- Red: http://192.168.x.x:5173 (IP detectada automáticamente)
+- Red: http://192.168.x.x:5173 (IP configurada en .env)
 
 ### Build
 
@@ -75,21 +74,20 @@ npm run preview
 
 ### Variables de Entorno (`.env`)
 
-El archivo `.env` se genera automáticamente con el script `setup-env.js`:
+El archivo `.env` se configura manualmente con las URLs necesarias:
 
 ```env
-# Generado automáticamente
-VITE_API_URL=http://localhost:8080/api/v1  # o http://192.168.x.x:8080/api/v1
-VITE_FRONTEND_URL=http://localhost:5173     # o http://192.168.x.x:5173
+# Configurado manualmente - cambiar según tu entorno
+VITE_API_URL=http://192.168.1.14:8080/api/v1
+VITE_FRONTEND_URL=http://192.168.1.14:5173
 VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
 
-**Scripts de configuración:**
-- `npm run dev` - Genera `.env` para localhost
-- `npm run dev:network` - Genera `.env` con IP de red detectada
-- `npm run setup-env` - Solo ejecuta la configuración
+**Scripts de desarrollo:**
+- `npm run dev` - Desarrollo local (localhost)
+- `npm run dev:network` - Desarrollo accesible desde red (otros dispositivos)
 
-**Nota:** El `VITE_GOOGLE_CLIENT_ID` se copia automáticamente desde el `.env` raíz del proyecto.
+**Nota:** Cambia manualmente las IPs en el archivo `.env` para configurar el acceso desde otros dispositivos.
 
 ---
 
@@ -168,8 +166,7 @@ const { user, login, logout, isAuthenticated } = useAuth();
 ```bash
 # Desarrollo
 npm run dev              # Local (localhost)
-npm run dev:network      # Red local (auto-detecta IP)
-npm run setup-env        # Solo configuración
+npm run dev:network      # Red local (accesible desde otros dispositivos)
 
 # Build
 npm run build           # Compilar

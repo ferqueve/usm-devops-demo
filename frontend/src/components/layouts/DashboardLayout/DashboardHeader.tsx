@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Calendar } from "lucide-react";
 

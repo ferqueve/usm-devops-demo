@@ -125,22 +125,56 @@ cd frontend
 # Instalar dependencias
 npm install
 
-# Ejecutar en desarrollo (solo localhost)
-npm run dev
+# Configurar IPs automáticamente (OBLIGATORIO si quieres acceso desde red)
+npm run auto-set-ip
 
-# Ejecutar accesible desde la red local (auto-detecta IP)
-npm run dev:network
+# Ejecutar en desarrollo local
+npm run dev              # Solo localhost:5173
 
-# Ejecutar solo el script de configuración
-npm run setup-env
+# Ejecutar accesible desde la red local  
+npm run dev:network      # IP detectada automáticamente (ej: http://192.168.1.14:5173)
 
 # Build de producción
 npm run build
 ```
 
-**El frontend estará disponible en:** http://localhost:5173
+**El frontend estará disponible en:** 
+- Local: `http://localhost:5173`
+- Red: `http://[IP-DETECTADA]:5173` (ej: `http://192.168.1.14:5173`)
 
-**Nota:** El archivo `.env` del frontend se genera automáticamente con el script `setup-env.js` que detecta la IP de red y configura las URLs apropiadamente.
+## 🔧 Configuración de IPs
+
+**¿Cuándo configurar IPs?**
+- ✅ **Primera vez** en el proyecto
+- ✅ **Acceso desde red** (otros dispositivos)
+- ✅ **Cambio de red WiFi** 
+- ✅ **Desconexión/reconexión** de WiFi
+- ✅ **Después de reiniciar** router/módemic
+
+### **Opción 1: Detección automática (recomendado)**
+```bash
+# Detecta y configura automáticamente la mejor IP disponible
+npm run auto-set-ip
+
+# Interfaz específica (si tienes problemas de detección)
+npm run set-wifi-ip          # Solo interfaz WiFi
+npm run set-ethernet-ip      # Solo interfaz Ethernet
+```
+
+**Lo que hace automáticamente:**
+- 🔍 Detecta tu IP real usando `os.networkInterfaces()`
+- 🚫 Ignora adaptadores virtuales (VMware, WSL, VirtualBox)
+- 📝 Actualiza `frontend/.env` y `backend/.env` simultáneamente
+- 💾 Agrega comentarios con fecha/hora de configuración
+- 🎯 Prioriza interfaces por confiabilidad (Ethernet > WiFi > otras)
+- 🌐 Funciona en laptops, escritorios y servidores
+
+### **Opción 2: Manual**
+Editar directamente los archivos:
+- `frontend/.env` → `VITE_API_URL` y `VITE_FRONTEND_URL`
+- `backend/.env` → `FRONTEND_URL` (para CORS)
+
+**Para configuración manual:** Borra los comentarios automáticos y edita las IPs directamente.
 
 ---
 
@@ -173,11 +207,14 @@ npm run dev
 cp .env.example .env
 # Editar .env con tus credenciales
 
+# Configurar IPs automáticamente para acceso desde red  
+npm run auto-set-ip
+
 # Backend (Terminal 1)
 cd backend
 ./mvnw spring-boot:run
 
-# Frontend (Terminal 2) - Auto-detecta IP
+# Frontend (Terminal 2) - Usa IP detectada automáticamente
 cd frontend
 npm run dev:network
 ```
@@ -186,7 +223,8 @@ npm run dev:network
 - ✅ Accesible desde otros dispositivos en la red local
 - ✅ Frontend: `http://192.168.x.x:5173` (IP detectada automáticamente)
 - ✅ Backend: `http://192.168.x.x:8080`
-- ✅ Usa el script `setup-env.js` que detecta tu IP automáticamente
+- ✅ Configuración automática con `npm run auto-set-ip`
+- ✅ Detección inteligente que ignora adaptadores virtuales
 
 ### 3. **Docker Local** (Todo en Docker, solo localhost)
 ```bash
@@ -230,16 +268,18 @@ docker-compose up -d
 
 ### Arquitectura de Variables de Entorno
 
-El proyecto utiliza una arquitectura **separada por servicio** con tres archivos `.env`:
+El proyecto utiliza una arquitectura **separada por servicio** con archivos `.env` optimizados:
 
 ```
 Proyecto/
-├── .env                  ← Docker Compose (orquestación)
-├── backend/.env          ← Backend (desarrollo local)
-└── frontend/.env         ← Frontend (generado automáticamente)
+├── .env                  ← Docker Compose (solo BD + variables compartidas)
+├── backend/.env          ← Backend (todas las variables del backend)
+└── frontend/.env         ← Frontend (URLs configuradas manualmente)
 ```
 
-Cada carpeta incluye un archivo `.env.example` como plantilla.
+**Configuración:**
+- **Desarrollo local**: URLs configuradas manualmente en `frontend/.env` y `backend/.env`
+- **Docker**: Docker Compose lee variables de cada archivo `.env` correspondiente
 
 ### Variables de Entorno por Servicio
 
@@ -251,37 +291,23 @@ POSTGRES_DB=utec_db
 POSTGRES_USER=ut_user
 POSTGRES_PASSWORD=tu_password_seguro
 
-# Google OAuth
+# Variables compartidas
 GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=tu-client-secret
-
-# JWT
-JWT_SECRET=tu-secreto-super-seguro-256-bits
-
-# Email
-MAIL_USERNAME=tu-email@gmail.com
-MAIL_PASSWORD=tu-app-password
-
-# URLs
-FRONTEND_URL=http://localhost:5173
-
-# Docker
-DEV_MODE=dev:network
 ```
 
-#### 📄 `backend/.env` (Backend - Desarrollo Local)
+#### 📄 `backend/.env` (Backend - Todas las Variables)
 
 ```env
-# Base de datos local
+# Base de datos
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/utec_db
 SPRING_DATASOURCE_USERNAME=ut_user
 SPRING_DATASOURCE_PASSWORD=tu_password
 
-# Configuración
+# Configuración Spring
 SPRING_PROFILES_ACTIVE=dev
 SERVER_PORT=8080
 
-# Google OAuth (mismas credenciales que en .env raíz)
+# Google OAuth
 GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=tu-client-secret
 
@@ -298,25 +324,22 @@ MAIL_PASSWORD=tu-app-password
 FRONTEND_URL=http://localhost:5173
 ```
 
-#### 📄 `frontend/.env` (Frontend - Generado Automáticamente)
+#### 📄 `frontend/.env` (Frontend - Configurado Manualmente)
 
-Este archivo se genera automáticamente con el script `setup-env.js`:
+Este archivo contiene las URLs de conexión configuradas manualmente:
 
 ```env
-# Generado automáticamente por npm run dev o npm run dev:network
-# En Docker: usa 'backend' para comunicación entre contenedores
-# En Local: usa IP detectada automáticamente
-VITE_API_URL=http://backend:8080/api/v1  # o http://192.168.x.x:8080/api/v1
-VITE_FRONTEND_URL=http://localhost:5173   # o http://192.168.x.x:5173
+# URLs para desarrollo local - configurar manualmente con tu IP
+VITE_API_URL=http://192.168.1.14:8080/api/v1
+VITE_FRONTEND_URL=http://192.168.1.14:5173
 VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
 
 **Scripts disponibles:**
-- `npm run dev` - Modo localhost (genera `.env` con localhost)
-- `npm run dev:network` - Modo red (auto-detecta IP y genera `.env` con IP de red)
-- `npm run setup-env` - Solo ejecuta el script de configuración
+- `npm run dev` - Modo localhost
+- `npm run dev:network` - Modo red (accesible desde otros dispositivos)
 
-**Nota:** El `VITE_GOOGLE_CLIENT_ID` se copia automáticamente desde `.env` raíz. El host se detecta automáticamente según el entorno (Docker vs Local).
+**Nota:** Cambia manualmente las IPs en el archivo `.env` según tu red local para acceder desde otros dispositivos.
 
 ### 🔐 Configuración de Google OAuth
 
@@ -509,10 +532,12 @@ cd frontend
 # Instalar
 npm install
 
+# Configurar IPs para desarrollo en red
+npm run auto-set-ip
+
 # Desarrollo
 npm run dev              # Local (localhost)
-npm run dev:network      # Red local (auto-detecta IP)
-npm run setup-env        # Solo configuración
+npm run dev:network      # Red local (accesible desde otros dispositivos)
 
 # Build
 npm run build
@@ -522,6 +547,17 @@ npm run preview
 
 # Linter
 npm run lint
+```
+
+### Scripts de configuración de IP (Desde raíz)
+
+```bash
+# Configurar IPs automáticamente
+npm run auto-set-ip
+
+# Configurar interfaz específica  
+npm run set-wifi-ip          # Solo WiFi
+npm run set-ethernet-ip      # Solo Ethernet
 ```
 
 ---

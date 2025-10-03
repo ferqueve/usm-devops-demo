@@ -251,16 +251,12 @@ cd backend
 
 ### Configuración del Frontend
 
-Para desarrollo local, el frontend necesita configurar las URLs del backend. El script `setup-env.js` del frontend detecta automáticamente la IP de red y configura las variables apropiadas:
+Para desarrollo local, el frontend necesita configurar las URLs del backend. Edita manualmente el archivo `frontend/.env` con la IP deseada:
 
-```bash
-cd frontend
-
-# Configurar para desarrollo local (localhost)
-npm run setup-env
-
-# Configurar para acceso desde red local
-node scripts/setup-env.js --host
+```env
+# Configurar estas URLs en frontend/.env según tu entorno
+VITE_API_URL=http://192.168.1.14:8080/api/v1
+VITE_FRONTEND_URL=http://192.168.1.14:5173
 ```
 
 ### Tests Implementados

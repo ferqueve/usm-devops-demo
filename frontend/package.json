@@ -4,9 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "setup-env": "node scripts/setup-env.js",
-    "dev": "npm run setup-env && vite",
-    "dev:network": "node scripts/setup-env.js --host && vite --host 0.0.0.0",
+    "dev": "vite",
+    "dev:network": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -47,6 +46,7 @@
     "@tabler/icons-react": "^3.34.1",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-table": "^8.21.3",
+    "@types/node": "^24.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
