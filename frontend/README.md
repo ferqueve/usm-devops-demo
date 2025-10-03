@@ -50,9 +50,14 @@ npm run dev
 
 # Red local (accesible desde otros dispositivos)
 npm run dev:network
+
+# Solo configuración de entorno
+npm run setup-env
 ```
 
-**Acceso:** http://localhost:5173
+**Acceso:** 
+- Local: http://localhost:5173
+- Red: http://192.168.x.x:5173 (IP detectada automáticamente)
 
 ### Build
 
@@ -70,10 +75,21 @@ npm run preview
 
 ### Variables de Entorno (`.env`)
 
+El archivo `.env` se genera automáticamente con el script `setup-env.js`:
+
 ```env
-VITE_API_URL=http://localhost:8080/api/v1
-VITE_APP_NAME=UTEC Space Manager
+# Generado automáticamente
+VITE_API_URL=http://localhost:8080/api/v1  # o http://192.168.x.x:8080/api/v1
+VITE_FRONTEND_URL=http://localhost:5173     # o http://192.168.x.x:5173
+VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
+
+**Scripts de configuración:**
+- `npm run dev` - Genera `.env` para localhost
+- `npm run dev:network` - Genera `.env` con IP de red detectada
+- `npm run setup-env` - Solo ejecuta la configuración
+
+**Nota:** El `VITE_GOOGLE_CLIENT_ID` se copia automáticamente desde el `.env` raíz del proyecto.
 
 ---
 
@@ -151,8 +167,9 @@ const { user, login, logout, isAuthenticated } = useAuth();
 
 ```bash
 # Desarrollo
-npm run dev              # Local
-npm run dev:network      # Red local
+npm run dev              # Local (localhost)
+npm run dev:network      # Red local (auto-detecta IP)
+npm run setup-env        # Solo configuración
 
 # Build
 npm run build           # Compilar

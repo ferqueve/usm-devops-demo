@@ -249,6 +249,20 @@ cd backend
 ./mvnw test -Dtest=JwtServiceTest
 ```
 
+### Configuración del Frontend
+
+Para desarrollo local, el frontend necesita configurar las URLs del backend. El script `setup-env.js` del frontend detecta automáticamente la IP de red y configura las variables apropiadas:
+
+```bash
+cd frontend
+
+# Configurar para desarrollo local (localhost)
+npm run setup-env
+
+# Configurar para acceso desde red local
+node scripts/setup-env.js --host
+```
+
 ### Tests Implementados
 
 **Total: 57 tests** (38 unitarios + 19 integración)

@@ -122,9 +122,6 @@ cp .env.example .env
 ```bash
 cd frontend
 
-# Configurar variables de entorno (opcional, se genera automáticamente)
-cp .env.example .env
-
 # Instalar dependencias
 npm install
 
@@ -134,11 +131,16 @@ npm run dev
 # Ejecutar accesible desde la red local (auto-detecta IP)
 npm run dev:network
 
+# Ejecutar solo el script de configuración
+npm run setup-env
+
 # Build de producción
 npm run build
 ```
 
 **El frontend estará disponible en:** http://localhost:5173
+
+**Nota:** El archivo `.env` del frontend se genera automáticamente con el script `setup-env.js` que detecta la IP de red y configura las URLs apropiadamente.
 
 ---
 
@@ -308,6 +310,11 @@ VITE_API_URL=http://backend:8080/api/v1  # o http://192.168.x.x:8080/api/v1
 VITE_FRONTEND_URL=http://localhost:5173   # o http://192.168.x.x:5173
 VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
+
+**Scripts disponibles:**
+- `npm run dev` - Modo localhost (genera `.env` con localhost)
+- `npm run dev:network` - Modo red (auto-detecta IP y genera `.env` con IP de red)
+- `npm run setup-env` - Solo ejecuta el script de configuración
 
 **Nota:** El `VITE_GOOGLE_CLIENT_ID` se copia automáticamente desde `.env` raíz. El host se detecta automáticamente según el entorno (Docker vs Local).
 
@@ -503,13 +510,18 @@ cd frontend
 npm install
 
 # Desarrollo
-npm run dev
+npm run dev              # Local (localhost)
+npm run dev:network      # Red local (auto-detecta IP)
+npm run setup-env        # Solo configuración
 
 # Build
 npm run build
 
 # Preview
 npm run preview
+
+# Linter
+npm run lint
 ```
 
 ---

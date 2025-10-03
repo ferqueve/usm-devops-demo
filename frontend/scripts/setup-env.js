@@ -27,37 +27,33 @@ function getLocalIP() {
   return 'localhost'; // fallback
 }
 
-// Leer GOOGLE_CLIENT_ID del .env raíz o del entorno (Docker)
-let googleClientId = process.env.VITE_GOOGLE_CLIENT_ID || '';
-if (!googleClientId) {
-  const rootEnvPath = path.join(__dirname, '..', '..', '.env');
-  if (fs.existsSync(rootEnvPath)) {
-    const rootEnvContent = fs.readFileSync(rootEnvPath, 'utf-8');
-    const match = rootEnvContent.match(/GOOGLE_CLIENT_ID=(.+)/);
-    if (match) {
-      googleClientId = match[1].trim();
-    }
+// Leer GOOGLE_CLIENT_ID del .env raíz
+let googleClientId = '';
+const rootEnvPath = path.join(__dirname, '..', '..', '.env');
+if (fs.existsSync(rootEnvPath)) {
+  const rootEnvContent = fs.readFileSync(rootEnvPath, 'utf-8');
+  const match = rootEnvContent.match(/GOOGLE_CLIENT_ID=(.+)/);
+  if (match) {
+    googleClientId = match[1].trim();
   }
 }
 
-// Determinar host a usar
-// En Docker: usar 'backend' (nombre del servicio en docker-compose)
-// En Local: usar IP detectada
+// Determinar host a usar - SOLO para desarrollo local
 let host;
-const inDocker = fs.existsSync('/.dockerenv');
+const isNetworkMode = process.argv.includes('--host') || process.argv.includes('0.0.0.0');
 
-if (inDocker) {
-  // En Docker, siempre usar el nombre del servicio backend
-  host = 'backend';
-  console.log(`🐳 Docker detectado - usando host: ${host}`);
-} else {
-  // En local, usar IP detectada
+if (isNetworkMode) {
+  // Modo red: usar IP detectada
   host = getLocalIP();
-  console.log(`🌐 IP detectada: ${host}`);
+  console.log(`🌐 Modo red - IP detectada: ${host}`);
+} else {
+  // Modo localhost
+  host = 'localhost';
+  console.log(`🏠 Modo localhost - usando: ${host}`);
 }
 
 // Generar contenido del .env
-let envContent = `# Configuración automática para desarrollo
+let envContent = `# Configuración automática para desarrollo LOCAL
 # Host: ${host} - ${new Date().toLocaleString()}
 
 VITE_API_URL=http://${host}:8080/api/v1

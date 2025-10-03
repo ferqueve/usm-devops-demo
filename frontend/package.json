@@ -6,7 +6,7 @@
   "scripts": {
     "setup-env": "node scripts/setup-env.js",
     "dev": "npm run setup-env && vite",
-    "dev:network": "npm run setup-env && vite --host 0.0.0.0",
+    "dev:network": "node scripts/setup-env.js --host && vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

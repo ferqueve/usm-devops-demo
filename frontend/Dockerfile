@@ -19,5 +19,5 @@ COPY . .
 # Exponer puerto 5173 (puerto por defecto de Vite)
 EXPOSE 5173
 
-# Comando para desarrollo - ejecuta setup-env.js al arrancar el contenedor
-CMD ["sh", "-c", "npm run ${DEV_MODE:-dev:network}"]
+# Comando para desarrollo - las variables vienen del docker-compose
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

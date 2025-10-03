@@ -127,8 +127,14 @@ Proyecto/
 **Propósito:** Variables del frontend  
 **Generado automáticamente:** Por `scripts/setup-env.js`  
 **Contiene:**
-- `VITE_API_URL` (auto-detecta IP de red)
+- `VITE_API_URL` (auto-detecta IP de red o localhost)
+- `VITE_FRONTEND_URL` (auto-detecta IP de red o localhost)
 - `VITE_GOOGLE_CLIENT_ID` (copiado desde `.env` raíz)
+
+**Scripts disponibles:**
+- `npm run dev` - Modo localhost
+- `npm run dev:network` - Modo red (auto-detecta IP)
+- `npm run setup-env` - Solo configuración
 
 ### Archivos `.env.example`
 **Propósito:** Plantillas de configuración (commiteadas al repositorio)  
@@ -415,6 +421,24 @@ frontend/
 - Aliases de importación
 - Utilidades CSS
 
+#### `scripts/setup-env.js`
+**Ubicación:** `frontend/scripts/setup-env.js`  
+**Propósito:** Script de configuración automática de entorno
+- Detecta IP de red local automáticamente
+- Genera archivo `.env` con URLs apropiadas
+- Copia `GOOGLE_CLIENT_ID` desde `.env` raíz
+- Filtra adaptadores virtuales (WSL, VMware, VirtualBox)
+
+**Uso:**
+```bash
+# Modo localhost
+node scripts/setup-env.js
+
+# Modo red (auto-detecta IP)
+node scripts/setup-env.js --host
+node scripts/setup-env.js 0.0.0.0
+```
+
 ---
 
 ## 📚 Archivos de Documentación
@@ -496,7 +520,9 @@ cd frontend
 npm install
 
 # Ejecutar en desarrollo
-npm run dev
+npm run dev              # Local (localhost)
+npm run dev:network      # Red local (auto-detecta IP)
+npm run setup-env        # Solo configuración
 
 # Build de producción
 npm run build
