@@ -10,8 +10,8 @@ WORKDIR /app
 # Copiar archivos de configuración de dependencias
 COPY package*.json ./
 
-# Instalar todas las dependencias
-RUN npm ci
+# Instalar todas las dependencias (con cache optimizado)
+RUN npm ci --frozen-lockfile
 
 # Copiar código fuente
 COPY . .
