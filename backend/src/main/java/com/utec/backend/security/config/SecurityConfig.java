@@ -50,7 +50,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas
-                .requestMatchers("/api/v1/auth/**", "/actuator/**", "/error").permitAll()
+                .requestMatchers("/api/v1/auth/**", "/api/v1/oauth2/**", "/actuator/**", "/error").permitAll()
 
                 // Rutas protegidas por rol
                 .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)

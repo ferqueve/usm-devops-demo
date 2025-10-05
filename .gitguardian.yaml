@@ -1,0 +1,36 @@
+# GitGuardian configuration for UTEC Space Manager
+# Configuración para ignorar secretos de testing que NO se usan en producción
+# Documentación: https://docs.gitguardian.com/ggshield-docs/configuration
+
+version: 2
+
+# Exit code siempre 0 o 1 si encuentra incidentes
+exit_zero: false
+
+# Configuración de escaneo de secretos
+secret:
+  # Excluir archivos y directorios de test del escaneo
+  ignored_paths:
+    - '**/src/test/**'
+    - '**/*test*.properties'
+    - '**/application-test.properties'
+    - '**/*.test.ts'
+    - '**/*.spec.ts'
+    - '**/node_modules/**'
+    - '**/target/**'
+    - '**/dist/**'
+
+  # Ignorar secretos específicos por su hash SHA256 o valor
+  ignored_matches:
+    - name: JWT test secret (dummy base64)
+      match: ZHVtbXktdGVzdC1zZWNyZXQtZHVtbXktdGVzdC0zMmM=
+    - name: Test email credentials
+      match: test@utec.edu.uy
+    - name: Test dummy secret decoded
+      match: dummy-test-secret-dummy-test-32c
+
+  # No mostrar los secretos en la salida
+  show_secrets: false
+
+  # Ignorar secretos ya conocidos en el dashboard
+  ignore_known_secrets: false

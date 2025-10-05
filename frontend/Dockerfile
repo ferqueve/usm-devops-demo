@@ -10,17 +10,14 @@ WORKDIR /app
 # Copiar archivos de configuración de dependencias
 COPY package*.json ./
 
-# Instalar todas las dependencias
-RUN npm ci
+# Instalar todas las dependencias (con cache optimizado)
+RUN npm ci --frozen-lockfile
 
 # Copiar código fuente
 COPY . .
 
-# Ejecutar script de configuración de entorno
-RUN npm run setup-env
-
 # Exponer puerto 5173 (puerto por defecto de Vite)
 EXPOSE 5173
 
-# Comando para desarrollo - configurable
-CMD ["sh", "-c", "npm run ${DEV_MODE:-dev:network}"]
+# Comando para desarrollo - las variables vienen del docker-compose
+CMD ["npm", "run", "dev:network"]

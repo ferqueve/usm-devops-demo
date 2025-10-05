@@ -1,19 +1,24 @@
-# USM Space Manager - Backend
+# UTEC Space Manager - Backend
 
 ## 📋 Descripción General
 
-El backend del **USM Space Manager** es una aplicación robusta y segura construida con **Spring Boot** que gestiona el sistema de reservas de salones para la Universidad Tecnológica del Uruguay (UTEC). El sistema permite la autenticación delegada en la cuenta institucional UTEC, gestión completa de salones, inventario, reservas con control de solapamientos, y flujos de aprobación de solicitudes.
+El backend del **UTEC Space Manager** es una API REST construida con **Spring Boot** que gestiona el sistema de espacios y reservas para la Universidad Tecnológica del Uruguay (UTEC). 
+
+**Estado Actual:** Sistema de autenticación y gestión de usuarios implementado. Funcionalidades de reservas y salones en desarrollo.
 
 ## 🏗️ Arquitectura del Sistema
 
 ### Stack Tecnológico
-- **Framework**: Spring Boot 3.x
-- **Base de Datos**: PostgreSQL
+- **Framework**: Spring Boot 3.5.6
+- **Base de Datos**: PostgreSQL 15
 - **ORM**: Hibernate/JPA
+- **Migraciones**: Liquibase
 - **Seguridad**: Spring Security + JWT
-- **Autenticación**: SSO/IdP (LDAP/OAuth2)
+- **Autenticación**: JWT con tokens de acceso y refresh
+- **Email**: Spring Mail (Gmail SMTP)
 - **Build Tool**: Maven
-- **Java**: JDK 17+
+- **Java**: JDK 21
+- **Tests**: JUnit 5 + Mockito + Spring Boot Testcontainers
 
 ### Arquitectura en Capas
 El sistema sigue una arquitectura **N-tier** o multicapa:
@@ -56,27 +61,39 @@ src/main/java/com/utec/reservas/
 └── statistics/         # Estadísticas (opcional)
 ```
 
-## 🎯 Funcionalidades Principales
+## 🎯 Funcionalidades Implementadas
 
-### 🔐 Autenticación y Autorización
-- **SSO UTEC**: Integración con el sistema de identidad institucional
-- **Usuarios Externos**: Registro y autenticación local
-- **JWT**: Tokens de sesión seguros
-- **Roles**: Admin, Analista, Docente, Estudiante, Externo
+### ✅ Autenticación y Autorización
+- **Registro de usuarios**: Con validación de email
+- **Login tradicional**: Email + contraseña con JWT
+- **Login con Google OAuth**: Autenticación social
+- **Refresh tokens**: Renovación automática de sesiones
+- **Token blacklist**: Invalidación de tokens en logout
+- **Verificación de email**: Sistema de códigos de verificación
+- **Roles**: Admin, Analista, Docente, Estudiante, Externo (asignados por la app)
 
-### 🏢 Gestión de Salones
+### ✅ Gestión de Usuarios
+- Obtener perfil propio
+- Actualizar perfil (nombre y contraseña)
+- Listar todos los usuarios (Admin)
+- Obtener usuario por ID
+- Cambiar roles de usuario (Admin)
+
+### 🚧 Próximas Funcionalidades
+
+### Gestión de Salones (Próximamente)
 - CRUD completo de salones
 - Control de capacidad y recursos
 - Gestión de inventario por salón
 - Imágenes y planos de salones
 
-### 📅 Sistema de Reservas
+### Sistema de Reservas (Próximamente)
 - Creación y gestión de reservas
 - Control automático de solapamientos
 - Estados: Pendiente, Aprobado, Cancelado
 - Eventos externos para reservas públicas
 
-### 📊 Análisis y Recomendaciones
+### Análisis y Recomendaciones (Próximamente)
 - Sistema de recomendaciones inteligentes
 - Estadísticas de uso de salones
 - Métricas de reservas por período
@@ -92,9 +109,15 @@ src/main/java/com/utec/reservas/
 ### Autenticación
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `POST` | `/auth/signup` | Registro de usuario externo |
-| `POST` | `/auth/login` | Login tradicional (externos) |
-| `POST` | `/auth/utec/login` | Login UTEC vía LDAP |
+| `POST` | `/auth/register` | Registro de nuevo usuario |
+| `POST` | `/auth/login` | Login con email y contraseña |
+| `GET` | `/oauth2/google/authorize` | **Iniciar login con Google OAuth** |
+| `GET` | `/oauth2/google/callback` | **Callback de Google OAuth** |
+| `POST` | `/auth/logout` | Cerrar sesión (invalida token) |
+| `POST` | `/auth/refresh` | Refrescar access token |
+| `GET` | `/auth/verify` | Verificar si token es válido |
+| `POST` | `/auth/verify-email` | Verificar email con código |
+| `POST` | `/auth/resend-verification` | Reenviar código de verificación |
 
 ### Usuarios
 | Método | Endpoint | Descripción | Auth |
@@ -105,46 +128,15 @@ src/main/java/com/utec/reservas/
 | `GET` | `/usuarios/{id}` | Ver usuario específico | ✅ |
 | `PUT` | `/usuarios/{id}/rol` | Cambiar rol (Admin) | ✅ |
 
-### Salones
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/salones` | Listar salones | ✅ |
-| `POST` | `/salones` | Crear salón (Admin) | ✅ |
-| `GET` | `/salones/{id}` | Ver salón | ✅ |
-| `PUT` | `/salones/{id}` | Editar salón (Admin) | ✅ |
-| `DELETE` | `/salones/{id}` | Borrar salón (Admin) | ✅ |
+### 🚧 Endpoints en Desarrollo
 
-### Inventario
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/salones/{salonId}/inventario` | Listar inventario | ✅ |
-| `POST` | `/salones/{salonId}/inventario` | Crear ítem | ✅ |
-| `PUT` | `/salones/{salonId}/inventario/{itemId}` | Modificar ítem | ✅ |
-| `DELETE` | `/salones/{salonId}/inventario/{itemId}` | Eliminar ítem | ✅ |
+Los siguientes endpoints están planificados pero aún no implementados:
 
-### Reservas
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/reservas` | Listar reservas (con filtros) | ✅ |
-| `POST` | `/reservas` | Crear reserva | ✅ |
-| `GET` | `/reservas/{id}` | Ver reserva | ✅ |
-| `PUT` | `/reservas/{id}` | Actualizar reserva | ✅ |
-| `DELETE` | `/reservas/{id}` | Cancelar reserva | ✅ |
-
-### Eventos Externos
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/reservas/{id}/evento` | Crear evento | ✅ |
-| `GET` | `/reservas/{id}/evento` | Ver evento | ✅ |
-| `PUT` | `/reservas/{id}/evento` | Modificar evento | ✅ |
-| `DELETE` | `/reservas/{id}/evento` | Eliminar evento | ✅ |
-
-### Recomendaciones y Estadísticas
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/recomendaciones/{userId}` | Obtener sugerencias | ✅ |
-| `GET` | `/estadisticas/reservas` | Estadísticas de reservas | ✅ |
-| `GET` | `/estadisticas/salones/uso` | Uso de salones | ✅ |
+- Salones (CRUD)
+- Inventario
+- Reservas
+- Eventos Externos
+- Recomendaciones y Estadísticas
 
 ## 🗄️ Base de Datos
 
@@ -182,13 +174,109 @@ Authorization: Bearer <jwt_token>
 | **Eventos Externos** | ✅ | ✅ | ✅ | ❌ | ✅ |
 | **Estadísticas** | ✅ | ✅ | ❌ | ❌ | ❌ |
 
+## 🔐 Configuración de Google OAuth
+
+### Obtener Credenciales
+
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
+2. Crea o selecciona un proyecto
+3. Ve a **"APIs & Services" > "Credentials"**
+4. Clic en **"Create Credentials" > "OAuth 2.0 Client ID"**
+5. Configura:
+   - **Application type:** Web application
+   - **Authorized JavaScript origins:** `http://localhost:5173`
+   - **Authorized redirect URIs:** 
+     - `http://localhost:8080/api/v1/oauth2/google/callback` (Backend callback)
+     - `http://localhost:5173/auth/callback/success` (Frontend success)
+6. Copia el **Client ID** y **Client Secret**
+7. Agrégalos a tu archivo `backend/.env`:
+   ```env
+   GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=tu-client-secret
+   ```
+
+### Flujo de Autenticación OAuth (Backend-First)
+
+1. Usuario hace clic en "Iniciar con Google" en el frontend
+2. Frontend redirige a `GET /api/v1/oauth2/google/authorize`
+3. Backend redirige a Google OAuth con parámetros
+4. Usuario autoriza en Google
+5. Google redirige a `GET /api/v1/oauth2/google/callback`
+6. Backend intercambia código por tokens con Google
+7. Backend busca o crea el usuario:
+   - Si es nuevo: crea con rol `EXTERNO` y `verificado=true`
+   - Si existe: vincula cuenta OAuth
+8. Backend genera JWT tokens y redirige a frontend
+9. Frontend procesa callback y autentica usuario
+
+**Nota:** Los roles se asignan desde la aplicación, Google solo provee la identidad.
+
 ## 🚀 Despliegue y Configuración
 
 ### Requisitos del Sistema
-- **Java**: JDK 17 o superior
+- **Java**: JDK 21 o superior
 - **Maven**: 3.6+
-- **PostgreSQL**: 12+
+- **PostgreSQL**: 15+
 - **Memoria**: Mínimo 2GB RAM
+
+### Configurar Variables de Entorno
+
+```bash
+cd backend
+
+# Copiar archivo de ejemplo
+cp .env.example .env
+
+# Editar con tus credenciales
+nano .env  # o usa tu editor preferido
+```
+
+Ver sección [Configuración](#configuración-de-google-oauth) para obtener credenciales de Google.
+
+### Ejecutar Aplicación
+
+```bash
+cd backend
+
+# Compilar proyecto
+./mvnw clean install
+
+# Ejecutar aplicación (perfil dev por defecto)
+./mvnw spring-boot:run
+
+# Con perfil específico
+./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+
+# Ejecutar tests
+./mvnw test
+
+# Test específico
+./mvnw test -Dtest=JwtServiceTest
+```
+
+### Configuración del Frontend
+
+Para desarrollo local, el frontend necesita configurar las URLs del backend. Edita manualmente el archivo `frontend/.env` con la IP deseada:
+
+```env
+# Configurar estas URLs en frontend/.env según tu entorno
+VITE_API_URL=http://192.168.1.14:8080/api/v1
+VITE_FRONTEND_URL=http://192.168.1.14:5173
+```
+
+### Tests Implementados
+
+**Total: 57 tests** (38 unitarios + 19 integración)
+
+- ✅ **JwtServiceTest** (14 tests) - Servicio de tokens JWT
+- ✅ **UsuarioServiceTest** (11 tests) - Lógica de usuarios
+- ✅ **AuthenticationServiceTest** (13 tests) - Autenticación
+- ✅ **UsuarioControllerTest** (7 tests) - Endpoints de usuarios
+- ✅ **AuthenticationControllerTest** (12 tests) - Endpoints de auth
+
+**Nota:** Los tests de OAuth requieren configuración adicional de mocks para Google API.
+
+Ver documentación completa en: [src/test/README.md](src/test/README.md)
 
 
 ## 🤝 Contribución
@@ -200,13 +288,20 @@ Authorization: Bearer <jwt_token>
 - **Paquetes**: minúsculas (`com.utec.reservas.service`)
 
 
-## 📞 Contacto y Soporte
+## 📚 Documentación Adicional
+
+- **Tests**: [src/test/README.md](src/test/README.md)
+- **Estructura del Proyecto**: [../PROJECT_STRUCTURE.md](../PROJECT_STRUCTURE.md)
+- **Configuración de Seguridad**: Ver `.gitguardian.yaml` y `.gitleaksignore`
+
+## 📞 Contacto
 
 - **Desarrollador Backend**: Mathias Pena
-- **Proyecto**: USM Space Manager
+- **Proyecto**: UTEC Space Manager
 - **Institución**: Universidad Tecnológica del Uruguay (UTEC)
-- **Versión**: 1.0 (Julio/Agosto 2025)
+- **Versión**: 1.0.0
+- **Fecha**: Octubre 2025
 
+---
 
-
-**Nota**: Este es un README inicial que puede ser actualizado conforme evolucione el proyecto. Para más detalles técnicos, consultar la documentación completa del backend.
+**Última actualización:** Octubre 2025

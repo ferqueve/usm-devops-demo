@@ -1,0 +1,17 @@
+# Ignorar secretos de testing para GitLeaks
+# Estos son valores de prueba que NO se usan en producción
+
+# JWT Test Secret - valor dummy en Base64
+backend/src/test/resources/application-test.properties:jwt.secret
+ZHVtbXktdGVzdC1zZWNyZXQtZHVtbXktdGVzdC0zMmM=
+
+# Cualquier archivo en directorio de tests
+backend/src/test/**
+frontend/src/**/*.test.*
+frontend/src/**/*.spec.*
+
+# Archivos de configuración de test
+**/application-test.properties
+**/application-test.yml
+**/.env.test
+

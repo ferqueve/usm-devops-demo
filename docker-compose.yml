@@ -1,11 +1,11 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
     container_name: ut_db
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -13,31 +13,40 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      target: runtime
     container_name: spring_backend
     env_file:
-      - .env
+      - backend/.env
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:
       - db
     restart: unless-stopped
+    volumes:
+      - maven-cache:/root/.m2
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
     container_name: react_frontend
     ports:
       - "5173:5173"
-    environment:
-      - DEV_MODE=${DEV_MODE:-dev:network}
+    env_file:
+      - frontend/.env
     depends_on:
       - backend
     restart: unless-stopped
+    volumes:
+      - npm-cache:/root/.npm
+      - node-modules:/app/node_modules
 
 volumes:
   pgdata:
+  maven-cache:
+  npm-cache:
+  node-modules:
 

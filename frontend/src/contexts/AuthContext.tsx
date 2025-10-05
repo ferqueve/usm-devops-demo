@@ -181,6 +181,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+
   // Función de registro con manejo de errores
   const register = useCallback(async (userData: { 
     nombre: string; 
