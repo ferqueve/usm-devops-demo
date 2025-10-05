@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { RoleProtectedRoute } from '@/components/auth';
 import AuthPage from './app/public/auth/page';
 import VerifyEmailPage from './app/auth/verify/page';
+import { AuthCallbackSuccess } from './pages/auth/AuthCallbackSuccess';
 import { AuthLayout } from './components/layouts';
 import DashboardPage from './app/dashboard/page';
 import CalendarPage from './app/calendar/page';
@@ -43,6 +44,11 @@ function AppRoutes() {
             <VerifyEmailPage />
           </AuthLayout>
         )} 
+      />
+      
+      <Route 
+        path="/auth/callback/success" 
+        element={<AuthCallbackSuccess />} 
       />
       
       {/* Rutas protegidas del dashboard */}

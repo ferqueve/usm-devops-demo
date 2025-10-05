@@ -111,7 +111,8 @@ src/main/java/com/utec/reservas/
 |--------|----------|-------------|
 | `POST` | `/auth/register` | Registro de nuevo usuario |
 | `POST` | `/auth/login` | Login con email y contraseña |
-| `POST` | `/oauth2/google` | **Login con Google OAuth** |
+| `GET` | `/oauth2/google/authorize` | **Iniciar login con Google OAuth** |
+| `GET` | `/oauth2/google/callback` | **Callback de Google OAuth** |
 | `POST` | `/auth/logout` | Cerrar sesión (invalida token) |
 | `POST` | `/auth/refresh` | Refrescar access token |
 | `GET` | `/auth/verify` | Verificar si token es válido |
@@ -184,7 +185,9 @@ Authorization: Bearer <jwt_token>
 5. Configura:
    - **Application type:** Web application
    - **Authorized JavaScript origins:** `http://localhost:5173`
-   - **Authorized redirect URIs:** `http://localhost:5173/auth/callback/google`
+   - **Authorized redirect URIs:** 
+     - `http://localhost:8080/api/v1/oauth2/google/callback` (Backend callback)
+     - `http://localhost:5173/auth/callback/success` (Frontend success)
 6. Copia el **Client ID** y **Client Secret**
 7. Agrégalos a tu archivo `backend/.env`:
    ```env
@@ -192,17 +195,19 @@ Authorization: Bearer <jwt_token>
    GOOGLE_CLIENT_SECRET=tu-client-secret
    ```
 
-### Flujo de Autenticación OAuth
+### Flujo de Autenticación OAuth (Backend-First)
 
 1. Usuario hace clic en "Iniciar con Google" en el frontend
-2. Frontend recibe token de Google
-3. Frontend envía token a `POST /api/v1/oauth2/google`
-4. Backend verifica el token con Google API
-5. Backend busca o crea el usuario:
+2. Frontend redirige a `GET /api/v1/oauth2/google/authorize`
+3. Backend redirige a Google OAuth con parámetros
+4. Usuario autoriza en Google
+5. Google redirige a `GET /api/v1/oauth2/google/callback`
+6. Backend intercambia código por tokens con Google
+7. Backend busca o crea el usuario:
    - Si es nuevo: crea con rol `EXTERNO` y `verificado=true`
    - Si existe: vincula cuenta OAuth
-6. Backend genera JWT tokens y los retorna
-7. Usuario queda autenticado
+8. Backend genera JWT tokens y redirige a frontend
+9. Frontend procesa callback y autentica usuario
 
 **Nota:** Los roles se asignan desde la aplicación, Google solo provee la identidad.
 

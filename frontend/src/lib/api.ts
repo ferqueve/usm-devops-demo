@@ -181,11 +181,4 @@ export const authApi = {
     });
   },
 
-  // Google OAuth Login
-  async googleLogin(googleToken: string): Promise<ApiResponse<LoginResponse>> {
-    return apiRequest<LoginResponse>('/oauth2/google', {
-      method: 'POST',
-      body: JSON.stringify({ token: googleToken }),
-    });
-  },
 };

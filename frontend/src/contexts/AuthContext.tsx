@@ -14,7 +14,6 @@ interface AuthContextType {
     rol: string;
   } | null;
   login: (credentials?: { email: string; password: string }) => Promise<void>;
-  loginWithGoogle: (googleToken: string) => Promise<void>;
   register: (userData: { 
     nombre: string; 
     apellido: string; 
@@ -182,44 +181,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  // Función de login con Google OAuth
-  const loginWithGoogle = useCallback(async (googleToken: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Llamar a la API del backend con el token de Google
-      const response = await authApi.googleLogin(googleToken);
-      
-      if (response.success && response.data) {
-        // Guardar tokens y datos del usuario
-        const userData = {
-          email: response.data.email,
-          nombre: response.data.nombre,
-          rol: response.data.rol
-        };
-        
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Guardar en el estado del contexto
-        setUser(userData);
-        
-        const authData = { isAuthenticated: true, timestamp: Date.now() };
-        storageUtils.set(AUTH_STORAGE_KEY, authData);
-        setIsAuthenticated(true);
-      } else {
-        throw new Error(response.error || 'Error en el login con Google');
-      }
-    } catch (err) {
-      const errorMessage = errorUtils.getErrorMessage(err);
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
 
   // Función de registro con manejo de errores
   const register = useCallback(async (userData: { 
@@ -324,7 +285,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     user,
     login,
-    loginWithGoogle,
     register,
     logout,
     error,

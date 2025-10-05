@@ -1,14 +1,15 @@
 package com.utec.backend.security.oauth;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.utec.backend.common.exception.AuthenticationException;
 import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import com.utec.backend.security.auth.AuthenticationResponse;
-import com.utec.backend.security.auth.GoogleTokenRequest;
 import com.utec.backend.security.auth.GoogleUserInfo;
 import com.utec.backend.security.jwt.JwtService;
 import com.utec.backend.security.service.CustomUserDetailsService;
@@ -34,16 +35,25 @@ public class OAuth2Service {
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
+    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    private String googleClientSecret;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
     /**
-     * Autentica un usuario con Google OAuth
+     * Maneja el callback de Google OAuth intercambiando código por tokens
      */
-    public AuthenticationResponse authenticateWithGoogle(GoogleTokenRequest request) {
+    public AuthenticationResponse handleGoogleCallback(String authorizationCode) {
         try {
-            // Verificar token de Google
-            GoogleUserInfo googleUser = verifyGoogleToken(request.getToken());
+            // Intercambiar código de autorización por tokens
+            GoogleTokenResponse tokenResponse = exchangeCodeForTokens(authorizationCode);
+            
+            // Verificar ID token y extraer información del usuario
+            GoogleUserInfo googleUser = verifyIdToken(tokenResponse.getIdToken());
             
             if (googleUser == null) {
-                throw new AuthenticationException("Token de Google inválido");
+                throw new AuthenticationException("ID Token de Google inválido");
             }
 
             // Buscar o crear usuario
@@ -54,7 +64,7 @@ public class OAuth2Service {
             String token = jwtService.generateToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-            log.info("Usuario autenticado exitosamente con Google: {}", usuario.getEmail());
+            log.info("Usuario autenticado exitosamente con Google OAuth: {}", usuario.getEmail());
 
             return new AuthenticationResponse(
                 token,
@@ -65,16 +75,35 @@ public class OAuth2Service {
                 jwtService.getExpirationTime()
             );
 
-        } catch (GeneralSecurityException | IOException e) {
-            log.error("Error al verificar token de Google: {}", e.getMessage());
-            throw new AuthenticationException("Error al verificar token de Google");
+        } catch (Exception e) {
+            log.error("Error en callback de Google OAuth: {}", e.getMessage());
+            throw new AuthenticationException("Error al procesar autenticación con Google");
         }
     }
 
     /**
-     * Verifica el token de Google y extrae información del usuario
+     * Intercambia el código de autorización por tokens de Google
      */
-    private GoogleUserInfo verifyGoogleToken(String tokenString) throws GeneralSecurityException, IOException {
+    private GoogleTokenResponse exchangeCodeForTokens(String authorizationCode) throws IOException {
+        String redirectUri = frontendUrl + "/auth/callback/google";
+        
+        GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
+            new NetHttpTransport(),
+            new GsonFactory(),
+            googleClientId,
+            googleClientSecret,
+            authorizationCode,
+            redirectUri
+        ).execute();
+
+        log.info("Tokens de Google obtenidos exitosamente");
+        return tokenResponse;
+    }
+
+    /**
+     * Verifica el ID token de Google y extrae información del usuario
+     */
+    private GoogleUserInfo verifyIdToken(String idTokenString) throws GeneralSecurityException, IOException {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
             new NetHttpTransport(),
             new GsonFactory()
@@ -82,7 +111,7 @@ public class OAuth2Service {
             .setAudience(Collections.singletonList(googleClientId))
             .build();
 
-        GoogleIdToken idToken = verifier.verify(tokenString);
+        GoogleIdToken idToken = verifier.verify(idTokenString);
         
         if (idToken != null) {
             GoogleIdToken.Payload payload = idToken.getPayload();
@@ -99,7 +128,7 @@ public class OAuth2Service {
 
             return new GoogleUserInfo(email, name, String.valueOf(emailVerified), pictureUrl);
         } else {
-            log.warn("Token de Google inválido");
+            log.warn("ID Token de Google inválido");
             return null;
         }
     }

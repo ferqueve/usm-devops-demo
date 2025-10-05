@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils"
 import { Button, Input, Label } from "@/components/ui/"
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { useGoogleLogin } from '@react-oauth/google'
 import { useAuth } from '@/contexts/AuthContext'
 
 export function LoginForm({
@@ -17,7 +16,6 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,23 +24,11 @@ export function LoginForm({
     }
   }
 
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        setGoogleLoading(true);
-        // El token de acceso viene en tokenResponse.access_token
-        await loginWithGoogle(tokenResponse.access_token);
-      } catch (error) {
-        console.error('Error en login con Google:', error);
-      } finally {
-        setGoogleLoading(false);
-      }
-    },
-    onError: (error) => {
-      console.error('Error en Google OAuth:', error);
-      setGoogleLoading(false);
-    },
-  });
+  const handleGoogleLogin = () => {
+    // Redirigir al endpoint del backend que manejará todo el flujo OAuth
+    setGoogleLoading(true);
+    window.location.href = `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/api/v1/oauth2/google/authorize`;
+  };
 
   return (
     <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} {...props}>
