@@ -15,7 +15,7 @@ El backend del **UTEC Space Manager** es una API REST construida con **Spring Bo
 - **Migraciones**: Liquibase
 - **Seguridad**: Spring Security + JWT
 - **Autenticación**: JWT con tokens de acceso y refresh
-- **Email**: Spring Mail (Gmail SMTP)
+- **Email**: Gmail API (HTTP)
 - **Build Tool**: Maven
 - **Java**: JDK 21
 - **Tests**: JUnit 5 + Mockito + Spring Boot Testcontainers
@@ -275,6 +275,30 @@ VITE_FRONTEND_URL=http://192.168.1.14:5173
 - ✅ **AuthenticationControllerTest** (12 tests) - Endpoints de auth
 
 **Nota:** Los tests de OAuth requieren configuración adicional de mocks para Google API.
+
+## 📧 Configuración de Gmail API
+
+El sistema usa Gmail API para el envío de emails de verificación. Para configurarlo:
+
+### 1. Obtener Credenciales
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
+2. Habilita la Gmail API
+3. Crea credenciales OAuth 2.0 (Desktop application)
+4. Obtén el refresh token
+
+### 2. Configurar Variables
+```env
+GMAIL_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=tu-client-secret
+GMAIL_REFRESH_TOKEN=tu-refresh-token
+GMAIL_FROM_EMAIL=tu-email@gmail.com
+```
+
+### 3. Ventajas vs SMTP
+- ✅ Mejor confiabilidad
+- ✅ Límites más altos
+- ✅ Autenticación OAuth 2.0 más segura
+- ✅ Sin contraseñas de aplicación
 
 Ver documentación completa en: [src/test/README.md](src/test/README.md)
 

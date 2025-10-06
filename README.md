@@ -12,7 +12,7 @@ Sistema de gestión de reservas de espacios para la Universidad Tecnológica del
 
 **UTEC Space Manager** es una aplicación web completa para la gestión de espacios y reservas en la Universidad Tecnológica del Uruguay. El sistema permite:
 
-- ✅ Autenticación segura con JWT y verificación de email
+- ✅ Autenticación segura con JWT y verificación de email (Gmail API)
 - ✅ **Login con Google OAuth** (autenticación social)
 - ✅ Gestión de usuarios con roles (Admin, Docente, Analista, Estudiante, Externo)
 - ✅ Arquitectura separada por servicios (backend/frontend independientes)
@@ -316,9 +316,11 @@ JWT_SECRET=tu-secreto-super-seguro-256-bits
 JWT_EXPIRATION=3600000
 JWT_REFRESH_EXPIRATION=2592000000
 
-# Email
-MAIL_USERNAME=tu-email@gmail.com
-MAIL_PASSWORD=tu-app-password
+# Gmail API
+GMAIL_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=tu-client-secret
+GMAIL_REFRESH_TOKEN=tu-refresh-token
+GMAIL_FROM_EMAIL=tu-email@gmail.com
 
 # Frontend URL
 FRONTEND_URL=http://localhost:5173
@@ -358,6 +360,24 @@ Para habilitar el login con Google, necesitas configurar OAuth 2.0:
 8. Pégalos en tus archivos `.env` correspondientes
 
 **Importante:** El `GOOGLE_CLIENT_ID` debe ser el mismo en todos los archivos `.env`.
+
+### 📧 Configuración de Gmail API
+
+Para el envío de emails de verificación, el sistema usa Gmail API en lugar de SMTP:
+
+1. **Habilita Gmail API** en Google Cloud Console
+2. **Crea credenciales OAuth 2.0** (Desktop application)
+3. **Obtén el refresh token** usando el script de Python
+4. **Configura las variables** en `backend/.env`:
+
+```env
+GMAIL_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=tu-client-secret
+GMAIL_REFRESH_TOKEN=tu-refresh-token
+GMAIL_FROM_EMAIL=tu-email@gmail.com
+```
+
+**📖 Documentación completa:** Ver sección de configuración en [backend/README.md](backend/README.md)
 
 ---
 

@@ -2,28 +2,24 @@ package com.utec.backend.service;
 
 import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * Servicio para el envío de emails
+ * Servicio para el envío de emails usando Gmail API
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final GmailApiService gmailApiService;
     private final UsuarioRepository usuarioRepository;
 
-    @Value("${spring.mail.username:}")
+    @Value("${gmail.api.from-email:usm.utec.uy@gmail.com}")
     private String fromEmail;
 
     @Value("${app.frontend.url:http://localhost:5173}")
@@ -36,36 +32,7 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean verificarConfiguracionEmail(String to) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("Verificación de Configuración - UTEC Space Manager");
-            helper.setText("""
-                Este es un email de verificación para confirmar que la configuración de Gmail SMTP está funcionando correctamente.
-                
-                Si recibes este mensaje, significa que:
-                - La configuración de Gmail SMTP está correcta
-                - Las credenciales son válidas
-                - El servicio de email está funcionando
-                
-                Saludos,
-                Equipo UTEC Space Manager
-                """, false);
-
-            mailSender.send(message);
-            log.info("Email de verificación enviado exitosamente a: {}", to);
-            return true;
-
-        } catch (MessagingException e) {
-            log.error("Error al enviar email de verificación a {}: {}", to, e.getMessage());
-            return false;
-        } catch (Exception e) {
-            log.error("Error inesperado al verificar configuración de email: {}", e.getMessage());
-            return false;
-        }
+        return gmailApiService.verificarConfiguracionGmailApi(to);
     }
 
     /**
@@ -94,48 +61,31 @@ public class EmailService {
     }
 
     /**
-     * Envía email de verificación con enlace
+     * Envía email de verificación con enlace usando Gmail API
      *
      * @param to Email del destinatario
      * @param verificationToken Token de verificación
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailVerificacion(String to, String verificationToken) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("Verifica tu cuenta - UTEC Space Manager");
+        String subject = "Verifica tu cuenta - UTEC Space Manager";
+        String verificationUrl = frontendUrl + "/auth/verify?token=" + verificationToken;
+        
+        String bodyText = """
+            ¡Bienvenido a UTEC Space Manager!
             
-            String verificationUrl = frontendUrl + "/auth/verify?token=" + verificationToken;
+            Para completar tu registro, por favor verifica tu email haciendo clic en el siguiente enlace:
             
-            helper.setText("""
-                ¡Bienvenido a UTEC Space Manager!
-                
-                Para completar tu registro, por favor verifica tu email haciendo clic en el siguiente enlace:
-                
-                {verificationUrl}
-                
-                Este enlace expirará en 24 horas.
-                
-                Si no solicitaste este registro, puedes ignorar este email.
-                
-                Saludos,
-                Equipo UTEC Space Manager
-                """.replace("{verificationUrl}", verificationUrl), false);
+            {verificationUrl}
+            
+            Este enlace expirará en 24 horas.
+            
+            Si no solicitaste este registro, puedes ignorar este email.
+            
+            Saludos,
+            Equipo UTEC Space Manager
+            """.replace("{verificationUrl}", verificationUrl);
 
-            mailSender.send(message);
-            log.info("Email de verificación enviado exitosamente a: {}", to);
-            return true;
-
-        } catch (MessagingException e) {
-            log.error("Error al enviar email de verificación a {}: {}", to, e.getMessage());
-            return false;
-        } catch (Exception e) {
-            log.error("Error inesperado al enviar email de verificación: {}", e.getMessage());
-            return false;
-        }
+        return gmailApiService.sendEmail(to, subject, bodyText);
     }
 }

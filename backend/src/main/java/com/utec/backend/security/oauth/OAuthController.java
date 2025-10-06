@@ -24,7 +24,7 @@ public class OAuthController {
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
-    @Value("${frontend.url}")
+    @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
     /**
