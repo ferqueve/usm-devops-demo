@@ -13,6 +13,7 @@ import com.utec.backend.security.auth.AuthenticationResponse;
 import com.utec.backend.security.auth.GoogleUserInfo;
 import com.utec.backend.security.jwt.JwtService;
 import com.utec.backend.security.service.CustomUserDetailsService;
+import com.utec.backend.util.RolUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,8 +65,21 @@ public class OAuth2Service {
 
             // Generar tokens JWT
             UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
+            
+            if (userDetails == null) {
+                throw new AuthenticationException("No se pudo cargar los detalles del usuario");
+            }
+            
             String token = jwtService.generateToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
+            
+            if (token == null || token.trim().isEmpty()) {
+                throw new AuthenticationException("No se pudo generar el token de acceso");
+            }
+            
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                throw new AuthenticationException("No se pudo generar el token de refresh");
+            }
 
             log.info("Usuario autenticado exitosamente con Google OAuth: {}", usuario.getEmail());
 
@@ -193,7 +207,8 @@ public class OAuth2Service {
                 nuevoUsuario.setNombre(nombre);
                 nuevoUsuario.setPassword(null); // OAuth no usa contraseña
                 nuevoUsuario.setOauthProv("GOOGLE");
-                nuevoUsuario.setRolApp(Usuario.RolApp.EXTERNO); // Rol por defecto
+                // Asignar rol basado en el dominio del email
+                nuevoUsuario.setRolApp(RolUtil.determinarRolPorEmail(email));
                 nuevoUsuario.setVerificado(true); // Google ya verificó el email
                 
                 return usuarioRepository.save(nuevoUsuario);

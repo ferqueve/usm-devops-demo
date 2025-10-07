@@ -128,12 +128,21 @@ export const errorUtils = {
    */
   getErrorMessage: (error: unknown): string => {
     if (error instanceof Error) {
+      // Si es un error de fetch o de red
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        return 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.';
+      }
+      // Si es un error de timeout
+      if (error.message.includes('timeout')) {
+        return 'La petición tardó demasiado tiempo. Intenta nuevamente.';
+      }
+      // Para otros errores, usar el mensaje tal como viene
       return error.message;
     }
     if (typeof error === 'string') {
       return error;
     }
-    return 'Ha ocurrido un error inesperado';
+    return 'Ha ocurrido un error inesperado. Intenta nuevamente.';
   },
 
   /**

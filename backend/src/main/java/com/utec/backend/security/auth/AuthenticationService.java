@@ -8,6 +8,7 @@ import com.utec.backend.security.service.CustomUserDetailsService;
 import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import com.utec.backend.service.EmailService;
+import com.utec.backend.util.RolUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,18 +31,23 @@ public class AuthenticationService {
     private final EmailService emailService;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        // Autenticar usuario - Spring Security manejará las excepciones automáticamente
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        try {
+            // Autenticar usuario - Spring Security manejará las excepciones automáticamente
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (Exception e) {
+            // Si falla la autenticación, lanzar excepción con mensaje claro
+            throw new AuthenticationException("Email o contraseña incorrectos. Verifica tus credenciales e intenta nuevamente.");
+        }
 
         // Buscar usuario en la base de datos
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+            .orElseThrow(() -> new UsuarioNotFoundException("No encontramos una cuenta con ese email"));
 
         // Verificar si el usuario ha verificado su email
         if (!usuario.getVerificado()) {
-            throw new AuthenticationException("Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada.");
+            throw new AuthenticationException("Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo código de verificación.");
         }
 
         // Generar tokens JWT reales
@@ -67,7 +73,7 @@ public class AuthenticationService {
 
         // Verificar si el usuario ya existe
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new AuthenticationException("Ya existe una cuenta registrada con este email");
+            throw new AuthenticationException("Ya existe una cuenta registrada con este email. Si ya tienes una cuenta, intenta iniciar sesión o usa el enlace '¿Olvidaste tu contraseña?'");
         }
 
         // Crear nuevo usuario
@@ -77,7 +83,8 @@ public class AuthenticationService {
         usuario.setNombre(nombreCompleto);
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRolApp(Usuario.RolApp.EXTERNO); // Rol por defecto para usuarios registrados
+        // Asignar rol basado en el dominio del email
+        usuario.setRolApp(RolUtil.determinarRolPorEmail(request.getEmail()));
         usuario.setVerificado(false); // Inicialmente no verificado
         usuario.setOauthProv(null); // Registro manual, no OAuth
 

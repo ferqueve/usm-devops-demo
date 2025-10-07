@@ -111,7 +111,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('Auto-logout detectado, limpiando estado...');
       setUser(null);
       setIsAuthenticated(false);
-      setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      // Solo mostrar mensaje de sesión expirada si realmente había una sesión activa
+      if (isAuthenticated) {
+        setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      }
     };
 
     window.addEventListener('auth:logout', handleAutoLogout);
@@ -119,13 +122,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       window.removeEventListener('auth:logout', handleAutoLogout);
     };
-  }, []);
+  }, [isAuthenticated]);
 
   // Función de login con manejo de errores
   const login = useCallback(async (credentials?: { email: string; password: string }) => {
     try {
       setIsLoading(true);
-      setError(null);
+      setError(null); // Limpiar cualquier error previo
       
       // Validar credenciales
       if (credentials) {
@@ -165,7 +168,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Guardar en el estado del contexto
           setUser(userData);
         } else {
-          throw new Error(response.error || 'Error en el login');
+          // Usar el mensaje de error del backend
+          const errorMessage = response.error || response.message || 'Error en el login';
+          throw new Error(errorMessage);
         }
       }
       
@@ -235,7 +240,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setRegistrationSuccess(true);
         setError(null);
       } else {
-        throw new Error(response.error || 'Error en el registro');
+        // Usar el mensaje de error del backend
+        const errorMessage = response.error || response.message || 'Error en el registro';
+        throw new Error(errorMessage);
       }
       
     } catch (err) {

@@ -71,44 +71,57 @@ async function apiRequest<T>(
     const response = await fetch(url, config);
     
     // Si es 401 y no es un retry, intentar refresh token
-    if (response.status === 401 && !isRetry) {
-      try {
-        console.log('Token expirado, intentando renovar...');
-        const refreshResponse = await authApi.refreshToken();
-        
-        if (refreshResponse.success && refreshResponse.data) {
-          // Guardar nuevos tokens
-          localStorage.setItem('token', refreshResponse.data.token);
-          localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
+    // PERO NO para endpoints de autenticación que no requieren token
+    const isAuthEndpoint = endpoint.includes('/auth/login') || 
+                          endpoint.includes('/auth/register') || 
+                          endpoint.includes('/auth/verify-email') || 
+                          endpoint.includes('/auth/resend-verification');
+    
+    if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+      // Solo intentar refresh si realmente hay un token (sesión válida)
+      const hasValidToken = token && token.length > 0;
+      
+      if (hasValidToken) {
+        try {
+          console.log('Token expirado, intentando renovar...');
+          const refreshResponse = await authApi.refreshToken();
           
-          // Actualizar header de autorización con nuevo token
-          config.headers = {
-            ...config.headers,
-            'Authorization': `Bearer ${refreshResponse.data.token}`,
-          };
+          if (refreshResponse.success && refreshResponse.data) {
+            // Guardar nuevos tokens
+            localStorage.setItem('token', refreshResponse.data.token);
+            localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
+            
+            // Actualizar header de autorización con nuevo token
+            config.headers = {
+              ...config.headers,
+              'Authorization': `Bearer ${refreshResponse.data.token}`,
+            };
+            
+            console.log('Token renovado exitosamente, reintentando petición...');
+            // Reintentar la petición original con el nuevo token
+            return apiRequest<T>(endpoint, { ...options, headers: config.headers }, true);
+          }
+        } catch (refreshError) {
+          console.error('Error al renovar token:', refreshError);
+          // Si falla el refresh, limpiar tokens y redirigir a login
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
           
-          console.log('Token renovado exitosamente, reintentando petición...');
-          // Reintentar la petición original con el nuevo token
-          return apiRequest<T>(endpoint, { ...options, headers: config.headers }, true);
+          // Emitir evento personalizado para que el AuthContext se entere
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+          
+          throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
         }
-      } catch (refreshError) {
-        console.error('Error al renovar token:', refreshError);
-        // Si falla el refresh, limpiar tokens y redirigir a login
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        
-        // Emitir evento personalizado para que el AuthContext se entere
-        window.dispatchEvent(new CustomEvent('auth:logout'));
-        
-        throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
       }
     }
     
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error || 'Error en la petición');
+      // Si el backend devuelve un error estructurado, usar ese mensaje
+      const errorMessage = data.error || data.message || 'Error en la petición';
+      throw new Error(errorMessage);
     }
     
     return data;

@@ -23,9 +23,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
+        // Para usuarios OAuth, la contraseña puede ser null
+        String password = usuario.getPassword();
+        if (password == null) {
+            password = ""; // Usuario OAuth sin contraseña
+        }
+        
         return new User(
                 usuario.getEmail(),
-                usuario.getPassword(),
+                password,
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuario.getRolApp().name()))
         );
     }

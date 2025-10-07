@@ -42,7 +42,7 @@ export function RegisterForm({
 
   // Timer para el cooldown del reenvío
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (resendCooldown > 0) {
       interval = setInterval(() => {
         setResendCooldown((prev) => {
@@ -67,16 +67,10 @@ export function RegisterForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validar que las contraseñas coincidan
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
-    
     if (onRegister) {
       try {
         await onRegister(formData);
-        // Limpiar formulario
+        // Limpiar formulario solo si el registro fue exitoso
         setFormData({
           nombre: "",
           apellido: "",
