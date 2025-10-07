@@ -27,13 +27,16 @@ public class OAuthController {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+    @Value("${app.backend.url:http://localhost:8080}")
+    private String backendUrl;
+
     /**
      * Inicia el flujo OAuth redirigiendo al usuario a Google
      * El frontend llama a este endpoint y el usuario es redirigido a Google
      */
     @GetMapping("/google/authorize")
     public void initiateGoogleLogin(HttpServletResponse response) throws IOException {
-        String redirectUri = frontendUrl + "/auth/callback/google";
+        String redirectUri = backendUrl + "/api/v1/oauth2/google/callback";
         String state = generateState();
         
         // Guardar state para validación posterior (implementar si es necesario)

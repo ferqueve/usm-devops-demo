@@ -113,6 +113,7 @@ src/main/java/com/utec/reservas/
 | `POST` | `/auth/login` | Login con email y contraseña |
 | `GET` | `/oauth2/google/authorize` | **Iniciar login con Google OAuth** |
 | `GET` | `/oauth2/google/callback` | **Callback de Google OAuth** |
+| `GET` | `/oauth2/google/info` | **Info de OAuth (debugging)** |
 | `POST` | `/auth/logout` | Cerrar sesión (invalida token) |
 | `POST` | `/auth/refresh` | Refrescar access token |
 | `GET` | `/auth/verify` | Verificar si token es válido |

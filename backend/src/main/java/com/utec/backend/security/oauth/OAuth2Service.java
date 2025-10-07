@@ -41,6 +41,9 @@ public class OAuth2Service {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+    @Value("${app.backend.url:http://localhost:8080}")
+    private String backendUrl;
+
     /**
      * Maneja el callback de Google OAuth intercambiando código por tokens
      */
@@ -66,13 +69,33 @@ public class OAuth2Service {
 
             log.info("Usuario autenticado exitosamente con Google OAuth: {}", usuario.getEmail());
 
+            // Validar que todos los valores requeridos no sean null
+            String email = usuario.getEmail();
+            String nombre = usuario.getNombre();
+            String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : "EXTERNO";
+            Long expiresIn = jwtService.getExpirationTime();
+            
+            if (email == null || email.trim().isEmpty()) {
+                throw new AuthenticationException("Email del usuario es requerido");
+            }
+            
+            if (nombre == null || nombre.trim().isEmpty()) {
+                nombre = "Usuario OAuth"; // Valor por defecto
+            }
+            
+            // expiresIn nunca será null ya que getExpirationTime() retorna un long primitivo
+            // pero mantenemos la validación por seguridad
+            if (expiresIn == null || expiresIn <= 0) {
+                expiresIn = 3600000L; // 1 hora por defecto
+            }
+            
             return new AuthenticationResponse(
                 token,
                 refreshToken,
-                usuario.getEmail(),
-                usuario.getNombre(),
-                usuario.getRolApp().name(),
-                jwtService.getExpirationTime()
+                email,
+                nombre,
+                rol,
+                expiresIn
             );
 
         } catch (Exception e) {
@@ -85,7 +108,7 @@ public class OAuth2Service {
      * Intercambia el código de autorización por tokens de Google
      */
     private GoogleTokenResponse exchangeCodeForTokens(String authorizationCode) throws IOException {
-        String redirectUri = frontendUrl + "/auth/callback/google";
+        String redirectUri = backendUrl + "/api/v1/oauth2/google/callback";
         
         GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
             new NetHttpTransport(),
@@ -152,9 +175,22 @@ public class OAuth2Service {
             .orElseGet(() -> {
                 // Crear nuevo usuario OAuth
                 log.info("Creando nuevo usuario con Google OAuth: {}", googleUser.getEmail());
+                
+                // Validar datos del usuario de Google
+                String email = googleUser.getEmail();
+                String nombre = googleUser.getNombre();
+                
+                if (email == null || email.trim().isEmpty()) {
+                    throw new AuthenticationException("Email de Google es requerido");
+                }
+                
+                if (nombre == null || nombre.trim().isEmpty()) {
+                    nombre = "Usuario OAuth"; // Valor por defecto
+                }
+                
                 Usuario nuevoUsuario = new Usuario();
-                nuevoUsuario.setEmail(googleUser.getEmail());
-                nuevoUsuario.setNombre(googleUser.getNombre());
+                nuevoUsuario.setEmail(email);
+                nuevoUsuario.setNombre(nombre);
                 nuevoUsuario.setPassword(null); // OAuth no usa contraseña
                 nuevoUsuario.setOauthProv("GOOGLE");
                 nuevoUsuario.setRolApp(Usuario.RolApp.EXTERNO); // Rol por defecto

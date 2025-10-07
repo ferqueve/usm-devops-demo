@@ -307,7 +307,8 @@ SPRING_DATASOURCE_PASSWORD=tu_password
 SPRING_PROFILES_ACTIVE=dev
 SERVER_PORT=8080
 
-# Google OAuth
+# Google OAuth 2.0
+# IMPORTANTE: El callback es del backend, no del frontend
 GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=tu-client-secret
 
@@ -322,8 +323,9 @@ GMAIL_CLIENT_SECRET=tu-client-secret
 GMAIL_REFRESH_TOKEN=tu-refresh-token
 GMAIL_FROM_EMAIL=tu-email@gmail.com
 
-# Frontend URL
+# URLs del sistema
 FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:8080
 ```
 
 #### 📄 `frontend/.env` (Frontend - Configurado Manualmente)
@@ -349,17 +351,63 @@ Para habilitar el login con Google, necesitas configurar OAuth 2.0:
 
 1. **Ve a [Google Cloud Console](https://console.cloud.google.com/)**
 2. Crea o selecciona un proyecto
-3. **Habilita la API de Google+** (opcional pero recomendado)
-4. Ve a **"APIs & Services" > "Credentials"**
-5. Clic en **"Create Credentials" > "OAuth 2.0 Client ID"**
-6. Configura:
+3. Ve a **"APIs & Services" > "Credentials"**
+4. Clic en **"Create Credentials" > "OAuth 2.0 Client ID"**
+5. Configura:
    - **Application type:** Web application
    - **Authorized JavaScript origins:** `http://localhost:5173`
-   - **Authorized redirect URIs:** `http://localhost:5173/auth/callback/google`
-7. Copia el **Client ID** y **Client Secret**
-8. Pégalos en tus archivos `.env` correspondientes
+   - **Authorized redirect URIs:** `http://localhost:8080/api/v1/oauth2/google/callback`
+6. Copia el **Client ID** y **Client Secret**
+7. Pégalos en tus archivos `.env` correspondientes
 
-**Importante:** El `GOOGLE_CLIENT_ID` debe ser el mismo en todos los archivos `.env`.
+**Importante:** 
+- El `GOOGLE_CLIENT_ID` debe ser el mismo en todos los archivos `.env`
+- La URL de callback es del **backend**, no del frontend
+- El flujo es: Frontend → Backend → Google → Backend → Frontend
+
+#### 🔄 Flujo de Autenticación OAuth
+
+```
+1. Usuario hace clic en "Iniciar con Google" en el frontend
+   ↓
+2. Frontend redirige a: GET /api/v1/oauth2/google/authorize
+   ↓
+3. Backend redirige a Google OAuth con parámetros
+   ↓
+4. Usuario autoriza en Google
+   ↓
+5. Google redirige a: GET /api/v1/oauth2/google/callback
+   ↓
+6. Backend intercambia código por tokens con Google
+   ↓
+7. Backend busca o crea el usuario:
+   - Si es nuevo: crea con rol EXTERNO y verificado=true
+   - Si existe: vincula cuenta OAuth
+   ↓
+8. Backend genera JWT tokens y redirige a frontend
+   ↓
+9. Frontend procesa callback y autentica usuario
+```
+
+#### 📍 URLs OAuth del Sistema
+
+| Endpoint | Descripción | Método |
+|----------|-------------|--------|
+| `/api/v1/oauth2/google/authorize` | Inicia el flujo OAuth | GET |
+| `/api/v1/oauth2/google/callback` | Callback de Google | GET |
+| `/api/v1/oauth2/google/info` | Info de OAuth (debug) | GET |
+
+#### ⚙️ URLs para Google Cloud Console
+
+**Authorized JavaScript Origins:**
+```
+http://localhost:5173
+```
+
+**Authorized Redirect URIs:**
+```
+http://localhost:8080/api/v1/oauth2/google/callback
+```
 
 ### 📧 Configuración de Gmail API
 
@@ -486,6 +534,7 @@ El sistema utiliza **JWT (JSON Web Tokens)** para autenticación:
 - [x] Backend API REST completo
 - [x] Autenticación con JWT
 - [x] Registro y login
+- [x] **Login con Google OAuth** ✅
 - [x] Verificación de email
 - [x] Gestión de usuarios
 - [x] Tests unitarios e integración (57 tests)

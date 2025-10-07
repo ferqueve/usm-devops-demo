@@ -13,14 +13,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: true,
+    host: false,
     allowedHosts: [
       'localhost',
-      '127.0.0.1',
-      '0.0.0.0',
-      'usm-utec.up.railway.app',
-      '.railway.app',
-      '.up.railway.app'
+      'usm-utec.up.railway.app'
     ],
   },
 })
