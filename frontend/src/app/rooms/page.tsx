@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/layouts';
-import Rooms from '@/components/rooms';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
+import Rooms from '@/components/rooms/index';
 
 // Página de salones
 export default function RoomsPage() {
@@ -9,3 +9,4 @@ export default function RoomsPage() {
     </DashboardLayout>
   );
 }
+

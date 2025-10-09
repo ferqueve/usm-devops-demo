@@ -1,5 +1,7 @@
 import { Outlet } from 'react-router-dom';
-import { AuthHeader, AuthSidePanel, AuthLoading } from './index';
+import { AuthHeader } from './AuthHeader';
+import { AuthSidePanel } from './AuthSidePanel';
+import { AuthLoading } from './AuthLoading';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -39,3 +41,4 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     </div>
   );
 }
+

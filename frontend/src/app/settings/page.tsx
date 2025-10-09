@@ -1,11 +1,12 @@
-import { DashboardLayout } from '@/components/layouts';
-import Settings from '@/components/settings';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
+import Users from '@/components/settings/index';
 
-// Página de configuración
-export default function SettingsPage() {
+// Página de gestión de usuarios
+export default function UsersPage() {
   return (
     <DashboardLayout>
-      <Settings />
+      <Users />
     </DashboardLayout>
   );
 }
+

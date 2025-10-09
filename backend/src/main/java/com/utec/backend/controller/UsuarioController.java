@@ -1,6 +1,7 @@
 package com.utec.backend.controller;
 
 import com.utec.backend.dto.usuarios.CambioRolDto;
+import com.utec.backend.dto.usuarios.PagedUsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
 import com.utec.backend.service.UsuarioService;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/usuarios")
@@ -34,8 +34,17 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponseDto>> listarTodosLosUsuarios() {
-        List<UsuarioResponseDto> usuarios = usuarioService.listarTodosLosUsuarios();
+    public ResponseEntity<PagedUsuarioResponseDto> listarTodosLosUsuarios(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String rol,
+            @RequestParam(required = false) Boolean verificado,
+            @RequestParam(required = false) Boolean activo
+    ) {
+        PagedUsuarioResponseDto usuarios = usuarioService.listarUsuariosPaginados(
+                page, size, search, rol, verificado, activo
+        );
         return ResponseEntity.ok(usuarios);
     }
 
@@ -49,5 +58,11 @@ public class UsuarioController {
     public ResponseEntity<Void> cambiarRolUsuario(@PathVariable Long id, @RequestBody CambioRolDto cambioRolDto) {
         usuarioService.cambiarRolUsuario(id, cambioRolDto);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/toggle-activo")
+    public ResponseEntity<UsuarioResponseDto> toggleUsuarioActivo(@PathVariable Long id) {
+        UsuarioResponseDto usuario = usuarioService.toggleUsuarioActivo(id);
+        return ResponseEntity.ok(usuario);
     }
 }

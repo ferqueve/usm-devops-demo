@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:15
+    container_name: ut_db_hub
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_hub:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    image: mathiaspena/utec-backend:latest
+    container_name: spring_backend_hub
+    env_file:
+      - backend/.env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+    pull_policy: always
+
+  frontend:
+    image: mathiaspena/utec-frontend:latest
+    container_name: react_frontend_hub
+    ports:
+      - "5173:5173"
+    env_file:
+      - frontend/.env
+    depends_on:
+      - backend
+    restart: unless-stopped
+    pull_policy: always
+
+volumes:
+  pgdata_hub:
+
+

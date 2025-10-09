@@ -1,9 +1,8 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { mockReservations } from "@/data/mock-data";
-import type { Reservation } from "@/lib/types/dashboard";
+import type { Reservation } from "@/core/types/types";
 
 // Componente para mostrar el estado de una reserva
 function StatusBadge({ status }: { status: Reservation['status'] }) {
@@ -141,3 +140,4 @@ export default function Reservations() {
     </div>
   );
 }
+

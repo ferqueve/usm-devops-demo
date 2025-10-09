@@ -3,14 +3,21 @@ package com.utec.backend.service;
 import com.utec.backend.common.exception.AuthenticationException;
 import com.utec.backend.common.exception.UsuarioNotFoundException;
 import com.utec.backend.dto.usuarios.CambioRolDto;
+import com.utec.backend.dto.usuarios.PagedUsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
 import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,12 +83,99 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    public PagedUsuarioResponseDto listarUsuariosPaginados(
+            int page, 
+            int size, 
+            String search, 
+            String rol,
+            Boolean verificado,
+            Boolean activo
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        
+        Specification<Usuario> spec = null;
+        
+        // Filtro de búsqueda (email o nombre)
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = search.toLowerCase();
+            Specification<Usuario> searchSpec = (root, query, cb) ->
+                cb.or(
+                    cb.like(cb.lower(root.get("email")), "%" + searchLower + "%"),
+                    cb.like(cb.lower(root.get("nombre")), "%" + searchLower + "%")
+                );
+            spec = spec == null ? searchSpec : spec.and(searchSpec);
+        }
+        
+        // Filtro por rol
+        if (rol != null && !rol.trim().isEmpty()) {
+            try {
+                Usuario.RolApp rolApp = Usuario.RolApp.valueOf(rol.toUpperCase());
+                Specification<Usuario> rolSpec = (root, query, cb) -> 
+                    cb.equal(root.get("rolApp"), rolApp);
+                spec = spec == null ? rolSpec : spec.and(rolSpec);
+            } catch (IllegalArgumentException e) {
+                // Ignorar si el rol no es válido
+            }
+        }
+        
+        // Filtro por verificado
+        if (verificado != null) {
+            Specification<Usuario> verificadoSpec = (root, query, cb) -> 
+                cb.equal(root.get("verificado"), verificado);
+            spec = spec == null ? verificadoSpec : spec.and(verificadoSpec);
+        }
+        
+        // Filtro por activo (deletedAt null o no null)
+        if (activo != null) {
+            Specification<Usuario> activoSpec = (root, query, cb) -> 
+                activo ? cb.isNull(root.get("deletedAt")) : cb.isNotNull(root.get("deletedAt"));
+            spec = spec == null ? activoSpec : spec.and(activoSpec);
+        }
+        
+        Page<Usuario> pageResult = usuarioRepository.findAll(spec, pageable);
+        
+        List<UsuarioResponseDto> content = pageResult.getContent()
+                .stream()
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+        
+        return new PagedUsuarioResponseDto(
+                content,
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                pageResult.isFirst(),
+                pageResult.isLast()
+        );
+    }
+
+    public UsuarioResponseDto toggleUsuarioActivo(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsuarioNotFoundException(id));
+        
+        if (usuario.getDeletedAt() == null) {
+            // Desactivar (soft delete)
+            usuario.setDeletedAt(LocalDateTime.now());
+        } else {
+            // Activar
+            usuario.setDeletedAt(null);
+        }
+        
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return convertirADto(usuarioActualizado);
+    }
+
     private UsuarioResponseDto convertirADto(Usuario usuario) {
         return new UsuarioResponseDto(
                 usuario.getId(),
                 usuario.getEmail(),
                 usuario.getNombre(),
-                usuario.getRolApp()
+                usuario.getRolApp(),
+                usuario.getVerificado(),
+                usuario.getDeletedAt() == null, // activo si no está eliminado
+                usuario.getOauthProv(),
+                usuario.getCreatedAt()
         );
     }
 }

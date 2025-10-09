@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,4 +16,8 @@ public class UsuarioResponseDto {
     private String email;
     private String nombre;
     private RolApp rolApp;
+    private Boolean verificado;
+    private Boolean activo; // true si deletedAt es null
+    private String oauthProv;
+    private LocalDateTime createdAt;
 }

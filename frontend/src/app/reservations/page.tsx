@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/layouts';
-import Reservations from '@/components/reservations';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
+import Reservations from '@/components/reservations/index';
 
 // Página de reservas
 export default function ReservationsPage() {
@@ -9,3 +9,4 @@ export default function ReservationsPage() {
     </DashboardLayout>
   );
 }
+

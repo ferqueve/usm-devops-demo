@@ -4,7 +4,8 @@ import {
   SidebarProvider,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { DashboardSidebar, DashboardHeader } from './index';
+import { DashboardSidebar } from './DashboardSidebar';
+import { DashboardHeader } from './DashboardHeader';
 import { useAuth } from "@/contexts/AuthContext";
 import type { ReactNode } from 'react';
 
@@ -68,3 +69,4 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
     </SidebarProvider>
   );
 }
+

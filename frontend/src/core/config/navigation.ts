@@ -4,9 +4,9 @@ import {
   BookOpen,
   Building2,
   BarChart3,
-  Settings
+  Users
 } from "lucide-react";
-import type { SidebarMenuItem } from "@/lib/types/dashboard";
+import type { SidebarMenuItem } from "@/core/types/types";
 
 // Configuración de navegación del sidebar para UTEC Space Manager
 export const sidebarMenuItems: SidebarMenuItem[] = [
@@ -43,8 +43,9 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
   },
   {
     id: "settings",
-    label: "Configuración",
-    icon: Settings,
+    label: "Usuarios",
+    icon: Users,
     href: "/settings"
   }
 ];
+

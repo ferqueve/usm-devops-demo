@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authApi } from '@/lib/api';
-import { VerifyEmailForm } from '@/components/public/auth';
+import { authApi } from '@/core/api/api';
+import { VerifyEmailForm } from '@/components/public/auth/VerifyEmailForm';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -130,3 +130,4 @@ export default function VerifyEmailPage() {
     />
   );
 }
+

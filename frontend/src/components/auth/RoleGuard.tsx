@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessRoute, getUserPermissions, type Role } from '@/lib/config/roles';
+import { canAccessRoute, getUserPermissions, type Role } from '@/core/config/roles';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -72,3 +72,4 @@ export function useRolePermissions() {
     userRole: user?.rol || null
   };
 }
+

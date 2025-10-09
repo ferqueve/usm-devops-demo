@@ -1,5 +1,6 @@
-import { cn } from "@/lib/utils"
-import { Button, Label } from "@/components/ui/"
+import { cn } from "@/core/utils/helpers"
+import { Button } from "@/components/ui/Button"
+import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react"
 
 interface VerifyEmailFormProps {
@@ -27,7 +28,7 @@ export function VerifyEmailForm({
 
   // Timer para el cooldown del reenvío
   useEffect(() => {
-    let interval: number;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (resendCooldown > 0) {
       interval = setInterval(() => {
         setResendCooldown((prev) => {
@@ -38,7 +39,9 @@ export function VerifyEmailForm({
         });
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [resendCooldown]);
 
   // Iniciar cooldown cuando se muestra el estado de error
@@ -163,3 +166,4 @@ export function VerifyEmailForm({
     </div>
   )
 }
+

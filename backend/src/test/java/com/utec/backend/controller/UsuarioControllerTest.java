@@ -2,6 +2,7 @@ package com.utec.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.utec.backend.dto.usuarios.CambioRolDto;
+import com.utec.backend.dto.usuarios.PagedUsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioResponseDto;
 import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
 import com.utec.backend.model.entity.Usuario;
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,7 +53,11 @@ class UsuarioControllerTest {
                 1L,
                 testEmail,
                 "Juan Pérez",
-                Usuario.RolApp.EXTERNO
+                Usuario.RolApp.EXTERNO,
+                true,  // verificado
+                true,  // activo
+                null,  // oauthProv
+                LocalDateTime.now()  // createdAt
         );
     }
 
@@ -84,7 +90,11 @@ class UsuarioControllerTest {
                 1L,
                 testEmail,
                 "Juan Carlos Pérez",
-                Usuario.RolApp.EXTERNO
+                Usuario.RolApp.EXTERNO,
+                true,
+                true,
+                null,
+                LocalDateTime.now()
         );
 
         when(usuarioService.actualizarPerfil(eq(testEmail), ArgumentMatchers.any(UsuarioUpdateDto.class)))
@@ -103,28 +113,47 @@ class UsuarioControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/usuarios - Debe listar todos los usuarios")
-    void debeListarTodosLosUsuarios() throws Exception {
+    @DisplayName("GET /api/v1/usuarios - Debe listar usuarios con paginación")
+    void debeListarUsuariosPaginados() throws Exception {
         // Given
         UsuarioResponseDto usuario2 = new UsuarioResponseDto(
                 2L,
                 "otro@utec.edu.uy",
                 "Otro Usuario",
-                Usuario.RolApp.DOCENTE
+                Usuario.RolApp.DOCENTE,
+                true,
+                true,
+                null,
+                LocalDateTime.now()
         );
 
         List<UsuarioResponseDto> usuarios = Arrays.asList(usuarioResponseDto, usuario2);
-        when(usuarioService.listarTodosLosUsuarios()).thenReturn(usuarios);
+        PagedUsuarioResponseDto pagedResponse = new PagedUsuarioResponseDto(
+                usuarios,
+                0,      // pageNumber
+                10,     // pageSize
+                2L,     // totalElements
+                1,      // totalPages
+                true,   // first
+                true    // last
+        );
+        
+        when(usuarioService.listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull()))
+                .thenReturn(pagedResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/usuarios")
+                        .param("page", "0")
+                        .param("size", "10")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].email").value(testEmail))
-                .andExpect(jsonPath("$[1].email").value("otro@utec.edu.uy"));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].email").value(testEmail))
+                .andExpect(jsonPath("$.content[1].email").value("otro@utec.edu.uy"))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1));
 
-        verify(usuarioService).listarTodosLosUsuarios();
+        verify(usuarioService).listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull());
     }
 
     @Test

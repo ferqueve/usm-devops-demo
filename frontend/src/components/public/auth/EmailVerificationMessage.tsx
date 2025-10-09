@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/Button"
+import { cn } from "@/core/utils/helpers"
 
 interface EmailVerificationMessageProps {
   onBackToLogin?: () => void;
@@ -51,3 +51,4 @@ export function EmailVerificationMessage({
     </div>
   );
 }
+

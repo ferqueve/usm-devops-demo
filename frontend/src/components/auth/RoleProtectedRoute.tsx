@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessRoute, getUserPermissions } from '@/lib/config/roles';
+import { canAccessRoute, getUserPermissions } from '@/core/config/roles';
 
 interface RoleProtectedRouteProps {
   children: React.ReactNode;
@@ -42,3 +42,4 @@ export default function RoleProtectedRoute({
   // Si puede acceder, mostrar el contenido
   return <>{children}</>;
 }
+

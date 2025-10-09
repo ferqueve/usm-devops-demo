@@ -1,29 +1,19 @@
-// Constantes de la aplicación
-export const APP_CONFIG = {
-  NAME: 'UTEC Space Manager',
-  VERSION: '1.0.0',
-  STORAGE_KEYS: {
-    AUTH: 'utec-space-manager-auth',
-    THEME: 'utec-space-manager-theme',
-    PREFERENCES: 'utec-space-manager-preferences',
-  },
-  ROUTES: {
-    LOGIN: '/login',
-    DASHBOARD: '/dashboard',
-    CALENDAR: '/calendar',
-    RESERVATIONS: '/reservations',
-    ROOMS: '/rooms',
-    STATISTICS: '/statistics',
-    SETTINGS: '/settings',
-  },
-  API: {
-    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
-    TIMEOUT: 10000,
-  },
-} as const;
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
+// ============================================================================
+// Utilidades de UI
+// ============================================================================
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+// ============================================================================
 // Utilidades para manejo de rutas
-export const routeUtils = {
+// ============================================================================
+
+export const routeHelpers = {
   /**
    * Obtiene el nombre de la ruta desde el pathname
    */
@@ -47,8 +37,11 @@ export const routeUtils = {
   },
 };
 
+// ============================================================================
 // Utilidades para localStorage
-export const storageUtils = {
+// ============================================================================
+
+export const storage = {
   /**
    * Guarda datos en localStorage
    */
@@ -96,8 +89,11 @@ export const storageUtils = {
   },
 };
 
+// ============================================================================
 // Utilidades para validación
-export const validationUtils = {
+// ============================================================================
+
+export const validation = {
   /**
    * Valida si un email es válido
    */
@@ -121,12 +117,15 @@ export const validationUtils = {
   },
 };
 
+// ============================================================================
 // Utilidades para manejo de errores
-export const errorUtils = {
+// ============================================================================
+
+export const errors = {
   /**
    * Obtiene un mensaje de error legible
    */
-  getErrorMessage: (error: unknown): string => {
+  getMessage: (error: unknown): string => {
     if (error instanceof Error) {
       // Si es un error de fetch o de red
       if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
@@ -148,8 +147,10 @@ export const errorUtils = {
   /**
    * Logs de error con contexto
    */
-  logError: (error: unknown, context?: string): void => {
-    const message = errorUtils.getErrorMessage(error);
+  log: (error: unknown, context?: string): void => {
+    const message = errors.getMessage(error);
     console.error(`[${context || 'App'}] Error:`, message, error);
   },
 };
+
+

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 export function AuthCallbackSuccess() {
   const [searchParams] = useSearchParams();
@@ -84,3 +83,4 @@ export function AuthCallbackSuccess() {
     </div>
   );
 }
+

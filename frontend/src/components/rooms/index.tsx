@@ -1,9 +1,8 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { mockRooms } from "@/data/mock-data";
-import type { Room } from "@/lib/types/dashboard";
+import type { Room } from "@/core/types/types";
 
 // Componente para mostrar el tipo de salón
 function RoomTypeBadge({ type }: { type: Room['type'] }) {
@@ -160,3 +159,4 @@ export default function Rooms() {
     </div>
   );
 }
+

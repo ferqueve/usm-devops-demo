@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/layouts';
-import Dashboard from '@/components/dashboard';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
+import Dashboard from '@/components/dashboard/index';
 
 // Página principal del dashboard
 export default function DashboardPage() {
@@ -9,3 +9,4 @@ export default function DashboardPage() {
     </DashboardLayout>
   );
 }
+

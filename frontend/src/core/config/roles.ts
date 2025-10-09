@@ -132,3 +132,4 @@ export const getUserPermissions = (userRole: string | null) => {
   if (!userRole) return null;
   return ROLE_PERMISSIONS[userRole as Role] || null;
 };
+

@@ -1,11 +1,11 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/core/utils/helpers"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { EmailVerificationMessage } from "./EmailVerificationMessage"
-import { authApi } from "@/lib/api"
+import { authApi } from "@/core/api/api"
 
 export function RegisterForm({
   className,
@@ -216,3 +216,4 @@ export function RegisterForm({
     </form>
   )
 }
+

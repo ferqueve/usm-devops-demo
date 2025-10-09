@@ -1,26 +1,16 @@
 import { 
-  TrendingUp, 
-  TrendingDown,
   Users, 
-  CheckCircle, 
-  Clock,
-  Calendar,
   BookOpen,
   Building2,
   BarChart3,
-  Settings,
-  Home,
-  AlertCircle,
-  Plus,
-  Search,
-  Filter
+  AlertCircle
 } from "lucide-react";
 import type { 
   Statistic, 
   Reservation, 
   Room, 
   CalendarEvent 
-} from "@/lib/types/dashboard";
+} from "@/core/types/types";
 
 // Datos mock para el Dashboard Principal
 export const dashboardStats: Statistic[] = [
@@ -237,3 +227,4 @@ export const mockStatistics: Statistic[] = [
     icon: Users
   }
 ];
+

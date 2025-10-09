@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Building2, LogOut } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { sidebarMenuItems } from "@/lib/config/navigation";
-import { canAccessSidebarItem } from "@/lib/config/roles";
+import { sidebarMenuItems } from "@/core/config/navigation";
+import { canAccessSidebarItem } from "@/core/config/roles";
 import { useAuth } from "@/contexts/AuthContext";
-import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/dashboard";
+import type { SidebarMenuItem as SidebarMenuItemType } from "@/core/types/types";
 
 // Tipos para las props del sidebar
 interface DashboardSidebarProps {
@@ -100,3 +100,4 @@ export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebar
     </Sidebar>
   );
 }
+

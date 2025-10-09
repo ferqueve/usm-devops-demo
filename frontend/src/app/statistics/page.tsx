@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/layouts';
-import Statistics from '@/components/statistics';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
+import Statistics from '@/components/statistics/index';
 
 // Página de estadísticas
 export default function StatisticsPage() {
@@ -9,3 +9,4 @@ export default function StatisticsPage() {
     </DashboardLayout>
   );
 }
+

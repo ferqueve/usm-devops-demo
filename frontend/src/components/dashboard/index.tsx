@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { dashboardStats } from "@/data/mock-data";
-import type { Statistic } from "@/lib/types/dashboard";
+import type { Statistic } from "@/core/types/types";
 
 // Componente para mostrar estadísticas
 function StatCard({ stat }: { stat: Statistic }) {
@@ -93,8 +93,8 @@ export default function Dashboard() {
                 Ver Estadísticas
               </Button>
               <Button className="w-full justify-start" variant="outline">
-                <span className="mr-2">⚙️</span>
-                Configuración
+                <span className="mr-2">👥</span>
+                Gestionar Usuarios
               </Button>
             </div>
           </CardContent>
@@ -132,3 +132,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

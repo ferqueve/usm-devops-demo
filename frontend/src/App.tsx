@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { RoleProtectedRoute } from '@/components/auth';
-import AuthPage from './app/public/auth/page';
+import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import AuthPage from './app/auth/page';
 import VerifyEmailPage from './app/auth/verify/page';
-import { AuthCallbackSuccess } from './pages/auth/AuthCallbackSuccess';
-import { AuthLayout } from './components/layouts';
+import { AuthCallbackSuccess } from './app/auth/callback-success';
+import { AuthLayout } from './components/layouts/AuthLayout/AuthLayout';
 import DashboardPage from './app/dashboard/page';
 import CalendarPage from './app/calendar/page';
 import ReservationsPage from './app/reservations/page';
 import RoomsPage from './app/rooms/page';
 import StatisticsPage from './app/statistics/page';
-import SettingsPage from './app/settings/page';
+import UsersPage from './app/settings/page';
 
 
 // Componente principal de rutas
@@ -101,7 +101,7 @@ function AppRoutes() {
         path="/settings" 
         element={
           <RoleProtectedRoute>
-            <SettingsPage />
+            <UsersPage />
           </RoleProtectedRoute>
         } 
       />
@@ -133,3 +133,4 @@ function App() {
 }
 
 export default App;
+

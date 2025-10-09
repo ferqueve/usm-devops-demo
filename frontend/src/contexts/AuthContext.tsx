@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { APP_CONFIG, storageUtils, errorUtils, validationUtils } from '@/lib/utils/constants';
-import { authApi } from '@/lib/api';
-import type { LoginRequest, RegisterRequest } from '@/lib/api';
+import { APP_CONFIG } from '@/core/config/app';
+import { storage, errors, validation } from '@/core/utils/helpers';
+import { authApi } from '@/core/api/api';
+import type { LoginRequest, RegisterRequest } from '@/core/api/api';
 
 // Tipos para el contexto de autenticación
 interface AuthContextType {
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               localStorage.removeItem('token');
               localStorage.removeItem('refreshToken');
               localStorage.removeItem('user');
-              storageUtils.remove(AUTH_STORAGE_KEY);
+              storage.remove(AUTH_STORAGE_KEY);
               setUser(null);
               setIsAuthenticated(false);
             }
@@ -85,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('user');
-            storageUtils.remove(AUTH_STORAGE_KEY);
+            storage.remove(AUTH_STORAGE_KEY);
             setUser(null);
             setIsAuthenticated(false);
           }
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setIsAuthenticated(false);
         }
       } catch (err) {
-        errorUtils.logError(err, 'AuthContext');
+        errors.log(err, 'AuthContext');
         setError('Error al cargar el estado de autenticación');
         setIsAuthenticated(false);
       } finally {
@@ -133,13 +134,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Validar credenciales
       if (credentials) {
         const { email, password } = credentials;
-        if (validationUtils.isEmpty(email) || validationUtils.isEmpty(password)) {
+        if (validation.isEmpty(email) || validation.isEmpty(password)) {
           throw new Error('Email y contraseña son requeridos');
         }
-        if (!validationUtils.isValidEmail(email)) {
+        if (!validation.isValidEmail(email)) {
           throw new Error('Email inválido');
         }
-        if (!validationUtils.isValidPassword(password)) {
+        if (!validation.isValidPassword(password)) {
           throw new Error('La contraseña debe tener al menos 6 caracteres');
         }
       }
@@ -175,10 +176,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       const authData = { isAuthenticated: true, timestamp: Date.now() };
-      storageUtils.set(AUTH_STORAGE_KEY, authData);
+      storage.set(AUTH_STORAGE_KEY, authData);
       setIsAuthenticated(true);
     } catch (err) {
-      const errorMessage = errorUtils.getErrorMessage(err);
+      const errorMessage = errors.getMessage(err);
       setError(errorMessage);
       throw err;
     } finally {
@@ -202,19 +203,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Validar datos
       const { nombre, apellido, email, password, confirmPassword } = userData;
       
-      if (validationUtils.isEmpty(nombre) || validationUtils.isEmpty(apellido)) {
+      if (validation.isEmpty(nombre) || validation.isEmpty(apellido)) {
         throw new Error('Nombre y apellido son requeridos');
       }
       
-      if (validationUtils.isEmpty(email) || validationUtils.isEmpty(password)) {
+      if (validation.isEmpty(email) || validation.isEmpty(password)) {
         throw new Error('Email y contraseña son requeridos');
       }
       
-      if (!validationUtils.isValidEmail(email)) {
+      if (!validation.isValidEmail(email)) {
         throw new Error('Email inválido');
       }
       
-      if (!validationUtils.isValidPassword(password)) {
+      if (!validation.isValidPassword(password)) {
         throw new Error('La contraseña debe tener al menos 6 caracteres');
       }
       
@@ -246,7 +247,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
     } catch (err) {
-      const errorMessage = errorUtils.getErrorMessage(err);
+      const errorMessage = errors.getMessage(err);
       setError(errorMessage);
       throw err;
     } finally {
@@ -272,15 +273,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
-      storageUtils.remove(AUTH_STORAGE_KEY);
+      storage.remove(AUTH_STORAGE_KEY);
       
       // Limpiar estado del contexto
       setUser(null);
       setIsAuthenticated(false);
     } catch (err) {
-      const errorMessage = errorUtils.getErrorMessage(err);
+      const errorMessage = errors.getMessage(err);
       setError(errorMessage);
-      errorUtils.logError(err, 'AuthContext.logout');
+      errors.log(err, 'AuthContext.logout');
     } finally {
       setIsLoading(false);
     }
@@ -317,3 +318,4 @@ export function useAuth(): AuthContextType {
   
   return context;
 }
+

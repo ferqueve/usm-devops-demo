@@ -4,7 +4,7 @@
 /* Definir fuente personalizada UTEC */
 @font-face {
   font-family: 'UTEC';
-  src: url('./assets/utec_gruesa_3.0.ttf') format('truetype');
+  src: url('/fonts/utec_gruesa_3.0.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

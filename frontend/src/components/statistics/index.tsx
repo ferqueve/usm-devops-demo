@@ -1,9 +1,7 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { mockStatistics } from "@/data/mock-data";
-import type { Statistic } from "@/lib/types/dashboard";
+import type { Statistic } from "@/core/types/types";
 
 // Componente para mostrar estadísticas
 function StatCard({ stat }: { stat: Statistic }) {
@@ -214,3 +212,4 @@ export default function Statistics() {
     </div>
   );
 }
+
