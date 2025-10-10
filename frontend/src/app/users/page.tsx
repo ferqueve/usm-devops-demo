@@ -1,5 +1,5 @@
 import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
-import Users from '@/components/settings/index';
+import Users from '@/components/users/index';
 
 // Página de gestión de usuarios
 export default function UsersPage() {

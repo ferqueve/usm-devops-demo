@@ -169,6 +169,96 @@ body {
     font-size: 1.25rem;
     line-height: 1.1;
   }
+
+  /* Clases de colores corporativos UTEC */
+  /* Colores de texto */
+  .text-utec-green { color: #86bb4c; }
+  .text-utec-yellow { color: #F6CA21; }
+  .text-utec-orange { color: #DE7A27; }
+  .text-utec-red { color: #DF2B31; }
+  .text-utec-blue { color: #184897; }
+  .text-utec-cyan { color: #00c7ff; }
+  .text-utec-dark { color: #343a40; }
+
+  /* Colores de fondo */
+  .bg-utec-green { background-color: #86bb4c; }
+  .bg-utec-yellow { background-color: #F6CA21; }
+  .bg-utec-orange { background-color: #DE7A27; }
+  .bg-utec-red { background-color: #DF2B31; }
+  .bg-utec-blue { background-color: #184897; }
+  .bg-utec-cyan { background-color: #00c7ff; }
+  .bg-utec-dark { background-color: #343a40; }
+
+  /* Colores de borde */
+  .border-utec-green { border-color: #86bb4c; }
+  .border-utec-yellow { border-color: #F6CA21; }
+  .border-utec-orange { border-color: #DE7A27; }
+  .border-utec-red { border-color: #DF2B31; }
+  .border-utec-blue { border-color: #184897; }
+  .border-utec-cyan { border-color: #00c7ff; }
+  .border-utec-dark { border-color: #343a40; }
+
+  /* Gradientes corporativos */
+  .bg-utec-gradient-full {
+    background: linear-gradient(45deg, #86bb4c 0%, #F6CA21 20%, #DE7A27 40%, #DF2B31 60%, #184897 80%, #86bb4c 100%);
+  }
+  
+  .bg-utec-gradient-primary {
+    background: linear-gradient(135deg, #184897 0%, #86bb4c 100%);
+  }
+  
+  .bg-utec-gradient-warm {
+    background: linear-gradient(135deg, #DF2B31 0%, #F6CA21 100%);
+  }
+  
+  .bg-utec-gradient-cool {
+    background: linear-gradient(135deg, #184897 0%, #86bb4c 100%);
+  }
+
+  /* Estados con colores corporativos */
+  .status-success { 
+    color: #86bb4c;
+    background-color: rgb(134 187 76 / 0.1);
+  }
+  
+  .status-warning { 
+    color: #F6CA21;
+    background-color: rgb(246 202 33 / 0.1);
+  }
+  
+  .status-error { 
+    color: #DF2B31;
+    background-color: rgb(223 43 49 / 0.1);
+  }
+  
+  .status-info { 
+    color: #184897;
+    background-color: rgb(24 72 151 / 0.1);
+  }
+
+  /* Estilos del sidebar */
+  .bg-utec-dark-lighter { 
+    background-color: #4a5057; 
+  }
+
+  .hover\:bg-utec-dark-lighter:hover {
+    background-color: #4a5057;
+  }
+
+  .sidebar-menu-item {
+    color: #d1d5db;
+    transition: all 0.2s ease;
+  }
+
+  .sidebar-menu-item:hover {
+    background-color: #4a5057;
+    color: #ffffff;
+  }
+
+  .sidebar-menu-item.active {
+    background-color: #525961;
+    color: #ffffff;
+  }
 }
 
 /* Animación de gradiente cíclico perfecto con colores UTEC */

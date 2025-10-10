@@ -12,7 +12,7 @@ export type Role = typeof ROLES[keyof typeof ROLES];
 // Configuración de rutas y permisos por rol
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: {
-    name: 'Administrador',
+    name: 'Admin',
     description: 'Acceso completo al sistema',
     routes: [
       '/dashboard',
@@ -21,8 +21,7 @@ export const ROLE_PERMISSIONS = {
       '/calendar',
       '/users',
       '/inventory',
-      '/statistics',
-      '/settings'
+      '/statistics'
     ],
     sidebarItems: [
       'dashboard',
@@ -32,7 +31,7 @@ export const ROLE_PERMISSIONS = {
       'users',
       'inventory',
       'statistics',
-      'settings'
+      'Users'
     ]
   },
   [ROLES.ANALISTA]: {
@@ -86,7 +85,7 @@ export const ROLE_PERMISSIONS = {
     ]
   },
   [ROLES.EXTERNO]: {
-    name: 'Usuario Externo',
+    name: 'Externo',
     description: 'Acceso a eventos externos únicamente',
     routes: [
       '/dashboard',

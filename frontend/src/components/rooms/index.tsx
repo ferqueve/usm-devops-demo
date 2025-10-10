@@ -47,11 +47,7 @@ export default function Rooms() {
   return (
     <div className="space-y-6">
       {/* Header con acciones */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Gestión de Salones</h2>
-          <p className="text-muted-foreground">Administra los salones y sus características</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button>
           <span className="mr-2">+</span>
           Agregar Salón

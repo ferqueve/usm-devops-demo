@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Building2, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems } from "@/core/config/navigation";
 import { canAccessSidebarItem } from "@/core/config/roles";
@@ -51,46 +51,58 @@ export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebar
 
   // Memoizar los items del menú para evitar re-renders
   const menuItems = useMemo(() => 
-    filteredMenuItems.map((item) => (
-      <SidebarMenuItem key={item.id}>
-        <SidebarMenuButton 
-          asChild 
-          isActive={location.pathname === item.href}
-          onClick={() => handleMenuItemClick(item)}
-        >
-          <Link to={item.href || "#"}>
-            <item.icon className="size-4" />
-            {item.label}
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    )), [filteredMenuItems, location.pathname, handleMenuItemClick]);
+    filteredMenuItems.map((item) => {
+      const isActive = location.pathname === item.href;
+      return (
+        <SidebarMenuItem key={item.id}>
+          <SidebarMenuButton 
+            asChild 
+            isActive={isActive}
+            onClick={() => handleMenuItemClick(item)}
+            className={`sidebar-menu-item ${isActive ? 'active' : ''}`}
+          >
+            <Link to={item.href || "#"} className="flex items-center gap-2">
+              <item.icon className="size-4" />
+              {item.label}
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      );
+    }), [filteredMenuItems, location.pathname, handleMenuItemClick]);
 
   return (
-    <Sidebar variant="inset">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link to="/dashboard" className="flex items-center gap-2">
-                <Building2 className="size-4" />
-                <span className="text-base font-utec-brand">USM</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    <Sidebar variant="inset" className="bg-utec-dark">
+      <SidebarHeader className="h-16 border-b border-white/10 bg-utec-dark px-4">
+        <div className="flex items-center justify-between gap-3 w-full h-full">
+          {/* Logo UTEC a la izquierda */}
+          <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-opacity -mt-2">
+            <img 
+              src="/utec-logo-header.svg" 
+              alt="UTEC Logo" 
+              className="h-12 w-auto"
+            />
+          </Link>
+          
+          {/* Separador vertical */}
+          <div className="h-6 w-px bg-white/20"></div>
+          
+          {/* USM a la derecha */}
+          <Link to="/dashboard" className="flex items-center sidebar-menu-item px-3 py-1 rounded-md">
+            <span className="text-lg font-utec-brand">USM</span>
+          </Link>
+        </div>
       </SidebarHeader>
       
-      <SidebarContent>
-        <SidebarMenu>
+      <SidebarContent className="pt-4 bg-utec-dark">
+        <SidebarMenu className="bg-utec-dark">
           {menuItems}
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter>
-        <SidebarMenu>
+      <SidebarFooter className="border-t border-white/10 bg-utec-dark">
+        <SidebarMenu className="bg-utec-dark">
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout}>
+            <SidebarMenuButton onClick={handleLogout} className="sidebar-menu-item">
               <LogOut className="size-4" />
               Cerrar Sesión
             </SidebarMenuButton>

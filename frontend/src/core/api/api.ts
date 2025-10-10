@@ -73,14 +73,32 @@ async function apiRequest<T>(
   try {
     const response = await fetch(url, config);
     
-    // Si es 401 y no es un retry, intentar refresh token
+    // Si es 401/500 y no es un retry, intentar refresh token
     // PERO NO para endpoints de autenticación que no requieren token
     const isAuthEndpoint = endpoint.includes('/auth/login') || 
                           endpoint.includes('/auth/register') || 
                           endpoint.includes('/auth/verify-email') || 
                           endpoint.includes('/auth/resend-verification');
     
-    if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+    // Verificar si el error podría ser por JWT expirado
+    let isJwtError = response.status === 401;
+    
+    // Si es 500, verificar si el error contiene "JWT" o "token"
+    if (response.status === 500 && !isRetry && !isAuthEndpoint) {
+      try {
+        const errorData = await response.clone().json();
+        const errorMessage = (errorData.error || errorData.message || '').toLowerCase();
+        isJwtError = errorMessage.includes('jwt') || errorMessage.includes('token') || errorMessage.includes('expired');
+      } catch (e) {
+        // Si no se puede parsear, no es un error de JWT
+        isJwtError = false;
+      }
+    }
+    
+    // Manejar 401 (Unauthorized) o 500 con error de JWT
+    const shouldAttemptRefresh = isJwtError && !isRetry && !isAuthEndpoint;
+    
+    if (shouldAttemptRefresh) {
       // Solo intentar refresh si realmente hay un token (sesión válida)
       const hasValidToken = token && token.length > 0;
       

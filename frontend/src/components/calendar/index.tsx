@@ -45,11 +45,7 @@ export default function Calendar() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Calendario de Reservas</h2>
-          <p className="text-muted-foreground">Visualiza todas las reservas en formato calendario</p>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex gap-2">
           <Button variant="outline">Hoy</Button>
           <Button variant="outline">Mes</Button>

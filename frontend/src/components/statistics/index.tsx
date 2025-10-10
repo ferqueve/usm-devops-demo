@@ -33,11 +33,7 @@ export default function Statistics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Estadísticas y Reportes</h2>
-          <p className="text-muted-foreground">Análisis y reportes de uso de salones</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button>
           <span className="mr-2">📊</span>
           Generar Reporte

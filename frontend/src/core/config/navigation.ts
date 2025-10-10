@@ -42,10 +42,10 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     href: "/statistics"
   },
   {
-    id: "settings",
+    id: "users",
     label: "Usuarios",
     icon: Users,
-    href: "/settings"
+    href: "/users"
   }
 ];
 

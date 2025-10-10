@@ -28,7 +28,15 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
 
   // Memoizar el título de la página
   const pageTitle = useMemo(() => {
-    return currentRoute.charAt(0).toUpperCase() + currentRoute.slice(1);
+    const titleMap: Record<string, string> = {
+      'dashboard': 'Dashboard',
+      'calendar': 'Calendario de Reservas',
+      'reservations': 'Gestión de Reservas',
+      'rooms': 'Gestión de Salones',
+      'statistics': 'Estadísticas y Reportes',
+      'users': 'Gestión de Usuarios'
+    };
+    return titleMap[currentRoute] || currentRoute.charAt(0).toUpperCase() + currentRoute.slice(1);
   }, [currentRoute]);
 
   // Memoizar el handler de click del menú
@@ -61,7 +69,7 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
       <SidebarInset>
         <div className="flex flex-col h-full">
           <DashboardHeader title={pageTitle} />
-          <main className="flex-1 overflow-auto p-4 lg:p-6">
+          <main className="flex-1 overflow-auto p-6">
             {children}
           </main>
         </div>

@@ -33,11 +33,7 @@ export default function Reservations() {
   return (
     <div className="space-y-6">
       {/* Header con acciones */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Gestión de Reservas</h2>
-          <p className="text-muted-foreground">Administra y crea nuevas reservas de salones</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button>
           <span className="mr-2">+</span>
           Nueva Reserva

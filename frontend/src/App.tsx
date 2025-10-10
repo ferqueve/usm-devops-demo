@@ -10,7 +10,7 @@ import CalendarPage from './app/calendar/page';
 import ReservationsPage from './app/reservations/page';
 import RoomsPage from './app/rooms/page';
 import StatisticsPage from './app/statistics/page';
-import UsersPage from './app/settings/page';
+import UsersPage from './app/users/page';
 
 
 // Componente principal de rutas
@@ -98,7 +98,7 @@ function AppRoutes() {
       />
       
       <Route 
-        path="/settings" 
+        path="/users" 
         element={
           <RoleProtectedRoute>
             <UsersPage />

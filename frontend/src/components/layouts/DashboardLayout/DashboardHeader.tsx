@@ -1,34 +1,18 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/Button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Calendar } from "lucide-react";
 
 interface DashboardHeaderProps {
   title?: string;
-  badge?: string;
-  showDateButton?: boolean;
 }
 
 export function DashboardHeader({ 
-  title = "Dashboard", 
-  badge = "Beta",
-  showDateButton = true 
+  title = "Dashboard"
 }: DashboardHeaderProps) {
   return (
-    <header className="flex h-16 items-center gap-4 border-b bg-background px-4 lg:px-6">
-      <SidebarTrigger />
+    <header className="flex h-16 items-center gap-4 border-b px-4 lg:px-6" style={{ backgroundColor: '#525961' }}>
+      <SidebarTrigger style={{ color: '#d1d5db' }} className="hover:bg-white/10" />
       <div className="flex items-center gap-2">
-        <h1 className="text-lg font-semibold">{title}</h1>
-        {badge && <Badge variant="secondary">{badge}</Badge>}
+        <h1 className="text-lg font-utec-title" style={{ color: '#d1d5db' }}>{title}</h1>
       </div>
-      {showDateButton && (
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Hoy
-          </Button>
-        </div>
-      )}
     </header>
   );
 }
