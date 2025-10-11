@@ -81,7 +81,19 @@ async function apiRequest<T>(
                           endpoint.includes('/auth/resend-verification');
     
     // Verificar si el error podría ser por JWT expirado
-    let isJwtError = response.status === 401;
+    let isJwtError = false;
+    
+    // Si es 401, verificar si es por JWT expirado
+    if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+      try {
+        const errorData = await response.clone().json();
+        const errorMessage = (errorData.error || errorData.message || '').toLowerCase();
+        isJwtError = errorMessage.includes('jwt') || errorMessage.includes('token') || errorMessage.includes('expired');
+      } catch (e) {
+        // Si no se puede parsear pero es 401, probablemente sea JWT expirado
+        isJwtError = true;
+      }
+    }
     
     // Si es 500, verificar si el error contiene "JWT" o "token"
     if (response.status === 500 && !isRetry && !isAuthEndpoint) {
@@ -104,7 +116,6 @@ async function apiRequest<T>(
       
       if (hasValidToken) {
         try {
-          console.log('Token expirado, intentando renovar...');
           const refreshResponse = await authApi.refreshToken();
           
           if (refreshResponse.success && refreshResponse.data) {
@@ -118,12 +129,10 @@ async function apiRequest<T>(
               'Authorization': `Bearer ${refreshResponse.data.token}`,
             };
             
-            console.log('Token renovado exitosamente, reintentando petición...');
             // Reintentar la petición original con el nuevo token
             return apiRequest<T>(endpoint, { ...options, headers: config.headers }, true);
           }
         } catch (refreshError) {
-          console.error('Error al renovar token:', refreshError);
           // Si falla el refresh, limpiar tokens y redirigir a login
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
@@ -137,17 +146,29 @@ async function apiRequest<T>(
       }
     }
     
-    const data = await response.json();
+    // Si la respuesta no tiene contenido (204 No Content), devolver respuesta vacía exitosa
+    if (response.status === 204) {
+      return { success: true } as ApiResponse<T>;
+    }
+    
+    // Verificar si la respuesta tiene contenido antes de parsear JSON
+    const contentType = response.headers.get('content-type');
+    const hasJsonContent = contentType && contentType.includes('application/json');
+    
+    let data: any = null;
+    if (hasJsonContent) {
+      data = await response.json();
+    }
     
     if (!response.ok) {
       // Si el backend devuelve un error estructurado, usar ese mensaje
-      const errorMessage = data.error || data.message || 'Error en la petición';
+      const errorMessage = data?.error || data?.message || 'Error en la petición';
       throw new Error(errorMessage);
     }
     
     // El backend ya devuelve ApiResponse { success, data, message }
     // No necesitamos envolver de nuevo
-    return data as ApiResponse<T>;
+    return data || { success: true } as ApiResponse<T>;
   } catch (error) {
     console.error('Error en API request:', error);
     throw error;
@@ -209,12 +230,23 @@ export const authApi = {
       throw new Error('No hay refresh token disponible');
     }
 
-    return apiRequest<LoginResponse>('/auth/refresh', {
+    // Llamar directamente a fetch para evitar el bucle infinito de refresh
+    const url = `${API_BASE_URL}/auth/refresh`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Refresh-Token': refreshToken,
       },
     });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Error al refrescar token');
+    }
+
+    return data as ApiResponse<LoginResponse>;
   },
 
 };

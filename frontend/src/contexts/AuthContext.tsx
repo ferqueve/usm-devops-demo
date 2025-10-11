@@ -109,7 +109,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Escuchar evento de logout automático desde apiRequest
   useEffect(() => {
     const handleAutoLogout = () => {
-      console.log('Auto-logout detectado, limpiando estado...');
       setUser(null);
       setIsAuthenticated(false);
       // Solo mostrar mensaje de sesión expirada si realmente había una sesión activa

@@ -9,6 +9,7 @@ import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
 import com.utec.backend.model.entity.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -49,15 +51,30 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario con email " + email + " no encontrado"));
         
+        boolean cambioNombre = false;
+        boolean cambioPassword = false;
+        
         if (updateDto.getNombre() != null && !updateDto.getNombre().trim().isEmpty()) {
             usuario.setNombre(updateDto.getNombre());
+            cambioNombre = true;
         }
         
         if (updateDto.getPassword() != null && !updateDto.getPassword().trim().isEmpty()) {
             usuario.setPassword(passwordEncoder.encode(updateDto.getPassword()));
+            cambioPassword = true;
         }
         
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        
+        // Log de cambios
+        if (cambioNombre && cambioPassword) {
+            log.info("Usuario {} actualizó su perfil (nombre y contraseña)", email);
+        } else if (cambioNombre) {
+            log.info("Usuario {} actualizó su nombre", email);
+        } else if (cambioPassword) {
+            log.info("Usuario {} actualizó su contraseña", email);
+        }
+        
         return convertirADto(usuarioActualizado);
     }
 
@@ -79,8 +96,12 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException(id));
         
+        Usuario.RolApp rolAnterior = usuario.getRolApp();
         usuario.setRolApp(cambioRolDto.getRolApp());
         usuarioRepository.save(usuario);
+        
+        log.info("Rol de usuario ID {} ({}) cambiado de {} a {}", 
+                id, usuario.getEmail(), rolAnterior, cambioRolDto.getRolApp());
     }
 
     public PagedUsuarioResponseDto listarUsuariosPaginados(
@@ -157,9 +178,11 @@ public class UsuarioService {
         if (usuario.getDeletedAt() == null) {
             // Desactivar (soft delete)
             usuario.setDeletedAt(LocalDateTime.now());
+            log.info("Usuario ID {} ({}) desactivado", id, usuario.getEmail());
         } else {
             // Activar
             usuario.setDeletedAt(null);
+            log.info("Usuario ID {} ({}) activado", id, usuario.getEmail());
         }
         
         Usuario usuarioActualizado = usuarioRepository.save(usuario);

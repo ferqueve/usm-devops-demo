@@ -38,6 +38,7 @@ public class AuthenticationService {
             );
         } catch (Exception e) {
             // Si falla la autenticación, lanzar excepción con mensaje claro
+            log.warn("Intento de login fallido para email: {}", request.getEmail());
             throw new AuthenticationException("Email o contraseña incorrectos. Verifica tus credenciales e intenta nuevamente.");
         }
 
@@ -47,6 +48,7 @@ public class AuthenticationService {
 
         // Verificar si el usuario ha verificado su email
         if (!usuario.getVerificado()) {
+            log.warn("Intento de login con email no verificado: {}", request.getEmail());
             throw new AuthenticationException("Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo código de verificación.");
         }
 
@@ -54,6 +56,8 @@ public class AuthenticationService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String token = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        log.info("Login exitoso para usuario: {} (rol: {})", usuario.getEmail(), usuario.getRolApp());
 
         return new AuthenticationResponse(
             token,
@@ -117,6 +121,13 @@ public class AuthenticationService {
             String token = authHeader.substring("Bearer ".length());
             // Agregar token a blacklist
             tokenBlacklistService.blacklistToken(token);
+            
+            try {
+                String userEmail = jwtService.extractUsername(token);
+                log.info("Logout exitoso para usuario: {}", userEmail);
+            } catch (Exception e) {
+                log.info("Logout exitoso (no se pudo extraer email del token)");
+            }
         }
     }
 
@@ -156,6 +167,8 @@ public class AuthenticationService {
                 Usuario usuario = usuarioRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
                 
+                log.info("Refresh token renovado exitosamente para usuario: {}", userEmail);
+                
                 return new AuthenticationResponse(
                     newToken,
                     newRefreshToken,
@@ -165,9 +178,14 @@ public class AuthenticationService {
                     jwtService.getExpirationTime()
                 );
             } else {
-                throw new AuthenticationException("Refresh token inválido");
+                log.warn("Intento de refresh con token inválido para usuario: {}", userEmail);
+                throw new AuthenticationException("Refresh token inválido o expirado");
             }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            log.warn("Intento de refresh con token expirado para usuario: {}", e.getClaims().getSubject());
+            throw new AuthenticationException("Tu sesión ha expirado completamente. Por favor, inicia sesión nuevamente.");
         } catch (Exception e) {
+            log.error("Error al refrescar token: {}", e.getMessage());
             throw new AuthenticationException("Error al refrescar token: " + e.getMessage());
         }
     }
