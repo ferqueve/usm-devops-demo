@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   SidebarProvider,
@@ -16,7 +16,7 @@ interface DashboardLayoutProps {
 }
 
 // Layout reutilizable para todas las páginas del dashboard
-export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
+export const DashboardLayout = memo(function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
   const location = useLocation();
   const { logout } = useAuth();
 
@@ -34,7 +34,8 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
       'reservations': 'Gestión de Reservas',
       'rooms': 'Gestión de Salones',
       'statistics': 'Estadísticas y Reportes',
-      'users': 'Gestión de Usuarios'
+      'users': 'Gestión de Usuarios',
+      'system': 'Sistema'
     };
     return titleMap[currentRoute] || currentRoute.charAt(0).toUpperCase() + currentRoute.slice(1);
   }, [currentRoute]);
@@ -67,14 +68,16 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
         onMenuItemClick={handleMenuItemClick}
       />
       <SidebarInset>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full max-w-full overflow-hidden">
           <DashboardHeader title={pageTitle} />
-          <main className="flex-1 overflow-auto p-6">
-            {children}
+          <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 lg:p-8 bg-gray-50">
+            <div className="mx-auto max-w-screen-2xl min-w-0 w-full px-0">
+              {children}
+            </div>
           </main>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
-}
+});
 

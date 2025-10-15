@@ -21,7 +21,8 @@ export const ROLE_PERMISSIONS = {
       '/calendar',
       '/users',
       '/inventory',
-      '/statistics'
+      '/statistics',
+      '/system'
     ],
     sidebarItems: [
       'dashboard',
@@ -31,7 +32,8 @@ export const ROLE_PERMISSIONS = {
       'users',
       'inventory',
       'statistics',
-      'Users'
+      'Users',
+      'system'
     ]
   },
   [ROLES.ANALISTA]: {

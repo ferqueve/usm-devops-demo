@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, memo } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +22,7 @@ interface DashboardSidebarProps {
 }
 
 // Componente del sidebar del dashboard
-export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebarProps) {
+export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -59,11 +59,11 @@ export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebar
             asChild 
             isActive={isActive}
             onClick={() => handleMenuItemClick(item)}
-            className={`sidebar-menu-item ${isActive ? 'active' : ''}`}
+            className={`sidebar-menu-item transition-smooth ${isActive ? 'active active-indicator' : ''}`}
           >
-            <Link to={item.href || "#"} className="flex items-center gap-2">
-              <item.icon className="size-4" />
-              {item.label}
+            <Link to={item.href || "#"} className="flex items-center gap-3 relative">
+              <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
+              <span className="font-medium">{item.label}</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -71,11 +71,11 @@ export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebar
     }), [filteredMenuItems, location.pathname, handleMenuItemClick]);
 
   return (
-    <Sidebar variant="inset" className="bg-utec-dark">
+    <Sidebar variant="inset" className="bg-utec-dark shadow-inner-subtle">
       <SidebarHeader className="h-16 border-b border-white/10 bg-utec-dark px-4">
         <div className="flex items-center justify-between gap-3 w-full h-full">
           {/* Logo UTEC a la izquierda */}
-          <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-opacity -mt-2">
+          <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-all hover:scale-105 -mt-2">
             <img 
               src="/utec-logo-header.svg" 
               alt="UTEC Logo" 
@@ -83,33 +83,36 @@ export function DashboardSidebar({ onLogout, onMenuItemClick }: DashboardSidebar
             />
           </Link>
           
-          {/* Separador vertical */}
-          <div className="h-6 w-px bg-white/20"></div>
+          {/* Separador vertical con gradiente sutil */}
+          <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent"></div>
           
           {/* USM a la derecha */}
-          <Link to="/dashboard" className="flex items-center sidebar-menu-item px-3 py-1 rounded-md">
-            <span className="text-lg font-utec-brand">USM</span>
+          <Link to="/dashboard" className="flex items-center sidebar-menu-item px-3 py-1.5 rounded-md transition-all hover:scale-105">
+            <span className="text-lg font-utec-brand tracking-wider">USM</span>
           </Link>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="pt-4 bg-utec-dark">
-        <SidebarMenu className="bg-utec-dark">
+      <SidebarContent className="pt-6 bg-utec-dark px-2">
+        <SidebarMenu className="bg-utec-dark space-y-1">
           {menuItems}
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="border-t border-white/10 bg-utec-dark">
+      <SidebarFooter className="border-t border-white/10 bg-utec-dark px-2 py-4">
         <SidebarMenu className="bg-utec-dark">
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout} className="sidebar-menu-item">
-              <LogOut className="size-4" />
-              Cerrar Sesión
+            <SidebarMenuButton 
+              onClick={handleLogout} 
+              className="sidebar-menu-item transition-smooth hover:bg-utec-red/20 hover:text-utec-red"
+            >
+              <LogOut className="size-4 transition-transform hover-scale" />
+              <span className="font-medium">Cerrar Sesión</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
-}
+});
 

@@ -1,6 +1,8 @@
 package com.utec.backend.security.oauth;
 
 import com.utec.backend.security.auth.AuthenticationResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+@Tag(name = "OAuth2", description = "Endpoints para autenticación con OAuth2 (Google)")
 @RestController
 @RequestMapping("/api/v1/oauth2")
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class OAuthController {
      * Inicia el flujo OAuth redirigiendo al usuario a Google
      * El frontend llama a este endpoint y el usuario es redirigido a Google
      */
+    @Operation(summary = "Autorizar con Google", description = "Redirigir al usuario para autenticación con Google OAuth2")
     @GetMapping("/google/authorize")
     public void initiateGoogleLogin(HttpServletResponse response) throws IOException {
         String redirectUri = backendUrl + "/api/v1/oauth2/google/callback";
@@ -62,6 +66,7 @@ public class OAuthController {
      * Callback endpoint que recibe el código de autorización de Google
      * Google redirige aquí después de la autorización del usuario
      */
+    @Operation(summary = "Callback de Google", description = "Procesar código de autorización devuelto por Google OAuth2")
     @GetMapping("/google/callback")
     public void handleGoogleCallback(
         @RequestParam(required = false) String code,
@@ -109,6 +114,7 @@ public class OAuthController {
     /**
      * Endpoint alternativo para obtener información de OAuth (para debugging)
      */
+    @Operation(summary = "Información OAuth", description = "Obtener configuración de OAuth para debugging")
     @GetMapping("/google/info")
     public ResponseEntity<Map<String, String>> getOAuthInfo() {
         return ResponseEntity.ok(Map.of(

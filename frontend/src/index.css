@@ -15,12 +15,30 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground, var(--primary-foreground));
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
 /* Variables CSS globales */
 :root {
-  --primary-color: #3b82f6;
-  --secondary-color: #6b7280;
-  --success-color: #10b981;
-  --error-color: #ef4444;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -53,51 +71,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-}
-
-/* Estilos base del body */
-body {
-  font-family: 'Gilroy', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  line-height: 1.6;
-  color: #1f2937;
-  background-color: #f9fafb;
-}
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 .dark {
@@ -135,52 +108,58 @@ body {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  *::before,
+  *::after {
+    @apply border-border;
+    box-sizing: border-box;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'Gilroy', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Prevenir overflow horizontal */
+  #root, #root > *, main, main > *, div, section, article {
+    max-width: 100%;
+    min-width: 0;
+  }
+  
+  .flex > *, .grid > * {
+    min-width: 0;
+    min-height: 0;
   }
 }
 
-/* Clases para fuente UTEC - Solo para títulos y marca */
+/* Utilidades específicas del proyecto */
 @layer utilities {
+  /* Fuente UTEC */
   .font-utec {
-    font-family: 'UTEC', 'Gilroy', 'Poppins', sans-serif;
-    font-weight: normal;
-    text-transform: uppercase; /* Solo mayúsculas como especifica la identidad */
-    letter-spacing: 0.05em; /* Espaciado entre letras para mejor legibilidad */
-  }
-  
-  .font-utec-title {
     font-family: 'UTEC', 'Gilroy', 'Poppins', sans-serif;
     font-weight: normal;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 1.5rem; /* Tamaño específico para títulos */
-    line-height: 1.2;
-  }
-  
-  .font-utec-brand {
-    font-family: 'UTEC', 'Gilroy', 'Poppins', sans-serif;
-    font-weight: normal;
-    text-transform: uppercase;
-    letter-spacing: 0.1em; /* Más espaciado para la marca */
-    font-size: 1.25rem;
-    line-height: 1.1;
   }
 
-  /* Clases de colores corporativos UTEC */
-  /* Colores de texto */
+  /* Colores corporativos UTEC */
   .text-utec-green { color: #86bb4c; }
   .text-utec-yellow { color: #F6CA21; }
   .text-utec-orange { color: #DE7A27; }
   .text-utec-red { color: #DF2B31; }
   .text-utec-blue { color: #184897; }
   .text-utec-cyan { color: #00c7ff; }
+  .text-utec-purple { color: #9333ea; }
   .text-utec-dark { color: #343a40; }
 
-  /* Colores de fondo */
   .bg-utec-green { background-color: #86bb4c; }
   .bg-utec-yellow { background-color: #F6CA21; }
   .bg-utec-orange { background-color: #DE7A27; }
@@ -188,63 +167,33 @@ body {
   .bg-utec-blue { background-color: #184897; }
   .bg-utec-cyan { background-color: #00c7ff; }
   .bg-utec-dark { background-color: #343a40; }
+  .bg-utec-dark-lighter { background-color: #4a5057; }
 
-  /* Colores de borde */
   .border-utec-green { border-color: #86bb4c; }
   .border-utec-yellow { border-color: #F6CA21; }
-  .border-utec-orange { border-color: #DE7A27; }
-  .border-utec-red { border-color: #DF2B31; }
   .border-utec-blue { border-color: #184897; }
-  .border-utec-cyan { border-color: #00c7ff; }
-  .border-utec-dark { border-color: #343a40; }
 
-  /* Gradientes corporativos */
-  .bg-utec-gradient-full {
-    background: linear-gradient(45deg, #86bb4c 0%, #F6CA21 20%, #DE7A27 40%, #DF2B31 60%, #184897 80%, #86bb4c 100%);
-  }
-  
-  .bg-utec-gradient-primary {
-    background: linear-gradient(135deg, #184897 0%, #86bb4c 100%);
-  }
-  
-  .bg-utec-gradient-warm {
-    background: linear-gradient(135deg, #DF2B31 0%, #F6CA21 100%);
-  }
-  
-  .bg-utec-gradient-cool {
-    background: linear-gradient(135deg, #184897 0%, #86bb4c 100%);
+  /* Sombras */
+  .shadow-card {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: box-shadow 0.3s ease;
   }
 
-  /* Estados con colores corporativos */
-  .status-success { 
-    color: #86bb4c;
-    background-color: rgb(134 187 76 / 0.1);
-  }
-  
-  .status-warning { 
-    color: #F6CA21;
-    background-color: rgb(246 202 33 / 0.1);
-  }
-  
-  .status-error { 
-    color: #DF2B31;
-    background-color: rgb(223 43 49 / 0.1);
-  }
-  
-  .status-info { 
-    color: #184897;
-    background-color: rgb(24 72 151 / 0.1);
+  .shadow-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
-  /* Estilos del sidebar */
-  .bg-utec-dark-lighter { 
-    background-color: #4a5057; 
+  /* Efectos de hover */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .hover\:bg-utec-dark-lighter:hover {
-    background-color: #4a5057;
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
+  /* Sidebar */
   .sidebar-menu-item {
     color: #d1d5db;
     transition: all 0.2s ease;
@@ -259,29 +208,79 @@ body {
     background-color: #525961;
     color: #ffffff;
   }
-}
 
-/* Animación de gradiente cíclico perfecto con colores UTEC */
-@keyframes utec-rotating-gradient {
-  0% {
-    background-position: 0% 50%;
+  /* Animación de spin única */
+  @keyframes spin-once {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
-  100% {
-    background-position: 100% 50%;
+
+  .animate-spin-once {
+    animation: spin-once 0.6s ease-in-out;
   }
-}
+
+  /* Gradiente animado UTEC */
+  @keyframes utec-rotating-gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
 
   .animate-utec-rotating-gradient {
-  background: linear-gradient(
-    45deg,
-    #86bb4c 0%,
-    #F6CA21 20%,
-    #DE7A27 40%,
-    #DF2B31 60%,
-    #184897 80%,
-    #86bb4c 100%
-  );
-  background-size: 1000% 100%;
-  animation: utec-rotating-gradient 50s alternate infinite;
-}
+    background: linear-gradient(45deg, #86bb4c 0%, #F6CA21 20%, #DE7A27 40%, #DF2B31 60%, #184897 80%, #86bb4c 100%);
+    background-size: 1000% 100%;
+    animation: utec-rotating-gradient 50s alternate infinite;
+  }
 
+  /* Secciones del sistema */
+  .section-separator {
+    @apply border-t border-gray-200 pt-8 mt-8 max-w-full;
+  }
+
+  .section-title {
+    @apply text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2 sm:gap-3 flex-wrap;
+  }
+
+  /* Log viewer */
+  .log-line {
+    @apply font-mono text-xs hover:bg-gray-800/50 transition-colors;
+  }
+
+  .log-error {
+    @apply text-red-400 bg-red-950/30;
+  }
+
+  .log-warn {
+    @apply text-yellow-400 bg-yellow-950/30;
+  }
+
+  /* Optimización para página Sistema */
+  [data-page="system"] {
+    contain: layout style;
+    will-change: auto;
+  }
+
+  [data-page="system"] .recharts-responsive-container {
+    will-change: width, height;
+    contain: layout;
+  }
+
+  [data-page="system"] table {
+    contain: layout style;
+  }
+
+  /* Optimización del sidebar - Aceleración GPU */
+  [data-slot="sidebar-container"] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  [data-slot="sidebar-gap"] {
+    will-change: width;
+  }
+
+  /* Transición suave para el contenido del sidebar */
+  .group[data-state="collapsed"] [data-slot="sidebar-container"],
+  .group[data-state="expanded"] [data-slot="sidebar-container"] {
+    transition: left 150ms ease-out, right 150ms ease-out, width 150ms ease-out;
+  }
+}

@@ -111,4 +111,23 @@ export interface CalendarEvent {
   type: 'reservation' | 'maintenance' | 'event';
 }
 
+// ============================================================================
+// Tipos para Tracking de Usuarios Activos
+// ============================================================================
+
+export interface ActiveUser {
+  email: string;
+  nombre: string;
+  apellido: string;
+  rol: string;
+  lastActivity: string;
+  ipAddress: string;
+  userAgent: string;
+}
+
+export interface ActiveUsersStats {
+  totalActiveUsers: number;
+  activeUsers: ActiveUser[];
+}
+
 

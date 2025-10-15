@@ -4,7 +4,8 @@ import {
   BookOpen,
   Building2,
   BarChart3,
-  Users
+  Users,
+  Server
 } from "lucide-react";
 import type { SidebarMenuItem } from "@/core/types/types";
 
@@ -46,6 +47,12 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Usuarios",
     icon: Users,
     href: "/users"
+  },
+  {
+    id: "system",
+    label: "Sistema",
+    icon: Server,
+    href: "/system"
   }
 ];
 

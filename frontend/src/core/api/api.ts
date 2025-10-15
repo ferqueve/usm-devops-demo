@@ -289,3 +289,172 @@ export const usuariosApi = {
     });
   },
 };
+
+// ===== API DE ACTUATOR (MONITOREO DEL SISTEMA) =====
+// Helper para hacer requests de Actuator con manejo de token refresh
+async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<any> {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL.replace('/api/v1', '')}${endpoint}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  // Si es 401 y no es un retry, intentar refresh token
+  if (response.status === 401 && !isRetry) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken) {
+      try {
+        // Intentar renovar el token con el header correcto
+        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Refresh-Token': refreshToken,
+          },
+        });
+
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          localStorage.setItem('token', data.token);
+          if (data.refreshToken) {
+            localStorage.setItem('refreshToken', data.refreshToken);
+          }
+          
+          // Reintentar la request original con el nuevo token
+          return actuatorRequest(endpoint, true);
+        }
+      } catch (error) {
+        console.error('Error al renovar token:', error);
+      }
+    }
+    throw new Error('Token expirado. Por favor inicia sesión nuevamente.');
+  }
+
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export const actuatorApi = {
+  // Obtener salud del sistema
+  async getHealth(): Promise<any> {
+    return actuatorRequest('/actuator/health');
+  },
+
+  // Obtener métricas del sistema
+  async getMetrics(): Promise<any> {
+    return actuatorRequest('/actuator/metrics');
+  },
+
+  // Obtener métrica específica
+  async getMetric(metricName: string): Promise<any> {
+    return actuatorRequest(`/actuator/metrics/${metricName}`);
+  },
+
+  // Obtener información de la aplicación
+  async getInfo(): Promise<any> {
+    return actuatorRequest('/actuator/info');
+  },
+
+  // Obtener todos los endpoints disponibles
+  async getEndpoints(): Promise<any> {
+    return actuatorRequest('/actuator');
+  },
+
+  // Obtener HTTP Exchanges (reemplaza httptrace en Spring Boot 2.2+)
+  async getHttpTrace(): Promise<any> {
+    return actuatorRequest('/actuator/httpexchanges');
+  },
+
+  // Obtener mappings (endpoints REST disponibles)
+  async getMappings(): Promise<any> {
+    return actuatorRequest('/actuator/mappings');
+  },
+
+  // Obtener documentación OpenAPI
+  async getOpenApiDocs(): Promise<any> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8080'}/v3/api-docs`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Error al obtener OpenAPI docs');
+    }
+    
+    return await response.json();
+  },
+
+  // Obtener información de Liquibase
+  async getLiquibase(): Promise<any> {
+    return actuatorRequest('/actuator/liquibase');
+  },
+
+  // Obtener loggers
+  async getLoggers(): Promise<any> {
+    return actuatorRequest('/actuator/loggers');
+  },
+
+  // Cambiar nivel de logger
+  async setLoggerLevel(name: string, level: string): Promise<any> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL.replace('/api/v1', '')}/actuator/loggers/${name}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ configuredLevel: level })
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al cambiar nivel de logger');
+    }
+
+    return response.status === 204 ? { success: true } : await response.json();
+  },
+
+  // Obtener archivo de logs
+  async getLogFile(): Promise<string> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL.replace('/api/v1', '')}/actuator/logfile`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener log file');
+    }
+
+    return await response.text();
+  },
+};
+
+// API de Estadísticas
+export const statsApi = {
+  // Obtener usuarios activos
+  async getActiveUsers(): Promise<any> {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_BASE_URL}/stats/active-users`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Error al obtener usuarios activos');
+    }
+    
+    return await response.json();
+  },
+};

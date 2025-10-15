@@ -11,6 +11,7 @@ import ReservationsPage from './app/reservations/page';
 import RoomsPage from './app/rooms/page';
 import StatisticsPage from './app/statistics/page';
 import UsersPage from './app/users/page';
+import SystemPage from './app/system/page';
 
 
 // Componente principal de rutas
@@ -102,6 +103,15 @@ function AppRoutes() {
         element={
           <RoleProtectedRoute>
             <UsersPage />
+          </RoleProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/system" 
+        element={
+          <RoleProtectedRoute>
+            <SystemPage />
           </RoleProtectedRoute>
         } 
       />

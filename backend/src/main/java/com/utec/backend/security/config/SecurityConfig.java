@@ -50,10 +50,15 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas
-                .requestMatchers("/api/v1/auth/**", "/api/v1/oauth2/**", "/actuator/**", "/error").permitAll()
+                .requestMatchers("/api/v1/auth/**", "/api/v1/oauth2/**", "/error").permitAll()
+
+                // Actuator y Swagger SOLO para ADMIN
+                .requestMatchers("/actuator/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").hasRole(ROLE_ADMIN)
 
                 // Rutas protegidas por rol
                 .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
                 .requestMatchers("/api/v1/salones/**", "/api/v1/salones/*/inventario/**", "/api/v1/estadisticas/**", "/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
                 .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE)
                 .requestMatchers("/api/v1/calendario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE)
