@@ -183,14 +183,15 @@
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
-  /* Efectos de hover */
+  /* Efectos de hover - Optimizados para mejor rendimiento */
   .hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    will-change: transform, box-shadow;
   }
 
   .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 12px -3px rgb(0 0 0 / 0.08), 0 3px 5px -4px rgb(0 0 0 / 0.08);
   }
 
   /* Sidebar */

@@ -96,7 +96,7 @@ export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUse
               {data.activeUsers.map((user, index) => (
                 <div
                   key={`${user.email}-${index}`}
-                  className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors duration-150"
                 >
                   {/* Avatar con iniciales */}
                   <AvatarInitials

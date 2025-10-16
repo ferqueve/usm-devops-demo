@@ -19,7 +19,7 @@ export const LogsSection = memo(function LogsSection({ loggers, logFile, onLogge
       {/* Visor de logs con configuración integrada */}
       <LogViewer 
         content={logFile} 
-        maxLines={1000}
+        maxLines={200}
         loggers={loggers}
         onLoggerUpdate={onLoggerUpdate}
       />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { actuatorApi, statsApi } from '@/core/api/api';
 import { toast } from 'sonner';
 
@@ -38,7 +38,7 @@ export const useSystemMetrics = () => {
   // Historial de métricas para gráficos en tiempo real
   const [metricsHistory, setMetricsHistory] = useState<MetricsHistory[]>([]);
 
-  // Actualizar historial de métricas
+  // Actualizar historial de métricas - optimizado para reducir frecuencia
   const updateMetricsHistory = useCallback((memory: number, cpu: number, threads: number) => {
     const timestamp = new Date();
     const newDataPoint: MetricsHistory = {
@@ -50,9 +50,17 @@ export const useSystemMetrics = () => {
     };
 
     setMetricsHistory(prev => {
+      // Solo actualizar si han pasado al menos 2 segundos desde la última actualización
+      const lastUpdate = prev[prev.length - 1]?.timestamp;
+      const timeDiff = timestamp.getTime() - (lastUpdate || 0);
+      
+      if (timeDiff < 2000 && prev.length > 0) {
+        return prev; // No actualizar si es muy frecuente
+      }
+      
       const updated = [...prev, newDataPoint];
-      // Mantener solo los últimos 30 puntos
-      return updated.slice(-30);
+      // Mantener solo los últimos 20 puntos para mejor rendimiento
+      return updated.slice(-20);
     });
   }, []);
 

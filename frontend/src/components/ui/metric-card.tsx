@@ -80,7 +80,7 @@ export const MetricCard = memo(function MetricCard({
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={cn(
-                    'h-full transition-all duration-500 rounded-full',
+                    'h-full transition-all duration-300 rounded-full',
                     variant === 'success' && 'bg-utec-green',
                     variant === 'warning' && 'bg-utec-yellow',
                     variant === 'error' && 'bg-utec-red',

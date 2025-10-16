@@ -3,7 +3,7 @@ import { CheckCircle2, AlertCircle, HardDrive, Cpu, Clock } from 'lucide-react';
 import { MetricCard } from '@/components/ui/metric-card';
 import { formatBytes, formatUptime } from '@/core/utils/formatters';
 
-interface SystemMetricsProps {
+interface MetricsCardsProps {
   health: any;
   memoryMetrics: any;
   memoryMaxMetrics: any;
@@ -11,13 +11,13 @@ interface SystemMetricsProps {
   uptimeMetrics: any;
 }
 
-export const SystemMetrics = memo(function SystemMetrics({
+export const MetricsCards = memo(function MetricsCards({
   health,
   memoryMetrics,
   memoryMaxMetrics,
   cpuMetrics,
   uptimeMetrics
-}: SystemMetricsProps) {
+}: MetricsCardsProps) {
   const healthStatus = health?.status || 'UNKNOWN';
   const isHealthy = healthStatus === 'UP';
   

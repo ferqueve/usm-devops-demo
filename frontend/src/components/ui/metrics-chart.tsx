@@ -1,4 +1,4 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, memo, useCallback } from 'react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +13,7 @@ interface MetricsChartProps {
   unit?: string;
   type?: 'line' | 'area';
   height?: number;
+  isPaused?: boolean; // Nueva prop para pausar animaciones
 }
 
 export const MetricsChart = memo(function MetricsChart({
@@ -23,14 +24,21 @@ export const MetricsChart = memo(function MetricsChart({
   color = '#0066CC',
   unit = '',
   type = 'area',
-  height = 300
+  height = 300,
+  isPaused = false
 }: MetricsChartProps) {
   const [timeRange, setTimeRange] = useState<number>(20);
   const [yAxisMode, setYAxisMode] = useState<'auto' | 'fixed'>('auto');
 
-  // Filtrar datos según el rango de tiempo
+  // Filtrar datos según el rango de tiempo y optimizar para mejor rendimiento
   const displayData = useMemo(() => {
-    return data.slice(-timeRange);
+    const sliced = data.slice(-timeRange);
+    // Si hay muchos puntos, reducir la resolución para mejor rendimiento
+    if (sliced.length > 50) {
+      const step = Math.ceil(sliced.length / 50);
+      return sliced.filter((_, index) => index % step === 0);
+    }
+    return sliced;
   }, [data, timeRange]);
 
   // Calcular dominio del eje Y
@@ -46,8 +54,8 @@ export const MetricsChart = memo(function MetricsChart({
     return [Math.max(0, min - margin), max + margin];
   }, [displayData, dataKey, yAxisMode]);
 
-  // Tooltip personalizado
-  const CustomTooltip = ({ active, payload }: any) => {
+  // Tooltip personalizado - memoizado para evitar re-renders
+  const CustomTooltip = useCallback(({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white border rounded-lg shadow-lg p-3">
@@ -63,7 +71,53 @@ export const MetricsChart = memo(function MetricsChart({
       );
     }
     return null;
-  };
+  }, [unit]);
+
+  // Si está pausado, mostrar versión estática optimizada
+  if (isPaused) {
+    return (
+      <Card className="shadow-card">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base flex-shrink-0">
+              {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color }} />}
+              <span className="truncate">{title}</span>
+            </CardTitle>
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
+              <Select value={timeRange.toString()} onValueChange={(val) => setTimeRange(Number(val))}>
+                <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10 pts</SelectItem>
+                  <SelectItem value="20">20 pts</SelectItem>
+                  <SelectItem value="30">30 pts</SelectItem>
+                  <SelectItem value="50">50 pts</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => setYAxisMode(val)}>
+                <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto Y</SelectItem>
+                  <SelectItem value="fixed">Fijo Y</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+            <div className="text-center">
+              <div className="text-sm opacity-50">Gráfico pausado</div>
+              <div className="text-xs mt-1">Para optimizar rendimiento</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="shadow-card hover-lift">
@@ -126,7 +180,7 @@ export const MetricsChart = memo(function MetricsChart({
                 stroke={color}
                 strokeWidth={2}
                 fill={`url(#gradient-${dataKey})`}
-                animationDuration={150}
+                animationDuration={300}
                 isAnimationActive={true}
               />
             </AreaChart>
@@ -151,7 +205,7 @@ export const MetricsChart = memo(function MetricsChart({
                 stroke={color}
                 strokeWidth={2}
                 dot={false}
-                animationDuration={150}
+                animationDuration={300}
                 isAnimationActive={true}
               />
             </LineChart>

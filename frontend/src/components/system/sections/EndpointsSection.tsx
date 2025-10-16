@@ -4,15 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Network, Settings, ArrowUpDown, ArrowUp, ArrowDown, BookOpen, FileJson } from 'lucide-react';
-import { HttpTraceTable } from '@/components/ui/http-trace-table';
+import { Settings, ArrowUpDown, ArrowUp, ArrowDown, BookOpen, FileJson } from 'lucide-react';
 
-interface SystemActivityProps {
-  httpTrace: any;
+interface EndpointsSectionProps {
   mappings: any;
 }
 
-export const SystemActivity = memo(function SystemActivity({ httpTrace, mappings }: SystemActivityProps) {
+export const EndpointsSection = memo(function EndpointsSection({ mappings }: EndpointsSectionProps) {
   // Estado para ordenamiento
   const [sortColumn, setSortColumn] = useState<'method' | 'path'>('path');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -123,108 +121,94 @@ export const SystemActivity = memo(function SystemActivity({ httpTrace, mappings
   }
 
   return (
-    <section className="section-separator">
-      <h3 className="section-title">
-        <Network className="h-6 w-6 text-utec-blue" />
-        Actividad del Sistema
-      </h3>
-
-      <div className="space-y-4">
-        {/* HTTP Trace */}
-        <HttpTraceTable data={httpTrace} />
-
-        {/* Endpoints REST */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Settings className="h-5 w-5 text-utec-purple" />
-                Endpoints REST
-                {allEndpoints.length > 0 && (
-                  <Badge variant="secondary">
-                    {allEndpoints.length} endpoints
-                  </Badge>
-                )}
-              </CardTitle>
-              
-              {/* Botones de Swagger (solo ADMIN) */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                  onClick={() => window.open(`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8080'}/swagger-ui.html`, '_blank')}
-                >
-                  <BookOpen className="h-4 w-4" />
-                  Swagger UI
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                  onClick={() => window.open(`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8080'}/v3/api-docs`, '_blank')}
-                >
-                  <FileJson className="h-4 w-4" />
-                  OpenAPI JSON
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {allEndpoints.length > 0 ? (
-              <ScrollArea className="h-[500px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[80px]">
-                        <button
-                          onClick={() => handleSort('method')}
-                          className="flex items-center hover:text-utec-blue transition-colors font-semibold"
-                        >
-                          Método
-                          {getSortIcon('method')}
-                        </button>
-                      </TableHead>
-                      <TableHead className="w-[300px]">
-                        <button
-                          onClick={() => handleSort('path')}
-                          className="flex items-center hover:text-utec-blue transition-colors font-semibold"
-                        >
-                          Endpoint
-                          {getSortIcon('path')}
-                        </button>
-                      </TableHead>
-                      <TableHead>Descripción</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allEndpoints.map((endpoint, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="py-2">
-                          <Badge className={`text-xs font-semibold border ${getMethodColor(endpoint.method)}`}>
-                            {endpoint.method}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs py-2">
-                          {endpoint.path}
-                        </TableCell>
-                        <TableCell className="text-xs text-gray-700 py-2">
-                          {endpoint.description}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            ) : (
-              <p className="text-muted-foreground text-sm text-center py-4">
-                No hay información de mappings disponible
-              </p>
+    <Card className="shadow-card">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Settings className="h-5 w-5 text-utec-purple" />
+            Endpoints REST
+            {allEndpoints.length > 0 && (
+              <Badge variant="secondary">
+                {allEndpoints.length} endpoints
+              </Badge>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+          </CardTitle>
+          
+          {/* Botones de Swagger (solo ADMIN) */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => window.open(`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8080'}/swagger-ui.html`, '_blank')}
+            >
+              <BookOpen className="h-4 w-4" />
+              Swagger UI
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => window.open(`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8080'}/v3/api-docs`, '_blank')}
+            >
+              <FileJson className="h-4 w-4" />
+              OpenAPI JSON
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {allEndpoints.length > 0 ? (
+          <ScrollArea className="h-[500px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">
+                    <button
+                      onClick={() => handleSort('method')}
+                      className="flex items-center hover:text-utec-blue transition-colors duration-150 font-semibold"
+                    >
+                      Método
+                      {getSortIcon('method')}
+                    </button>
+                  </TableHead>
+                  <TableHead className="w-[300px]">
+                    <button
+                      onClick={() => handleSort('path')}
+                      className="flex items-center hover:text-utec-blue transition-colors duration-150 font-semibold"
+                    >
+                      Endpoint
+                      {getSortIcon('path')}
+                    </button>
+                  </TableHead>
+                  <TableHead>Descripción</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {allEndpoints.map((endpoint, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="py-2">
+                      <Badge className={`text-xs font-semibold border ${getMethodColor(endpoint.method)}`}>
+                        {endpoint.method}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs py-2">
+                      {endpoint.path}
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-700 py-2">
+                      {endpoint.description}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        ) : (
+          <p className="text-muted-foreground text-sm text-center py-4">
+            No hay información de mappings disponible
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 });
-

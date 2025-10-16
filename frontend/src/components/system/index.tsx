@@ -1,12 +1,14 @@
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSystemMetrics } from '@/core/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
-import { SystemMetrics } from './SystemMetrics';
-import { AppInfo } from './AppInfo';
-import { JvmMetrics } from './JvmMetrics';
-import { SystemActivity } from './SystemActivity';
-import { DatabaseSection } from './DatabaseSection';
-import { LogsSection } from './LogsSection';
+import { lazy, Suspense } from 'react';
+
+// Lazy loading para tabs pesados
+const OverviewTab = lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab })));
+const PerformanceTab = lazy(() => import('./tabs/PerformanceTab').then(m => ({ default: m.PerformanceTab })));
+const ActivityTab = lazy(() => import('./tabs/ActivityTab').then(m => ({ default: m.ActivityTab })));
+const DatabaseLogsTab = lazy(() => import('./tabs/DatabaseLogsTab').then(m => ({ default: m.DatabaseLogsTab })));
 
 export default function System() {
   const {
@@ -56,36 +58,101 @@ export default function System() {
         handleRefresh={handleRefresh}
       />
 
-      <SystemMetrics
-        health={health}
-        memoryMetrics={memoryMetrics}
-        memoryMaxMetrics={memoryMaxMetrics}
-        cpuMetrics={cpuMetrics}
-        uptimeMetrics={uptimeMetrics}
-      />
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            📊 Overview
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            ⚙️ Performance
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-2">
+            🌐 Activity
+          </TabsTrigger>
+          <TabsTrigger value="database-logs" className="flex items-center gap-2">
+            🗄️ Database & Logs
+          </TabsTrigger>
+        </TabsList>
 
-      <AppInfo info={info} activeUsers={activeUsers} />
+        <TabsContent value="overview" className="mt-0">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-muted-foreground">Cargando Overview...</p>
+              </div>
+            </div>
+          }>
+            <OverviewTab
+              health={health}
+              memoryMetrics={memoryMetrics}
+              memoryMaxMetrics={memoryMaxMetrics}
+              cpuMetrics={cpuMetrics}
+              uptimeMetrics={uptimeMetrics}
+              info={info}
+              activeUsers={activeUsers}
+              metricsHistory={metricsHistory}
+            />
+          </Suspense>
+        </TabsContent>
 
-      <JvmMetrics
-        memoryMetrics={memoryMetrics}
-        memoryMaxMetrics={memoryMaxMetrics}
-        cpuMetrics={cpuMetrics}
-        threadsMetrics={threadsMetrics}
-        gcMetrics={gcMetrics}
-        uptimeMetrics={uptimeMetrics}
-        httpMetrics={httpMetrics}
-        metricsHistory={metricsHistory}
-      />
+        <TabsContent value="performance" className="mt-0">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-muted-foreground">Cargando Performance...</p>
+              </div>
+            </div>
+          }>
+            <PerformanceTab
+              memoryMetrics={memoryMetrics}
+              memoryMaxMetrics={memoryMaxMetrics}
+              cpuMetrics={cpuMetrics}
+              threadsMetrics={threadsMetrics}
+              gcMetrics={gcMetrics}
+              uptimeMetrics={uptimeMetrics}
+              httpMetrics={httpMetrics}
+              metricsHistory={metricsHistory}
+            />
+          </Suspense>
+        </TabsContent>
 
-      <SystemActivity httpTrace={httpTrace} mappings={mappings} />
+        <TabsContent value="activity" className="mt-0">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-muted-foreground">Cargando Activity...</p>
+              </div>
+            </div>
+          }>
+            <ActivityTab
+              httpTrace={httpTrace}
+              mappings={mappings}
+            />
+          </Suspense>
+        </TabsContent>
 
-      <DatabaseSection health={health} liquibase={liquibase} />
-
-      <LogsSection
-        loggers={loggers}
-        logFile={logFile}
-        onLoggerUpdate={handleLoggerUpdate}
-      />
+        <TabsContent value="database-logs" className="mt-0">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-muted-foreground">Cargando Database & Logs...</p>
+              </div>
+            </div>
+          }>
+            <DatabaseLogsTab
+              health={health}
+              liquibase={liquibase}
+              loggers={loggers}
+              logFile={logFile}
+              onLoggerUpdate={handleLoggerUpdate}
+            />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
