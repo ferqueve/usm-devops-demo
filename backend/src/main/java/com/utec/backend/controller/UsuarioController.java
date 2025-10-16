@@ -1,9 +1,9 @@
 package com.utec.backend.controller;
 
-import com.utec.backend.dto.usuarios.CambioRolDto;
-import com.utec.backend.dto.usuarios.PagedUsuarioResponseDto;
-import com.utec.backend.dto.usuarios.UsuarioResponseDto;
-import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
+import com.utec.backend.dto.usuario.CambioRolDto;
+import com.utec.backend.dto.usuario.PagedUsuarioResponseDto;
+import com.utec.backend.dto.usuario.UsuarioResponseDto;
+import com.utec.backend.dto.usuario.UsuarioUpdateDto;
 import com.utec.backend.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

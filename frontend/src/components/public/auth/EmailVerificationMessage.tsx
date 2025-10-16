@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/Button"
-import { cn } from "@/core/utils/helpers"
+import { cn } from "@/lib/utils/helpers"
 
 interface EmailVerificationMessageProps {
   onBackToLogin?: () => void;

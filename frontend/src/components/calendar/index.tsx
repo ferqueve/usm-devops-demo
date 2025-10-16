@@ -1,6 +1,4 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { mockCalendarEvents } from "@/data/mock-data";
 
@@ -33,7 +31,7 @@ export default function Calendar() {
   // Obtener eventos para un día específico
   const getEventsForDay = (date: Date) => {
     return mockCalendarEvents.filter(event => {
-      const eventDate = event.start;
+      const eventDate = new Date(event.start);
       return eventDate.getDate() === date.getDate() && 
              eventDate.getMonth() === date.getMonth() && 
              eventDate.getFullYear() === date.getFullYear();
@@ -155,7 +153,7 @@ export default function Calendar() {
         <CardContent>
           <div className="space-y-4">
             {mockCalendarEvents
-              .sort((a, b) => a.start.getTime() - b.start.getTime())
+              .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
               .slice(0, 5)
               .map(event => (
                 <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -171,17 +169,17 @@ export default function Calendar() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">
-                      {event.start.toLocaleDateString('es-ES', { 
+                      {new Date(event.start).toLocaleDateString('es-ES', { 
                         weekday: 'short', 
                         month: 'short', 
                         day: 'numeric' 
                       })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {event.start.toLocaleTimeString('es-ES', { 
+                      {new Date(event.start).toLocaleTimeString('es-ES', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
-                      })} - {event.end.toLocaleTimeString('es-ES', { 
+                      })} - {new Date(event.end).toLocaleTimeString('es-ES', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                       })}

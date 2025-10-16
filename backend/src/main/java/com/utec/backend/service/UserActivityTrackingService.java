@@ -1,8 +1,8 @@
 package com.utec.backend.service;
 
-import com.utec.backend.dto.ActiveUserDTO;
-import com.utec.backend.dto.ActiveUsersStatsDTO;
-import com.utec.backend.model.entity.Usuario;
+import com.utec.backend.dto.stats.ActiveUserDTO;
+import com.utec.backend.dto.stats.ActiveUsersStatsDTO;
+import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

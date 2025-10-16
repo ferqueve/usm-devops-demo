@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.utec.backend.security.service.CustomUserDetailsService;
+import com.utec.backend.service.CustomUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 
 import java.io.IOException;

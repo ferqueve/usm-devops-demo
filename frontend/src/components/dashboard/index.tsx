@@ -1,13 +1,10 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { dashboardStats } from "@/data/mock-data";
-import type { Statistic } from "@/core/types/types";
+import type { Statistic } from "@/lib/types";
 
 // Componente para mostrar estadísticas
 function StatCard({ stat }: { stat: Statistic }) {
-  const Icon = stat.icon;
   const getTrendColor = (trend: string) => {
     switch (trend) {
       case 'up': return 'text-green-600';
@@ -20,7 +17,7 @@ function StatCard({ stat }: { stat: Statistic }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-        <Icon className={`h-4 w-4 ${getTrendColor(stat.trend)}`} />
+        {stat.icon && <stat.icon className={`h-4 w-4 ${getTrendColor(stat.trend || 'neutral')}`} />}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{stat.value}</div>
@@ -50,86 +47,59 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { room: "Aula 101", time: "09:00 - 11:00", user: "Dr. María García", purpose: "Clase Programación" },
-                { room: "Laboratorio 2A", time: "14:00 - 16:00", user: "Ing. Carlos López", purpose: "Práctica Redes" },
-                { room: "Auditorio Principal", time: "10:00 - 12:00", user: "Prof. Ana Rodríguez", purpose: "Presentación Proyectos" }
-              ].map((reservation, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div>
-                      <p className="font-medium">{reservation.room}</p>
-                      <p className="text-sm text-muted-foreground">{reservation.purpose}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{reservation.time}</p>
-                    <p className="text-xs text-muted-foreground">{reservation.user}</p>
-                  </div>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Clase de Programación</p>
+                  <p className="text-sm text-muted-foreground">Aula 101 - 15 Ene, 09:00</p>
                 </div>
-              ))}
+                <Button variant="outline" size="sm">Ver detalles</Button>
+              </div>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Práctica de Redes</p>
+                  <p className="text-sm text-muted-foreground">Laboratorio 2A - 15 Ene, 14:00</p>
+                </div>
+                <Button variant="outline" size="sm">Ver detalles</Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Acciones rápidas */}
+        {/* Estado del sistema */}
         <Card>
           <CardHeader>
-            <CardTitle>Acciones Rápidas</CardTitle>
+            <CardTitle>Estado del Sistema</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <Button className="w-full justify-start" variant="outline">
-                <span className="mr-2">📅</span>
-                Nueva Reserva
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <span className="mr-2">🏢</span>
-                Ver Salones
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <span className="mr-2">📊</span>
-                Ver Estadísticas
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <span className="mr-2">👥</span>
-                Gestionar Usuarios
-              </Button>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Salones disponibles</span>
+              <span className="text-sm font-medium text-green-600">8/11</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Estado de salones */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Estado de Salones</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-3">
-                <h4 className="font-medium text-green-600">Disponibles</h4>
-                {["Aula 101", "Laboratorio 2A", "Sala de Reuniones 3", "Aula 205"].map((room) => (
-                  <div key={room} className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">{room}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-3">
-                <h4 className="font-medium text-red-600">Ocupados/Mantenimiento</h4>
-                {["Auditorio Principal", "Laboratorio 1B"].map((room) => (
-                  <div key={room} className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-sm">{room}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Usuarios activos</span>
+              <span className="text-sm font-medium text-blue-600">156</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Reservas hoy</span>
+              <span className="text-sm font-medium text-purple-600">24</span>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Acciones rápidas */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Acciones Rápidas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button>Nueva Reserva</Button>
+            <Button variant="outline">Ver Calendario</Button>
+            <Button variant="outline">Gestionar Salones</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-

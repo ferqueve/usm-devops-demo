@@ -1,6 +1,6 @@
 package com.utec.backend.util;
 
-import com.utec.backend.model.entity.Usuario;
+import com.utec.backend.model.Usuario;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

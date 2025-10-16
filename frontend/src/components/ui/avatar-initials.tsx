@@ -1,4 +1,4 @@
-import { cn } from '@/core/utils/helpers';
+import { cn } from '@/lib/utils/helpers';
 
 interface AvatarInitialsProps {
   name: string;

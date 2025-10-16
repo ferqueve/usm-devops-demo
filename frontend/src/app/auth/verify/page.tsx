@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authApi } from '@/core/api/api';
+import { authApi } from '@/lib/api/auth';
 import { VerifyEmailForm } from '@/components/public/auth/VerifyEmailForm';
 
 export default function VerifyEmailPage() {

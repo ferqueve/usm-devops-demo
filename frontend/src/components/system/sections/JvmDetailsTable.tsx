@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Cpu, Activity, MemoryStick, Trash2, Clock, Network } from 'lucide-react';
-import { formatBytes, formatUptime } from '@/core/utils/formatters';
+import { formatBytes, formatUptime } from '@/lib/utils/formatters';
 
 interface JvmDetailsTableProps {
   memoryMetrics: any;

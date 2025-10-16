@@ -1,12 +1,12 @@
 package com.utec.backend.service;
 
-import com.utec.backend.common.exception.AuthenticationException;
-import com.utec.backend.common.exception.UsuarioNotFoundException;
-import com.utec.backend.dto.usuarios.CambioRolDto;
-import com.utec.backend.dto.usuarios.PagedUsuarioResponseDto;
-import com.utec.backend.dto.usuarios.UsuarioResponseDto;
-import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
-import com.utec.backend.model.entity.Usuario;
+import com.utec.backend.exception.AuthenticationException;
+import com.utec.backend.exception.UsuarioNotFoundException;
+import com.utec.backend.dto.usuario.CambioRolDto;
+import com.utec.backend.dto.usuario.PagedUsuarioResponseDto;
+import com.utec.backend.dto.usuario.UsuarioResponseDto;
+import com.utec.backend.dto.usuario.UsuarioUpdateDto;
+import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

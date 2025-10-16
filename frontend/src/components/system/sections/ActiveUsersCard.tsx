@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, User, Clock } from 'lucide-react';
-import type { ActiveUsersStats } from '@/core/types/types';
+import type { ActiveUsersStats } from '@/lib/types';
 import { AvatarInitials } from '@/components/ui/avatar-initials';
 
 interface ActiveUsersCardProps {

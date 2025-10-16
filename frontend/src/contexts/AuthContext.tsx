@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { APP_CONFIG } from '@/core/config/app';
-import { storage, errors, validation } from '@/core/utils/helpers';
-import { authApi } from '@/core/api/api';
-import type { LoginRequest, RegisterRequest } from '@/core/api/api';
+import { APP_CONFIG } from '@/lib/config/app';
+import { storage, errors, validation } from '@/lib/utils/helpers';
+import { authApi } from '@/lib/api/auth';
+import type { LoginRequest, RegisterRequest } from '@/lib/types/auth';
 
 // Tipos para el contexto de autenticación
 interface AuthContextType {

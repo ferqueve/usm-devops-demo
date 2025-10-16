@@ -1,6 +1,6 @@
 package com.utec.backend.util;
 
-import com.utec.backend.model.entity.Usuario;
+import com.utec.backend.model.Usuario;
 import lombok.extern.slf4j.Slf4j;
 
 /**

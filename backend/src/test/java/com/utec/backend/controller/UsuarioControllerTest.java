@@ -1,11 +1,11 @@
 package com.utec.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.utec.backend.dto.usuarios.CambioRolDto;
-import com.utec.backend.dto.usuarios.PagedUsuarioResponseDto;
-import com.utec.backend.dto.usuarios.UsuarioResponseDto;
-import com.utec.backend.dto.usuarios.UsuarioUpdateDto;
-import com.utec.backend.model.entity.Usuario;
+import com.utec.backend.dto.usuario.CambioRolDto;
+import com.utec.backend.dto.usuario.PagedUsuarioResponseDto;
+import com.utec.backend.dto.usuario.UsuarioResponseDto;
+import com.utec.backend.dto.usuario.UsuarioUpdateDto;
+import com.utec.backend.model.Usuario;
 import com.utec.backend.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -47,4 +47,3 @@ public class ActivityTrackingInterceptor implements HandlerInterceptor {
         return true;
     }
 }
-

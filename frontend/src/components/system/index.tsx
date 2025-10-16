@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSystemMetrics } from '@/core/hooks/useSystemMetrics';
+import { useSystemMetrics } from '@/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
 import { lazy, Suspense } from 'react';
 

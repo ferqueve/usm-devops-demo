@@ -1,4 +1,4 @@
-import { cn } from '@/core/utils/helpers';
+import { cn } from '@/lib/utils/helpers';
 import { type LucideIcon } from 'lucide-react';
 import { Button } from './Button';
 

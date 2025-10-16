@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { mockReservations } from "@/data/mock-data";
-import type { Reservation } from "@/core/types/types";
+import type { Reservation } from "@/lib/types";
 
 // Componente para mostrar el estado de una reserva
 function StatusBadge({ status }: { status: Reservation['status'] }) {
@@ -68,7 +68,7 @@ export default function Reservations() {
               <div key={reservation.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold">{reservation.roomName.split(' ')[1]}</span>
+                    <span className="text-blue-600 font-semibold">{reservation.roomName?.split(' ')[1] || 'N/A'}</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">

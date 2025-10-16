@@ -1,11 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { mockStatistics } from "@/data/mock-data";
-import type { Statistic } from "@/core/types/types";
+import type { Statistic } from "@/lib/types";
 
 // Componente para mostrar estadísticas
 function StatCard({ stat }: { stat: Statistic }) {
-  const Icon = stat.icon;
   const getTrendColor = (trend: string) => {
     switch (trend) {
       case 'up': return 'text-green-600';
@@ -18,7 +17,7 @@ function StatCard({ stat }: { stat: Statistic }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-        <Icon className={`h-4 w-4 ${getTrendColor(stat.trend)}`} />
+        {stat.icon && <stat.icon className={`h-4 w-4 ${getTrendColor(stat.trend || 'neutral')}`} />}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{stat.value}</div>

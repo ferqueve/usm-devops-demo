@@ -1,4 +1,4 @@
-import { memo, lazy, Suspense } from 'react';
+import { memo, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { DatabaseSection } from '../sections/DatabaseSection';
 import { LogsSection } from '../sections/LogsSection';
@@ -12,11 +12,11 @@ interface DatabaseLogsTabProps {
 }
 
 // Lazy loading para LogsSection ya que puede ser pesado
-const LazyLogsSection = lazy(() => 
-  import('../sections/LogsSection').then(module => ({
-    default: module.LogsSection
-  }))
-);
+// const LazyLogsSection = lazy(() => 
+//   import('../sections/LogsSection').then(module => ({
+//     default: module.LogsSection
+//   }))
+// );
 
 export const DatabaseLogsTab = memo(function DatabaseLogsTab({
   health,

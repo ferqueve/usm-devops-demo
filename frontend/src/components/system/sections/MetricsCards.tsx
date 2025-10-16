@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { CheckCircle2, AlertCircle, HardDrive, Cpu, Clock } from 'lucide-react';
 import { MetricCard } from '@/components/ui/metric-card';
-import { formatBytes, formatUptime } from '@/core/utils/formatters';
+import { formatBytes, formatUptime } from '@/lib/utils/formatters';
 
 interface MetricsCardsProps {
   health: any;

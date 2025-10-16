@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { mockRooms } from "@/data/mock-data";
-import type { Room } from "@/core/types/types";
+import type { Room } from "@/lib/types";
 
 // Componente para mostrar el tipo de salón
 function RoomTypeBadge({ type }: { type: Room['type'] }) {
@@ -87,7 +87,7 @@ export default function Rooms() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Estado de disponibilidad */}
-              <AvailabilityStatus isAvailable={room.isAvailable} />
+              <AvailabilityStatus isAvailable={room.isAvailable ?? true} />
               
               {/* Capacidad */}
               <div className="flex items-center justify-between">

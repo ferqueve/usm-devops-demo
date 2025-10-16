@@ -1,10 +1,9 @@
-import { cn } from "@/core/utils/helpers"
+import { cn } from "@/lib/utils/helpers"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { useAuth } from '@/contexts/AuthContext'
 
 export function LoginForm({
   className,

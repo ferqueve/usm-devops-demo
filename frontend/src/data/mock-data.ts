@@ -10,7 +10,7 @@ import type {
   Reservation, 
   Room, 
   CalendarEvent 
-} from "@/core/types/types";
+} from "@/lib/types";
 
 // Datos mock para el Dashboard Principal
 export const dashboardStats: Statistic[] = [
@@ -162,8 +162,8 @@ export const mockCalendarEvents: CalendarEvent[] = [
     id: "1",
     title: "Clase Programación",
     room: "Aula 101",
-    start: new Date(2024, 0, 15, 9, 0),
-    end: new Date(2024, 0, 15, 11, 0),
+    start: "2024-01-15T09:00:00",
+    end: "2024-01-15T11:00:00",
     color: "#3b82f6",
     type: "reservation"
   },
@@ -171,8 +171,8 @@ export const mockCalendarEvents: CalendarEvent[] = [
     id: "2",
     title: "Práctica Redes",
     room: "Laboratorio 2A",
-    start: new Date(2024, 0, 15, 14, 0),
-    end: new Date(2024, 0, 15, 16, 0),
+    start: "2024-01-15T14:00:00",
+    end: "2024-01-15T16:00:00",
     color: "#10b981",
     type: "reservation"
   },
@@ -180,8 +180,8 @@ export const mockCalendarEvents: CalendarEvent[] = [
     id: "3",
     title: "Mantenimiento",
     room: "Auditorio Principal",
-    start: new Date(2024, 0, 16, 8, 0),
-    end: new Date(2024, 0, 16, 12, 0),
+    start: "2024-01-16T08:00:00",
+    end: "2024-01-16T12:00:00",
     color: "#f59e0b",
     type: "maintenance"
   },
@@ -189,8 +189,8 @@ export const mockCalendarEvents: CalendarEvent[] = [
     id: "4",
     title: "Presentación Proyectos",
     room: "Auditorio Principal",
-    start: new Date(2024, 0, 17, 10, 0),
-    end: new Date(2024, 0, 17, 12, 0),
+    start: "2024-01-17T10:00:00",
+    end: "2024-01-17T12:00:00",
     color: "#8b5cf6",
     type: "event"
   }

@@ -43,9 +43,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { usuariosApi } from '@/core/api/api';
-import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS } from '@/core/config/users';
-import type { User, UserRole, UserFilters } from '@/core/types/types';
+import { usuariosApi } from '@/lib/api/users';
+import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS } from '@/lib/config/constants';
+import type { User, UserRole, UserFilters } from '@/lib/types/users';
 import { 
   Search, 
   ChevronLeft, 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { canAccessRoute, getUserPermissions, type Role } from '@/core/config/roles';
+import { canAccessRoute, getUserPermissions, type Role } from '@/lib/config/constants';
 
 interface RoleGuardProps {
   children: React.ReactNode;

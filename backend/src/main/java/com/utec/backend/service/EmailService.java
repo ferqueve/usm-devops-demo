@@ -1,6 +1,6 @@
 package com.utec.backend.service;
 
-import com.utec.backend.model.entity.Usuario;
+import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

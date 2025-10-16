@@ -1,6 +1,6 @@
 package com.utec.backend.controller;
 
-import com.utec.backend.dto.ActiveUsersStatsDTO;
+import com.utec.backend.dto.stats.ActiveUsersStatsDTO;
 import com.utec.backend.service.UserActivityTrackingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
