@@ -189,7 +189,9 @@ export async function apiRequest<T>(
 // Helper para hacer requests de Actuator con manejo de token refresh
 export async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<any> {
   const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL.replace('/api/v1', '')}${endpoint}`, {
+  const url = `${API_BASE_URL.replace('/api/v1', '')}${endpoint}`;
+
+  const response = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -230,7 +232,28 @@ export async function actuatorRequest(endpoint: string, isRetry: boolean = false
     throw new Error(`Error ${response.status}: ${response.statusText}`);
   }
 
-  return response.json();
+  // Verificar el tipo de contenido antes de parsear
+  const contentType = response.headers.get('content-type');
+
+  let result: any;
+  
+  if (contentType?.includes('application/json')) {
+    // Parsear como JSON
+    result = await response.json();
+  } else if (contentType?.includes('text/plain')) {
+    // Obtener como texto plano
+    result = await response.text();
+  } else {
+    // Intentar JSON por defecto, pero manejar errores
+    try {
+      result = await response.json();
+    } catch (error) {
+      // Si falla, intentar como texto
+      result = await response.text();
+    }
+  }
+  
+  return result;
 }
 
 // ============================================================================

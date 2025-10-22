@@ -75,9 +75,16 @@ src/main/java/com/utec/reservas/
 ### ✅ Gestión de Usuarios
 - Obtener perfil propio
 - Actualizar perfil (nombre y contraseña)
-- Listar todos los usuarios (Admin)
+- Listar todos los usuarios con filtros avanzados (Admin)
 - Obtener usuario por ID
 - Cambiar roles de usuario (Admin)
+- Activar/desactivar usuarios (Admin)
+- Obtener estadísticas de usuarios (Admin)
+- Exportar usuarios a CSV (Admin)
+- Editar información de usuarios por admin
+- Reenviar verificación de email por admin
+- Restablecer contraseña por admin
+- Filtros por fecha de registro
 
 ### 🚧 Próximas Funcionalidades
 
@@ -128,6 +135,12 @@ src/main/java/com/utec/reservas/
 | `GET` | `/usuarios` | Listar usuarios (Admin) | ✅ |
 | `GET` | `/usuarios/{id}` | Ver usuario específico | ✅ |
 | `PUT` | `/usuarios/{id}/rol` | Cambiar rol (Admin) | ✅ |
+| `PUT` | `/usuarios/{id}/toggle-activo` | Activar/desactivar usuario (Admin) | ✅ |
+| `GET` | `/usuarios/stats` | Estadísticas de usuarios (Admin) | ✅ |
+| `GET` | `/usuarios/export` | Exportar usuarios a CSV (Admin) | ✅ |
+| `PUT` | `/usuarios/{id}` | Actualizar usuario por admin (Admin) | ✅ |
+| `POST` | `/usuarios/{id}/resend-verification` | Reenviar verificación por admin (Admin) | ✅ |
+| `POST` | `/usuarios/{id}/reset-password` | Restablecer contraseña por admin (Admin) | ✅ |
 
 ### 🚧 Endpoints en Desarrollo
 

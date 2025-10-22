@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { BarChart3, Settings } from 'lucide-react';
 import { JvmCharts } from '../sections/JvmCharts';
 import { JvmDetailsTable } from '../sections/JvmDetailsTable';
 import { useSidebarTransition } from '@/hooks/useSidebarTransition';
@@ -32,7 +33,8 @@ export const PerformanceTab = memo(function PerformanceTab({
       <section>
         <h3 className="section-title mb-4">
           <span className="flex items-center gap-2">
-            📊 Métricas JVM en Tiempo Real
+            <BarChart3 className="h-5 w-5 text-utec-cyan" />
+            Métricas JVM en Tiempo Real
           </span>
         </h3>
         <JvmCharts metricsHistory={metricsHistory} isPaused={isTransitioning} />
@@ -42,7 +44,8 @@ export const PerformanceTab = memo(function PerformanceTab({
       <section>
         <h3 className="section-title mb-4">
           <span className="flex items-center gap-2">
-            ⚙️ Detalle JVM
+            <Settings className="h-5 w-5 text-utec-yellow" />
+            Detalle JVM
           </span>
         </h3>
         <JvmDetailsTable

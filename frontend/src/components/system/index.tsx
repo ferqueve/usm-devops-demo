@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { Loader2, BarChart3, Settings, Globe, Database } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSystemMetrics } from '@/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
@@ -59,18 +59,34 @@ export default function System() {
       />
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            📊 Overview
+        <TabsList className="flex w-full mb-6 gap-1 lg:grid lg:grid-cols-4">
+          <TabsTrigger 
+            value="overview" 
+            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
+          >
+            <BarChart3 className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-2">
-            ⚙️ Performance
+          <TabsTrigger 
+            value="performance" 
+            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
+          >
+            <Settings className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Performance</span>
           </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center gap-2">
-            🌐 Activity
+          <TabsTrigger 
+            value="activity" 
+            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
+          >
+            <Globe className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Activity</span>
           </TabsTrigger>
-          <TabsTrigger value="database-logs" className="flex items-center gap-2">
-            🗄️ Database & Logs
+          <TabsTrigger 
+            value="database-logs" 
+            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
+          >
+            <Database className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Database & Logs</span>
           </TabsTrigger>
         </TabsList>
 

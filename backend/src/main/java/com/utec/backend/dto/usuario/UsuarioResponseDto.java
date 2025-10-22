@@ -20,4 +20,5 @@ public class UsuarioResponseDto {
     private Boolean activo; // true si deletedAt es null
     private String oauthProv;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

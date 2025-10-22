@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UserStatsCards } from './UserStatsCards';
+import { EditUserDialog } from './EditUserDialog';
+import { exportUsersToCSV } from '@/lib/utils/csv-export';
+import { formatDate, formatRelativeTime } from '@/lib/utils/date-helpers';
 import {
   Table,
   TableBody,
@@ -57,7 +61,11 @@ import {
   RefreshCw, 
   Eye, 
   Filter,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Download,
+  Edit,
+  Mail as MailIcon,
+  KeyRound
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -106,6 +114,16 @@ export default function UserManagement() {
   // Modal de detalles de usuario
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [userDetails, setUserDetails] = useState<User | null>(null);
+  
+  // Modal de edición de usuario
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  
+  // Estado para reenvío de verificación
+  const [resendingVerification, setResendingVerification] = useState(false);
+  
+  // Estado para restablecimiento de contraseña
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -159,6 +177,22 @@ export default function UserManagement() {
     setFilters(prev => ({ 
       ...prev, 
       activo: value === 'all' ? undefined : value === 'true' 
+    }));
+  };
+
+  const handleFechaDesdeFilter = (value: string) => {
+    setPage(0);
+    setFilters(prev => ({ 
+      ...prev, 
+      fechaDesde: value || undefined 
+    }));
+  };
+
+  const handleFechaHastaFilter = (value: string) => {
+    setPage(0);
+    setFilters(prev => ({ 
+      ...prev, 
+      fechaHasta: value || undefined 
     }));
   };
 
@@ -243,6 +277,68 @@ export default function UserManagement() {
     toast.info('Filtros limpiados');
   };
 
+  const handleExportCSV = async () => {
+    try {
+      await exportUsersToCSV(filters);
+      toast.success('Exportación completada', {
+        description: 'El archivo CSV se ha descargado exitosamente'
+      });
+    } catch (error: any) {
+      console.error('Error al exportar CSV:', error);
+      toast.error('Error al exportar', {
+        description: error.message || 'No se pudo exportar el archivo CSV'
+      });
+    }
+  };
+
+  const openEditDialog = (user: User) => {
+    setEditingUser(user);
+    setEditDialog(true);
+  };
+
+  const handleEditSuccess = (updatedUser: User) => {
+    setUsers(prevUsers => 
+      prevUsers.map(u => 
+        u.id === updatedUser.id ? updatedUser : u
+      )
+    );
+    setEditDialog(false);
+  };
+
+  const handleResendVerification = async (userId: number) => {
+    try {
+      setResendingVerification(true);
+      await usuariosApi.reenviarVerificacion(userId);
+      toast.success('Email reenviado', {
+        description: 'Se ha reenviado el email de verificación'
+      });
+    } catch (error: any) {
+      console.error('Error al reenviar verificación:', error);
+      toast.error('Error al reenviar', {
+        description: error.message || 'No se pudo reenviar el email de verificación'
+      });
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
+  const handleResetPassword = async (userId: number, userName: string) => {
+    try {
+      setResettingPassword(true);
+      await usuariosApi.restablecerPassword(userId);
+      toast.success('Contraseña restablecida', {
+        description: `Se ha enviado una nueva contraseña temporal a ${userName}`
+      });
+    } catch (error: any) {
+      console.error('Error al restablecer contraseña:', error);
+      toast.error('Error al restablecer', {
+        description: error.message || 'No se pudo restablecer la contraseña'
+      });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     const startTime = Date.now();
@@ -307,6 +403,24 @@ export default function UserManagement() {
       });
     }
     
+    if (filters.fechaDesde) {
+      items.push({
+        id: 'fechaDesde',
+        label: `Desde: ${filters.fechaDesde}`,
+        value: filters.fechaDesde,
+        onRemove: () => setFilters(prev => ({ ...prev, fechaDesde: undefined }))
+      });
+    }
+    
+    if (filters.fechaHasta) {
+      items.push({
+        id: 'fechaHasta',
+        label: `Hasta: ${filters.fechaHasta}`,
+        value: filters.fechaHasta,
+        onRemove: () => setFilters(prev => ({ ...prev, fechaHasta: undefined }))
+      });
+    }
+    
     return items;
   }, [filters]);
 
@@ -339,6 +453,15 @@ export default function UserManagement() {
             <span className="text-sm text-muted-foreground whitespace-nowrap">usuarios</span>
           </div>
           
+          <Button 
+            variant="outline"
+            onClick={handleExportCSV}
+            className="h-10"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+          
           <div 
             onClick={!isRefreshing ? handleRefresh : undefined}
             className={`flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10 transition-all ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
@@ -348,6 +471,9 @@ export default function UserManagement() {
           </div>
         </div>
       </div>
+
+      {/* Estadísticas de usuarios */}
+      <UserStatsCards />
 
       {/* Barra de búsqueda y filtros compacta */}
       <Card className="shadow-card">
@@ -377,9 +503,15 @@ export default function UserManagement() {
                   type="button"
                   variant="outline" 
                   onClick={() => setShowFilters(!showFilters)}
-                  className={showFilters ? 'bg-gray-100' : ''}
+                  className={`transition-all duration-200 ${
+                    showFilters 
+                      ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' 
+                      : 'hover:bg-gray-50'
+                  }`}
                 >
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className={`h-4 w-4 mr-2 transition-transform duration-200 ${
+                    showFilters ? 'rotate-180' : ''
+                  }`} />
                   Filtros
                   {activeFilters.length > 0 && (
                     <Badge variant="secondary" className="ml-2 px-1.5 min-w-[20px]">
@@ -391,8 +523,12 @@ export default function UserManagement() {
             </div>
 
             {/* Panel de filtros expandible */}
-            {showFilters && (
-              <div className="flex flex-wrap gap-3 pt-3 border-t animate-slide-up">
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className={`flex flex-wrap gap-3 pt-3 border-t transition-transform duration-300 ease-in-out ${
+                showFilters ? 'translate-y-0' : '-translate-y-2'
+              }`}>
                 <div>
                   <Label htmlFor="role-filter" className="text-xs text-muted-foreground mb-1.5 block">
                     Rol
@@ -464,8 +600,34 @@ export default function UserManagement() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <Label htmlFor="fecha-desde" className="text-xs text-muted-foreground mb-1.5 block">
+                    Fecha desde
+                  </Label>
+                  <Input
+                    id="fecha-desde"
+                    type="date"
+                    value={filters.fechaDesde || ''}
+                    onChange={(e) => handleFechaDesdeFilter(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="fecha-hasta" className="text-xs text-muted-foreground mb-1.5 block">
+                    Fecha hasta
+                  </Label>
+                  <Input
+                    id="fecha-hasta"
+                    type="date"
+                    value={filters.fechaHasta || ''}
+                    onChange={(e) => handleFechaHastaFilter(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
               </div>
-            )}
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -550,6 +712,15 @@ export default function UserManagement() {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => openEditDialog(user)}
+                                className="whitespace-nowrap rounded-2xl"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => openChangeRoleDialog(user)}
                                 className="whitespace-nowrap rounded-2xl"
                               >
@@ -613,7 +784,16 @@ export default function UserManagement() {
                             className="flex-1 rounded-2xl"
                           >
                             <Eye className="h-4 w-4 mr-2" />
-                            Detalles
+                            Ver
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(user)}
+                            className="flex-1 rounded-2xl"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
                           </Button>
                           <Button
                             variant="outline"
@@ -789,11 +969,27 @@ export default function UserManagement() {
                 
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Verificado</Label>
-                  <div>
+                  <div className="flex items-center gap-2">
                     <StatusBadge 
                       status={userDetails.verificado ? 'success' : 'neutral'}
                       label={userDetails.verificado ? 'Verificado' : 'Pendiente'}
                     />
+                    {!userDetails.verificado && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResendVerification(userDetails.id)}
+                        disabled={resendingVerification}
+                        className="h-6 px-2 text-xs"
+                      >
+                        {resendingVerification ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <MailIcon className="h-3 w-3 mr-1" />
+                        )}
+                        Reenviar
+                      </Button>
+                    )}
                   </div>
                 </div>
                 
@@ -807,6 +1003,21 @@ export default function UserManagement() {
                 </div>
               </div>
               
+              {/* Fechas */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Fecha de Registro</Label>
+                  <p className="text-sm font-medium">{formatDate(userDetails.createdAt)}</p>
+                  <p className="text-xs text-muted-foreground">{formatRelativeTime(userDetails.createdAt)}</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Última Actualización</Label>
+                  <p className="text-sm font-medium">{formatDate(userDetails.updatedAt)}</p>
+                  <p className="text-xs text-muted-foreground">{formatRelativeTime(userDetails.updatedAt)}</p>
+                </div>
+              </div>
+              
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Proveedor de autenticación</Label>
                 <div className="flex items-center gap-2">
@@ -815,6 +1026,27 @@ export default function UserManagement() {
                     {userDetails.oauthProv?.toLowerCase() === 'google' ? 'Google' : 'Local'}
                   </span>
                 </div>
+              </div>
+              
+              {/* Botón de restablecer contraseña */}
+              <div className="col-span-2 pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleResetPassword(userDetails.id, userDetails.nombre)}
+                  disabled={resettingPassword}
+                  className="w-full"
+                >
+                  {resettingPassword ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <KeyRound className="h-4 w-4 mr-2" />
+                  )}
+                  Restablecer Contraseña
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Se enviará una contraseña temporal por email
+                </p>
               </div>
             </div>
           )}
@@ -825,6 +1057,14 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de edición de usuario */}
+      <EditUserDialog 
+        user={editingUser}
+        open={editDialog}
+        onOpenChange={setEditDialog}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }

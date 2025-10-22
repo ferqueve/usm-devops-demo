@@ -1,5 +1,5 @@
 import { memo, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Database, FileText } from 'lucide-react';
 import { DatabaseSection } from '../sections/DatabaseSection';
 import { LogsSection } from '../sections/LogsSection';
 
@@ -31,7 +31,8 @@ export const DatabaseLogsTab = memo(function DatabaseLogsTab({
       <section>
         <h3 className="section-title mb-4">
           <span className="flex items-center gap-2">
-            🗄️ Base de Datos
+            <Database className="h-5 w-5 text-utec-blue" />
+            Base de Datos
           </span>
         </h3>
         <DatabaseSection health={health} liquibase={liquibase} />
@@ -41,7 +42,8 @@ export const DatabaseLogsTab = memo(function DatabaseLogsTab({
       <section>
         <h3 className="section-title mb-4">
           <span className="flex items-center gap-2">
-            📝 Logs del Sistema
+            <FileText className="h-5 w-5 text-utec-purple" />
+            Logs del Sistema
           </span>
         </h3>
         <Suspense 

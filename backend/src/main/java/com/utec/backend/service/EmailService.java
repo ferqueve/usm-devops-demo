@@ -88,4 +88,30 @@ public class EmailService {
 
         return gmailApiService.sendEmail(to, subject, bodyText);
     }
+
+    /**
+     * Envía email con contraseña temporal restablecida por admin
+     *
+     * @param to Email del destinatario
+     * @param nuevaPassword Nueva contraseña temporal
+     * @return true si se envió correctamente, false en caso contrario
+     */
+    public boolean enviarEmailRestablecimientoPassword(String to, String nuevaPassword) {
+        String subject = "Tu contraseña ha sido restablecida - UTEC Space Manager";
+        
+        String bodyText = """
+            Tu contraseña ha sido restablecida por un administrador.
+            
+            Tu nueva contraseña temporal es:
+            
+            {nuevaPassword}
+            
+            Por favor, cambia esta contraseña después de iniciar sesión.
+            
+            Saludos,
+            Equipo UTEC Space Manager
+            """.replace("{nuevaPassword}", nuevaPassword);
+
+        return gmailApiService.sendEmail(to, subject, bodyText);
+    }
 }

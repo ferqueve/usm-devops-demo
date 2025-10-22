@@ -1,5 +1,5 @@
 import { apiRequest, type ApiResponse } from './client';
-import type { User, UserRole, PagedUsers, UserFilters } from '../types/users';
+import type { User, UserRole, PagedUsers, UserFilters, UserStats, UpdateUserData } from '../types/users';
 
 // API de usuarios
 export const usuariosApi = {
@@ -18,6 +18,8 @@ export const usuariosApi = {
     if (filters?.rol) params.append('rol', filters.rol);
     if (filters?.verificado !== undefined) params.append('verificado', filters.verificado.toString());
     if (filters?.activo !== undefined) params.append('activo', filters.activo.toString());
+    if (filters?.fechaDesde) params.append('fechaDesde', filters.fechaDesde);
+    if (filters?.fechaHasta) params.append('fechaHasta', filters.fechaHasta);
 
     return apiRequest<PagedUsers>(`/usuarios?${params.toString()}`, {
       method: 'GET',
@@ -36,6 +38,67 @@ export const usuariosApi = {
   async toggleActivo(userId: number): Promise<ApiResponse<User>> {
     return apiRequest<User>(`/usuarios/${userId}/toggle-activo`, {
       method: 'PUT',
+    });
+  },
+
+  // Obtener estadísticas de usuarios
+  async obtenerEstadisticas(): Promise<UserStats> {
+    const result = await apiRequest<UserStats>('/usuarios/stats', {
+      method: 'GET',
+    });
+    // El backend devuelve UserStats directamente, no envuelto en ApiResponse
+    return (result.data || result) as UserStats;
+  },
+
+  // Exportar usuarios a CSV
+  async exportarUsuarios(filters?: UserFilters): Promise<Blob> {
+    const params = new URLSearchParams();
+    
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.rol) params.append('rol', filters.rol);
+    if (filters?.verificado !== undefined) params.append('verificado', filters.verificado.toString());
+    if (filters?.activo !== undefined) params.append('activo', filters.activo.toString());
+    if (filters?.fechaDesde) params.append('fechaDesde', filters.fechaDesde);
+    if (filters?.fechaHasta) params.append('fechaHasta', filters.fechaHasta);
+
+    // Usar la misma configuración de API que las otras funciones
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+    const url = `${API_BASE_URL}/usuarios/export?${params.toString()}`;
+    
+    const token = localStorage.getItem('token');
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al exportar usuarios');
+    }
+
+    return response.blob();
+  },
+
+  // Actualizar usuario por admin
+  async actualizarUsuario(id: number, data: UpdateUserData): Promise<ApiResponse<User>> {
+    return apiRequest<User>(`/usuarios/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Reenviar verificación por admin
+  async reenviarVerificacion(userId: number): Promise<ApiResponse<void>> {
+    return apiRequest<void>(`/usuarios/${userId}/resend-verification`, {
+      method: 'POST',
+    });
+  },
+
+  // Restablecer contraseña por admin
+  async restablecerPassword(userId: number): Promise<ApiResponse<void>> {
+    return apiRequest<void>(`/usuarios/${userId}/reset-password`, {
+      method: 'POST',
     });
   },
 };

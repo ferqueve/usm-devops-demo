@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Globe, List } from 'lucide-react';
 import { HttpTraceSection } from '../sections/HttpTraceSection';
 import { EndpointsSection } from '../sections/EndpointsSection';
 
@@ -17,7 +18,8 @@ export const ActivityTab = memo(function ActivityTab({
       <section>
         <h3 className="section-title mb-4">
           <span className="flex items-center gap-2">
-            🌐 HTTP Trace
+            <Globe className="h-5 w-5 text-utec-green" />
+            HTTP Trace
           </span>
         </h3>
         <HttpTraceSection httpTrace={httpTrace} />
@@ -27,7 +29,8 @@ export const ActivityTab = memo(function ActivityTab({
       <section>
         <h3 className="section-title mb-4">
           <span className="flex items-center gap-2">
-            📋 Endpoints REST
+            <List className="h-5 w-5 text-utec-orange" />
+            Endpoints REST
           </span>
         </h3>
         <EndpointsSection mappings={mappings} />

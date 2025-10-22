@@ -14,6 +14,7 @@ export interface User {
   activo: boolean;
   oauthProv?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface PagedUsers {
@@ -31,8 +32,25 @@ export interface UserFilters {
   rol?: UserRole;
   verificado?: boolean;
   activo?: boolean;
+  fechaDesde?: string;
+  fechaHasta?: string;
 }
 
 export interface ChangeRoleRequest {
   rolApp: UserRole;
+}
+
+export interface UserStats {
+  totalUsuarios: number;
+  totalActivos: number;
+  totalInactivos: number;
+  totalVerificados: number;
+  totalNoVerificados: number;
+  usuariosPorRol: Record<UserRole, number>;
+  usuariosPorProveedor: Record<string, number>;
+}
+
+export interface UpdateUserData {
+  email?: string;
+  nombre?: string;
 }

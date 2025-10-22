@@ -8,10 +8,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { sidebarMenuItems, canAccessSidebarItem } from "@/lib/config/constants";
+import { sidebarMenuItems, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatEmailForDisplay, formatNameForSidebar } from "@/lib/utils/text-formatters";
 import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/ui";
 
 // Tipos para las props del sidebar
@@ -92,13 +93,76 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="pt-6 bg-utec-dark px-2">
+      <SidebarContent className="pt-6 bg-utec-dark px-1">
         <SidebarMenu className="bg-utec-dark space-y-1">
           {menuItems}
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="border-t border-white/10 bg-utec-dark px-2 py-4">
+      {/* Perfil del usuario */}
+      {user && (
+        <div className="bg-utec-dark px-1 py-4">
+          <SidebarMenu className="bg-utec-dark">
+            <SidebarMenuItem>
+              <div className="flex flex-col gap-1 px-1 py-2">
+                {/* Fila superior: Ícono y Rol */}
+                <div className="flex items-center gap-1">
+                  {/* Avatar circular más pequeño */}
+                  <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-utec-blue to-utec-purple rounded-full flex items-center justify-center">
+                    <User className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  
+                  {/* Rol como badge */}
+                  <div>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-200">
+                      {ROLE_LABELS[user.rol as keyof typeof ROLE_LABELS] || user.rol}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Información del usuario */}
+                <div className="flex-1 min-w-0 text-left">
+                  {/* Nombre con salto de línea inteligente */}
+                  <div className="text-sm font-semibold text-white break-words mb-0.5 leading-tight" title={user?.nombre || ""}>
+                    {(() => {
+                      const nameFormat = formatNameForSidebar(user?.nombre || "");
+                      if (nameFormat.needsBreak) {
+                        return (
+                          <>
+                            {nameFormat.firstLine}
+                            <br />
+                            {nameFormat.secondLine}
+                          </>
+                        );
+                      }
+                      return nameFormat.firstLine;
+                    })()}
+                  </div>
+                  
+                  {/* Email con salto de línea inteligente */}
+                  <div className="text-xs text-gray-400 leading-tight" title={user?.email || ""}>
+                    {(() => {
+                      const emailFormat = formatEmailForDisplay(user?.email || "", 20);
+                      if (emailFormat.needsBreak) {
+                        return (
+                          <>
+                            {emailFormat.firstLine}
+                            <br />
+                            {emailFormat.secondLine}
+                          </>
+                        );
+                      }
+                      return emailFormat.firstLine;
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </div>
+      )}
+      
+      <SidebarFooter className="border-t border-white/10 bg-utec-dark px-1 py-4">
         <SidebarMenu className="bg-utec-dark">
           <SidebarMenuItem>
             <SidebarMenuButton 
