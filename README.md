@@ -16,7 +16,7 @@ Sistema de gestión de reservas de espacios para la Universidad Tecnológica del
 - ✅ **Login con Google OAuth** (autenticación social)
 - ✅ Gestión de usuarios con roles (Admin, Docente, Analista, Estudiante, Externo)
 - ✅ Arquitectura separada por servicios (backend/frontend independientes)
-- 🚧 Gestión de salones y recursos (próximamente)
+- ✅ Gestión de espacios y recursos (salones, laboratorios, auditorios)
 - 🚧 Sistema de reservas con control de solapamientos (próximamente)
 - 🚧 Calendario interactivo (próximamente)
 - 🚧 Estadísticas y reportes (próximamente)

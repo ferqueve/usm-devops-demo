@@ -21,8 +21,8 @@ public class Reserva {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "salon_id", nullable = false)
-    private Salon salon;
+    @JoinColumn(name = "espacio_id", nullable = false)
+    private Espacio espacio;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)

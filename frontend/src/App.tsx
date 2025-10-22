@@ -9,6 +9,7 @@ import DashboardPage from './app/dashboard/page';
 import CalendarPage from './app/calendar/page';
 import ReservationsPage from './app/reservations/page';
 import RoomsPage from './app/rooms/page';
+import RoomDetailsPage from './app/rooms/[id]/page';
 import StatisticsPage from './app/statistics/page';
 import UsersPage from './app/users/page';
 import SystemPage from './app/system/page';
@@ -85,6 +86,15 @@ function AppRoutes() {
         element={
           <RoleProtectedRoute>
             <RoomsPage />
+          </RoleProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/rooms/:id" 
+        element={
+          <RoleProtectedRoute>
+            <RoomDetailsPage />
           </RoleProtectedRoute>
         } 
       />

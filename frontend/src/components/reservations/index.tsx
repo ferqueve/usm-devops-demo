@@ -33,7 +33,13 @@ export default function Reservations() {
   return (
     <div className="space-y-6">
       {/* Header con acciones */}
-      <div className="flex items-center justify-end">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">Gestión de Reservas</h2>
+          <p className="text-muted-foreground">
+            Administra las reservas de espacios del sistema
+          </p>
+        </div>
         <Button>
           <span className="mr-2">+</span>
           Nueva Reserva
@@ -95,7 +101,7 @@ export default function Reservations() {
       </Card>
 
       {/* Estadísticas rápidas */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Reservas</CardTitle>

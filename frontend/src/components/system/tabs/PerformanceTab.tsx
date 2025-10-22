@@ -28,7 +28,7 @@ export const PerformanceTab = memo(function PerformanceTab({
   const { isTransitioning } = useSidebarTransition();
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* Gráficos JVM - Pausados durante transición del sidebar */}
       <section>
         <h3 className="section-title mb-4">

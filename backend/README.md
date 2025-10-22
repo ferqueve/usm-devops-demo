@@ -4,7 +4,7 @@
 
 El backend del **UTEC Space Manager** es una API REST construida con **Spring Boot** que gestiona el sistema de espacios y reservas para la Universidad Tecnológica del Uruguay (UTEC). 
 
-**Estado Actual:** Sistema de autenticación y gestión de usuarios implementado. Funcionalidades de reservas y salones en desarrollo.
+**Estado Actual:** Sistema de autenticación y gestión de usuarios implementado. Funcionalidades de reservas y espacios en desarrollo.
 
 ## 🏗️ Arquitectura del Sistema
 
@@ -88,11 +88,13 @@ src/main/java/com/utec/reservas/
 
 ### 🚧 Próximas Funcionalidades
 
-### Gestión de Salones (Próximamente)
-- CRUD completo de salones
+### Gestión de Espacios (Implementado)
+- CRUD completo de espacios
 - Control de capacidad y recursos
-- Gestión de inventario por salón
-- Imágenes y planos de salones
+- Gestión de inventario por espacio
+- Imágenes y planos de espacios
+- Búsqueda y filtrado de espacios
+- Estadísticas de ocupación
 
 ### Sistema de Reservas (Próximamente)
 - Creación y gestión de reservas
@@ -142,11 +144,24 @@ src/main/java/com/utec/reservas/
 | `POST` | `/usuarios/{id}/resend-verification` | Reenviar verificación por admin (Admin) | ✅ |
 | `POST` | `/usuarios/{id}/reset-password` | Restablecer contraseña por admin (Admin) | ✅ |
 
+### Espacios
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/espacios` | Crear nuevo espacio (Admin/Analista) | ✅ |
+| `GET` | `/espacios` | Listar todos los espacios (Admin/Analista) | ✅ |
+| `GET` | `/espacios/paged` | Listar espacios paginados (Admin/Analista) | ✅ |
+| `GET` | `/espacios/{id}` | Obtener espacio por ID (Admin/Analista) | ✅ |
+| `PUT` | `/espacios/{id}` | Actualizar espacio (Admin/Analista) | ✅ |
+| `DELETE` | `/espacios/{id}` | Eliminar espacio (Admin) | ✅ |
+| `GET` | `/espacios/search` | Buscar espacios por nombre (Admin/Analista) | ✅ |
+| `GET` | `/espacios/capacidad/{capacidadMinima}` | Filtrar por capacidad mínima (Admin/Analista) | ✅ |
+| `GET` | `/espacios/disponibles` | Obtener espacios disponibles en rango de tiempo (Admin/Analista/Docente) | ✅ |
+| `GET` | `/espacios/stats` | Obtener estadísticas de espacios (Admin/Analista) | ✅ |
+
 ### 🚧 Endpoints en Desarrollo
 
 Los siguientes endpoints están planificados pero aún no implementados:
 
-- Salones (CRUD)
 - Inventario
 - Reservas
 - Eventos Externos
@@ -156,8 +171,8 @@ Los siguientes endpoints están planificados pero aún no implementados:
 
 ### Esquema Principal
 - **usuario**: Gestión de usuarios y roles
-- **salon**: Definición de salones disponibles
-- **inventario_item**: Recursos por salón
+- **espacio**: Definición de espacios disponibles (salones, laboratorios, auditorios, etc.)
+- **inventario_item**: Recursos por espacio
 - **reserva**: Reservas con control de solapamientos
 - **evento_externo**: Detalles de eventos públicos
 - **recomendacion**: Sugerencias inteligentes
@@ -182,7 +197,7 @@ Authorization: Bearer <jwt_token>
 | Función | Admin | Analista | Docente | Estudiante | Externo |
 |---------|-------|----------|---------|------------|---------|
 | **Gestión de Usuarios** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Gestión de Salones** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Gestión de Espacios** | ✅ | ✅ | ❌ | ❌ | ❌ |
 | **Inventario** | ✅ | ✅ | ❌ | ❌ | ❌ |
 | **Reservas** | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **Eventos Externos** | ✅ | ✅ | ✅ | ❌ | ✅ |

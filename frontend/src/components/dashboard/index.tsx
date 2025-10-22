@@ -31,8 +31,18 @@ function StatCard({ stat }: { stat: Statistic }) {
 export default function Dashboard() {
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Resumen general del sistema de gestión de espacios
+          </p>
+        </div>
+      </div>
+
       {/* Estadísticas principales */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-4">
         {dashboardStats.map((stat) => (
           <StatCard key={stat.label} stat={stat} />
         ))}
@@ -72,7 +82,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Salones disponibles</span>
+              <span className="text-sm">Espacios disponibles</span>
               <span className="text-sm font-medium text-green-600">8/11</span>
             </div>
             <div className="flex items-center justify-between">
@@ -96,7 +106,7 @@ export default function Dashboard() {
           <div className="flex gap-4">
             <Button>Nueva Reserva</Button>
             <Button variant="outline">Ver Calendario</Button>
-            <Button variant="outline">Gestionar Salones</Button>
+            <Button variant="outline">Gestionar Espacios</Button>
           </div>
         </CardContent>
       </Card>

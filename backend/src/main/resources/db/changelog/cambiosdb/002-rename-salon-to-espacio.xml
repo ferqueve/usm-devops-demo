@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Renombrar tabla salon a espacio -->
+    <changeSet id="001" author="mathi">
+        <renameTable oldTableName="salon" newTableName="espacio"/>
+    </changeSet>
+
+    <!-- Renombrar columna salon_id a espacio_id en inventario_item -->
+    <changeSet id="002" author="mathi">
+        <renameColumn tableName="inventario_item" 
+                      oldColumnName="salon_id" 
+                      newColumnName="espacio_id"/>
+    </changeSet>
+
+    <!-- Renombrar columna salon_id a espacio_id en reserva -->
+    <changeSet id="003" author="mathi">
+        <renameColumn tableName="reserva" 
+                      oldColumnName="salon_id" 
+                      newColumnName="espacio_id"/>
+    </changeSet>
+
+    <!-- Renombrar columna salon_id a espacio_id en recomendacion -->
+    <changeSet id="004" author="mathi">
+        <renameColumn tableName="recomendacion" 
+                      oldColumnName="salon_id" 
+                      newColumnName="espacio_id"/>
+    </changeSet>
+
+    <!-- Actualizar foreign keys para usar espacio_id -->
+    <changeSet id="005" author="mathi">
+        <dropForeignKeyConstraint baseTableName="inventario_item" constraintName="fk_inventario_salon"/>
+        <addForeignKeyConstraint baseTableName="inventario_item"
+                                 baseColumnNames="espacio_id"
+                                 constraintName="fk_inventario_espacio"
+                                 referencedTableName="espacio"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="006" author="mathi">
+        <dropForeignKeyConstraint baseTableName="reserva" constraintName="fk_reserva_salon"/>
+        <addForeignKeyConstraint baseTableName="reserva"
+                                 baseColumnNames="espacio_id"
+                                 constraintName="fk_reserva_espacio"
+                                 referencedTableName="espacio"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="007" author="mathi">
+        <dropForeignKeyConstraint baseTableName="recomendacion" constraintName="fk_recomendacion_salon"/>
+        <addForeignKeyConstraint baseTableName="recomendacion"
+                                 baseColumnNames="espacio_id"
+                                 constraintName="fk_recomendacion_espacio"
+                                 referencedTableName="espacio"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Actualizar constraint names para usar espacio -->
+    <changeSet id="008" author="mathi">
+        <dropNotNullConstraint tableName="espacio" columnName="nombre"/>
+        <addNotNullConstraint tableName="espacio" columnName="nombre" constraintName="nn_espacio_nombre"/>
+    </changeSet>
+
+    <changeSet id="009" author="mathi">
+        <dropNotNullConstraint tableName="espacio" columnName="capacidad"/>
+        <addNotNullConstraint tableName="espacio" columnName="capacidad" constraintName="nn_espacio_capacidad"/>
+    </changeSet>
+
+    <changeSet id="010" author="mathi">
+        <dropNotNullConstraint tableName="espacio" columnName="created_at"/>
+        <addNotNullConstraint tableName="espacio" columnName="created_at" constraintName="nn_espacio_created_at"/>
+    </changeSet>
+
+    <changeSet id="011" author="mathi">
+        <dropNotNullConstraint tableName="espacio" columnName="updated_at"/>
+        <addNotNullConstraint tableName="espacio" columnName="updated_at" constraintName="nn_espacio_updated_at"/>
+    </changeSet>
+
+    <!-- Actualizar constraint names en inventario_item -->
+    <changeSet id="012" author="mathi">
+        <dropNotNullConstraint tableName="inventario_item" columnName="espacio_id"/>
+        <addNotNullConstraint tableName="inventario_item" columnName="espacio_id" constraintName="nn_inventario_espacio_id"/>
+    </changeSet>
+
+    <!-- Actualizar constraint names en reserva -->
+    <changeSet id="013" author="mathi">
+        <dropNotNullConstraint tableName="reserva" columnName="espacio_id"/>
+        <addNotNullConstraint tableName="reserva" columnName="espacio_id" constraintName="nn_reserva_espacio_id"/>
+    </changeSet>
+
+    <!-- Actualizar constraint names en recomendacion -->
+    <changeSet id="014" author="mathi">
+        <dropNotNullConstraint tableName="recomendacion" columnName="espacio_id"/>
+        <addNotNullConstraint tableName="recomendacion" columnName="espacio_id" constraintName="nn_recomendacion_espacio_id"/>
+    </changeSet>
+
+    <!-- Actualizar unique constraint en recomendacion -->
+    <changeSet id="015" author="mathi">
+        <dropUniqueConstraint tableName="recomendacion" constraintName="uk_recomendacion_usuario_salon"/>
+        <addUniqueConstraint tableName="recomendacion" 
+                            columnNames="usuario_id,espacio_id" 
+                            constraintName="uk_recomendacion_usuario_espacio"/>
+    </changeSet>
+
+</databaseChangeLog>

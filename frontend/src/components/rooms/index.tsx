@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { mockRooms } from "@/data/mock-data";
 import type { Room } from "@/lib/types";
 
-// Componente para mostrar el tipo de salón
+// Componente para mostrar el tipo de espacio
 function RoomTypeBadge({ type }: { type: Room['type'] }) {
   const getTypeConfig = (type: Room['type']) => {
     switch (type) {
@@ -42,7 +42,7 @@ function AvailabilityStatus({ isAvailable }: { isAvailable: boolean }) {
   );
 }
 
-// Vista de Gestión de Salones
+// Vista de Gestión de Espacios
 export default function Rooms() {
   return (
     <div className="space-y-6">
@@ -50,7 +50,7 @@ export default function Rooms() {
       <div className="flex items-center justify-end">
         <Button>
           <span className="mr-2">+</span>
-          Agregar Salón
+          Agregar Espacio
         </Button>
       </div>
 
@@ -72,7 +72,7 @@ export default function Rooms() {
         </CardContent>
       </Card>
 
-      {/* Grid de salones */}
+      {/* Grid de espacios */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {mockRooms.map((room) => (
           <Card key={room.id} className="hover:shadow-lg transition-shadow">
@@ -126,16 +126,16 @@ export default function Rooms() {
         ))}
       </div>
 
-      {/* Estadísticas de salones */}
+      {/* Estadísticas de espacios */}
       <Card>
         <CardHeader>
-          <CardTitle>Resumen de Salones</CardTitle>
+          <CardTitle>Resumen de Espacios</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">12</div>
-              <p className="text-sm text-muted-foreground">Total Salones</p>
+              <p className="text-sm text-muted-foreground">Total Espacios</p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">8</div>

@@ -73,7 +73,7 @@ export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUse
   }
 
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-card h-full flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-utec-green" />
@@ -83,7 +83,7 @@ export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUse
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         {data.totalActiveUsers === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <User className="h-12 w-12 mx-auto mb-2 opacity-50" />

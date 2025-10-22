@@ -29,7 +29,7 @@ export const OverviewTab = memo(function OverviewTab({
   const { isTransitioning } = useSidebarTransition();
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* Métricas principales */}
       <section>
         <MetricsCards
@@ -43,7 +43,7 @@ export const OverviewTab = memo(function OverviewTab({
 
       {/* Información de la app y usuarios activos */}
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           <AppInfoCard info={info} />
           <ActiveUsersCard data={activeUsers} />
         </div>

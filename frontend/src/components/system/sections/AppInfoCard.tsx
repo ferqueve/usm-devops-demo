@@ -9,14 +9,14 @@ interface AppInfoCardProps {
 
 export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps) {
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-card h-full flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Server className="h-5 w-5 text-utec-blue" />
           Información de la Aplicación
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         {info && info.app ? (
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center py-2 border-b">

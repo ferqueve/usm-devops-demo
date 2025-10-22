@@ -26,7 +26,7 @@ export const DatabaseLogsTab = memo(function DatabaseLogsTab({
   onLoggerUpdate
 }: DatabaseLogsTabProps) {
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* Base de Datos */}
       <section>
         <h3 className="section-title mb-4">

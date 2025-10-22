@@ -36,9 +36,9 @@ export function UserStatsCards() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border p-3 animate-pulse">
+          <div key={i} className="bg-white rounded-lg border p-5 animate-pulse">
             <div className="flex items-center justify-between mb-2">
               <div className="h-3 bg-gray-200 rounded w-16"></div>
               <div className="h-4 w-4 bg-gray-200 rounded"></div>
@@ -53,8 +53,8 @@ export function UserStatsCards() {
 
   if (!stats) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="col-span-2 lg:col-span-4 bg-white rounded-lg border p-4 text-center text-muted-foreground">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="col-span-1 sm:col-span-2 lg:col-span-4 bg-white rounded-lg border p-5 text-center text-muted-foreground">
           Error al cargar estadísticas
         </div>
       </div>
@@ -67,9 +67,9 @@ export function UserStatsCards() {
 
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
       {/* Total Usuarios */}
-      <div className="bg-white border rounded-lg p-4">
+      <div className="bg-white border rounded-lg p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">Total Usuarios</span>
           <Users className="h-5 w-5 text-gray-400" />
@@ -81,7 +81,7 @@ export function UserStatsCards() {
       </div>
 
       {/* Usuarios Verificados */}
-      <div className="bg-white border rounded-lg p-4">
+      <div className="bg-white border rounded-lg p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">Verificados</span>
           <UserCheck className="h-5 w-5 text-gray-400" />
@@ -93,7 +93,7 @@ export function UserStatsCards() {
       </div>
 
       {/* Usuarios no verificados */}
-      <div className="bg-white border rounded-lg p-4">
+      <div className="bg-white border rounded-lg p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">Sin Verificar</span>
           <MailX className="h-5 w-5 text-gray-400" />
@@ -105,7 +105,7 @@ export function UserStatsCards() {
       </div>
 
       {/* Distribución por Proveedor */}
-      <div className="bg-white border rounded-lg p-4">
+      <div className="bg-white border rounded-lg p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">Proveedores</span>
           <Shield className="h-5 w-5 text-gray-400" />
@@ -123,8 +123,8 @@ export function UserStatsCards() {
       </div>
 
       {/* Distribución por Rol */}
-      <div className="col-span-2 lg:col-span-4">
-        <div className="bg-white border rounded-lg p-4">
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+        <div className="bg-white border rounded-lg p-5">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="h-5 w-5 text-gray-400" />
             <span className="text-sm font-medium text-gray-600">Distribución por Rol</span>

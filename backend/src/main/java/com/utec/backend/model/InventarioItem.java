@@ -4,6 +4,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "inventario_item")
@@ -17,15 +23,48 @@ public class InventarioItem {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "salon_id", nullable = false)
-    private Salon salon;
+    @JoinColumn(name = "espacio_id", nullable = false)
+    private Espacio espacio;
     
-    @Column(name = "tipo", nullable = false, length = 50)
-    private String tipo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_elemento_id", nullable = false)
+    private TipoElemento tipoElemento;
     
     @Column(name = "cantidad", nullable = false)
-    private Integer cantidad;
+    private Integer cantidad = 1;
+    
+    @Column(name = "marca", length = 100)
+    private String marca;
+    
+    @Column(name = "modelo", length = 100)
+    private String modelo;
+    
+    @Column(name = "numero_serie", length = 100)
+    private String numeroSerie;
+    
+    @Column(name = "estado", nullable = false, length = 20)
+    private String estado = "DISPONIBLE"; // DISPONIBLE, MANTENIMIENTO, DANADO
+    
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
+    
+    @Column(name = "fecha_adquisicion")
+    private LocalDate fechaAdquisicion;
+    
+    @Column(name = "valor_estimado", precision = 10, scale = 2)
+    private BigDecimal valorEstimado;
     
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
+    
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
 }

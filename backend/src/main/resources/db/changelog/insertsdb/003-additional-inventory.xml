@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Inventario adicional para espacios que necesitan más elementos -->
+    <changeSet id="003-additional-inventory-001" author="system">
+        <comment>Agregar inventario adicional para espacios existentes</comment>
+
+        <!-- Inventario adicional para Aula 102 -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="2"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="25"/>
+            <column name="marca" value="OfficeMax"/>
+            <column name="modelo" value="OM-200"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-01-20"/>
+            <column name="valor_estimado" value="37500"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="2"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="12"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="LINNMON"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-01-20"/>
+            <column name="valor_estimado" value="60000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="2"/>
+            <column name="tipo_elemento_id" value="4"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Whiteboard Co"/>
+            <column name="modelo" value="WB-120x80"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-01-20"/>
+            <column name="valor_estimado" value="40000"/>
+        </insert>
+
+        <!-- Inventario adicional para Aula 201 -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="3"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="35"/>
+            <column name="marca" value="Steelcase"/>
+            <column name="modelo" value="Think"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-01"/>
+            <column name="valor_estimado" value="52500"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="3"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="18"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="LINNMON"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-01"/>
+            <column name="valor_estimado" value="90000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="3"/>
+            <column name="tipo_elemento_id" value="5"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Epson"/>
+            <column name="modelo" value="PowerLite 1781W"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-01"/>
+            <column name="valor_estimado" value="120000"/>
+        </insert>
+
+        <!-- Inventario adicional para Aula 202 -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="4"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="28"/>
+            <column name="marca" value="OfficeMax"/>
+            <column name="modelo" value="OM-200"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-05"/>
+            <column name="valor_estimado" value="42000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="4"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="14"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="LINNMON"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-05"/>
+            <column name="valor_estimado" value="70000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="4"/>
+            <column name="tipo_elemento_id" value="7"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Samsung"/>
+            <column name="modelo" value="55QN90A"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-05"/>
+            <column name="valor_estimado" value="400000"/>
+        </insert>
+
+        <!-- Inventario adicional para Aula 301 -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="5"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="40"/>
+            <column name="marca" value="Steelcase"/>
+            <column name="modelo" value="Think"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-15"/>
+            <column name="valor_estimado" value="60000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="5"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="20"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="LINNMON"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-15"/>
+            <column name="valor_estimado" value="100000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="5"/>
+            <column name="tipo_elemento_id" value="4"/>
+            <column name="cantidad" value="2"/>
+            <column name="marca" value="Whiteboard Co"/>
+            <column name="modelo" value="WB-120x80"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-15"/>
+            <column name="valor_estimado" value="80000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="5"/>
+            <column name="tipo_elemento_id" value="5"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Epson"/>
+            <column name="modelo" value="PowerLite 1781W"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-15"/>
+            <column name="valor_estimado" value="120000"/>
+        </insert>
+
+        <!-- Inventario adicional para Laboratorio de Computación B -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="7"/>
+            <column name="tipo_elemento_id" value="8"/>
+            <column name="cantidad" value="20"/>
+            <column name="marca" value="HP"/>
+            <column name="modelo" value="EliteDesk 800 G8"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-20"/>
+            <column name="valor_estimado" value="2000000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="7"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="20"/>
+            <column name="marca" value="Herman Miller"/>
+            <column name="modelo" value="Aeron"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-20"/>
+            <column name="valor_estimado" value="600000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="7"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="10"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="BEKANT"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-02-20"/>
+            <column name="valor_estimado" value="500000"/>
+        </insert>
+
+        <!-- Inventario adicional para Laboratorio de Química -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="8"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="15"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-300"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-10"/>
+            <column name="valor_estimado" value="22500"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="8"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="8"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-Desk"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-10"/>
+            <column name="valor_estimado" value="120000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="8"/>
+            <column name="tipo_elemento_id" value="4"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-Board"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-10"/>
+            <column name="valor_estimado" value="50000"/>
+        </insert>
+
+        <!-- Inventario adicional para Laboratorio de Física -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="9"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="18"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-300"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-15"/>
+            <column name="valor_estimado" value="27000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="9"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="9"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-Desk"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-15"/>
+            <column name="valor_estimado" value="135000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="9"/>
+            <column name="tipo_elemento_id" value="5"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Epson"/>
+            <column name="modelo" value="PowerLite 1781W"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-15"/>
+            <column name="valor_estimado" value="120000"/>
+        </insert>
+
+        <!-- Inventario adicional para Laboratorio de Electrónica -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="10"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="12"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-300"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-20"/>
+            <column name="valor_estimado" value="18000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="10"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="6"/>
+            <column name="marca" value="LabMax"/>
+            <column name="modelo" value="LM-Desk"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-20"/>
+            <column name="valor_estimado" value="90000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="10"/>
+            <column name="tipo_elemento_id" value="8"/>
+            <column name="cantidad" value="6"/>
+            <column name="marca" value="Dell"/>
+            <column name="modelo" value="OptiPlex 7090"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-20"/>
+            <column name="valor_estimado" value="600000"/>
+        </insert>
+
+        <!-- Inventario adicional para Auditorio Pequeño -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="12"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="80"/>
+            <column name="marca" value="Steelcase"/>
+            <column name="modelo" value="Think"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-25"/>
+            <column name="valor_estimado" value="2400000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="12"/>
+            <column name="tipo_elemento_id" value="9"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Bose"/>
+            <column name="modelo" value="RoomMatch"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-25"/>
+            <column name="valor_estimado" value="600000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="12"/>
+            <column name="tipo_elemento_id" value="6"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Da-Lite"/>
+            <column name="modelo" value="Model B"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-03-25"/>
+            <column name="valor_estimado" value="150000"/>
+        </insert>
+
+        <!-- Inventario adicional para Sala de Reuniones B -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="14"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="12"/>
+            <column name="marca" value="Herman Miller"/>
+            <column name="modelo" value="Sayl"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-10"/>
+            <column name="valor_estimado" value="360000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="14"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="BEKANT"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-10"/>
+            <column name="valor_estimado" value="50000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="14"/>
+            <column name="tipo_elemento_id" value="7"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Samsung"/>
+            <column name="modelo" value="55QN90A"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-10"/>
+            <column name="valor_estimado" value="400000"/>
+        </insert>
+
+        <!-- Inventario adicional para Sala de Conferencias -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="15"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="25"/>
+            <column name="marca" value="Herman Miller"/>
+            <column name="modelo" value="Sayl"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-15"/>
+            <column name="valor_estimado" value="750000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="15"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="2"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="BEKANT"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-15"/>
+            <column name="valor_estimado" value="100000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="15"/>
+            <column name="tipo_elemento_id" value="7"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Samsung"/>
+            <column name="modelo" value="75QN90A"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-15"/>
+            <column name="valor_estimado" value="600000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="15"/>
+            <column name="tipo_elemento_id" value="9"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Bose"/>
+            <column name="modelo" value="RoomMatch"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-04-15"/>
+            <column name="valor_estimado" value="500000"/>
+        </insert>
+
+        <!-- Inventario adicional para Oficina Administrativa -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="16"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="6"/>
+            <column name="marca" value="Herman Miller"/>
+            <column name="modelo" value="Sayl"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-01"/>
+            <column name="valor_estimado" value="180000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="16"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="3"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="BEKANT"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-01"/>
+            <column name="valor_estimado" value="150000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="16"/>
+            <column name="tipo_elemento_id" value="8"/>
+            <column name="cantidad" value="3"/>
+            <column name="marca" value="Dell"/>
+            <column name="modelo" value="OptiPlex 7090"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-01"/>
+            <column name="valor_estimado" value="300000"/>
+        </insert>
+
+        <!-- Inventario adicional para Oficina de Coordinación -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="17"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="4"/>
+            <column name="marca" value="Herman Miller"/>
+            <column name="modelo" value="Sayl"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-05"/>
+            <column name="valor_estimado" value="120000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="17"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="2"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="BEKANT"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-05"/>
+            <column name="valor_estimado" value="100000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="17"/>
+            <column name="tipo_elemento_id" value="8"/>
+            <column name="cantidad" value="2"/>
+            <column name="marca" value="Dell"/>
+            <column name="modelo" value="OptiPlex 7090"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-05"/>
+            <column name="valor_estimado" value="200000"/>
+        </insert>
+
+        <!-- Inventario adicional para Sala de Estudio A -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="18"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="20"/>
+            <column name="marca" value="OfficeMax"/>
+            <column name="modelo" value="OM-200"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-10"/>
+            <column name="valor_estimado" value="30000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="18"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="10"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="LINNMON"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-10"/>
+            <column name="valor_estimado" value="50000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="18"/>
+            <column name="tipo_elemento_id" value="10"/>
+            <column name="cantidad" value="2"/>
+            <column name="marca" value="Carrier"/>
+            <column name="modelo" value="42QHC018"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-10"/>
+            <column name="valor_estimado" value="600000"/>
+        </insert>
+
+        <!-- Inventario adicional para Sala de Estudio B -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="19"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="15"/>
+            <column name="marca" value="OfficeMax"/>
+            <column name="modelo" value="OM-200"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-12"/>
+            <column name="valor_estimado" value="22500"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="19"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="8"/>
+            <column name="marca" value="IKEA"/>
+            <column name="modelo" value="LINNMON"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-12"/>
+            <column name="valor_estimado" value="40000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="19"/>
+            <column name="tipo_elemento_id" value="10"/>
+            <column name="cantidad" value="1"/>
+            <column name="marca" value="Carrier"/>
+            <column name="modelo" value="42QHC018"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-12"/>
+            <column name="valor_estimado" value="300000"/>
+        </insert>
+
+        <!-- Inventario adicional para Taller de Mecánica -->
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="20"/>
+            <column name="tipo_elemento_id" value="1"/>
+            <column name="cantidad" value="16"/>
+            <column name="marca" value="WorkshopMax"/>
+            <column name="modelo" value="WM-400"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-15"/>
+            <column name="valor_estimado" value="24000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="20"/>
+            <column name="tipo_elemento_id" value="2"/>
+            <column name="cantidad" value="8"/>
+            <column name="marca" value="WorkshopMax"/>
+            <column name="modelo" value="WM-Desk"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-15"/>
+            <column name="valor_estimado" value="160000"/>
+        </insert>
+        <insert tableName="inventario_item">
+            <column name="espacio_id" value="20"/>
+            <column name="tipo_elemento_id" value="10"/>
+            <column name="cantidad" value="2"/>
+            <column name="marca" value="Carrier"/>
+            <column name="modelo" value="42QHC018"/>
+            <column name="estado" value="DISPONIBLE"/>
+            <column name="fecha_adquisicion" value="2023-05-15"/>
+            <column name="valor_estimado" value="600000"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

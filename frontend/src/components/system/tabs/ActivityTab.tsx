@@ -13,7 +13,7 @@ export const ActivityTab = memo(function ActivityTab({
   mappings
 }: ActivityTabProps) {
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* HTTP Trace */}
       <section>
         <h3 className="section-title mb-4">

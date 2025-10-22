@@ -36,7 +36,7 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
   },
   {
     id: "rooms",
-    label: "Salones",
+    label: "Espacios",
     icon: Building2,
     href: "/rooms"
   },
@@ -82,6 +82,7 @@ export const ROLE_PERMISSIONS = {
     routes: [
       '/dashboard',
       '/rooms',
+      '/rooms/:id',
       '/reservations', 
       '/calendar',
       '/users',
@@ -107,6 +108,7 @@ export const ROLE_PERMISSIONS = {
     routes: [
       '/dashboard',
       '/rooms',
+      '/rooms/:id',
       '/reservations',
       '/calendar',
       '/inventory',
@@ -126,13 +128,11 @@ export const ROLE_PERMISSIONS = {
     description: 'Acceso a reservas y eventos externos',
     routes: [
       '/dashboard',
-      '/rooms',
       '/reservations',
       '/calendar'
     ],
     sidebarItems: [
       'dashboard',
-      'rooms',
       'reservations',
       'calendar'
     ]
@@ -142,12 +142,10 @@ export const ROLE_PERMISSIONS = {
     description: 'Acceso limitado a visualización',
     routes: [
       '/dashboard',
-      '/rooms',
       '/calendar'
     ],
     sidebarItems: [
       'dashboard',
-      'rooms',
       'calendar'
     ]
   },
@@ -182,7 +180,24 @@ export const canAccessRoute = (userRole: string | null, route: string): boolean 
   const permissions = ROLE_PERMISSIONS[userRole as Role];
   if (!permissions) return false;
   
-  return permissions.routes.includes(route as any);
+  // Verificar rutas exactas
+  if (permissions.routes.includes(route as any)) {
+    return true;
+  }
+  
+  // Verificar rutas con parámetros dinámicos
+  for (const allowedRoute of permissions.routes) {
+    if (allowedRoute.includes(':')) {
+      // Convertir ruta con parámetros a regex
+      const routePattern = allowedRoute.replace(/:[^/]+/g, '[^/]+');
+      const regex = new RegExp(`^${routePattern}$`);
+      if (regex.test(route)) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
 };
 
 export const canAccessSidebarItem = (userRole: string | null, item: string): boolean => {

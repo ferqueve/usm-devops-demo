@@ -49,7 +49,7 @@ export default function System() {
   }
 
   return (
-    <div data-page="system" className="space-y-4 sm:space-y-6 lg:space-y-8 max-w-full overflow-x-hidden" style={{ boxSizing: 'border-box' }}>
+    <div data-page="system" className="space-y-6 max-w-full overflow-x-hidden" style={{ boxSizing: 'border-box' }}>
       <SystemHeader
         hasConnectionError={hasConnectionError}
         autoRefresh={autoRefresh}

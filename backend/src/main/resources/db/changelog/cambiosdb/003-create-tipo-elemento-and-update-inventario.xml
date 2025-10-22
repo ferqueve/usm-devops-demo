@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Crear tabla tipo_espacio -->
+    <changeSet id="001" author="mathi">
+        <createTable tableName="tipo_espacio">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nombre" type="VARCHAR(100)">
+                <constraints notNullConstraintName="nn_tipo_espacio_nombre" uniqueConstraintName="uk_tipo_espacio_nombre"/>
+            </column>
+            <column name="descripcion" type="TEXT"/>
+            <column name="activo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints notNullConstraintName="nn_tipo_espacio_activo"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_tipo_espacio_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_tipo_espacio_updated_at"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Agregar columna tipo_espacio_id a espacio -->
+    <changeSet id="002" author="mathi">
+        <addColumn tableName="espacio">
+            <column name="tipo_espacio_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar foreign key constraint para tipo_espacio_id -->
+    <changeSet id="003" author="mathi">
+        <addForeignKeyConstraint baseTableName="espacio"
+                                 baseColumnNames="tipo_espacio_id"
+                                 constraintName="fk_espacio_tipo_espacio"
+                                 referencedTableName="tipo_espacio"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Agregar columna deleted_at a espacio -->
+    <changeSet id="004" author="mathi">
+        <addColumn tableName="espacio">
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Crear tabla tipo_elemento -->
+    <changeSet id="005" author="mathi">
+        <createTable tableName="tipo_elemento">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nombre" type="VARCHAR(100)">
+                <constraints notNullConstraintName="nn_tipo_elemento_nombre" uniqueConstraintName="uk_tipo_elemento_nombre"/>
+            </column>
+            <column name="descripcion" type="TEXT"/>
+            <column name="activo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints notNullConstraintName="nn_tipo_elemento_activo"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_tipo_elemento_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_tipo_elemento_updated_at"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Agregar columna tipo_elemento_id a inventario_item -->
+    <changeSet id="006" author="mathi">
+        <addColumn tableName="inventario_item">
+            <column name="tipo_elemento_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar foreign key constraint para tipo_elemento_id -->
+    <changeSet id="007" author="mathi">
+        <addForeignKeyConstraint baseTableName="inventario_item"
+                                 baseColumnNames="tipo_elemento_id"
+                                 constraintName="fk_inventario_tipo_elemento"
+                                 referencedTableName="tipo_elemento"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Agregar nuevas columnas a inventario_item -->
+    <changeSet id="008" author="mathi">
+        <addColumn tableName="inventario_item">
+            <column name="marca" type="VARCHAR(100)"/>
+            <column name="modelo" type="VARCHAR(100)"/>
+            <column name="numero_serie" type="VARCHAR(100)"/>
+            <column name="estado" type="VARCHAR(20)" defaultValue="DISPONIBLE">
+                <constraints notNullConstraintName="nn_inventario_estado"/>
+            </column>
+            <column name="observaciones" type="TEXT"/>
+            <column name="fecha_adquisicion" type="DATE"/>
+            <column name="valor_estimado" type="DECIMAL(10,2)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_inventario_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_inventario_updated_at"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Eliminar columna tipo antigua de inventario_item -->
+    <changeSet id="009" author="mathi">
+        <dropColumn tableName="inventario_item" columnName="tipo"/>
+    </changeSet>
+
+    <!-- Insertar tipos básicos de espacios -->
+    <changeSet id="010" author="mathi">
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Aula"/>
+            <column name="descripcion" value="Aula de clases tradicional"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Laboratorio"/>
+            <column name="descripcion" value="Laboratorio de computación o especializado"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Auditorio"/>
+            <column name="descripcion" value="Auditorio para eventos y presentaciones"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Sala de Reuniones"/>
+            <column name="descripcion" value="Sala para reuniones y trabajo en equipo"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Oficina"/>
+            <column name="descripcion" value="Oficina individual o compartida"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Biblioteca"/>
+            <column name="descripcion" value="Espacio de biblioteca y estudio"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Taller"/>
+            <column name="descripcion" value="Taller para actividades prácticas"/>
+        </insert>
+        <insert tableName="tipo_espacio">
+            <column name="nombre" value="Gimnasio"/>
+            <column name="descripcion" value="Gimnasio o espacio deportivo"/>
+        </insert>
+    </changeSet>
+
+    <!-- Insertar tipos básicos de elementos -->
+    <changeSet id="011" author="mathi">
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Silla"/>
+            <column name="descripcion" value="Silla individual para estudiantes"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Mesa"/>
+            <column name="descripcion" value="Mesa individual o grupal"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Escritorio"/>
+            <column name="descripcion" value="Escritorio para profesor"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Pizarra"/>
+            <column name="descripcion" value="Pizarra blanca o verde"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Proyector"/>
+            <column name="descripcion" value="Proyector multimedia"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Pantalla"/>
+            <column name="descripcion" value="Pantalla de proyección"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Televisor"/>
+            <column name="descripcion" value="Televisor LED/LCD"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Computadora"/>
+            <column name="descripcion" value="PC de escritorio"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Sistema de Audio"/>
+            <column name="descripcion" value="Sistema de sonido"/>
+        </insert>
+        <insert tableName="tipo_elemento">
+            <column name="nombre" value="Aire Acondicionado"/>
+            <column name="descripcion" value="Sistema de climatización"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

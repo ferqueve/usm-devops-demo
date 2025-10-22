@@ -43,8 +43,14 @@ export default function Calendar() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
-        <div className="flex gap-2">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">Calendario de Reservas</h2>
+          <p className="text-muted-foreground">
+            Visualiza y gestiona las reservas en el calendario
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline">Hoy</Button>
           <Button variant="outline">Mes</Button>
           <Button variant="outline">Semana</Button>
@@ -82,7 +88,7 @@ export default function Calendar() {
               return (
                 <div
                   key={index}
-                  className={`min-h-[100px] p-2 border rounded-lg ${
+                  className={`min-h-[80px] sm:min-h-[100px] lg:min-h-[120px] p-1.5 sm:p-2 border rounded-lg ${
                     day ? 'bg-white' : 'bg-gray-50'
                   } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
                 >

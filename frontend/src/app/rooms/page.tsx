@@ -1,11 +1,11 @@
 import { DashboardLayout } from '@/components/layouts/DashboardLayout/DashboardLayout';
-import Rooms from '@/components/rooms/index';
+import SpacesManagement from '@/components/spaces';
 
-// Página de salones
+// Página de gestión de espacios
 export default function RoomsPage() {
   return (
     <DashboardLayout>
-      <Rooms />
+      <SpacesManagement />
     </DashboardLayout>
   );
 }

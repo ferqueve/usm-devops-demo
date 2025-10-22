@@ -22,7 +22,7 @@ export const dashboardStats: Statistic[] = [
     icon: BookOpen
   },
   {
-    label: "Salones Disponibles",
+    label: "Espacios Disponibles",
     value: 8,
     change: "3 en mantenimiento",
     trend: "neutral",
@@ -92,7 +92,7 @@ export const mockReservations: Reservation[] = [
   }
 ];
 
-// Datos mock para salones
+// Datos mock para espacios
 export const mockRooms: Room[] = [
   {
     id: "1",
@@ -213,7 +213,7 @@ export const mockStatistics: Statistic[] = [
     icon: BarChart3
   },
   {
-    label: "Salones en Mantenimiento",
+    label: "Espacios en Mantenimiento",
     value: 2,
     change: "-1 vs mes anterior",
     trend: "down",

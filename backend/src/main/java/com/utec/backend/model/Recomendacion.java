@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "recomendacion", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"usuario_id", "salon_id"})
+    @UniqueConstraint(columnNames = {"usuario_id", "espacio_id"})
 })
 @Data
 @NoArgsConstructor
@@ -27,8 +27,8 @@ public class Recomendacion {
     private Usuario usuario;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "salon_id", nullable = false)
-    private Salon salon;
+    @JoinColumn(name = "espacio_id", nullable = false)
+    private Espacio espacio;
     
     @Column(name = "puntaje", nullable = false, precision = 5, scale = 2)
     private BigDecimal puntaje = BigDecimal.ZERO;

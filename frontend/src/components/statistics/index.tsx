@@ -32,7 +32,13 @@ export default function Statistics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">Estadísticas y Reportes</h2>
+          <p className="text-muted-foreground">
+            Análisis detallado del uso de espacios y reservas
+          </p>
+        </div>
         <Button>
           <span className="mr-2">📊</span>
           Generar Reporte
@@ -40,7 +46,7 @@ export default function Statistics() {
       </div>
 
       {/* Estadísticas principales */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-4">
         {mockStatistics.map((stat) => (
           <StatCard key={stat.label} stat={stat} />
         ))}
@@ -48,10 +54,10 @@ export default function Statistics() {
 
       {/* Gráficos y análisis */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Ocupación por tipo de salón */}
+        {/* Ocupación por tipo de espacio */}
         <Card>
           <CardHeader>
-            <CardTitle>Ocupación por Tipo de Salón</CardTitle>
+            <CardTitle>Ocupación por Tipo de Espacio</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -106,10 +112,10 @@ export default function Statistics() {
           </CardContent>
         </Card>
 
-        {/* Salones más utilizados */}
+        {/* Espacios más utilizados */}
         <Card>
           <CardHeader>
-            <CardTitle>Salones Más Utilizados</CardTitle>
+            <CardTitle>Espacios Más Utilizados</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -186,7 +192,7 @@ export default function Statistics() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Tipo de Salón</label>
+              <label className="text-sm font-medium">Tipo de Espacio</label>
               <div className="flex gap-2 mt-2">
                 <Button variant="outline" size="sm">Todos</Button>
                 <Button variant="outline" size="sm">Aulas</Button>
