@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/espacios")
@@ -131,12 +133,13 @@ public class EspacioController {
             @RequestParam(required = false) Long tipoEspacioId,
             @RequestParam(required = false) Integer capacidadMin,
             @RequestParam(required = false) Integer capacidadMax,
+            @RequestParam(required = false) String estado,
             @RequestParam(required = false) List<Long> tipoElementoIds,
             @RequestParam(required = false) List<Integer> cantidadMins,
             @RequestParam(required = false) List<Integer> cantidadMaxs) {
         try {
             List<EspacioResponseDto> espacios = espacioService.filterEspacios(
-                search, tipoEspacioId, capacidadMin, capacidadMax, 
+                search, tipoEspacioId, capacidadMin, capacidadMax, estado,
                 tipoElementoIds, cantidadMins, cantidadMaxs);
             return ResponseEntity.ok(ApiResponse.success(espacios, "Filtros aplicados exitosamente"));
         } catch (Exception e) {
@@ -182,7 +185,7 @@ public class EspacioController {
             Integer capacidadMinima = espacioService.getCapacidadMinima();
             
             // Crear un Map para las estadísticas
-            java.util.Map<String, Object> stats = new java.util.HashMap<>();
+            Map<String, Object> stats = new HashMap<>();
             stats.put("totalEspacios", totalEspacios);
             stats.put("capacidadPromedio", capacidadPromedio);
             stats.put("capacidadMaxima", capacidadMaxima);

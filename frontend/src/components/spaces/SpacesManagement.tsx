@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,14 @@ import {
 } from "@/components/ui/select";
 import { SpaceCard } from './SpaceCard';
 import { SpaceCardSkeleton } from './SpaceCardSkeleton';
+import { SpaceTable } from './SpaceTable';
 import { SpaceFormDialog } from './SpaceFormDialog';
 import { DeleteSpaceDialog } from './DeleteSpaceDialog';
+import { TipoEspacioManagement } from './TipoEspacioManagement';
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
 import { espaciosApi } from '@/lib/api/spaces';
 import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, TipoElemento } from '@/lib/types/spaces';
 import { 
@@ -30,11 +33,18 @@ import {
   RefreshCw, 
   Building2, 
   Download,
-  X
+  Package,
+  X,
+  LayoutGrid,
+  LayoutList
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { exportEspaciosToCSV } from '@/lib/utils/csv-export';
 
 export default function SpacesManagement() {
+  const navigate = useNavigate();
+  
   // Estados principales
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,11 +62,19 @@ export default function SpacesManagement() {
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   
+  // Estados de visualización
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+  const [sortConfig, setSortConfig] = useState<{ column: string | null; direction: 'asc' | 'desc' }>({ 
+    column: null, 
+    direction: 'asc' 
+  });
+  
   // Modales
   const [createDialog, setCreateDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<Espacio | null>(null);
+  const [showTiposManagement, setShowTiposManagement] = useState(false);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -132,11 +150,15 @@ export default function SpacesManagement() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(0);
-    setFilters(prev => ({ ...prev, search: searchInput || undefined }));
-  };
+  // Debouncer para búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(0);
+      setFilters(prev => ({ ...prev, search: searchInput || undefined }));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleTipoEspacioFilter = (tipoId: string) => {
     setPage(0);
@@ -159,6 +181,14 @@ export default function SpacesManagement() {
     setFilters(prev => ({ 
       ...prev, 
       capacidadMax: value ? parseInt(value) : undefined 
+    }));
+  };
+
+  const handleEstadoFilter = (value: string) => {
+    setPage(0);
+    setFilters(prev => ({ 
+      ...prev, 
+      estado: value !== 'all' ? (value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE') : undefined 
     }));
   };
 
@@ -185,6 +215,46 @@ export default function SpacesManagement() {
     setFiltrosInventario([]);
     setPage(0);
     toast.info('Filtros limpiados');
+  };
+
+  const handleExport = async () => {
+    try {
+      // Combinar filtros básicos con filtros de inventario
+      const filtrosCompletos: EspacioFilters = {
+        ...filters,
+        filtrosInventario: filtrosInventario.length > 0 ? filtrosInventario : undefined
+      };
+      
+      // Verificar si hay filtros activos
+      const hasActiveFilters = filtrosCompletos.search || filtrosCompletos.tipoEspacioId || 
+                               filtrosCompletos.capacidadMin || filtrosCompletos.capacidadMax ||
+                               filtrosCompletos.filtrosInventario;
+      
+      let espaciosParaExportar: Espacio[];
+      
+      if (hasActiveFilters) {
+        // Si hay filtros activos, usar el endpoint de filtros
+        const response = await espaciosApi.filtrarEspacios(filtrosCompletos);
+        espaciosParaExportar = response.data || [];
+      } else {
+        // Sin filtros, obtener todos los espacios sin paginación
+        const response = await espaciosApi.obtenerEspacios();
+        espaciosParaExportar = response.data || [];
+      }
+      
+      if (!espaciosParaExportar || espaciosParaExportar.length === 0) {
+        toast.info('No hay espacios para exportar');
+        return;
+      }
+      
+      exportEspaciosToCSV(espaciosParaExportar);
+      toast.success(`${espaciosParaExportar.length} espacios exportados exitosamente`);
+    } catch (error: any) {
+      console.error('Error al exportar:', error);
+      toast.error('Error al exportar espacios', {
+        description: error.message || 'No se pudo exportar los espacios'
+      });
+    }
   };
 
   // Funciones para manejar filtros de inventario
@@ -234,6 +304,65 @@ export default function SpacesManagement() {
     setEditDialog(true);
   };
 
+  const handleDelete = (espacio: Espacio) => {
+    setSelectedSpace(espacio);
+    setDeleteDialog(true);
+  };
+
+  const handleSort = (column: string) => {
+    setSortConfig(prev => {
+      if (prev.column === column) {
+        return {
+          column,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      return { column, direction: 'asc' };
+    });
+  };
+
+  // Aplicar ordenamiento a los espacios
+  const sortedEspacios = useMemo(() => {
+    if (!sortConfig.column) return espacios;
+    
+    const sorted = [...espacios];
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortConfig.column) {
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'nombre':
+          aValue = a.nombre.toLowerCase();
+          bValue = b.nombre.toLowerCase();
+          break;
+        case 'tipo':
+          aValue = (a.tipoEspacioNombre || '').toLowerCase();
+          bValue = (b.tipoEspacioNombre || '').toLowerCase();
+          break;
+        case 'capacidad':
+          aValue = a.capacidad;
+          bValue = b.capacidad;
+          break;
+        case 'activo':
+          aValue = a.activo;
+          bValue = b.activo;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [espacios, sortConfig]);
+
   const canEdit = true; // TODO: Implementar verificación de permisos
 
   // Crear array de filtros activos para FilterBar
@@ -277,6 +406,20 @@ export default function SpacesManagement() {
         label: `Capacidad máx: ${filters.capacidadMax}`,
         value: filters.capacidadMax,
         onRemove: () => setFilters(prev => ({ ...prev, capacidadMax: undefined }))
+      });
+    }
+    
+    if (filters.estado) {
+      const estadoLabels: Record<string, string> = {
+        'DISPONIBLE': 'Disponible',
+        'MANTENIMIENTO': 'En Mantenimiento',
+        'NO_DISPONIBLE': 'No Disponible'
+      };
+      items.push({
+        id: 'estado',
+        label: `Estado: ${estadoLabels[filters.estado] || filters.estado}`,
+        value: filters.estado,
+        onRemove: () => setFilters(prev => ({ ...prev, estado: undefined }))
       });
     }
     
@@ -335,7 +478,17 @@ export default function SpacesManagement() {
           
           <Button 
             variant="outline"
-            onClick={() => {/* TODO: Implementar exportación */}}
+            onClick={() => navigate('/inventory')}
+            className="h-10 flex-1 sm:flex-none"
+          >
+            <Package className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Gestionar Inventario</span>
+            <span className="sm:hidden">Inventario</span>
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={handleExport}
             className="h-10 flex-1 sm:flex-none"
           >
             <Download className="h-4 w-4 sm:mr-2" />
@@ -350,21 +503,51 @@ export default function SpacesManagement() {
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
             <span className="text-sm font-medium hidden sm:inline">Actualizar</span>
           </div>
+
+          {/* Botones de switch de vista */}
+          <div className="flex items-center border rounded-lg shadow-sm bg-white h-10 p-1 flex-shrink-0">
+            <Button
+              variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('cards')}
+              className="h-8 px-3"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="h-8 px-3"
+            >
+              <LayoutList className="h-4 w-4" />
+            </Button>
+          </div>
           
           {canEdit && (
-            <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Agregar Espacio</span>
-              <span className="sm:hidden">Agregar</span>
-            </Button>
+            <>
+              <Button onClick={() => setShowTiposManagement(true)} variant="outline" className="h-10 flex-1 sm:flex-none">
+                <Building2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Tipos de Espacios</span>
+                <span className="sm:hidden">Tipos</span>
+              </Button>
+              <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Agregar Espacio</span>
+                <span className="sm:hidden">Agregar</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
 
       {/* Barra de búsqueda y filtros compacta */}
       <Card className="shadow-card">
-        <CardContent className="p-4 md:p-6">
-          <form onSubmit={handleSearch} className="space-y-4">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-lg">Filtros</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
+          <div className="space-y-2">
             <div className="flex flex-col md:flex-row gap-3">
               {/* Campo de búsqueda principal */}
               <div className="flex-1">
@@ -381,10 +564,6 @@ export default function SpacesManagement() {
 
               {/* Botones de acción */}
               <div className="flex gap-2">
-                <Button type="submit" className="hover-lift">
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </Button>
                 <Button 
                   type="button"
                   variant="outline" 
@@ -409,172 +588,171 @@ export default function SpacesManagement() {
             </div>
 
             {/* Panel de filtros expandible */}
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-              <div className={`flex flex-wrap gap-3 pt-3 border-t transition-transform duration-300 ease-in-out ${
-                showFilters ? 'translate-y-0' : '-translate-y-2'
-              }`}>
-                <div className="min-w-[200px] flex-1">
-                  <Label htmlFor="tipo-filter" className="text-xs text-muted-foreground mb-1.5 block">
-                    Tipo de Espacio
-                  </Label>
-                  <Select 
-                    value={filters.tipoEspacioId?.toString() || 'all'} 
-                    onValueChange={handleTipoEspacioFilter}
-                  >
-                    <SelectTrigger id="tipo-filter">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los tipos</SelectItem>
-                      {tiposEspacio.map(tipo => (
-                        <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                          {tipo.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {(() => {
+              const filterFields: FilterField[] = [
+                {
+                  id: 'tipo-filter',
+                  label: 'Tipo de Espacio',
+                  type: 'select',
+                  value: filters.tipoEspacioId?.toString() || 'all',
+                  options: [
+                    { value: 'all', label: 'Todos los tipos' },
+                    ...tiposEspacio.map(tipo => ({ 
+                      value: tipo.id.toString(), 
+                      label: tipo.nombre 
+                    }))
+                  ],
+                  onChange: (value) => handleTipoEspacioFilter(value)
+                },
+                {
+                  id: 'estado-filter',
+                  label: 'Estado',
+                  type: 'select',
+                  value: filters.estado || 'all',
+                  options: [
+                    { value: 'all', label: 'Todos los estados' },
+                    { value: 'DISPONIBLE', label: 'Disponible' },
+                    { value: 'MANTENIMIENTO', label: 'En Mantenimiento' },
+                    { value: 'NO_DISPONIBLE', label: 'No Disponible' }
+                  ],
+                  onChange: (value) => handleEstadoFilter(value)
+                },
+                {
+                  id: 'capacidad-min-filter',
+                  label: 'Capacidad Mínima',
+                  type: 'number',
+                  value: filters.capacidadMin,
+                  placeholder: 'Ej: 10',
+                  onChange: (value) => handleCapacidadMinFilter(value)
+                },
+                {
+                  id: 'capacidad-max-filter',
+                  label: 'Capacidad Máxima',
+                  type: 'number',
+                  value: filters.capacidadMax,
+                  placeholder: 'Ej: 50',
+                  onChange: (value) => handleCapacidadMaxFilter(value)
+                }
+              ];
 
-                <div className="min-w-[150px] flex-1">
-                  <Label htmlFor="capacidad-min-filter" className="text-xs text-muted-foreground mb-1.5 block">
-                    Capacidad Mínima
-                  </Label>
-                  <Input
-                    id="capacidad-min-filter"
-                    type="number"
-                    placeholder="Ej: 10"
-                    value={filters.capacidadMin || ''}
-                    onChange={(e) => handleCapacidadMinFilter(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-
-                <div className="min-w-[150px] flex-1">
-                  <Label htmlFor="capacidad-max-filter" className="text-xs text-muted-foreground mb-1.5 block">
-                    Capacidad Máxima
-                  </Label>
-                  <Input
-                    id="capacidad-max-filter"
-                    type="number"
-                    placeholder="Ej: 50"
-                    value={filters.capacidadMax || ''}
-                    onChange={(e) => handleCapacidadMaxFilter(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-              </div>
-
-              {/* Filtros de Inventario */}
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-medium text-gray-900">Filtros por Inventario</h4>
-                    {filtrosInventario.length === 0 && (
-                      <span className="text-xs text-muted-foreground">Sin filtros</span>
-                    )}
+              const additionalContent = (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-medium text-gray-900">Filtros por Inventario</h4>
+                      {filtrosInventario.length === 0 && (
+                        <span className="text-xs text-muted-foreground">Sin filtros</span>
+                      )}
+                    </div>
+                    <Button 
+                      onClick={agregarFiltroInventario} 
+                      variant="outline" 
+                      size="sm"
+                      className="h-7 px-2"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Agregar
+                    </Button>
                   </div>
-                  <Button 
-                    onClick={agregarFiltroInventario} 
-                    variant="outline" 
-                    size="sm"
-                    className="h-7 px-2"
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Agregar
-                  </Button>
-                </div>
 
-                {filtrosInventario.length > 0 && (
-                  <div className="space-y-3">
-                    {filtrosInventario.map((filtro, index) => (
-                      <div key={index} className="border rounded-lg p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-xs">
-                            Filtro {index + 1}
-                          </Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => eliminarFiltroInventario(index)}
-                            className="h-5 w-5 p-0 text-red-500 hover:text-red-700"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-
-                        <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                          {/* Tipo de Elemento */}
-                          <div className="space-y-1">
-                            <Label className="text-xs">Tipo de Elemento</Label>
-                            <Select 
-                              value={filtro.tipoElementoId === 0 ? "0" : filtro.tipoElementoId.toString()} 
-                              onValueChange={(value) => actualizarFiltroInventario(index, 'tipoElementoId', parseInt(value))}
+                  {filtrosInventario.length > 0 && (
+                    <div className="space-y-3">
+                      {filtrosInventario.map((filtro, index) => (
+                        <div key={index} className="border rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="text-xs">
+                              Filtro {index + 1}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => eliminarFiltroInventario(index)}
+                              className="h-5 w-5 p-0 text-red-500 hover:text-red-700"
                             >
-                              <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Selecciona tipo" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="0" disabled>Selecciona tipo</SelectItem>
-                                {tiposElemento.map(tipo => (
-                                  <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                                    {tipo.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              <X className="h-3 w-3" />
+                            </Button>
                           </div>
 
-                          {/* Cantidad Mínima */}
-                          <div className="space-y-1">
-                            <Label className="text-xs">Cantidad Mínima</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              placeholder="Ej: 10"
-                              value={filtro.cantidadMin || ''}
-                              onChange={(e) => actualizarFiltroInventario(index, 'cantidadMin', e.target.value ? parseInt(e.target.value) : undefined)}
-                              className="h-8"
-                            />
+                          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                            {/* Tipo de Elemento */}
+                            <div>
+                              <Label className="text-xs block mb-1">Tipo de Elemento</Label>
+                              <Select 
+                                value={filtro.tipoElementoId === 0 ? "0" : filtro.tipoElementoId.toString()} 
+                                onValueChange={(value) => actualizarFiltroInventario(index, 'tipoElementoId', parseInt(value))}
+                              >
+                                <SelectTrigger className="h-8">
+                                  <SelectValue placeholder="Selecciona tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="0" disabled>Selecciona tipo</SelectItem>
+                                  {tiposElemento.map(tipo => (
+                                    <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                                      {tipo.nombre}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Cantidad Mínima */}
+                            <div>
+                              <Label className="text-xs block mb-1">Cantidad Mínima</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                placeholder="Ej: 10"
+                                value={filtro.cantidadMin || ''}
+                                onChange={(e) => actualizarFiltroInventario(index, 'cantidadMin', e.target.value ? parseInt(e.target.value) : undefined)}
+                                className="h-8"
+                              />
+                            </div>
+
+                            {/* Cantidad Máxima */}
+                            <div>
+                              <Label className="text-xs block mb-1">Cantidad Máxima</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                placeholder="Ej: 50"
+                                value={filtro.cantidadMax || ''}
+                                onChange={(e) => actualizarFiltroInventario(index, 'cantidadMax', e.target.value ? parseInt(e.target.value) : undefined)}
+                                className="h-8"
+                              />
+                            </div>
                           </div>
 
-                          {/* Cantidad Máxima */}
-                          <div className="space-y-1">
-                            <Label className="text-xs">Cantidad Máxima</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              placeholder="Ej: 50"
-                              value={filtro.cantidadMax || ''}
-                              onChange={(e) => actualizarFiltroInventario(index, 'cantidadMax', e.target.value ? parseInt(e.target.value) : undefined)}
-                              className="h-8"
-                            />
-                          </div>
+                          {/* Resumen del filtro */}
+                          {filtro.tipoElementoId > 0 && (
+                            <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                              <strong>Filtro:</strong> Espacios que tengan{' '}
+                              {filtro.cantidadMin !== undefined && filtro.cantidadMax !== undefined
+                                ? `entre ${filtro.cantidadMin} y ${filtro.cantidadMax}`
+                                : filtro.cantidadMin !== undefined
+                                ? `al menos ${filtro.cantidadMin}`
+                                : filtro.cantidadMax !== undefined
+                                ? `máximo ${filtro.cantidadMax}`
+                                : 'cualquier cantidad de'
+                              }{' '}
+                              <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
+                            </div>
+                          )}
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
 
-                        {/* Resumen del filtro */}
-                        {filtro.tipoElementoId > 0 && (
-                          <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
-                            <strong>Filtro:</strong> Espacios que tengan{' '}
-                            {filtro.cantidadMin !== undefined && filtro.cantidadMax !== undefined
-                              ? `entre ${filtro.cantidadMin} y ${filtro.cantidadMax}`
-                              : filtro.cantidadMin !== undefined
-                              ? `al menos ${filtro.cantidadMin}`
-                              : filtro.cantidadMax !== undefined
-                              ? `máximo ${filtro.cantidadMax}`
-                              : 'cualquier cantidad de'
-                            }{' '}
-                            <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </form>
+              return (
+                <FiltersPanel 
+                  showFilters={showFilters} 
+                  fields={filterFields}
+                  additionalContent={additionalContent}
+                />
+              );
+            })()}
+          </div>
         </CardContent>
       </Card>
 
@@ -587,14 +765,24 @@ export default function SpacesManagement() {
         />
       )}
 
-      {/* Grid de espacios */}
+      {/* Vista de espacios */}
       {loading ? (
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: pageSize }).map((_, index) => (
-            <SpaceCardSkeleton key={index} />
-          ))}
-        </div>
-      ) : espacios.length === 0 ? (
+        viewMode === 'cards' ? (
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: pageSize }).map((_, index) => (
+              <SpaceCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : (
+          <div className="border rounded-lg shadow-card p-8">
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="h-16 bg-gray-100 animate-pulse rounded" />
+              ))}
+            </div>
+          </div>
+        )
+      ) : sortedEspacios.length === 0 ? (
         <EmptyState
           icon={Building2}
           title="No se encontraron espacios"
@@ -606,25 +794,36 @@ export default function SpacesManagement() {
         />
       ) : (
         <>
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {espacios.map((espacio) => (
-              <SpaceCard
-                key={espacio.id}
-                espacio={espacio}
-                canEdit={canEdit}
-                onEdit={handleEdit}
-              />
-            ))}
-          </div>
+          {viewMode === 'cards' ? (
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {sortedEspacios.map((espacio) => (
+                <SpaceCard
+                  key={espacio.id}
+                  espacio={espacio}
+                  canEdit={canEdit}
+                  onEdit={handleEdit}
+                />
+              ))}
+            </div>
+          ) : (
+            <SpaceTable
+              espacios={sortedEspacios}
+              canEdit={canEdit}
+              onEdit={handleEdit}
+              onDelete={canEdit ? handleDelete : undefined}
+              sortConfig={sortConfig}
+              onSort={handleSort}
+            />
+          )}
 
           {/* Paginación */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t bg-gray-50/50">
             <p className="text-sm text-muted-foreground">
               <span className="hidden sm:inline">
-                Mostrando {espacios.length} de {totalElements} espacios (Página {page + 1} de {totalPages})
+                Mostrando {sortedEspacios.length} de {totalElements} espacios (Página {page + 1} de {totalPages})
               </span>
               <span className="sm:hidden">
-                Pág {page + 1}/{totalPages} ({espacios.length} de {totalElements})
+                Pág {page + 1}/{totalPages} ({sortedEspacios.length} de {totalElements})
               </span>
             </p>
             <div className="flex gap-2">
@@ -671,6 +870,14 @@ export default function SpacesManagement() {
         open={deleteDialog}
         onOpenChange={setDeleteDialog}
         onSuccess={handleDeleteSuccess}
+      />
+
+      <TipoEspacioManagement
+        open={showTiposManagement}
+        onOpenChange={setShowTiposManagement}
+        onSuccess={() => {
+          fetchTiposEspacio(); // Recargar tipos cuando cambian
+        }}
       />
     </div>
   );

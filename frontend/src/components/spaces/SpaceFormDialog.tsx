@@ -21,6 +21,7 @@ import { espaciosApi } from '@/lib/api/spaces';
 import type { Espacio, TipoEspacio } from '@/lib/types/spaces';
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 
 interface SpaceFormDialogProps {
   espacio: Espacio | null;
@@ -41,8 +42,12 @@ export function SpaceFormDialog({
     nombre: '',
     capacidad: 1,
     tipoEspacioId: 0,
-    imagenUrl: ''
+    imagenUrl: '',
+    estado: 'DISPONIBLE' as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE'
   });
+  
+  // Prevenir layout shift cuando el modal está abierto
+  useDialogScrollLock(open);
 
   const isEditing = !!espacio;
 
@@ -60,14 +65,16 @@ export function SpaceFormDialog({
         nombre: espacio.nombre,
         capacidad: espacio.capacidad,
         tipoEspacioId: espacio.tipoEspacioId,
-        imagenUrl: espacio.imagenUrl || ''
+        imagenUrl: espacio.imagenUrl || '',
+        estado: espacio.estado
       });
     } else {
       setFormData({
         nombre: '',
         capacidad: 1,
         tipoEspacioId: 0,
-        imagenUrl: ''
+        imagenUrl: '',
+        estado: 'DISPONIBLE'
       });
     }
   }, [espacio]);
@@ -110,7 +117,8 @@ export function SpaceFormDialog({
         nombre: formData.nombre.trim(),
         capacidad: formData.capacidad,
         tipoEspacioId: formData.tipoEspacioId,
-        imagenUrl: formData.imagenUrl.trim() || undefined
+        imagenUrl: formData.imagenUrl.trim() || undefined,
+        estado: formData.estado
       };
 
       let response;
@@ -152,7 +160,7 @@ export function SpaceFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] overflow-hidden">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Editar Espacio' : 'Crear Nuevo Espacio'}
@@ -165,6 +173,7 @@ export function SpaceFormDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="overflow-y-auto max-h-[calc(90vh-8rem)] -mx-6 px-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nombre">Nombre del Espacio</Label>
@@ -175,21 +184,26 @@ export function SpaceFormDialog({
               placeholder="Ej: Aula 101"
               disabled={loading}
               required
+              className="w-full"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="tipoEspacio">Tipo de Espacio</Label>
             <Select
-              value={formData.tipoEspacioId === 0 ? "0" : formData.tipoEspacioId?.toString() || "0"}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, tipoEspacioId: parseInt(value) }))}
+              value={formData.tipoEspacioId === 0 ? "seleccionar" : formData.tipoEspacioId?.toString() || "seleccionar"}
+              onValueChange={(value) => {
+                if (value !== "seleccionar") {
+                  setFormData(prev => ({ ...prev, tipoEspacioId: parseInt(value) }));
+                }
+              }}
               disabled={loading}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona un tipo" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccionar" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0" disabled>Selecciona un tipo</SelectItem>
+                <SelectItem value="seleccionar" disabled>Seleccionar</SelectItem>
                 {tiposEspacio.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
                     {tipo.nombre}
@@ -210,6 +224,7 @@ export function SpaceFormDialog({
               placeholder="Ej: 30"
               disabled={loading}
               required
+              className="w-full"
             />
           </div>
 
@@ -222,29 +237,51 @@ export function SpaceFormDialog({
               onChange={(e) => setFormData(prev => ({ ...prev, imagenUrl: e.target.value }))}
               placeholder="https://ejemplo.com/imagen.jpg"
               disabled={loading}
+              className="w-full"
             />
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
+          <div className="space-y-2">
+            <Label htmlFor="estado">Estado</Label>
+            <Select
+              value={formData.estado}
+              onValueChange={(value) => {
+                setFormData(prev => ({ ...prev, estado: value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE' }));
+              }}
               disabled={loading}
             >
-              <X className="h-4 w-4 mr-1" />
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-1" />
-              )}
-              {isEditing ? 'Actualizar' : 'Crear'}
-            </Button>
-          </DialogFooter>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccionar estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DISPONIBLE">Disponible</SelectItem>
+                <SelectItem value="MANTENIMIENTO">En Mantenimiento</SelectItem>
+                <SelectItem value="NO_DISPONIBLE">No Disponible</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </form>
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={loading}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Cancelar
+          </Button>
+          <Button type="button" onClick={handleSubmit} disabled={loading}>
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-1" />
+            )}
+            {isEditing ? 'Actualizar' : 'Crear'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -25,7 +25,6 @@ import {
   Users, 
   Calendar,
   Package,
-  DollarSign,
   AlertCircle,
   CheckCircle,
   Wrench,
@@ -37,34 +36,6 @@ interface SpaceDetailsProps {
   espacioId: number;
 }
 
-// Función para obtener configuración del tipo de espacio
-function getTipoEspacioConfig(tipoNombre: string | null | undefined) {
-  if (!tipoNombre) {
-    return { label: 'Sin tipo', color: 'bg-gray-100 text-gray-800' };
-  }
-  
-  const tipoLower = tipoNombre.toLowerCase();
-  
-  if (tipoLower.includes('aula')) {
-    return { label: 'Aula', color: 'bg-blue-100 text-blue-800' };
-  } else if (tipoLower.includes('laboratorio')) {
-    return { label: 'Laboratorio', color: 'bg-green-100 text-green-800' };
-  } else if (tipoLower.includes('auditorio')) {
-    return { label: 'Auditorio', color: 'bg-purple-100 text-purple-800' };
-  } else if (tipoLower.includes('reunion')) {
-    return { label: 'Sala de Reuniones', color: 'bg-orange-100 text-orange-800' };
-  } else if (tipoLower.includes('oficina')) {
-    return { label: 'Oficina', color: 'bg-gray-100 text-gray-800' };
-  } else if (tipoLower.includes('biblioteca')) {
-    return { label: 'Biblioteca', color: 'bg-indigo-100 text-indigo-800' };
-  } else if (tipoLower.includes('taller')) {
-    return { label: 'Taller', color: 'bg-yellow-100 text-yellow-800' };
-  } else if (tipoLower.includes('gimnasio')) {
-    return { label: 'Gimnasio', color: 'bg-red-100 text-red-800' };
-  } else {
-    return { label: tipoNombre, color: 'bg-gray-100 text-gray-800' };
-  }
-}
 
 // Función para obtener configuración del estado del inventario
 function getEstadoConfig(estado: string) {
@@ -72,38 +43,30 @@ function getEstadoConfig(estado: string) {
     case 'DISPONIBLE':
       return { 
         label: 'Disponible', 
-        color: 'bg-green-100 text-green-800',
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         icon: CheckCircle
       };
     case 'MANTENIMIENTO':
       return { 
         label: 'Mantenimiento', 
-        color: 'bg-yellow-100 text-yellow-800',
+        color: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Wrench
       };
     case 'DANADO':
       return { 
         label: 'Dañado', 
-        color: 'bg-red-100 text-red-800',
+        color: 'bg-red-50 text-red-700 border-red-200',
         icon: AlertCircle
       };
     default:
       return { 
         label: estado, 
-        color: 'bg-gray-100 text-gray-800',
+        color: 'bg-gray-50 text-gray-700 border-gray-200',
         icon: AlertCircle
       };
   }
 }
 
-// Función para formatear moneda
-function formatCurrency(value?: number): string {
-  if (!value) return 'N/A';
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(value);
-}
 
 export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
   const navigate = useNavigate();
@@ -125,6 +88,20 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
     fetchEspacio();
     fetchInventario();
   }, [espacioId]);
+
+  // Actualizar título de la página dinámicamente
+  useEffect(() => {
+    if (espacio) {
+      document.title = `Espacios - ${espacio.nombre}`;
+    } else {
+      document.title = 'Espacios';
+    }
+    
+    return () => {
+      // Resetear título al desmontar
+      document.title = 'USM Space Manager';
+    };
+  }, [espacio]);
 
   const fetchEspacio = async () => {
     try {
@@ -261,7 +238,6 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
     );
   }
 
-  const tipoConfig = getTipoEspacioConfig(espacio.tipoEspacioNombre);
 
   return (
     <div className="space-y-6">
@@ -273,11 +249,32 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
             Volver
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{espacio.nombre}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className={tipoConfig.color}>
-                {tipoConfig.label}
-              </Badge>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-bold">{espacio.nombre}</h1>
+              {(() => {
+                const estadoConfig = getEstadoConfig(espacio.estado);
+                const EstadoIcon = estadoConfig.icon;
+                return (
+                  <Badge className={`${estadoConfig.color} border font-medium`}>
+                    <EstadoIcon className="h-3.5 w-3.5 mr-1.5" />
+                    {estadoConfig.label}
+                  </Badge>
+                );
+              })()}
+            </div>
+            <div className="flex items-center gap-2">
+              {espacio.tipoEspacioColor ? (
+                <span 
+                  className="px-2 py-0.5 rounded text-white text-xs font-medium"
+                  style={{ backgroundColor: espacio.tipoEspacioColor }}
+                >
+                  {espacio.tipoEspacioNombre}
+                </span>
+              ) : (
+                <Badge className="bg-gray-100 text-gray-800">
+                  {espacio.tipoEspacioNombre || 'Sin tipo'}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -331,9 +328,18 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-gray-500" />
                 <span className="font-medium">Tipo:</span>
-                <Badge className={tipoConfig.color}>
-                  {tipoConfig.label}
-                </Badge>
+                {espacio.tipoEspacioColor ? (
+                  <span 
+                    className="px-2 py-0.5 rounded text-white text-xs font-medium"
+                    style={{ backgroundColor: espacio.tipoEspacioColor }}
+                  >
+                    {espacio.tipoEspacioNombre}
+                  </span>
+                ) : (
+                  <Badge className="bg-gray-100 text-gray-800">
+                    {espacio.tipoEspacioNombre || 'Sin tipo'}
+                  </Badge>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
@@ -390,22 +396,13 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                             <p className="font-semibold text-sm mb-1">{item.tipoElementoNombre}</p>
                             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                               <span>Cant: {item.cantidad}</span>
-                              {item.marca && <span>• {item.marca}</span>}
-                              {item.modelo && <span>• {item.modelo}</span>}
                             </div>
                           </div>
-                          <Badge className={estadoConfig.color}>
-                            <EstadoIcon className="h-3 w-3 mr-1" />
+                          <Badge className={`${estadoConfig.color} border font-medium`}>
+                            <EstadoIcon className="h-3.5 w-3.5 mr-1.5" />
                             {estadoConfig.label}
                           </Badge>
                         </div>
-                        
-                        {item.valorEstimado && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">{formatCurrency(item.valorEstimado)}</span>
-                          </div>
-                        )}
                         
                         {canEdit && (
                           <div className="flex gap-2 pt-2 border-t">
@@ -442,10 +439,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                     <TableRow>
                       <TableHead>Tipo de Elemento</TableHead>
                       <TableHead>Cantidad</TableHead>
-                      <TableHead>Marca</TableHead>
-                      <TableHead>Modelo</TableHead>
                       <TableHead>Estado</TableHead>
-                      <TableHead>Valor Estimado</TableHead>
                       {canEdit && <TableHead>Acciones</TableHead>}
                     </TableRow>
                   </TableHeader>
@@ -460,23 +454,11 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                             {item.tipoElementoNombre}
                           </TableCell>
                           <TableCell>{item.cantidad}</TableCell>
-                          <TableCell>{item.marca || 'N/A'}</TableCell>
-                          <TableCell>{item.modelo || 'N/A'}</TableCell>
                           <TableCell>
-                            <Badge className={estadoConfig.color}>
-                              <EstadoIcon className="h-3 w-3 mr-1" />
+                            <Badge className={`${estadoConfig.color} border font-medium`}>
+                              <EstadoIcon className="h-3.5 w-3.5 mr-1.5" />
                               {estadoConfig.label}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {item.valorEstimado ? (
-                              <div className="flex items-center gap-1">
-                                <DollarSign className="h-4 w-4 text-green-600" />
-                                {formatCurrency(item.valorEstimado)}
-                              </div>
-                            ) : (
-                              'N/A'
-                            )}
                           </TableCell>
                           {canEdit && (
                             <TableCell>

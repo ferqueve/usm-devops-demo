@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,7 +21,7 @@ public class InventarioItem {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "espacio_id", nullable = false)
+    @JoinColumn(name = "espacio_id", nullable = true)
     private Espacio espacio;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,26 +31,11 @@ public class InventarioItem {
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad = 1;
     
-    @Column(name = "marca", length = 100)
-    private String marca;
-    
-    @Column(name = "modelo", length = 100)
-    private String modelo;
-    
-    @Column(name = "numero_serie", length = 100)
-    private String numeroSerie;
-    
     @Column(name = "estado", nullable = false, length = 20)
     private String estado = "DISPONIBLE"; // DISPONIBLE, MANTENIMIENTO, DANADO
     
     @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
-    
-    @Column(name = "fecha_adquisicion")
-    private LocalDate fechaAdquisicion;
-    
-    @Column(name = "valor_estimado", precision = 10, scale = 2)
-    private BigDecimal valorEstimado;
     
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;

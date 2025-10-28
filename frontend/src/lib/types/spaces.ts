@@ -2,9 +2,8 @@ export interface TipoEspacio {
   id: number;
   nombre: string;
   descripcion?: string;
+  color?: string; // Hex color
   activo: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Espacio {
@@ -14,6 +13,8 @@ export interface Espacio {
   imagenUrl?: string;
   tipoEspacioId: number;
   tipoEspacioNombre?: string;
+  tipoEspacioColor?: string; // Color del tipo de espacio
+  estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
   activo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -28,18 +29,14 @@ export interface TipoElemento {
 
 export interface InventarioItem {
   id: number;
-  espacioId: number;
+  espacioId: number | null; // null cuando no está asignado a ningún espacio
   espacioNombre: string;
+  espacioColor?: string; // Hex color del espacio
   tipoElementoId: number;
   tipoElementoNombre: string;
   cantidad: number;
-  marca?: string;
-  modelo?: string;
-  numeroSerie?: string;
   estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO';
   observaciones?: string;
-  fechaAdquisicion?: string;
-  valorEstimado?: number;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -56,6 +53,7 @@ export interface EspacioFilters {
   tipoEspacioId?: number;
   capacidadMin?: number;
   capacidadMax?: number;
+  estado?: 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
   filtrosInventario?: FiltroInventario[];
 }
 
@@ -74,4 +72,12 @@ export interface PagedInventario {
   totalElements: number;
   size: number;
   number: number;
+}
+
+export interface InventarioFilters {
+  search?: string;
+  espacioId?: number;
+  tipoElementoId?: number;
+  estado?: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO';
+  sinAsignar?: boolean;
 }

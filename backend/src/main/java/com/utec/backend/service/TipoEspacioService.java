@@ -33,6 +33,9 @@ public class TipoEspacioService {
         tipoEspacio.setDescripcion(createDto.getDescripcion());
         tipoEspacio.setActivo(true);
         
+        // Generar color automáticamente si no se proporciona
+        tipoEspacio.setColor(createDto.getColor() != null ? createDto.getColor() : generarColor(createDto.getNombre()));
+        
         TipoEspacio savedTipoEspacio = tipoEspacioRepository.save(tipoEspacio);
         return mapToResponseDto(savedTipoEspacio);
     }
@@ -68,6 +71,12 @@ public class TipoEspacioService {
         
         tipoEspacio.setNombre(updateDto.getNombre());
         tipoEspacio.setDescripcion(updateDto.getDescripcion());
+        
+        // Actualizar color si se proporciona
+        if (updateDto.getColor() != null) {
+            tipoEspacio.setColor(updateDto.getColor());
+        }
+        
         tipoEspacio.setUpdatedAt(LocalDateTime.now());
         
         TipoEspacio updatedTipoEspacio = tipoEspacioRepository.save(tipoEspacio);
@@ -78,12 +87,12 @@ public class TipoEspacioService {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de espacio no encontrado con ID: " + id));
         
-        // Verificar si tiene espacios asociados
-        if (!tipoEspacio.getEspacios().isEmpty()) {
-            throw new RuntimeException("No se puede eliminar el tipo de espacio porque tiene espacios asociados");
-        }
+        // Soft delete: marcar como inactivo
+        tipoEspacio.setActivo(false);
+        tipoEspacio.setDeletedAt(LocalDateTime.now());
+        tipoEspacio.setUpdatedAt(LocalDateTime.now());
         
-        tipoEspacioRepository.deleteById(id);
+        tipoEspacioRepository.save(tipoEspacio);
     }
     
     public TipoEspacioResponseDto toggleActivo(Long id) {
@@ -116,11 +125,35 @@ public class TipoEspacioService {
         return tipoEspacioRepository.countByActivoTrue();
     }
     
+    // Generar color consistente basado en el nombre
+    private String generarColor(String nombre) {
+        if (nombre == null || nombre.isEmpty()) {
+            nombre = "default";
+        }
+        
+        // Generar color basado en hash del nombre
+        int hash = nombre.hashCode();
+        hash = hash < 0 ? -hash : hash;
+        
+        // Usar solo colores pastel/brillantes evitando muy claros
+        int r = 100 + (hash % 100);
+        int g = 100 + ((hash / 100) % 100);
+        int b = 100 + ((hash / 10000) % 100);
+        
+        // Normalizar para asegurar que los valores sean válidos
+        r = Math.min(255, Math.max(100, r));
+        g = Math.min(255, Math.max(100, g));
+        b = Math.min(255, Math.max(100, b));
+        
+        return String.format("#%02X%02X%02X", r, g, b);
+    }
+    
     private TipoEspacioResponseDto mapToResponseDto(TipoEspacio tipoEspacio) {
         TipoEspacioResponseDto dto = new TipoEspacioResponseDto();
         dto.setId(tipoEspacio.getId());
         dto.setNombre(tipoEspacio.getNombre());
         dto.setDescripcion(tipoEspacio.getDescripcion());
+        dto.setColor(tipoEspacio.getColor() != null ? tipoEspacio.getColor() : generarColor(tipoEspacio.getNombre()));
         dto.setActivo(tipoEspacio.getActivo());
         dto.setCreatedAt(tipoEspacio.getCreatedAt());
         dto.setUpdatedAt(tipoEspacio.getUpdatedAt());

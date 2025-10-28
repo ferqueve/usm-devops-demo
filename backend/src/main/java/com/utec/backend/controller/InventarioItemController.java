@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/inventario")
@@ -52,9 +53,16 @@ public class InventarioItemController {
     
     @GetMapping("/paged")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
-    public ResponseEntity<ApiResponse<PagedResponseDto<InventarioItemResponseDto>>> getAllInventarioItemsPaged(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedResponseDto<InventarioItemResponseDto>>> getAllInventarioItemsPaged(
+            Pageable pageable,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long espacioId,
+            @RequestParam(required = false) Long tipoElementoId,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Boolean sinAsignar) {
         try {
-            Page<InventarioItemResponseDto> inventarioItems = inventarioItemService.getAllInventarioItemsPaged(pageable);
+            Page<InventarioItemResponseDto> inventarioItems = inventarioItemService.getAllInventarioItemsPagedWithFilters(
+                pageable, search, espacioId, tipoElementoId, estado, sinAsignar);
             PagedResponseDto<InventarioItemResponseDto> pagedResponse = PagedResponseDto.of(inventarioItems);
             return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Items de inventario obtenidos exitosamente"));
         } catch (Exception e) {
@@ -134,31 +142,6 @@ public class InventarioItemController {
         }
     }
     
-    @GetMapping("/search/marca")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
-    public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> searchInventarioByMarca(
-            @RequestParam String marca) {
-        try {
-            List<InventarioItemResponseDto> inventarioItems = inventarioItemService.searchInventarioByMarca(marca);
-            return ResponseEntity.ok(ApiResponse.success(inventarioItems, "Búsqueda por marca completada exitosamente"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error en la búsqueda por marca: " + e.getMessage()));
-        }
-    }
-    
-    @GetMapping("/search/modelo")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
-    public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> searchInventarioByModelo(
-            @RequestParam String modelo) {
-        try {
-            List<InventarioItemResponseDto> inventarioItems = inventarioItemService.searchInventarioByModelo(modelo);
-            return ResponseEntity.ok(ApiResponse.success(inventarioItems, "Búsqueda por modelo completada exitosamente"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error en la búsqueda por modelo: " + e.getMessage()));
-        }
-    }
     
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
@@ -176,19 +159,31 @@ public class InventarioItemController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
     public ResponseEntity<ApiResponse<Object>> getInventarioStats() {
         try {
-            Long totalItems = inventarioItemService.getTotalInventarioItems();
-            java.math.BigDecimal valorPromedio = inventarioItemService.getValorPromedioInventario();
-            java.math.BigDecimal valorTotal = inventarioItemService.getValorTotalInventario();
-            
-            java.util.Map<String, Object> stats = new java.util.HashMap<>();
-            stats.put("totalItems", totalItems);
-            stats.put("valorPromedio", valorPromedio);
-            stats.put("valorTotal", valorTotal);
-            
+            Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas de inventario obtenidas exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener estadísticas: " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/filter")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> filterInventario(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long espacioId,
+            @RequestParam(required = false) Long tipoElementoId,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Boolean sinAsignar,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir) {
+        try {
+            List<InventarioItemResponseDto> items = inventarioItemService.filterInventario(
+                search, espacioId, tipoElementoId, estado, sinAsignar, sortBy, sortDir);
+            return ResponseEntity.ok(ApiResponse.success(items, "Filtros aplicados exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al aplicar filtros: " + e.getMessage()));
         }
     }
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="007-move-color-to-tipo-espacio" author="system">
+        <!-- Agregar columna color a tipo_espacio -->
+        <addColumn tableName="tipo_espacio">
+            <column name="color" type="VARCHAR(7)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Eliminar columna color de espacio -->
+        <dropColumn tableName="espacio" columnName="color"/>
+    </changeSet>
+
+</databaseChangeLog>

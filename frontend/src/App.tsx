@@ -13,6 +13,7 @@ import RoomDetailsPage from './app/rooms/[id]/page';
 import StatisticsPage from './app/statistics/page';
 import UsersPage from './app/users/page';
 import SystemPage from './app/system/page';
+import InventoryPage from './app/inventory/page';
 
 
 // Componente principal de rutas
@@ -122,6 +123,15 @@ function AppRoutes() {
         element={
           <RoleProtectedRoute>
             <SystemPage />
+          </RoleProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/inventory" 
+        element={
+          <RoleProtectedRoute>
+            <InventoryPage />
           </RoleProtectedRoute>
         } 
       />

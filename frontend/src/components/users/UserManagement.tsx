@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
 import { usuariosApi } from '@/lib/api/users';
 import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS } from '@/lib/config/constants';
 import type { User, UserRole, UserFilters } from '@/lib/types/users';
@@ -150,11 +151,15 @@ export default function UserManagement() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(0);
-    setFilters(prev => ({ ...prev, search: searchInput || undefined }));
-  };
+  // Debouncer para búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(0);
+      setFilters(prev => ({ ...prev, search: searchInput || undefined }));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleRoleFilter = (rol: string) => {
     setPage(0);
@@ -477,8 +482,11 @@ export default function UserManagement() {
 
       {/* Barra de búsqueda y filtros compacta */}
       <Card className="shadow-card">
-        <CardContent className="p-4">
-          <form onSubmit={handleSearch} className="space-y-4">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-lg">Filtros</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
+          <div className="space-y-2">
             <div className="flex flex-col md:flex-row gap-3">
               {/* Campo de búsqueda principal */}
               <div className="flex-1">
@@ -495,10 +503,6 @@ export default function UserManagement() {
 
               {/* Botones de acción */}
               <div className="flex gap-2">
-                <Button type="submit" className="hover-lift">
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </Button>
                 <Button 
                   type="button"
                   variant="outline" 
@@ -523,112 +527,73 @@ export default function UserManagement() {
             </div>
 
             {/* Panel de filtros expandible */}
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-              <div className={`flex flex-wrap gap-3 pt-3 border-t transition-transform duration-300 ease-in-out ${
-                showFilters ? 'translate-y-0' : '-translate-y-2'
-              }`}>
-                <div>
-                  <Label htmlFor="role-filter" className="text-xs text-muted-foreground mb-1.5 block">
-                    Rol
-                  </Label>
-                  <Select 
-                    value={filters.rol || 'all'} 
-                    onValueChange={handleRoleFilter}
-                  >
-                    <SelectTrigger id="role-filter">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los roles</SelectItem>
-                      {USER_ROLES.map(role => (
-                        <SelectItem key={role} value={role}>
-                          {ROLE_LABELS[role]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {(() => {
+              const filterFields: FilterField[] = [
+                {
+                  id: 'role-filter',
+                  label: 'Rol',
+                  type: 'select',
+                  value: filters.rol || 'all',
+                  options: [
+                    { value: 'all', label: 'Todos los roles' },
+                    ...USER_ROLES.map(role => ({ 
+                      value: role, 
+                      label: ROLE_LABELS[role] 
+                    }))
+                  ],
+                  onChange: handleRoleFilter
+                },
+                {
+                  id: 'verified-filter',
+                  label: 'Verificación',
+                  type: 'select',
+                  value: filters.verificado === undefined 
+                    ? 'all' 
+                    : filters.verificado 
+                    ? 'true' 
+                    : 'false',
+                  options: [
+                    { value: 'all', label: 'Todos' },
+                    { value: 'true', label: 'Verificados' },
+                    { value: 'false', label: 'Sin verificar' }
+                  ],
+                  onChange: handleVerificadoFilter
+                },
+                {
+                  id: 'active-filter',
+                  label: 'Estado',
+                  type: 'select',
+                  value: filters.activo === undefined 
+                    ? 'all' 
+                    : filters.activo 
+                    ? 'true' 
+                    : 'false',
+                  options: [
+                    { value: 'all', label: 'Todos' },
+                    { value: 'true', label: 'Activos' },
+                    { value: 'false', label: 'Inactivos' }
+                  ],
+                  onChange: handleActivoFilter
+                },
+                {
+                  id: 'fecha-desde',
+                  label: 'Fecha desde',
+                  type: 'date',
+                  value: filters.fechaDesde,
+                  onChange: (value) => handleFechaDesdeFilter(value)
+                },
+                {
+                  id: 'fecha-hasta',
+                  label: 'Fecha hasta',
+                  type: 'date',
+                  value: filters.fechaHasta,
+                  onChange: (value) => handleFechaHastaFilter(value)
+                }
+              ];
 
-                <div>
-                  <Label htmlFor="verified-filter" className="text-xs text-muted-foreground mb-1.5 block">
-                    Verificación
-                  </Label>
-                  <Select 
-                    value={
-                      filters.verificado === undefined 
-                        ? 'all' 
-                        : filters.verificado 
-                        ? 'true' 
-                        : 'false'
-                    } 
-                    onValueChange={handleVerificadoFilter}
-                  >
-                    <SelectTrigger id="verified-filter">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="true">Verificados</SelectItem>
-                      <SelectItem value="false">Sin verificar</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="active-filter" className="text-xs text-muted-foreground mb-1.5 block">
-                    Estado
-                  </Label>
-                  <Select 
-                    value={
-                      filters.activo === undefined 
-                        ? 'all' 
-                        : filters.activo 
-                        ? 'true' 
-                        : 'false'
-                    } 
-                    onValueChange={handleActivoFilter}
-                  >
-                    <SelectTrigger id="active-filter">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="true">Activos</SelectItem>
-                      <SelectItem value="false">Inactivos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="fecha-desde" className="text-xs text-muted-foreground mb-1.5 block">
-                    Fecha desde
-                  </Label>
-                  <Input
-                    id="fecha-desde"
-                    type="date"
-                    value={filters.fechaDesde || ''}
-                    onChange={(e) => handleFechaDesdeFilter(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="fecha-hasta" className="text-xs text-muted-foreground mb-1.5 block">
-                    Fecha hasta
-                  </Label>
-                  <Input
-                    id="fecha-hasta"
-                    type="date"
-                    value={filters.fechaHasta || ''}
-                    onChange={(e) => handleFechaHastaFilter(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-              </div>
-            </div>
-          </form>
+              return <FiltersPanel showFilters={showFilters} fields={filterFields} />;
+            })()}
+          </div>
         </CardContent>
       </Card>
 

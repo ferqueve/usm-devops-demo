@@ -126,12 +126,6 @@ html {
   overflow-x: hidden;
 }
 
-/* Solución específica para cuando Radix UI bloquea el scroll */
-body[data-scroll-locked="1"] {
-  padding-right: 0 !important;
-  margin-right: 0 !important;
-}
-  
   /* Prevenir overflow horizontal */
   #root, #root > *, main, main > *, div, section, article {
     max-width: 100%;
@@ -142,6 +136,40 @@ body[data-scroll-locked="1"] {
     min-width: 0;
     min-height: 0;
   }
+}
+
+/* Solución específica para cuando Radix UI bloquea el scroll */
+body[data-scroll-locked="1"] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Prevenir layout shift cuando se abre un modal */
+body:has([data-slot="dialog"][data-state="open"]) {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Prevenir layout shift en la raíz cuando hay modal */
+html:has([data-slot="dialog"][data-state="open"]) {
+  overflow: hidden !important;
+  position: relative;
+}
+
+/* Asegurar que los dropdowns dentro de modales no causen layout shift */
+[data-slot="select-content"] {
+  position: fixed !important;
+  isolation: isolate;
 }
 
 /* Utilidades específicas del proyecto */
@@ -288,5 +316,31 @@ body[data-scroll-locked="1"] {
   .group[data-state="collapsed"] [data-slot="sidebar-container"],
   .group[data-state="expanded"] [data-slot="sidebar-container"] {
     transition: left 150ms ease-out, right 150ms ease-out, width 150ms ease-out;
+  }
+
+  /* Prevenir layout shift en modales con scroll */
+  [data-slot="dialog-content"] {
+    overscroll-behavior: contain;
+    isolation: isolate;
+  }
+
+  /* Asegurar que los portales no causen shift */
+  [data-slot="select-content"] {
+    contain: layout style paint;
+    isolation: isolate;
+    will-change: transform;
+  }
+  
+  /* Stacking context para modales */
+  [data-slot="dialog-portal"] {
+    isolation: isolate;
+    contain: layout style paint;
+  }
+  
+  /* Prevenir cualquier shift en el overlay */
+  [data-slot="dialog-overlay"] {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 49 !important;
   }
 }

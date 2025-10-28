@@ -1,9 +1,39 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
-import { Users, Eye, Edit } from "lucide-react";
+import { Users, Eye, Edit, CheckCircle, Wrench, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Espacio } from "@/lib/types/spaces";
+
+// Función para obtener configuración del estado
+function getEstadoConfig(estado: string) {
+  switch (estado) {
+    case 'DISPONIBLE':
+      return { 
+        label: 'Disponible', 
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        icon: CheckCircle
+      };
+    case 'MANTENIMIENTO':
+      return { 
+        label: 'En Mantenimiento', 
+        color: 'bg-amber-50 text-amber-700 border-amber-200',
+        icon: Wrench
+      };
+    case 'NO_DISPONIBLE':
+      return { 
+        label: 'No Disponible', 
+        color: 'bg-red-50 text-red-700 border-red-200',
+        icon: XCircle
+      };
+    default:
+      return { 
+        label: estado, 
+        color: 'bg-gray-50 text-gray-700 border-gray-200',
+        icon: CheckCircle
+      };
+  }
+}
 
 interface SpaceCardProps {
   espacio: Espacio;
@@ -11,38 +41,8 @@ interface SpaceCardProps {
   onEdit: (espacio: Espacio) => void;
 }
 
-// Función para obtener configuración del tipo de espacio
-function getTipoEspacioConfig(tipoNombre: string | null | undefined) {
-  if (!tipoNombre) {
-    return { label: 'Sin tipo', color: 'bg-gray-100 text-gray-800' };
-  }
-  
-  const tipoLower = tipoNombre.toLowerCase();
-  
-  if (tipoLower.includes('aula')) {
-    return { label: 'Aula', color: 'bg-blue-100 text-blue-800' };
-  } else if (tipoLower.includes('laboratorio')) {
-    return { label: 'Laboratorio', color: 'bg-green-100 text-green-800' };
-  } else if (tipoLower.includes('auditorio')) {
-    return { label: 'Auditorio', color: 'bg-purple-100 text-purple-800' };
-  } else if (tipoLower.includes('reunion')) {
-    return { label: 'Sala de Reuniones', color: 'bg-orange-100 text-orange-800' };
-  } else if (tipoLower.includes('oficina')) {
-    return { label: 'Oficina', color: 'bg-gray-100 text-gray-800' };
-  } else if (tipoLower.includes('biblioteca')) {
-    return { label: 'Biblioteca', color: 'bg-indigo-100 text-indigo-800' };
-  } else if (tipoLower.includes('taller')) {
-    return { label: 'Taller', color: 'bg-yellow-100 text-yellow-800' };
-  } else if (tipoLower.includes('gimnasio')) {
-    return { label: 'Gimnasio', color: 'bg-red-100 text-red-800' };
-  } else {
-    return { label: tipoNombre, color: 'bg-gray-100 text-gray-800' };
-  }
-}
-
 export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
   const navigate = useNavigate();
-  const tipoConfig = getTipoEspacioConfig(espacio.tipoEspacioNombre);
 
   const handleViewDetails = (e?: React.MouseEvent) => {
     if (e) {
@@ -58,7 +58,10 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
 
   return (
     <Card 
-      className="group hover:shadow-md transition-all duration-200 cursor-pointer h-full flex flex-col border border-gray-200 hover:border-gray-300 overflow-hidden"
+      className="group hover:shadow-md transition-all duration-200 cursor-pointer h-full flex flex-col border border-gray-200 hover:border-gray-300 overflow-hidden relative"
+      style={{ 
+        borderTop: espacio.tipoEspacioColor ? `6px solid ${espacio.tipoEspacioColor}` : undefined 
+      }}
       onClick={handleViewDetails}
     >
       {/* Imagen del espacio - más compacta */}
@@ -83,15 +86,38 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
           <CardTitle className="text-sm font-semibold line-clamp-1 leading-tight flex-1 min-w-0">
             {espacio.nombre}
           </CardTitle>
-          <Badge className={`${tipoConfig.color} text-xs px-2 py-1 flex-shrink-0`}>
-            {tipoConfig.label}
-          </Badge>
+          {espacio.tipoEspacioColor ? (
+            <span 
+              className="px-2 py-0.5 rounded text-white text-xs font-medium flex-shrink-0"
+              style={{ backgroundColor: espacio.tipoEspacioColor }}
+            >
+              {espacio.tipoEspacioNombre}
+            </span>
+          ) : (
+            <Badge className="bg-gray-100 text-gray-800 text-xs px-2 py-1 flex-shrink-0">
+              {espacio.tipoEspacioNombre || 'Sin tipo'}
+            </Badge>
+          )}
         </div>
 
-        {/* Capacidad */}
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
-          <span className="text-sm text-gray-600 font-medium">{espacio.capacidad} personas</span>
+        {/* Capacidad y Estado */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <span className="text-sm text-gray-600 font-medium">{espacio.capacidad} personas</span>
+          </div>
+          <div>
+            {(() => {
+              const estadoConfig = getEstadoConfig(espacio.estado);
+              const EstadoIcon = estadoConfig.icon;
+              return (
+                <Badge className={`${estadoConfig.color} border font-medium text-xs`}>
+                  <EstadoIcon className="h-3 w-3 mr-1" />
+                  {estadoConfig.label}
+                </Badge>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Botones de acción */}

@@ -52,7 +52,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
   // Memoizar los items del menú para evitar re-renders
   const menuItems = useMemo(() => 
     filteredMenuItems.map((item) => {
-      const isActive = location.pathname === item.href;
+      let isActive = location.pathname === item.href;
+      
+      // Lógica especial para Espacios: debe estar activo en /rooms, /rooms/:id e /inventory
+      if (item.id === 'rooms') {
+        isActive = location.pathname === '/rooms' || 
+                   location.pathname.startsWith('/rooms/') || 
+                   location.pathname === '/inventory';
+      }
+      
       return (
         <SidebarMenuItem key={item.id}>
           <SidebarMenuButton 

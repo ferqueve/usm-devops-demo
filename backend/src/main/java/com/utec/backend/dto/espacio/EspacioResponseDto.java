@@ -16,6 +16,8 @@ public class EspacioResponseDto {
     private String imagenUrl;
     private Long tipoEspacioId;
     private String tipoEspacioNombre;
+    private String tipoEspacioColor; // Color del tipo de espacio
+    private String estado;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

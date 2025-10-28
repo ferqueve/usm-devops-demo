@@ -13,6 +13,7 @@ public class TipoEspacioResponseDto {
     private Long id;
     private String nombre;
     private String descripcion;
+    private String color;
     private Boolean activo;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -24,3 +24,41 @@ export const formatUptime = (ms: number): string => {
   return `${seconds}s`;
 };
 
+/**
+ * Formatea un número como moneda (USD)
+ */
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+  }).format(amount);
+};
+
+/**
+ * Genera un color consistente basado en un string (nombre del espacio)
+ */
+export const generateColorFromString = (str: string): string => {
+  if (!str || str.trim() === '') {
+    str = 'default';
+  }
+  
+  // Generar hash del string
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  hash = hash < 0 ? -hash : hash;
+  
+  // Usar solo colores brillantes/pastel (evitando muy claros)
+  const r = 100 + (hash % 100);
+  const g = 100 + ((hash / 100) % 100);
+  const b = 100 + ((hash / 10000) % 100);
+  
+  const rValid = Math.min(255, Math.max(100, r));
+  const gValid = Math.min(255, Math.max(100, g));
+  const bValid = Math.min(255, Math.max(100, b));
+  
+  return `#${rValid.toString(16).padStart(2, '0')}${gValid.toString(16).padStart(2, '0')}${bValid.toString(16).padStart(2, '0')}`;
+};
+

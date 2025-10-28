@@ -27,6 +27,9 @@ public class TipoEspacio {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
     
+    @Column(name = "color", length = 7)
+    private String color; // Hex color (#RRGGBB)
+    
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
     

@@ -44,6 +44,9 @@ public class Espacio {
     @Column(name = "tipo_espacio_id", nullable = false)
     private Long tipoEspacioId;
     
+    @Column(name = "estado", nullable = false, length = 20)
+    private String estado = "DISPONIBLE";
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_espacio_id", nullable = false, insertable = false, updatable = false)
     private TipoEspacio tipoEspacio;

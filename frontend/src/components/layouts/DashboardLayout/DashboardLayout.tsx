@@ -12,11 +12,12 @@ import type { ReactNode } from 'react';
 // Tipos para el layout
 interface DashboardLayoutProps {
   children: ReactNode;
+  title?: string; // Título opcional para sobrescribir el título automático
   onLogout?: () => void;
 }
 
 // Layout reutilizable para todas las páginas del dashboard
-export const DashboardLayout = memo(function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
+export const DashboardLayout = memo(function DashboardLayout({ children, title, onLogout }: DashboardLayoutProps) {
   const location = useLocation();
   const { logout } = useAuth();
 
@@ -28,17 +29,31 @@ export const DashboardLayout = memo(function DashboardLayout({ children, onLogou
 
   // Memoizar el título de la página
   const pageTitle = useMemo(() => {
+    // Si se pasa un título específico, usarlo
+    if (title) {
+      return title;
+    }
+    
+    const path = location.pathname;
+    
+    // Detectar si estamos en detalles de espacio (/rooms/:id)
+    if (path.startsWith('/rooms/') && path !== '/rooms') {
+      // Para detalles de espacio, devolver texto genérico (el título específico se setea en el componente)
+      return 'Espacios';
+    }
+    
     const titleMap: Record<string, string> = {
       'dashboard': 'Dashboard',
       'calendar': 'Calendario de Reservas',
       'reservations': 'Gestión de Reservas',
-      'rooms': 'Gestión de Salones',
+      'rooms': 'Gestión de Espacios',
       'statistics': 'Estadísticas y Reportes',
       'users': 'Gestión de Usuarios',
-      'system': 'Sistema'
+      'system': 'Sistema',
+      'inventory': 'Gestión de Inventario'
     };
     return titleMap[currentRoute] || currentRoute.charAt(0).toUpperCase() + currentRoute.slice(1);
-  }, [currentRoute]);
+  }, [currentRoute, location.pathname, title]);
 
   // Memoizar el handler de click del menú
   const handleMenuItemClick = useCallback(() => {

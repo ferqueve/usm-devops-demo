@@ -57,12 +57,6 @@ export function DeleteInventarioDialog({
           <div className="space-y-1 text-sm">
             <p><span className="font-medium">Tipo:</span> {inventarioItem.tipoElementoNombre}</p>
             <p><span className="font-medium">Cantidad:</span> {inventarioItem.cantidad}</p>
-            {inventarioItem.marca && (
-              <p><span className="font-medium">Marca:</span> {inventarioItem.marca}</p>
-            )}
-            {inventarioItem.modelo && (
-              <p><span className="font-medium">Modelo:</span> {inventarioItem.modelo}</p>
-            )}
           </div>
         </div>
 

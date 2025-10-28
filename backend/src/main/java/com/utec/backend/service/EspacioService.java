@@ -28,6 +28,7 @@ public class EspacioService {
         espacio.setCapacidad(createDto.getCapacidad());
         espacio.setImagenUrl(createDto.getImagenUrl());
         espacio.setTipoEspacioId(createDto.getTipoEspacioId());
+        espacio.setEstado(createDto.getEstado() != null ? createDto.getEstado() : "DISPONIBLE");
         
         Espacio savedEspacio = espacioRepository.save(espacio);
         return mapToResponseDto(savedEspacio);
@@ -61,6 +62,9 @@ public class EspacioService {
         espacio.setCapacidad(updateDto.getCapacidad());
         espacio.setImagenUrl(updateDto.getImagenUrl());
         espacio.setTipoEspacioId(updateDto.getTipoEspacioId());
+        if (updateDto.getEstado() != null) {
+            espacio.setEstado(updateDto.getEstado());
+        }
         espacio.setUpdatedAt(LocalDateTime.now());
         
         Espacio updatedEspacio = espacioRepository.save(espacio);
@@ -118,7 +122,7 @@ public class EspacioService {
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> filterEspacios(String search, Long tipoEspacioId, Integer capacidadMin, Integer capacidadMax, 
-                                                   List<Long> tipoElementoIds, List<Integer> cantidadMins, List<Integer> cantidadMaxs) {
+                                                   String estado, List<Long> tipoElementoIds, List<Integer> cantidadMins, List<Integer> cantidadMaxs) {
         List<Espacio> espacios = espacioRepository.findAll();
         
         // Aplicar filtros básicos
@@ -143,6 +147,12 @@ public class EspacioService {
         if (capacidadMax != null) {
             espacios = espacios.stream()
                     .filter(e -> e.getCapacidad() <= capacidadMax)
+                    .collect(Collectors.toList());
+        }
+        
+        if (estado != null && !estado.trim().isEmpty()) {
+            espacios = espacios.stream()
+                    .filter(e -> e.getEstado() != null && e.getEstado().equals(estado))
                     .collect(Collectors.toList());
         }
         
@@ -217,6 +227,8 @@ public class EspacioService {
         dto.setImagenUrl(espacio.getImagenUrl());
         dto.setTipoEspacioId(espacio.getTipoEspacioId());
         dto.setTipoEspacioNombre(espacio.getTipoEspacio() != null ? espacio.getTipoEspacio().getNombre() : null);
+        dto.setTipoEspacioColor(espacio.getTipoEspacio() != null ? espacio.getTipoEspacio().getColor() : null);
+        dto.setEstado(espacio.getEstado());
         dto.setCreatedAt(espacio.getCreatedAt());
         dto.setUpdatedAt(espacio.getUpdatedAt());
         return dto;

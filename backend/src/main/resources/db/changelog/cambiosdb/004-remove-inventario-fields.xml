@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Eliminar columna marca de inventario_item -->
+    <changeSet id="001" author="mathi">
+        <dropColumn tableName="inventario_item" columnName="marca"/>
+    </changeSet>
+
+    <!-- Eliminar columna modelo de inventario_item -->
+    <changeSet id="002" author="mathi">
+        <dropColumn tableName="inventario_item" columnName="modelo"/>
+    </changeSet>
+
+    <!-- Eliminar columna numero_serie de inventario_item -->
+    <changeSet id="003" author="mathi">
+        <dropColumn tableName="inventario_item" columnName="numero_serie"/>
+    </changeSet>
+
+    <!-- Eliminar columna valor_estimado de inventario_item -->
+    <changeSet id="004" author="mathi">
+        <dropColumn tableName="inventario_item" columnName="valor_estimado"/>
+    </changeSet>
+
+    <!-- Eliminar columna fecha_adquisicion de inventario_item -->
+    <changeSet id="005" author="mathi">
+        <dropColumn tableName="inventario_item" columnName="fecha_adquisicion"/>
+    </changeSet>
+
+</databaseChangeLog>
+

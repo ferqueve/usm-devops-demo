@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Agregar columna estado a espacio -->
+    <changeSet id="001" author="mathi">
+        <addColumn tableName="espacio">
+            <column name="estado" type="VARCHAR(20)" defaultValue="DISPONIBLE">
+                <constraints notNullConstraintName="nn_espacio_estado"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar constraint CHECK para validar valores válidos de estado -->
+    <changeSet id="002" author="mathi">
+        <sql>
+            ALTER TABLE espacio ADD CONSTRAINT ck_espacio_estado 
+            CHECK (estado IN ('DISPONIBLE', 'MANTENIMIENTO', 'NO_DISPONIBLE'));
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

@@ -26,4 +26,6 @@ public class EspacioCreateDto {
     
     @NotNull(message = "El ID del tipo de espacio es obligatorio")
     private Long tipoEspacioId;
+    
+    private String estado = "DISPONIBLE";
 }
