@@ -46,6 +46,9 @@ public class Reserva {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
+    // Campos de auditoría que se pueden setear manualmente si es necesario
+    // Estos ya están mapeados por las anotaciones @CreationTimestamp y @UpdateTimestamp
+    
     // Relaciones
     @OneToOne(mappedBy = "reserva", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private EventoExterno eventoExterno;

@@ -81,3 +81,25 @@ export interface InventarioFilters {
   estado?: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO';
   sinAsignar?: boolean;
 }
+
+export interface Reserva {
+  id: number;
+  espacioId: number;
+  espacioNombre: string;
+  espacioImagen?: string;
+  capacidadEspacio: number;
+  usuarioId: number;
+  usuarioNombre: string;
+  usuarioEmail: string;
+  inicio: string; // ISO datetime
+  fin: string;
+  estado: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReservaFilters {
+  estado?: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
+  espacioId?: number;
+  search?: string;
+}
