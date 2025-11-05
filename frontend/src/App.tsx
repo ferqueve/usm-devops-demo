@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { Toaster } from '@/components/ui/sonner';
 import AuthPage from './app/auth/page';
 import VerifyEmailPage from './app/auth/verify/page';
 import { AuthCallbackSuccess } from './app/auth/callback-success';
@@ -157,6 +158,7 @@ function App() {
     <AuthProvider>
       <Router>
         <AppRoutes />
+        <Toaster />
       </Router>
     </AuthProvider>
   );

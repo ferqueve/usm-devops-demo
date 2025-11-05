@@ -1,18 +1,25 @@
 package com.utec.backend.controller;
 
 import com.utec.backend.common.ApiResponse;
+import com.utec.backend.dto.common.PagedResponseDto;
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
+import com.utec.backend.dto.reserva.ReservaStatsDto;
 import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.service.ReservaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -60,6 +67,38 @@ public class ReservaController {
     }
     
     /**
+     * Obtener reservas del usuario autenticado con paginación y filtros
+     */
+    @GetMapping("/mis-reservas/paged")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    public ResponseEntity<ApiResponse<PagedResponseDto<ReservaResponseDto>>> getMisReservasPaged(
+            Authentication authentication,
+            @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Long espacioId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @RequestParam(required = false) String tiempo) {
+        try {
+            String userEmail = authentication.getName();
+            
+            var reservasPage = reservaService.getReservasByUsuarioPaged(
+                    userEmail,
+                    pageable,
+                    estado,
+                    espacioId,
+                    fechaInicio,
+                    fechaFin,
+                    tiempo);
+            
+            PagedResponseDto<ReservaResponseDto> pagedResponse = PagedResponseDto.of(reservasPage);
+            return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Reservas obtenidas exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
+        }
+    }
+        /**
      * Obtener una reserva por ID
      */
     @GetMapping("/{id}")
@@ -136,6 +175,23 @@ public class ReservaController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener reservas del espacio: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Obtener estadísticas personales de reservas del usuario autenticado
+     */
+    @GetMapping("/mis-reservas/stats")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    public ResponseEntity<ApiResponse<ReservaStatsDto>> getMisReservasStats(
+            Authentication authentication) {
+        try {
+            String userEmail = authentication.getName();
+            ReservaStatsDto stats = reservaService.obtenerEstadisticasPersonales(userEmail);
+            return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas obtenidas exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener estadísticas: " + e.getMessage()));
         }
     }
 }

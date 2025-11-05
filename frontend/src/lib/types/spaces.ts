@@ -88,6 +88,9 @@ export interface Reserva {
   espacioNombre: string;
   espacioImagen?: string;
   capacidadEspacio: number;
+  tipoEspacioId?: number;
+  tipoEspacioNombre?: string;
+  tipoEspacioColor?: string; // Color del tipo de espacio
   usuarioId: number;
   usuarioNombre: string;
   usuarioEmail: string;
@@ -102,4 +105,52 @@ export interface ReservaFilters {
   estado?: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
   espacioId?: number;
   search?: string;
+}
+
+export interface ReservaStats {
+  // Métricas básicas
+  totalReservas: number;
+  totalAprobadas: number;
+  totalPendientes: number;
+  totalCanceladas: number;
+  totalFuturas: number;
+  totalPasadas: number;
+  totalActivas: number;
+  reservasPorEstado: Record<string, number>;
+  
+  // Métricas temporales
+  reservasEsteMes: number;
+  reservasProximoMes: number;
+  reservasEsteAnio: number;
+  reservasPorMes: Record<string, number>;
+  reservasPorDiaSemana: Record<string, number>;
+  mesConMasReservas?: string | null;
+  promedioReservasPorMes: number;
+  
+  // Métricas de espacios
+  totalEspaciosUsados: number;
+  espacioMasUsado?: number | null;
+  nombreEspacioMasUsado?: string | null;
+  reservasPorEspacio: Record<string, number>;
+  distribucionPorEspacio: Record<string, number>;
+  
+  // Métricas de uso y duración
+  duracionTotalHoras: number;
+  duracionPromedioHoras: number;
+  reservaMasLargaHoras: number;
+  reservaMasCortaHoras: number;
+  horasReservadasEsteMes: number;
+  
+  // Métricas de frecuencia
+  promedioReservasPorSemana: number;
+  diasDesdeUltimaReserva?: number | null;
+  diasHastaProximaReserva?: number | null;
+  fechaUltimaReserva?: string | null; // ISO datetime
+  fechaProximaReserva?: string | null; // ISO datetime
+  
+  // Métricas comparativas
+  reservasMesActual: number;
+  reservasMesAnterior: number;
+  diferenciaMesAnterior: number;
+  porcentajeCambioMesAnterior: number;
 }

@@ -16,6 +16,9 @@ public class ReservaResponseDto {
     private String espacioNombre;
     private String espacioImagen;
     private Integer capacidadEspacio;
+    private Long tipoEspacioId;
+    private String tipoEspacioNombre;
+    private String tipoEspacioColor; // Color del tipo de espacio
     private Long usuarioId;
     private String usuarioNombre;
     private String usuarioEmail;

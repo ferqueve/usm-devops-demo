@@ -243,6 +243,25 @@ export const espaciosApi = {
     return apiRequest<any>('/inventario/stats', { method: 'GET' });
   },
 
+  async obtenerEstadisticasDetalladasInventario(
+    espacioId?: number | null,
+    tipoElementoId?: number | null,
+    estado?: string
+  ): Promise<ApiResponse<any>> {
+    const params = new URLSearchParams();
+    if (espacioId !== null && espacioId !== undefined) {
+      params.append('espacioId', espacioId.toString());
+    }
+    if (tipoElementoId !== null && tipoElementoId !== undefined) {
+      params.append('tipoElementoId', tipoElementoId.toString());
+    }
+    if (estado && estado !== 'todos') {
+      params.append('estado', estado);
+    }
+    const queryString = params.toString();
+    return apiRequest<any>(`/stats/inventario/detailed${queryString ? '?' + queryString : ''}`, { method: 'GET' });
+  },
+
   // Obtener todo el inventario sin paginación (para exportar)
   async obtenerTodoElInventario(): Promise<ApiResponse<InventarioItem[]>> {
     return apiRequest<InventarioItem[]>('/inventario', { method: 'GET' });

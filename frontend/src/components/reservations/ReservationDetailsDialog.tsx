@@ -70,7 +70,7 @@ export default function ReservationDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             Detalles de la Reserva
@@ -103,13 +103,13 @@ export default function ReservationDetailsDialog({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Información del Espacio</h3>
             <div className="grid gap-2 pl-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="font-medium">Nombre:</span>
-                <span>{reserva.espacioNombre}</span>
+                <span className="break-words">{reserva.espacioNombre}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <Users className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="font-medium">Capacidad:</span>
                 <span>{reserva.capacidadEspacio} personas</span>
               </div>
@@ -120,15 +120,15 @@ export default function ReservationDetailsDialog({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Información del Usuario</h3>
             <div className="grid gap-2 pl-4">
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <User className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="font-medium">Nombre:</span>
-                <span>{reserva.usuarioNombre}</span>
+                <span className="break-words">{reserva.usuarioNombre}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="font-medium">Email:</span>
-                <span>{reserva.usuarioEmail}</span>
+                <span className="break-all">{reserva.usuarioEmail}</span>
               </div>
             </div>
           </div>
@@ -137,13 +137,13 @@ export default function ReservationDetailsDialog({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Fecha y Hora</h3>
             <div className="grid gap-2 pl-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="font-medium">Fecha:</span>
-                <span>{formatDate(reserva.inicio)}</span>
+                <span className="break-words">{formatDate(reserva.inicio)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="font-medium">Horario:</span>
                 <span>{formatTime(reserva.inicio)} - {formatTime(reserva.fin)}</span>
               </div>

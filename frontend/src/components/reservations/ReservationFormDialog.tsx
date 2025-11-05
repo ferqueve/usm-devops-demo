@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 import type { Espacio, Reserva } from '@/lib/types/spaces';
+import { formatLocalDateTime } from './reservationUtils';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -53,10 +54,10 @@ export default function ReservationFormDialog({
   const horas = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
   const minutos = ['00', '15', '30', '45'];
 
-  // Obtener horas disponibles para el día seleccionado
-  const getHorasDisponibles = () => {
+  // Obtener horas ocupadas por reservas existentes
+  const getHorasOcupadas = () => {
     if (!fecha || reservasEspacio.length === 0) {
-      return horas;
+      return new Set<number>();
     }
 
     const fechaStr = fecha.toISOString().split('T')[0];
@@ -70,17 +71,11 @@ export default function ReservationFormDialog({
              (inicio.toISOString() < fecha + 'T23:59:59' && fin.toISOString() > fecha + 'T00:00:00');
     });
 
-    if (reservasDia.length === 0) {
-      return horas;
-    }
-
     const horasOcupadas = new Set<number>();
     
     reservasDia.forEach(reserva => {
       const inicio = new Date(reserva.inicio);
       const fin = new Date(reserva.fin);
-      
-      // Si es el mismo día, marcar las horas ocupadas
       const inicioStr = inicio.toISOString().split('T')[0];
       const finStr = fin.toISOString().split('T')[0];
       
@@ -94,10 +89,152 @@ export default function ReservationFormDialog({
       }
     });
 
-    return horas.filter(hora => !horasOcupadas.has(parseInt(hora)));
+    return horasOcupadas;
   };
 
-  const horasDisponibles = getHorasDisponibles();
+  // Obtener horas disponibles para inicio
+  const getHorasInicioDisponibles = () => {
+    const horasOcupadas = getHorasOcupadas();
+    const ahora = new Date();
+    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const horaActual = ahora.getHours();
+
+    return horas.filter(hora => {
+      const horaNum = parseInt(hora);
+      
+      // Excluir horas ocupadas
+      if (horasOcupadas.has(horaNum)) {
+        return false;
+      }
+
+      // Si es hoy, excluir horas pasadas
+      if (esHoy) {
+        if (horaNum < horaActual) {
+          return false;
+        }
+        // Si es la hora actual, solo permitir si hay minutos disponibles después del minuto actual
+        if (horaNum === horaActual) {
+          // Los minutos se filtrarán en getMinutosInicioDisponibles
+          return true;
+        }
+      }
+
+      // Si hay hora de fin seleccionada, solo mostrar horas anteriores
+      if (formData.horaFinHora) {
+        const horaFinNum = parseInt(formData.horaFinHora);
+        // Si la hora de inicio es igual a la de fin, verificar minutos
+        if (horaNum === horaFinNum) {
+          // Si los minutos de inicio son mayores o iguales a los de fin, no es válido
+          const minInicio = parseInt(formData.horaInicioMinuto || '0');
+          const minFin = parseInt(formData.horaFinMinuto || '0');
+          return minInicio < minFin;
+        }
+        return horaNum < horaFinNum;
+      }
+
+      return true;
+    });
+  };
+
+  // Obtener horas disponibles para fin
+  const getHorasFinDisponibles = () => {
+    const horasOcupadas = getHorasOcupadas();
+    const ahora = new Date();
+    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const horaActual = ahora.getHours();
+
+    return horas.filter(hora => {
+      const horaNum = parseInt(hora);
+      
+      // Excluir horas ocupadas
+      if (horasOcupadas.has(horaNum)) {
+        return false;
+      }
+
+      // Si es hoy, excluir horas pasadas
+      if (esHoy && horaNum < horaActual) {
+        return false;
+      }
+
+      // Si hay hora de inicio seleccionada, solo mostrar horas posteriores
+      if (formData.horaInicioHora) {
+        const horaInicioNum = parseInt(formData.horaInicioHora);
+        
+        // Si la hora de fin es igual a la de inicio, verificar minutos
+        if (horaNum === horaInicioNum) {
+          // Los minutos se filtrarán en getMinutosFinDisponibles para asegurar 30 minutos mínimos
+          return true;
+        }
+        
+        return horaNum > horaInicioNum;
+      }
+
+      return true;
+    });
+  };
+
+  const horasInicioDisponibles = getHorasInicioDisponibles();
+  const horasFinDisponibles = getHorasFinDisponibles();
+
+  // Obtener minutos disponibles para inicio
+  const getMinutosInicioDisponibles = () => {
+    if (!formData.horaInicioHora) {
+      return minutos;
+    }
+
+    const ahora = new Date();
+    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const horaActual = ahora.getHours();
+    const minutoActual = ahora.getMinutes();
+    const horaInicioNum = parseInt(formData.horaInicioHora);
+
+    // Si es hoy y es la hora actual, excluir minutos pasados
+    if (esHoy && horaInicioNum === horaActual) {
+      return minutos.filter(min => parseInt(min) > minutoActual);
+    }
+
+    // Si hay hora de fin seleccionada y es la misma hora, filtrar minutos
+    if (formData.horaFinHora && formData.horaInicioHora === formData.horaFinHora) {
+      const minFin = parseInt(formData.horaFinMinuto || '0');
+      return minutos.filter(min => parseInt(min) < minFin);
+    }
+
+    return minutos;
+  };
+
+  // Obtener minutos disponibles para fin
+  const getMinutosFinDisponibles = () => {
+    if (!formData.horaFinHora) {
+      return minutos;
+    }
+
+    const ahora = new Date();
+    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const horaActual = ahora.getHours();
+    const minutoActual = ahora.getMinutes();
+    const horaFinNum = parseInt(formData.horaFinHora);
+
+    // Si es hoy y es la hora actual, excluir minutos pasados
+    if (esHoy && horaFinNum === horaActual) {
+      return minutos.filter(min => parseInt(min) > minutoActual);
+    }
+
+    // Si hay hora de inicio seleccionada y es la misma hora, asegurar diferencia mínima de 30 minutos
+    if (formData.horaInicioHora && formData.horaInicioHora === formData.horaFinHora) {
+      const minInicio = parseInt(formData.horaInicioMinuto || '0');
+      return minutos.filter(min => {
+        const minNum = parseInt(min);
+        const diferenciaMinutos = minNum - minInicio;
+        return diferenciaMinutos >= 30;
+      });
+    }
+
+    // Si no hay hora de inicio o la hora de fin es mayor que la de inicio, todos los minutos están disponibles
+    return minutos;
+  };
+
+  const minutosInicioDisponibles = getMinutosInicioDisponibles();
+  const minutosFinDisponibles = getMinutosFinDisponibles();
 
   useEffect(() => {
     if (open) {
@@ -268,9 +405,10 @@ export default function ReservationFormDialog({
 
     setLoading(true);
     try {
-      // Formatear fechas en ISO para el backend
-      const inicioISO = inicio.toISOString();
-      const finISO = fin.toISOString();
+      // Formatear fechas en formato ISO local (sin convertir a UTC)
+      // Esto es necesario porque el backend usa LocalDateTime que no tiene zona horaria
+      const inicioISO = formatLocalDateTime(inicio);
+      const finISO = formatLocalDateTime(fin);
 
       await reservationsApi.crearReserva({
         espacioId: parseInt(formData.espacioId),
@@ -315,7 +453,7 @@ export default function ReservationFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Nueva Reserva</DialogTitle>
@@ -369,18 +507,37 @@ export default function ReservationFormDialog({
               <div className="flex gap-2 items-center">
                 <div className="flex-1">
                   <TimeSelect
-                    options={horasDisponibles}
+                    options={horasInicioDisponibles}
                     value={formData.horaInicioHora}
-                    onChange={(value) => setFormData(prev => ({ ...prev, horaInicioHora: value }))}
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, horaInicioHora: value }));
+                      // Si la hora de fin seleccionada es menor o igual a la nueva hora de inicio, limpiarla
+                      if (formData.horaFinHora && parseInt(value) >= parseInt(formData.horaFinHora)) {
+                        setFormData(prev => ({ ...prev, horaFinHora: '' }));
+                      }
+                    }}
                     placeholder="00"
                   />
                 </div>
                 <div className="text-lg font-semibold px-1">:</div>
                 <div className="flex-1">
                   <TimeSelect
-                    options={minutos}
+                    options={minutosInicioDisponibles}
                     value={formData.horaInicioMinuto}
-                    onChange={(value) => setFormData(prev => ({ ...prev, horaInicioMinuto: value }))}
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, horaInicioMinuto: value }));
+                      // Si hay hora de fin, verificar que siga siendo válida
+                      if (formData.horaInicioHora && formData.horaFinHora) {
+                        const horaInicioNum = parseInt(formData.horaInicioHora);
+                        const horaFinNum = parseInt(formData.horaFinHora);
+                        const minInicio = parseInt(value);
+                        const minFin = parseInt(formData.horaFinMinuto || '0');
+                        
+                        if (horaInicioNum === horaFinNum && minInicio >= minFin) {
+                          setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
+                        }
+                      }
+                    }}
                     placeholder="00"
                   />
                 </div>
@@ -393,16 +550,33 @@ export default function ReservationFormDialog({
               <div className="flex gap-2 items-center">
                 <div className="flex-1">
                   <TimeSelect
-                    options={horasDisponibles}
+                    options={horasFinDisponibles}
                     value={formData.horaFinHora}
-                    onChange={(value) => setFormData(prev => ({ ...prev, horaFinHora: value }))}
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, horaFinHora: value }));
+                      // Si la nueva hora de fin es igual a la de inicio y los minutos no son válidos, limpiar minutos de fin
+                      if (formData.horaInicioHora && value === formData.horaInicioHora) {
+                        const minInicio = parseInt(formData.horaInicioMinuto || '0');
+                        const minFin = parseInt(formData.horaFinMinuto || '0');
+                        if (minFin <= minInicio) {
+                          // Buscar el próximo minuto válido (al menos 30 minutos después)
+                          const minValido = minInicio + 30;
+                          if (minValido >= 60) {
+                            // Si no hay minutos válidos en esta hora, limpiar
+                            setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
+                          } else {
+                            setFormData(prev => ({ ...prev, horaFinMinuto: minValido.toString().padStart(2, '0') }));
+                          }
+                        }
+                      }
+                    }}
                     placeholder="00"
                   />
                 </div>
                 <div className="text-lg font-semibold px-1">:</div>
                 <div className="flex-1">
                   <TimeSelect
-                    options={minutos}
+                    options={minutosFinDisponibles}
                     value={formData.horaFinMinuto}
                     onChange={(value) => setFormData(prev => ({ ...prev, horaFinMinuto: value }))}
                     placeholder="00"
