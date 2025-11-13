@@ -15,6 +15,7 @@ import StatisticsPage from './app/statistics/page';
 import UsersPage from './app/users/page';
 import SystemPage from './app/system/page';
 import InventoryPage from './app/inventory/page';
+import InventoryRequestsPage from './app/inventory/requests/page';
 
 
 // Componente principal de rutas
@@ -135,6 +136,15 @@ function AppRoutes() {
             <InventoryPage />
           </RoleProtectedRoute>
         } 
+      />
+
+      <Route
+        path="/inventory/requests"
+        element={
+          <RoleProtectedRoute>
+            <InventoryRequestsPage />
+          </RoleProtectedRoute>
+        }
       />
       
       {/* Ruta raíz - redirección inteligente */}

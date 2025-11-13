@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reserva")
@@ -27,6 +28,10 @@ public class Reserva {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carrera_id", nullable = true)
+    private Carrera carrera;
     
     @Column(name = "inicio", nullable = false)
     private LocalDateTime inicio;
@@ -52,6 +57,9 @@ public class Reserva {
     // Relaciones
     @OneToOne(mappedBy = "reserva", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private EventoExterno eventoExterno;
+    
+    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ReservaItemSolicitado> itemsSolicitados;
     
     // Enumeración para estados
     public enum EstadoReserva {

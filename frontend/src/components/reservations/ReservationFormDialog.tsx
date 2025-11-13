@@ -4,9 +4,7 @@ import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
@@ -18,12 +16,16 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimeSelect } from '@/components/ui/time-select';
-import { Loader2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Loader2, Pencil, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
-import type { Espacio, Reserva } from '@/lib/types/spaces';
+import { carrerasApi } from '@/lib/api/carreras';
+import type { Espacio, Reserva, Carrera, TipoElemento } from '@/lib/types/spaces';
 import { formatLocalDateTime } from './reservationUtils';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -38,12 +40,21 @@ export default function ReservationFormDialog({
 }: ReservationFormDialogProps) {
   const [loading, setLoading] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
+  const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
   const [fecha, setFecha] = useState<Date | undefined>(new Date());
   const [horaError, setHoraError] = useState<string>('');
   const [reservasEspacio, setReservasEspacio] = useState<Reserva[]>([]);
   const [disabledDates, setDisabledDates] = useState<Date[]>([]);
+  const [itemsSolicitados, setItemsSolicitados] = useState<Array<{
+    tipoElementoId: number;
+    inventarioItemId?: number;
+    cantidadSolicitada: number;
+    observaciones?: string;
+  }>>([]);
   const [formData, setFormData] = useState({
     espacioId: '',
+    carreraId: '',
     horaInicioHora: '',
     horaInicioMinuto: '00',
     horaFinHora: '',
@@ -239,10 +250,14 @@ export default function ReservationFormDialog({
   useEffect(() => {
     if (open) {
       fetchEspacios();
+      fetchCarreras();
+      fetchTiposElemento();
       setFecha(new Date());
       setHoraError('');
+      setItemsSolicitados([]);
       setFormData({
         espacioId: '',
+        carreraId: '',
         horaInicioHora: '',
         horaInicioMinuto: '00',
         horaFinHora: '',
@@ -291,6 +306,49 @@ export default function ReservationFormDialog({
       console.error('Error al cargar espacios:', error);
       toast.error('Error al cargar espacios');
     }
+  };
+
+  const fetchCarreras = async () => {
+    try {
+      const response = await carrerasApi.obtenerCarreras();
+      if (response.data) {
+        setCarreras(response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar carreras:', error);
+      // No mostramos error porque la carrera es opcional
+    }
+  };
+
+  const fetchTiposElemento = async () => {
+    try {
+      const response = await espaciosApi.listarTiposElemento();
+      if (response.data) {
+        const tiposActivos = response.data.filter(t => t.activo);
+        setTiposElemento(tiposActivos);
+      }
+    } catch (error) {
+      console.error('Error al cargar tipos de elemento:', error);
+      // No mostramos error porque los items son opcionales
+    }
+  };
+
+  const agregarItemSolicitado = () => {
+    setItemsSolicitados(prev => [...prev, {
+      tipoElementoId: tiposElemento[0]?.id || 0,
+      cantidadSolicitada: 1,
+      observaciones: ''
+    }]);
+  };
+
+  const eliminarItemSolicitado = (index: number) => {
+    setItemsSolicitados(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const actualizarItemSolicitado = (index: number, field: string, value: any) => {
+    setItemsSolicitados(prev => prev.map((item, i) => 
+      i === index ? { ...item, [field]: value } : item
+    ));
   };
 
   // Cargar reservas del espacio seleccionado
@@ -412,8 +470,15 @@ export default function ReservationFormDialog({
 
       await reservationsApi.crearReserva({
         espacioId: parseInt(formData.espacioId),
+        carreraId: formData.carreraId ? parseInt(formData.carreraId) : undefined,
         inicio: inicioISO,
-        fin: finISO
+        fin: finISO,
+        itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
+          tipoElementoId: item.tipoElementoId,
+          inventarioItemId: item.inventarioItemId,
+          cantidadSolicitada: item.cantidadSolicitada,
+          observaciones: item.observaciones || undefined
+        })) : undefined
       });
 
       toast.success('Reserva creada exitosamente');
@@ -453,156 +518,347 @@ export default function ReservationFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Nueva Reserva</DialogTitle>
-            <DialogDescription>
-              Completa los datos para crear una nueva reserva
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Espacio */}
-            <div className="space-y-2">
-              <Label htmlFor="espacio">Espacio *</Label>
-              <Select
-                value={formData.espacioId}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, espacioId: value }))}
-              >
-                <SelectTrigger id="espacio">
-                  <SelectValue placeholder="Seleccionar espacio" />
-                </SelectTrigger>
-                <SelectContent>
-                  {espaciosDisponibles.length === 0 ? (
-                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                      No hay espacios disponibles
-                    </div>
-                  ) : (
-                    espaciosDisponibles.map((espacio) => (
-                      <SelectItem key={espacio.id} value={espacio.id.toString()}>
-                        {espacio.nombre} (Cap: {espacio.capacidad})
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Fecha */}
-            <div className="space-y-2">
-              <Label>Fecha *</Label>
-              <DatePicker
-                value={fecha}
-                onChange={setFecha}
-                placeholder="Seleccionar fecha"
-                minDate={new Date()}
-                disabledDates={disabledDates}
-              />
-            </div>
-
-            {/* Hora de inicio */}
-            <div className="space-y-2">
-              <Label>Hora de inicio *</Label>
-              <div className="flex gap-2 items-center">
-                <div className="flex-1">
-                  <TimeSelect
-                    options={horasInicioDisponibles}
-                    value={formData.horaInicioHora}
-                    onChange={(value) => {
-                      setFormData(prev => ({ ...prev, horaInicioHora: value }));
-                      // Si la hora de fin seleccionada es menor o igual a la nueva hora de inicio, limpiarla
-                      if (formData.horaFinHora && parseInt(value) >= parseInt(formData.horaFinHora)) {
-                        setFormData(prev => ({ ...prev, horaFinHora: '' }));
-                      }
-                    }}
-                    placeholder="00"
-                  />
-                </div>
-                <div className="text-lg font-semibold px-1">:</div>
-                <div className="flex-1">
-                  <TimeSelect
-                    options={minutosInicioDisponibles}
-                    value={formData.horaInicioMinuto}
-                    onChange={(value) => {
-                      setFormData(prev => ({ ...prev, horaInicioMinuto: value }));
-                      // Si hay hora de fin, verificar que siga siendo válida
-                      if (formData.horaInicioHora && formData.horaFinHora) {
-                        const horaInicioNum = parseInt(formData.horaInicioHora);
-                        const horaFinNum = parseInt(formData.horaFinHora);
-                        const minInicio = parseInt(value);
-                        const minFin = parseInt(formData.horaFinMinuto || '0');
-                        
-                        if (horaInicioNum === horaFinNum && minInicio >= minFin) {
-                          setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
-                        }
-                      }
-                    }}
-                    placeholder="00"
-                  />
-                </div>
+      <DialogContent className="!grid-cols-1 w-[95vw] sm:max-w-[500px] !p-0 !gap-0 max-h-[90vh] !flex !flex-col overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
+          {/* Ticket Style Header */}
+          <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 px-6 pt-5 pb-4 flex-shrink-0">
+            <div className="flex items-center gap-3 mb-2">
+              <p className="text-xs font-medium text-white/90">NUEVA RESERVA</p>
+              <div className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                Crear
               </div>
             </div>
-
-            {/* Hora de fin */}
-            <div className="space-y-2">
-              <Label>Hora de fin *</Label>
-              <div className="flex gap-2 items-center">
-                <div className="flex-1">
-                  <TimeSelect
-                    options={horasFinDisponibles}
-                    value={formData.horaFinHora}
-                    onChange={(value) => {
-                      setFormData(prev => ({ ...prev, horaFinHora: value }));
-                      // Si la nueva hora de fin es igual a la de inicio y los minutos no son válidos, limpiar minutos de fin
-                      if (formData.horaInicioHora && value === formData.horaInicioHora) {
-                        const minInicio = parseInt(formData.horaInicioMinuto || '0');
-                        const minFin = parseInt(formData.horaFinMinuto || '0');
-                        if (minFin <= minInicio) {
-                          // Buscar el próximo minuto válido (al menos 30 minutos después)
-                          const minValido = minInicio + 30;
-                          if (minValido >= 60) {
-                            // Si no hay minutos válidos en esta hora, limpiar
-                            setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
-                          } else {
-                            setFormData(prev => ({ ...prev, horaFinMinuto: minValido.toString().padStart(2, '0') }));
-                          }
-                        }
-                      }
-                    }}
-                    placeholder="00"
-                  />
-                </div>
-                <div className="text-lg font-semibold px-1">:</div>
-                <div className="flex-1">
-                  <TimeSelect
-                    options={minutosFinDisponibles}
-                    value={formData.horaFinMinuto}
-                    onChange={(value) => setFormData(prev => ({ ...prev, horaFinMinuto: value }))}
-                    placeholder="00"
-                  />
-                </div>
-              </div>
-              {horaError && (
-                <p className="text-sm text-destructive font-medium">{horaError}</p>
-              )}
+            <DialogTitle className="text-lg font-bold text-white">Completa los datos</DialogTitle>
+            {/* Puntos decorativos tipo ticket */}
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
+              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading || !isFormValid}>
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Crear Reserva
-            </Button>
-          </DialogFooter>
+          {/* Contenido del formulario */}
+          <div className="bg-white flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6">
+            {/* Espacio */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="espacio" className="text-sm font-semibold text-gray-700 min-w-[80px]">Espacio *</Label>
+              <div className="flex-1">
+                <Select
+                  value={formData.espacioId}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, espacioId: value }))}
+                >
+                  <SelectTrigger id="espacio" className="h-10">
+                    <SelectValue placeholder="Seleccionar espacio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {espaciosDisponibles.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No hay espacios disponibles
+                      </div>
+                    ) : (
+                      espaciosDisponibles.map((espacio) => (
+                        <SelectItem key={espacio.id} value={espacio.id.toString()}>
+                          {espacio.nombre} (Cap: {espacio.capacidad})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Carrera */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="carrera" className="text-sm font-semibold text-gray-700 min-w-[80px]">Carrera</Label>
+              <div className="flex-1">
+                <Select
+                  value={formData.carreraId || "ninguna"}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, carreraId: value === "ninguna" ? '' : value }))}
+                >
+                  <SelectTrigger id="carrera" className="h-10">
+                    <SelectValue placeholder="Seleccionar carrera" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ninguna">Ninguna</SelectItem>
+                    {carreras.map((carrera) => (
+                      <SelectItem key={carrera.id} value={carrera.id.toString()}>
+                        {carrera.nombre} {carrera.codigo ? `(${carrera.codigo})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Items Solicitados */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold text-gray-700">Items Solicitados</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={agregarItemSolicitado}
+                  disabled={tiposElemento.length === 0}
+                  className="h-8 text-xs"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Agregar
+                </Button>
+              </div>
+              {itemsSolicitados.length > 0 && (
+                <div className="space-y-3 border border-gray-200 rounded-lg p-2 bg-gray-50">
+                  {itemsSolicitados.map((item, index) => {
+                    const tipo = tiposElemento.find((tipo) => tipo.id === item.tipoElementoId);
+                    const observacionLimpia = item.observaciones?.trim() || '';
+                    const observacionResumen =
+                      observacionLimpia.length > 45
+                        ? `${observacionLimpia.slice(0, 42)}...`
+                        : observacionLimpia || 'Sin observaciones';
+
+                    return (
+                      <div key={index} className="bg-white rounded-md border border-gray-200 p-3 flex items-center gap-3">
+                        <div className="flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="text-sm font-semibold text-gray-800">
+                            {tipo?.nombre ?? 'Tipo sin definir'}
+                          </span>
+                          <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                            x{item.cantidadSolicitada}
+                          </span>
+                          <span className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-[260px]">
+                            Obs: {observacionResumen}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                          <PopoverContent align="start" className="w-[320px] space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                Tipo de elemento
+                              </Label>
+                              <Select
+                                value={item.tipoElementoId.toString()}
+                                onValueChange={(value) => actualizarItemSolicitado(index, 'tipoElementoId', parseInt(value))}
+                              >
+                                <SelectTrigger className="h-9 text-sm">
+                                  <SelectValue placeholder="Seleccionar tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {tiposElemento.map((tipo) => (
+                                    <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                                      {tipo.nombre}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                Cantidad
+                              </Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={item.cantidadSolicitada}
+                                onChange={(e) =>
+                                  actualizarItemSolicitado(index, 'cantidadSolicitada', parseInt(e.target.value) || 1)
+                                }
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                Observaciones (opcional)
+                              </Label>
+                              <Textarea
+                                value={item.observaciones || ''}
+                                onChange={(e) => actualizarItemSolicitado(index, 'observaciones', e.target.value)}
+                                placeholder="Ej: Necesito marcadores nuevos"
+                                className="text-sm min-h-[80px] resize-none"
+                              />
+                            </div>
+                          </PopoverContent>
+                          </Popover>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => eliminarItemSolicitado(index)}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {itemsSolicitados.length === 0 && (
+                <p className="text-xs text-gray-500 italic">No hay items solicitados. Haz clic en "Agregar" para añadir uno.</p>
+              )}
+            </div>
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Fecha */}
+            <div className="flex items-center gap-4">
+              <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">Fecha *</Label>
+              <div className="flex-1">
+                <DatePicker
+                  value={fecha}
+                  onChange={setFecha}
+                  placeholder="Seleccionar fecha"
+                  minDate={new Date()}
+                  disabledDates={disabledDates}
+                />
+              </div>
+            </div>
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Horas de inicio y fin */}
+            <div className="flex gap-6">
+              {/* Hora de inicio */}
+              <div className="flex-1 space-y-3">
+                <Label className="text-sm font-semibold text-gray-700">Hora de inicio *</Label>
+                <div className="flex gap-3 items-center">
+                  <div className="flex-1">
+                    <TimeSelect
+                      options={horasInicioDisponibles}
+                      value={formData.horaInicioHora}
+                      onChange={(value) => {
+                        setFormData(prev => ({ ...prev, horaInicioHora: value }));
+                        // Si la hora de fin seleccionada es menor o igual a la nueva hora de inicio, limpiarla
+                        if (formData.horaFinHora && parseInt(value) >= parseInt(formData.horaFinHora)) {
+                          setFormData(prev => ({ ...prev, horaFinHora: '' }));
+                        }
+                      }}
+                      placeholder="00"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold px-1.5">:</div>
+                  <div className="flex-1">
+                    <TimeSelect
+                      options={minutosInicioDisponibles}
+                      value={formData.horaInicioMinuto}
+                      onChange={(value) => {
+                        setFormData(prev => ({ ...prev, horaInicioMinuto: value }));
+                        // Si hay hora de fin, verificar que siga siendo válida
+                        if (formData.horaInicioHora && formData.horaFinHora) {
+                          const horaInicioNum = parseInt(formData.horaInicioHora);
+                          const horaFinNum = parseInt(formData.horaFinHora);
+                          const minInicio = parseInt(value);
+                          const minFin = parseInt(formData.horaFinMinuto || '0');
+                          
+                          if (horaInicioNum === horaFinNum && minInicio >= minFin) {
+                            setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
+                          }
+                        }
+                      }}
+                      placeholder="00"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Separador vertical */}
+              <div className="border-l border-dashed border-gray-300 self-stretch mx-1.5"></div>
+
+              {/* Hora de fin */}
+              <div className="flex-1 space-y-3">
+                <Label className="text-sm font-semibold text-gray-700">Hora de fin *</Label>
+                <div className="flex gap-3 items-center">
+                  <div className="flex-1">
+                    <TimeSelect
+                      options={horasFinDisponibles}
+                      value={formData.horaFinHora}
+                      onChange={(value) => {
+                        setFormData(prev => ({ ...prev, horaFinHora: value }));
+                        // Si la nueva hora de fin es igual a la de inicio y los minutos no son válidos, limpiar minutos de fin
+                        if (formData.horaInicioHora && value === formData.horaInicioHora) {
+                          const minInicio = parseInt(formData.horaInicioMinuto || '0');
+                          const minFin = parseInt(formData.horaFinMinuto || '0');
+                          if (minFin <= minInicio) {
+                            // Buscar el próximo minuto válido (al menos 30 minutos después)
+                            const minValido = minInicio + 30;
+                            if (minValido >= 60) {
+                              // Si no hay minutos válidos en esta hora, limpiar
+                              setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
+                            } else {
+                              setFormData(prev => ({ ...prev, horaFinMinuto: minValido.toString().padStart(2, '0') }));
+                            }
+                          }
+                        }
+                      }}
+                      placeholder="00"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold px-1.5">:</div>
+                  <div className="flex-1">
+                    <TimeSelect
+                      options={minutosFinDisponibles}
+                      value={formData.horaFinMinuto}
+                      onChange={(value) => setFormData(prev => ({ ...prev, horaFinMinuto: value }))}
+                      placeholder="00"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {horaError && (
+              <p className="text-sm text-destructive font-medium">{horaError}</p>
+            )}
+          </div>
+
+          {/* Footer tipo ticket */}
+          <div className="relative bg-gray-50 px-5 py-3 border-t border-dashed border-gray-300 flex-shrink-0">
+            {/* Puntos decorativos inferiores */}
+            <div className="absolute top-0 left-0 right-0 flex justify-between px-4 -mt-1.5">
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+            </div>
+            <DialogFooter className="mt-0 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Crear Reserva
+              </Button>
+            </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

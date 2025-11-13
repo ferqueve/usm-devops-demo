@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Agregar columna carrera_id a tabla reserva -->
+    <changeSet id="001" author="mathi">
+        <addColumn tableName="reserva">
+            <column name="carrera_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar foreign key constraint -->
+    <changeSet id="002" author="mathi">
+        <addForeignKeyConstraint
+                baseTableName="reserva"
+                baseColumnNames="carrera_id"
+                referencedTableName="carrera"
+                referencedColumnNames="id"
+                constraintName="fk_reserva_carrera"
+                onDelete="SET NULL"
+                onUpdate="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>
+

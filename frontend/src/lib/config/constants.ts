@@ -87,6 +87,7 @@ export const ROLE_PERMISSIONS = {
       '/calendar',
       '/users',
       '/inventory',
+      '/inventory/requests',
       '/statistics',
       '/system'
     ],
@@ -112,6 +113,7 @@ export const ROLE_PERMISSIONS = {
       '/reservations',
       '/calendar',
       '/inventory',
+      '/inventory/requests',
       '/statistics'
     ],
     sidebarItems: [

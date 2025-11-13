@@ -1,11 +1,13 @@
 package com.utec.backend.dto.reserva;
 
+import com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoCreateDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -15,10 +17,14 @@ public class ReservaCreateDto {
     @NotNull(message = "El ID del espacio es requerido")
     private Long espacioId;
     
+    private Long carreraId; // Opcional
+    
     @NotNull(message = "La fecha de inicio es requerida")
     private LocalDateTime inicio;
     
     @NotNull(message = "La fecha de fin es requerida")
     private LocalDateTime fin;
+    
+    private List<ReservaItemSolicitadoCreateDto> itemsSolicitados; // Opcional
 }
 

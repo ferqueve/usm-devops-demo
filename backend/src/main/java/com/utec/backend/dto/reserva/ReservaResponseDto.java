@@ -1,11 +1,13 @@
 package com.utec.backend.dto.reserva;
 
+import com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoResponseDto;
 import com.utec.backend.model.Reserva;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,9 +24,13 @@ public class ReservaResponseDto {
     private Long usuarioId;
     private String usuarioNombre;
     private String usuarioEmail;
+    private Long carreraId;
+    private String carreraNombre;
+    private String carreraCodigo;
     private LocalDateTime inicio;
     private LocalDateTime fin;
     private Reserva.EstadoReserva estado;
+    private List<ReservaItemSolicitadoResponseDto> itemsSolicitados;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

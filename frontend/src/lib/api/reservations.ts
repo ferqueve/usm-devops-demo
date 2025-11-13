@@ -1,5 +1,10 @@
 import { apiRequest, type ApiResponse } from './client';
-import type { Reserva, ReservaStats } from '../types/spaces';
+import type {
+  Reserva,
+  ReservaStats,
+  ReservaItemSolicitado,
+  ReservaItemSolicitadoEstado,
+} from '../types/spaces';
 
 export interface PagedResponse<T> {
   content: T[];
@@ -14,12 +19,37 @@ export interface PagedResponse<T> {
   numberOfElements: number;
 }
 
+export interface InventoryRequestsQuery {
+  page?: number;
+  size?: number;
+  estados?: ReservaItemSolicitadoEstado[];
+  espacioId?: number;
+  fechaDesde?: Date | string | null;
+  fechaHasta?: Date | string | null;
+  search?: string;
+  sortField?: string;
+  sortDirection?: 'asc' | 'desc';
+}
+
+export interface InventoryRequestUpdatePayload {
+  estado?: ReservaItemSolicitadoEstado;
+  inventarioItemId?: number | null;
+  observaciones?: string | null;
+}
+
 export const reservationsApi = {
   // Crear nueva reserva
   async crearReserva(data: {
     espacioId: number;
+    carreraId?: number; // Opcional
     inicio: string; // ISO datetime
     fin: string;
+    itemsSolicitados?: Array<{
+      tipoElementoId: number;
+      inventarioItemId?: number;
+      cantidadSolicitada: number;
+      observaciones?: string;
+    }>;
   }): Promise<ApiResponse<Reserva>> {
     return apiRequest<Reserva>('/reservas', {
       method: 'POST',
@@ -87,5 +117,83 @@ export const reservationsApi = {
   // Obtener estadísticas personales de reservas
   async obtenerEstadisticasPersonales(): Promise<ApiResponse<ReservaStats>> {
     return apiRequest<ReservaStats>('/reservas/mis-reservas/stats', { method: 'GET' });
+  },
+
+  // Listar solicitudes de inventario asociadas a reservas
+  async listarSolicitudesInventario(params: InventoryRequestsQuery = {}): Promise<ApiResponse<PagedResponse<ReservaItemSolicitado>>> {
+    const searchParams = new URLSearchParams();
+    const page = params.page ?? 0;
+    const size = params.size ?? 20;
+
+    searchParams.append('page', page.toString());
+    searchParams.append('size', size.toString());
+
+    if (params.estados && params.estados.length > 0) {
+      params.estados.forEach((estado) => {
+        searchParams.append('estado', estado);
+      });
+    }
+
+    if (params.espacioId !== undefined && params.espacioId !== null) {
+      searchParams.append('espacioId', params.espacioId.toString());
+    }
+
+    const toIso = (value?: Date | string | null) => {
+      if (!value) return undefined;
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? value.toString() : parsed.toISOString();
+    };
+
+    const fechaDesdeIso = toIso(params.fechaDesde);
+    if (fechaDesdeIso) {
+      searchParams.append('fechaDesde', fechaDesdeIso);
+    }
+
+    const fechaHastaIso = toIso(params.fechaHasta);
+    if (fechaHastaIso) {
+      searchParams.append('fechaHasta', fechaHastaIso);
+    }
+
+    if (params.search && params.search.trim().length > 0) {
+      searchParams.append('search', params.search.trim());
+    }
+
+    if (params.sortField) {
+      const direction = (params.sortDirection ?? 'desc').toLowerCase();
+      searchParams.append('sort', `${params.sortField},${direction}`);
+    }
+
+    return apiRequest<PagedResponse<ReservaItemSolicitado>>(
+      `/reservas/items-solicitados?${searchParams.toString()}`,
+      { method: 'GET' }
+    );
+  },
+
+  // Actualizar una solicitud de inventario (estado, asignaciones, observaciones)
+  async actualizarSolicitudInventario(
+    id: number,
+    data: InventoryRequestUpdatePayload
+  ): Promise<ApiResponse<ReservaItemSolicitado>> {
+    const payload: Record<string, unknown> = {};
+
+    if (data.estado) {
+      payload.estado = data.estado;
+    }
+
+    if (data.inventarioItemId !== undefined) {
+      payload.inventarioItemId = data.inventarioItemId;
+    }
+
+    if (data.observaciones !== undefined) {
+      payload.observaciones = data.observaciones;
+    }
+
+    return apiRequest<ReservaItemSolicitado>(`/reservas/items-solicitados/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
   },
 };

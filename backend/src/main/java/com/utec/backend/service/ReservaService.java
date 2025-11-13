@@ -5,9 +5,11 @@ import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
 import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.exception.UsuarioNotFoundException;
+import com.utec.backend.model.Carrera;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Reserva;
 import com.utec.backend.model.Usuario;
+import com.utec.backend.repository.CarreraRepository;
 import com.utec.backend.repository.EspacioRepository;
 import com.utec.backend.repository.ReservaRepository;
 import com.utec.backend.repository.UsuarioRepository;
@@ -36,6 +38,8 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final EspacioRepository espacioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CarreraRepository carreraRepository;
+    private final ReservaItemSolicitadoService reservaItemSolicitadoService;
     
     /**
      * Crear una nueva reserva con manejo robusto de concurrencia
@@ -56,6 +60,17 @@ public class ReservaService {
         // 3. Validar que el espacio está disponible
         if (!"DISPONIBLE".equals(espacio.getEstado())) {
             throw new RuntimeException("El espacio no está disponible. Estado actual: " + espacio.getEstado());
+        }
+        
+        // 3.5. Validar y obtener carrera si se proporciona
+        Carrera carrera = null;
+        if (createDto.getCarreraId() != null) {
+            carrera = carreraRepository.findById(createDto.getCarreraId())
+                    .orElseThrow(() -> new RuntimeException("Carrera no encontrada con ID: " + createDto.getCarreraId()));
+            // Verificar que la carrera no esté eliminada
+            if (carrera.getDeletedAt() != null) {
+                throw new RuntimeException("La carrera especificada ha sido eliminada");
+            }
         }
         
         // 4. Validar horarios lógicos
@@ -92,6 +107,7 @@ public class ReservaService {
         Reserva reserva = new Reserva();
         reserva.setEspacio(espacio);
         reserva.setUsuario(usuario);
+        reserva.setCarrera(carrera);
         reserva.setInicio(createDto.getInicio());
         reserva.setFin(createDto.getFin());
         reserva.setEstado(Reserva.EstadoReserva.APROBADO); // Auto-aprobada
@@ -100,7 +116,14 @@ public class ReservaService {
         log.info("Reserva creada exitosamente. ID: {}, Espacio: {}, Usuario: {}", 
                 savedReserva.getId(), espacio.getNombre(), usuario.getNombre());
         
-        // 8. Retornar DTO con datos completos
+        // 8. Crear items solicitados si se proporcionaron
+        if (createDto.getItemsSolicitados() != null && !createDto.getItemsSolicitados().isEmpty()) {
+            reservaItemSolicitadoService.crearSolicitudes(savedReserva.getId(), createDto.getItemsSolicitados());
+            log.info("Se crearon {} items solicitados para la reserva {}", 
+                    createDto.getItemsSolicitados().size(), savedReserva.getId());
+        }
+        
+        // 9. Retornar DTO con datos completos (incluyendo items solicitados)
         return mapToResponseDto(savedReserva);
     }
     
@@ -642,9 +665,19 @@ public class ReservaService {
         dto.setUsuarioId(reserva.getUsuario().getId());
         dto.setUsuarioNombre(reserva.getUsuario().getNombre());
         dto.setUsuarioEmail(reserva.getUsuario().getEmail());
+        // Información de carrera
+        if (reserva.getCarrera() != null) {
+            dto.setCarreraId(reserva.getCarrera().getId());
+            dto.setCarreraNombre(reserva.getCarrera().getNombre());
+            dto.setCarreraCodigo(reserva.getCarrera().getCodigo());
+        }
         dto.setInicio(reserva.getInicio());
         dto.setFin(reserva.getFin());
         dto.setEstado(reserva.getEstado());
+        // Mapear items solicitados
+        if (reserva.getItemsSolicitados() != null && !reserva.getItemsSolicitados().isEmpty()) {
+            dto.setItemsSolicitados(reservaItemSolicitadoService.obtenerPorReserva(reserva.getId()));
+        }
         dto.setCreatedAt(reserva.getCreatedAt());
         dto.setUpdatedAt(reserva.getUpdatedAt());
         return dto;

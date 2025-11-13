@@ -158,12 +158,18 @@ src/main/java/com/utec/reservas/
 | `GET` | `/espacios/disponibles` | Obtener espacios disponibles en rango de tiempo (Admin/Analista/Docente) | ✅ |
 | `GET` | `/espacios/stats` | Obtener estadísticas de espacios (Admin/Analista) | ✅ |
 
+### Reservas e Items Solicitados
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/reservas/items-solicitados` | Listar solicitudes de inventario con filtros y paginación (Admin/Analista) | ✅ |
+| `PATCH` | `/reservas/items-solicitados/{id}` | Actualizar estado, observaciones o asignación de items solicitados (Admin/Analista) | ✅ |
+
 ### 🚧 Endpoints en Desarrollo
 
 Los siguientes endpoints están planificados pero aún no implementados:
 
-- Inventario
-- Reservas
+- Inventario (flujos masivos y auditoría)
+- Reservas (autorizaciones automáticas y notificaciones)
 - Eventos Externos
 - Recomendaciones y Estadísticas
 

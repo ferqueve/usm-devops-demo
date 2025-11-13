@@ -49,7 +49,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
     );
     
     // Buscar reserva por ID con datos relacionados
-    @Query("SELECT r FROM Reserva r JOIN FETCH r.espacio JOIN FETCH r.usuario WHERE r.id = :id")
+    @Query("SELECT r FROM Reserva r JOIN FETCH r.espacio JOIN FETCH r.usuario LEFT JOIN FETCH r.carrera WHERE r.id = :id")
     Reserva findByIdWithRelations(@Param("id") Long id);
 }
 

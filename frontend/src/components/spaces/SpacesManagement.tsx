@@ -34,6 +34,7 @@ import {
   Building2, 
   Download,
   Package,
+  ClipboardList,
   X,
   LayoutGrid,
   LayoutList
@@ -484,6 +485,16 @@ export default function SpacesManagement() {
             <Package className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Gestionar Inventario</span>
             <span className="sm:hidden">Inventario</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => navigate('/inventory/requests')}
+            className="h-10 flex-1 sm:flex-none"
+          >
+            <ClipboardList className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Solicitudes de Inventario</span>
+            <span className="sm:hidden">Solicitudes</span>
           </Button>
           
           <Button 

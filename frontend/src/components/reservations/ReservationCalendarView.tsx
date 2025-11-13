@@ -217,52 +217,11 @@ export default function ReservationCalendarView({
       new Date(a.inicio).getTime() - new Date(b.inicio).getTime()
     );
 
-    // Si está en pantalla completa, usar la lógica original (todas las horas)
-    // Si no está en pantalla completa, contraer horas según reservas
-    let horaInicioVisible: number;
-    let horaFinVisible: number;
-    let mostrarColapsadoAntes = false;
-    let mostrarColapsadoDespues = false;
-
-    if (isFullScreen) {
-      // Pantalla completa: mostrar todas las horas según hideNightHours
-      horaInicioVisible = hideNightHours ? 8 : 0;
-      horaFinVisible = 24;
-      mostrarColapsadoAntes = false;
-      mostrarColapsadoDespues = false;
-    } else {
-      // No pantalla completa: contraer horas según reservas
-      let horaMinima = 24;
-      let horaMaxima = 0;
-      let hayReservas = false;
-
-      reservasOrdenadas.forEach(reserva => {
-        const inicio = new Date(reserva.inicio);
-        const fin = new Date(reserva.fin);
-        const horaInicio = inicio.getHours();
-        const horaFin = fin.getHours() === 0 && fin.getMinutes() === 0 ? 24 : fin.getHours();
-        
-        if (horaInicio < horaMinima) horaMinima = horaInicio;
-        if (horaFin > horaMaxima) horaMaxima = horaFin;
-        hayReservas = true;
-      });
-
-      if (hayReservas && reservasOrdenadas.length > 0) {
-        // Rango con margen de 1 hora antes y después
-        horaInicioVisible = Math.max(0, horaMinima - 1);
-        horaFinVisible = Math.min(24, horaMaxima + 1);
-        
-        // Si hay horas antes o después del rango visible, mostrar colapsadas
-        mostrarColapsadoAntes = horaInicioVisible > 0;
-        mostrarColapsadoDespues = horaFinVisible < 24;
-      } else {
-        // Sin reservas, usar configuración por defecto
-        horaInicioVisible = hideNightHours ? 8 : 0;
-        horaFinVisible = hideNightHours ? 24 : 24;
-        mostrarColapsadoAntes = false;
-        mostrarColapsadoDespues = false;
-      }
-    }
+    // Mostrar un rango consistente de horas sin secciones colapsadas
+    const horaInicioVisible = hideNightHours ? 8 : 0;
+    const horaFinVisible = 24;
+    const mostrarColapsadoAntes = false;
+    const mostrarColapsadoDespues = false;
 
     const minutosInicioVisible = horaInicioVisible * 60;
     const minutosFinVisible = horaFinVisible * 60;

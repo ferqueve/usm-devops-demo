@@ -105,7 +105,9 @@ VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 
 - CRUD de salones
 - Sistema de reservas
-- Calendario interactivo
+- Formulario de creación de reservas con items solicitados resumidos y edición en popover
+- Gestor de solicitudes de inventario con filtros y panel de acciones (accesible desde Espacios)
+- Calendario interactivo (la vista diaria ahora muestra el horario completo sin colapsar horas alejadas)
 - Estadísticas y reportes
 
 ---

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Crear tabla carrera -->
+    <changeSet id="001" author="mathi">
+        <createTable tableName="carrera">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nombre" type="VARCHAR(100)">
+                <constraints notNullConstraintName="nn_carrera_nombre"/>
+            </column>
+            <column name="codigo" type="VARCHAR(20)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_carrera_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_carrera_updated_at"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Agregar constraint unique para codigo (solo cuando no es null) -->
+    <changeSet id="002" author="mathi">
+        <sql>
+            CREATE UNIQUE INDEX uk_carrera_codigo ON carrera(codigo) WHERE codigo IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

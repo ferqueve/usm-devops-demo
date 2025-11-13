@@ -82,6 +82,45 @@ export interface InventarioFilters {
   sinAsignar?: boolean;
 }
 
+export interface Carrera {
+  id: number;
+  nombre: string;
+  codigo?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export type ReservaItemSolicitadoEstado = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ENTREGADO';
+
+export interface ReservaItemSolicitado {
+  id: number;
+  reservaId: number;
+  espacioId?: number | null;
+  espacioNombre?: string;
+  usuarioId?: number | null;
+  solicitanteNombre?: string;
+  solicitanteEmail?: string;
+  tipoElementoId: number;
+  tipoElementoNombre: string;
+  inventarioItemId?: number | null;
+  cantidadSolicitada: number;
+  estado: ReservaItemSolicitadoEstado;
+  observaciones?: string;
+  reservaInicio?: string;
+  reservaFin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReservaItemSolicitadoFilters {
+  estados?: ReservaItemSolicitadoEstado[];
+  espacioId?: number;
+  fechaDesde?: string;
+  fechaHasta?: string;
+  search?: string;
+}
+
 export interface Reserva {
   id: number;
   espacioId: number;
@@ -94,9 +133,13 @@ export interface Reserva {
   usuarioId: number;
   usuarioNombre: string;
   usuarioEmail: string;
+  carreraId?: number;
+  carreraNombre?: string;
+  carreraCodigo?: string;
   inicio: string; // ISO datetime
   fin: string;
   estado: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
+  itemsSolicitados?: ReservaItemSolicitado[];
   createdAt: string;
   updatedAt: string;
 }
