@@ -12,8 +12,6 @@ import type { Espacio, InventarioItem, ReservaItemSolicitado, ReservaItemSolicit
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -21,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DatePicker } from '@/components/ui/date-picker';
 import {
   Table,
   TableBody,
@@ -35,15 +32,32 @@ import { EmptyState } from '@/components/ui/empty-state';
 import {
   ArrowLeft,
   ClipboardList,
-  CalendarClock,
-  Building2,
-  User,
   Boxes,
   RefreshCw,
-  Search,
   Loader2,
+  Building2,
+  CalendarClock,
+  ClipboardCheck,
+  History,
+  Mail,
+  PackageMinus,
+  PackagePlus,
+  CheckCircle2,
+  XCircle,
+  User as UserIcon,
+  FileText,
+  Undo2,
+  Save,
 } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { InventoryRequestFilters } from '@/components/inventory/InventoryRequestFilters';
+import InventoryRequestsCardView from '@/components/inventory/InventoryRequestsCardView';
 
 const ESTADO_OPTIONS: Array<{
   value: ReservaItemSolicitadoEstado;
@@ -61,6 +75,13 @@ const ESTADO_LABEL = ESTADO_OPTIONS.reduce<Record<ReservaItemSolicitadoEstado, s
   return acc;
 }, { PENDIENTE: 'Pendiente', APROBADO: 'Aprobado', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado' });
 
+const ESTADO_ACCENT: Record<ReservaItemSolicitadoEstado, string> = {
+  PENDIENTE: 'from-amber-500 via-amber-600 to-orange-600',
+  APROBADO: 'from-blue-500 via-blue-600 to-indigo-600',
+  ENTREGADO: 'from-emerald-500 via-teal-600 to-sky-600',
+  RECHAZADO: 'from-rose-500 via-rose-600 to-fuchsia-600',
+};
+
 export default function InventoryRequestsManagement() {
   const navigate = useNavigate();
 
@@ -77,18 +98,18 @@ export default function InventoryRequestsManagement() {
   const [fechaHasta, setFechaHasta] = useState<Date | undefined>();
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sort, setSort] = useState<{ field: string; direction: 'asc' | 'desc' }>({
-    field: 'createdAt',
-    direction: 'desc',
-  });
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const sortField = 'createdAt';
+  const sortDirection: 'asc' | 'desc' = 'desc';
 
   const [selectedRequest, setSelectedRequest] = useState<ReservaItemSolicitado | null>(null);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const [inventoryOptions, setInventoryOptions] = useState<InventarioItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
   const [selectedInventoryId, setSelectedInventoryId] = useState<number | null>(null);
   const [observacionesEdit, setObservacionesEdit] = useState('');
   const [updatingRequest, setUpdatingRequest] = useState(false);
+  const [processingRequestId, setProcessingRequestId] = useState<number | null>(null);
 
   useEffect(() => {
     const handler = setTimeout(() => setSearchTerm(searchInput.trim()), 400);
@@ -108,12 +129,11 @@ export default function InventoryRequestsManagement() {
   const fetchEspacios = useCallback(async () => {
     try {
       const response = await espaciosApi.obtenerEspacios();
-      if (response.data) {
-        setEspacios(response.data.filter((espacio) => espacio.activo));
-      }
-    } catch (error) {
+      setEspacios(response.data ?? []);
+    } catch (error: unknown) {
       console.error('Error al cargar espacios', error);
-      toast.error('No se pudieron cargar los espacios');
+      const message = error instanceof Error ? error.message : undefined;
+      toast.error(message || 'No se pudieron cargar los espacios');
     }
   }, []);
 
@@ -129,8 +149,8 @@ export default function InventoryRequestsManagement() {
           fechaDesde: fechaDesde ?? undefined,
           fechaHasta: fechaHasta ?? undefined,
           search: searchTerm || undefined,
-          sortField: sort.field,
-          sortDirection: sort.direction,
+          sortField,
+          sortDirection,
           ...opts,
         };
 
@@ -151,15 +171,16 @@ export default function InventoryRequestsManagement() {
             numberOfElements: 0,
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error al cargar solicitudes de inventario', error);
-        toast.error(error?.message || 'No se pudieron cargar las solicitudes de inventario');
+        const message = error instanceof Error ? error.message : undefined;
+        toast.error(message || 'No se pudieron cargar las solicitudes de inventario');
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [fechaDesde, fechaHasta, page, pageSize, refreshing, searchTerm, selectedEstados, selectedEspacio, sort.direction, sort.field]
+    [fechaDesde, fechaHasta, page, pageSize, refreshing, searchTerm, selectedEstados, selectedEspacio, sortDirection, sortField]
   );
 
   useEffect(() => {
@@ -205,25 +226,24 @@ export default function InventoryRequestsManagement() {
         'asc'
       );
       setInventoryOptions(response.data ?? []);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error al cargar items disponibles', error);
-      toast.error('No se pudieron cargar los items disponibles');
+      const message = error instanceof Error ? error.message : undefined;
+      toast.error(message || 'No se pudieron cargar los items disponibles');
     } finally {
       setInventoryLoading(false);
     }
   }, [selectedRequest]);
 
   useEffect(() => {
-    if (!panelOpen || !selectedRequest) {
+    if (!manageDialogOpen || !selectedRequest) {
       return;
     }
     loadInventoryOptions();
-  }, [panelOpen, selectedRequest, loadInventoryOptions]);
+  }, [manageDialogOpen, selectedRequest, loadInventoryOptions]);
 
   const handleToggleEstado = (estado: ReservaItemSolicitadoEstado) => {
-    setSelectedEstados((prev) =>
-      prev.includes(estado) ? prev.filter((item) => item !== estado) : [...prev, estado]
-    );
+    setSelectedEstados((prev) => (prev.includes(estado) ? [] : [estado]));
   };
 
   const handleClearFilters = () => {
@@ -278,23 +298,69 @@ export default function InventoryRequestsManagement() {
         hour: '2-digit',
         minute: '2-digit',
       }).format(new Date(iso));
-    } catch (error) {
+    } catch {
       return iso;
     }
   };
 
-  const handleOpenPanel = (request: ReservaItemSolicitado) => {
-    setSelectedRequest(request);
-    setPanelOpen(true);
+  const formatCompactDateTime = (iso?: string) => {
+    if (!iso) return '—';
+    try {
+      return new Intl.DateTimeFormat('es-PE', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+        .format(new Date(iso))
+        .replace('.', '')
+        .replace(',', '');
+    } catch {
+      return formatDateTime(iso);
+    }
   };
 
-  const updateSelectedRequest = async (
+  const handleOpenDialog = (request: ReservaItemSolicitado) => {
+    setSelectedRequest(request);
+    setManageDialogOpen(true);
+  };
+
+  const handleManageDialogChange = (open: boolean) => {
+    if (!open) {
+      setManageDialogOpen(false);
+      setSelectedRequest(null);
+      return;
+    }
+    if (selectedRequest) {
+      setManageDialogOpen(true);
+    }
+  };
+
+  const handleMarkDelivered = (request: ReservaItemSolicitado) => {
+    if (request.estado === 'ENTREGADO') {
+      toast.info('La solicitud ya fue marcada como entregada');
+      return;
+    }
+    if (request.estado !== 'APROBADO') {
+      toast.error('Solo puedes confirmar entrega cuando la solicitud está aprobada');
+      return;
+    }
+    if (!request.inventarioItemId) {
+      toast.error('Asigna un item antes de confirmar la entrega');
+      return;
+    }
+    updateRequest(
+      request,
+      { estado: 'ENTREGADO', inventarioItemId: request.inventarioItemId },
+      'Entrega confirmada'
+    );
+  };
+
+  const updateRequest = async (
+    target: ReservaItemSolicitado,
     payload: InventoryRequestUpdatePayload,
     successMessage: string
   ) => {
-    if (!selectedRequest) return;
-
-    const requestId = selectedRequest.id;
     const sanitized: InventoryRequestUpdatePayload = {};
 
     if (payload.estado) {
@@ -307,21 +373,35 @@ export default function InventoryRequestsManagement() {
       sanitized.observaciones = payload.observaciones;
     }
 
-    setUpdatingRequest(true);
+    const isDialogTarget =
+      manageDialogOpen && selectedRequest && selectedRequest.id === target.id;
+
+    if (isDialogTarget) {
+      setUpdatingRequest(true);
+    }
+    setProcessingRequestId(target.id);
+
     try {
-      const response = await reservationsApi.actualizarSolicitudInventario(requestId, sanitized);
+      const response = await reservationsApi.actualizarSolicitudInventario(target.id, sanitized);
       if (response.data) {
         toast.success(successMessage);
-        setSelectedRequest(response.data);
-        setSelectedInventoryId(response.data.inventarioItemId ?? null);
-        setObservacionesEdit(response.data.observaciones ?? '');
         await fetchRequests();
-        await loadInventoryOptions();
+
+        if (isDialogTarget) {
+          setSelectedRequest(response.data);
+          setSelectedInventoryId(response.data.inventarioItemId ?? null);
+          setObservacionesEdit(response.data.observaciones ?? '');
+          await loadInventoryOptions();
+        }
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'No se pudo actualizar la solicitud');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : undefined;
+      toast.error(message || 'No se pudo actualizar la solicitud');
     } finally {
-      setUpdatingRequest(false);
+      if (isDialogTarget) {
+        setUpdatingRequest(false);
+      }
+      setProcessingRequestId(null);
     }
   };
 
@@ -345,6 +425,14 @@ export default function InventoryRequestsManagement() {
 
     return options;
   }, [inventoryOptions, selectedRequest?.inventarioItemId]);
+
+  const isRequestApproved = selectedRequest?.estado === 'APROBADO';
+  const isRequestRejected = selectedRequest?.estado === 'RECHAZADO';
+  const isRequestDelivered = selectedRequest?.estado === 'ENTREGADO';
+  const inventoryLocked = Boolean(isRequestApproved || isRequestRejected || isRequestDelivered);
+  const canApprove =
+    selectedRequest?.estado === 'PENDIENTE' && selectedRequest?.inventarioItemId != null;
+  const canReject = Boolean(selectedRequest && !isRequestRejected && !isRequestDelivered);
 
   return (
     <div className="space-y-6">
@@ -392,117 +480,6 @@ export default function InventoryRequestsManagement() {
       </div>
 
       <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="Buscar por solicitante, tipo o ID..."
-                className="pl-9"
-              />
-            </div>
-            <div className="flex gap-2 items-center">
-              <Label className="text-xs text-muted-foreground whitespace-nowrap">Estados:</Label>
-              <div className="flex flex-wrap gap-2">
-                {ESTADO_OPTIONS.map((option) => {
-                  const active = selectedEstados.includes(option.value);
-                  return (
-                    <Button
-                      key={option.value}
-                      type="button"
-                      variant={active ? 'default' : 'outline'}
-                      className={active ? 'h-8 px-3 text-xs bg-utec-blue text-white' : 'h-8 px-3 text-xs'}
-                      onClick={() => handleToggleEstado(option.value)}
-                    >
-                      {option.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Espacio</Label>
-              <Select
-                value={selectedEspacio !== null ? selectedEspacio.toString() : 'todos'}
-                onValueChange={(value) => {
-                  if (value === 'todos') {
-                    setSelectedEspacio(null);
-                  } else {
-                    setSelectedEspacio(Number(value));
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos los espacios" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los espacios</SelectItem>
-                  {espacios.map((espacio) => (
-                    <SelectItem key={espacio.id} value={espacio.id.toString()}>
-                      {espacio.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Desde</Label>
-              <DatePicker value={fechaDesde} onChange={setFechaDesde} placeholder="Fecha inicio" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Hasta</Label>
-              <DatePicker value={fechaHasta} onChange={setFechaHasta} placeholder="Fecha fin" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Elementos por página</Label>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={(value) => {
-                  setPageSize(Number(value));
-                  setPage(0);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[10, 20, 50].map((size) => (
-                    <SelectItem key={size} value={size.toString()}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {hasFilters ? (
-                <span>{summary.total} resultados (filtros aplicados)</span>
-              ) : (
-                <span>{summary.total} resultados</span>
-              )}
-            </div>
-            <Button type="button" variant="ghost" size="sm" onClick={handleClearFilters} disabled={!hasFilters}>
-              Limpiar filtros
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-card">
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">Solicitudes</CardTitle>
@@ -511,6 +488,53 @@ export default function InventoryRequestsManagement() {
             </p>
           </div>
         </CardHeader>
+        <div className="px-6 pb-4">
+          <InventoryRequestFilters
+            searchValue={searchInput}
+            activeSearch={searchTerm}
+            onSearchChange={setSearchInput}
+            onSearchClear={() => {
+              setSearchInput('');
+              setSearchTerm('');
+            }}
+            selectedEstados={selectedEstados}
+            onToggleEstado={handleToggleEstado}
+            onClearEstados={() => setSelectedEstados([])}
+            espacios={espacios}
+            selectedEspacio={selectedEspacio}
+            onEspacioChange={(id) => {
+              setSelectedEspacio(id);
+              setPage(0);
+            }}
+            fechaDesde={fechaDesde}
+            fechaHasta={fechaHasta}
+            onFechaDesdeChange={(date) => {
+              setFechaDesde(date);
+              setPage(0);
+            }}
+            onFechaHastaChange={(date) => {
+              setFechaHasta(date);
+              setPage(0);
+            }}
+            onResetFechas={() => {
+              setFechaDesde(undefined);
+              setFechaHasta(undefined);
+              setPage(0);
+            }}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(0);
+            }}
+            hasFilters={hasFilters}
+            onClearFilters={handleClearFilters}
+            viewMode={viewMode}
+            onViewModeChange={(mode) => {
+              setViewMode(mode);
+              setPage(0);
+            }}
+          />
+        </div>
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-16">
@@ -523,7 +547,7 @@ export default function InventoryRequestsManagement() {
               description="No se encontraron solicitudes de inventario con los criterios actuales."
               action={hasFilters ? { label: 'Limpiar filtros', onClick: handleClearFilters } : undefined}
             />
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -571,8 +595,23 @@ export default function InventoryRequestsManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDateTime(item.createdAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => handleOpenPanel(item)}>
+                        <TableCell className="flex items-center justify-end gap-2">
+                          {item.estado === 'APROBADO' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkDelivered(item)}
+                              disabled={processingRequestId === item.id || item.inventarioItemId == null}
+                            >
+                              <ClipboardCheck className="h-3.5 w-3.5" />
+                              Entregado
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenDialog(item)}
+                            disabled={processingRequestId === item.id}
+                          >
                             Gestionar
                           </Button>
                         </TableCell>
@@ -581,6 +620,18 @@ export default function InventoryRequestsManagement() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          ) : (
+            <div className="px-6 py-5">
+              <InventoryRequestsCardView
+                requests={tableContent}
+                onManage={handleOpenDialog}
+                onDeliver={handleMarkDelivered}
+                processingRequestId={processingRequestId}
+                formatDateTime={formatDateTime}
+                estadoOptions={ESTADO_OPTIONS}
+                estadoLabel={ESTADO_LABEL}
+              />
             </div>
           )}
         </CardContent>
@@ -614,240 +665,300 @@ export default function InventoryRequestsManagement() {
         )}
       </Card>
 
-      <Sheet open={panelOpen && !!selectedRequest} onOpenChange={setPanelOpen}>
-        <SheetContent className="sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>Detalle de solicitud #{selectedRequest?.id}</SheetTitle>
-          </SheetHeader>
+      <Dialog
+        open={manageDialogOpen && !!selectedRequest}
+        onOpenChange={handleManageDialogChange}
+      >
+        <DialogContent className="max-w-[520px] gap-0 p-0 overflow-hidden border border-slate-200 bg-white shadow-2xl">
           {selectedRequest ? (
-            <div className="mt-4 space-y-6">
-              <div className="rounded-lg border border-gray-200 bg-white p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{selectedRequest.tipoElementoNombre}</p>
-                    <p className="text-xs text-muted-foreground">Reserva #{selectedRequest.reservaId}</p>
-                  </div>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    x{selectedRequest.cantidadSolicitada}
+            <div className="flex flex-col">
+              <DialogHeader
+                className={`gap-2 bg-gradient-to-br px-5 py-4 text-left text-white sm:text-left ${ESTADO_ACCENT[selectedRequest.estado] ?? 'from-slate-600 to-slate-800'}`}
+              >
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/70">
+                  <span>Solicitud #{selectedRequest.id}</span>
+                  <Badge className="bg-white/90 text-slate-900 border-0 px-2 py-0 text-[11px] font-semibold shadow-sm">
+                    {ESTADO_LABEL[selectedRequest.estado]}
                   </Badge>
+                  <span className="ml-auto text-[10px] normal-case text-white/70">
+                    {formatCompactDateTime(selectedRequest.updatedAt)}
+                  </span>
                 </div>
-                <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">Espacio</span>
-                    <span>{selectedRequest.espacioNombre || '—'}</span>
+                <DialogTitle className="text-xl font-semibold leading-tight text-white">
+                  {selectedRequest.tipoElementoNombre}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-white/80">
+                  Gestiona el estado, inventario y observaciones asociadas a esta solicitud de equipamiento.
+                </DialogDescription>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-white/20 px-2 py-0.5">
+                    <Boxes className="h-3.5 w-3.5" />
+                    x{selectedRequest.cantidadSolicitada}
+                  </span>
+                  {selectedRequest.espacioNombre && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5">
+                      <Building2 className="h-3.5 w-3.5" />
+                      {selectedRequest.espacioNombre}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5">
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    R#{selectedRequest.reservaId}
+                  </span>
+                </div>
+              </DialogHeader>
+
+              <div className="px-5 py-4 space-y-3 text-sm text-slate-900">
+                <div className="grid gap-2">
+                  <div className="flex items-start gap-2">
+                    <UserIcon className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold leading-tight">
+                        {selectedRequest.solicitanteNombre ?? '—'}
+                      </p>
+                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Mail className="h-3 w-3 shrink-0" />
+                        <span className="truncate break-all">
+                          {selectedRequest.solicitanteEmail ?? '—'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">Solicitante</span>
-                    <span>{selectedRequest.solicitanteNombre || '—'}</span>
+
+                  <div className="flex items-start gap-2">
+                    <CalendarClock className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                    <div className="flex flex-wrap items-center gap-1 text-sm font-semibold leading-tight text-slate-900">
+                      <span>{formatCompactDateTime(selectedRequest.reservaInicio)}</span>
+                      <span className="text-[10px] text-muted-foreground">→</span>
+                      <span>{formatCompactDateTime(selectedRequest.reservaFin)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">Correo</span>
-                    <span>{selectedRequest.solicitanteEmail || '—'}</span>
+
+                  <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                    <History className="mt-0.5 h-3.5 w-3.5" />
+                    <span>Creada {formatCompactDateTime(selectedRequest.createdAt)}</span>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold uppercase tracking-wide text-slate-500">Estado</span>
+                  <Badge
+                    variant="outline"
+                    className={`px-2 py-0 text-[11px] font-semibold ${ESTADO_OPTIONS.find((estado) => estado.value === selectedRequest.estado)?.badgeClass ?? 'bg-gray-100 text-gray-700 border-gray-200'}`}
+                  >
+                    {ESTADO_LABEL[selectedRequest.estado]}
+                  </Badge>
+                  <span className="ml-auto text-[10px]">
+                    Actualizado {formatCompactDateTime(selectedRequest.updatedAt)}
+                  </span>
+                </div>
+
+                <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50/70 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">Inicio</span>
-                    <span>{formatDateTime(selectedRequest.reservaInicio)}</span>
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      <Boxes className="h-3.5 w-3.5 text-blue-600" />
+                      <span>Inventario</span>
+                    </div>
+                    {inventoryLoading && (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                    )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">Fin</span>
-                    <span>{formatDateTime(selectedRequest.reservaFin)}</span>
+                  <Select
+                    value={selectedInventoryId !== null ? selectedInventoryId.toString() : 'none'}
+                    onValueChange={(value) => {
+                      if (value === 'none') {
+                        setSelectedInventoryId(null);
+                      } else {
+                        setSelectedInventoryId(Number(value));
+                      }
+                    }}
+                    disabled={inventoryLoading || inventoryLocked}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Selecciona un item disponible" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sin asignar</SelectItem>
+                      {inventorySelectOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value.toString()}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (selectedInventoryId === null) {
+                          toast.error('Selecciona un item disponible');
+                          return;
+                        }
+                        if (!selectedRequest) {
+                          return;
+                        }
+                        if (selectedInventoryId === selectedRequest.inventarioItemId) {
+                          toast.info('El item ya está asignado a esta solicitud');
+                          return;
+                        }
+                        updateRequest(
+                          selectedRequest,
+                          { inventarioItemId: selectedInventoryId },
+                          'Item de inventario asignado'
+                        );
+                      }}
+                      disabled={
+                        updatingRequest ||
+                        inventoryLocked ||
+                        selectedInventoryId === null ||
+                        (selectedRequest?.inventarioItemId != null &&
+                          selectedInventoryId === selectedRequest.inventarioItemId)
+                      }
+                      className="justify-center"
+                    >
+                      <PackagePlus className="h-3.5 w-3.5" />
+                      Asignar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (!selectedRequest) {
+                          return;
+                        }
+                        updateRequest(
+                          selectedRequest,
+                          { inventarioItemId: 0 },
+                          'Item de inventario liberado'
+                        );
+                      }}
+                      disabled={
+                        updatingRequest ||
+                        inventoryLocked ||
+                        selectedRequest.inventarioItemId == null
+                      }
+                      className="justify-center"
+                    >
+                      <PackageMinus className="h-3.5 w-3.5" />
+                      Liberar
+                    </Button>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">Creada</span>
-                    <span>{formatDateTime(selectedRequest.createdAt)}</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <FileText className="h-3.5 w-3.5 text-slate-500" />
+                    Observaciones
+                  </div>
+                  <Textarea
+                    value={observacionesEdit}
+                    onChange={(event) => setObservacionesEdit(event.target.value)}
+                    rows={3}
+                    className="resize-none text-sm"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setObservacionesEdit(selectedRequest.observaciones ?? '')}
+                      disabled={
+                        updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
+                      }
+                    >
+                      <Undo2 className="h-3.5 w-3.5" />
+                      Deshacer
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        if (!selectedRequest) {
+                          return;
+                        }
+                        updateRequest(
+                          selectedRequest,
+                          { observaciones: observacionesEdit },
+                          'Observaciones actualizadas'
+                        );
+                      }}
+                      disabled={
+                        updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
+                      }
+                    >
+                      <Save className="h-3.5 w-3.5" />
+                      Guardar
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Acciones
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}
+                      onClick={() => {
+                        if (!selectedRequest) {
+                          return;
+                        }
+                        if (!canApprove) {
+                          toast.error('Asigna un item antes de aprobar la solicitud');
+                          return;
+                        }
+                        updateRequest(
+                          selectedRequest,
+                          { estado: 'APROBADO' },
+                          'Solicitud aprobada'
+                        );
+                      }}
+                      disabled={updatingRequest || !canApprove}
+                      className="justify-center"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Aprobar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title={!canReject ? 'La solicitud ya fue cerrada' : undefined}
+                      onClick={() => {
+                        if (!selectedRequest) {
+                          return;
+                        }
+                        updateRequest(
+                          selectedRequest,
+                          { estado: 'RECHAZADO', inventarioItemId: 0 },
+                          'Solicitud rechazada'
+                        );
+                      }}
+                      disabled={updatingRequest || !canReject}
+                      className="justify-center"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Rechazar
+                    </Button>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Estado actual</p>
-                <Badge
+              <div className="border-t border-slate-100 bg-slate-50 px-5 py-3 text-right">
+                <Button
                   variant="outline"
-                  className={
-                    ESTADO_OPTIONS.find((estado) => estado.value === selectedRequest.estado)?.badgeClass ??
-                    'bg-gray-100 text-gray-700 border-gray-200'
-                  }
+                  size="sm"
+                  className="h-8 px-4"
+                  onClick={() => handleManageDialogChange(false)}
                 >
-                  {ESTADO_LABEL[selectedRequest.estado]}
-                </Badge>
-                <p className="text-[11px] text-muted-foreground">
-                  Última actualización: {formatDateTime(selectedRequest.updatedAt)}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Inventario asignado</p>
-                  {inventoryLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
-                </div>
-                <Select
-                  value={selectedInventoryId !== null ? selectedInventoryId.toString() : 'none'}
-                  onValueChange={(value) => {
-                    if (value === 'none') {
-                      setSelectedInventoryId(null);
-                    } else {
-                      setSelectedInventoryId(Number(value));
-                    }
-                  }}
-                  disabled={inventoryLoading || selectedRequest.estado === 'RECHAZADO'}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un item disponible" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sin asignar</SelectItem>
-                    {inventorySelectOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value.toString()}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (selectedInventoryId === null) {
-                        toast.error('Selecciona un item disponible');
-                        return;
-                      }
-                      if (selectedInventoryId === selectedRequest.inventarioItemId) {
-                        toast.info('El item ya está asignado a esta solicitud');
-                        return;
-                      }
-                      updateSelectedRequest(
-                        { inventarioItemId: selectedInventoryId },
-                        'Item de inventario asignado'
-                      );
-                    }}
-                    disabled={
-                      updatingRequest ||
-                      selectedInventoryId === null ||
-                      selectedInventoryId === selectedRequest.inventarioItemId
-                    }
-                  >
-                    Asignar item
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      updateSelectedRequest(
-                        { inventarioItemId: 0 },
-                        'Item de inventario liberado'
-                      )
-                    }
-                    disabled={updatingRequest || selectedRequest.inventarioItemId == null}
-                  >
-                    Liberar item
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const efectivo = selectedInventoryId ?? selectedRequest.inventarioItemId ?? null;
-                      if (!efectivo) {
-                        toast.error('Asigna un item disponible antes de marcar como entregado');
-                        return;
-                      }
-                      updateSelectedRequest(
-                        { estado: 'ENTREGADO', inventarioItemId: efectivo },
-                        'Solicitud marcada como entregada'
-                      );
-                    }}
-                    disabled={
-                      updatingRequest ||
-                      selectedRequest.estado !== 'APROBADO'
-                    }
-                  >
-                    Marcar entregado
-                  </Button>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Solo se listan items disponibles del mismo tipo. La entrega requiere un item asignado.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Observaciones</p>
-                <Textarea
-                  value={observacionesEdit}
-                  onChange={(event) => setObservacionesEdit(event.target.value)}
-                  rows={4}
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setObservacionesEdit(selectedRequest.observaciones ?? '')}
-                    disabled={
-                      updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
-                    }
-                  >
-                    Deshacer
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() =>
-                      updateSelectedRequest(
-                        { observaciones: observacionesEdit },
-                        'Observaciones actualizadas'
-                      )
-                    }
-                    disabled={
-                      updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
-                    }
-                  >
-                    Guardar
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Acciones rápidas</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      updateSelectedRequest(
-                        { estado: 'APROBADO' },
-                        'Solicitud marcada como aprobada'
-                      )
-                    }
-                    disabled={updatingRequest || selectedRequest.estado !== 'PENDIENTE'}
-                  >
-                    Marcar como aprobada
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      updateSelectedRequest(
-                        { estado: 'RECHAZADO', inventarioItemId: 0 },
-                        'Solicitud marcada como rechazada'
-                      )
-                    }
-                    disabled={
-                      updatingRequest ||
-                      selectedRequest.estado === 'RECHAZADO' ||
-                      selectedRequest.estado === 'ENTREGADO'
-                    }
-                  >
-                    Rechazar
-                  </Button>
-                </div>
+                  Cerrar
+                </Button>
               </div>
             </div>
-          ) : (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              Selecciona una solicitud para ver sus detalles.
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
