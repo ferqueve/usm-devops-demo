@@ -1,6 +1,6 @@
 import { LoginForm } from '@/components/public/auth/LoginForm';
 import { RegisterForm } from '@/components/public/auth/RegisterForm';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 

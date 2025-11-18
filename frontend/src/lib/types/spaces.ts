@@ -197,3 +197,106 @@ export interface ReservaStats {
   diferenciaMesAnterior: number;
   porcentajeCambioMesAnterior: number;
 }
+
+export interface InventoryStats {
+  // === TOTALES Y BÁSICAS ===
+  totalItems: number;
+  totalCantidad: number;
+  disponibles: number;
+  mantenimiento: number;
+  danados: number;
+  sinAsignar: number;
+  asignados: number;
+  itemsInactivos: number;
+  
+  // === PORCENTAJES ===
+  porcentajeDisponibles: number;
+  porcentajeMantenimiento: number;
+  porcentajeDanados: number;
+  porcentajeSinAsignar: number;
+  porcentajeAsignados: number;
+  porcentajeInactivos: number;
+  
+  // === POR TIPO DE ELEMENTO ===
+  itemsPorTipo: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
+  tiposUnicos: number;
+  
+  // === POR ESPACIO ===
+  itemsPorEspacio: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
+  espaciosConInventario: number;
+  
+  // === TOP RANKINGS ===
+  topEspacios: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number }>;
+  topTipos: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number }>;
+  espaciosConMasProblemas: Array<{ espacioNombre: string; espacioId: number; problemas: number; porcentaje: number }>;
+  tiposConMasProblemas: Array<{ tipoNombre: string; tipoId: number; problemas: number; porcentaje: number }>;
+  
+  // === PROMEDIOS ===
+  promedioItemsPorEspacio: number;
+  promedioCantidadPorItem: number;
+  promedioItemsPorTipo: number;
+  promedioCantidadPorEspacio: number;
+  promedioCantidadPorTipo: number;
+  
+  // === ANÁLISIS TEMPORAL ===
+  itemsCreadosEsteMes: number;
+  itemsCreadosEsteAnio: number;
+  itemsCreadosUltimos6Meses: number;
+  itemsCreadosUltimos12Meses: number;
+  itemsActualizadosEsteMes: number;
+  itemsActualizadosUltimos7Dias: number;
+  
+  // === ANÁLISIS DE EDAD ===
+  itemsRecientes: number;
+  itemsJovenes: number;
+  itemsViejos: number;
+  promedioAntiguedadDias: number;
+  promedioTiempoSinActualizarDias: number;
+  itemsSinActualizarMasDe6Meses: number;
+  
+  // === SALUD DEL INVENTARIO ===
+  ratioSalud: number;
+  ratioProblemas: number;
+  ratioAsignacion: number;
+  indiceCobertura: number;
+  
+  // === ITEMS CRÍTICOS ===
+  itemsCriticos: number;
+  itemsSinAsignarConProblemas: number;
+  espaciosSinInventario: number;
+  tiposSinItems: number;
+  
+  // === ANÁLISIS DE DISTRIBUCIÓN ===
+  espaciosConSoloDisponibles: number;
+  espaciosConSoloMantenimiento: number;
+  espaciosConSoloDanados: number;
+  espaciosConMezclaEstados: number;
+  tiposConSoloDisponibles: number;
+  tiposConSoloMantenimiento: number;
+  tiposConSoloDanados: number;
+  tiposConMezclaEstados: number;
+  
+  // === ANÁLISIS DE CANTIDAD ===
+  itemsConCantidad1: number;
+  itemsConCantidadAlta: number;
+  itemsConCantidadMedia: number;
+  cantidadMaxima: number;
+  cantidadMinima: number;
+  cantidadTotalPromedio: number;
+  
+  // === ESTADÍSTICAS DE OBSERVACIONES ===
+  itemsConObservaciones: number;
+  itemsSinObservaciones: number;
+  porcentajeConObservaciones: number;
+  
+  // === COMPARATIVAS ===
+  diferenciaMesAnterior: number;
+  porcentajeCambioMesAnterior: number;
+  diferenciaAnioAnterior: number;
+  porcentajeCambioAnioAnterior: number;
+  
+  // === EFICIENCIA ===
+  eficienciaAsignacion: number;
+  densidadInventario: number;
+  concentracionInventario: number;
+}

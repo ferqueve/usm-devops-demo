@@ -12,16 +12,17 @@ export const useDialogScrollLock = (isOpen: boolean) => {
     if (!isOpen) return;
 
     // Guardar la posición actual del scroll
-    scrollPositionRef.current = window.scrollY;
+    scrollPositionRef.current = globalThis.scrollY;
 
     // Calcular el ancho del scrollbar
     const getScrollbarWidth = () => {
       const outer = document.createElement('div');
       outer.style.visibility = 'hidden';
       outer.style.overflow = 'scroll';
-      // @ts-ignore - Propiedad específica de IE que puede estar presente
+      // Propiedad específica de IE que puede estar presente
+      const styleWithMsOverflow = outer.style as CSSStyleDeclaration & { msOverflowStyle?: string };
       if ('msOverflowStyle' in outer.style) {
-        (outer.style as any).msOverflowStyle = 'scrollbar';
+        styleWithMsOverflow.msOverflowStyle = 'scrollbar';
       }
       document.body.appendChild(outer);
 
@@ -30,7 +31,7 @@ export const useDialogScrollLock = (isOpen: boolean) => {
 
       const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
 
-      outer.parentNode?.removeChild(outer);
+      outer.remove();
 
       return scrollbarWidth;
     };
@@ -53,8 +54,8 @@ export const useDialogScrollLock = (isOpen: boolean) => {
     if (scrollbarWidthRef.current > 0) {
       const content = document.querySelector('[data-slot="dialog-content"]');
       if (content instanceof HTMLElement) {
-        const currentRight = window.getComputedStyle(content).marginRight;
-        const marginRightNum = parseInt(currentRight) || 0;
+        const currentRight = globalThis.getComputedStyle(content).marginRight;
+        const marginRightNum = Number.parseInt(currentRight, 10) || 0;
         content.style.marginRight = `${marginRightNum + scrollbarWidthRef.current}px`;
       }
     }
@@ -71,7 +72,7 @@ export const useDialogScrollLock = (isOpen: boolean) => {
       document.body.style.overflow = '';
 
       // Restaurar scroll position
-      window.scrollTo(0, scrollPositionRef.current);
+      globalThis.scrollTo(0, scrollPositionRef.current);
 
       // Restaurar margin del dialog
       const content = document.querySelector('[data-slot="dialog-content"]');

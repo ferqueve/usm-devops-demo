@@ -11,6 +11,16 @@ interface MetricsHistory {
   threads: number;
 }
 
+interface MetricMeasurement {
+  statistic: string;
+  value: number;
+}
+
+interface MetricData {
+  measurements?: MetricMeasurement[];
+  [key: string]: unknown;
+}
+
 export const useSystemMetrics = () => {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -18,23 +28,23 @@ export const useSystemMetrics = () => {
   const [hasConnectionError, setHasConnectionError] = useState(false);
   
   // Estados para los datos básicos de Actuator
-  const [health, setHealth] = useState<any>(null);
-  const [info, setInfo] = useState<any>(null);
-  const [memoryMetrics, setMemoryMetrics] = useState<any>(null);
-  const [cpuMetrics, setCpuMetrics] = useState<any>(null);
-  const [threadsMetrics, setThreadsMetrics] = useState<any>(null);
-  const [httpMetrics, setHttpMetrics] = useState<any>(null);
-  const [uptimeMetrics, setUptimeMetrics] = useState<any>(null);
-  const [gcMetrics, setGcMetrics] = useState<any>(null);
-  const [memoryMaxMetrics, setMemoryMaxMetrics] = useState<any>(null);
+  const [health, setHealth] = useState<unknown>(null);
+  const [info, setInfo] = useState<unknown>(null);
+  const [memoryMetrics, setMemoryMetrics] = useState<MetricData | null>(null);
+  const [cpuMetrics, setCpuMetrics] = useState<MetricData | null>(null);
+  const [threadsMetrics, setThreadsMetrics] = useState<MetricData | null>(null);
+  const [httpMetrics, setHttpMetrics] = useState<unknown>(null);
+  const [uptimeMetrics, setUptimeMetrics] = useState<unknown>(null);
+  const [gcMetrics, setGcMetrics] = useState<unknown>(null);
+  const [memoryMaxMetrics, setMemoryMaxMetrics] = useState<unknown>(null);
   
   // Estados para los nuevos endpoints
-  const [httpTrace, setHttpTrace] = useState<any>(null);
-  const [mappings, setMappings] = useState<any>(null);
-  const [liquibase, setLiquibase] = useState<any>(null);
-  const [loggers, setLoggers] = useState<any>(null);
+  const [httpTrace, setHttpTrace] = useState<unknown>(null);
+  const [mappings, setMappings] = useState<unknown>(null);
+  const [liquibase, setLiquibase] = useState<unknown>(null);
+  const [loggers, setLoggers] = useState<unknown>(null);
   const [logFile, setLogFile] = useState<string>('');
-  const [activeUsers, setActiveUsers] = useState<any>(null);
+  const [activeUsers, setActiveUsers] = useState<unknown>(null);
   
   // Historial de métricas para gráficos en tiempo real
   const [metricsHistory, setMetricsHistory] = useState<MetricsHistory[]>([]);
@@ -52,7 +62,7 @@ export const useSystemMetrics = () => {
 
     setMetricsHistory(prev => {
       // Solo actualizar si han pasado al menos 2 segundos desde la última actualización
-      const lastUpdate = prev[prev.length - 1]?.timestamp;
+      const lastUpdate = prev.at(-1)?.timestamp;
       const timeDiff = timestamp.getTime() - (lastUpdate || 0);
       
       if (timeDiff < 2000 && prev.length > 0) {
@@ -95,6 +105,69 @@ export const useSystemMetrics = () => {
     }
   }, []);
 
+  // Funciones auxiliares para reducir complejidad
+  const handleConnectionError = useCallback((silent: boolean) => {
+    setAutoRefresh(false);
+    setHasConnectionError(true);
+    if (!silent) {
+      toast.error('Error de autenticación', {
+        description: 'Sesión expirada. Por favor recarga la página.'
+      });
+    }
+  }, []);
+
+  const updateBasicMetrics = useCallback((results: {
+    healthData: PromiseSettledResult<unknown>;
+    memoryData: PromiseSettledResult<unknown>;
+    cpuData: PromiseSettledResult<unknown>;
+    threadsData: PromiseSettledResult<unknown>;
+    httpData: PromiseSettledResult<unknown>;
+    uptimeData: PromiseSettledResult<unknown>;
+    gcData: PromiseSettledResult<unknown>;
+    memoryMaxData: PromiseSettledResult<unknown>;
+  }) => {
+    if (results.healthData.status === 'fulfilled') setHealth(results.healthData.value);
+    if (results.memoryData.status === 'fulfilled') setMemoryMetrics(results.memoryData.value as MetricData);
+    if (results.cpuData.status === 'fulfilled') setCpuMetrics(results.cpuData.value as MetricData);
+    if (results.threadsData.status === 'fulfilled') setThreadsMetrics(results.threadsData.value as MetricData);
+    if (results.httpData.status === 'fulfilled') setHttpMetrics(results.httpData.value);
+    if (results.uptimeData.status === 'fulfilled') setUptimeMetrics(results.uptimeData.value);
+    if (results.gcData.status === 'fulfilled') setGcMetrics(results.gcData.value);
+    if (results.memoryMaxData.status === 'fulfilled') setMemoryMaxMetrics(results.memoryMaxData.value);
+  }, []);
+
+  const updateAdditionalMetrics = useCallback((
+    httpTraceData: PromiseSettledResult<unknown>,
+    mappingsData: PromiseSettledResult<unknown>,
+    loggersData: PromiseSettledResult<unknown>,
+    logFileData: PromiseSettledResult<unknown>
+  ) => {
+    if (httpTraceData.status === 'fulfilled') setHttpTrace(httpTraceData.value);
+    if (mappingsData.status === 'fulfilled') setMappings(mappingsData.value);
+    if (loggersData.status === 'fulfilled') setLoggers(loggersData.value);
+    if (logFileData.status === 'fulfilled') {
+      const logFileValue = logFileData.value;
+      setLogFile(typeof logFileValue === 'string' ? logFileValue : String(logFileValue));
+    }
+  }, []);
+
+  const updateMetricsChart = useCallback((
+    memoryData: PromiseSettledResult<unknown>,
+    cpuData: PromiseSettledResult<unknown>,
+    threadsData: PromiseSettledResult<unknown>
+  ) => {
+    if (memoryData.status === 'fulfilled' && cpuData.status === 'fulfilled' && threadsData.status === 'fulfilled') {
+      const memData = memoryData.value as MetricData;
+      const cpuDataValue = cpuData.value as MetricData;
+      const threadsDataValue = threadsData.value as MetricData;
+      
+      const memValue = memData?.measurements?.find((m) => m.statistic === 'VALUE')?.value || 0;
+      const cpuValue = cpuDataValue?.measurements?.find((m) => m.statistic === 'VALUE')?.value || 0;
+      const threadsValue = threadsDataValue?.measurements?.find((m) => m.statistic === 'VALUE')?.value || 0;
+      updateMetricsHistory(memValue, cpuValue, threadsValue);
+    }
+  }, [updateMetricsHistory]);
+
   const fetchAllMetrics = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
@@ -131,54 +204,37 @@ export const useSystemMetrics = () => {
       const allFailed = essentialResults.every(result => result.status === 'rejected');
 
       if (allFailed) {
-        setAutoRefresh(false);
-        setHasConnectionError(true);
-        if (!silent) {
-          toast.error('Error de autenticación', {
-            description: 'Sesión expirada. Por favor recarga la página.'
-          });
-        }
+        handleConnectionError(silent);
         return;
       }
 
       setHasConnectionError(false);
-
-      // Datos básicos
-      if (healthData.status === 'fulfilled') setHealth(healthData.value);
-      if (memoryData.status === 'fulfilled') setMemoryMetrics(memoryData.value);
-      if (cpuData.status === 'fulfilled') setCpuMetrics(cpuData.value);
-      if (threadsData.status === 'fulfilled') setThreadsMetrics(threadsData.value);
-      if (httpData.status === 'fulfilled') setHttpMetrics(httpData.value);
-      if (uptimeData.status === 'fulfilled') setUptimeMetrics(uptimeData.value);
-      if (gcData.status === 'fulfilled') setGcMetrics(gcData.value);
-      if (memoryMaxData.status === 'fulfilled') setMemoryMaxMetrics(memoryMaxData.value);
+      updateBasicMetrics({
+        healthData,
+        memoryData,
+        cpuData,
+        threadsData,
+        httpData,
+        uptimeData,
+        gcData,
+        memoryMaxData
+      });
+      updateAdditionalMetrics(httpTraceData, mappingsData, loggersData, logFileData);
+      updateMetricsChart(memoryData, cpuData, threadsData);
       
-      // Nuevos datos
-      if (httpTraceData.status === 'fulfilled') setHttpTrace(httpTraceData.value);
-      if (mappingsData.status === 'fulfilled') setMappings(mappingsData.value);
-      if (loggersData.status === 'fulfilled') setLoggers(loggersData.value);
-      if (logFileData.status === 'fulfilled') setLogFile(logFileData.value);
-
-      // Actualizar historial de gráficos
-      if (memoryData.status === 'fulfilled' && cpuData.status === 'fulfilled' && threadsData.status === 'fulfilled') {
-        const memValue = memoryData.value?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-        const cpuValue = cpuData.value?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-        const threadsValue = threadsData.value?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-        updateMetricsHistory(memValue, cpuValue, threadsValue);
-      }
-      
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al cargar métricas:', error);
       setAutoRefresh(false);
       if (!silent) {
+        const errorMessage = error instanceof Error ? error.message : 'No se pudieron obtener las métricas del sistema';
         toast.error('Error al cargar métricas', {
-          description: error.message || 'No se pudieron obtener las métricas del sistema'
+          description: errorMessage
         });
       }
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [updateMetricsHistory]);
+  }, [handleConnectionError, updateBasicMetrics, updateAdditionalMetrics, updateMetricsChart]);
 
   const handleRefresh = async () => {
     try {
@@ -195,7 +251,7 @@ export const useSystemMetrics = () => {
       setTimeout(() => {
         setIsRefreshing(false);
       }, remaining);
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar');
       setIsRefreshing(false);
     }

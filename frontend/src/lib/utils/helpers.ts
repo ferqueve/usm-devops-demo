@@ -59,10 +59,10 @@ export const storage = {
   get: <T>(key: string, defaultValue?: T): T | null => {
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue || null;
+      return item ? JSON.parse(item) : (defaultValue ?? null);
     } catch (error) {
       console.error('Error al obtener de localStorage:', error);
-      return defaultValue || null;
+      return defaultValue ?? null;
     }
   },
 
@@ -78,7 +78,7 @@ export const storage = {
   },
 
   /**
-   * Limpia todo localStorage
+   * Limpia tod localStorage
    */
   clear: (): void => {
     try {

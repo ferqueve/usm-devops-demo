@@ -1,41 +1,15 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { APP_CONFIG } from '@/lib/config/app';
 import { storage, errors, validation } from '@/lib/utils/helpers';
 import { authApi } from '@/lib/api/auth';
 import type { LoginRequest, RegisterRequest } from '@/lib/types/auth';
-
-// Tipos para el contexto de autenticación
-interface AuthContextType {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  user: {
-    email: string;
-    nombre: string;
-    rol: string;
-  } | null;
-  login: (credentials?: { email: string; password: string }) => Promise<void>;
-  register: (userData: { 
-    nombre: string; 
-    apellido: string; 
-    email: string; 
-    password: string; 
-    confirmPassword: string;
-  }) => Promise<void>;
-  logout: () => Promise<void>;
-  error: string | null;
-  registrationSuccess: boolean;
-  setRegistrationSuccess: (success: boolean) => void;
-  lastRegisteredEmail: string;
-}
+import { AuthContext, type AuthContextType } from './authContext';
 
 // Tipos para las props del provider
 interface AuthProviderProps {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
-
-// Crear contexto con valor por defecto
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Clave para localStorage
 const AUTH_STORAGE_KEY = APP_CONFIG.STORAGE_KEYS.AUTH;
@@ -81,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUser(null);
               setIsAuthenticated(false);
             }
-          } catch (error) {
+          } catch {
             // Error al verificar token, limpiar datos
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
@@ -117,10 +91,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    window.addEventListener('auth:logout', handleAutoLogout);
+    globalThis.addEventListener('auth:logout', handleAutoLogout);
     
     return () => {
-      window.removeEventListener('auth:logout', handleAutoLogout);
+      globalThis.removeEventListener('auth:logout', handleAutoLogout);
     };
   }, [isAuthenticated]);
 
@@ -286,8 +260,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  // Valor del contexto
-  const contextValue: AuthContextType = {
+  // Valor del contexto - memoizado para evitar re-renders innecesarios
+  const contextValue: AuthContextType = useMemo(() => ({
     isAuthenticated,
     isLoading,
     user,
@@ -298,23 +272,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     registrationSuccess,
     setRegistrationSuccess,
     lastRegisteredEmail
-  };
+  }), [isAuthenticated, isLoading, user, login, register, logout, error, registrationSuccess, lastRegisteredEmail]);
 
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-// Hook personalizado para usar el contexto de autenticación
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
-  }
-  
-  return context;
 }
 

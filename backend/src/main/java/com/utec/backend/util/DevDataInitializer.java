@@ -130,8 +130,11 @@ public class DevDataInitializer implements CommandLineRunner {
     private Map<String, Espacio> createEspacios() {
         // Verificar si ya hay espacios
         if (espacioRepository.count() > 0) {
-            log.info("Ya existen espacios en la base de datos. Saltando creación de espacios.");
-            return new HashMap<>();
+            log.info("Ya existen espacios en la base de datos. Obteniendo espacios existentes para inventario.");
+            // Obtener todos los espacios existentes y mapearlos por nombre
+            Map<String, Espacio> espaciosExistentes = new HashMap<>();
+            espacioRepository.findAll().forEach(espacio -> espaciosExistentes.put(espacio.getNombre(), espacio));
+            return espaciosExistentes;
         }
 
         log.info("Creando espacios de prueba...");
@@ -193,9 +196,13 @@ public class DevDataInitializer implements CommandLineRunner {
             return;
         }
 
-        // Verificar si ya hay items de inventario
-        if (inventarioItemRepository.count() > 0) {
-            log.info("Ya existen items de inventario en la base de datos. Saltando creación de inventario.");
+        // Verificar si ya hay items de inventario ACTIVOS (no eliminados)
+        long itemsActivos = inventarioItemRepository.findAll().stream()
+                .filter(item -> item.getActivo() != null && item.getActivo() && item.getDeletedAt() == null)
+                .count();
+        
+        if (itemsActivos > 0) {
+            log.info("Ya existen {} items de inventario activos en la base de datos. Saltando creación de inventario.", itemsActivos);
             return;
         }
 

@@ -59,10 +59,19 @@ public class SecurityConfig {
                 // Rutas protegidas por rol
                 .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
                 .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
-                .requestMatchers("/api/v1/espacios/**", "/api/v1/espacios/*/inventario/**", "/api/v1/tipos-elemento/**", "/api/v1/tipos-espacio/**", "/api/v1/inventario/**", "/api/v1/estadisticas/**", "/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
-                .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE)
-                .requestMatchers("/api/v1/calendario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE)
+                // Espacios, inventario, tipos: ADMIN y MANTENIMIENTO (gestión), ANALISTA (solo visualización se maneja en métodos)
+                .requestMatchers("/api/v1/espacios/**", "/api/v1/espacios/*/inventario/**", "/api/v1/tipos-elemento/**", "/api/v1/tipos-espacio/**", "/api/v1/inventario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+                // Estadísticas: ADMIN, ANALISTA (reservas), MANTENIMIENTO (inventario/espacios)
+                .requestMatchers("/api/v1/estadisticas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+                .requestMatchers("/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
+                // Reservas: ADMIN, ANALISTA (CRUD), DOCENTE (solicitar), MANTENIMIENTO (ver para ocupación)
+                .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_MANTENIMIENTO)
+                // Calendario: Todos los roles autenticados
+                .requestMatchers("/api/v1/calendario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE, ROLE_MANTENIMIENTO, ROLE_EXTERNO)
 
+                // Solicitudes de inventario: ADMIN, ANALISTA (crear), MANTENIMIENTO (aceptar/rechazar)
+                .requestMatchers("/api/v1/reservas/items-solicitados/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+                
                 // Rutas autenticadas generales
                 .requestMatchers("/api/v1/recomendaciones/**").authenticated()
 

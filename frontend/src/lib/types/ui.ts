@@ -12,10 +12,6 @@ export interface SidebarMenuItem {
   isActive?: boolean;
 }
 
-export interface DashboardPageProps {
-  // Props comunes para páginas del dashboard
-}
-
 export interface Statistic {
   title?: string; // Hacer opcional para compatibilidad
   value: string | number;

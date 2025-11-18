@@ -3,6 +3,13 @@ import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+// Extender el tipo de jsPDF para incluir lastAutoTable
+interface ExtendedJsPDF extends jsPDF {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
+
 interface InventoryStats {
   totalItems: number;
   totalCantidad: number;
@@ -83,6 +90,38 @@ interface ExportFilters {
   estado?: string;
 }
 
+// Función auxiliar para formatear diferencia del mes anterior
+function formatMesAnterior(diferencia: number, porcentaje: number): string {
+  if (diferencia === 0) return '-';
+  const signo = diferencia > 0 ? '+' : '';
+  const signoPorcentaje = porcentaje > 0 ? '+' : '';
+  return `${signo}${diferencia} (${signoPorcentaje}${porcentaje.toFixed(1)}%)`;
+}
+
+// Función auxiliar para agregar pie de página
+function addFooter(doc: ExtendedJsPDF, pageWidth: number, pageHeight: number, grayColor: [number, number, number]): void {
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+    doc.text(
+      `Página ${i} de ${totalPages}`,
+      pageWidth / 2,
+      pageHeight - 10,
+      { align: 'center' }
+    );
+    doc.text(
+      'UTEC Space Manager - Sistema de Gestión de Espacios',
+      pageWidth / 2,
+      pageHeight - 5,
+      { align: 'center' }
+    );
+    doc.setTextColor(0, 0, 0);
+  }
+}
+
 /**
  * Exporta las estadísticas de inventario a PDF con un diseño profesional
  */
@@ -91,7 +130,7 @@ export function exportInventoryStatsToPDF(
   filters?: ExportFilters
 ): void {
   try {
-    const doc = new jsPDF('p', 'mm', 'a4');
+    const doc = new jsPDF('p', 'mm', 'a4') as ExtendedJsPDF;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
@@ -180,7 +219,7 @@ export function exportInventoryStatsToPDF(
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
     // Métricas de salud
     checkPageBreak(15);
@@ -194,11 +233,12 @@ export function exportInventoryStatsToPDF(
     yPos += 15;
 
     // === ESTADÍSTICAS TEMPORALES ===
-    addSectionTitle('ANALISIS TEMPORAL', [76, 175, 80] as [number, number, number]);
+    const temporalColor: [number, number, number] = [76, 175, 80];
+    addSectionTitle('ANALISIS TEMPORAL', temporalColor);
 
     checkPageBreak(25);
     const temporalData = [
-      ['Creados Este Mes', stats.itemsCreadosEsteMes.toString(), stats.diferenciaMesAnterior !== 0 ? `${stats.diferenciaMesAnterior > 0 ? '+' : ''}${stats.diferenciaMesAnterior} (${stats.porcentajeCambioMesAnterior > 0 ? '+' : ''}${stats.porcentajeCambioMesAnterior.toFixed(1)}%)` : '-'],
+      ['Creados Este Mes', stats.itemsCreadosEsteMes.toString(), formatMesAnterior(stats.diferenciaMesAnterior, stats.porcentajeCambioMesAnterior)],
       ['Creados Este Año', stats.itemsCreadosEsteAnio.toString(), `Últimos 6 meses: ${stats.itemsCreadosUltimos6Meses}`],
       ['Actualizados Este Mes', stats.itemsActualizadosEsteMes.toString(), `Últimos 7 días: ${stats.itemsActualizadosUltimos7Dias}`],
       ['Antigüedad Promedio', Math.round(stats.promedioAntiguedadDias).toString() + ' días', `${Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar`],
@@ -209,14 +249,15 @@ export function exportInventoryStatsToPDF(
       head: [['Período', 'Cantidad', 'Detalles']],
       body: temporalData,
       theme: 'striped',
-      headStyles: { fillColor: [76, 175, 80] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+      headStyles: { fillColor: temporalColor, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
     // === TOP RANKINGS ===
-    addSectionTitle('TOP RANKINGS', [255, 152, 0] as [number, number, number]);
+    const topRankingsColor: [number, number, number] = [255, 152, 0];
+    addSectionTitle('TOP RANKINGS', topRankingsColor);
 
     // Top 10 Espacios
     checkPageBreak(30);
@@ -237,11 +278,11 @@ export function exportInventoryStatsToPDF(
       head: [['Rank', 'Espacio', 'Items', 'Cantidad Total']],
       body: topEspaciosData,
       theme: 'striped',
-      headStyles: { fillColor: [255, 152, 0] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+      headStyles: { fillColor: topRankingsColor, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
     // Top 10 Tipos
     checkPageBreak(30);
@@ -262,11 +303,11 @@ export function exportInventoryStatsToPDF(
       head: [['Rank', 'Tipo de Elemento', 'Items', 'Cantidad Total']],
       body: topTiposData,
       theme: 'striped',
-      headStyles: { fillColor: [255, 152, 0] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+      headStyles: { fillColor: topRankingsColor, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
     // === ITEMS CRÍTICOS ===
     if (stats.itemsCriticos > 0 || stats.espaciosSinInventario > 0) {
@@ -289,7 +330,7 @@ export function exportInventoryStatsToPDF(
         styles: { fontSize: 9, cellPadding: 3 },
         margin: { left: margin, right: margin },
       });
-      yPos = (doc as any).lastAutoTable.finalY + 8;
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
       // Espacios con más problemas
       if (stats.espaciosConMasProblemas.length > 0) {
@@ -314,12 +355,13 @@ export function exportInventoryStatsToPDF(
           styles: { fontSize: 9, cellPadding: 3 },
           margin: { left: margin, right: margin },
         });
-        yPos = (doc as any).lastAutoTable.finalY + 8;
+        yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
       }
     }
 
     // === ANÁLISIS DE DISTRIBUCIÓN ===
-    addSectionTitle('ANALISIS DE DISTRIBUCION', [156, 39, 176] as [number, number, number]);
+    const distribucionColor: [number, number, number] = [156, 39, 176];
+    addSectionTitle('ANALISIS DE DISTRIBUCION', distribucionColor);
 
     checkPageBreak(40);
     const distribucionData = [
@@ -338,11 +380,11 @@ export function exportInventoryStatsToPDF(
       head: [['Métrica', 'Valor']],
       body: distribucionData,
       theme: 'striped',
-      headStyles: { fillColor: [156, 39, 176] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+      headStyles: { fillColor: distribucionColor, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
     // Distribución por cantidad
     checkPageBreak(20);
@@ -363,15 +405,16 @@ export function exportInventoryStatsToPDF(
       head: [['Rango', 'Items']],
       body: cantidadData,
       theme: 'striped',
-      headStyles: { fillColor: [156, 39, 176] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+      headStyles: { fillColor: distribucionColor, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
-    yPos = (doc as any).lastAutoTable.finalY + 8;
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
 
     // === INVENTARIO COMPLETO POR TIPO ===
     if (stats.itemsPorTipo.length > 0) {
-      addSectionTitle('INVENTARIO COMPLETO POR TIPO', [0, 150, 136] as [number, number, number]);
+      const tipoColor: [number, number, number] = [0, 150, 136];
+      addSectionTitle('INVENTARIO COMPLETO POR TIPO', tipoColor);
 
       checkPageBreak(50);
       const tipoCompletoData = stats.itemsPorTipo.map((tipo) => {
@@ -392,7 +435,7 @@ export function exportInventoryStatsToPDF(
         head: [['Tipo', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados', '% del Total']],
         body: tipoCompletoData,
         theme: 'striped',
-        headStyles: { fillColor: [0, 150, 136] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+        headStyles: { fillColor: tipoColor, textColor: [255, 255, 255], fontStyle: 'bold' },
         styles: { fontSize: 8, cellPadding: 2 },
         margin: { left: margin, right: margin },
         columnStyles: {
@@ -405,12 +448,13 @@ export function exportInventoryStatsToPDF(
           6: { cellWidth: 20 },
         },
       });
-      yPos = (doc as any).lastAutoTable.finalY + 8;
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
     }
 
     // === INVENTARIO COMPLETO POR ESPACIO ===
     if (stats.itemsPorEspacio.length > 0) {
-      addSectionTitle('INVENTARIO COMPLETO POR ESPACIO', [103, 58, 183] as [number, number, number]);
+      const espacioColor: [number, number, number] = [103, 58, 183];
+      addSectionTitle('INVENTARIO COMPLETO POR ESPACIO', espacioColor);
 
       checkPageBreak(50);
       const espacioCompletoData = stats.itemsPorEspacio.map((espacio) => [
@@ -427,7 +471,7 @@ export function exportInventoryStatsToPDF(
         head: [['Espacio', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados']],
         body: espacioCompletoData,
         theme: 'striped',
-        headStyles: { fillColor: [103, 58, 183] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold' },
+        headStyles: { fillColor: espacioColor, textColor: [255, 255, 255], fontStyle: 'bold' },
         styles: { fontSize: 8, cellPadding: 2 },
         margin: { left: margin, right: margin },
         columnStyles: {
@@ -439,30 +483,11 @@ export function exportInventoryStatsToPDF(
           5: { cellWidth: 20 },
         },
       });
-      yPos = (doc as any).lastAutoTable.finalY + 8;
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
     }
 
     // Pie de página en todas las páginas
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
-      doc.text(
-        `Página ${i} de ${totalPages}`,
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: 'center' }
-      );
-      doc.text(
-        'UTEC Space Manager - Sistema de Gestión de Espacios',
-        pageWidth / 2,
-        pageHeight - 5,
-        { align: 'center' }
-      );
-      doc.setTextColor(0, 0, 0);
-    }
+    addFooter(doc, pageWidth, pageHeight, grayColor);
 
     // Generar nombre de archivo
     const fecha = format(new Date(), 'yyyy-MM-dd');

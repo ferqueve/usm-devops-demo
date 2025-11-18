@@ -1,4 +1,4 @@
-import { Calendar, Clock, LayoutGrid, Table as TableIcon, CalendarDays, CheckCircle2, XCircle, Hourglass, Filter, BrushCleaning, Building2, CalendarArrowDown, CalendarArrowUp } from 'lucide-react';
+import { Calendar, Clock, LayoutGrid, Table as TableIcon, CalendarDays, CheckCircle2, XCircle, Hourglass, Filter, BrushCleaning, Building2, CalendarArrowDown, CalendarArrowUp, GraduationCap, Tag } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -18,21 +18,37 @@ interface Espacio {
   nombre: string;
 }
 
+interface Carrera {
+  id: number;
+  nombre: string;
+  codigo?: string;
+}
+
+interface TipoEspacio {
+  id: number;
+  nombre: string;
+  color?: string;
+}
+
 interface ReservationFiltersProps {
   tiempoFilter: string;
   estadoFilter: string;
   espacioFilter: number | null;
+  carreraFilter: number | null;
+  tipoEspacioFilter: number | null;
   fechaInicio: Date | undefined;
   fechaFin: Date | undefined;
-  viewMode: 'cards' | 'table' | 'calendar';
   espaciosUnicos: Espacio[];
+  carrerasUnicas: Carrera[];
+  tiposEspacioUnicos: TipoEspacio[];
   hayFiltrosActivos: boolean;
   onTiempoFilterChange: (filter: string) => void;
   onEstadoFilterChange: (filter: string) => void;
   onEspacioFilterChange: (filter: number | null) => void;
+  onCarreraFilterChange: (filter: number | null) => void;
+  onTipoEspacioFilterChange: (filter: number | null) => void;
   onFechaInicioChange: (date: Date | undefined) => void;
   onFechaFinChange: (date: Date | undefined) => void;
-  onViewModeChange: (mode: 'cards' | 'table' | 'calendar') => void;
   onClearFilters: () => void;
 }
 
@@ -40,35 +56,25 @@ export default function ReservationFilters({
   tiempoFilter,
   estadoFilter,
   espacioFilter,
+  carreraFilter,
+  tipoEspacioFilter,
   fechaInicio,
   fechaFin,
-  viewMode,
   espaciosUnicos,
+  carrerasUnicas,
+  tiposEspacioUnicos,
   hayFiltrosActivos,
   onTiempoFilterChange,
   onEstadoFilterChange,
   onEspacioFilterChange,
+  onCarreraFilterChange,
+  onTipoEspacioFilterChange,
   onFechaInicioChange,
   onFechaFinChange,
-  onViewModeChange,
   onClearFilters,
 }: ReservationFiltersProps) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      {/* Botón limpiar filtros */}
-      {hayFiltrosActivos && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={onClearFilters}
-              className="p-1.5 rounded transition-colors bg-red-500 text-white hover:bg-red-600"
-            >
-              <BrushCleaning className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Limpiar filtros</TooltipContent>
-        </Tooltip>
-      )}
       {/* Filtro por rango de fechas */}
       <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
         <Tooltip>
@@ -341,51 +347,141 @@ export default function ReservationFilters({
           </PopoverContent>
         </Popover>
       </div>
-      {/* Toggle de vista */}
+      {/* Filtro por tipo de espacio */}
       <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => onViewModeChange('cards')}
-              className={`p-1 rounded transition-colors ${viewMode === 'cards'
+              onClick={() => onTipoEspacioFilterChange(null)}
+              className={`p-1.5 rounded transition-colors ${tipoEspacioFilter === null
                   ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
                   : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <Filter className="h-3.5 w-3.5" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Vista de tarjetas</TooltipContent>
+          <TooltipContent>Todos los tipos</TooltipContent>
         </Tooltip>
+        <Popover>
+          <Tooltip>
+            <PopoverTrigger asChild>
+              <TooltipTrigger asChild>
+                <button
+                  className={`p-1.5 rounded transition-colors ${tipoEspacioFilter !== null
+                      ? 'bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300'
+                      : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  <Tag className={`h-3.5 w-3.5 ${tipoEspacioFilter !== null ? 'text-purple-700' : 'text-gray-500'}`} />
+                </button>
+              </TooltipTrigger>
+            </PopoverTrigger>
+            <TooltipContent>
+              {tipoEspacioFilter !== null
+                ? tiposEspacioUnicos.find(t => t.id === tipoEspacioFilter)?.nombre || 'Seleccionar tipo'
+                : 'Seleccionar tipo de espacio'}
+            </TooltipContent>
+          </Tooltip>
+          <PopoverContent className="w-64 p-2 max-h-[300px] overflow-y-auto" align="start">
+            <div className="space-y-1">
+              {tiposEspacioUnicos.map((tipo) => (
+                <button
+                  key={tipo.id}
+                  onClick={() => onTipoEspacioFilterChange(tipo.id)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
+                    tipoEspacioFilter === tipo.id
+                      ? 'bg-gray-100 text-gray-900 font-medium'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {tipo.color && (
+                    <div 
+                      className="w-3 h-3 rounded-full shrink-0" 
+                      style={{ backgroundColor: tipo.color }}
+                    />
+                  )}
+                  <span>{tipo.nombre}</span>
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      {/* Filtro por carrera */}
+      <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => onViewModeChange('table')}
-              className={`p-1 rounded transition-colors ${viewMode === 'table'
+              onClick={() => onCarreraFilterChange(null)}
+              className={`p-1.5 rounded transition-colors ${carreraFilter === null
                   ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
                   : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              <TableIcon className="h-3.5 w-3.5" />
+              <Filter className="h-3.5 w-3.5" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Vista de tabla</TooltipContent>
+          <TooltipContent>Todas las carreras</TooltipContent>
         </Tooltip>
-                <Tooltip>
+        <Popover>
+          <Tooltip>
+            <PopoverTrigger asChild>
+              <TooltipTrigger asChild>
+                <button
+                  className={`p-1.5 rounded transition-colors ${carreraFilter !== null
+                      ? 'bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300'
+                      : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  <GraduationCap className={`h-3.5 w-3.5 ${carreraFilter !== null ? 'text-indigo-700' : 'text-gray-500'}`} />
+                </button>
+              </TooltipTrigger>
+            </PopoverTrigger>
+            <TooltipContent>
+              {carreraFilter !== null
+                ? carrerasUnicas.find(c => c.id === carreraFilter)?.nombre || 'Seleccionar carrera'
+                : 'Seleccionar carrera'}
+            </TooltipContent>
+          </Tooltip>
+          <PopoverContent className="w-64 p-2 max-h-[300px] overflow-y-auto" align="start">
+            <div className="space-y-1">
+              {carrerasUnicas.map((carrera) => (
+                <button
+                  key={carrera.id}
+                  onClick={() => onCarreraFilterChange(carrera.id)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                    carreraFilter === carrera.id
+                      ? 'bg-gray-100 text-gray-900 font-medium'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex flex-col">
+                    <span>{carrera.nombre}</span>
+                    {carrera.codigo && (
+                      <span className="text-xs text-muted-foreground">{carrera.codigo}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      {/* Botón limpiar filtros */}
+      {hayFiltrosActivos && (
+        <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => onViewModeChange('calendar')}
-              className={`p-1 rounded transition-colors ${viewMode === 'calendar'                                                                               
-                  ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'     
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
+              onClick={onClearFilters}
+              className="p-1.5 rounded transition-colors bg-red-500 text-white hover:bg-red-600"
             >
-              <CalendarDays className="h-3.5 w-3.5" />
+              <BrushCleaning className="h-3.5 w-3.5" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Vista de calendario</TooltipContent>
+          <TooltipContent>Limpiar filtros</TooltipContent>
         </Tooltip>
-      </div>
+      )}
     </div>
   );
 }

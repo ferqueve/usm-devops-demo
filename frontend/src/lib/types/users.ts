@@ -2,7 +2,7 @@
 // Tipos para usuarios
 // ============================================================================
 
-export type UserRole = 'ADMIN' | 'ANALISTA' | 'DOCENTE' | 'ESTUDIANTE' | 'EXTERNO';
+export type UserRole = 'ADMIN' | 'ANALISTA' | 'DOCENTE' | 'ESTUDIANTE' | 'EXTERNO' | 'MANTENIMIENTO';
 
 export interface User {
   id: number;

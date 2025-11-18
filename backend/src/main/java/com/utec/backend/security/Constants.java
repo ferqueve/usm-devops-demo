@@ -15,5 +15,6 @@ public final class Constants {
     public static final String ROLE_DOCENTE = "DOCENTE";
     public static final String ROLE_ESTUDIANTE = "ESTUDIANTE";
     public static final String ROLE_EXTERNO = "EXTERNO";
+    public static final String ROLE_MANTENIMIENTO = "MANTENIMIENTO";
 
 }

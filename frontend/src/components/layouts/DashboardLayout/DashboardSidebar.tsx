@@ -11,7 +11,7 @@ import {
 import { LogOut, User } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { formatEmailForDisplay, formatNameForSidebar } from "@/lib/utils/text-formatters";
 import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/ui";
 

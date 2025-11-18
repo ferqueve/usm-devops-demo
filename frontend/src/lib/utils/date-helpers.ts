@@ -8,6 +8,9 @@
 export function formatDate(date: string): string {
   try {
     const dateObj = new Date(date);
+    if (Number.isNaN(dateObj.getTime())) {
+      return 'Fecha inválida';
+    }
     return dateObj.toLocaleDateString('es-UY', {
       year: 'numeric',
       month: '2-digit',
@@ -15,7 +18,7 @@ export function formatDate(date: string): string {
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch (error) {
+  } catch {
     return 'Fecha inválida';
   }
 }
@@ -26,6 +29,9 @@ export function formatDate(date: string): string {
 export function formatRelativeTime(date: string): string {
   try {
     const dateObj = new Date(date);
+    if (Number.isNaN(dateObj.getTime())) {
+      return 'Fecha inválida';
+    }
     const now = new Date();
     const diffInMs = now.getTime() - dateObj.getTime();
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -43,7 +49,7 @@ export function formatRelativeTime(date: string): string {
     } else {
       return formatDate(date);
     }
-  } catch (error) {
+  } catch {
     return 'Fecha inválida';
   }
 }
@@ -54,8 +60,11 @@ export function formatRelativeTime(date: string): string {
 export function formatDateForInput(date: string): string {
   try {
     const dateObj = new Date(date);
+    if (Number.isNaN(dateObj.getTime())) {
+      return '';
+    }
     return dateObj.toISOString().split('T')[0];
-  } catch (error) {
+  } catch {
     return '';
   }
 }

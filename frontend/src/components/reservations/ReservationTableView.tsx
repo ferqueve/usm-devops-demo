@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Calendar, Clock, Users, Eye, X, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import { Calendar, Clock, Users, Eye, X, Maximize2, Minimize2, Loader2, LayoutGrid, Table as TableIcon, CalendarDays } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import {
   Table as UITable,
@@ -33,14 +33,30 @@ interface Espacio {
   nombre: string;
 }
 
+interface Carrera {
+  id: number;
+  nombre: string;
+  codigo?: string;
+}
+
+interface TipoEspacio {
+  id: number;
+  nombre: string;
+  color?: string;
+}
+
 interface ReservationTableViewProps {
   reservas: Reserva[];
   titulo: string;
   espaciosUnicos: Espacio[];
+  carrerasUnicas: Carrera[];
+  tiposEspacioUnicos: TipoEspacio[];
   // Filtros
   tiempoFilter: string;
   estadoFilter: string;
   espacioFilter: number | null;
+  carreraFilter: number | null;
+  tipoEspacioFilter: number | null;
   fechaInicio: Date | undefined;
   fechaFin: Date | undefined;
   viewMode: 'cards' | 'table' | 'calendar';
@@ -48,6 +64,8 @@ interface ReservationTableViewProps {
   onTiempoFilterChange: (filter: string) => void;
   onEstadoFilterChange: (filter: string) => void;
   onEspacioFilterChange: (filter: number | null) => void;
+  onCarreraFilterChange: (filter: number | null) => void;
+  onTipoEspacioFilterChange: (filter: number | null) => void;
   onFechaInicioChange: (date: Date | undefined) => void;
   onFechaFinChange: (date: Date | undefined) => void;
   onViewModeChange: (mode: 'cards' | 'table' | 'calendar') => void;
@@ -71,9 +89,13 @@ interface ReservationTableViewProps {
 export default function ReservationTableView({
   reservas,
   espaciosUnicos,
+  carrerasUnicas,
+  tiposEspacioUnicos,
   tiempoFilter,
   estadoFilter,
   espacioFilter,
+  carreraFilter,
+  tipoEspacioFilter,
   fechaInicio,
   fechaFin,
   viewMode,
@@ -81,6 +103,8 @@ export default function ReservationTableView({
   onTiempoFilterChange,
   onEstadoFilterChange,
   onEspacioFilterChange,
+  onCarreraFilterChange,
+  onTipoEspacioFilterChange,
   onFechaInicioChange,
   onFechaFinChange,
   onViewModeChange,
@@ -179,29 +203,78 @@ export default function ReservationTableView({
     <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : ''}>
       <Card className={isFullScreen ? 'min-h-full flex flex-col' : ''}>
         <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2 flex-wrap flex-1">
               <ReservationFilters
                 tiempoFilter={tiempoFilter}
                 estadoFilter={estadoFilter}
                 espacioFilter={espacioFilter}
+                carreraFilter={carreraFilter}
+                tipoEspacioFilter={tipoEspacioFilter}
                 fechaInicio={fechaInicio}
                 fechaFin={fechaFin}
-                viewMode={viewMode}
                 espaciosUnicos={espaciosUnicos}
+                carrerasUnicas={carrerasUnicas}
+                tiposEspacioUnicos={tiposEspacioUnicos}
                 hayFiltrosActivos={hayFiltrosActivos}
                 onTiempoFilterChange={onTiempoFilterChange}
                 onEstadoFilterChange={onEstadoFilterChange}
                 onEspacioFilterChange={onEspacioFilterChange}
+                onCarreraFilterChange={onCarreraFilterChange}
+                onTipoEspacioFilterChange={onTipoEspacioFilterChange}
                 onFechaInicioChange={onFechaInicioChange}
                 onFechaFinChange={onFechaFinChange}
-                onViewModeChange={onViewModeChange}
                 onClearFilters={onClearFilters}
               />
             </div>
+            {/* Botón de cambio de vista - a la izquierda del botón de pantalla completa */}
+            <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 flex-shrink-0 self-start">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onViewModeChange('cards')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'cards'
+                        ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
+                        : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Vista de tarjetas</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onViewModeChange('table')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'table'
+                        ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
+                        : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    <TableIcon className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Vista de tabla</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onViewModeChange('calendar')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'calendar'
+                        ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
+                        : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    <CalendarDays className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Vista de calendario</TooltipContent>
+              </Tooltip>
+            </div>
             {/* Botón de pantalla completa - siempre a la derecha */}
             {onToggleFullScreen && (
-              <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+              <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 flex-shrink-0 self-start">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button

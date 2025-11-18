@@ -52,14 +52,58 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/
 // Cliente HTTP Base
 // ============================================================================
 
-// Función para hacer requests HTTP con auto-refresh
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {},
-  isRetry: boolean = false
-): Promise<ApiResponse<T>> {
-  const url = `${API_BASE_URL}${endpoint}`;
+// Funciones auxiliares para reducir complejidad
+function isAuthEndpoint(endpoint: string): boolean {
+  return endpoint.includes('/auth/login') || 
+         endpoint.includes('/auth/register') || 
+         endpoint.includes('/auth/verify-email') || 
+         endpoint.includes('/auth/resend-verification');
+}
+
+async function checkJwtError(response: Response, status: number): Promise<boolean> {
+  if (status !== 401 && status !== 500) return false;
   
+  try {
+    const errorData = await response.clone().json();
+    const errorMessage = (errorData.error || errorData.message || '').toLowerCase();
+    return errorMessage.includes('jwt') || errorMessage.includes('token') || errorMessage.includes('expired');
+  } catch {
+    // Si es 401 y no se puede parsear, probablemente sea JWT expirado
+    return status === 401;
+  }
+}
+
+async function attemptTokenRefresh<T>(
+  endpoint: string,
+  options: RequestInit,
+  config: RequestInit
+): Promise<ApiResponse<T>> {
+  const refreshResponse = await refreshToken();
+  
+  if (refreshResponse.success && refreshResponse.data) {
+    localStorage.setItem('token', refreshResponse.data.token);
+    localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
+    
+    config.headers = {
+      ...config.headers,
+      'Authorization': `Bearer ${refreshResponse.data.token}`,
+    };
+    
+    return apiRequest<T>(endpoint, { ...options, headers: config.headers }, true);
+  }
+  
+  throw new Error('Error al refrescar token');
+}
+
+function handleRefreshFailure(): void {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+  globalThis.dispatchEvent(new CustomEvent('auth:logout'));
+}
+
+function createRequestConfig(options: RequestInit): RequestInit {
+  const token = localStorage.getItem('token');
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -68,8 +112,6 @@ export async function apiRequest<T>(
     ...options,
   };
 
-  // Agregar token de autorización si existe
-  const token = localStorage.getItem('token');
   if (token) {
     config.headers = {
       ...config.headers,
@@ -77,104 +119,56 @@ export async function apiRequest<T>(
     };
   }
 
+  return config;
+}
+
+async function parseResponse<T>(response: Response): Promise<ApiResponse<T> | null> {
+  if (response.status === 204) {
+    return { success: true } as ApiResponse<T>;
+  }
+  
+  const contentType = response.headers.get('content-type');
+  const hasJsonContent = contentType?.includes('application/json');
+  
+  if (hasJsonContent) {
+    return await response.json() as ApiResponse<T>;
+  }
+  
+  return null;
+}
+
+// Función para hacer requests HTTP con auto-refresh
+export async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  isRetry: boolean = false
+): Promise<ApiResponse<T>> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const config = createRequestConfig(options);
+  const token = localStorage.getItem('token');
+
   try {
     const response = await fetch(url, config);
+    const authEndpoint = isAuthEndpoint(endpoint);
+    const isJwtError = await checkJwtError(response, response.status);
+    const shouldAttemptRefresh = isJwtError && !isRetry && !authEndpoint;
     
-    // Si es 401/500 y no es un retry, intentar refresh token
-    // PERO NO para endpoints de autenticación que no requieren token
-    const isAuthEndpoint = endpoint.includes('/auth/login') || 
-                          endpoint.includes('/auth/register') || 
-                          endpoint.includes('/auth/verify-email') || 
-                          endpoint.includes('/auth/resend-verification');
-    
-    // Verificar si el error podría ser por JWT expirado
-    let isJwtError = false;
-    
-    // Si es 401, verificar si es por JWT expirado
-    if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+    if (shouldAttemptRefresh && token && token.length > 0) {
       try {
-        const errorData = await response.clone().json();
-        const errorMessage = (errorData.error || errorData.message || '').toLowerCase();
-        isJwtError = errorMessage.includes('jwt') || errorMessage.includes('token') || errorMessage.includes('expired');
-      } catch (e) {
-        // Si no se puede parsear pero es 401, probablemente sea JWT expirado
-        isJwtError = true;
+        return await attemptTokenRefresh<T>(endpoint, options, config);
+      } catch {
+        handleRefreshFailure();
+        throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
       }
     }
     
-    // Si es 500, verificar si el error contiene "JWT" o "token"
-    if (response.status === 500 && !isRetry && !isAuthEndpoint) {
-      try {
-        const errorData = await response.clone().json();
-        const errorMessage = (errorData.error || errorData.message || '').toLowerCase();
-        isJwtError = errorMessage.includes('jwt') || errorMessage.includes('token') || errorMessage.includes('expired');
-      } catch (e) {
-        // Si no se puede parsear, no es un error de JWT
-        isJwtError = false;
-      }
-    }
-    
-    // Manejar 401 (Unauthorized) o 500 con error de JWT
-    const shouldAttemptRefresh = isJwtError && !isRetry && !isAuthEndpoint;
-    
-    if (shouldAttemptRefresh) {
-      // Solo intentar refresh si realmente hay un token (sesión válida)
-      const hasValidToken = token && token.length > 0;
-      
-      if (hasValidToken) {
-        try {
-          const refreshResponse = await refreshToken();
-          
-          if (refreshResponse.success && refreshResponse.data) {
-            // Guardar nuevos tokens
-            localStorage.setItem('token', refreshResponse.data.token);
-            localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
-            
-            // Actualizar header de autorización con nuevo token
-            config.headers = {
-              ...config.headers,
-              'Authorization': `Bearer ${refreshResponse.data.token}`,
-            };
-            
-            // Reintentar la petición original con el nuevo token
-            return apiRequest<T>(endpoint, { ...options, headers: config.headers }, true);
-          }
-        } catch (refreshError) {
-          // Si falla el refresh, limpiar tokens y redirigir a login
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          
-          // Emitir evento personalizado para que el AuthContext se entere
-          window.dispatchEvent(new CustomEvent('auth:logout'));
-          
-          throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
-        }
-      }
-    }
-    
-    // Si la respuesta no tiene contenido (204 No Content), devolver respuesta vacía exitosa
-    if (response.status === 204) {
-      return { success: true } as ApiResponse<T>;
-    }
-    
-    // Verificar si la respuesta tiene contenido antes de parsear JSON
-    const contentType = response.headers.get('content-type');
-    const hasJsonContent = contentType && contentType.includes('application/json');
-    
-    let data: any = null;
-    if (hasJsonContent) {
-      data = await response.json();
-    }
+    const data = await parseResponse<T>(response);
     
     if (!response.ok) {
-      // Si el backend devuelve un error estructurado, usar ese mensaje
       const errorMessage = data?.error || data?.message || 'Error en la petición';
       throw new Error(errorMessage);
     }
     
-    // El backend ya devuelve ApiResponse { success, data, message }
-    // No necesitamos envolver de nuevo
     return data || { success: true } as ApiResponse<T>;
   } catch (error) {
     console.error('Error en API request:', error);
@@ -186,8 +180,57 @@ export async function apiRequest<T>(
 // Helper para Actuator Requests
 // ============================================================================
 
+async function attemptActuatorTokenRefresh(endpoint: string): Promise<unknown> {
+  const refreshTokenValue = localStorage.getItem('refreshToken');
+  if (!refreshTokenValue) {
+    throw new Error('Token expirado. Por favor inicia sesión nuevamente.');
+  }
+
+  try {
+    const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Refresh-Token': refreshTokenValue,
+      },
+    });
+
+    if (refreshResponse.ok) {
+      const data = await refreshResponse.json();
+      localStorage.setItem('token', data.token);
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
+      return actuatorRequest(endpoint, true);
+    }
+  } catch (error) {
+    console.error('Error al renovar token:', error);
+  }
+  
+  throw new Error('Token expirado. Por favor inicia sesión nuevamente.');
+}
+
+async function parseActuatorResponse(response: Response): Promise<unknown> {
+  const contentType = response.headers.get('content-type');
+  
+  if (contentType?.includes('application/json')) {
+    return await response.json();
+  }
+  
+  if (contentType?.includes('text/plain')) {
+    return await response.text();
+  }
+  
+  // Intentar JSON por defecto, pero manejar errores
+  try {
+    return await response.json();
+  } catch {
+    return await response.text();
+  }
+}
+
 // Helper para hacer requests de Actuator con manejo de token refresh
-export async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<any> {
+export async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<unknown> {
   const token = localStorage.getItem('token');
   const url = `${API_BASE_URL.replace('/api/v1', '')}${endpoint}`;
 
@@ -197,63 +240,15 @@ export async function actuatorRequest(endpoint: string, isRetry: boolean = false
     },
   });
 
-  // Si es 401 y no es un retry, intentar refresh token
   if (response.status === 401 && !isRetry) {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      try {
-        // Intentar renovar el token con el header correcto
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Refresh-Token': refreshToken,
-          },
-        });
-
-        if (refreshResponse.ok) {
-          const data = await refreshResponse.json();
-          localStorage.setItem('token', data.token);
-          if (data.refreshToken) {
-            localStorage.setItem('refreshToken', data.refreshToken);
-          }
-          
-          // Reintentar la request original con el nuevo token
-          return actuatorRequest(endpoint, true);
-        }
-      } catch (error) {
-        console.error('Error al renovar token:', error);
-      }
-    }
-    throw new Error('Token expirado. Por favor inicia sesión nuevamente.');
+    return attemptActuatorTokenRefresh(endpoint);
   }
 
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${response.statusText}`);
   }
 
-  // Verificar el tipo de contenido antes de parsear
-  const contentType = response.headers.get('content-type');
-
-  let result: any;
-  
-  if (contentType?.includes('application/json')) {
-    // Parsear como JSON
-    result = await response.json();
-  } else if (contentType?.includes('text/plain')) {
-    // Obtener como texto plano
-    result = await response.text();
-  } else {
-    // Intentar JSON por defecto, pero manejar errores
-    try {
-      result = await response.json();
-    } catch (error) {
-      // Si falla, intentar como texto
-      result = await response.text();
-    }
-  }
-  
-  return result;
+  return parseActuatorResponse(response);
 }
 
 // ============================================================================

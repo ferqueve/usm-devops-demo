@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardHeader } from './DashboardHeader';
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import type { ReactNode } from 'react';
 
 // Tipos para el layout

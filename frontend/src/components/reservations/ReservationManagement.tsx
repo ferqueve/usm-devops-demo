@@ -3,7 +3,12 @@ import { Button } from "@/components/ui/Button";
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
+import { espaciosApi } from '@/lib/api/spaces';
+import { carrerasApi } from '@/lib/api/carreras';
 import type { Reserva } from '@/lib/types/spaces';
+import type { Espacio } from '@/lib/types/spaces';
+import type { Carrera } from '@/lib/types/spaces';
+import type { TipoEspacio } from '@/lib/types/spaces';
 import ReservationFormDialog from './ReservationFormDialog.tsx';
 import ReservationDetailsDialog from './ReservationDetailsDialog.tsx';
 import ReservationStats from './ReservationStats.tsx';
@@ -30,6 +35,8 @@ export default function ReservationManagement() {
   const [estadoFilter, setEstadoFilter] = useState<string>('todas');
   const [tiempoFilter, setTiempoFilter] = useState<string>('todas');
   const [espacioFilter, setEspacioFilter] = useState<number | null>(null);
+  const [carreraFilter, setCarreraFilter] = useState<number | null>(null);
+  const [tipoEspacioFilter, setTipoEspacioFilter] = useState<number | null>(null);
   const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined);
   const [fechaFin, setFechaFin] = useState<Date | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
@@ -74,6 +81,8 @@ export default function ReservationManagement() {
         pageSize,
         estadoFilter,
         espacioFilter,
+        carreraFilter,
+        tipoEspacioFilter,
         fechaInicio,
         fechaFin,
         tiempoFilter
@@ -124,7 +133,7 @@ export default function ReservationManagement() {
     if (viewMode === 'table' || viewMode === 'cards') {
       setPage(0);
     }
-  }, [viewMode, estadoFilter, tiempoFilter, espacioFilter, fechaInicio, fechaFin]);
+  }, [viewMode, estadoFilter, tiempoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   // Cargar reservas con paginación para table y cards
   // Se ejecuta cuando cambia la página o los filtros
@@ -133,7 +142,7 @@ export default function ReservationManagement() {
       fetchReservasPaged();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, page, estadoFilter, tiempoFilter, espacioFilter, fechaInicio, fechaFin]);
+  }, [viewMode, page, estadoFilter, tiempoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   const handleCreateSuccess = () => {
     if (viewMode === 'calendar') {
@@ -178,6 +187,8 @@ export default function ReservationManagement() {
     setEstadoFilter('todas');
     setTiempoFilter('todas');
     setEspacioFilter(null);
+    setCarreraFilter(null);
+    setTipoEspacioFilter(null);
     setFechaInicio(undefined);
     setFechaFin(undefined);
     setPage(0); // Resetear a primera página cuando se limpian filtros
@@ -191,14 +202,50 @@ export default function ReservationManagement() {
   const hayFiltrosActivos = estadoFilter !== 'todas' || 
     tiempoFilter !== 'todas' || 
     espacioFilter !== null || 
+    carreraFilter !== null ||
+    tipoEspacioFilter !== null ||
     fechaInicio !== undefined || 
     fechaFin !== undefined;
 
-  // Obtener espacios únicos de las reservas (para calendar, usar todas las reservas; para table/cards, necesitaríamos cargar todos los espacios)
-  // Por ahora, obtenemos de las reservas cargadas
-  const espaciosUnicos = Array.from(
-    new Map(reservas.map(r => [r.espacioId, r.espacioNombre])).entries()
-  ).map(([id, nombre]) => ({ id, nombre })).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  // Estados para carreras y tipos de espacio
+  const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
+  const [espacios, setEspacios] = useState<Espacio[]>([]);
+
+  // Cargar carreras, tipos de espacio y espacios para los filtros
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [carrerasRes, tiposEspacioRes, espaciosRes] = await Promise.all([
+          carrerasApi.obtenerCarreras(),
+          espaciosApi.listarTiposEspacio(),
+          espaciosApi.obtenerEspacios()
+        ]);
+        
+        if (carrerasRes.data) setCarreras(carrerasRes.data);
+        if (tiposEspacioRes.data) setTiposEspacio(tiposEspacioRes.data);
+        if (espaciosRes.data) setEspacios(espaciosRes.data);
+      } catch (error: any) {
+        console.error('Error al cargar datos para filtros:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Obtener espacios únicos (usar todos los espacios cargados, no solo los de las reservas)
+  const espaciosUnicos = espacios.map(e => ({ id: e.id, nombre: e.nombre }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  
+  // Obtener carreras únicas (filtrar eliminadas)
+  const carrerasUnicas = carreras
+    .filter(c => !c.deletedAt)
+    .map(c => ({ id: c.id, nombre: c.nombre, codigo: c.codigo }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  
+  // Obtener tipos de espacio únicos
+  const tiposEspacioUnicos = tiposEspacio
+    .map(t => ({ id: t.id, nombre: t.nombre, color: t.color }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
   // Para calendar, filtrar en el cliente (porque carga todas las reservas)
   // Para table y cards, el filtrado se hace en el servidor
@@ -217,6 +264,14 @@ export default function ReservationManagement() {
         }
         // Filtro por espacio
         if (espacioFilter !== null && reserva.espacioId !== espacioFilter) {
+          return false;
+        }
+        // Filtro por tipo de espacio
+        if (tipoEspacioFilter !== null && reserva.tipoEspacioId !== tipoEspacioFilter) {
+          return false;
+        }
+        // Filtro por carrera
+        if (carreraFilter !== null && reserva.carreraId !== carreraFilter) {
           return false;
         }
         // Filtro por rango de fechas
@@ -259,9 +314,13 @@ export default function ReservationManagement() {
         reservas={reservasLista}
         titulo={titulo}
         espaciosUnicos={espaciosUnicos}
+        carrerasUnicas={carrerasUnicas}
+        tiposEspacioUnicos={tiposEspacioUnicos}
         tiempoFilter={tiempoFilter}
         estadoFilter={estadoFilter}
         espacioFilter={espacioFilter}
+        carreraFilter={carreraFilter}
+        tipoEspacioFilter={tipoEspacioFilter}
         fechaInicio={fechaInicio}
         fechaFin={fechaFin}
         viewMode={viewMode}
@@ -269,6 +328,8 @@ export default function ReservationManagement() {
         onTiempoFilterChange={(filter) => { setTiempoFilter(filter); setPage(0); }}
         onEstadoFilterChange={(filter) => { setEstadoFilter(filter); setPage(0); }}
         onEspacioFilterChange={(filter) => { setEspacioFilter(filter); setPage(0); }}
+        onCarreraFilterChange={(filter) => { setCarreraFilter(filter); setPage(0); }}
+        onTipoEspacioFilterChange={(filter) => { setTipoEspacioFilter(filter); setPage(0); }}
         onFechaInicioChange={(date) => { setFechaInicio(date); setPage(0); }}
         onFechaFinChange={(date) => { setFechaFin(date); setPage(0); }}
         onViewModeChange={setViewMode}
@@ -295,9 +356,13 @@ export default function ReservationManagement() {
         reservas={reservasLista}
         titulo={titulo}
         espaciosUnicos={espaciosUnicos}
+        carrerasUnicas={carrerasUnicas}
+        tiposEspacioUnicos={tiposEspacioUnicos}
         tiempoFilter={tiempoFilter}
         estadoFilter={estadoFilter}
         espacioFilter={espacioFilter}
+        carreraFilter={carreraFilter}
+        tipoEspacioFilter={tipoEspacioFilter}
         fechaInicio={fechaInicio}
         fechaFin={fechaFin}
         viewMode={viewMode}
@@ -305,6 +370,8 @@ export default function ReservationManagement() {
         onTiempoFilterChange={(filter) => { setTiempoFilter(filter); setPage(0); }}
         onEstadoFilterChange={(filter) => { setEstadoFilter(filter); setPage(0); }}
         onEspacioFilterChange={(filter) => { setEspacioFilter(filter); setPage(0); }}
+        onCarreraFilterChange={(filter) => { setCarreraFilter(filter); setPage(0); }}
+        onTipoEspacioFilterChange={(filter) => { setTipoEspacioFilter(filter); setPage(0); }}
         onFechaInicioChange={(date) => { setFechaInicio(date); setPage(0); }}
         onFechaFinChange={(date) => { setFechaFin(date); setPage(0); }}
         onViewModeChange={setViewMode}
@@ -330,9 +397,13 @@ export default function ReservationManagement() {
       <ReservationCalendarView
         reservas={reservasLista}
         espaciosUnicos={espaciosUnicos}
+        carrerasUnicas={carrerasUnicas}
+        tiposEspacioUnicos={tiposEspacioUnicos}
         tiempoFilter={tiempoFilter}
         estadoFilter={estadoFilter}
         espacioFilter={espacioFilter}
+        carreraFilter={carreraFilter}
+        tipoEspacioFilter={tipoEspacioFilter}
         fechaInicio={fechaInicio}
         fechaFin={fechaFin}
         viewMode={viewMode}
@@ -340,6 +411,8 @@ export default function ReservationManagement() {
         onTiempoFilterChange={setTiempoFilter}
         onEstadoFilterChange={setEstadoFilter}
         onEspacioFilterChange={setEspacioFilter}
+        onCarreraFilterChange={setCarreraFilter}
+        onTipoEspacioFilterChange={setTipoEspacioFilter}
         onFechaInicioChange={setFechaInicio}
         onFechaFinChange={setFechaFin}
         onViewModeChange={setViewMode}

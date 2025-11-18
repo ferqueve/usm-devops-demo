@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { AuthHeader } from './AuthHeader';
 import { AuthSidePanel } from './AuthSidePanel';
 import { AuthLoading } from './AuthLoading';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import type { ReactNode } from 'react';
 
 // Tipos para el layout

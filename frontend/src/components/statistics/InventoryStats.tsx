@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { exportInventoryStatsToPDF } from '@/lib/utils/pdf-export';
+import InventoryCharts from './InventoryCharts';
 
 interface InventoryStats {
   // === TOTALES Y BÁSICAS ===
@@ -1079,6 +1080,9 @@ export default function InventoryStats() {
           </CardContent>
         </Card>
       )}
+
+      {/* Gráficos visuales */}
+      {stats && <InventoryCharts stats={stats} loading={false} />}
     </div>
   );
 }

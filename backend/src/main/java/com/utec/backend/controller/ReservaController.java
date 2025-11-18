@@ -76,6 +76,8 @@ public class ReservaController {
             @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) Long espacioId,
+            @RequestParam(required = false) Long carreraId,
+            @RequestParam(required = false) Long tipoEspacioId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
             @RequestParam(required = false) String tiempo) {
@@ -87,6 +89,8 @@ public class ReservaController {
                     pageable,
                     estado,
                     espacioId,
+                    carreraId,
+                    tipoEspacioId,
                     fechaInicio,
                     fechaFin,
                     tiempo);
@@ -175,6 +179,29 @@ public class ReservaController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener reservas del espacio: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Obtener todas las reservas del sistema (público, para visualización en calendario)
+     * Accesible para todos los roles autenticados
+     */
+    @GetMapping("/todas")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<List<ReservaResponseDto>>> getTodasLasReservas(
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Long espacioId,
+            @RequestParam(required = false) Long carreraId,
+            @RequestParam(required = false) Long tipoEspacioId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
+        try {
+            List<ReservaResponseDto> reservas = reservaService.getTodasLasReservas(
+                    estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin);
+            return ResponseEntity.ok(ApiResponse.success(reservas, "Reservas obtenidas exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
         }
     }
     

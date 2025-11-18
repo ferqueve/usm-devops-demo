@@ -7,7 +7,8 @@ import type {
   EspacioFilters,
   PagedEspacios,
   PagedInventario,
-  InventarioFilters
+  InventarioFilters,
+  InventoryStats
 } from '../types/spaces';
 
 export const espaciosApi = {
@@ -30,7 +31,7 @@ export const espaciosApi = {
     
     // Filtros de inventario múltiples
     if (filters?.filtrosInventario && filters.filtrosInventario.length > 0) {
-      filters.filtrosInventario.forEach((filtro) => {
+      for (const filtro of filters.filtrosInventario) {
         params.append('tipoElementoIds', filtro.tipoElementoId.toString());
         if (filtro.cantidadMin !== undefined) {
           params.append('cantidadMins', filtro.cantidadMin.toString());
@@ -38,7 +39,7 @@ export const espaciosApi = {
         if (filtro.cantidadMax !== undefined) {
           params.append('cantidadMaxs', filtro.cantidadMax.toString());
         }
-      });
+      }
     }
     
     return apiRequest<PagedEspacios>(`/espacios/paged?${params.toString()}`, { method: 'GET' });
@@ -56,7 +57,7 @@ export const espaciosApi = {
     
     // Filtros de inventario múltiples
     if (filters?.filtrosInventario && filters.filtrosInventario.length > 0) {
-      filters.filtrosInventario.forEach((filtro) => {
+      for (const filtro of filters.filtrosInventario) {
         params.append('tipoElementoIds', filtro.tipoElementoId.toString());
         if (filtro.cantidadMin !== undefined) {
           params.append('cantidadMins', filtro.cantidadMin.toString());
@@ -64,7 +65,7 @@ export const espaciosApi = {
         if (filtro.cantidadMax !== undefined) {
           params.append('cantidadMaxs', filtro.cantidadMax.toString());
         }
-      });
+      }
     }
     
     return apiRequest<Espacio[]>(`/espacios/filter?${params.toString()}`, { method: 'GET' });
@@ -141,7 +142,6 @@ export const espaciosApi = {
   async listarInventarioPorEspacio(
     espacioId: number
   ): Promise<ApiResponse<InventarioItem[]>> {
-    // Por ahora sin paginación en el endpoint, pero preparado para futuro
     return apiRequest<InventarioItem[]>(`/inventario/espacio/${espacioId}`, { method: 'GET' });
   },
   
@@ -239,15 +239,15 @@ export const espaciosApi = {
     return apiRequest<InventarioItem[]>(`/inventario/filter?${params.toString()}`, { method: 'GET' });
   },
 
-  async obtenerEstadisticasInventario(): Promise<ApiResponse<any>> {
-    return apiRequest<any>('/inventario/stats', { method: 'GET' });
+  async obtenerEstadisticasInventario(): Promise<ApiResponse<InventoryStats>> {
+    return apiRequest<InventoryStats>('/inventario/stats', { method: 'GET' });
   },
 
   async obtenerEstadisticasDetalladasInventario(
     espacioId?: number | null,
     tipoElementoId?: number | null,
     estado?: string
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<InventoryStats>> {
     const params = new URLSearchParams();
     if (espacioId !== null && espacioId !== undefined) {
       params.append('espacioId', espacioId.toString());
@@ -259,10 +259,10 @@ export const espaciosApi = {
       params.append('estado', estado);
     }
     const queryString = params.toString();
-    return apiRequest<any>(`/stats/inventario/detailed${queryString ? '?' + queryString : ''}`, { method: 'GET' });
+    return apiRequest<InventoryStats>(`/stats/inventario/detailed${queryString ? '?' + queryString : ''}`, { method: 'GET' });
   },
 
-  // Obtener todo el inventario sin paginación (para exportar)
+  // Obtener tod el inventario sin paginación (para exportar)
   async obtenerTodoElInventario(): Promise<ApiResponse<InventarioItem[]>> {
     return apiRequest<InventarioItem[]>('/inventario', { method: 'GET' });
   },

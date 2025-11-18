@@ -150,13 +150,15 @@ public class ReservaService {
             Pageable pageable,
             String estado,
             Long espacioId,
+            Long carreraId,
+            Long tipoEspacioId,
             LocalDateTime fechaInicio,
             LocalDateTime fechaFin,
             String tiempo) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
         
-        Specification<Reserva> spec = buildSpecification(usuario.getId(), estado, espacioId, fechaInicio, fechaFin, tiempo);
+        Specification<Reserva> spec = buildSpecification(usuario.getId(), estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin, tiempo);
         
         Page<Reserva> reservasPage = reservaRepository.findAll(spec, pageable);
         return reservasPage.map(this::mapToResponseDto);
@@ -169,6 +171,8 @@ public class ReservaService {
             Long usuarioId,
             String estado,
             Long espacioId,
+            Long carreraId,
+            Long tipoEspacioId,
             LocalDateTime fechaInicio,
             LocalDateTime fechaFin,
             String tiempo) {
@@ -191,6 +195,16 @@ public class ReservaService {
             // Filtro por espacio
             if (espacioId != null) {
                 predicates.add(cb.equal(root.get("espacio").get("id"), espacioId));
+            }
+            
+            // Filtro por tipo de espacio
+            if (tipoEspacioId != null) {
+                predicates.add(cb.equal(root.get("espacio").get("tipoEspacioId"), tipoEspacioId));
+            }
+            
+            // Filtro por carrera
+            if (carreraId != null) {
+                predicates.add(cb.equal(root.get("carrera").get("id"), carreraId));
             }
             
             // Filtro por fecha inicio
@@ -366,6 +380,88 @@ public class ReservaService {
         return reservas.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Obtener todas las reservas del sistema (público, para visualización)
+     * Permite filtros opcionales para visualización
+     */
+    @Transactional(readOnly = true)
+    public List<ReservaResponseDto> getTodasLasReservas(
+            String estado,
+            Long espacioId,
+            Long carreraId,
+            Long tipoEspacioId,
+            LocalDateTime fechaInicio,
+            LocalDateTime fechaFin) {
+        Specification<Reserva> spec = buildSpecificationPublico(estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin);
+        
+        List<Reserva> reservas = reservaRepository.findAll(spec);
+        return reservas.stream()
+                .map(this::mapToResponseDto)
+                .sorted((a, b) -> b.getInicio().compareTo(a.getInicio())) // Ordenar por fecha descendente
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Construir Specification para filtrar reservas públicas (sin filtrar por usuario)
+     */
+    private Specification<Reserva> buildSpecificationPublico(
+            String estado,
+            Long espacioId,
+            Long carreraId,
+            Long tipoEspacioId,
+            LocalDateTime fechaInicio,
+            LocalDateTime fechaFin) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // NO filtrar por usuario - mostrar todas las reservas
+            
+            // Filtro por estado
+            if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
+                try {
+                    Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
+                    predicates.add(cb.equal(root.get("estado"), estadoEnum));
+                } catch (IllegalArgumentException e) {
+                    // Ignorar si el estado no es válido
+                }
+            }
+            
+            // Filtro por espacio
+            if (espacioId != null) {
+                predicates.add(cb.equal(root.get("espacio").get("id"), espacioId));
+            }
+            
+            // Filtro por tipo de espacio (tipoEspacioId es un campo directo en Espacio, no una relación)
+            if (tipoEspacioId != null) {
+                // Acceder al campo tipoEspacioId directamente del espacio
+                predicates.add(cb.equal(
+                    root.get("espacio").get("tipoEspacioId"), 
+                    tipoEspacioId
+                ));
+            }
+            
+            // Filtro por carrera
+            if (carreraId != null) {
+                predicates.add(cb.equal(root.get("carrera").get("id"), carreraId));
+            }
+            
+            // Filtro por fecha inicio
+            if (fechaInicio != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("inicio"), fechaInicio));
+            }
+            
+            // Filtro por fecha fin
+            if (fechaFin != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), fechaFin));
+            }
+            
+            // Ordenar por fecha descendente
+            query.orderBy(cb.desc(root.get("inicio")));
+            
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
     
     /**

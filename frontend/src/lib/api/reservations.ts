@@ -68,6 +68,8 @@ export const reservationsApi = {
     size: number = 10,
     estado?: string,
     espacioId?: number | null,
+    carreraId?: number | null,
+    tipoEspacioId?: number | null,
     fechaInicio?: Date | null,
     fechaFin?: Date | null,
     tiempo?: string
@@ -77,6 +79,8 @@ export const reservationsApi = {
     params.append('size', size.toString());
     if (estado && estado !== 'todas') params.append('estado', estado);
     if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
+    if (carreraId !== null && carreraId !== undefined) params.append('carreraId', carreraId.toString());
+    if (tipoEspacioId !== null && tipoEspacioId !== undefined) params.append('tipoEspacioId', tipoEspacioId.toString());
     if (fechaInicio) params.append('fechaInicio', fechaInicio.toISOString());
     if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
     if (tiempo && tiempo !== 'todas') params.append('tiempo', tiempo);
@@ -112,6 +116,28 @@ export const reservationsApi = {
   // Obtener reservas por espacio
   async obtenerReservasPorEspacio(espacioId: number): Promise<ApiResponse<Reserva[]>> {
     return apiRequest<Reserva[]>(`/reservas/espacio/${espacioId}`, { method: 'GET' });
+  },
+
+  // Obtener todas las reservas del sistema (público, para visualización)
+  async obtenerTodasLasReservas(
+    estado?: string,
+    espacioId?: number | null,
+    carreraId?: number | null,
+    tipoEspacioId?: number | null,
+    fechaInicio?: Date | null,
+    fechaFin?: Date | null
+  ): Promise<ApiResponse<Reserva[]>> {
+    const params = new URLSearchParams();
+    if (estado && estado !== 'todas') params.append('estado', estado);
+    if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
+    if (carreraId !== null && carreraId !== undefined) params.append('carreraId', carreraId.toString());
+    if (tipoEspacioId !== null && tipoEspacioId !== undefined) params.append('tipoEspacioId', tipoEspacioId.toString());
+    if (fechaInicio) params.append('fechaInicio', fechaInicio.toISOString());
+    if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
+    
+    const queryString = params.toString();
+    const url = queryString ? `/reservas/todas?${queryString}` : '/reservas/todas';
+    return apiRequest<Reserva[]>(url, { method: 'GET' });
   },
 
   // Obtener estadísticas personales de reservas

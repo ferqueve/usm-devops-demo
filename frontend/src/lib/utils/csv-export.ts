@@ -10,7 +10,7 @@ export async function exportUsersToCSV(filters?: UserFilters): Promise<void> {
     const blob = await usuariosApi.exportarUsuarios(filters);
     
     // Crear URL del blob
-    const url = window.URL.createObjectURL(blob);
+    const url = globalThis.URL.createObjectURL(blob);
     
     // Crear elemento anchor temporal para descarga
     const link = document.createElement('a');
@@ -25,8 +25,8 @@ export async function exportUsersToCSV(filters?: UserFilters): Promise<void> {
     link.click();
     
     // Limpiar
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    link.remove();
+    globalThis.URL.revokeObjectURL(url);
     
   } catch (error) {
     console.error('Error al exportar usuarios:', error);
@@ -58,7 +58,7 @@ export function exportInventarioToCSV(items: InventarioItem[]): void {
         item.tipoElementoNombre,
         item.cantidad,
         item.estado,
-        `"${(item.observaciones || '').replace(/"/g, '""')}"`
+        `"${(item.observaciones || '').replaceAll('"', '""')}"`
       ].join(','))
     ].join('\n');
     
@@ -66,7 +66,7 @@ export function exportInventarioToCSV(items: InventarioItem[]): void {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     
     // Crear URL del blob
-    const url = window.URL.createObjectURL(blob);
+    const url = globalThis.URL.createObjectURL(blob);
     
     // Crear elemento anchor temporal para descarga
     const link = document.createElement('a');
@@ -81,8 +81,8 @@ export function exportInventarioToCSV(items: InventarioItem[]): void {
     link.click();
     
     // Limpiar
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    link.remove();
+    globalThis.URL.revokeObjectURL(url);
     
   } catch (error) {
     console.error('Error al exportar inventario:', error);
@@ -111,7 +111,7 @@ export function exportEspaciosToCSV(espacios: Espacio[]): void {
       headers.join(','),
       ...espacios.map(espacio => [
         espacio.id,
-        `"${espacio.nombre.replace(/"/g, '""')}"`,
+        `"${espacio.nombre.replaceAll('"', '""')}"`,
         espacio.capacidad,
         espacio.tipoEspacioNombre || 'Sin tipo',
         espacio.activo ? 'Sí' : 'No',
@@ -124,7 +124,7 @@ export function exportEspaciosToCSV(espacios: Espacio[]): void {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     
     // Crear URL del blob
-    const url = window.URL.createObjectURL(blob);
+    const url = globalThis.URL.createObjectURL(blob);
     
     // Crear elemento anchor temporal para descarga
     const link = document.createElement('a');
@@ -139,8 +139,8 @@ export function exportEspaciosToCSV(espacios: Espacio[]): void {
     link.click();
     
     // Limpiar
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    link.remove();
+    globalThis.URL.revokeObjectURL(url);
     
   } catch (error) {
     console.error('Error al exportar espacios:', error);

@@ -62,6 +62,6 @@ public class Usuario {
     
     // Enumeración para roles
     public enum RolApp {
-        ANALISTA, DOCENTE, ESTUDIANTE, EXTERNO, ADMIN
+        ANALISTA, DOCENTE, ESTUDIANTE, EXTERNO, ADMIN, MANTENIMIENTO
     }
 }

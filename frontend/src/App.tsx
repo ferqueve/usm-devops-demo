@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import RoleGuard from '@/components/auth/RoleGuard';
+import { ROLES } from '@/lib/config/constants';
 import { Toaster } from '@/components/ui/sonner';
 import AuthPage from './app/auth/page';
 import VerifyEmailPage from './app/auth/verify/page';
@@ -123,9 +126,9 @@ function AppRoutes() {
       <Route 
         path="/system" 
         element={
-          <RoleProtectedRoute>
+          <RoleGuard requiredRole={ROLES.ADMIN}>
             <SystemPage />
-          </RoleProtectedRoute>
+          </RoleGuard>
         } 
       />
       

@@ -69,7 +69,8 @@ export const ROLES = {
   ANALISTA: 'ANALISTA', 
   DOCENTE: 'DOCENTE',
   ESTUDIANTE: 'ESTUDIANTE',
-  EXTERNO: 'EXTERNO'
+  EXTERNO: 'EXTERNO',
+  MANTENIMIENTO: 'MANTENIMIENTO'
 } as const;
 
 export type Role = typeof ROLES[keyof typeof ROLES];
@@ -162,6 +163,26 @@ export const ROLE_PERMISSIONS = {
       'dashboard',
       'calendar'
     ]
+  },
+  [ROLES.MANTENIMIENTO]: {
+    name: 'Mantenimiento',
+    description: 'Gestión completa de espacios e inventario',
+    routes: [
+      '/dashboard',
+      '/rooms',
+      '/rooms/:id',
+      '/calendar',
+      '/inventory',
+      '/inventory/requests',
+      '/statistics'
+    ],
+    sidebarItems: [
+      'dashboard',
+      'rooms',
+      'calendar',
+      'inventory',
+      'statistics'
+    ]
   }
 } as const;
 
@@ -176,6 +197,19 @@ export const hasAnyRole = (userRole: string | null, roles: Role[]): boolean => {
   return roles.includes(userRole as Role);
 };
 
+// Función auxiliar para convertir ruta con parámetros a regex
+function convertRouteToPattern(route: string): string {
+  const paramRegex = /:[^/]+/g;
+  let pattern = route;
+  let match: RegExpExecArray | null;
+  
+  while ((match = paramRegex.exec(route)) !== null) {
+    pattern = pattern.replace(match[0], '[^/]+');
+  }
+  
+  return pattern;
+}
+
 export const canAccessRoute = (userRole: string | null, route: string): boolean => {
   if (!userRole) return false;
   
@@ -183,7 +217,8 @@ export const canAccessRoute = (userRole: string | null, route: string): boolean 
   if (!permissions) return false;
   
   // Verificar rutas exactas
-  if (permissions.routes.includes(route as any)) {
+  const routesArray = permissions.routes as readonly string[];
+  if (routesArray.includes(route)) {
     return true;
   }
   
@@ -191,7 +226,7 @@ export const canAccessRoute = (userRole: string | null, route: string): boolean 
   for (const allowedRoute of permissions.routes) {
     if (allowedRoute.includes(':')) {
       // Convertir ruta con parámetros a regex
-      const routePattern = allowedRoute.replace(/:[^/]+/g, '[^/]+');
+      const routePattern = convertRouteToPattern(allowedRoute);
       const regex = new RegExp(`^${routePattern}$`);
       if (regex.test(route)) {
         return true;
@@ -208,7 +243,8 @@ export const canAccessSidebarItem = (userRole: string | null, item: string): boo
   const permissions = ROLE_PERMISSIONS[userRole as Role];
   if (!permissions) return false;
   
-  return permissions.sidebarItems.includes(item as any);
+  const sidebarItemsArray = permissions.sidebarItems as readonly string[];
+  return sidebarItemsArray.includes(item);
 };
 
 export const getUserPermissions = (userRole: string | null) => {
@@ -234,7 +270,8 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   ANALISTA: ROLE_PERMISSIONS.ANALISTA.name,
   DOCENTE: ROLE_PERMISSIONS.DOCENTE.name,
   ESTUDIANTE: ROLE_PERMISSIONS.ESTUDIANTE.name,
-  EXTERNO: ROLE_PERMISSIONS.EXTERNO.name
+  EXTERNO: ROLE_PERMISSIONS.EXTERNO.name,
+  MANTENIMIENTO: 'Mantenimiento'
 };
 
 // Variantes de badges para roles (UI específico)
@@ -243,5 +280,6 @@ export const ROLE_BADGE_VARIANTS: Record<UserRole, 'default' | 'secondary' | 'de
   ANALISTA: 'default',
   DOCENTE: 'secondary',
   ESTUDIANTE: 'outline',
-  EXTERNO: 'outline'
+  EXTERNO: 'outline',
+  MANTENIMIENTO: 'secondary'
 };

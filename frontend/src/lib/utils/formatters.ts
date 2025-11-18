@@ -45,7 +45,8 @@ export const generateColorFromString = (str: string): string => {
   // Generar hash del string
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    const codePoint = str.codePointAt(i) ?? 0;
+    hash = codePoint + ((hash << 5) - hash);
   }
   
   hash = hash < 0 ? -hash : hash;

@@ -11,6 +11,104 @@ export interface EmailFormatResult {
   secondLine?: string;
 }
 
+// Funciones auxiliares para reducir complejidad
+function splitEmailByAt(email: string, maxCharsPerLine: number): EmailFormatResult | null {
+  const parts = email.split('@');
+  if (parts.length !== 2) return null;
+  
+  const [username, domain] = parts;
+  const usernameWithAt = `${username}@`;
+  
+  if (usernameWithAt.length <= maxCharsPerLine && domain.length <= maxCharsPerLine) {
+    return {
+      needsBreak: true,
+      firstLine: usernameWithAt,
+      secondLine: domain
+    };
+  }
+  
+  return null;
+}
+
+function splitLongUsername(username: string, domain: string, maxCharsPerLine: number): EmailFormatResult | null {
+  if (username.length <= maxCharsPerLine) return null;
+  
+  const usernameParts = username.split('.');
+  if (usernameParts.length <= 1) return null;
+  
+  const firstPart = usernameParts[0];
+  const restParts = usernameParts.slice(1);
+  
+  if (firstPart.length + 1 <= maxCharsPerLine) {
+    return {
+      needsBreak: true,
+      firstLine: `${firstPart}.`,
+      secondLine: `${restParts.join('.')}@${domain}`
+    };
+  }
+  
+  let firstLine = '';
+  let secondLine = '';
+  
+  for (let i = 0; i < usernameParts.length; i++) {
+    const part = usernameParts[i];
+    const testFirstLine = firstLine ? `${firstLine}.${part}` : part;
+    
+    if (testFirstLine.length <= maxCharsPerLine) {
+      firstLine = testFirstLine;
+    } else {
+      const remainingParts = usernameParts.slice(i);
+      secondLine = `${remainingParts.join('.')}@${domain}`;
+      break;
+    }
+  }
+  
+  return secondLine ? {
+    needsBreak: true,
+    firstLine,
+    secondLine
+  } : null;
+}
+
+function splitLongDomain(username: string, domain: string, maxCharsPerLine: number): EmailFormatResult | null {
+  const domainParts = domain.split('.');
+  if (domainParts.length <= 1) return null;
+  
+  const firstDomainPart = domainParts[0];
+  const restDomain = domainParts.slice(1).join('.');
+  const firstLine = `${username}@${firstDomainPart}`;
+  
+  if (firstLine.length <= maxCharsPerLine && restDomain.length <= maxCharsPerLine) {
+    return {
+      needsBreak: true,
+      firstLine,
+      secondLine: restDomain
+    };
+  }
+  
+  let currentFirstLine = `${username}@`;
+  let currentSecondLine = '';
+  
+  for (let i = 0; i < domainParts.length; i++) {
+    const part = domainParts[i];
+    const testFirstLine = `${currentFirstLine}${part}`;
+    
+    if (testFirstLine.length <= maxCharsPerLine) {
+      currentFirstLine = testFirstLine;
+    } else {
+      const remainingParts = domainParts.slice(i);
+      currentSecondLine = remainingParts.join('.');
+      break;
+    }
+  }
+  
+  return currentSecondLine ? {
+    needsBreak: true,
+    firstLine: currentFirstLine,
+    secondLine: currentSecondLine
+  } : null;
+}
+
 /**
  * Formatea un email para mostrar en espacios reducidos como el sidebar
  * Divide el email de forma inteligente cortando en puntos y arrobas
@@ -20,7 +118,6 @@ export interface EmailFormatResult {
  * @returns Objeto con la información del email formateado
  */
 export const formatEmailForDisplay = (email: string, maxCharsPerLine: number = 18): EmailFormatResult => {
-  // Si el email es corto, no dividir
   if (email.length <= maxCharsPerLine) {
     return {
       needsBreak: false,
@@ -28,7 +125,6 @@ export const formatEmailForDisplay = (email: string, maxCharsPerLine: number = 1
     };
   }
   
-  // Dividir en partes usando @ como separador principal
   const parts = email.split('@');
   if (parts.length !== 2) {
     return {
@@ -39,108 +135,19 @@ export const formatEmailForDisplay = (email: string, maxCharsPerLine: number = 1
   
   const [username, domain] = parts;
   
-  // Estrategia 1: Dividir después del @ si es posible
-  const usernameWithAt = `${username}@`;
-  if (usernameWithAt.length <= maxCharsPerLine && domain.length <= maxCharsPerLine) {
-    return {
-      needsBreak: true,
-      firstLine: usernameWithAt,
-      secondLine: domain
-    };
-  }
+  // Estrategia 1: Dividir después del @
+  const result1 = splitEmailByAt(email, maxCharsPerLine);
+  if (result1) return result1;
   
-  // Estrategia 2: Si el username es muy largo, dividir en puntos
-  if (username.length > maxCharsPerLine) {
-    const usernameParts = username.split('.');
-    if (usernameParts.length > 1) {
-      // Intentar dividir en el primer punto
-      const firstPart = usernameParts[0];
-      const restParts = usernameParts.slice(1);
-      
-      // Si la primera parte + @ cabe en una línea
-      if (firstPart.length + 1 <= maxCharsPerLine) {
-        const secondLine = `${restParts.join('.')}@${domain}`;
-        return {
-          needsBreak: true,
-          firstLine: `${firstPart}.`,
-          secondLine: secondLine
-        };
-      }
-      
-      // Si no, dividir más agresivamente
-      let firstLine = '';
-      let secondLine = '';
-      
-      for (let i = 0; i < usernameParts.length; i++) {
-        const part = usernameParts[i];
-        const testFirstLine = firstLine ? `${firstLine}.${part}` : part;
-        
-        if (testFirstLine.length <= maxCharsPerLine) {
-          firstLine = testFirstLine;
-        } else {
-          // Poner el resto en la segunda línea
-          const remainingParts = usernameParts.slice(i);
-          secondLine = `${remainingParts.join('.')}@${domain}`;
-          break;
-        }
-      }
-      
-      if (secondLine) {
-        return {
-          needsBreak: true,
-          firstLine: firstLine,
-          secondLine: secondLine
-        };
-      }
-    }
-  }
+  // Estrategia 2: Dividir username largo
+  const result2 = splitLongUsername(username, domain, maxCharsPerLine);
+  if (result2) return result2;
   
-  // Estrategia 3: Dividir el dominio en puntos
-  const domainParts = domain.split('.');
-  if (domainParts.length > 1) {
-    const firstDomainPart = domainParts[0];
-    const restDomain = domainParts.slice(1).join('.');
-    
-    // Intentar dividir después del primer punto del dominio
-    const firstLine = `${username}@${firstDomainPart}`;
-    const secondLine = restDomain;
-    
-    if (firstLine.length <= maxCharsPerLine && secondLine.length <= maxCharsPerLine) {
-      return {
-        needsBreak: true,
-        firstLine,
-        secondLine
-      };
-    }
-    
-    // Si aún es muy largo, dividir más agresivamente
-    let currentFirstLine = `${username}@`;
-    let currentSecondLine = '';
-    
-    for (let i = 0; i < domainParts.length; i++) {
-      const part = domainParts[i];
-      const testFirstLine = `${currentFirstLine}${part}`;
-      
-      if (testFirstLine.length <= maxCharsPerLine) {
-        currentFirstLine = testFirstLine;
-      } else {
-        // Poner el resto en la segunda línea
-        const remainingParts = domainParts.slice(i);
-        currentSecondLine = remainingParts.join('.');
-        break;
-      }
-    }
-    
-    if (currentSecondLine) {
-      return {
-        needsBreak: true,
-        firstLine: currentFirstLine,
-        secondLine: currentSecondLine
-      };
-    }
-  }
+  // Estrategia 3: Dividir dominio largo
+  const result3 = splitLongDomain(username, domain, maxCharsPerLine);
+  if (result3) return result3;
   
-  // Estrategia 4: Si todo falla, truncar
+  // Fallback: Truncar si todas las estrategias fallan
   return {
     needsBreak: false,
     firstLine: email.substring(0, maxCharsPerLine - 3) + '...'
@@ -169,6 +176,65 @@ export interface NameFormatResult {
   secondLine?: string;
 }
 
+// Funciones auxiliares para formatear nombres
+function handleSingleWordName(name: string, maxCharsPerLine: number): NameFormatResult {
+  return {
+    needsBreak: false,
+    firstLine: name.substring(0, maxCharsPerLine - 3) + '...'
+  };
+}
+
+function handleTwoWordName(words: string[], maxCharsPerLine: number): NameFormatResult {
+  const [first, second] = words;
+  const canSplit = first.length <= maxCharsPerLine && 
+                   second.length <= maxCharsPerLine && 
+                   (first.length <= 8 || second.length <= 8);
+  
+  if (canSplit) {
+    return {
+      needsBreak: true,
+      firstLine: first,
+      secondLine: second
+    };
+  }
+  
+  return {
+    needsBreak: false,
+    firstLine: `${first} ${second}`.substring(0, maxCharsPerLine - 3) + '...'
+  };
+}
+
+function distributeWordsToLines(words: string[], maxCharsPerLine: number): NameFormatResult {
+  let firstLine = '';
+  let secondLine = '';
+  let currentLine = 1;
+  
+  for (const word of words) {
+    const testLine = currentLine === 1 ? firstLine : secondLine;
+    const testWithWord = testLine ? `${testLine} ${word}` : word;
+    
+    if (testWithWord.length <= maxCharsPerLine) {
+      if (currentLine === 1) {
+        firstLine = testWithWord;
+      } else {
+        secondLine = testWithWord;
+      }
+    } else if (currentLine === 1) {
+      currentLine = 2;
+      secondLine = word;
+    } else {
+      secondLine = testWithWord.substring(0, maxCharsPerLine - 3) + '...';
+      break;
+    }
+  }
+  
+  return {
+    needsBreak: secondLine.length > 0,
+    firstLine,
+    secondLine: secondLine || undefined
+  };
+}
+
 /**
  * Formatea un nombre para mostrar de forma compacta en el sidebar
  * Maneja nombres muy largos dividiéndolos inteligentemente
@@ -185,67 +251,17 @@ export const formatNameForSidebar = (name: string, maxCharsPerLine: number = 28)
     };
   }
   
-  // Dividir en palabras
   const words = name.split(' ');
   
   if (words.length === 1) {
-    // Si es una sola palabra muy larga, truncar
-    return {
-      needsBreak: false,
-      firstLine: name.substring(0, maxCharsPerLine - 3) + '...'
-    };
+    return handleSingleWordName(name, maxCharsPerLine);
   }
   
-  // Solo dividir si hay una palabra claramente más corta que la otra
   if (words.length === 2) {
-    const [first, second] = words;
-    // Solo dividir si una palabra es significativamente más corta
-    if (first.length <= maxCharsPerLine && second.length <= maxCharsPerLine && 
-        (first.length <= 8 || second.length <= 8)) {
-      return {
-        needsBreak: true,
-        firstLine: first,
-        secondLine: second
-      };
-    }
-    // Si ambas palabras son largas, truncar en lugar de dividir
-    return {
-      needsBreak: false,
-      firstLine: name.substring(0, maxCharsPerLine - 3) + '...'
-    };
+    return handleTwoWordName(words, maxCharsPerLine);
   }
   
-  // Para más de 2 palabras, usar la lógica anterior
-  let firstLine = '';
-  let secondLine = '';
-  let currentLine = 1;
-  
-  for (const word of words) {
-    const testLine = currentLine === 1 ? firstLine : secondLine;
-    const testWithWord = testLine ? `${testLine} ${word}` : word;
-    
-    if (testWithWord.length <= maxCharsPerLine) {
-      if (currentLine === 1) {
-        firstLine = testWithWord;
-      } else {
-        secondLine = testWithWord;
-      }
-    } else {
-      if (currentLine === 1) {
-        currentLine = 2;
-        secondLine = word;
-      } else {
-        secondLine = testWithWord.substring(0, maxCharsPerLine - 3) + '...';
-        break;
-      }
-    }
-  }
-  
-  return {
-    needsBreak: secondLine.length > 0,
-    firstLine,
-    secondLine: secondLine || undefined
-  };
+  return distributeWordsToLines(words, maxCharsPerLine);
 };
 
 /**
