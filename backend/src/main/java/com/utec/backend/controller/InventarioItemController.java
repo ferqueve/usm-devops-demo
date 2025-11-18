@@ -18,6 +18,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
+import static com.utec.backend.security.Constants.*;
+
 @RestController
 @RequestMapping("/api/v1/inventario")
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class InventarioItemController {
     private final InventarioItemService inventarioItemService;
     
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<InventarioItemResponseDto>> createInventarioItem(
             @Valid @RequestBody InventarioItemCreateDto createDto) {
         try {
@@ -40,7 +42,7 @@ public class InventarioItemController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getAllInventarioItems() {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getAllInventarioItems();
@@ -52,7 +54,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/paged")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<PagedResponseDto<InventarioItemResponseDto>>> getAllInventarioItemsPaged(
             Pageable pageable,
             @RequestParam(required = false) String search,
@@ -72,7 +74,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<InventarioItemResponseDto>> getInventarioItemById(@PathVariable Long id) {
         try {
             InventarioItemResponseDto inventarioItem = inventarioItemService.getInventarioItemById(id);
@@ -87,7 +89,7 @@ public class InventarioItemController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<InventarioItemResponseDto>> updateInventarioItem(
             @PathVariable Long id,
             @Valid @RequestBody InventarioItemUpdateDto updateDto) {
@@ -104,7 +106,7 @@ public class InventarioItemController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<Void>> deleteInventarioItem(@PathVariable Long id) {
         try {
             inventarioItemService.deleteInventarioItem(id);
@@ -119,7 +121,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/espacio/{espacioId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByEspacio(@PathVariable Long espacioId) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByEspacio(espacioId);
@@ -131,7 +133,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/tipo-elemento/{tipoElementoId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByTipoElemento(@PathVariable Long tipoElementoId) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByTipoElemento(tipoElementoId);
@@ -144,7 +146,7 @@ public class InventarioItemController {
     
     
     @GetMapping("/estado/{estado}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByEstado(@PathVariable String estado) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByEstado(estado);
@@ -156,7 +158,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<Object>> getInventarioStats() {
         try {
             Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
@@ -168,7 +170,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/filter")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> filterInventario(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long espacioId,

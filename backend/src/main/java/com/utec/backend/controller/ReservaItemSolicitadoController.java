@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import static com.utec.backend.security.Constants.*;
+
 @RestController
 @RequestMapping("/api/v1/reservas/items-solicitados")
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class ReservaItemSolicitadoController {
     private final ReservaItemSolicitadoService reservaItemSolicitadoService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<PagedResponseDto<ReservaItemSolicitadoResponseDto>>> listarSolicitudes(
             @RequestParam(name = "estado", required = false) List<String> estados,
             @RequestParam(name = "espacioId", required = false) Long espacioId,
@@ -53,7 +55,7 @@ public class ReservaItemSolicitadoController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<ReservaItemSolicitadoResponseDto>> actualizarSolicitud(
             @PathVariable Long id,
             @Valid @RequestBody ReservaItemSolicitadoUpdateDto updateDto,

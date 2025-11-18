@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import type { TipoElemento, Espacio } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 import {
   Package,
   CheckCircle2,
@@ -190,10 +191,11 @@ export default function InventoryStats() {
         if (response.data) {
           setStats(response.data as InventoryStats);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las estadísticas';
         console.error('Error al cargar estadísticas:', error);
         toast.error('Error al cargar estadísticas', {
-          description: error.message || 'No se pudieron cargar las estadísticas'
+          description: errorMessage
         });
       } finally {
         setLoading(false);
@@ -235,10 +237,11 @@ export default function InventoryStats() {
       toast.success('PDF generado exitosamente', {
         description: 'El reporte se ha descargado correctamente'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo generar el archivo PDF';
       console.error('Error al exportar:', error);
       toast.error('Error al generar PDF', {
-        description: error.message || 'No se pudo generar el archivo PDF'
+        description: errorMessage
       });
     }
   };
@@ -255,7 +258,7 @@ export default function InventoryStats() {
         setStats(response.data as InventoryStats);
         toast.success('Datos actualizados');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar datos');
     }
   };
@@ -306,10 +309,12 @@ export default function InventoryStats() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
           </Button>
-          <Button onClick={handleExport}>
-            <FileDown className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
+          <PermissionGuard requiredPermission="estadisticas:exportar">
+            <Button onClick={handleExport}>
+              <FileDown className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 

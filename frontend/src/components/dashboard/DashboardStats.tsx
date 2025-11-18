@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Building2, Users, BarChart3, Loader2 } from 'lucide-react';
+import { BookOpen, Building2, Users, BarChart3 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import type { DashboardStats as DashboardStatsType } from '@/lib/api/dashboard';
 
 interface DashboardStatsProps {
@@ -8,6 +9,9 @@ interface DashboardStatsProps {
 }
 
 export default function DashboardStats({ stats, loading = false }: DashboardStatsProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'ADMIN';
+  
   const statCards = [
     {
       label: "Reservas Activas",
@@ -62,9 +66,25 @@ export default function DashboardStats({ stats, loading = false }: DashboardStat
     );
   }
 
+  // Filtrar cards: solo ADMIN puede ver "Usuarios Activos"
+  const visibleCards = statCards.filter(stat => {
+    if (stat.label === "Usuarios Activos") {
+      return isAdmin;
+    }
+    return true;
+  });
+
+  // Ajustar el grid dinámicamente según la cantidad de cards visibles
+  const cardCount = visibleCards.length;
+  const gridCols = cardCount === 3 
+    ? 'md:grid-cols-2 lg:grid-cols-3' 
+    : cardCount === 2
+    ? 'md:grid-cols-2'
+    : 'md:grid-cols-2 lg:grid-cols-4';
+
   return (
-    <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {statCards.map((stat) => {
+    <div className={`grid gap-4 lg:gap-6 ${gridCols}`}>
+      {visibleCards.map((stat) => {
         const Icon = stat.icon;
         return (
           <Card key={stat.label} className="transition-all hover:shadow-md">

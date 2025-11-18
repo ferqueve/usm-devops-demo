@@ -1,20 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/Button";
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';
 import { carrerasApi } from '@/lib/api/carreras';
+// import { usuariosApi } from '@/lib/api/users'; // Se usará cuando se agregue el filtro de usuario
 import type { Reserva } from '@/lib/types/spaces';
 import type { Espacio } from '@/lib/types/spaces';
 import type { Carrera } from '@/lib/types/spaces';
 import type { TipoEspacio } from '@/lib/types/spaces';
+// import type { User } from '@/lib/types/users'; // Se usará cuando se agregue el filtro de usuario
 import ReservationFormDialog from './ReservationFormDialog.tsx';
 import ReservationDetailsDialog from './ReservationDetailsDialog.tsx';
 import ReservationStats from './ReservationStats.tsx';
 import ReservationCardView from './ReservationCardView.tsx';
 import ReservationTableView from './ReservationTableView.tsx';
 import ReservationCalendarView from './ReservationCalendarView.tsx';
+import PermissionGuard from '@/components/auth/PermissionGuard';
+import { useAuth } from '@/hooks/useAuth';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +33,10 @@ import {
 type ViewMode = 'cards' | 'table' | 'calendar';
 
 export default function ReservationManagement() {
+  const { user } = useAuth();
+  const isDocente = user?.rol === 'DOCENTE';
+  const isAnalista = user?.rol === 'ANALISTA' || user?.rol === 'ADMIN';
+  
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [contentLoading, setContentLoading] = useState(false); // Loading solo para el contenido de table/cards
   const [calendarLoading, setCalendarLoading] = useState(false); // Loading solo para calendar
@@ -37,6 +45,7 @@ export default function ReservationManagement() {
   const [espacioFilter, setEspacioFilter] = useState<number | null>(null);
   const [carreraFilter, setCarreraFilter] = useState<number | null>(null);
   const [tipoEspacioFilter, setTipoEspacioFilter] = useState<number | null>(null);
+  const [usuarioFilter, setUsuarioFilter] = useState<number | null>(null); // Solo para ANALISTA
   const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined);
   const [fechaFin, setFechaFin] = useState<Date | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
@@ -52,54 +61,125 @@ export default function ReservationManagement() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  
+  // Contador de solicitudes pendientes (solo para ANALISTA)
+  const [pendientesCount, setPendientesCount] = useState(0);
 
-  const fetchReservas = async () => {
+  const fetchReservas = useCallback(async () => {
     setCalendarLoading(true); // Solo afecta al contenido de calendar
     try {
-      const response = await reservationsApi.obtenerMisReservas();
+      let response;
+      if (isDocente) {
+        // DOCENTE: solo sus reservas
+        response = await reservationsApi.obtenerMisReservas();
+      } else {
+        // ANALISTA: todas las reservas
+        response = await reservationsApi.obtenerTodasLasReservas(
+          estadoFilter !== 'todas' ? estadoFilter : undefined,
+          espacioFilter ?? undefined,
+          carreraFilter ?? undefined,
+          tipoEspacioFilter ?? undefined,
+          fechaInicio ?? undefined,
+          fechaFin ?? undefined
+        );
+      }
+      
       if (response.data) {
         // Ordenar por fecha descendente
         const sorted = response.data.sort((a, b) =>
           new Date(b.inicio).getTime() - new Date(a.inicio).getTime()
         );
         setReservas(sorted);
+        
+        // Contar pendientes para ANALISTA
+        if (isAnalista) {
+          const pendientes = sorted.filter(r => r.estado === 'PENDIENTE').length;
+          setPendientesCount(pendientes);
+        }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las reservas';
       toast.error('Error al cargar reservas', {
-        description: error.message || 'No se pudieron cargar las reservas'
+        description: errorMessage
       });
     } finally {
       setCalendarLoading(false);
     }
-  };
+  }, [isDocente, isAnalista, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
-  const fetchReservasPaged = async () => {
+  const fetchReservasPaged = useCallback(async () => {
     setContentLoading(true); // Solo afecta al contenido
     try {
-      const response = await reservationsApi.obtenerMisReservasPaged(
-        page,
-        pageSize,
-        estadoFilter,
-        espacioFilter,
-        carreraFilter,
-        tipoEspacioFilter,
-        fechaInicio,
-        fechaFin,
-        tiempoFilter
-      );
+      let response;
+      if (isDocente) {
+        // DOCENTE: solo sus reservas
+        response = await reservationsApi.obtenerMisReservasPaged(
+          page,
+          pageSize,
+          estadoFilter,
+          espacioFilter,
+          carreraFilter,
+          tipoEspacioFilter,
+          fechaInicio,
+          fechaFin,
+          tiempoFilter
+        );
+      } else {
+        // ANALISTA: todas las reservas
+        response = await reservationsApi.obtenerTodasReservasPaged(
+          page,
+          pageSize,
+          estadoFilter,
+          espacioFilter,
+          carreraFilter,
+          tipoEspacioFilter,
+          usuarioFilter,
+          fechaInicio,
+          fechaFin,
+          tiempoFilter
+        );
+      }
+      
       if (response.data) {
         setReservas(response.data.content);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
+        
+        // Contar pendientes para ANALISTA
+        if (isAnalista && page === 0) {
+          // Intentar obtener el total de pendientes desde el servidor
+          try {
+            const pendientesResponse = await reservationsApi.obtenerTodasReservasPaged(
+              0,
+              1000, // Obtener muchas para contar
+              'PENDIENTE',
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              undefined
+            );
+            if (pendientesResponse.data) {
+              setPendientesCount(pendientesResponse.data.totalElements);
+            }
+          } catch {
+            // Si falla, contar solo las visibles
+            const pendientesVisibles = response.data.content.filter(r => r.estado === 'PENDIENTE').length;
+            setPendientesCount(pendientesVisibles);
+          }
+        }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las reservas';
       toast.error('Error al cargar reservas', {
-        description: error.message || 'No se pudieron cargar las reservas'
+        description: errorMessage
       });
     } finally {
       setContentLoading(false);
     }
-  };
+  }, [isDocente, isAnalista, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
 
   const handleToggleFullScreen = () => {
     setIsFullScreen(!isFullScreen);
@@ -125,7 +205,7 @@ export default function ReservationManagement() {
     if (viewMode === 'calendar') {
       fetchReservas();
     }
-  }, [viewMode]);
+  }, [viewMode, fetchReservas]);
 
   // Resetear página cuando cambian filtros o vista (solo para table y cards)
   // Esto se ejecuta antes del useEffect que carga los datos
@@ -133,7 +213,7 @@ export default function ReservationManagement() {
     if (viewMode === 'table' || viewMode === 'cards') {
       setPage(0);
     }
-  }, [viewMode, estadoFilter, tiempoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [viewMode, estadoFilter, tiempoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin]);
 
   // Cargar reservas con paginación para table y cards
   // Se ejecuta cuando cambia la página o los filtros
@@ -141,8 +221,7 @@ export default function ReservationManagement() {
     if (viewMode === 'table' || viewMode === 'cards') {
       fetchReservasPaged();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, page, estadoFilter, tiempoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [viewMode, page, fetchReservasPaged]);
 
   const handleCreateSuccess = () => {
     if (viewMode === 'calendar') {
@@ -171,9 +250,10 @@ export default function ReservationManagement() {
       }
       setCancelDialog(false);
       setReservaToCancel(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo cancelar la reserva';
       toast.error('Error al cancelar reserva', {
-        description: error.message || 'No se pudo cancelar la reserva'
+        description: errorMessage
       });
     }
   };
@@ -189,6 +269,7 @@ export default function ReservationManagement() {
     setEspacioFilter(null);
     setCarreraFilter(null);
     setTipoEspacioFilter(null);
+    setUsuarioFilter(null);
     setFechaInicio(undefined);
     setFechaFin(undefined);
     setPage(0); // Resetear a primera página cuando se limpian filtros
@@ -204,33 +285,58 @@ export default function ReservationManagement() {
     espacioFilter !== null || 
     carreraFilter !== null ||
     tipoEspacioFilter !== null ||
+    usuarioFilter !== null ||
     fechaInicio !== undefined || 
     fechaFin !== undefined;
 
-  // Estados para carreras y tipos de espacio
+  // Estados para carreras, tipos de espacio, espacios y usuarios
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
+  // const [usuarios, setUsuarios] = useState<User[]>([]); // Solo para ANALISTA - se usará cuando se agregue el filtro de usuario
 
-  // Cargar carreras, tipos de espacio y espacios para los filtros
+  // Cargar carreras, tipos de espacio, espacios y usuarios para los filtros
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [carrerasRes, tiposEspacioRes, espaciosRes] = await Promise.all([
+        const promises: Promise<unknown>[] = [
           carrerasApi.obtenerCarreras(),
           espaciosApi.listarTiposEspacio(),
           espaciosApi.obtenerEspacios()
-        ]);
+        ];
         
-        if (carrerasRes.data) setCarreras(carrerasRes.data);
-        if (tiposEspacioRes.data) setTiposEspacio(tiposEspacioRes.data);
-        if (espaciosRes.data) setEspacios(espaciosRes.data);
-      } catch (error: any) {
+        // Cargar usuarios para filtro (se implementará cuando se agregue el filtro de usuario a las vistas)
+        // if (isAnalista) {
+        //   promises.push(usuariosApi.listarUsuarios(0, 1000, {}));
+        // }
+        
+        const results = await Promise.all(promises);
+        
+        const carrerasRes = results[0] as { data?: Carrera[] };
+        if (carrerasRes?.data) {
+          setCarreras(carrerasRes.data);
+        }
+        const tiposEspacioRes = results[1] as { data?: TipoEspacio[] };
+        if (tiposEspacioRes?.data) {
+          setTiposEspacio(tiposEspacioRes.data);
+        }
+        const espaciosRes = results[2] as { data?: Espacio[] };
+        if (espaciosRes?.data) {
+          setEspacios(espaciosRes.data);
+        }
+        // Cargar usuarios para filtro (se implementará cuando se agregue el filtro de usuario a las vistas)
+        // if (isAnalista && results[3]) {
+        //   const usuariosRes = results[3] as { data?: { content: User[] } };
+        //   if (usuariosRes?.data && 'content' in usuariosRes.data) {
+        //     setUsuarios(usuariosRes.data.content);
+        //   }
+        // }
+      } catch (error: unknown) {
         console.error('Error al cargar datos para filtros:', error);
       }
     };
     fetchData();
-  }, []);
+  }, [isAnalista]);
 
   // Obtener espacios únicos (usar todos los espacios cargados, no solo los de las reservas)
   const espaciosUnicos = espacios.map(e => ({ id: e.id, nombre: e.nombre }))
@@ -246,12 +352,20 @@ export default function ReservationManagement() {
   const tiposEspacioUnicos = tiposEspacio
     .map(t => ({ id: t.id, nombre: t.nombre, color: t.color }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  
+  // Obtener usuarios únicos (solo para ANALISTA) - se usará cuando se agregue el filtro de usuario a las vistas
+  // const usuariosUnicos = isAnalista
+  //   ? usuarios
+  //       .filter(u => u.activo !== false)
+  //       .map(u => ({ id: u.id, nombre: u.nombre, email: u.email }))
+  //       .sort((a, b) => a.nombre.localeCompare(b.nombre))
+  //   : [];
 
   // Para calendar, filtrar en el cliente (porque carga todas las reservas)
-  // Para table y cards, el filtrado se hace en el servidor
+  // Para table y cards, usar reservas paginadas del hook
   const ahora = new Date();
   const reservasFiltradas = viewMode === 'calendar' 
-    ? reservas.filter(reserva => {
+    ? reservas.filter((reserva: Reserva) => {
         // Filtro por estado
         if (estadoFilter !== 'todas' && reserva.estado !== estadoFilter) {
           return false;
@@ -300,11 +414,17 @@ export default function ReservationManagement() {
     : reservas; // Para table y cards, las reservas ya vienen filtradas del servidor
 
 
-  // Obtener título dinámico según filtros
+  // Obtener título dinámico según filtros y rol
   const getTituloReservas = () => {
-    if (tiempoFilter === 'futuras') return 'Reservas Futuras';
-    if (tiempoFilter === 'pasadas') return 'Reservas Pasadas';
-    return 'Mis Reservas';
+    if (isDocente) {
+      if (tiempoFilter === 'futuras') return 'Mis Solicitudes Futuras';
+      if (tiempoFilter === 'pasadas') return 'Mis Solicitudes Pasadas';
+      return 'Mis Solicitudes';
+    } else {
+      if (tiempoFilter === 'futuras') return 'Reservas Futuras';
+      if (tiempoFilter === 'pasadas') return 'Reservas Pasadas';
+      return 'Todas las Reservas';
+    }
   };
 
   // Renderizar vista de cards
@@ -432,17 +552,53 @@ export default function ReservationManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Mis Reservas</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">
+            {isDocente ? 'Mis Solicitudes' : 'Gestión de Reservas'}
+          </h2>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Administra tus reservas de espacios
+            {isDocente 
+              ? 'Administra tus solicitudes de reserva de espacios'
+              : 'Administra todas las reservas y solicitudes del sistema'}
           </p>
         </div>
-        <Button onClick={() => setCreateDialog(true)} className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Nueva Reserva</span>
-          <span className="sm:hidden">Nueva</span>
-        </Button>
+        <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+          <Button onClick={() => setCreateDialog(true)} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">
+              {isDocente ? 'Nueva Solicitud' : 'Nueva Reserva'}
+            </span>
+            <span className="sm:hidden">{isDocente ? 'Solicitar' : 'Nueva'}</span>
+          </Button>
+        </PermissionGuard>
       </div>
+
+      {/* Sección de Solicitudes Pendientes para ANALISTA */}
+      {isAnalista && pendientesCount > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+            <div>
+              <p className="font-semibold text-amber-900">
+                {pendientesCount} {pendientesCount === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'}
+              </p>
+              <p className="text-sm text-amber-700">
+                Hay solicitudes de reserva esperando aprobación
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEstadoFilter('PENDIENTE');
+              setPage(0);
+            }}
+            className="border-amber-300 text-amber-900 hover:bg-amber-100"
+          >
+            Ver Pendientes
+          </Button>
+        </div>
+      )}
 
       {/* Layout principal: Gestión + Stats lateral */}
       <div className="flex gap-4 sm:gap-6 flex-col lg:flex-row">
@@ -456,7 +612,9 @@ export default function ReservationManagement() {
 
         {/* Estadísticas en el lateral derecho (30%) - se ajusta automáticamente cuando está colapsada */}
         <div className="w-full lg:w-auto lg:shrink-0 lg:order-last">
-          <ReservationStats onRefresh={fetchReservas} />
+          <PermissionGuard requiredPermission="estadisticas:ver" fallback={null} showFallback={false}>
+            <ReservationStats onRefresh={viewMode === 'calendar' ? fetchReservas : fetchReservasPaged} />
+          </PermissionGuard>
         </div>
       </div>
 

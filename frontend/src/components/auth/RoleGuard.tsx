@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { canAccessRoute, getUserPermissions, type Role } from '@/lib/config/constants';
+import type { Role } from '@/lib/config/constants';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -44,32 +44,5 @@ export default function RoleGuard({
 
   // Si pasa todas las verificaciones, mostrar el contenido
   return <>{children}</>;
-}
-
-// Hook personalizado para verificar permisos
-export function useRolePermissions() {
-  const { user } = useAuth();
-  
-  const permissions = getUserPermissions(user?.rol || null);
-  
-  const canAccess = (route: string) => {
-    return canAccessRoute(user?.rol || null, route);
-  };
-
-  const hasRole = (role: Role) => {
-    return user?.rol === role;
-  };
-
-  const hasAnyRole = (roles: Role[]) => {
-    return user?.rol ? roles.includes(user.rol as Role) : false;
-  };
-
-  return {
-    permissions,
-    canAccess,
-    hasRole,
-    hasAnyRole,
-    userRole: user?.rol || null
-  };
 }
 

@@ -140,6 +140,61 @@ export const reservationsApi = {
     return apiRequest<Reserva[]>(url, { method: 'GET' });
   },
 
+  // Obtener todas las reservas del sistema con paginación (para ANALISTA/ADMIN)
+  async obtenerTodasReservasPaged(
+    page: number = 0,
+    size: number = 10,
+    estado?: string,
+    espacioId?: number | null,
+    carreraId?: number | null,
+    tipoEspacioId?: number | null,
+    usuarioId?: number | null,
+    fechaInicio?: Date | null,
+    fechaFin?: Date | null,
+    tiempo?: string
+  ): Promise<ApiResponse<PagedResponse<Reserva>>> {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    if (estado && estado !== 'todas') params.append('estado', estado);
+    if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
+    if (carreraId !== null && carreraId !== undefined) params.append('carreraId', carreraId.toString());
+    if (tipoEspacioId !== null && tipoEspacioId !== undefined) params.append('tipoEspacioId', tipoEspacioId.toString());
+    if (usuarioId !== null && usuarioId !== undefined) params.append('usuarioId', usuarioId.toString());
+    if (fechaInicio) params.append('fechaInicio', fechaInicio.toISOString());
+    if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
+    if (tiempo && tiempo !== 'todas') params.append('tiempo', tiempo);
+    
+    return apiRequest<PagedResponse<Reserva>>(`/reservas/paged?${params.toString()}`, { method: 'GET' });
+  },
+
+  // Aprobar una reserva pendiente
+  async aprobarReserva(id: number): Promise<ApiResponse<Reserva>> {
+    return apiRequest<Reserva>(`/reservas/${id}/estado`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado: 'APROBADO' }),
+    });
+  },
+
+  // Rechazar una reserva pendiente
+  async rechazarReserva(id: number): Promise<ApiResponse<Reserva>> {
+    return apiRequest<Reserva>(`/reservas/${id}/estado`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado: 'CANCELADO' }),
+    });
+  },
+
+  // Cambiar el estado de una reserva (método genérico)
+  async cambiarEstadoReserva(
+    id: number,
+    estado: 'APROBADO' | 'CANCELADO'
+  ): Promise<ApiResponse<Reserva>> {
+    return apiRequest<Reserva>(`/reservas/${id}/estado`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado }),
+    });
+  },
+
   // Obtener estadísticas personales de reservas
   async obtenerEstadisticasPersonales(): Promise<ApiResponse<ReservaStats>> {
     return apiRequest<ReservaStats>('/reservas/mis-reservas/stats', { method: 'GET' });

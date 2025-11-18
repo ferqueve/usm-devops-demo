@@ -102,7 +102,7 @@ export const ROLE_PERMISSIONS = {
       'statistics',
       'Users',
       'system'
-    ]
+    ],
   },
   [ROLES.ANALISTA]: {
     name: 'Analista',
@@ -114,7 +114,6 @@ export const ROLE_PERMISSIONS = {
       '/reservations',
       '/calendar',
       '/inventory',
-      '/inventory/requests',
       '/statistics'
     ],
     sidebarItems: [
@@ -124,7 +123,7 @@ export const ROLE_PERMISSIONS = {
       'calendar',
       'inventory',
       'statistics'
-    ]
+    ],
   },
   [ROLES.DOCENTE]: {
     name: 'Docente',
@@ -138,7 +137,7 @@ export const ROLE_PERMISSIONS = {
       'dashboard',
       'reservations',
       'calendar'
-    ]
+    ],
   },
   [ROLES.ESTUDIANTE]: {
     name: 'Estudiante',
@@ -150,7 +149,7 @@ export const ROLE_PERMISSIONS = {
     sidebarItems: [
       'dashboard',
       'calendar'
-    ]
+    ],
   },
   [ROLES.EXTERNO]: {
     name: 'Externo',
@@ -162,7 +161,7 @@ export const ROLE_PERMISSIONS = {
     sidebarItems: [
       'dashboard',
       'calendar'
-    ]
+    ],
   },
   [ROLES.MANTENIMIENTO]: {
     name: 'Mantenimiento',
@@ -182,7 +181,7 @@ export const ROLE_PERMISSIONS = {
       'calendar',
       'inventory',
       'statistics'
-    ]
+    ],
   }
 } as const;
 

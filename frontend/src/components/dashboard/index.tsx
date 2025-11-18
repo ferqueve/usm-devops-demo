@@ -7,10 +7,12 @@ import UpcomingReservations from './UpcomingReservations';
 import DashboardCharts from './DashboardCharts';
 import QuickActions from './QuickActions';
 import ReservationDetailsDialog from '@/components/reservations/ReservationDetailsDialog';
+import { useAuth } from '@/hooks/useAuth';
 import type { Reserva } from '@/lib/types/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMyReservationsOnly, setShowMyReservationsOnly] = useState(false);
@@ -24,17 +26,29 @@ export default function Dashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const dashboardData = await dashboardApi.obtenerDatosDashboard();
+        const dashboardData = await dashboardApi.obtenerDatosDashboard(user?.rol);
         setData(dashboardData);
         
-        // Guardar todas las reservas para los gráficos
-        try {
-          const todasReservas = await reservationsApi.obtenerTodasLasReservas();
-          if (todasReservas.data) {
-            setAllReservas(todasReservas.data);
+        // Guardar todas las reservas para los gráficos (solo si no es DOCENTE)
+        if (user?.rol !== 'DOCENTE') {
+          try {
+            const todasReservas = await reservationsApi.obtenerTodasLasReservas();
+            if (todasReservas.data) {
+              setAllReservas(todasReservas.data);
+            }
+          } catch (error) {
+            console.warn('No se pudieron cargar todas las reservas para gráficos:', error);
           }
-        } catch (error) {
-          console.warn('No se pudieron cargar todas las reservas para gráficos:', error);
+        } else {
+          // Para DOCENTE, usar sus propias reservas para los gráficos
+          try {
+            const misReservas = await reservationsApi.obtenerMisReservas();
+            if (misReservas.data) {
+              setAllReservas(misReservas.data);
+            }
+          } catch (error) {
+            console.warn('No se pudieron cargar mis reservas para gráficos:', error);
+          }
         }
 
         // Cargar mis reservas para el filtro
@@ -55,10 +69,11 @@ export default function Dashboard() {
           // Si falla, simplemente no mostrar el filtro de "mis reservas"
           console.warn('No se pudieron cargar mis reservas:', error);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error al cargar datos del dashboard:', error);
+        const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar los datos';
         toast.error('Error al cargar el dashboard', {
-          description: error.message || 'No se pudieron cargar los datos'
+          description: errorMessage
         });
       } finally {
         setLoading(false);
@@ -66,7 +81,7 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, []);
+  }, [user?.rol]);
 
   const handleViewDetails = (reserva: Reserva) => {
     setSelectedReserva(reserva);
@@ -139,12 +154,14 @@ export default function Dashboard() {
                     {data.stats.espaciosDisponibles}/{data.stats.totalEspacios}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Usuarios activos</span>
-                  <span className="text-sm font-medium text-blue-600">
-                    {data.stats.usuariosActivos}
-                  </span>
-                </div>
+                {user?.rol === 'ADMIN' && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Usuarios activos</span>
+                    <span className="text-sm font-medium text-blue-600">
+                      {data.stats.usuariosActivos}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Reservas hoy</span>
                   <span className="text-sm font-medium text-purple-600">

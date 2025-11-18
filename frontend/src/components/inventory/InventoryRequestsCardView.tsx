@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils/helpers';
 import { User, Boxes, CalendarClock, Mail, ClipboardCheck } from 'lucide-react';
 import type { ReservaItemSolicitado, ReservaItemSolicitadoEstado } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface EstadoOption {
   value: ReservaItemSolicitadoEstado;
@@ -179,17 +180,19 @@ export default function InventoryRequestsCardView({
               <span className="hidden rounded-md border border-dashed border-slate-300 px-2 py-1 text-center text-[10px] text-slate-500 lg:block">
                 Creada {formatDateTime(request.createdAt)}
               </span>
-              {request.estado === 'APROBADO' && request.inventarioItemId != null && onDeliver && (
-                <button
-                  type="button"
-                  onClick={() => onDeliver(request)}
-                  disabled={processingRequestId === request.id || request.inventarioItemId == null}
-                  className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-600/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-70 lg:h-8"
-                >
-                  <ClipboardCheck className="h-3.5 w-3.5" />
-                  Entregado
-                </button>
-              )}
+              <PermissionGuard requiredPermission="solicitudes_inventario:entregar">
+                {request.estado === 'APROBADO' && request.inventarioItemId != null && onDeliver && (
+                  <button
+                    type="button"
+                    onClick={() => onDeliver(request)}
+                    disabled={processingRequestId === request.id || request.inventarioItemId == null}
+                    className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-600/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-70 lg:h-8"
+                  >
+                    <ClipboardCheck className="h-3.5 w-3.5" />
+                    Entregado
+                  </button>
+                )}
+              </PermissionGuard>
               <button
                 type="button"
                 onClick={() => onManage(request)}

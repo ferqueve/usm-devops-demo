@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/label';
 import {
@@ -26,6 +26,8 @@ import type { Espacio, Reserva, Carrera, TipoElemento } from '@/lib/types/spaces
 import { formatLocalDateTime } from './reservationUtils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import PermissionGuard from '@/components/auth/PermissionGuard';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -38,6 +40,9 @@ export default function ReservationFormDialog({
   onOpenChange,
   onSuccess
 }: ReservationFormDialogProps) {
+  const { user } = useAuth();
+  const isDocente = user?.rol === 'DOCENTE';
+  
   const [loading, setLoading] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
@@ -266,6 +271,54 @@ export default function ReservationFormDialog({
     }
   }, [open]);
 
+  // Calcular días completamente ocupados
+  const calcularDiasOcupados = useCallback((reservas: Reserva[]) => {
+    const diasOcupados = new Set<string>();
+    
+    reservas.forEach(reserva => {
+      const inicio = new Date(reserva.inicio);
+      const fin = new Date(reserva.fin);
+      
+      // Verificar si el día está completamente ocupado (24 horas)
+      if (inicio.getHours() === 0 && inicio.getMinutes() === 0 && 
+          fin.getHours() === 23 && fin.getMinutes() === 59) {
+        const fechaKey = inicio.toISOString().split('T')[0];
+        diasOcupados.add(fechaKey);
+      }
+    });
+    
+    const fechasDeshabilitadas = Array.from(diasOcupados).map(fechaStr => {
+      const [year, month, day] = fechaStr.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    });
+    
+    setDisabledDates(fechasDeshabilitadas);
+  }, []);
+
+  // Cargar reservas del espacio seleccionado
+  const fetchReservasEspacio = useCallback(async (espacioId: string) => {
+    if (!espacioId) {
+      setReservasEspacio([]);
+      setDisabledDates([]);
+      return;
+    }
+
+    try {
+      const response = await reservationsApi.obtenerReservasPorEspacio(parseInt(espacioId));
+      if (response.data) {
+        const reservasAprobadas = response.data.filter(r => r.estado === 'APROBADO');
+        setReservasEspacio(reservasAprobadas);
+        
+        // Calcular días completamente ocupados
+        calcularDiasOcupados(reservasAprobadas);
+      }
+    } catch (error) {
+      console.error('Error al cargar reservas del espacio:', error);
+      setReservasEspacio([]);
+      setDisabledDates([]);
+    }
+  }, [calcularDiasOcupados]);
+
   // Cargar reservas cuando se selecciona un espacio
   useEffect(() => {
     if (formData.espacioId) {
@@ -274,7 +327,7 @@ export default function ReservationFormDialog({
       setReservasEspacio([]);
       setDisabledDates([]);
     }
-  }, [formData.espacioId]);
+  }, [formData.espacioId, fetchReservasEspacio]);
 
   // Validar horas en tiempo real
   useEffect(() => {
@@ -345,58 +398,10 @@ export default function ReservationFormDialog({
     setItemsSolicitados(prev => prev.filter((_, i) => i !== index));
   };
 
-  const actualizarItemSolicitado = (index: number, field: string, value: any) => {
+  const actualizarItemSolicitado = (index: number, field: string, value: string | number) => {
     setItemsSolicitados(prev => prev.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     ));
-  };
-
-  // Cargar reservas del espacio seleccionado
-  const fetchReservasEspacio = async (espacioId: string) => {
-    if (!espacioId) {
-      setReservasEspacio([]);
-      setDisabledDates([]);
-      return;
-    }
-
-    try {
-      const response = await reservationsApi.obtenerReservasPorEspacio(parseInt(espacioId));
-      if (response.data) {
-        const reservasAprobadas = response.data.filter(r => r.estado === 'APROBADO');
-        setReservasEspacio(reservasAprobadas);
-        
-        // Calcular días completamente ocupados
-        calcularDiasOcupados(reservasAprobadas);
-      }
-    } catch (error) {
-      console.error('Error al cargar reservas del espacio:', error);
-      setReservasEspacio([]);
-      setDisabledDates([]);
-    }
-  };
-
-  // Calcular días completamente ocupados
-  const calcularDiasOcupados = (reservas: Reserva[]) => {
-    const diasOcupados = new Set<string>();
-    
-    reservas.forEach(reserva => {
-      const inicio = new Date(reserva.inicio);
-      const fin = new Date(reserva.fin);
-      
-      // Verificar si el día está completamente ocupado (24 horas)
-      if (inicio.getHours() === 0 && inicio.getMinutes() === 0 && 
-          fin.getHours() === 23 && fin.getMinutes() === 59) {
-        const fechaKey = inicio.toISOString().split('T')[0];
-        diasOcupados.add(fechaKey);
-      }
-    });
-    
-    const fechasDeshabilitadas = Array.from(diasOcupados).map(fechaStr => {
-      const [year, month, day] = fechaStr.split('-').map(Number);
-      return new Date(year, month - 1, day);
-    });
-    
-    setDisabledDates(fechasDeshabilitadas);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -481,12 +486,16 @@ export default function ReservationFormDialog({
         })) : undefined
       });
 
-      toast.success('Reserva creada exitosamente');
+      toast.success(
+        isDocente 
+          ? 'Solicitud de reserva enviada exitosamente. Esperando aprobación.'
+          : 'Reserva creada exitosamente'
+      );
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al crear reserva:', error);
-      const mensaje = error.message || 'No se pudo crear la reserva';
+      const mensaje = error instanceof Error ? error.message : 'No se pudo crear la reserva';
       
       // Mensajes de error más específicos
       if (mensaje.includes('ocupado') || mensaje.includes('conflicto')) {
@@ -528,7 +537,9 @@ export default function ReservationFormDialog({
                 Crear
               </div>
             </div>
-            <DialogTitle className="text-lg font-bold text-white">Completa los datos</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-white">
+              {isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
+            </DialogTitle>
             {/* Puntos decorativos tipo ticket */}
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
               <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
@@ -853,10 +864,12 @@ export default function ReservationFormDialog({
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Crear Reserva
-              </Button>
+              <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+                <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
+                </Button>
+              </PermissionGuard>
             </DialogFooter>
           </div>
         </form>

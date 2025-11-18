@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface ImportCSVDialogProps {
   open: boolean;
@@ -172,13 +173,15 @@ export default function ImportCSVDialog({
             >
               Cancelar
             </Button>
-            <Button 
-              onClick={handleImport} 
-              disabled={!file}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Importar
-            </Button>
+            <PermissionGuard requiredPermission="inventario:importar">
+              <Button 
+                onClick={handleImport} 
+                disabled={!file}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Importar
+              </Button>
+            </PermissionGuard>
           </DialogFooter>
       </DialogContent>
     </Dialog>

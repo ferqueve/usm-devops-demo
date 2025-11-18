@@ -22,6 +22,7 @@ import { espaciosApi } from '@/lib/api/spaces';
 import type { InventarioItem, TipoElemento, Espacio } from '@/lib/types/spaces';
 import { toast } from 'sonner';
 import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface InventoryFormDialogProps {
   item: InventarioItem | null;
@@ -138,10 +139,11 @@ export default function InventoryFormDialog({
       onSuccess(result);
       onOpenChange(false);
       toast.success(item ? 'Item actualizado exitosamente' : 'Item creado exitosamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo guardar el item';
       console.error('Error al guardar item:', error);
       toast.error('Error al guardar item', {
-        description: error.message || 'No se pudo guardar el item'
+        description: errorMessage
       });
     } finally {
       setLoading(false);
@@ -275,9 +277,11 @@ export default function InventoryFormDialog({
           >
             Cancelar
           </Button>
-          <Button type="submit" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Guardando...' : (item ? 'Actualizar' : 'Crear')}
-          </Button>
+          <PermissionGuard requiredPermissions={item ? ['inventario:editar'] : ['inventario:crear']}>
+            <Button type="submit" onClick={handleSubmit} disabled={loading}>
+              {loading ? 'Guardando...' : (item ? 'Actualizar' : 'Crear')}
+            </Button>
+          </PermissionGuard>
         </DialogFooter>
       </DialogContent>
     </Dialog>

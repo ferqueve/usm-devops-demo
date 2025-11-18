@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { InventarioFormDialog } from './InventarioFormDialog';
 import { DeleteInventarioDialog } from './DeleteInventarioDialog';
 import { espaciosApi } from '@/lib/api/spaces';
 import type { Espacio, InventarioItem } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 import { 
   ArrowLeft, 
   Edit, 
@@ -82,12 +83,46 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
   const [deleteInventarioDialog, setDeleteInventarioDialog] = useState(false);
   const [selectedInventarioItem, setSelectedInventarioItem] = useState<InventarioItem | null>(null);
 
-  const canEdit = true; // TODO: Implementar verificación de permisos
+  const fetchEspacio = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await espaciosApi.obtenerEspacio(espacioId);
+      if (response.data) {
+        setEspacio(response.data);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo cargar la información del espacio';
+      console.error('Error al cargar espacio:', error);
+      toast.error('Error al cargar espacio', {
+        description: errorMessage
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [espacioId]);
+
+  const fetchInventario = useCallback(async () => {
+    try {
+      setLoadingInventario(true);
+      const response = await espaciosApi.listarInventarioPorEspacio(espacioId);
+      if (response.data) {
+        setInventario(response.data);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo cargar el inventario del espacio';
+      console.error('Error al cargar inventario:', error);
+      toast.error('Error al cargar inventario', {
+        description: errorMessage
+      });
+    } finally {
+      setLoadingInventario(false);
+    }
+  }, [espacioId]);
 
   useEffect(() => {
     fetchEspacio();
     fetchInventario();
-  }, [espacioId]);
+  }, [fetchEspacio, fetchInventario]);
 
   // Actualizar título de la página dinámicamente
   useEffect(() => {
@@ -102,40 +137,6 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
       document.title = 'USM Space Manager';
     };
   }, [espacio]);
-
-  const fetchEspacio = async () => {
-    try {
-      setLoading(true);
-      const response = await espaciosApi.obtenerEspacio(espacioId);
-      if (response.data) {
-        setEspacio(response.data);
-      }
-    } catch (error: any) {
-      console.error('Error al cargar espacio:', error);
-      toast.error('Error al cargar espacio', {
-        description: error.message || 'No se pudo cargar la información del espacio'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchInventario = async () => {
-    try {
-      setLoadingInventario(true);
-      const response = await espaciosApi.listarInventarioPorEspacio(espacioId);
-      if (response.data) {
-        setInventario(response.data);
-      }
-    } catch (error: any) {
-      console.error('Error al cargar inventario:', error);
-      toast.error('Error al cargar inventario', {
-        description: error.message || 'No se pudo cargar el inventario del espacio'
-      });
-    } finally {
-      setLoadingInventario(false);
-    }
-  };
 
   const handleEditSuccess = (updatedSpace: Espacio) => {
     setEspacio(updatedSpace);
@@ -279,18 +280,20 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
           </div>
         </div>
         
-        {canEdit && (
-          <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          <PermissionGuard requiredPermission="espacios:editar">
             <Button variant="outline" onClick={() => setEditDialog(true)} className="flex-1 sm:flex-none">
               <Edit className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Editar</span>
             </Button>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission="espacios:eliminar">
             <Button variant="outline" onClick={() => setDeleteDialog(true)} className="flex-1 sm:flex-none">
               <Trash2 className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Eliminar</span>
             </Button>
-          </div>
-        )}
+          </PermissionGuard>
+        </div>
       </div>
 
       {/* Información del espacio */}
@@ -360,12 +363,12 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
               <Package className="h-5 w-5" />
               Inventario del Espacio
             </CardTitle>
-            {canEdit && (
+            <PermissionGuard requiredPermission="inventario:crear">
               <Button onClick={handleAddInventario} size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Agregar Elemento
               </Button>
-            )}
+            </PermissionGuard>
           </div>
         </CardHeader>
         <CardContent>
@@ -404,8 +407,8 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                           </Badge>
                         </div>
                         
-                        {canEdit && (
-                          <div className="flex gap-2 pt-2 border-t">
+                        <div className="flex gap-2 pt-2 border-t">
+                          <PermissionGuard requiredPermission="inventario:editar">
                             <Button
                               variant="outline"
                               size="sm"
@@ -415,6 +418,8 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                               <Edit className="h-3 w-3 mr-1" />
                               Editar
                             </Button>
+                          </PermissionGuard>
+                          <PermissionGuard requiredPermission="inventario:eliminar">
                             <Button
                               variant="outline"
                               size="sm"
@@ -424,8 +429,8 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                               <Trash2 className="h-3 w-3 mr-1" />
                               Eliminar
                             </Button>
-                          </div>
-                        )}
+                          </PermissionGuard>
+                        </div>
                       </CardContent>
                     </Card>
                   );
@@ -440,7 +445,9 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                       <TableHead>Tipo de Elemento</TableHead>
                       <TableHead>Cantidad</TableHead>
                       <TableHead>Estado</TableHead>
-                      {canEdit && <TableHead>Acciones</TableHead>}
+                      <PermissionGuard requiredPermissions={['inventario:editar', 'inventario:eliminar']}>
+                        <TableHead>Acciones</TableHead>
+                      </PermissionGuard>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -460,9 +467,9 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                               {estadoConfig.label}
                             </Badge>
                           </TableCell>
-                          {canEdit && (
-                            <TableCell>
-                              <div className="flex gap-1">
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <PermissionGuard requiredPermission="inventario:editar">
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -470,6 +477,8 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
+                              </PermissionGuard>
+                              <PermissionGuard requiredPermission="inventario:eliminar">
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -477,9 +486,9 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
-                              </div>
-                            </TableCell>
-                          )}
+                              </PermissionGuard>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       );
                     })}

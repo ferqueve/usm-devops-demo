@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { InventarioItem } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface InventoryTableProps {
   items: InventarioItem[];
@@ -175,47 +176,53 @@ export default function InventoryTable({
                       </Tooltip>
                     )}
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => onAssign(item)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Package className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{item.espacioId ? 'Reasignar' : 'Asignar'}</TooltipContent>
-                    </Tooltip>
+                    <PermissionGuard requiredPermission="inventario:asignar">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => onAssign(item)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Package className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{item.espacioId ? 'Reasignar' : 'Asignar'}</TooltipContent>
+                      </Tooltip>
+                    </PermissionGuard>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => onEdit(item)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Editar</TooltipContent>
-                    </Tooltip>
+                    <PermissionGuard requiredPermission="inventario:editar">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => onEdit(item)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Editar</TooltipContent>
+                      </Tooltip>
+                    </PermissionGuard>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => onDelete(item)}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Eliminar</TooltipContent>
-                    </Tooltip>
+                    <PermissionGuard requiredPermission="inventario:eliminar">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => onDelete(item)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Eliminar</TooltipContent>
+                      </Tooltip>
+                    </PermissionGuard>
                   </TooltipProvider>
                 </div>
               </TableCell>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Users, Eye, Edit, CheckCircle, Wrench, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Espacio } from "@/lib/types/spaces";
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 // Función para obtener configuración del estado
 function getEstadoConfig(estado: string) {
@@ -131,7 +132,7 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
             <Eye className="h-4 w-4 mr-1.5" />
             Ver Detalles
           </Button>
-          {canEdit && (
+          <PermissionGuard requiredPermission="espacios:editar">
             <Button 
               size="sm" 
               variant="outline" 
@@ -141,7 +142,7 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
               <Edit className="h-4 w-4 mr-1.5" />
               Editar
             </Button>
-          )}
+          </PermissionGuard>
         </div>
       </CardContent>
     </Card>

@@ -58,6 +58,7 @@ import {
 } from '@/components/ui/dialog';
 import { InventoryRequestFilters } from '@/components/inventory/InventoryRequestFilters';
 import InventoryRequestsCardView from '@/components/inventory/InventoryRequestsCardView';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 const ESTADO_OPTIONS: Array<{
   value: ReservaItemSolicitadoEstado;
@@ -596,16 +597,18 @@ export default function InventoryRequestsManagement() {
                         </TableCell>
                         <TableCell>{formatDateTime(item.createdAt)}</TableCell>
                         <TableCell className="flex items-center justify-end gap-2">
-                          {item.estado === 'APROBADO' && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleMarkDelivered(item)}
-                              disabled={processingRequestId === item.id || item.inventarioItemId == null}
-                            >
-                              <ClipboardCheck className="h-3.5 w-3.5" />
-                              Entregado
-                            </Button>
-                          )}
+                          <PermissionGuard requiredPermission="solicitudes_inventario:entregar">
+                            {item.estado === 'APROBADO' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleMarkDelivered(item)}
+                                disabled={processingRequestId === item.id || item.inventarioItemId == null}
+                              >
+                                <ClipboardCheck className="h-3.5 w-3.5" />
+                                Entregado
+                              </Button>
+                            )}
+                          </PermissionGuard>
                           <Button
                             size="sm"
                             variant="outline"
@@ -786,63 +789,65 @@ export default function InventoryRequestsManagement() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        if (selectedInventoryId === null) {
-                          toast.error('Selecciona un item disponible');
-                          return;
+                  <PermissionGuard requiredPermission="solicitudes_inventario:aprobar">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (selectedInventoryId === null) {
+                            toast.error('Selecciona un item disponible');
+                            return;
+                          }
+                          if (!selectedRequest) {
+                            return;
+                          }
+                          if (selectedInventoryId === selectedRequest.inventarioItemId) {
+                            toast.info('El item ya está asignado a esta solicitud');
+                            return;
+                          }
+                          updateRequest(
+                            selectedRequest,
+                            { inventarioItemId: selectedInventoryId },
+                            'Item de inventario asignado'
+                          );
+                        }}
+                        disabled={
+                          updatingRequest ||
+                          inventoryLocked ||
+                          selectedInventoryId === null ||
+                          (selectedRequest?.inventarioItemId != null &&
+                            selectedInventoryId === selectedRequest.inventarioItemId)
                         }
-                        if (!selectedRequest) {
-                          return;
+                        className="justify-center"
+                      >
+                        <PackagePlus className="h-3.5 w-3.5" />
+                        Asignar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (!selectedRequest) {
+                            return;
+                          }
+                          updateRequest(
+                            selectedRequest,
+                            { inventarioItemId: 0 },
+                            'Item de inventario liberado'
+                          );
+                        }}
+                        disabled={
+                          updatingRequest ||
+                          inventoryLocked ||
+                          selectedRequest.inventarioItemId == null
                         }
-                        if (selectedInventoryId === selectedRequest.inventarioItemId) {
-                          toast.info('El item ya está asignado a esta solicitud');
-                          return;
-                        }
-                        updateRequest(
-                          selectedRequest,
-                          { inventarioItemId: selectedInventoryId },
-                          'Item de inventario asignado'
-                        );
-                      }}
-                      disabled={
-                        updatingRequest ||
-                        inventoryLocked ||
-                        selectedInventoryId === null ||
-                        (selectedRequest?.inventarioItemId != null &&
-                          selectedInventoryId === selectedRequest.inventarioItemId)
-                      }
-                      className="justify-center"
-                    >
-                      <PackagePlus className="h-3.5 w-3.5" />
-                      Asignar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        if (!selectedRequest) {
-                          return;
-                        }
-                        updateRequest(
-                          selectedRequest,
-                          { inventarioItemId: 0 },
-                          'Item de inventario liberado'
-                        );
-                      }}
-                      disabled={
-                        updatingRequest ||
-                        inventoryLocked ||
-                        selectedRequest.inventarioItemId == null
-                      }
-                      className="justify-center"
-                    >
-                      <PackageMinus className="h-3.5 w-3.5" />
-                      Liberar
-                    </Button>
-                  </div>
+                        className="justify-center"
+                      >
+                        <PackageMinus className="h-3.5 w-3.5" />
+                        Liberar
+                      </Button>
+                    </div>
+                  </PermissionGuard>
                 </div>
 
                 <div className="space-y-2">
@@ -892,57 +897,63 @@ export default function InventoryRequestsManagement() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Acciones
+                <PermissionGuard requiredPermissions={['solicitudes_inventario:aprobar', 'solicitudes_inventario:rechazar']} requireAll={false}>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Acciones
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <PermissionGuard requiredPermission="solicitudes_inventario:aprobar">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}
+                          onClick={() => {
+                            if (!selectedRequest) {
+                              return;
+                            }
+                            if (!canApprove) {
+                              toast.error('Asigna un item antes de aprobar la solicitud');
+                              return;
+                            }
+                            updateRequest(
+                              selectedRequest,
+                              { estado: 'APROBADO' },
+                              'Solicitud aprobada'
+                            );
+                          }}
+                          disabled={updatingRequest || !canApprove}
+                          className="justify-center"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Aprobar
+                        </Button>
+                      </PermissionGuard>
+                      <PermissionGuard requiredPermission="solicitudes_inventario:rechazar">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title={!canReject ? 'La solicitud ya fue cerrada' : undefined}
+                          onClick={() => {
+                            if (!selectedRequest) {
+                              return;
+                            }
+                            updateRequest(
+                              selectedRequest,
+                              { estado: 'RECHAZADO', inventarioItemId: 0 },
+                              'Solicitud rechazada'
+                            );
+                          }}
+                          disabled={updatingRequest || !canReject}
+                          className="justify-center"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          Rechazar
+                        </Button>
+                      </PermissionGuard>
+                    </div>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}
-                      onClick={() => {
-                        if (!selectedRequest) {
-                          return;
-                        }
-                        if (!canApprove) {
-                          toast.error('Asigna un item antes de aprobar la solicitud');
-                          return;
-                        }
-                        updateRequest(
-                          selectedRequest,
-                          { estado: 'APROBADO' },
-                          'Solicitud aprobada'
-                        );
-                      }}
-                      disabled={updatingRequest || !canApprove}
-                      className="justify-center"
-                    >
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Aprobar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      title={!canReject ? 'La solicitud ya fue cerrada' : undefined}
-                      onClick={() => {
-                        if (!selectedRequest) {
-                          return;
-                        }
-                        updateRequest(
-                          selectedRequest,
-                          { estado: 'RECHAZADO', inventarioItemId: 0 },
-                          'Solicitud rechazada'
-                        );
-                      }}
-                      disabled={updatingRequest || !canReject}
-                      className="justify-center"
-                    >
-                      <XCircle className="h-3.5 w-3.5" />
-                      Rechazar
-                    </Button>
-                  </div>
-                </div>
+                </PermissionGuard>
               </div>
 
               <div className="border-t border-slate-100 bg-slate-50 px-5 py-3 text-right">

@@ -54,10 +54,11 @@ export default function ReservationStats({ onRefresh }: ReservationStatsProps) {
       if (response.data) {
         setStats(response.data);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al cargar estadísticas:', error);
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las estadísticas';
       toast.error('Error al cargar estadísticas', {
-        description: error.message || 'No se pudieron cargar las estadísticas'
+        description: errorMessage
       });
     } finally {
       setLoading(false);

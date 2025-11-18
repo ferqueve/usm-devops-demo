@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +42,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { exportEspaciosToCSV } from '@/lib/utils/csv-export';
+import PermissionGuard from '@/components/auth/PermissionGuard';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 
 export default function SpacesManagement() {
   const navigate = useNavigate();
@@ -77,14 +79,7 @@ export default function SpacesManagement() {
   const [selectedSpace, setSelectedSpace] = useState<Espacio | null>(null);
   const [showTiposManagement, setShowTiposManagement] = useState(false);
 
-  // Cargar datos iniciales
-  useEffect(() => {
-    fetchEspacios();
-    fetchTiposEspacio();
-    fetchTiposElemento();
-  }, [page, filters, filtrosInventario]);
-
-  const fetchEspacios = async () => {
+  const fetchEspacios = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -101,7 +96,7 @@ export default function SpacesManagement() {
       
       if (hasActiveFilters) {
         const response = await espaciosApi.filtrarEspacios(filtrosCompletos);
-        const espaciosData: any = response.data || response;
+        const espaciosData = response.data || [];
         
         if (Array.isArray(espaciosData)) {
           setEspacios(espaciosData);
@@ -111,7 +106,7 @@ export default function SpacesManagement() {
       } else {
         // Sin filtros, usar paginación normal
         const response = await espaciosApi.listarEspacios(page, pageSize, filtrosCompletos);
-        const pagedData: any = response.data || response;
+        const pagedData = response.data;
         
         if (pagedData?.content) {
           setEspacios(pagedData.content);
@@ -119,15 +114,23 @@ export default function SpacesManagement() {
           setTotalElements(pagedData.totalElements);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al cargar espacios:', error);
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo cargar la lista de espacios';
       toast.error('Error al cargar espacios', {
-        description: error.message || 'No se pudo cargar la lista de espacios'
+        description: errorMessage
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, filters, filtrosInventario]);
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    fetchEspacios();
+    fetchTiposEspacio();
+    fetchTiposElemento();
+  }, [fetchEspacios]);
 
   const fetchTiposEspacio = async () => {
     try {
@@ -250,10 +253,11 @@ export default function SpacesManagement() {
       
       exportEspaciosToCSV(espaciosParaExportar);
       toast.success(`${espaciosParaExportar.length} espacios exportados exitosamente`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al exportar:', error);
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo exportar los espacios';
       toast.error('Error al exportar espacios', {
-        description: error.message || 'No se pudo exportar los espacios'
+        description: errorMessage
       });
     }
   };
@@ -268,21 +272,22 @@ export default function SpacesManagement() {
     setFiltrosInventario([...filtrosInventario, nuevoFiltro]);
   };
 
-  const eliminarFiltroInventario = (index: number) => {
-    const nuevosFiltros = filtrosInventario.filter((_, i) => i !== index);
-    setFiltrosInventario(nuevosFiltros);
-  };
+  const eliminarFiltroInventario = useCallback((index: number) => {
+    setFiltrosInventario(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
-  const actualizarFiltroInventario = (index: number, campo: keyof FiltroInventario, valor: any) => {
-    const nuevosFiltros = [...filtrosInventario];
-    nuevosFiltros[index] = { ...nuevosFiltros[index], [campo]: valor };
-    setFiltrosInventario(nuevosFiltros);
-  };
+  const actualizarFiltroInventario = useCallback((index: number, campo: keyof FiltroInventario, valor: number | undefined) => {
+    setFiltrosInventario(prev => {
+      const nuevosFiltros = [...prev];
+      nuevosFiltros[index] = { ...nuevosFiltros[index], [campo]: valor };
+      return nuevosFiltros;
+    });
+  }, []);
 
-  const obtenerNombreTipoElemento = (tipoElementoId: number) => {
+  const obtenerNombreTipoElemento = useCallback((tipoElementoId: number) => {
     const tipo = tiposElemento.find(t => t.id === tipoElementoId);
     return tipo?.nombre || 'Tipo desconocido';
-  };
+  }, [tiposElemento]);
 
   const handleCreateSuccess = (newSpace: Espacio) => {
     setEspacios(prev => [newSpace, ...prev]);
@@ -328,8 +333,8 @@ export default function SpacesManagement() {
     
     const sorted = [...espacios];
     sorted.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number | boolean;
+      let bValue: string | number | boolean;
       
       switch (sortConfig.column) {
         case 'id':
@@ -364,7 +369,8 @@ export default function SpacesManagement() {
     return sorted;
   }, [espacios, sortConfig]);
 
-  const canEdit = true; // TODO: Implementar verificación de permisos
+  const { canEdit: canEditResource } = useRolePermissions();
+  const canEdit = canEditResource('espacios');
 
   // Crear array de filtros activos para FilterBar
   const activeFilters: FilterItem[] = useMemo(() => {
@@ -446,7 +452,7 @@ export default function SpacesManagement() {
     });
     
     return items;
-  }, [filters, tiposEspacio, filtrosInventario, tiposElemento]);
+  }, [filters, tiposEspacio, filtrosInventario, eliminarFiltroInventario, obtenerNombreTipoElemento]);
 
   if (loading && espacios.length === 0) {
     return (
@@ -487,25 +493,29 @@ export default function SpacesManagement() {
             <span className="sm:hidden">Inventario</span>
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={() => navigate('/inventory/requests')}
-            className="h-10 flex-1 sm:flex-none"
-          >
-            <ClipboardList className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Solicitudes de Inventario</span>
-            <span className="sm:hidden">Solicitudes</span>
-          </Button>
+          <PermissionGuard requiredPermission="solicitudes_inventario:leer">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/inventory/requests')}
+              className="h-10 flex-1 sm:flex-none"
+            >
+              <ClipboardList className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Solicitudes de Inventario</span>
+              <span className="sm:hidden">Solicitudes</span>
+            </Button>
+          </PermissionGuard>
           
-          <Button 
-            variant="outline"
-            onClick={handleExport}
-            className="h-10 flex-1 sm:flex-none"
-          >
-            <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exportar CSV</span>
-            <span className="sm:hidden">CSV</span>
-          </Button>
+          <PermissionGuard requiredPermission="espacios:leer">
+            <Button 
+              variant="outline"
+              onClick={handleExport}
+              className="h-10 flex-1 sm:flex-none"
+            >
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Exportar CSV</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
+          </PermissionGuard>
           
           <div 
             onClick={!isRefreshing ? handleRefresh : undefined}
@@ -535,20 +545,20 @@ export default function SpacesManagement() {
             </Button>
           </div>
           
-          {canEdit && (
-            <>
-              <Button onClick={() => setShowTiposManagement(true)} variant="outline" className="h-10 flex-1 sm:flex-none">
-                <Building2 className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Tipos de Espacios</span>
-                <span className="sm:hidden">Tipos</span>
-              </Button>
-              <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
-                <Plus className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Agregar Espacio</span>
-                <span className="sm:hidden">Agregar</span>
-              </Button>
-            </>
-          )}
+          <PermissionGuard requiredPermissions={['espacios:crear', 'tipos_espacio:crear']} requireAll={false}>
+            <Button onClick={() => setShowTiposManagement(true)} variant="outline" className="h-10 flex-1 sm:flex-none">
+              <Building2 className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Tipos de Espacios</span>
+              <span className="sm:hidden">Tipos</span>
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission="espacios:crear">
+            <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Agregar Espacio</span>
+              <span className="sm:hidden">Agregar</span>
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 

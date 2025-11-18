@@ -14,6 +14,7 @@ import { usuariosApi } from '@/lib/api/users';
 import type { User, UpdateUserData } from '@/lib/types/users';
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface EditUserDialogProps {
   user: User | null;
@@ -79,10 +80,11 @@ export function EditUserDialog({
         onSuccess(response.data);
       }
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo actualizar el usuario';
       console.error('Error al actualizar usuario:', error);
       toast.error('Error al actualizar usuario', {
-        description: error.message || 'No se pudo actualizar el usuario'
+        description: errorMessage
       });
     } finally {
       setLoading(false);
@@ -163,14 +165,16 @@ export function EditUserDialog({
               <X className="h-4 w-4 mr-2" />
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || !formData.email?.trim() || !formData.nombre?.trim()}
-            >
-              {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              <Save className="h-4 w-4 mr-2" />
-              Guardar Cambios
-            </Button>
+            <PermissionGuard requiredPermission="usuarios:gestionar">
+              <Button 
+                type="submit" 
+                disabled={loading || !formData.email?.trim() || !formData.nombre?.trim()}
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                <Save className="h-4 w-4 mr-2" />
+                Guardar Cambios
+              </Button>
+            </PermissionGuard>
           </DialogFooter>
         </form>
       </DialogContent>

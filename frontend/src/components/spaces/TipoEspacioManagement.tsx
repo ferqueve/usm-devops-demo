@@ -14,6 +14,7 @@ import { Plus, Edit, Trash2, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { TipoEspacioFormDialog } from './TipoEspacioFormDialog';
 import { DeleteTipoEspacioDialog } from './DeleteTipoEspacioDialog';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface TipoEspacioManagementProps {
   open: boolean;
@@ -129,21 +130,25 @@ export function TipoEspacioManagement({
                       )}
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditClick(tipo)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(tipo)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <PermissionGuard requiredPermission="tipos_espacio:editar">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditClick(tipo)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </PermissionGuard>
+                      <PermissionGuard requiredPermission="tipos_espacio:eliminar">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(tipo)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </PermissionGuard>
                     </div>
                   </div>
                 ))}
@@ -155,10 +160,12 @@ export function TipoEspacioManagement({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cerrar
             </Button>
-            <Button onClick={handleCreateClick}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Tipo
-            </Button>
+            <PermissionGuard requiredPermission="tipos_espacio:crear">
+              <Button onClick={handleCreateClick}>
+                <Plus className="h-4 w-4 mr-2" />
+                Crear Tipo
+              </Button>
+            </PermissionGuard>
           </div>
         </DialogContent>
       </Dialog>

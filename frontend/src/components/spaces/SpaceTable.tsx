@@ -28,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Espacio } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface SpaceTableProps {
   espacios: Espacio[];
@@ -40,7 +41,6 @@ interface SpaceTableProps {
 
 export function SpaceTable({ 
   espacios, 
-  canEdit, 
   onEdit,
   onDelete,
   sortConfig, 
@@ -194,39 +194,39 @@ export function SpaceTable({
                       <TooltipContent>Ver Detalles</TooltipContent>
                     </Tooltip>
                     
-                    {canEdit && (
-                      <>
+                    <PermissionGuard requiredPermission="espacios:editar">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => onEdit(espacio)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Editar</TooltipContent>
+                      </Tooltip>
+                    </PermissionGuard>
+                    
+                    <PermissionGuard requiredPermission="espacios:eliminar">
+                      {onDelete && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => onEdit(espacio)}
-                              className="h-8 w-8 p-0"
+                              onClick={() => onDelete(espacio)}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Editar</TooltipContent>
+                          <TooltipContent>Eliminar</TooltipContent>
                         </Tooltip>
-                        
-                        {onDelete && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => onDelete(espacio)}
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Eliminar</TooltipContent>
-                          </Tooltip>
-                        )}
-                      </>
-                    )}
+                      )}
+                    </PermissionGuard>
                   </TooltipProvider>
                 </div>
               </TableCell>

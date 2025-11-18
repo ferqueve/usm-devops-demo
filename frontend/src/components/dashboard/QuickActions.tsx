@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
-import { Calendar, BookOpen, Building2, BarChart3, Users, Settings } from 'lucide-react';
+import { Calendar, BookOpen, Building2, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import PermissionGuard from '@/components/auth/PermissionGuard';
+import type { Permission } from '@/lib/config/permissions';
 
 export default function QuickActions() {
   const navigate = useNavigate();
@@ -46,7 +48,17 @@ export default function QuickActions() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {actions.map((action) => {
             const Icon = action.icon;
-            return (
+            // Determinar permisos según la acción
+            let requiredPermissions: Permission[] | undefined;
+            if (action.label === "Nueva Reserva") {
+              requiredPermissions = ['reservas:crear', 'reservas:solicitar'] as Permission[];
+            } else if (action.label === "Gestionar Espacios") {
+              requiredPermissions = ['espacios:leer'] as Permission[];
+            } else if (action.label === "Ver Estadísticas") {
+              requiredPermissions = ['estadisticas:ver'] as Permission[];
+            }
+            
+            const button = (
               <Button
                 key={action.label}
                 variant={action.variant}
@@ -61,6 +73,14 @@ export default function QuickActions() {
                   </div>
                 </div>
               </Button>
+            );
+            
+            return requiredPermissions ? (
+              <PermissionGuard key={action.label} requiredPermissions={requiredPermissions}>
+                {button}
+              </PermissionGuard>
+            ) : (
+              button
             );
           })}
         </div>

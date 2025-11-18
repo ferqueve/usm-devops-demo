@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
@@ -51,6 +51,7 @@ import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel
 import { usuariosApi } from '@/lib/api/users';
 import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS } from '@/lib/config/constants';
 import type { User, UserRole, UserFilters } from '@/lib/types/users';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 import { 
   Search, 
   ChevronLeft, 
@@ -126,30 +127,31 @@ export default function UserManagement() {
   // Estado para restablecimiento de contraseña
   const [resettingPassword, setResettingPassword] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [page, filters]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await usuariosApi.listarUsuarios(page, pageSize, filters);
-      const pagedData: any = response.data || response;
+      const pagedData = response.data || response;
       
-      if (pagedData?.content) {
+      if (pagedData && typeof pagedData === 'object' && 'content' in pagedData) {
         setUsers(pagedData.content);
         setTotalPages(pagedData.totalPages);
         setTotalElements(pagedData.totalElements);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo cargar la lista de usuarios';
       console.error('Error al cargar usuarios:', error);
       toast.error('Error al cargar usuarios', {
-        description: error.message || 'No se pudo cargar la lista de usuarios'
+        description: errorMessage
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, filters]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   // Debouncer para búsqueda
   useEffect(() => {
@@ -225,10 +227,11 @@ export default function UserManagement() {
       toast.success('Rol actualizado', {
         description: `El rol de ${selectedUser.nombre} se actualizó a ${ROLE_LABELS[newRole]}`
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo actualizar el rol del usuario';
       console.error('Error al cambiar rol:', error);
       toast.error('Error al cambiar rol', {
-        description: error.message || 'No se pudo actualizar el rol del usuario'
+        description: errorMessage
       });
       fetchUsers();
     } finally {
@@ -263,10 +266,11 @@ export default function UserManagement() {
       toast.success(`Usuario ${action}`, {
         description: `${userToToggle.nombre} ha sido ${action} exitosamente`
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo cambiar el estado del usuario';
       console.error('Error al cambiar estado:', error);
       toast.error('Error al cambiar estado', {
-        description: error.message || 'No se pudo cambiar el estado del usuario'
+        description: errorMessage
       });
       fetchUsers();
     } finally {
@@ -288,10 +292,11 @@ export default function UserManagement() {
       toast.success('Exportación completada', {
         description: 'El archivo CSV se ha descargado exitosamente'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo exportar el archivo CSV';
       console.error('Error al exportar CSV:', error);
       toast.error('Error al exportar', {
-        description: error.message || 'No se pudo exportar el archivo CSV'
+        description: errorMessage
       });
     }
   };
@@ -317,10 +322,11 @@ export default function UserManagement() {
       toast.success('Email reenviado', {
         description: 'Se ha reenviado el email de verificación'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo reenviar el email de verificación';
       console.error('Error al reenviar verificación:', error);
       toast.error('Error al reenviar', {
-        description: error.message || 'No se pudo reenviar el email de verificación'
+        description: errorMessage
       });
     } finally {
       setResendingVerification(false);
@@ -334,10 +340,11 @@ export default function UserManagement() {
       toast.success('Contraseña restablecida', {
         description: `Se ha enviado una nueva contraseña temporal a ${userName}`
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo restablecer la contraseña';
       console.error('Error al restablecer contraseña:', error);
       toast.error('Error al restablecer', {
-        description: error.message || 'No se pudo restablecer la contraseña'
+        description: errorMessage
       });
     } finally {
       setResettingPassword(false);
@@ -458,14 +465,16 @@ export default function UserManagement() {
             <span className="text-sm text-muted-foreground whitespace-nowrap">usuarios</span>
           </div>
           
-          <Button 
-            variant="outline"
-            onClick={handleExportCSV}
-            className="h-10"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
+          <PermissionGuard requiredPermission="usuarios:gestionar">
+            <Button 
+              variant="outline"
+              onClick={handleExportCSV}
+              className="h-10"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar CSV
+            </Button>
+          </PermissionGuard>
           
           <div 
             onClick={!isRefreshing ? handleRefresh : undefined}
@@ -653,15 +662,17 @@ export default function UserManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <Switch
-                                checked={user.activo}
-                                onCheckedChange={() => openConfirmStatusDialog(user)}
-                              />
-                              <span className="text-sm">
-                                {user.activo ? 'Activo' : 'Inactivo'}
-                              </span>
-                            </div>
+                            <PermissionGuard requiredPermission="usuarios:gestionar">
+                              <div className="flex items-center justify-center gap-2">
+                                <Switch
+                                  checked={user.activo}
+                                  onCheckedChange={() => openConfirmStatusDialog(user)}
+                                />
+                                <span className="text-sm">
+                                  {user.activo ? 'Activo' : 'Inactivo'}
+                                </span>
+                              </div>
+                            </PermissionGuard>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -674,24 +685,28 @@ export default function UserManagement() {
                                 <Eye className="h-4 w-4 mr-2" />
                                 Ver
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openEditDialog(user)}
-                                className="whitespace-nowrap rounded-2xl"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openChangeRoleDialog(user)}
-                                className="whitespace-nowrap rounded-2xl"
-                              >
-                                <Shield className="h-4 w-4 mr-2" />
-                                Rol
-                              </Button>
+                              <PermissionGuard requiredPermission="usuarios:gestionar">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openEditDialog(user)}
+                                  className="whitespace-nowrap rounded-2xl"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Editar
+                                </Button>
+                              </PermissionGuard>
+                              <PermissionGuard requiredPermission="usuarios:gestionar">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openChangeRoleDialog(user)}
+                                  className="whitespace-nowrap rounded-2xl"
+                                >
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Rol
+                                </Button>
+                              </PermissionGuard>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -716,10 +731,12 @@ export default function UserManagement() {
                               {user.email}
                             </p>
                           </div>
-                          <Switch
-                            checked={user.activo}
-                            onCheckedChange={() => openConfirmStatusDialog(user)}
-                          />
+                          <PermissionGuard requiredPermission="usuarios:gestionar">
+                            <Switch
+                              checked={user.activo}
+                              onCheckedChange={() => openConfirmStatusDialog(user)}
+                            />
+                          </PermissionGuard>
                         </div>
 
                         {/* Badges */}
@@ -751,24 +768,28 @@ export default function UserManagement() {
                             <Eye className="h-4 w-4 mr-2" />
                             Ver
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditDialog(user)}
-                            className="flex-1 rounded-2xl"
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openChangeRoleDialog(user)}
-                            className="flex-1 rounded-2xl"
-                          >
-                            <Shield className="h-4 w-4 mr-2" />
-                            Rol
-                          </Button>
+                          <PermissionGuard requiredPermission="usuarios:gestionar">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditDialog(user)}
+                              className="flex-1 rounded-2xl"
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </Button>
+                          </PermissionGuard>
+                          <PermissionGuard requiredPermission="usuarios:gestionar">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openChangeRoleDialog(user)}
+                              className="flex-1 rounded-2xl"
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Rol
+                            </Button>
+                          </PermissionGuard>
                         </div>
                       </div>
                     </CardContent>
@@ -940,20 +961,22 @@ export default function UserManagement() {
                       label={userDetails.verificado ? 'Verificado' : 'Pendiente'}
                     />
                     {!userDetails.verificado && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleResendVerification(userDetails.id)}
-                        disabled={resendingVerification}
-                        className="h-6 px-2 text-xs"
-                      >
-                        {resendingVerification ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <MailIcon className="h-3 w-3 mr-1" />
-                        )}
-                        Reenviar
-                      </Button>
+                      <PermissionGuard requiredPermission="usuarios:gestionar">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResendVerification(userDetails.id)}
+                          disabled={resendingVerification}
+                          className="h-6 px-2 text-xs"
+                        >
+                          {resendingVerification ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <MailIcon className="h-3 w-3 mr-1" />
+                          )}
+                          Reenviar
+                        </Button>
+                      </PermissionGuard>
                     )}
                   </div>
                 </div>
@@ -995,23 +1018,25 @@ export default function UserManagement() {
               
               {/* Botón de restablecer contraseña */}
               <div className="col-span-2 pt-2 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleResetPassword(userDetails.id, userDetails.nombre)}
-                  disabled={resettingPassword}
-                  className="w-full"
-                >
-                  {resettingPassword ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <KeyRound className="h-4 w-4 mr-2" />
-                  )}
-                  Restablecer Contraseña
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Se enviará una contraseña temporal por email
-                </p>
+                <PermissionGuard requiredPermission="usuarios:gestionar">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleResetPassword(userDetails.id, userDetails.nombre)}
+                    disabled={resettingPassword}
+                    className="w-full"
+                  >
+                    {resettingPassword ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <KeyRound className="h-4 w-4 mr-2" />
+                    )}
+                    Restablecer Contraseña
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Se enviará una contraseña temporal por email
+                  </p>
+                </PermissionGuard>
               </div>
             </div>
           )}

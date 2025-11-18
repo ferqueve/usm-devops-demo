@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CheckCircle2, AlertCircle, XCircle, MoreHorizontal, Package, PackageX, Download } from "lucide-react";
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface BulkActionsBarProps {
   selectedCount: number;
@@ -33,55 +34,63 @@ export default function BulkActionsBar({
       </div>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBulkAssign}
-        >
-          <Package className="h-4 w-4 mr-2" />
-          Asignar Espacio
-        </Button>
+        <PermissionGuard requiredPermission="inventario:asignar">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBulkAssign}
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Asignar Espacio
+          </Button>
+        </PermissionGuard>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBulkUnassign}
-        >
-          <PackageX className="h-4 w-4 mr-2" />
-          Desasignar
-        </Button>
+        <PermissionGuard requiredPermission="inventario:asignar">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBulkUnassign}
+          >
+            <PackageX className="h-4 w-4 mr-2" />
+            Desasignar
+          </Button>
+        </PermissionGuard>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBulkExport}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Exportar
-        </Button>
+        <PermissionGuard requiredPermission="inventario:exportar">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBulkExport}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
+        </PermissionGuard>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <MoreHorizontal className="h-4 w-4 mr-2" />
-              Estado
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onBulkStateChange('DISPONIBLE')}>
-              <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
-              Marcar como Disponible
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onBulkStateChange('MANTENIMIENTO')}>
-              <AlertCircle className="mr-2 h-4 w-4 text-yellow-600" />
-              Marcar como Mantenimiento
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onBulkStateChange('DANADO')}>
-              <XCircle className="mr-2 h-4 w-4 text-red-600" />
-              Marcar como Dañado
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <PermissionGuard requiredPermission="inventario:editar">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <MoreHorizontal className="h-4 w-4 mr-2" />
+                Estado
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onBulkStateChange('DISPONIBLE')}>
+                <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
+                Marcar como Disponible
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onBulkStateChange('MANTENIMIENTO')}>
+                <AlertCircle className="mr-2 h-4 w-4 text-yellow-600" />
+                Marcar como Mantenimiento
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onBulkStateChange('DANADO')}>
+                <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                Marcar como Dañado
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </PermissionGuard>
 
         <Button 
           variant="ghost" 

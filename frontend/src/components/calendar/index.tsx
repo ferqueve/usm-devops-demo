@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';
 import { carrerasApi } from '@/lib/api/carreras';
+import { useAuth } from '@/hooks/useAuth';
 import type { Reserva } from '@/lib/types/spaces';
 import type { Espacio } from '@/lib/types/spaces';
 import type { Carrera } from '@/lib/types/spaces';
@@ -29,6 +30,8 @@ interface TipoEspacioOption {
 
 // Vista de Calendario de Reservas Público
 export default function Calendar() {
+  const { user } = useAuth();
+  const isDocente = user?.rol === 'DOCENTE';
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
@@ -69,33 +72,62 @@ export default function Calendar() {
   }, []);
 
   // Cargar reservas
-  const fetchReservas = async () => {
+  const fetchReservas = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await reservationsApi.obtenerTodasLasReservas(
-        estadoFilter !== 'todas' ? estadoFilter : undefined,
-        espacioFilter,
-        carreraFilter,
-        tipoEspacioFilter,
-        fechaInicio,
-        fechaFin
-      );
+      // DOCENTE solo puede ver sus propias reservas, otros roles pueden ver todas
+      const response = isDocente
+        ? await reservationsApi.obtenerMisReservas()
+        : await reservationsApi.obtenerTodasLasReservas(
+            estadoFilter !== 'todas' ? estadoFilter : undefined,
+            espacioFilter,
+            carreraFilter,
+            tipoEspacioFilter,
+            fechaInicio,
+            fechaFin
+          );
+      
       if (response.data) {
-        setReservas(response.data);
+        let reservasFiltradas = response.data;
+        
+        // Si es DOCENTE, aplicar filtros en el cliente
+        if (isDocente) {
+          if (estadoFilter !== 'todas') {
+            reservasFiltradas = reservasFiltradas.filter(r => r.estado === estadoFilter);
+          }
+          if (espacioFilter !== null) {
+            reservasFiltradas = reservasFiltradas.filter(r => r.espacioId === espacioFilter);
+          }
+          if (carreraFilter !== null) {
+            reservasFiltradas = reservasFiltradas.filter(r => r.carreraId === carreraFilter);
+          }
+          if (tipoEspacioFilter !== null) {
+            reservasFiltradas = reservasFiltradas.filter(r => r.tipoEspacioId === tipoEspacioFilter);
+          }
+          if (fechaInicio) {
+            reservasFiltradas = reservasFiltradas.filter(r => new Date(r.inicio) >= fechaInicio);
+          }
+          if (fechaFin) {
+            reservasFiltradas = reservasFiltradas.filter(r => new Date(r.inicio) <= fechaFin);
+          }
+        }
+        
+        setReservas(reservasFiltradas);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las reservas';
       toast.error('Error al cargar reservas', {
-        description: error.message || 'No se pudieron cargar las reservas'
+        description: errorMessage
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [isDocente, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
-  // Cargar reservas cuando cambian los filtros
+  // Cargar reservas cuando cambian los filtros o el rol
   useEffect(() => {
     fetchReservas();
-  }, [estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [fetchReservas]);
 
   const handleViewDetails = (reserva: Reserva) => {
     setSelectedReserva(reserva);

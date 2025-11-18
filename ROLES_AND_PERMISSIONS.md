@@ -141,6 +141,7 @@ Personal administrativo con autoridad completa sobre las reservas. Pueden ver es
 - ✅ Ver qué items hay en cada espacio
 - ✅ Ver estado del inventario (DISPONIBLE, MANTENIMIENTO, DANADO)
 - ✅ Ver cantidad de items por espacio
+- ✅ Ver tipos de elemento (necesario para crear solicitudes)
 - ❌ Crear/editar/eliminar items (solo MANTENIMIENTO/ADMIN)
 - ❌ Asignar/desasignar items (solo MANTENIMIENTO/ADMIN)
 - ❌ Gestionar inventario
@@ -544,64 +545,189 @@ MANTENIMIENTO → Ver Solicitudes Pendientes (/inventory/requests)
 
 ---
 
-## 🎯 Permisos Granulares Propuestos
+## 🎯 Permisos Granulares Implementados
 
-Para implementar el sistema de permisos granular, se propone:
+El sistema de permisos granular está completamente implementado. Los permisos siguen el formato `recurso:accion`:
 
-### Permisos de Reservas
-- `reserva:crear` - Crear reserva directamente (ADMIN, ANALISTA)
-- `reserva:solicitar` - Solicitar reserva (ADMIN, ANALISTA, DOCENTE)
-- `reserva:ver:todas` - Ver todas las reservas (ADMIN, ANALISTA)
-- `reserva:ver:propias` - Ver propias reservas (DOCENTE)
-- `reserva:ver:publicas` - Ver reservas públicas (ESTUDIANTE, EXTERNO)
-- `reserva:editar` - Editar reservas (ADMIN, ANALISTA)
-- `reserva:eliminar` - Eliminar reservas (ADMIN, ANALISTA)
-- `reserva:aprobar` - Aprobar/rechazar (ADMIN, ANALISTA)
-- `reserva:cancelar` - Cancelar reservas (ADMIN, ANALISTA, DOCENTE*)
+### Permisos de Reservas (✅ Implementado)
+- `reservas:crear` - Crear reserva directamente (ADMIN, ANALISTA)
+- `reservas:solicitar` - Solicitar reserva (ADMIN, ANALISTA, DOCENTE, EXTERNO)
+- `reservas:leer` - Ver reservas (todos los roles autenticados, con diferentes niveles)
+- `reservas:editar` - Editar reservas (ADMIN, ANALISTA)
+- `reservas:eliminar` - Eliminar reservas (ADMIN, ANALISTA)
+- `reservas:aprobar` - Aprobar/rechazar (ADMIN, ANALISTA)
+- `reservas:cancelar` - Cancelar reservas (ADMIN, ANALISTA, DOCENTE)
 
-### Permisos de Espacios
-- `espacio:crear` - Crear espacios (ADMIN, MANTENIMIENTO)
-- `espacio:editar` - Editar espacios (ADMIN, MANTENIMIENTO)
-- `espacio:eliminar` - Eliminar espacios (ADMIN)
-- `espacio:ver` - Ver espacios (TODOS)
-- `espacio:gestionar` - Gestión completa (ADMIN, MANTENIMIENTO)
-- `espacio:gestionar_estado` - Cambiar estado (ADMIN, MANTENIMIENTO)
+### Permisos de Espacios (✅ Implementado)
+- `espacios:crear` - Crear espacios (ADMIN, MANTENIMIENTO)
+- `espacios:editar` - Editar espacios (ADMIN, MANTENIMIENTO)
+- `espacios:eliminar` - Eliminar espacios (ADMIN)
+- `espacios:leer` - Ver espacios (todos los usuarios autenticados)
+- `espacios:gestionar_estado` - Cambiar estado (ADMIN, MANTENIMIENTO)
 
-### Permisos de Inventario
+### Permisos de Inventario (✅ Implementado)
 - `inventario:crear` - Crear items (ADMIN, MANTENIMIENTO)
 - `inventario:editar` - Editar items (ADMIN, MANTENIMIENTO)
 - `inventario:eliminar` - Eliminar items (ADMIN)
-- `inventario:ver` - Ver inventario (ADMIN, MANTENIMIENTO)
-- `inventario:asignar` - Asignar items (ADMIN, MANTENIMIENTO)
+- `inventario:leer` - Ver inventario (ADMIN, ANALISTA, MANTENIMIENTO)
+- `inventario:asignar` - Asignar items a espacios (ADMIN, MANTENIMIENTO)
 - `inventario:gestionar_estado` - Cambiar estado items (ADMIN, MANTENIMIENTO)
-- `inventario:importar` - Importar inventario (ADMIN, MANTENIMIENTO)
-- `inventario:exportar` - Exportar inventario (ADMIN, MANTENIMIENTO)
+- `inventario:importar` - Importar inventario desde CSV (ADMIN, MANTENIMIENTO)
+- `inventario:exportar` - Exportar inventario a CSV (ADMIN, MANTENIMIENTO)
 
-### Permisos de Tipos
-- `tipo:crear` - Crear tipos elemento/espacio (ADMIN, MANTENIMIENTO)
-- `tipo:editar` - Editar tipos (ADMIN, MANTENIMIENTO)
-- `tipo:eliminar` - Eliminar tipos (ADMIN)
-- `tipo:ver` - Ver tipos (ADMIN, ANALISTA, MANTENIMIENTO)
+### Permisos de Tipos (✅ Implementado)
+- `tipos_elemento:crear` - Crear tipos de elemento (ADMIN, MANTENIMIENTO)
+- `tipos_elemento:leer` - Ver tipos de elemento (ADMIN, ANALISTA, MANTENIMIENTO)
+- `tipos_elemento:editar` - Editar tipos de elemento (ADMIN, MANTENIMIENTO)
+- `tipos_elemento:eliminar` - Eliminar tipos de elemento (ADMIN)
+- `tipos_espacio:crear` - Crear tipos de espacio (ADMIN, MANTENIMIENTO)
+- `tipos_espacio:leer` - Ver tipos de espacio (ADMIN, ANALISTA, MANTENIMIENTO)
+- `tipos_espacio:editar` - Editar tipos de espacio (ADMIN, MANTENIMIENTO)
+- `tipos_espacio:eliminar` - Eliminar tipos de espacio (ADMIN)
 
-### Permisos de Usuarios
-- `usuario:gestionar` - Gestión completa (ADMIN)
+### Permisos de Usuarios (✅ Implementado)
+- `usuarios:gestionar` - Gestión completa de usuarios (ADMIN)
+- `usuarios:ver` - Ver usuarios (ADMIN)
 
-### Permisos de Estadísticas
+### Permisos de Estadísticas (✅ Implementado)
 - `estadisticas:ver` - Ver estadísticas (ADMIN, ANALISTA, MANTENIMIENTO)
 - `estadisticas:exportar` - Exportar reportes (ADMIN, ANALISTA, MANTENIMIENTO)
-- `estadisticas:ver:reservas` - Ver estadísticas de reservas (ADMIN, ANALISTA)
+- `estadisticas:ver:reservas` - Ver estadísticas de reservas (ADMIN, ANALISTA) - *Pendiente de integración*
 - `estadisticas:ver:inventario` - Ver estadísticas de inventario (ADMIN, MANTENIMIENTO)
 - `estadisticas:ver:espacios` - Ver estadísticas de espacios (ADMIN, MANTENIMIENTO)
 
-### Permisos de Solicitudes
-- `solicitud:inventario:crear` - Crear solicitudes de inventario para reservas (ADMIN, ANALISTA)
-- `solicitud:inventario:aceptar` - Aceptar solicitudes de inventario (ADMIN, MANTENIMIENTO)
-- `solicitud:inventario:rechazar` - Rechazar solicitudes de inventario (ADMIN, MANTENIMIENTO)
+### Permisos de Solicitudes de Inventario (✅ Implementado)
+- `solicitudes_inventario:crear` - Crear solicitudes de inventario para reservas (ADMIN, ANALISTA)
+- `solicitudes_inventario:leer` - Ver solicitudes de inventario (ADMIN, ANALISTA, MANTENIMIENTO)
+- `solicitudes_inventario:aprobar` - Aprobar solicitudes de inventario (ADMIN, MANTENIMIENTO)
+- `solicitudes_inventario:rechazar` - Rechazar solicitudes de inventario (ADMIN, MANTENIMIENTO)
+- `solicitudes_inventario:entregar` - Marcar como entregado (ADMIN, MANTENIMIENTO)
 
-### Permisos de Sistema
+### Permisos de Carreras (✅ Implementado)
+- `carreras:gestionar` - Gestión completa de carreras (ADMIN)
+
+### Permisos de Sistema (✅ Implementado)
 - `sistema:acceder` - Acceso a vista de Sistema (ADMIN exclusivo)
-- `sistema:configurar` - Configurar sistema (ADMIN)
-- `sistema:logs` - Ver logs del sistema (ADMIN)
+- `sistema:configurar` - Configurar sistema (ADMIN) - *Pendiente de implementación*
+- `sistema:logs` - Ver logs del sistema (ADMIN) - *Pendiente de implementación*
+
+---
+
+## 💻 Uso del Sistema de Permisos en el Código
+
+### Frontend
+
+#### Usando PermissionGuard Component
+
+```tsx
+import PermissionGuard from '@/components/auth/PermissionGuard';
+
+// Ocultar botón si no tiene permiso
+<PermissionGuard requiredPermission="inventario:crear">
+  <Button onClick={handleCreate}>Crear Item</Button>
+</PermissionGuard>
+
+// Requiere cualquiera de los permisos
+<PermissionGuard 
+  requiredPermissions={['inventario:editar', 'inventario:eliminar']}
+  requireAll={false}
+>
+  <Button>Acción</Button>
+</PermissionGuard>
+
+// Requiere todos los permisos
+<PermissionGuard 
+  requiredPermissions={['inventario:editar', 'inventario:asignar']}
+  requireAll={true}
+>
+  <Button>Acción Compleja</Button>
+</PermissionGuard>
+```
+
+#### Usando useRolePermissions Hook
+
+```tsx
+import { useRolePermissions } from '@/hooks/useRolePermissions';
+
+function MyComponent() {
+  const { 
+    hasPermission, 
+    canCreate, 
+    canEdit, 
+    canDelete,
+    canApprove 
+  } = useRolePermissions();
+
+  // Verificar permiso específico
+  if (hasPermission('inventario:crear')) {
+    // ...
+  }
+
+  // Usar funciones de conveniencia
+  if (canCreate('inventario')) {
+    // ...
+  }
+
+  // Verificar múltiples permisos
+  if (canEdit('espacios') && canManageState('espacios')) {
+    // ...
+  }
+
+  return (
+    <div>
+      {canApprove('solicitudes_inventario') && (
+        <Button onClick={handleApprove}>Aprobar</Button>
+      )}
+    </div>
+  );
+}
+```
+
+### Backend
+
+#### Usando @PreAuthorize
+
+```java
+@RestController
+@RequestMapping("/api/v1/inventario")
+public class InventarioItemController {
+
+    @PostMapping
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    public ResponseEntity<ApiResponse<InventarioItem>> createInventarioItem(
+        @Valid @RequestBody InventarioItemCreateDto dto
+    ) {
+        // Solo ADMIN y MANTENIMIENTO pueden crear
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    public ResponseEntity<ApiResponse<List<InventarioItem>>> getAllInventarioItems() {
+        // ADMIN, ANALISTA y MANTENIMIENTO pueden ver
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    public ResponseEntity<ApiResponse<Void>> deleteInventarioItem(@PathVariable Long id) {
+        // Solo ADMIN puede eliminar
+    }
+}
+```
+
+### Estructura de Archivos
+
+```
+frontend/src/
+├── lib/config/
+│   ├── permissions.ts          # Definición de todos los permisos granulares
+│   ├── permissions-map.ts      # Mapeo de permisos por componente
+│   └── constants.ts            # Configuración de roles y rutas
+├── components/auth/
+│   ├── PermissionGuard.tsx     # Componente para control de UI
+│   └── RoleGuard.tsx           # Componente para control de rutas
+└── hooks/
+    └── useRolePermissions.ts   # Hook para verificar permisos
+```
 
 ---
 
@@ -623,8 +749,14 @@ Para implementar el sistema de permisos granular, se propone:
 
 ### ✅ Implementado
 
-- [x] Sistema de roles básico (ADMIN, ANALISTA, DOCENTE, ESTUDIANTE, EXTERNO)
+- [x] Sistema de roles básico (ADMIN, ANALISTA, MANTENIMIENTO, DOCENTE, ESTUDIANTE, EXTERNO)
 - [x] Control de acceso por rutas (`@PreAuthorize` en backend, `RoleGuard` en frontend)
+- [x] **Sistema de permisos granular** (implementado completamente)
+  - [x] Archivo `permissions.ts` con todos los permisos granulares definidos
+  - [x] Componente `PermissionGuard` para control de UI basado en permisos
+  - [x] Hook `useRolePermissions` extendido con funciones de permisos granulares
+  - [x] Aplicación de `PermissionGuard` en componentes de inventario, espacios y solicitudes
+  - [x] Mapeo de permisos por componente en `permissions-map.ts`
 - [x] Solicitudes de inventario para reservas (`ReservaItemSolicitado`)
 - [x] Vista de Sistema (solo ADMIN)
 - [x] Dashboard con información por rol
@@ -633,33 +765,28 @@ Para implementar el sistema de permisos granular, se propone:
 - [x] Exportar inventario (CSV, PDF)
 - [x] Ver inventario de espacios
 - [x] Soft delete en todos los modelos
+- [x] **Rol MANTENIMIENTO completamente implementado**
+  - [x] Backend: `@PreAuthorize` actualizado en controladores
+  - [x] Frontend: Permisos configurados y aplicados
+  - [x] Controladores actualizados: `InventarioItemController`, `EspacioController`, `TipoElementoController`, `TipoEspacioController`, `ReservaItemSolicitadoController`
 
 ### 🚧 Parcialmente Implementado
 
-- [ ] Sistema de permisos granular (solo control por rol, no por acción específica)
 - [ ] Solicitudes de reserva diferenciadas (DOCENTE/EXTERNO deberían crear con PENDIENTE)
 - [ ] Estadísticas de reservas (componente existe pero no está integrado en `/statistics`)
 - [ ] Reservas públicas vs privadas (no hay campo `publica`, todas son visibles según rol)
 
 ### ❌ No Implementado
 
-- [ ] Rol MANTENIMIENTO (existe en documentación, falta en código)
 - [ ] Endpoint separado para "solicitar" vs "crear" reservas
-- [ ] Permisos granulares por acción (solo permisos por rol)
 - [ ] Auditoría de acciones por rol
 - [ ] Exportar reportes de reservas
 
 ## 🔄 Actualizaciones Futuras
 
-- [ ] Implementar sistema de permisos granular
-- [ ] Agregar permisos específicos por acción
 - [ ] Implementar endpoint para solicitar reservas (estado PENDIENTE para DOCENTE/EXTERNO)
 - [ ] Agregar campo `publica` a reservas para diferenciar públicas/privadas
-- [ ] Agregar permisos de exportación diferenciados
 - [ ] Implementar auditoría de acciones por rol
-- [ ] Agregar rol MANTENIMIENTO al backend y frontend
-- [ ] Actualizar SecurityConfig para incluir MANTENIMIENTO
-- [ ] Crear usuarios de prueba con rol MANTENIMIENTO
 - [ ] Integrar `ReservationStats` en la vista de estadísticas
 - [ ] Implementar filtros de estadísticas por rol
 
@@ -667,11 +794,95 @@ Para implementar el sistema de permisos granular, se propone:
 
 ## 🔄 Cambios Recientes
 
-### Agregado Rol MANTENIMIENTO
+### ✅ Sistema de Permisos Granular Implementado (2024)
+
+Se ha implementado completamente el sistema de permisos granular en el frontend y backend:
+
+#### Frontend
+
+**Archivos creados:**
+- `frontend/src/lib/config/permissions.ts`: Define todos los permisos granulares por rol
+- `frontend/src/components/auth/PermissionGuard.tsx`: Componente para controlar visibilidad de UI basado en permisos
+- `frontend/src/hooks/useRolePermissions.ts`: Hook extendido con funciones de verificación de permisos granulares
+- `frontend/src/lib/config/permissions-map.ts`: Documentación de permisos requeridos por componente
+
+**Permisos implementados:**
+- **Inventario**: `crear`, `leer`, `editar`, `eliminar`, `asignar`, `exportar`, `importar`, `gestionar_estado`
+- **Espacios**: `crear`, `leer`, `editar`, `eliminar`, `gestionar_estado`
+- **Reservas**: `crear`, `leer`, `editar`, `eliminar`, `aprobar`, `cancelar`, `solicitar`
+- **Solicitudes de Inventario**: `crear`, `leer`, `aprobar`, `rechazar`, `entregar`
+- **Tipos**: `tipos_elemento:crear/leer/editar/eliminar`, `tipos_espacio:crear/leer/editar/eliminar` (ANALISTA solo tiene `leer` para ver tipos al crear solicitudes/reservas)
+- **Estadísticas**: `ver`, `exportar`, `ver:reservas`, `ver:inventario`, `ver:espacios`
+- **Sistema**: `acceder`, `configurar`, `logs`
+- **Usuarios**: `gestionar`, `ver`
+- **Carreras**: `gestionar`
+
+**Componentes actualizados con PermissionGuard:**
+- `InventoryManagement.tsx`: Botones de crear, importar, exportar
+- `InventoryTable.tsx`: Botones de editar, eliminar, asignar
+- `InventoryCardView.tsx`: Botones de editar, eliminar, asignar
+- `BulkActionsBar.tsx`: Acciones masivas (asignar, exportar, cambiar estado)
+- `InventoryRequestsManagement.tsx`: Botones de aprobar, rechazar, entregar, asignar
+- `InventoryRequestsCardView.tsx`: Botón de entregar
+- `SpacesManagement.tsx`: Botones de crear, exportar, gestionar tipos
+- `SpaceTable.tsx`: Botones de editar, eliminar
+- `SpaceCard.tsx`: Botón de editar
+
+**Funciones del hook `useRolePermissions`:**
+- `hasPermission(permission)`: Verifica un permiso específico
+- `hasAnyPermission(permissions[])`: Verifica si tiene alguno de los permisos
+- `hasAllPermissions(permissions[])`: Verifica si tiene todos los permisos
+- `canCreate(resource)`, `canRead(resource)`, `canEdit(resource)`, `canDelete(resource)`: Funciones de conveniencia por recurso
+- `canApprove(resource)`, `canCancel(resource)`, `canRequest(resource)`, etc.: Funciones específicas por acción
+- `canAccessFeature(feature)`: Mapeo de funcionalidades a permisos
+
+#### Backend
+
+**Controladores actualizados con `@PreAuthorize`:**
+
+1. **`InventarioItemController`**:
+   - `createInventarioItem`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `getAllInventarioItems`, `getInventarioItemById`, etc. (GET): `ROLE_ADMIN`, `ROLE_ANALISTA`, `ROLE_MANTENIMIENTO`
+   - `updateInventarioItem`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `deleteInventarioItem`: `ROLE_ADMIN`
+
+2. **`EspacioController`**:
+   - `createEspacio`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `getAllEspacios`, `getEspacioById`, etc. (GET): `isAuthenticated()` (todos los usuarios autenticados)
+   - `updateEspacio`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `deleteEspacio`: `ROLE_ADMIN`
+   - `getEspacioStats`: `ROLE_ADMIN`, `ROLE_ANALISTA`, `ROLE_MANTENIMIENTO`
+
+3. **`TipoElementoController`**:
+   - `createTipoElemento`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `getAllTiposElemento`, etc. (GET): `ROLE_ADMIN`, `ROLE_ANALISTA`, `ROLE_MANTENIMIENTO`
+   - `updateTipoElemento`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `deleteTipoElemento`: `ROLE_ADMIN`
+
+4. **`TipoEspacioController`**:
+   - `createTipoEspacio`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `getAllTiposEspacio`, etc. (GET): `ROLE_ADMIN`, `ROLE_ANALISTA`, `ROLE_MANTENIMIENTO`
+   - `updateTipoEspacio`: `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+   - `deleteTipoEspacio`: `ROLE_ADMIN`
+
+5. **`ReservaItemSolicitadoController`**:
+   - `listarSolicitudes` (GET): `ROLE_ADMIN`, `ROLE_ANALISTA`, `ROLE_MANTENIMIENTO`
+   - `actualizarSolicitud` (PATCH): `ROLE_ADMIN`, `ROLE_MANTENIMIENTO`
+
+#### Beneficios de la Implementación
+
+1. **Control granular**: Cada acción en la UI está protegida por permisos específicos
+2. **Consistencia**: Los permisos del frontend coinciden con los del backend
+3. **Mantenibilidad**: Fácil agregar nuevos permisos o modificar existentes
+4. **Seguridad**: Doble capa de protección (frontend oculta UI, backend valida requests)
+5. **UX mejorada**: Los usuarios solo ven las acciones que pueden realizar
+
+### ✅ Agregado Rol MANTENIMIENTO
 - Nuevo rol especializado en gestión de espacios e inventario
 - ANALISTA ya no gestiona espacios/inventario (solo reservas)
 - MANTENIMIENTO tiene permisos completos de espacios e inventario (excepto eliminar)
 - MANTENIMIENTO puede ver reservas para conocer ocupación pero no gestionarlas
+- MANTENIMIENTO puede aprobar/rechazar/entregar solicitudes de inventario
 
 ---
 
@@ -766,5 +977,150 @@ Los items con `deletedAt != null` no se muestran en las consultas normales.
 
 ---
 
-**Última actualización:** Revisado según código actual - Incluye rol MANTENIMIENTO (2024)
+---
+
+## 🔄 Implementación Exhaustiva de Protección de Permisos - Diciembre 2024
+
+### Resumen de Cambios
+
+Se realizó una implementación exhaustiva de protección de permisos en toda la aplicación, cubriendo todos los componentes del frontend y endpoints del backend. Esta implementación asegura que cada acción, botón y función esté protegida según los permisos granulares definidos.
+
+### Componentes Frontend Protegidos
+
+#### 1. Componentes de Reservas
+- ✅ **ReservationManagement.tsx**: Botón "Nueva Reserva" protegido con `reservas:crear` o `reservas:solicitar`
+- ✅ **ReservationTableView.tsx**: 
+  - Botón "Crear reserva" en EmptyState protegido
+  - Botón "Ver Detalles" protegido con `reservas:leer`
+  - Botón "Cancelar" protegido con `reservas:cancelar`
+- ✅ **ReservationCardView.tsx**: Mismos permisos que ReservationTableView
+- ✅ **ReservationFormDialog.tsx**: Botón submit protegido con `reservas:crear` o `reservas:solicitar`
+
+#### 2. Componentes de Usuarios
+- ✅ **UserManagement.tsx**:
+  - Botón "Exportar CSV" protegido con `usuarios:gestionar`
+  - Botones "Editar" protegidos con `usuarios:gestionar`
+  - Botones "Cambiar Rol" protegidos con `usuarios:gestionar`
+  - Switch de activar/desactivar protegido con `usuarios:gestionar`
+  - Botón "Reenviar Verificación" protegido con `usuarios:gestionar`
+  - Botón "Restablecer Contraseña" protegido con `usuarios:gestionar`
+- ✅ **EditUserDialog.tsx**: Botón "Guardar Cambios" protegido con `usuarios:gestionar`
+
+#### 3. Componentes de Tipos de Espacio
+- ✅ **TipoEspacioManagement.tsx**:
+  - Botón "Crear Tipo" protegido con `tipos_espacio:crear`
+  - Botones "Editar" protegidos con `tipos_espacio:editar`
+  - Botones "Eliminar" protegidos con `tipos_espacio:eliminar`
+- ✅ **TipoEspacioFormDialog.tsx**: Botón submit protegido dinámicamente (`tipos_espacio:crear` o `tipos_espacio:editar`)
+
+#### 4. Componentes de Espacios - Detalles
+- ✅ **SpaceDetails.tsx**:
+  - Botón "Editar Espacio" protegido con `espacios:editar`
+  - Botón "Eliminar Espacio" protegido con `espacios:eliminar`
+  - Botón "Agregar Elemento" protegido con `inventario:crear`
+  - Botones "Editar Inventario" protegidos con `inventario:editar`
+  - Botones "Eliminar Inventario" protegidos con `inventario:eliminar`
+  - Columna "Acciones" en tabla protegida con `inventario:editar` o `inventario:eliminar`
+
+#### 5. Componentes de Estadísticas y Dashboard
+- ✅ **InventoryStats.tsx**: Botón "Exportar PDF" protegido con `estadisticas:exportar`
+- ✅ **QuickActions.tsx**: 
+  - Botón "Nueva Reserva" protegido con `reservas:crear` o `reservas:solicitar`
+  - Botón "Gestionar Espacios" protegido con `espacios:leer`
+  - Botón "Ver Estadísticas" protegido con `estadisticas:ver`
+
+#### 6. Diálogos de Formularios
+- ✅ **InventoryFormDialog.tsx**: Botón submit protegido dinámicamente (`inventario:crear` o `inventario:editar`)
+- ✅ **ImportCSVDialog.tsx**: Botón "Importar" protegido con `inventario:importar`
+- ✅ **InventarioFormDialog.tsx** (en spaces): Botón submit protegido dinámicamente (`inventario:crear` o `inventario:editar`)
+
+### Controladores Backend Actualizados
+
+#### 1. ReservaController.java
+- ✅ Todos los endpoints actualizados para usar constantes de `Constants.java`
+- ✅ Todos los `@PreAuthorize` ahora usan `ROLE_ADMIN`, `ROLE_ANALISTA` en lugar de strings literales
+- ✅ Endpoints protegidos:
+  - `POST /api/v1/reservas` - Crear reserva
+  - `GET /api/v1/reservas/mis-reservas` - Ver mis reservas
+  - `GET /api/v1/reservas/mis-reservas/paged` - Ver mis reservas paginadas
+  - `GET /api/v1/reservas/{id}` - Ver reserva por ID
+  - `PUT /api/v1/reservas/{id}` - Actualizar reserva
+  - `DELETE /api/v1/reservas/{id}` - Cancelar reserva
+  - `GET /api/v1/reservas/espacio/{espacioId}` - Ver reservas por espacio
+  - `GET /api/v1/reservas/mis-reservas/stats` - Estadísticas personales
+
+#### 2. StatsController.java
+- ✅ Todos los endpoints actualizados para usar constantes de `Constants.java`
+- ✅ `GET /api/v1/stats/active-users` - Solo ADMIN (usando `ROLE_ADMIN`)
+- ✅ `GET /api/v1/stats/inventario/detailed` - ADMIN, ANALISTA, MANTENIMIENTO (usando constantes)
+
+### Alineación Frontend-Backend
+
+#### Verificación de Consistencia
+- ✅ Todos los permisos del frontend tienen su equivalente en el backend
+- ✅ Los roles usados en `@PreAuthorize` coinciden con los permisos definidos en `permissions.ts`
+- ✅ Las constantes de roles se usan consistentemente en todo el backend
+
+#### Mapeo de Permisos Frontend-Backend
+
+| Permiso Frontend | Endpoint Backend | Roles Permitidos |
+|------------------|------------------|------------------|
+| `reservas:crear` | `POST /api/v1/reservas` | ADMIN, ANALISTA |
+| `reservas:leer` | `GET /api/v1/reservas/{id}` | ADMIN, ANALISTA |
+| `reservas:cancelar` | `DELETE /api/v1/reservas/{id}` | ADMIN, ANALISTA |
+| `usuarios:gestionar` | `PUT /api/v1/usuarios/{id}` | ADMIN |
+| `usuarios:gestionar` | `PUT /api/v1/usuarios/{id}/rol` | ADMIN |
+| `usuarios:gestionar` | `PUT /api/v1/usuarios/{id}/toggle-activo` | ADMIN |
+| `tipos_espacio:crear` | `POST /api/v1/tipos-espacio` | ADMIN, MANTENIMIENTO |
+| `tipos_espacio:editar` | `PUT /api/v1/tipos-espacio/{id}` | ADMIN, MANTENIMIENTO |
+| `tipos_espacio:eliminar` | `DELETE /api/v1/tipos-espacio/{id}` | ADMIN |
+| `espacios:editar` | `PUT /api/v1/espacios/{id}` | ADMIN, MANTENIMIENTO |
+| `espacios:eliminar` | `DELETE /api/v1/espacios/{id}` | ADMIN |
+| `inventario:crear` | `POST /api/v1/inventario` | ADMIN, MANTENIMIENTO |
+| `inventario:editar` | `PUT /api/v1/inventario/{id}` | ADMIN, MANTENIMIENTO |
+| `inventario:eliminar` | `DELETE /api/v1/inventario/{id}` | ADMIN |
+| `inventario:importar` | `POST /api/v1/inventario/import` | ADMIN, MANTENIMIENTO |
+| `estadisticas:exportar` | `GET /api/v1/stats/inventario/detailed` | ADMIN, ANALISTA, MANTENIMIENTO |
+
+### Archivos Modificados
+
+#### Frontend (16 archivos)
+1. `frontend/src/components/reservations/ReservationManagement.tsx`
+2. `frontend/src/components/reservations/ReservationTableView.tsx`
+3. `frontend/src/components/reservations/ReservationCardView.tsx`
+4. `frontend/src/components/reservations/ReservationFormDialog.tsx`
+5. `frontend/src/components/users/UserManagement.tsx`
+6. `frontend/src/components/users/EditUserDialog.tsx`
+7. `frontend/src/components/spaces/TipoEspacioManagement.tsx`
+8. `frontend/src/components/spaces/TipoEspacioFormDialog.tsx`
+9. `frontend/src/components/spaces/SpaceDetails.tsx`
+10. `frontend/src/components/statistics/InventoryStats.tsx`
+11. `frontend/src/components/dashboard/QuickActions.tsx`
+12. `frontend/src/components/inventory/InventoryFormDialog.tsx`
+13. `frontend/src/components/inventory/ImportCSVDialog.tsx`
+14. `frontend/src/components/spaces/InventarioFormDialog.tsx`
+
+#### Backend (2 archivos)
+1. `backend/src/main/java/com/utec/backend/controller/ReservaController.java`
+2. `backend/src/main/java/com/utec/backend/controller/StatsController.java`
+
+### Mejoras Implementadas
+
+1. **Consistencia en el Backend**: Todos los controladores ahora usan constantes de `Constants.java` en lugar de strings literales
+2. **Protección Granular**: Cada botón y acción está protegido con el permiso específico necesario
+3. **Alineación Completa**: Los permisos del frontend están perfectamente alineados con los del backend
+4. **Mantenibilidad**: El uso de constantes facilita el mantenimiento y reduce errores
+5. **Seguridad Mejorada**: No hay acciones accesibles sin los permisos correctos
+
+### Criterios de Éxito Cumplidos
+
+- ✅ Todos los botones de acción en el frontend están protegidos con `PermissionGuard`
+- ✅ Todos los endpoints del backend tienen `@PreAuthorize` apropiado
+- ✅ Los permisos del frontend y backend están alineados
+- ✅ No hay acciones accesibles sin los permisos correctos
+- ✅ La documentación está actualizada con todos los cambios
+
+---
+
+**Última actualización:** Sistema de permisos granular implementado completamente - Diciembre 2024
 

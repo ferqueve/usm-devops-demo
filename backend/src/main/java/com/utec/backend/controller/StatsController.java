@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import static com.utec.backend.security.Constants.*;
+
 /**
  * Controller para estadísticas del sistema
  */
@@ -35,7 +37,7 @@ public class StatsController {
      */
     @Operation(summary = "Obtener usuarios activos", description = "Obtener lista de usuarios actualmente conectados (solo ADMIN)")
     @GetMapping("/active-users")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ActiveUsersStatsDTO> getActiveUsers() {
         log.info("Solicitando estadísticas de usuarios activos");
         ActiveUsersStatsDTO stats = activityTrackingService.getActiveUsers();
@@ -48,7 +50,7 @@ public class StatsController {
     @Operation(summary = "Obtener estadísticas detalladas de inventario", 
                description = "Obtiene todas las estadísticas posibles del inventario con filtros opcionales")
     @GetMapping("/inventario/detailed")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDetailedInventarioStats(
             @RequestParam(required = false) Long espacioId,
             @RequestParam(required = false) Long tipoElementoId,

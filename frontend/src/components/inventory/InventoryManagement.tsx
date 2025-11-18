@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
@@ -58,6 +58,7 @@ import DeleteInventoryDialog from './DeleteInventoryDialog';
 import AssignSpaceDialog from './AssignSpaceDialog';
 import ImportCSVDialog from './ImportCSVDialog';
 import BulkActionsBar from './BulkActionsBar';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 type ViewMode = 'table' | 'cards';
 
@@ -138,20 +139,21 @@ export default function InventoryManagement() {
     }
   };
 
-  // Recargar cuando cambian filtros o página
-  useEffect(() => {
-    fetchItems(true); // true para usar sortConfig
-  }, [page, filters]);
+  // Mapear columnas del frontend a campos del backend
+  // Para el endpoint /paged Spring usa estos nombres de campos de la entidad
+  // Para el endpoint /filter el backend convierte estos a nombres de DTO
+  const mapFrontendColumnToBackend = (frontendColumn: string): string => {
+    const mapping: Record<string, string> = {
+      'id': 'id',
+      'tipo': 'tipoElemento.nombre',  // Para ordenar por tipo, necesitamos la relación
+      'cantidad': 'cantidad',
+      'estado': 'estado',
+      'espacio': 'espacio.nombre'  // Para ordenar por espacio
+    };
+    return mapping[frontendColumn] || frontendColumn;
+  };
 
-  // Solo recargar cuando cambia SORT (sin page ni filters), sin mostrar loading
-  useEffect(() => {
-    // Solo ejecutar si ya hay un sortConfig activo (no en la primera carga)
-    if (sortConfig.column) {
-      fetchItems(false); // false para NO mostrar loading spinner
-    }
-  }, [sortConfig.column, sortConfig.direction]);
-
-  const fetchItems = async (showLoading: boolean = true) => {
+  const fetchItems = useCallback(async (showLoading: boolean = true) => {
     try {
       if (showLoading) {
       setLoading(true);
@@ -171,7 +173,7 @@ export default function InventoryManagement() {
         sortConfig.direction
       );
       
-        const pagedData: any = response.data || response;
+        const pagedData = response.data;
         
         if (pagedData?.content) {
           setItems(pagedData.content);
@@ -181,32 +183,32 @@ export default function InventoryManagement() {
         setTotalPages(0);
         setTotalElements(0);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (showLoading) {
-      toast.error('Error al cargar inventario', {
-        description: error.message || 'No se pudo cargar el inventario'
-      });
+        const errorMessage = error instanceof Error ? error.message : 'No se pudo cargar el inventario';
+        toast.error('Error al cargar inventario', {
+          description: errorMessage
+        });
       }
     } finally {
       if (showLoading) {
       setLoading(false);
       }
     }
-  };
+  }, [page, pageSize, filters, sortConfig]);
 
-  // Mapear columnas del frontend a campos del backend
-  // Para el endpoint /paged Spring usa estos nombres de campos de la entidad
-  // Para el endpoint /filter el backend convierte estos a nombres de DTO
-  const mapFrontendColumnToBackend = (frontendColumn: string): string => {
-    const mapping: Record<string, string> = {
-      'id': 'id',
-      'tipo': 'tipoElemento.nombre',  // Para ordenar por tipo, necesitamos la relación
-      'cantidad': 'cantidad',
-      'estado': 'estado',
-      'espacio': 'espacio.nombre'  // Para ordenar por espacio
-    };
-    return mapping[frontendColumn] || frontendColumn;
-  };
+  // Recargar cuando cambian filtros o página
+  useEffect(() => {
+    fetchItems(true); // true para usar sortConfig
+  }, [fetchItems, page, filters]);
+
+  // Solo recargar cuando cambia SORT (sin page ni filters), sin mostrar loading
+  useEffect(() => {
+    // Solo ejecutar si ya hay un sortConfig activo (no en la primera carga)
+    if (sortConfig.column) {
+      fetchItems(false); // false para NO mostrar loading spinner
+    }
+  }, [fetchItems, sortConfig.column, sortConfig.direction]);
 
   const fetchEspacios = async () => {
     try {
@@ -230,12 +232,13 @@ export default function InventoryManagement() {
     }
   };
 
-  const handleFilterChange = (key: keyof InventarioFilters, value: any) => {
+  const handleFilterChange = (key: keyof InventarioFilters, value: string | number | boolean | undefined) => {
     setPage(0);
     if (value === undefined) {
       setFilters(prev => {
-        const { [key]: removed, ...rest } = prev;
-        return rest;
+        const newFilters = { ...prev };
+        delete newFilters[key];
+        return newFilters;
       });
     } else {
       setFilters(prev => ({ ...prev, [key]: value }));
@@ -318,10 +321,11 @@ export default function InventoryManagement() {
       
       exportInventarioToCSV(allItems);
       toast.success(`${allItems.length} items exportados exitosamente`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al exportar:', error);
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo exportar el inventario';
       toast.error('Error al exportar inventario', {
-        description: error.message || 'No se pudo exportar el inventario'
+        description: errorMessage
       });
     }
   };
@@ -395,9 +399,10 @@ export default function InventoryManagement() {
       setPendingBulkState(null);
       await fetchStatistics();
       await fetchItems(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron actualizar todos los items';
       toast.error('Error al actualizar estados', {
-        description: error.message || 'No se pudieron actualizar todos los items'
+        description: errorMessage
       });
     } finally {
       setBulkProcessing(false);
@@ -434,9 +439,10 @@ export default function InventoryManagement() {
       setSelectedItems(new Set());
       await fetchItems(false);
       await fetchStatistics();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron desasignar todos los items';
       toast.error('Error al desasignar items', {
-        description: error.message || 'No se pudieron desasignar todos los items'
+        description: errorMessage
       });
     } finally {
       setBulkProcessing(false);
@@ -451,7 +457,7 @@ export default function InventoryManagement() {
       exportInventarioToCSV(itemsToExport);
       toast.success(`${itemsToExport.length} items exportados exitosamente`);
       setSelectedItems(new Set());
-    } catch (error: any) {
+    } catch {
       toast.error('Error al exportar items');
     }
   };
@@ -489,9 +495,10 @@ export default function InventoryManagement() {
       setBulkEspacio(null);
       await fetchItems(false);
       await fetchStatistics();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudieron asignar todos los items';
       toast.error('Error al asignar items', {
-        description: error.message || 'No se pudieron asignar todos los items'
+        description: errorMessage
       });
     } finally {
       setBulkProcessing(false);
@@ -569,25 +576,29 @@ export default function InventoryManagement() {
             <span className="text-sm text-muted-foreground hidden sm:inline">items</span>
           </div>
           
-          <Button 
-            variant="outline"
-            onClick={() => setImportDialog(true)}
-            className="h-10 flex-1 sm:flex-none"
-          >
-            <Upload className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Importar CSV</span>
-            <span className="sm:hidden">Importar</span>
-          </Button>
+          <PermissionGuard requiredPermission="inventario:importar">
+            <Button 
+              variant="outline"
+              onClick={() => setImportDialog(true)}
+              className="h-10 flex-1 sm:flex-none"
+            >
+              <Upload className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Importar CSV</span>
+              <span className="sm:hidden">Importar</span>
+            </Button>
+          </PermissionGuard>
           
-          <Button 
-            variant="outline"
-            onClick={handleExport}
-            className="h-10 flex-1 sm:flex-none"
-          >
-            <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exportar CSV</span>
-            <span className="sm:hidden">Exportar</span>
-          </Button>
+          <PermissionGuard requiredPermission="inventario:exportar">
+            <Button 
+              variant="outline"
+              onClick={handleExport}
+              className="h-10 flex-1 sm:flex-none"
+            >
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Exportar CSV</span>
+              <span className="sm:hidden">Exportar</span>
+            </Button>
+          </PermissionGuard>
           
           <div 
             onClick={!isRefreshing ? handleRefresh : undefined}
@@ -597,11 +608,13 @@ export default function InventoryManagement() {
             <span className="text-sm font-medium hidden sm:inline">Actualizar</span>
           </div>
           
-          <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
-            <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Agregar Item</span>
-            <span className="sm:hidden">Agregar</span>
-          </Button>
+          <PermissionGuard requiredPermission="inventario:crear">
+            <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Agregar Item</span>
+              <span className="sm:hidden">Agregar</span>
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 
@@ -638,14 +651,18 @@ export default function InventoryManagement() {
                   onSelect={(value) => {
                     setPage(0);
                     if (value === 'sin-asignar') {
-                      const { espacioId, ...restFilters } = filters;
-                      setFilters({ ...restFilters, sinAsignar: true });
+                      const newFilters = { ...filters };
+                      delete newFilters.espacioId;
+                      setFilters({ ...newFilters, sinAsignar: true });
                     } else if (value === 'all') {
-                      const { sinAsignar, espacioId, ...rest } = filters;
-                      setFilters(rest);
+                      const newFilters = { ...filters };
+                      delete newFilters.sinAsignar;
+                      delete newFilters.espacioId;
+                      setFilters(newFilters);
                     } else {
-                      const { sinAsignar, ...restFilters } = filters;
-                      setFilters({ ...restFilters, espacioId: parseInt(value) });
+                      const newFilters = { ...filters };
+                      delete newFilters.sinAsignar;
+                      setFilters({ ...newFilters, espacioId: parseInt(value) });
                     }
                   }}
                 />

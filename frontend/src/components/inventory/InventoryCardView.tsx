@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { InventarioItem } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface InventoryCardViewProps {
   items: InventarioItem[];
@@ -106,15 +107,17 @@ export default function InventoryCardView({
 
               {/* Acciones */}
               <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => onAssign(item)}
-                >
-                  <Package className="h-3 w-3 mr-1" />
-                  {item.espacioId ? 'Reasignar' : 'Asignar'}
-                </Button>
+                <PermissionGuard requiredPermission="inventario:asignar">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => onAssign(item)}
+                  >
+                    <Package className="h-3 w-3 mr-1" />
+                    {item.espacioId ? 'Reasignar' : 'Asignar'}
+                  </Button>
+                </PermissionGuard>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -129,17 +132,21 @@ export default function InventoryCardView({
                         Ver Detalles
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onClick={() => onEdit(item)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Editar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => onDelete(item)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </DropdownMenuItem>
+                    <PermissionGuard requiredPermission="inventario:editar">
+                      <DropdownMenuItem onClick={() => onEdit(item)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar
+                      </DropdownMenuItem>
+                    </PermissionGuard>
+                    <PermissionGuard requiredPermission="inventario:eliminar">
+                      <DropdownMenuItem 
+                        onClick={() => onDelete(item)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </PermissionGuard>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Calendar, Clock, Users, Eye, X, Maximize2, Minimize2, Loader2, LayoutGrid, Table as TableIcon, CalendarDays } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 import {
   Table as UITable,
   TableBody,
@@ -127,7 +128,7 @@ export default function ReservationTableView({
     const pages = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(0, page - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
     
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(0, endPage - maxVisiblePages + 1);
@@ -311,15 +312,17 @@ export default function ReservationTableView({
         )}
         {reservas.length === 0 ? (
           <div className="py-8">
-            <EmptyState
-              icon={Calendar}
-              title="No hay reservas"
-              description="No tienes reservas con los filtros seleccionados"
-              action={{
-                label: 'Crear reserva',
-                onClick: onCreateReserva
-              }}
-            />
+            <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+              <EmptyState
+                icon={Calendar}
+                title="No hay reservas"
+                description="No tienes reservas con los filtros seleccionados"
+                action={{
+                  label: 'Crear reserva',
+                  onClick: onCreateReserva
+                }}
+              />
+            </PermissionGuard>
           </div>
         ) : (
           <div className="rounded-md border">
@@ -409,33 +412,37 @@ export default function ReservationTableView({
                       <TableCell className="py-2 text-right">
                         <div className="flex justify-end gap-2">
                           {/* Botón Ver como icono */}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={() => onViewDetails(reserva)}
-                                className="p-1.5 rounded transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Ver detalles</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          {!esPasada && esFutura && reserva.estado === 'APROBADO' && (
+                          <PermissionGuard requiredPermission="reservas:leer">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  onClick={() => onCancelReserva(reserva)}
-                                  className="p-1.5 rounded transition-colors text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => onViewDetails(reserva)}
+                                  className="p-1.5 rounded transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <Eye className="h-4 w-4" />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Cancelar reserva</p>
+                                <p>Ver detalles</p>
                               </TooltipContent>
                             </Tooltip>
+                          </PermissionGuard>
+                          {!esPasada && esFutura && reserva.estado === 'APROBADO' && (
+                            <PermissionGuard requiredPermission="reservas:cancelar">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => onCancelReserva(reserva)}
+                                    className="p-1.5 rounded transition-colors text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Cancelar reserva</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </PermissionGuard>
                           )}
                         </div>
                       </TableCell>

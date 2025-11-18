@@ -75,6 +75,7 @@ public class DevDataInitializer implements CommandLineRunner {
         createUsuario("estudiante@utec.edu.uy", "Usuario Estudiante", passwordHash, Usuario.RolApp.ESTUDIANTE);
         createUsuario("externo@utec.edu.uy", "Usuario Externo", passwordHash, Usuario.RolApp.EXTERNO);
         createUsuario("admin@utec.edu.uy", "Usuario Admin", passwordHash, Usuario.RolApp.ADMIN);
+        createUsuario("mantenimiento@utec.edu.uy", "Usuario Mantenimiento", passwordHash, Usuario.RolApp.MANTENIMIENTO);
     }
 
     private Usuario createUsuario(String email, String nombre, String passwordHash, Usuario.RolApp rolApp) {

@@ -43,11 +43,13 @@ public class ReservaService {
     
     /**
      * Crear una nueva reserva con manejo robusto de concurrencia
-     * USADO POR: Admin y Analista (auto-aprobadas)
+     * USADO POR: 
+     * - Admin y Analista: crean reservas auto-aprobadas (APROBADO)
+     * - Docente: crea solicitudes pendientes (PENDIENTE)
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
-    public ReservaResponseDto createReserva(ReservaCreateDto createDto, String userEmail) {
-        log.info("Creando reserva para usuario: {}", userEmail);
+    public ReservaResponseDto createReserva(ReservaCreateDto createDto, String userEmail, String userRole) {
+        log.info("Creando reserva para usuario: {} con rol: {}", userEmail, userRole);
         
         // 1. Validar y obtener usuario autenticado
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
@@ -89,42 +91,63 @@ public class ReservaService {
             throw new RuntimeException("La reserva debe tener una duración mínima de 30 minutos");
         }
         
-        // 7. VALIDACIÓN CRÍTICA: Verificar conflictos con LOCK PESIMISTA
-        // Este lock previene race conditions y garantiza atomicidad
-        List<Reserva> conflictos = reservaRepository.findConflictingReservas(
-                createDto.getEspacioId(),
-                createDto.getInicio(),
-                createDto.getFin(),
-                Reserva.EstadoReserva.APROBADO
-        );
+        // 7. Determinar el estado inicial según el rol
+        Reserva.EstadoReserva estadoInicial;
+        boolean esDocente = "DOCENTE".equals(userRole);
         
-        if (!conflictos.isEmpty()) {
-            log.warn("Conflicto de horario detectado. Espacio ocupado en ese rango de tiempo");
-            throw new RuntimeException("El espacio ya está reservado en ese horario. Por favor, seleccione otro horario.");
+        if (esDocente) {
+            estadoInicial = Reserva.EstadoReserva.PENDIENTE;
+            log.info("Docente creando solicitud pendiente");
+        } else {
+            estadoInicial = Reserva.EstadoReserva.APROBADO;
+            log.info("Admin/Analista creando reserva auto-aprobada");
+            
+            // 7.1 VALIDACIÓN CRÍTICA: Verificar conflictos solo para reservas APROBADO
+            // Las solicitudes PENDIENTE no bloquean el espacio
+            List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                    createDto.getEspacioId(),
+                    createDto.getInicio(),
+                    createDto.getFin(),
+                    Reserva.EstadoReserva.APROBADO
+            );
+            
+            if (!conflictos.isEmpty()) {
+                log.warn("Conflicto de horario detectado. Espacio ocupado en ese rango de tiempo");
+                throw new RuntimeException("El espacio ya está reservado en ese horario. Por favor, seleccione otro horario.");
+            }
         }
         
-        // 7. Crear la reserva con estado APROBADO (Admin/Analista)
+        // 8. Crear la reserva con el estado apropiado
         Reserva reserva = new Reserva();
         reserva.setEspacio(espacio);
         reserva.setUsuario(usuario);
         reserva.setCarrera(carrera);
         reserva.setInicio(createDto.getInicio());
         reserva.setFin(createDto.getFin());
-        reserva.setEstado(Reserva.EstadoReserva.APROBADO); // Auto-aprobada
+        reserva.setEstado(estadoInicial);
         
         Reserva savedReserva = reservaRepository.save(reserva);
-        log.info("Reserva creada exitosamente. ID: {}, Espacio: {}, Usuario: {}", 
-                savedReserva.getId(), espacio.getNombre(), usuario.getNombre());
+        log.info("Reserva creada exitosamente. ID: {}, Espacio: {}, Usuario: {}, Estado: {}", 
+                savedReserva.getId(), espacio.getNombre(), usuario.getNombre(), estadoInicial);
         
-        // 8. Crear items solicitados si se proporcionaron
+        // 9. Crear items solicitados si se proporcionaron
         if (createDto.getItemsSolicitados() != null && !createDto.getItemsSolicitados().isEmpty()) {
             reservaItemSolicitadoService.crearSolicitudes(savedReserva.getId(), createDto.getItemsSolicitados());
             log.info("Se crearon {} items solicitados para la reserva {}", 
                     createDto.getItemsSolicitados().size(), savedReserva.getId());
         }
         
-        // 9. Retornar DTO con datos completos (incluyendo items solicitados)
+        // 10. Retornar DTO con datos completos (incluyendo items solicitados)
         return mapToResponseDto(savedReserva);
+    }
+    
+    /**
+     * Sobrecarga del método createReserva para mantener compatibilidad
+     * Si no se proporciona el rol, asume ADMIN/ANALISTA (comportamiento anterior)
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
+    public ReservaResponseDto createReserva(ReservaCreateDto createDto, String userEmail) {
+        return createReserva(createDto, userEmail, "ADMIN"); // Por defecto ADMIN para mantener compatibilidad
     }
     
     /**
@@ -230,6 +253,158 @@ public class ReservaService {
             
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+    
+    /**
+     * Obtener todas las reservas del sistema (sin filtrar por usuario)
+     * Para ANALISTA/ADMIN con paginación y filtros
+     */
+    @Transactional(readOnly = true)
+    public Page<ReservaResponseDto> getAllReservasPaged(
+            Pageable pageable,
+            String estado,
+            Long espacioId,
+            Long carreraId,
+            Long tipoEspacioId,
+            Long usuarioId,
+            LocalDateTime fechaInicio,
+            LocalDateTime fechaFin,
+            String tiempo) {
+        Specification<Reserva> spec = buildSpecificationAll(
+                estado, espacioId, carreraId, tipoEspacioId, usuarioId, fechaInicio, fechaFin, tiempo);
+        
+        Page<Reserva> reservasPage = reservaRepository.findAll(spec, pageable);
+        return reservasPage.map(this::mapToResponseDto);
+    }
+    
+    /**
+     * Construir Specification para filtrar todas las reservas (sin filtrar por usuario por defecto)
+     */
+    private Specification<Reserva> buildSpecificationAll(
+            String estado,
+            Long espacioId,
+            Long carreraId,
+            Long tipoEspacioId,
+            Long usuarioId,
+            LocalDateTime fechaInicio,
+            LocalDateTime fechaFin,
+            String tiempo) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // Filtro opcional por usuario (para ANALISTA filtrar por solicitante)
+            if (usuarioId != null) {
+                predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
+            }
+            
+            // Filtro por estado
+            if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
+                try {
+                    Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
+                    predicates.add(cb.equal(root.get("estado"), estadoEnum));
+                } catch (IllegalArgumentException e) {
+                    // Ignorar si el estado no es válido
+                }
+            }
+            
+            // Filtro por espacio
+            if (espacioId != null) {
+                predicates.add(cb.equal(root.get("espacio").get("id"), espacioId));
+            }
+            
+            // Filtro por tipo de espacio
+            if (tipoEspacioId != null) {
+                predicates.add(cb.equal(root.get("espacio").get("tipoEspacioId"), tipoEspacioId));
+            }
+            
+            // Filtro por carrera
+            if (carreraId != null) {
+                predicates.add(cb.equal(root.get("carrera").get("id"), carreraId));
+            }
+            
+            // Filtro por fecha inicio
+            if (fechaInicio != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("inicio"), fechaInicio));
+            }
+            
+            // Filtro por fecha fin
+            if (fechaFin != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), fechaFin));
+            }
+            
+            // Filtro por tiempo (pasadas/futuras)
+            LocalDateTime ahora = LocalDateTime.now();
+            if ("futuras".equals(tiempo)) {
+                predicates.add(cb.greaterThan(root.get("inicio"), ahora));
+            } else if ("pasadas".equals(tiempo)) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), ahora));
+            }
+            
+            // Ordenar por fecha descendente
+            query.orderBy(cb.desc(root.get("inicio")));
+            
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+    
+    /**
+     * Cambiar el estado de una reserva (aprobar/rechazar)
+     * Solo permite cambiar de PENDIENTE a APROBADO o CANCELADO
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
+    public ReservaResponseDto cambiarEstadoReserva(Long id, String nuevoEstadoStr) {
+        log.info("Cambiando estado de reserva ID: {} a {}", id, nuevoEstadoStr);
+        
+        // Validar que el nuevo estado es válido
+        Reserva.EstadoReserva nuevoEstado;
+        try {
+            nuevoEstado = Reserva.EstadoReserva.valueOf(nuevoEstadoStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Estado inválido: " + nuevoEstadoStr + ". Estados válidos: PENDIENTE, APROBADO, CANCELADO");
+        }
+        
+        // Solo permitir APROBADO o CANCELADO
+        if (nuevoEstado != Reserva.EstadoReserva.APROBADO && nuevoEstado != Reserva.EstadoReserva.CANCELADO) {
+            throw new RuntimeException("Solo se puede cambiar el estado a APROBADO o CANCELADO");
+        }
+        
+        // Obtener la reserva
+        Reserva reserva = reservaRepository.findByIdWithRelations(id);
+        if (reserva == null) {
+            throw new RuntimeException("Reserva no encontrada con ID: " + id);
+        }
+        
+        // Validar que la reserva está en estado PENDIENTE
+        if (reserva.getEstado() != Reserva.EstadoReserva.PENDIENTE) {
+            throw new RuntimeException("Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: " + reserva.getEstado());
+        }
+        
+        // Si se aprueba, validar conflictos con otras reservas APROBADO
+        if (nuevoEstado == Reserva.EstadoReserva.APROBADO) {
+            List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                    reserva.getEspacio().getId(),
+                    reserva.getInicio(),
+                    reserva.getFin(),
+                    Reserva.EstadoReserva.APROBADO
+            );
+            
+            // Excluir la reserva actual de los conflictos
+            conflictos = conflictos.stream()
+                    .filter(c -> !c.getId().equals(reserva.getId()))
+                    .collect(Collectors.toList());
+            
+            if (!conflictos.isEmpty()) {
+                log.warn("Conflicto de horario detectado al aprobar reserva. Espacio ocupado en ese rango de tiempo");
+                throw new RuntimeException("No se puede aprobar la reserva: el espacio ya está reservado en ese horario por otra reserva aprobada.");
+            }
+        }
+        
+        // Cambiar el estado
+        reserva.setEstado(nuevoEstado);
+        Reserva savedReserva = reservaRepository.save(reserva);
+        
+        log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
+        return mapToResponseDto(savedReserva);
     }
     
     /**
@@ -483,6 +658,14 @@ public class ReservaService {
             return crearDtoVacio();
         }
         
+        // Reutilizar método auxiliar para calcular estadísticas
+        return calcularEstadisticasLegacy(reservas);
+    }
+    
+    /**
+     * Método auxiliar para calcular estadísticas a partir de una lista de reservas
+     */
+    private ReservaStatsDto calcularEstadisticasLegacy(List<Reserva> reservas) {
         LocalDateTime now = LocalDateTime.now();
         YearMonth mesActual = YearMonth.now();
         YearMonth proximoMes = mesActual.plusMonths(1);
@@ -721,6 +904,25 @@ public class ReservaService {
                 diferenciaMesAnterior,
                 porcentajeCambioMesAnterior
         );
+    }
+    
+    /**
+     * Obtener estadísticas globales de todas las reservas (para ANALISTA/ADMIN)
+     */
+    @Transactional(readOnly = true)
+    public ReservaStatsDto obtenerEstadisticasGlobales() {
+        log.info("Generando estadísticas globales de reservas");
+        
+        // Obtener todas las reservas
+        List<Reserva> reservas = reservaRepository.findAll();
+        
+        // Si no hay reservas, retornar DTO con valores en 0 o null
+        if (reservas.isEmpty()) {
+            return crearDtoVacio();
+        }
+        
+        // Reutilizar la misma lógica que obtenerEstadisticasPersonales pero con todas las reservas
+        return calcularEstadisticasLegacy(reservas);
     }
     
     /**

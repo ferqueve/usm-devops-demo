@@ -61,7 +61,7 @@ function extractEspacioStatsFromPromise(result: PromiseSettledResult<ApiResponse
     : { totalEspacios: 0, capacidadPromedio: 0 };
 }
 
-function extractUserStatsFromPromise(result: PromiseSettledResult<UserStats>): UserStats | null {
+function extractUserStatsFromPromise(result: PromiseSettledResult<UserStats | null>): UserStats | null {
   return result.status === 'fulfilled' && result.value ? result.value : null;
 }
 
@@ -102,9 +102,69 @@ function calcularEstadisticasEspacios(espacios: Espacio[]) {
 
 export const dashboardApi = {
   // Obtener todas las estadísticas del dashboard
-  async obtenerDatosDashboard(): Promise<DashboardData> {
+  async obtenerDatosDashboard(userRole?: string): Promise<DashboardData> {
     try {
+      // Verificar roles antes de llamar a endpoints
+      const isAdmin = userRole === 'ADMIN';
+      const isDocente = userRole === 'DOCENTE';
+      
+      // DOCENTE solo puede ver sus propias reservas, ANALISTA y ADMIN pueden ver todas
+      const reservasPromise = isDocente
+        ? reservationsApi.obtenerMisReservas()
+        : reservationsApi.obtenerTodasLasReservas();
+      
+      const reservasHoyPromise = isDocente
+        ? reservationsApi.obtenerMisReservas()
+            .then(response => {
+              // Filtrar solo las de hoy desde el cliente
+              const hoy = new Date();
+              hoy.setHours(0, 0, 0, 0);
+              const finHoy = new Date();
+              finHoy.setHours(23, 59, 59, 999);
+              
+              if (response.data) {
+                const reservasHoy = response.data.filter(r => {
+                  const inicio = new Date(r.inicio);
+                  return inicio >= hoy && inicio <= finHoy;
+                });
+                return { ...response, data: reservasHoy };
+              }
+              return response;
+            })
+        : reservationsApi.obtenerTodasLasReservas(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            new Date(new Date().setHours(0, 0, 0, 0)),
+            new Date(new Date().setHours(23, 59, 59, 999))
+          );
+      
+      // Preparar las promesas condicionales
+      const promises: Promise<unknown>[] = [
+        reservasPromise,
+        reservasHoyPromise,
+        espaciosApi.obtenerEspacios(),
+        apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
+      ];
+      
+      // Solo llamar a estos endpoints si el usuario es ADMIN
+      const userStatsPromise = isAdmin 
+        ? usuariosApi.obtenerEstadisticas().catch(() => null)
+        : Promise.resolve(null);
+      
+      const activeUsersPromise = isAdmin
+        ? statsApi.getActiveUsers().catch(() => null)
+        : Promise.resolve(null);
+      
+      promises.push(
+        userStatsPromise,
+        reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
+        activeUsersPromise
+      );
+      
       // Obtener datos en paralelo
+      const results = await Promise.allSettled(promises);
       const [
         todasLasReservas,
         reservasHoy,
@@ -113,22 +173,15 @@ export const dashboardApi = {
         userStatsRes,
         reservaStatsRes,
         activeUsersRes
-      ] = await Promise.allSettled([
-        reservationsApi.obtenerTodasLasReservas(),
-        reservationsApi.obtenerTodasLasReservas(
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          new Date(new Date().setHours(0, 0, 0, 0)),
-          new Date(new Date().setHours(23, 59, 59, 999))
-        ),
-        espaciosApi.obtenerEspacios(),
-        apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
-        usuariosApi.obtenerEstadisticas(),
-        reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
-        statsApi.getActiveUsers().catch(() => null)
-      ]);
+      ] = results as [
+        PromiseSettledResult<ApiResponse<Reserva[]>>,
+        PromiseSettledResult<ApiResponse<Reserva[]>>,
+        PromiseSettledResult<ApiResponse<Espacio[]>>,
+        PromiseSettledResult<ApiResponse<EspacioStats>>,
+        PromiseSettledResult<UserStats | null>,
+        PromiseSettledResult<ApiResponse<ReservaStats> | null>,
+        PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null>
+      ];
 
       const reservas = extractReservasFromPromise(todasLasReservas);
       const reservasHoyData = extractReservasFromPromise(reservasHoy);

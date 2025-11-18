@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.utec.backend.security.Constants.*;
+
 @RestController
 @RequestMapping("/api/v1/espacios")
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class EspacioController {
     private final EspacioService espacioService;
     
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<EspacioResponseDto>> createEspacio(
             @Valid @RequestBody EspacioCreateDto createDto) {
         try {
@@ -42,7 +44,7 @@ public class EspacioController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getAllEspacios() {
         try {
             List<EspacioResponseDto> espacios = espacioService.getAllEspacios();
@@ -54,7 +56,7 @@ public class EspacioController {
     }
     
     @GetMapping("/paged")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PagedResponseDto<EspacioResponseDto>>> getAllEspaciosPaged(Pageable pageable) {
         try {
             Page<EspacioResponseDto> espacios = espacioService.getAllEspaciosPaged(pageable);
@@ -67,7 +69,7 @@ public class EspacioController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<EspacioResponseDto>> getEspacioById(@PathVariable Long id) {
         try {
             EspacioResponseDto espacio = espacioService.getEspacioById(id);
@@ -82,7 +84,7 @@ public class EspacioController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<EspacioResponseDto>> updateEspacio(
             @PathVariable Long id,
             @Valid @RequestBody EspacioUpdateDto updateDto) {
@@ -99,7 +101,7 @@ public class EspacioController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<Void>> deleteEspacio(@PathVariable Long id) {
         try {
             espacioService.deleteEspacio(id);
@@ -114,7 +116,7 @@ public class EspacioController {
     }
     
     @GetMapping("/search")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> searchEspaciosByNombre(
             @RequestParam String nombre) {
         try {
@@ -127,7 +129,7 @@ public class EspacioController {
     }
     
     @GetMapping("/filter")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> filterEspacios(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long tipoEspacioId,
@@ -149,7 +151,7 @@ public class EspacioController {
     }
     
     @GetMapping("/capacidad/{capacidadMinima}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getEspaciosByCapacidadMinima(
             @PathVariable Integer capacidadMinima) {
         try {
@@ -162,7 +164,7 @@ public class EspacioController {
     }
     
     @GetMapping("/disponibles")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getEspaciosDisponibles(
             @RequestParam LocalDateTime inicio,
             @RequestParam LocalDateTime fin) {
@@ -176,7 +178,7 @@ public class EspacioController {
     }
     
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<Object>> getEspacioStats() {
         try {
             Long totalEspacios = espacioService.getTotalEspacios();

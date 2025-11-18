@@ -16,6 +16,7 @@ import type { TipoEspacio } from '@/lib/types/spaces';
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface TipoEspacioFormDialogProps {
   tipoEspacio: TipoEspacio | null;
@@ -92,12 +93,13 @@ export function TipoEspacioFormDialog({
         onSuccess(response.data);
         onOpenChange(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo guardar el tipo de espacio';
       console.error('Error al guardar tipo de espacio:', error);
       toast.error(
         isEditing ? 'Error al actualizar tipo de espacio' : 'Error al crear tipo de espacio',
         {
-          description: error.message || 'No se pudo guardar el tipo de espacio'
+          description: errorMessage
         }
       );
     } finally {
@@ -192,14 +194,16 @@ export function TipoEspacioFormDialog({
             <X className="h-4 w-4 mr-1" />
             Cancelar
           </Button>
-          <Button type="button" onClick={handleSubmit} disabled={loading}>
-            {loading ? (
-              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-1" />
-            )}
-            {isEditing ? 'Actualizar' : 'Crear'}
-          </Button>
+          <PermissionGuard requiredPermissions={isEditing ? ['tipos_espacio:editar'] : ['tipos_espacio:crear']}>
+            <Button type="button" onClick={handleSubmit} disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-1" />
+              )}
+              {isEditing ? 'Actualizar' : 'Crear'}
+            </Button>
+          </PermissionGuard>
         </DialogFooter>
       </DialogContent>
     </Dialog>
