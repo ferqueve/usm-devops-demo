@@ -44,12 +44,19 @@ public class ReservaController {
         try {
             String userEmail = authentication.getName();
             // Obtener el rol del usuario desde la autenticación
+            // Buscar específicamente la authority que empieza con "ROLE_" para evitar confusión con permisos
             String userRole = authentication.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .filter(auth -> auth.startsWith("ROLE_"))
                     .findFirst()
-                    .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+                    .map(auth -> auth.replace("ROLE_", ""))
                     .orElse("");
+            
+            // Log para debug: verificar que el rol se obtiene correctamente
+            // log.info("Usuario {} con rol {} creando reserva", userEmail, userRole);
+            
             ReservaResponseDto reserva = reservaService.createReserva(createDto, userEmail, userRole);
-            String mensaje = "DOCENTE".equals(userRole) 
+            String mensaje = ROLE_DOCENTE.equals(userRole) 
                     ? "Solicitud de reserva enviada exitosamente. Esperando aprobación."
                     : "Reserva creada exitosamente";
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -183,9 +190,10 @@ public class ReservaController {
     
     /**
      * Obtener reservas de un espacio específico
+     * Disponible para todos los autenticados (necesario para ver disponibilidad al crear reservas)
      */
     @GetMapping("/espacio/{espacioId}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<ReservaResponseDto>>> getReservasByEspacio(
             @PathVariable Long espacioId) {
         try {
@@ -238,7 +246,7 @@ public class ReservaController {
                     .orElse("");
             
             ReservaStatsDto stats;
-            if ("DOCENTE".equals(userRole)) {
+            if (ROLE_DOCENTE.equals(userRole)) {
                 // DOCENTE: estadísticas personales
                 stats = reservaService.obtenerEstadisticasPersonales(userEmail);
             } else {

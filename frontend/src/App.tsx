@@ -19,6 +19,7 @@ import UsersPage from './app/users/page';
 import SystemPage from './app/system/page';
 import InventoryPage from './app/inventory/page';
 import InventoryRequestsPage from './app/inventory/requests/page';
+import AuditPage from './app/audit/page';
 
 
 // Componente principal de rutas
@@ -148,6 +149,15 @@ function AppRoutes() {
             <InventoryRequestsPage />
           </RoleProtectedRoute>
         }
+      />
+      
+      <Route 
+        path="/audit" 
+        element={
+          <RoleGuard requiredRole={ROLES.ADMIN}>
+            <AuditPage />
+          </RoleGuard>
+        } 
       />
       
       {/* Ruta raíz - redirección inteligente */}

@@ -5,7 +5,8 @@ import {
   Building2,
   BarChart3,
   Users,
-  Server
+  Server,
+  FileText
 } from "lucide-react";
 import type { SidebarMenuItem } from '../types/ui';
 import type { UserRole } from '../types/users';
@@ -57,6 +58,12 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Sistema",
     icon: Server,
     href: "/system"
+  },
+  {
+    id: "audit",
+    label: "Auditoría",
+    icon: FileText,
+    href: "/audit"
   }
 ];
 
@@ -90,7 +97,8 @@ export const ROLE_PERMISSIONS = {
       '/inventory',
       '/inventory/requests',
       '/statistics',
-      '/system'
+      '/system',
+      '/audit'
     ],
     sidebarItems: [
       'dashboard',
@@ -101,7 +109,8 @@ export const ROLE_PERMISSIONS = {
       'inventory',
       'statistics',
       'Users',
-      'system'
+      'system',
+      'audit'
     ],
   },
   [ROLES.ANALISTA]: {

@@ -8,6 +8,7 @@ import DashboardCharts from './DashboardCharts';
 import QuickActions from './QuickActions';
 import ReservationDetailsDialog from '@/components/reservations/ReservationDetailsDialog';
 import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 import type { Reserva } from '@/lib/types/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 
@@ -30,7 +31,7 @@ export default function Dashboard() {
         setData(dashboardData);
         
         // Guardar todas las reservas para los gráficos (solo si no es DOCENTE)
-        if (user?.rol !== 'DOCENTE') {
+        if (user?.rol !== ROLES.DOCENTE) {
           try {
             const todasReservas = await reservationsApi.obtenerTodasLasReservas();
             if (todasReservas.data) {
@@ -154,7 +155,7 @@ export default function Dashboard() {
                     {data.stats.espaciosDisponibles}/{data.stats.totalEspacios}
                   </span>
                 </div>
-                {user?.rol === 'ADMIN' && (
+                {user?.rol === ROLES.ADMIN && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Usuarios activos</span>
                     <span className="text-sm font-medium text-blue-600">

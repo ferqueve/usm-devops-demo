@@ -121,7 +121,7 @@ public class InventarioItemController {
     }
     
     @GetMapping("/espacio/{espacioId}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByEspacio(@PathVariable Long espacioId) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByEspacio(espacioId);

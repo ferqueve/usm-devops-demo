@@ -501,3 +501,366 @@ export function exportInventoryStatsToPDF(
   }
 }
 
+interface ReservaStats {
+  totalReservas: number;
+  totalAprobadas: number;
+  totalPendientes: number;
+  totalCanceladas: number;
+  totalFuturas: number;
+  totalPasadas: number;
+  totalActivas: number;
+  reservasPorEstado: Record<string, number>;
+  reservasEsteMes: number;
+  reservasProximoMes: number;
+  reservasEsteAnio: number;
+  reservasPorMes: Record<string, number>;
+  reservasPorDiaSemana: Record<string, number>;
+  mesConMasReservas?: string | null;
+  promedioReservasPorMes: number;
+  totalEspaciosUsados: number;
+  espacioMasUsado?: number | null;
+  nombreEspacioMasUsado?: string | null;
+  reservasPorEspacio: Record<string, number>;
+  distribucionPorEspacio: Record<string, number>;
+  duracionTotalHoras: number;
+  duracionPromedioHoras: number;
+  reservaMasLargaHoras: number;
+  reservaMasCortaHoras: number;
+  horasReservadasEsteMes: number;
+  promedioReservasPorSemana: number;
+  diasDesdeUltimaReserva?: number | null;
+  diasHastaProximaReserva?: number | null;
+  fechaUltimaReserva?: string | null;
+  fechaProximaReserva?: string | null;
+  reservasMesActual: number;
+  reservasMesAnterior: number;
+  diferenciaMesAnterior: number;
+  porcentajeCambioMesAnterior: number;
+}
+
+interface ReservationExportFilters {
+  espacioNombre?: string;
+  carreraNombre?: string;
+}
+
+/**
+ * Exporta las estadísticas de reservas a PDF con un diseño profesional
+ */
+export function exportReservationStatsToPDF(
+  stats: ReservaStats,
+  filters?: ReservationExportFilters
+): void {
+  try {
+    const doc = new jsPDF('p', 'mm', 'a4') as ExtendedJsPDF;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    let yPos = margin;
+
+    // Colores personalizados
+    const primaryColor: [number, number, number] = [33, 150, 243]; // Azul
+    const successColor: [number, number, number] = [76, 175, 80]; // Verde
+    const warningColor: [number, number, number] = [255, 152, 0]; // Naranja
+    const grayColor: [number, number, number] = [158, 158, 158]; // Gris
+
+    // Función helper para agregar nueva página si es necesario
+    const checkPageBreak = (requiredHeight: number) => {
+      if (yPos + requiredHeight > pageHeight - margin) {
+        doc.addPage();
+        yPos = margin;
+      }
+    };
+
+    // Función helper para agregar título de sección
+    const addSectionTitle = (title: string, color: [number, number, number] = primaryColor) => {
+      checkPageBreak(10);
+      doc.setFillColor(color[0], color[1], color[2]);
+      doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, margin + 2, yPos + 5.5);
+      doc.setTextColor(0, 0, 0);
+      yPos += 12;
+    };
+
+    // Portada
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Reporte de Estadísticas de Reservas', pageWidth / 2, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    const fechaGeneracion = format(new Date(), 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es });
+    doc.text(`Generado el ${fechaGeneracion}`, pageWidth / 2, 32, { align: 'center' });
+    
+    doc.setTextColor(0, 0, 0);
+    yPos = 50;
+
+    // Información de filtros aplicados
+    if (filters && (filters.espacioNombre || filters.carreraNombre)) {
+      checkPageBreak(15);
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, yPos, pageWidth - 2 * margin, 12, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Filtros Aplicados:', margin + 2, yPos + 5);
+      doc.setFont('helvetica', 'normal');
+      let filterText = '';
+      if (filters.espacioNombre) filterText += `Espacio: ${filters.espacioNombre} | `;
+      if (filters.carreraNombre) filterText += `Carrera: ${filters.carreraNombre}`;
+      doc.text(filterText.replace(/\s*\|\s*$/, ''), margin + 2, yPos + 10);
+      yPos += 18;
+    }
+
+    // === RESUMEN EJECUTIVO ===
+    addSectionTitle('RESUMEN EJECUTIVO', primaryColor);
+    
+    checkPageBreak(40);
+    const porcentajeAprobadas = stats.totalReservas > 0 
+      ? ((stats.totalAprobadas / stats.totalReservas) * 100).toFixed(1)
+      : '0';
+    const porcentajePendientes = stats.totalReservas > 0 
+      ? ((stats.totalPendientes / stats.totalReservas) * 100).toFixed(1)
+      : '0';
+    const porcentajeCanceladas = stats.totalReservas > 0 
+      ? ((stats.totalCanceladas / stats.totalReservas) * 100).toFixed(1)
+      : '0';
+
+    const summaryData = [
+      ['Total Reservas', stats.totalReservas.toString()],
+      ['Aprobadas', `${stats.totalAprobadas} (${porcentajeAprobadas}%)`],
+      ['Pendientes', `${stats.totalPendientes} (${porcentajePendientes}%)`],
+      ['Canceladas', `${stats.totalCanceladas} (${porcentajeCanceladas}%)`],
+      ['Futuras', stats.totalFuturas.toString()],
+      ['Pasadas', stats.totalPasadas.toString()],
+      ['Activas', stats.totalActivas.toString()],
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: summaryData,
+      theme: 'striped',
+      headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 },
+      margin: { left: margin, right: margin },
+    });
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+
+    // === ESTADÍSTICAS TEMPORALES ===
+    addSectionTitle('ANALISIS TEMPORAL', successColor);
+
+    checkPageBreak(30);
+    const formatHours = (hours: number) => {
+      if (hours < 1) return `${Math.round(hours * 60)} min`;
+      if (hours === Math.floor(hours)) return `${Math.floor(hours)}h`;
+      const h = Math.floor(hours);
+      const m = Math.round((hours - h) * 60);
+      return `${h}h ${m}min`;
+    };
+
+    const temporalData = [
+      ['Reservas Este Mes', stats.reservasEsteMes.toString(), `Cambio: ${stats.diferenciaMesAnterior > 0 ? '+' : ''}${stats.diferenciaMesAnterior} (${stats.porcentajeCambioMesAnterior > 0 ? '+' : ''}${stats.porcentajeCambioMesAnterior.toFixed(1)}%)`],
+      ['Reservas Próximo Mes', stats.reservasProximoMes.toString(), 'Reservas programadas'],
+      ['Reservas Este Año', stats.reservasEsteAnio.toString(), `Promedio: ${stats.promedioReservasPorMes.toFixed(1)}/mes`],
+      ['Promedio Semanal', stats.promedioReservasPorSemana.toFixed(1), `${stats.promedioReservasPorMes.toFixed(1)} por mes`],
+      ['Mes con Más Reservas', stats.mesConMasReservas || 'N/A', ''],
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Período', 'Cantidad', 'Detalles']],
+      body: temporalData,
+      theme: 'striped',
+      headStyles: { fillColor: successColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 },
+      margin: { left: margin, right: margin },
+    });
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+
+    // === ANÁLISIS DE DURACIÓN ===
+    addSectionTitle('ANALISIS DE DURACION', warningColor);
+
+    checkPageBreak(25);
+    const duracionData = [
+      ['Duración Total', formatHours(stats.duracionTotalHoras)],
+      ['Duración Promedio', formatHours(stats.duracionPromedioHoras)],
+      ['Reserva Más Larga', formatHours(stats.reservaMasLargaHoras)],
+      ['Reserva Más Corta', formatHours(stats.reservaMasCortaHoras)],
+      ['Horas Este Mes', formatHours(stats.horasReservadasEsteMes)],
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: duracionData,
+      theme: 'striped',
+      headStyles: { fillColor: warningColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 },
+      margin: { left: margin, right: margin },
+    });
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+
+    // === ANÁLISIS DE ESPACIOS ===
+    addSectionTitle('ANALISIS DE ESPACIOS', primaryColor);
+
+    checkPageBreak(20);
+    const espaciosData = [
+      ['Total Espacios Usados', stats.totalEspaciosUsados.toString()],
+      ['Espacio Más Usado', stats.nombreEspacioMasUsado || 'N/A'],
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: espaciosData,
+      theme: 'striped',
+      headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 },
+      margin: { left: margin, right: margin },
+    });
+    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+
+    // Top 10 Espacios
+    if (stats.reservasPorEspacio && Object.keys(stats.reservasPorEspacio).length > 0) {
+      checkPageBreak(30);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Top 10 Espacios Más Reservados', margin, yPos);
+      yPos += 5;
+
+      const sortedEspacios = Object.entries(stats.reservasPorEspacio)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .slice(0, 10);
+
+      const topEspaciosData = sortedEspacios.map(([espacioId, cantidad], index) => [
+        `#${index + 1}`,
+        `Espacio ${espacioId}`,
+        cantidad.toString()
+      ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Rank', 'Espacio', 'Reservas']],
+        body: topEspaciosData,
+        theme: 'striped',
+        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        margin: { left: margin, right: margin },
+      });
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+    }
+
+    // === RESERVAS POR MES ===
+    if (stats.reservasPorMes && Object.keys(stats.reservasPorMes).length > 0) {
+      addSectionTitle('RESERVAS POR MES', successColor);
+
+      checkPageBreak(40);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Distribución Mensual', margin, yPos);
+      yPos += 5;
+
+      const reservasPorMesData = Object.entries(stats.reservasPorMes)
+        .map(([mes, cantidad]) => [mes, cantidad.toString()])
+        .sort(([a], [b]) => a.localeCompare(b));
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Mes', 'Cantidad']],
+        body: reservasPorMesData,
+        theme: 'striped',
+        headStyles: { fillColor: successColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        margin: { left: margin, right: margin },
+      });
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+    }
+
+    // === RESERVAS POR DÍA DE SEMANA ===
+    if (stats.reservasPorDiaSemana && Object.keys(stats.reservasPorDiaSemana).length > 0) {
+      addSectionTitle('RESERVAS POR DIA DE SEMANA', warningColor);
+
+      checkPageBreak(30);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Distribución por Día de Semana', margin, yPos);
+      yPos += 5;
+
+      const diasOrden = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+      const reservasPorDiaData = Object.entries(stats.reservasPorDiaSemana)
+        .map(([dia, cantidad]) => ({
+          dia,
+          cantidad: cantidad as number,
+          orden: diasOrden.indexOf(dia) !== -1 ? diasOrden.indexOf(dia) : 99
+        }))
+        .sort((a, b) => a.orden - b.orden)
+        .map(({ dia, cantidad }) => [dia, cantidad.toString()]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Día', 'Cantidad']],
+        body: reservasPorDiaData,
+        theme: 'striped',
+        headStyles: { fillColor: warningColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        margin: { left: margin, right: margin },
+      });
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+    }
+
+    // === INFORMACIÓN ADICIONAL ===
+    if (stats.fechaUltimaReserva || stats.fechaProximaReserva) {
+      addSectionTitle('INFORMACION ADICIONAL', grayColor);
+
+      checkPageBreak(20);
+      const infoData: string[][] = [];
+      if (stats.fechaUltimaReserva) {
+        const fechaUltima = format(new Date(stats.fechaUltimaReserva), 'dd MMM yyyy, HH:mm', { locale: es });
+        infoData.push(['Última Reserva', fechaUltima]);
+        if (stats.diasDesdeUltimaReserva !== null) {
+          infoData.push(['Días desde Última', `${stats.diasDesdeUltimaReserva} días`]);
+        }
+      }
+      if (stats.fechaProximaReserva) {
+        const fechaProxima = format(new Date(stats.fechaProximaReserva), 'dd MMM yyyy, HH:mm', { locale: es });
+        infoData.push(['Próxima Reserva', fechaProxima]);
+        if (stats.diasHastaProximaReserva !== null) {
+          infoData.push(['Días hasta Próxima', `${stats.diasHastaProximaReserva} días`]);
+        }
+      }
+
+      if (infoData.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Información', 'Valor']],
+          body: infoData,
+          theme: 'striped',
+          headStyles: { fillColor: grayColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+          styles: { fontSize: 9, cellPadding: 3 },
+          margin: { left: margin, right: margin },
+        });
+        yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
+      }
+    }
+
+    // Pie de página en todas las páginas
+    addFooter(doc, pageWidth, pageHeight, grayColor);
+
+    // Generar nombre de archivo
+    const fecha = format(new Date(), 'yyyy-MM-dd');
+    const nombreArchivo = `estadisticas_reservas_${fecha}.pdf`;
+
+    // Descargar PDF
+    doc.save(nombreArchivo);
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    throw new Error('Error al generar el PDF. Intenta nuevamente.');
+  }
+}
+

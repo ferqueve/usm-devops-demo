@@ -4,6 +4,7 @@ import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';
 import { carrerasApi } from '@/lib/api/carreras';
 import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 import type { Reserva } from '@/lib/types/spaces';
 import type { Espacio } from '@/lib/types/spaces';
 import type { Carrera } from '@/lib/types/spaces';
@@ -31,7 +32,7 @@ interface TipoEspacioOption {
 // Vista de Calendario de Reservas Público
 export default function Calendar() {
   const { user } = useAuth();
-  const isDocente = user?.rol === 'DOCENTE';
+  const isDocente = user?.rol === ROLES.DOCENTE;
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);

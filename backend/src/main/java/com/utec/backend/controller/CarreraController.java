@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.utec.backend.security.Constants.*;
+
 @RestController
 @RequestMapping("/api/v1/carreras")
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class CarreraController {
     private final CarreraService carreraService;
     
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<CarreraResponseDto>> createCarrera(
             @Valid @RequestBody CarreraCreateDto createDto) {
         try {
@@ -41,7 +43,7 @@ public class CarreraController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<CarreraResponseDto>>> getAllCarreras() {
         try {
             List<CarreraResponseDto> carreras = carreraService.getAllCarreras();
@@ -53,7 +55,7 @@ public class CarreraController {
     }
     
     @GetMapping("/paged")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PagedResponseDto<CarreraResponseDto>>> getAllCarrerasPaged(Pageable pageable) {
         try {
             Page<CarreraResponseDto> carreras = carreraService.getAllCarrerasPaged(pageable);
@@ -66,7 +68,7 @@ public class CarreraController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<CarreraResponseDto>> getCarreraById(@PathVariable Long id) {
         try {
             CarreraResponseDto carrera = carreraService.getCarreraById(id);
@@ -81,7 +83,7 @@ public class CarreraController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<CarreraResponseDto>> updateCarrera(
             @PathVariable Long id,
             @Valid @RequestBody CarreraUpdateDto updateDto) {
@@ -98,7 +100,7 @@ public class CarreraController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<Void>> deleteCarrera(@PathVariable Long id) {
         try {
             carreraService.deleteCarrera(id);
@@ -113,7 +115,7 @@ public class CarreraController {
     }
     
     @GetMapping("/search")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<CarreraResponseDto>>> searchCarrerasByNombre(
             @RequestParam String nombre) {
         try {
@@ -126,7 +128,7 @@ public class CarreraController {
     }
     
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Object>> getCarreraStats() {
         try {
             Long totalCarreras = carreraService.getTotalCarreras();

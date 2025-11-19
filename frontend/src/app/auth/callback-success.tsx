@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ROLES } from '@/lib/config/constants';
 
 export function AuthCallbackSuccess() {
   const [searchParams] = useSearchParams();
@@ -28,7 +29,7 @@ export function AuthCallbackSuccess() {
         const userData = {
           email,
           nombre: nombre || '',
-          rol: rol || 'EXTERNO'
+          rol: rol || ROLES.EXTERNO
         };
         localStorage.setItem('user', JSON.stringify(userData));
 

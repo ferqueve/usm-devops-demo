@@ -1,5 +1,6 @@
 package com.utec.backend.model;
 
+import com.utec.backend.audit.AuditEntityListener;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "usuario")
+@EntityListeners(AuditEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

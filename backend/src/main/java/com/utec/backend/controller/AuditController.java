@@ -1,0 +1,79 @@
+package com.utec.backend.controller;
+
+import com.utec.backend.common.ApiResponse;
+import com.utec.backend.dto.audit.AuditLogResponseDto;
+import com.utec.backend.dto.common.PagedResponseDto;
+import com.utec.backend.model.AuditLog;
+import com.utec.backend.service.AuditService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+
+import static com.utec.backend.security.Constants.ROLE_ADMIN;
+
+@RestController
+@RequestMapping("/api/v1/audit")
+@RequiredArgsConstructor
+public class AuditController {
+    
+    private final AuditService auditService;
+    
+    @GetMapping
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    public ResponseEntity<ApiResponse<PagedResponseDto<AuditLogResponseDto>>> listarLogs(
+            @RequestParam(required = false) String entidad,
+            @RequestParam(required = false) Long usuarioId,
+            @RequestParam(required = false) String accion,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaDesde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaHasta,
+            @RequestParam(required = false) String search,
+            @PageableDefault(size = 20, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        try {
+            AuditLog.AccionAudit accionEnum = null;
+            if (accion != null && !accion.trim().isEmpty()) {
+                try {
+                    accionEnum = AuditLog.AccionAudit.valueOf(accion.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Acción inválida: " + accion);
+                }
+            }
+            
+            PagedResponseDto<AuditLogResponseDto> resultado = auditService.buscarLogs(
+                    entidad, usuarioId, accionEnum, fechaDesde, fechaHasta, search, pageable
+            );
+            
+            return ResponseEntity.ok(ApiResponse.success(resultado, "Logs de auditoría obtenidos exitosamente"));
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener logs de auditoría: " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    public ResponseEntity<ApiResponse<AuditLogResponseDto>> obtenerLog(@PathVariable Long id) {
+        try {
+            AuditLogResponseDto log = auditService.obtenerLogPorId(id);
+            return ResponseEntity.ok(ApiResponse.success(log, "Log de auditoría obtenido exitosamente"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener log de auditoría: " + e.getMessage()));
+        }
+    }
+}
+

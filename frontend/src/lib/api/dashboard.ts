@@ -3,6 +3,7 @@ import { espaciosApi } from './spaces';
 import { reservationsApi } from './reservations';
 import { usuariosApi } from './users';
 import { statsApi } from './stats';
+import { ROLES } from '../config/constants';
 import type { Reserva, ReservaStats, Espacio } from '../types/spaces';
 import type { UserStats } from '../types/users';
 
@@ -105,8 +106,8 @@ export const dashboardApi = {
   async obtenerDatosDashboard(userRole?: string): Promise<DashboardData> {
     try {
       // Verificar roles antes de llamar a endpoints
-      const isAdmin = userRole === 'ADMIN';
-      const isDocente = userRole === 'DOCENTE';
+      const isAdmin = userRole === ROLES.ADMIN;
+      const isDocente = userRole === ROLES.DOCENTE;
       
       // DOCENTE solo puede ver sus propias reservas, ANALISTA y ADMIN pueden ver todas
       const reservasPromise = isDocente

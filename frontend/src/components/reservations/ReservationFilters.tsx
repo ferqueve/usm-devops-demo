@@ -1,4 +1,4 @@
-import { Calendar, Clock, LayoutGrid, Table as TableIcon, CalendarDays, CheckCircle2, XCircle, Hourglass, Filter, BrushCleaning, Building2, CalendarArrowDown, CalendarArrowUp, GraduationCap, Tag } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, XCircle, Filter, BrushCleaning, Building2, CalendarArrowDown, CalendarArrowUp, GraduationCap, Tag } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -263,20 +263,6 @@ export default function ReservationFilters({
             </button>
           </TooltipTrigger>
           <TooltipContent>Reservas aprobadas</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => onEstadoFilterChange('PENDIENTE')}
-              className={`p-1.5 rounded transition-colors ${estadoFilter === 'PENDIENTE'
-                  ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              <Hourglass className={`h-3.5 w-3.5 ${estadoFilter === 'PENDIENTE' ? 'text-yellow-600' : 'text-yellow-500'}`} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Reservas pendientes</TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>

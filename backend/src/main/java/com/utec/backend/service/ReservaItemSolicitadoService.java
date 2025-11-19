@@ -143,6 +143,14 @@ public class ReservaItemSolicitadoService {
             return cb.isNull(root.get("deletedAt"));
         };
 
+        // SOLO mostrar solicitudes de reservas APROBADAS
+        // Las solicitudes de reservas pendientes o canceladas no deben aparecer
+        Specification<ReservaItemSolicitado> reservaAprobadaSpec = (root, query, cb) -> {
+            Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join("reserva", JoinType.INNER);
+            return cb.equal(reservaJoin.get("estado"), Reserva.EstadoReserva.APROBADO);
+        };
+        spec = spec.and(reservaAprobadaSpec);
+
         if (estados != null && !estados.isEmpty()) {
             Specification<ReservaItemSolicitado> estadoSpec = (root, query, cb) -> root.get("estado").in(estados);
             spec = spec.and(estadoSpec);

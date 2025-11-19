@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -57,10 +58,28 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").hasRole(ROLE_ADMIN)
 
                 // Rutas protegidas por rol
+                // Permitir acceso al perfil propio a todos los autenticados
+                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/me").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/me").authenticated()
+                // Resto de usuarios: solo ADMIN
                 .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
                 .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
-                // Espacios, inventario, tipos: ADMIN y MANTENIMIENTO (gestión), ANALISTA (solo visualización se maneja en métodos)
+                .requestMatchers("/api/v1/audit/**").hasRole(ROLE_ADMIN)
+                
+                // PERMITIR LECTURA (GET) de espacios, tipos y carreras a todos los autenticados
+                // Esto permite que DOCENTE, ESTUDIANTE, EXTERNO puedan ver espacios para reservas/calendario
+                .requestMatchers(HttpMethod.GET, "/api/v1/espacios/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/tipos-espacio/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/tipos-elemento/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/carreras/**").authenticated()
+                
+                // Escritura de espacios, inventario, tipos: ADMIN y MANTENIMIENTO (gestión), ANALISTA (solo visualización se maneja en métodos)
+                // NOTA: Los GET ya fueron permitidos arriba, así que esto solo afecta POST, PUT, DELETE
                 .requestMatchers("/api/v1/espacios/**", "/api/v1/espacios/*/inventario/**", "/api/v1/tipos-elemento/**", "/api/v1/tipos-espacio/**", "/api/v1/inventario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+                
+                // Escritura de carreras: ADMIN y ANALISTA
+                .requestMatchers("/api/v1/carreras/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
+                
                 // Estadísticas: ADMIN, ANALISTA (reservas), MANTENIMIENTO (inventario/espacios)
                 .requestMatchers("/api/v1/estadisticas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
                 .requestMatchers("/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)

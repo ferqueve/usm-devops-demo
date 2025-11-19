@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -37,9 +39,11 @@ public class AuditLog {
     @Column(name = "timestamp", nullable = false, updatable = false)
     private LocalDateTime timestamp;
     
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "datos_previos", columnDefinition = "JSONB")
     private String datosPrevios;
     
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "datos_nuevos", columnDefinition = "JSONB")
     private String datosNuevos;
     

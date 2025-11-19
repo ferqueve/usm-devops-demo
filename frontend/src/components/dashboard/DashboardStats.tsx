@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Building2, Users, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 import type { DashboardStats as DashboardStatsType } from '@/lib/api/dashboard';
 
 interface DashboardStatsProps {
@@ -10,7 +11,7 @@ interface DashboardStatsProps {
 
 export default function DashboardStats({ stats, loading = false }: DashboardStatsProps) {
   const { user } = useAuth();
-  const isAdmin = user?.rol === 'ADMIN';
+  const isAdmin = user?.rol === ROLES.ADMIN;
   
   const statCards = [
     {

@@ -302,8 +302,10 @@ Profesores que pueden ver todas las reservas del sistema y solicitar reservas de
 - ✅ Ver todas las reservas (aprobadas y pendientes)
 - ✅ Filtrar por espacio, carrera, tipo
 
-#### ❌ Inventario
-- ❌ Ver inventario
+#### ✅ Inventario (Solo Visualización de Espacios)
+- ✅ Ver inventario de espacios (al ver detalles de un espacio)
+- ✅ Ver qué items hay en cada espacio
+- ❌ Ver todo el inventario del sistema
 - ❌ Gestionar inventario
 
 #### ❌ Usuarios
@@ -349,6 +351,7 @@ Estudiantes con acceso limitado. Solo pueden ver las reservas del sistema.
 - ✅ Ver todos los espacios (para contexto de reservas)
 - ✅ Ver detalles de espacios
 - ✅ Ver disponibilidad de espacios
+- ✅ Ver inventario de espacios (al ver detalles)
 - ❌ Crear/editar/eliminar espacios
 - ❌ Gestionar espacios
 
@@ -398,6 +401,7 @@ Usuarios externos a UTEC con acceso limitado. Pueden solicitar reservas y ver re
 - ✅ Ver espacios públicos
 - ✅ Ver detalles de espacios
 - ✅ Ver disponibilidad básica
+- ✅ Ver inventario de espacios (al ver detalles)
 - ❌ Ver información completa
 - ❌ Gestionar espacios
 
@@ -449,22 +453,26 @@ Usuarios externos a UTEC con acceso limitado. Pueden solicitar reservas y ver re
 | Asignar items | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | Gestionar estado | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | **Tipos de Elemento/Espacio** |
-| Ver tipos | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Ver tipos | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Crear tipos | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | Editar tipos | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | Eliminar tipos | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **Reservas** |
 | Crear reservas | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Solicitar reservas | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ |
-| Ver todas | ✅ | ✅ | ✅* | ✅ | ✅ | ❌ |
+| Ver todas | ✅ | ✅ | ✅* | ✅ | ✅ | ✅ |
 | Ver públicas | ✅ | ✅ | ✅* | ✅ | ✅ | ✅ |
+| Ver reservas por espacio | ✅ | ✅ | ✅* | ✅ | ✅ | ✅ |
 | CRUD reservas | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Aprobar/rechazar | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Solicitudes inventario: crear | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Solicitudes inventario: aceptar | ✅ | ❌ | ✅*** | ❌ | ❌ | ❌ |
 | **Carreras** |
-| Ver carreras | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Gestionar carreras | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Ver carreras | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Gestionar carreras | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Inventario** |
+| Ver inventario de espacio | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Ver todo el inventario | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
 | **Estadísticas** |
 | Ver estadísticas | ✅ | ✅**** | ✅***** | ❌ | ❌ | ❌ |
 | Exportar reportes | ✅ | ✅**** | ✅***** | ❌ | ❌ | ❌ |
@@ -474,10 +482,16 @@ Usuarios externos a UTEC con acceso limitado. Pueden solicitar reservas y ver re
 | Logs | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 
 *MANTENIMIENTO puede ver reservas para conocer ocupación de espacios  
-**DOCENTE/ESTUDIANTE pueden ver todas las reservas del sistema  
+**DOCENTE/ESTUDIANTE/EXTERNO pueden ver todas las reservas del sistema  
 ***MANTENIMIENTO acepta/rechaza solicitudes de inventario  
 ****ANALISTA solo estadísticas de reservas  
 *****MANTENIMIENTO solo estadísticas de inventario y espacios
+
+**Nota sobre permisos de lectura:**
+- Todos los usuarios autenticados pueden ver espacios, tipos de espacio, tipos de elemento y carreras (GET)
+- Todos los usuarios autenticados pueden ver reservas de un espacio específico (para ver disponibilidad)
+- Todos los usuarios autenticados pueden ver inventario de un espacio específico (al ver detalles del espacio)
+- Las operaciones de escritura (POST, PUT, DELETE) siguen restringidas según rol
 
 ---
 

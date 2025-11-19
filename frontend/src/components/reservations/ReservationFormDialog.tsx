@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -41,7 +42,7 @@ export default function ReservationFormDialog({
   onSuccess
 }: ReservationFormDialogProps) {
   const { user } = useAuth();
-  const isDocente = user?.rol === 'DOCENTE';
+  const isDocente = user?.rol === ROLES.DOCENTE;
   
   const [loading, setLoading] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);

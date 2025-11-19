@@ -147,22 +147,89 @@ src/main/java/com/utec/reservas/
 ### Espacios
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| `POST` | `/espacios` | Crear nuevo espacio (Admin/Analista) | ✅ |
-| `GET` | `/espacios` | Listar todos los espacios (Admin/Analista) | ✅ |
-| `GET` | `/espacios/paged` | Listar espacios paginados (Admin/Analista) | ✅ |
-| `GET` | `/espacios/{id}` | Obtener espacio por ID (Admin/Analista) | ✅ |
-| `PUT` | `/espacios/{id}` | Actualizar espacio (Admin/Analista) | ✅ |
+| `POST` | `/espacios` | Crear nuevo espacio (Admin/Mantenimiento) | ✅ |
+| `GET` | `/espacios` | Listar todos los espacios (Todos autenticados) | ✅ |
+| `GET` | `/espacios/paged` | Listar espacios paginados (Todos autenticados) | ✅ |
+| `GET` | `/espacios/{id}` | Obtener espacio por ID (Todos autenticados) | ✅ |
+| `PUT` | `/espacios/{id}` | Actualizar espacio (Admin/Mantenimiento) | ✅ |
 | `DELETE` | `/espacios/{id}` | Eliminar espacio (Admin) | ✅ |
-| `GET` | `/espacios/search` | Buscar espacios por nombre (Admin/Analista) | ✅ |
-| `GET` | `/espacios/capacidad/{capacidadMinima}` | Filtrar por capacidad mínima (Admin/Analista) | ✅ |
-| `GET` | `/espacios/disponibles` | Obtener espacios disponibles en rango de tiempo (Admin/Analista/Docente) | ✅ |
-| `GET` | `/espacios/stats` | Obtener estadísticas de espacios (Admin/Analista) | ✅ |
+| `GET` | `/espacios/search` | Buscar espacios por nombre (Todos autenticados) | ✅ |
+| `GET` | `/espacios/filter` | Filtrar espacios con múltiples criterios (Todos autenticados) | ✅ |
+| `GET` | `/espacios/capacidad/{capacidadMinima}` | Filtrar por capacidad mínima (Todos autenticados) | ✅ |
+| `GET` | `/espacios/disponibles` | Obtener espacios disponibles en rango de tiempo (Todos autenticados) | ✅ |
+| `GET` | `/espacios/stats` | Obtener estadísticas de espacios (Todos autenticados) | ✅ |
 
-### Reservas e Items Solicitados
+### Reservas
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/reservas/items-solicitados` | Listar solicitudes de inventario con filtros y paginación (Admin/Analista) | ✅ |
-| `PATCH` | `/reservas/items-solicitados/{id}` | Actualizar estado, observaciones o asignación de items solicitados (Admin/Analista) | ✅ |
+| `POST` | `/reservas` | Crear nueva reserva (Admin/Analista/Docente) | ✅ |
+| `GET` | `/reservas/mis-reservas` | Obtener mis reservas (Admin/Analista/Docente) | ✅ |
+| `GET` | `/reservas/mis-reservas/paged` | Obtener mis reservas paginadas (Admin/Analista/Docente) | ✅ |
+| `GET` | `/reservas/{id}` | Obtener reserva por ID (Admin/Analista/Docente) | ✅ |
+| `PUT` | `/reservas/{id}` | Actualizar reserva (Admin/Analista) | ✅ |
+| `DELETE` | `/reservas/{id}` | Cancelar reserva (Admin/Analista/Docente) | ✅ |
+| `GET` | `/reservas/espacio/{espacioId}` | Obtener reservas de un espacio (Todos autenticados) | ✅ |
+| `GET` | `/reservas/todas` | Obtener todas las reservas del sistema (Todos autenticados) | ✅ |
+| `GET` | `/reservas/paged` | Obtener todas las reservas paginadas (Admin/Analista) | ✅ |
+| `GET` | `/reservas/mis-reservas/stats` | Estadísticas personales de reservas (Admin/Analista/Docente) | ✅ |
+| `PATCH` | `/reservas/{id}/estado` | Cambiar estado de reserva (Admin/Analista) | ✅ |
+
+### Items Solicitados (Inventario para Reservas)
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/reservas/items-solicitados` | Listar solicitudes de inventario con filtros y paginación (Admin/Analista/Mantenimiento) | ✅ |
+| `PATCH` | `/reservas/items-solicitados/{id}` | Actualizar estado, observaciones o asignación de items solicitados (Admin/Mantenimiento) | ✅ |
+
+### Tipos de Espacio
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/tipos-espacio` | Crear tipo de espacio (Admin/Mantenimiento) | ✅ |
+| `GET` | `/tipos-espacio` | Listar tipos de espacio (Todos autenticados) | ✅ |
+| `GET` | `/tipos-espacio/paged` | Listar tipos de espacio paginados (Todos autenticados) | ✅ |
+| `GET` | `/tipos-espacio/{id}` | Obtener tipo de espacio por ID (Todos autenticados) | ✅ |
+| `PUT` | `/tipos-espacio/{id}` | Actualizar tipo de espacio (Admin/Mantenimiento) | ✅ |
+| `DELETE` | `/tipos-espacio/{id}` | Eliminar tipo de espacio (Admin) | ✅ |
+| `GET` | `/tipos-espacio/search` | Buscar tipos de espacio por nombre (Todos autenticados) | ✅ |
+| `GET` | `/tipos-espacio/stats` | Estadísticas de tipos de espacio (Todos autenticados) | ✅ |
+
+### Tipos de Elemento
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/tipos-elemento` | Crear tipo de elemento (Admin/Mantenimiento) | ✅ |
+| `GET` | `/tipos-elemento` | Listar tipos de elemento (Todos autenticados) | ✅ |
+| `GET` | `/tipos-elemento/paged` | Listar tipos de elemento paginados (Todos autenticados) | ✅ |
+| `GET` | `/tipos-elemento/{id}` | Obtener tipo de elemento por ID (Todos autenticados) | ✅ |
+| `PUT` | `/tipos-elemento/{id}` | Actualizar tipo de elemento (Admin/Mantenimiento) | ✅ |
+| `DELETE` | `/tipos-elemento/{id}` | Eliminar tipo de elemento (Admin) | ✅ |
+| `GET` | `/tipos-elemento/search` | Buscar tipos de elemento por nombre (Todos autenticados) | ✅ |
+| `GET` | `/tipos-elemento/stats` | Estadísticas de tipos de elemento (Todos autenticados) | ✅ |
+
+### Carreras
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/carreras` | Crear carrera (Admin/Analista) | ✅ |
+| `GET` | `/carreras` | Listar carreras (Todos autenticados) | ✅ |
+| `GET` | `/carreras/paged` | Listar carreras paginadas (Todos autenticados) | ✅ |
+| `GET` | `/carreras/{id}` | Obtener carrera por ID (Todos autenticados) | ✅ |
+| `PUT` | `/carreras/{id}` | Actualizar carrera (Admin/Analista) | ✅ |
+| `DELETE` | `/carreras/{id}` | Eliminar carrera (Admin/Analista) | ✅ |
+| `GET` | `/carreras/search` | Buscar carreras por nombre (Todos autenticados) | ✅ |
+| `GET` | `/carreras/stats` | Estadísticas de carreras (Todos autenticados) | ✅ |
+
+### Inventario
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/inventario` | Crear item de inventario (Admin/Mantenimiento) | ✅ |
+| `GET` | `/inventario` | Listar items de inventario (Admin/Analista/Mantenimiento) | ✅ |
+| `GET` | `/inventario/paged` | Listar items de inventario paginados (Admin/Analista/Mantenimiento) | ✅ |
+| `GET` | `/inventario/{id}` | Obtener item de inventario por ID (Admin/Analista/Mantenimiento) | ✅ |
+| `PUT` | `/inventario/{id}` | Actualizar item de inventario (Admin/Mantenimiento) | ✅ |
+| `DELETE` | `/inventario/{id}` | Eliminar item de inventario (Admin) | ✅ |
+| `GET` | `/inventario/espacio/{espacioId}` | Obtener inventario de un espacio (Todos autenticados) | ✅ |
+| `GET` | `/inventario/tipo-elemento/{tipoElementoId}` | Obtener inventario por tipo de elemento (Admin/Analista/Mantenimiento) | ✅ |
+| `GET` | `/inventario/estado/{estado}` | Obtener inventario por estado (Admin/Analista/Mantenimiento) | ✅ |
+| `GET` | `/inventario/filter` | Filtrar inventario con múltiples criterios (Admin/Analista/Mantenimiento) | ✅ |
+| `GET` | `/inventario/stats` | Estadísticas de inventario (Admin/Analista/Mantenimiento) | ✅ |
 
 ### 🚧 Endpoints en Desarrollo
 
@@ -200,14 +267,20 @@ Authorization: Bearer <jwt_token>
 
 ### Matriz de Permisos por Rol
 
-| Función | Admin | Analista | Docente | Estudiante | Externo |
-|---------|-------|----------|---------|------------|---------|
-| **Gestión de Usuarios** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Gestión de Espacios** | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Inventario** | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Reservas** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Eventos Externos** | ✅ | ✅ | ✅ | ❌ | ✅ |
-| **Estadísticas** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Función | Admin | Analista | Mantenimiento | Docente | Estudiante | Externo |
+|---------|-------|----------|---------------|---------|------------|---------|
+| **Gestión de Usuarios** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Gestión de Espacios** | ✅ | ❌* | ✅ | ❌ | ❌ | ❌ |
+| **Inventario** | ✅ | ❌* | ✅ | ❌ | ❌ | ❌ |
+| **Reservas** | ✅ | ✅ | ❌** | ✅ | ❌ | ❌ |
+| **Ver Espacios/Inventario** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Ver Reservas** | ✅ | ✅ | ✅** | ✅ | ✅ | ✅ |
+| **Estadísticas** | ✅ | ✅*** | ✅**** | ❌ | ❌ | ❌ |
+
+\* ANALISTA puede ver espacios e inventario pero no gestionarlos  
+\** MANTENIMIENTO puede ver reservas para conocer ocupación pero no gestionarlas  
+\*** ANALISTA solo estadísticas de reservas  
+\**** MANTENIMIENTO solo estadísticas de inventario y espacios
 
 ## 🔐 Configuración de Google OAuth
 

@@ -43,7 +43,7 @@ public class TipoElementoController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<TipoElementoResponseDto>>> getAllTiposElemento() {
         try {
             List<TipoElementoResponseDto> tiposElemento = tipoElementoService.getAllTiposElemento();
@@ -55,7 +55,7 @@ public class TipoElementoController {
     }
     
     @GetMapping("/paged")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PagedResponseDto<TipoElementoResponseDto>>> getAllTiposElementoPaged(Pageable pageable) {
         try {
             Page<TipoElementoResponseDto> tiposElemento = tipoElementoService.getAllTiposElementoPaged(pageable);
@@ -68,7 +68,7 @@ public class TipoElementoController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<TipoElementoResponseDto>> getTipoElementoById(@PathVariable Long id) {
         try {
             TipoElementoResponseDto tipoElemento = tipoElementoService.getTipoElementoById(id);
@@ -130,7 +130,7 @@ public class TipoElementoController {
     }
     
     @GetMapping("/search")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<TipoElementoResponseDto>>> searchTiposElementoByNombre(
             @RequestParam String nombre) {
         try {
@@ -143,7 +143,7 @@ public class TipoElementoController {
     }
     
     @GetMapping("/mas-utilizados")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<TipoElementoResponseDto>>> getTiposMasUtilizados() {
         try {
             List<TipoElementoResponseDto> tiposElemento = tipoElementoService.getTiposMasUtilizados();
@@ -155,7 +155,7 @@ public class TipoElementoController {
     }
     
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Object>> getTipoElementoStats() {
         try {
             Long totalTipos = tipoElementoService.getTotalTiposElemento();

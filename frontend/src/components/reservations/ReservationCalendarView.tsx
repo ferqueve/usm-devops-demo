@@ -14,6 +14,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 
 interface Espacio {
   id: number;
@@ -102,7 +104,12 @@ export default function ReservationCalendarView({
   loading = false,
   readOnly = false,
 }: ReservationCalendarViewProps) {
-  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>('month');
+  const { user } = useAuth();
+  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
+  const isDocente = user?.rol === ROLES.DOCENTE;
+  // Vista por defecto: Semana para ANALISTA y DOCENTE, Mes para otros
+  const defaultCalendarViewMode: CalendarViewMode = (isAnalista || isDocente) ? 'week' : 'month';
+  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(defaultCalendarViewMode);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isFullScreenInternal, setIsFullScreenInternal] = useState(false);
   const [hideNightHours, setHideNightHours] = useState(true);

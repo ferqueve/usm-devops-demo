@@ -5,13 +5,17 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Calendar, Clock, User, GraduationCap } from 'lucide-react';
+import { MapPin, Users, Calendar, Clock, User, GraduationCap, CheckCircle2, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { reservationsApi } from '@/lib/api/reservations';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 import type { Reserva } from '@/lib/types/spaces';
 
 interface ReservationDetailsDialogProps {
   reserva: Reserva;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onReservaUpdated?: () => void;
 }
 
 function getEstadoConfig(estado: Reserva['estado']) {
@@ -42,7 +46,8 @@ function getEstadoConfig(estado: Reserva['estado']) {
 export default function ReservationDetailsDialog({
   reserva,
   open,
-  onOpenChange
+  onOpenChange,
+  onReservaUpdated
 }: ReservationDetailsDialogProps) {
   const estadoConfig = getEstadoConfig(reserva.estado);
   const esFutura = new Date(reserva.inicio) > new Date();
@@ -65,6 +70,46 @@ export default function ReservationDetailsDialog({
   };
 
   const duracionHoras = Math.round((new Date(reserva.fin).getTime() - new Date(reserva.inicio).getTime()) / (1000 * 60 * 60) * 10) / 10;
+
+  const handleAprobarReserva = async () => {
+    try {
+      const response = await reservationsApi.aprobarReserva(reserva.id);
+      if (response.data) {
+        toast.success('Reserva aprobada', {
+          description: `La reserva de ${reserva.espacioNombre} ha sido aprobada exitosamente.`
+        });
+        if (onReservaUpdated) {
+          onReservaUpdated();
+        }
+        onOpenChange(false);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo aprobar la reserva';
+      toast.error('Error al aprobar reserva', {
+        description: errorMessage
+      });
+    }
+  };
+
+  const handleRechazarReserva = async () => {
+    try {
+      const response = await reservationsApi.rechazarReserva(reserva.id);
+      if (response.data) {
+        toast.success('Reserva rechazada', {
+          description: `La reserva de ${reserva.espacioNombre} ha sido rechazada.`
+        });
+        if (onReservaUpdated) {
+          onReservaUpdated();
+        }
+        onOpenChange(false);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo rechazar la reserva';
+      toast.error('Error al rechazar reserva', {
+        description: errorMessage
+      });
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -222,6 +267,31 @@ export default function ReservationDetailsDialog({
             <div className="w-3 h-3 bg-white rounded-full"></div>
             <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
+          
+          {/* Botones de acción para reservas pendientes */}
+          {reserva.estado === 'PENDIENTE' && (
+            <PermissionGuard requiredPermission="reservas:aprobar" fallback={null} showFallback={false}>
+              <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                <Button
+                  variant="default"
+                  onClick={handleAprobarReserva}
+                  className="flex-1 h-9 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Aprobar Reserva
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleRechazarReserva}
+                  className="flex-1 h-9 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold"
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Rechazar
+                </Button>
+              </div>
+            </PermissionGuard>
+          )}
+          
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full h-9 text-sm">
             Cerrar
           </Button>

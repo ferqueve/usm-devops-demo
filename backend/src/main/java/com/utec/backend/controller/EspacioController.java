@@ -178,7 +178,7 @@ public class EspacioController {
     }
     
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Object>> getEspacioStats() {
         try {
             Long totalEspacios = espacioService.getTotalEspacios();

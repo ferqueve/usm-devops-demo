@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 
+import static com.utec.backend.security.Constants.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -85,7 +87,7 @@ public class OAuth2Service {
             // Validar que todos los valores requeridos no sean null
             String email = usuario.getEmail();
             String nombre = usuario.getNombre();
-            String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : "EXTERNO";
+            String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : ROLE_EXTERNO;
             Long expiresIn = jwtService.getExpirationTime();
             
             if (email == null || email.trim().isEmpty()) {

@@ -21,13 +21,23 @@ import {
 
 interface ReservationStatsProps {
   onRefresh?: () => void;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export default function ReservationStats({ onRefresh }: ReservationStatsProps) {
+export default function ReservationStats({ 
+  onRefresh,
+  collapsed: externalCollapsed,
+  onCollapsedChange
+}: ReservationStatsProps) {
   const [stats, setStats] = useState<ReservaStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
+  
+  // Usar el estado externo si está disponible, sino usar el interno
+  const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+  const setCollapsed = onCollapsedChange || setInternalCollapsed;
 
   // Detectar cuando el layout está en vertical (menor a lg breakpoint)
   useEffect(() => {
@@ -45,7 +55,7 @@ export default function ReservationStats({ onRefresh }: ReservationStatsProps) {
     if (isVerticalLayout && collapsed) {
       setCollapsed(false);
     }
-  }, [isVerticalLayout, collapsed]);
+  }, [isVerticalLayout, collapsed, setCollapsed]);
 
   const fetchStats = async () => {
     try {

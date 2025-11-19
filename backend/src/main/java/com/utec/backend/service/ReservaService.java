@@ -30,6 +30,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import jakarta.persistence.criteria.Predicate;
 
+import static com.utec.backend.security.Constants.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -93,7 +95,7 @@ public class ReservaService {
         
         // 7. Determinar el estado inicial según el rol
         Reserva.EstadoReserva estadoInicial;
-        boolean esDocente = "DOCENTE".equals(userRole);
+        boolean esDocente = ROLE_DOCENTE.equals(userRole);
         
         if (esDocente) {
             estadoInicial = Reserva.EstadoReserva.PENDIENTE;
@@ -147,7 +149,7 @@ public class ReservaService {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public ReservaResponseDto createReserva(ReservaCreateDto createDto, String userEmail) {
-        return createReserva(createDto, userEmail, "ADMIN"); // Por defecto ADMIN para mantener compatibilidad
+        return createReserva(createDto, userEmail, ROLE_ADMIN); // Por defecto ADMIN para mantener compatibilidad
     }
     
     /**

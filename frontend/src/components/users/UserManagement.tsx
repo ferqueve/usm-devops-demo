@@ -49,7 +49,7 @@ import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
 import { usuariosApi } from '@/lib/api/users';
-import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS } from '@/lib/config/constants';
+import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS, ROLES } from '@/lib/config/constants';
 import type { User, UserRole, UserFilters } from '@/lib/types/users';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { 
@@ -106,7 +106,7 @@ export default function UserManagement() {
   const [changeRoleDialog, setChangeRoleDialog] = useState(false);
   const [changingRole, setChangingRole] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [newRole, setNewRole] = useState<UserRole>('ESTUDIANTE');
+  const [newRole, setNewRole] = useState<UserRole>(ROLES.ESTUDIANTE);
   
   // Modal de confirmación de cambio de estado
   const [confirmStatusDialog, setConfirmStatusDialog] = useState(false);
