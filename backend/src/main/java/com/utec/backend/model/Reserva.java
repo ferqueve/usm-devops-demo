@@ -35,6 +35,10 @@ public class Reserva {
     @JoinColumn(name = "carrera_id", nullable = true)
     private Carrera carrera;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "analista_id", nullable = true)
+    private Usuario analistaAsignado;
+    
     @Column(name = "inicio", nullable = false)
     private LocalDateTime inicio;
     

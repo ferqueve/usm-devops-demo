@@ -43,6 +43,7 @@ public class ReservaItemSolicitadoService {
     private final ReservaRepository reservaRepository;
     private final TipoElementoRepository tipoElementoRepository;
     private final InventarioItemRepository inventarioItemRepository;
+    private final EmailService emailService;
     
     /**
      * Crear múltiples solicitudes de items para una reserva
@@ -245,6 +246,7 @@ public class ReservaItemSolicitadoService {
 
         boolean cambios = false;
 
+        ReservaItemSolicitado.EstadoSolicitud estadoAnterior = item.getEstado();
         if (updateDto.getEstado() != null && updateDto.getEstado() != item.getEstado()) {
             validarTransicionEstado(item.getEstado(), updateDto.getEstado());
             item.setEstado(updateDto.getEstado());
@@ -303,7 +305,34 @@ public class ReservaItemSolicitadoService {
 
         ReservaItemSolicitado guardado = reservaItemSolicitadoRepository.save(item);
         log.info("Solicitud de inventario {} actualizada por {}", guardado.getId(), actualizadoPor != null ? actualizadoPor : "sistema");
-        return mapToResponseDto(guardado);
+        
+        ReservaItemSolicitadoResponseDto dto = mapToResponseDto(guardado);
+        
+        // Enviar notificación al usuario si cambió el estado
+        if (cambios && updateDto.getEstado() != null && updateDto.getEstado() != estadoAnterior) {
+            try {
+                if (dto.getSolicitanteEmail() != null) {
+                    boolean emailEnviado = emailService.enviarEmailNotificacionEstadoSolicitudInventario(
+                        dto.getSolicitanteEmail(),
+                        dto,
+                        estadoAnterior != null ? estadoAnterior.toString() : "N/A",
+                        updateDto.getEstado().toString()
+                    );
+                    if (emailEnviado) {
+                        log.info("Email de notificación de cambio de estado de solicitud de inventario enviado al usuario: {}", 
+                                dto.getSolicitanteEmail());
+                    } else {
+                        log.warn("No se pudo enviar email de notificación al usuario: {}", 
+                                dto.getSolicitanteEmail());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error al enviar email de notificación de cambio de estado de solicitud de inventario: {}", e.getMessage());
+                // No lanzar excepción para no interrumpir el flujo
+            }
+        }
+        
+        return dto;
     }
 
     private void validarTransicionEstado(ReservaItemSolicitado.EstadoSolicitud actual,

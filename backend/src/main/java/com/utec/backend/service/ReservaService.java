@@ -26,6 +26,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import jakarta.persistence.criteria.Predicate;
@@ -42,6 +43,7 @@ public class ReservaService {
     private final UsuarioRepository usuarioRepository;
     private final CarreraRepository carreraRepository;
     private final ReservaItemSolicitadoService reservaItemSolicitadoService;
+    private final EmailService emailService;
     
     /**
      * Crear una nueva reserva con manejo robusto de concurrencia
@@ -93,7 +95,45 @@ public class ReservaService {
             throw new RuntimeException("La reserva debe tener una duración mínima de 30 minutos");
         }
         
-        // 7. Determinar el estado inicial según el rol
+        // 6.5. Validar recurrencia si se proporciona
+        if (createDto.getTipoRecurrencia() != null) {
+            if (createDto.getFechaFinRecurrencia() == null) {
+                throw new RuntimeException("La fecha de fin de recurrencia es requerida cuando se especifica un tipo de recurrencia");
+            }
+            if (!createDto.getFechaFinRecurrencia().isAfter(createDto.getInicio())) {
+                throw new RuntimeException("La fecha de fin de recurrencia debe ser posterior a la fecha de inicio");
+            }
+            // Validar que no se generen demasiadas reservas (límite de seguridad: 1000 reservas)
+            long maxReservas = calcularMaxReservas(createDto);
+            if (maxReservas > 1000) {
+                throw new RuntimeException("La recurrencia generaría más de 1000 reservas. Por favor, reduzca el rango de fechas.");
+            }
+        }
+        
+        // 7. Validar y obtener analista asignado si es docente
+        Usuario analistaAsignado = null;
+        if (ROLE_DOCENTE.equals(userRole)) {
+            if (createDto.getAnalistaId() == null) {
+                throw new RuntimeException("El docente debe seleccionar un analista para gestionar la solicitud");
+            }
+            
+            analistaAsignado = usuarioRepository.findById(createDto.getAnalistaId())
+                    .orElseThrow(() -> new RuntimeException("Analista no encontrado con ID: " + createDto.getAnalistaId()));
+            
+            // Validar que el usuario seleccionado es realmente un analista
+            if (analistaAsignado.getRolApp() != Usuario.RolApp.ANALISTA) {
+                throw new RuntimeException("El usuario seleccionado no es un analista");
+            }
+            
+            // Validar que el analista no esté eliminado
+            if (analistaAsignado.getDeletedAt() != null) {
+                throw new RuntimeException("El analista seleccionado ha sido eliminado");
+            }
+            
+            log.info("Analista {} asignado a solicitud de docente {}", analistaAsignado.getEmail(), userEmail);
+        }
+        
+        // 8. Determinar el estado inicial según el rol
         Reserva.EstadoReserva estadoInicial;
         boolean esDocente = ROLE_DOCENTE.equals(userRole);
         
@@ -119,11 +159,32 @@ public class ReservaService {
             }
         }
         
-        // 8. Crear la reserva con el estado apropiado
+        // 9. Crear reserva(s) - simple o recurrente
+        if (createDto.getTipoRecurrencia() != null) {
+            // Crear múltiples reservas recurrentes
+            return crearReservasRecurrentes(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial, esDocente);
+        } else {
+            // Crear una sola reserva (comportamiento original)
+            return crearReservaSimple(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial);
+        }
+    }
+    
+    /**
+     * Crear una reserva simple (no recurrente)
+     */
+    private ReservaResponseDto crearReservaSimple(
+            ReservaCreateDto createDto,
+            Usuario usuario,
+            Espacio espacio,
+            Carrera carrera,
+            Usuario analistaAsignado,
+            Reserva.EstadoReserva estadoInicial) {
+        
         Reserva reserva = new Reserva();
         reserva.setEspacio(espacio);
         reserva.setUsuario(usuario);
         reserva.setCarrera(carrera);
+        reserva.setAnalistaAsignado(analistaAsignado);
         reserva.setInicio(createDto.getInicio());
         reserva.setFin(createDto.getFin());
         reserva.setEstado(estadoInicial);
@@ -132,15 +193,180 @@ public class ReservaService {
         log.info("Reserva creada exitosamente. ID: {}, Espacio: {}, Usuario: {}, Estado: {}", 
                 savedReserva.getId(), espacio.getNombre(), usuario.getNombre(), estadoInicial);
         
-        // 9. Crear items solicitados si se proporcionaron
+        // Crear items solicitados si se proporcionaron
         if (createDto.getItemsSolicitados() != null && !createDto.getItemsSolicitados().isEmpty()) {
             reservaItemSolicitadoService.crearSolicitudes(savedReserva.getId(), createDto.getItemsSolicitados());
             log.info("Se crearon {} items solicitados para la reserva {}", 
                     createDto.getItemsSolicitados().size(), savedReserva.getId());
         }
         
-        // 10. Retornar DTO con datos completos (incluyendo items solicitados)
-        return mapToResponseDto(savedReserva);
+        ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
+        
+        // Enviar notificación al analista si es una solicitud pendiente
+        if (estadoInicial == Reserva.EstadoReserva.PENDIENTE && analistaAsignado != null) {
+            try {
+                boolean emailEnviado = emailService.enviarEmailNotificacionNuevaSolicitud(
+                    analistaAsignado.getEmail(), reservaDto);
+                if (emailEnviado) {
+                    log.info("Email de notificación de nueva solicitud enviado al analista: {}", 
+                            analistaAsignado.getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación al analista: {}", 
+                            analistaAsignado.getEmail());
+                }
+            } catch (Exception e) {
+                log.error("Error al enviar email de notificación al analista: {}", e.getMessage());
+                // No lanzar excepción para no interrumpir el flujo de creación de reserva
+            }
+        }
+        
+        return reservaDto;
+    }
+    
+    /**
+     * Crear múltiples reservas recurrentes
+     */
+    private ReservaResponseDto crearReservasRecurrentes(
+            ReservaCreateDto createDto,
+            Usuario usuario,
+            Espacio espacio,
+            Carrera carrera,
+            Usuario analistaAsignado,
+            Reserva.EstadoReserva estadoInicial,
+            boolean esDocente) {
+        
+        List<LocalDateTime> fechasInicio = generarFechasRecurrentes(createDto);
+        log.info("Generando {} reservas recurrentes de tipo {}", fechasInicio.size(), createDto.getTipoRecurrencia());
+        
+        long duracionMinutos = Duration.between(createDto.getInicio(), createDto.getFin()).toMinutes();
+        List<Reserva> reservasCreadas = new ArrayList<>();
+        List<Reserva> reservasConError = new ArrayList<>();
+        
+        for (LocalDateTime fechaInicio : fechasInicio) {
+            LocalDateTime fechaFin = fechaInicio.plusMinutes(duracionMinutos);
+            
+            // Validar que no sea en el pasado
+            if (fechaInicio.isBefore(LocalDateTime.now())) {
+                continue; // Saltar fechas pasadas
+            }
+            
+            // Si es docente, no validar conflictos (será PENDIENTE)
+            // Si es admin/analista, validar conflictos antes de crear
+            if (!esDocente) {
+                List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                        espacio.getId(),
+                        fechaInicio,
+                        fechaFin,
+                        Reserva.EstadoReserva.APROBADO
+                );
+                
+                if (!conflictos.isEmpty()) {
+                    log.warn("Conflicto detectado para fecha recurrente: {}. Se omite esta reserva.", fechaInicio);
+                    reservasConError.add(null); // Marcador de error
+                    continue;
+                }
+            }
+            
+            // Crear la reserva
+            Reserva reserva = new Reserva();
+            reserva.setEspacio(espacio);
+            reserva.setUsuario(usuario);
+            reserva.setCarrera(carrera);
+            reserva.setAnalistaAsignado(analistaAsignado);
+            reserva.setInicio(fechaInicio);
+            reserva.setFin(fechaFin);
+            reserva.setEstado(estadoInicial);
+            
+            Reserva savedReserva = reservaRepository.save(reserva);
+            reservasCreadas.add(savedReserva);
+            
+            // Crear items solicitados para cada reserva
+            if (createDto.getItemsSolicitados() != null && !createDto.getItemsSolicitados().isEmpty()) {
+                reservaItemSolicitadoService.crearSolicitudes(savedReserva.getId(), createDto.getItemsSolicitados());
+            }
+        }
+        
+        log.info("Se crearon {} reservas recurrentes exitosamente. {} reservas omitidas por conflictos o fechas pasadas.", 
+                reservasCreadas.size(), fechasInicio.size() - reservasCreadas.size());
+        
+        if (reservasCreadas.isEmpty()) {
+            throw new RuntimeException("No se pudo crear ninguna reserva recurrente. Todas las fechas tienen conflictos o están en el pasado.");
+        }
+        
+        // Retornar la primera reserva creada como respuesta principal
+        ReservaResponseDto primeraReservaDto = mapToResponseDto(reservasCreadas.get(0));
+        
+        // Enviar notificación al analista si es una solicitud pendiente (solo para la primera)
+        if (estadoInicial == Reserva.EstadoReserva.PENDIENTE && analistaAsignado != null) {
+            try {
+                boolean emailEnviado = emailService.enviarEmailNotificacionNuevaSolicitud(
+                    analistaAsignado.getEmail(), primeraReservaDto);
+                if (emailEnviado) {
+                    log.info("Email de notificación de nueva solicitud recurrente enviado al analista: {}", 
+                            analistaAsignado.getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación al analista: {}", 
+                            analistaAsignado.getEmail());
+                }
+            } catch (Exception e) {
+                log.error("Error al enviar email de notificación al analista: {}", e.getMessage());
+                // No lanzar excepción para no interrumpir el flujo de creación de reserva
+            }
+        }
+        
+        return primeraReservaDto;
+    }
+    
+    /**
+     * Generar lista de fechas de inicio para reservas recurrentes
+     */
+    private List<LocalDateTime> generarFechasRecurrentes(ReservaCreateDto createDto) {
+        List<LocalDateTime> fechas = new ArrayList<>();
+        LocalDateTime fechaActual = createDto.getInicio();
+        LocalDateTime fechaFin = createDto.getFechaFinRecurrencia();
+        
+        // Ajustar fechaFin para incluir el día completo si es necesario
+        LocalDateTime fechaFinAjustada = fechaFin.plusDays(1).withHour(0).withMinute(0).minusMinutes(1);
+        
+        while (!fechaActual.isAfter(fechaFinAjustada)) {
+            fechas.add(fechaActual);
+            
+            switch (createDto.getTipoRecurrencia()) {
+                case DIARIA:
+                    fechaActual = fechaActual.plusDays(1);
+                    break;
+                case SEMANAL:
+                    fechaActual = fechaActual.plusWeeks(1);
+                    break;
+                case MENSUAL:
+                    fechaActual = fechaActual.plusMonths(1);
+                    break;
+            }
+        }
+        
+        return fechas;
+    }
+    
+    /**
+     * Calcular el número máximo de reservas que se generarían
+     */
+    private long calcularMaxReservas(ReservaCreateDto createDto) {
+        LocalDateTime fechaInicio = createDto.getInicio();
+        LocalDateTime fechaFin = createDto.getFechaFinRecurrencia();
+        
+        switch (createDto.getTipoRecurrencia()) {
+            case DIARIA:
+                return Duration.between(fechaInicio, fechaFin).toDays() + 1;
+            case SEMANAL:
+                return Duration.between(fechaInicio, fechaFin).toDays() / 7 + 1;
+            case MENSUAL:
+                // Aproximación: meses entre fechas
+                long meses = (fechaFin.getYear() - fechaInicio.getYear()) * 12 
+                           + (fechaFin.getMonthValue() - fechaInicio.getMonthValue());
+                return meses + 1;
+            default:
+                return 1;
+        }
     }
     
     /**
@@ -260,6 +486,7 @@ public class ReservaService {
     /**
      * Obtener todas las reservas del sistema (sin filtrar por usuario)
      * Para ANALISTA/ADMIN con paginación y filtros
+     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     @Transactional(readOnly = true)
     public Page<ReservaResponseDto> getAllReservasPaged(
@@ -271,9 +498,11 @@ public class ReservaService {
             Long usuarioId,
             LocalDateTime fechaInicio,
             LocalDateTime fechaFin,
-            String tiempo) {
+            String tiempo,
+            String userEmail,
+            String userRole) {
         Specification<Reserva> spec = buildSpecificationAll(
-                estado, espacioId, carreraId, tipoEspacioId, usuarioId, fechaInicio, fechaFin, tiempo);
+                estado, espacioId, carreraId, tipoEspacioId, usuarioId, fechaInicio, fechaFin, tiempo, userEmail, userRole);
         
         Page<Reserva> reservasPage = reservaRepository.findAll(spec, pageable);
         return reservasPage.map(this::mapToResponseDto);
@@ -281,6 +510,7 @@ public class ReservaService {
     
     /**
      * Construir Specification para filtrar todas las reservas (sin filtrar por usuario por defecto)
+     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     private Specification<Reserva> buildSpecificationAll(
             String estado,
@@ -290,12 +520,24 @@ public class ReservaService {
             Long usuarioId,
             LocalDateTime fechaInicio,
             LocalDateTime fechaFin,
-            String tiempo) {
+            String tiempo,
+            String userEmail,
+            String userRole) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             
-            // Filtro opcional por usuario (para ANALISTA filtrar por solicitante)
-            if (usuarioId != null) {
+            // Si el usuario es ANALISTA, solo mostrar reservas asignadas a él
+            if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
+                Usuario analista = usuarioRepository.findByEmail(userEmail)
+                        .orElse(null);
+                if (analista != null) {
+                    predicates.add(cb.equal(root.get("analistaAsignado").get("id"), analista.getId()));
+                    log.debug("Filtrando reservas para analista: {} (ID: {})", userEmail, analista.getId());
+                }
+            }
+            
+            // Filtro opcional por usuario (para ADMIN filtrar por solicitante)
+            if (usuarioId != null && !ROLE_ANALISTA.equals(userRole)) {
                 predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
             }
             
@@ -352,10 +594,11 @@ public class ReservaService {
     /**
      * Cambiar el estado de una reserva (aprobar/rechazar)
      * Solo permite cambiar de PENDIENTE a APROBADO o CANCELADO
+     * Si el usuario es ANALISTA, solo puede aprobar/rechazar reservas asignadas a él
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
-    public ReservaResponseDto cambiarEstadoReserva(Long id, String nuevoEstadoStr) {
-        log.info("Cambiando estado de reserva ID: {} a {}", id, nuevoEstadoStr);
+    public ReservaResponseDto cambiarEstadoReserva(Long id, String nuevoEstadoStr, String userEmail, String userRole) {
+        log.info("Cambiando estado de reserva ID: {} a {} por usuario: {} (rol: {})", id, nuevoEstadoStr, userEmail, userRole);
         
         // Validar que el nuevo estado es válido
         Reserva.EstadoReserva nuevoEstado;
@@ -379,6 +622,22 @@ public class ReservaService {
         // Validar que la reserva está en estado PENDIENTE
         if (reserva.getEstado() != Reserva.EstadoReserva.PENDIENTE) {
             throw new RuntimeException("Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: " + reserva.getEstado());
+        }
+        
+        // Si el usuario es ANALISTA, validar que la reserva está asignada a él
+        if (ROLE_ANALISTA.equals(userRole)) {
+            Usuario analista = usuarioRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+            
+            if (reserva.getAnalistaAsignado() == null) {
+                throw new RuntimeException("Esta reserva no tiene un analista asignado");
+            }
+            
+            if (!reserva.getAnalistaAsignado().getId().equals(analista.getId())) {
+                throw new RuntimeException("No tienes permisos para gestionar esta reserva. Solo puedes gestionar las reservas asignadas a ti.");
+            }
+            
+            log.info("Analista {} aprobando/rechazando reserva asignada a él", userEmail);
         }
         
         // Si se aprueba, validar conflictos con otras reservas APROBADO
@@ -406,7 +665,64 @@ public class ReservaService {
         Reserva savedReserva = reservaRepository.save(reserva);
         
         log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
-        return mapToResponseDto(savedReserva);
+        
+        ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
+        
+        // Enviar notificación al usuario sobre el cambio de estado
+        try {
+            if (nuevoEstado == Reserva.EstadoReserva.APROBADO) {
+                boolean emailEnviado = emailService.enviarEmailNotificacionReservaAprobada(
+                    reserva.getUsuario().getEmail(), reservaDto);
+                if (emailEnviado) {
+                    log.info("Email de notificación de reserva aprobada enviado al usuario: {}", 
+                            reserva.getUsuario().getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación al usuario: {}", 
+                            reserva.getUsuario().getEmail());
+                }
+                
+                // Si la reserva tiene items solicitados, notificar a MANTENIMIENTO
+                if (reservaDto.getItemsSolicitados() != null && !reservaDto.getItemsSolicitados().isEmpty()) {
+                    try {
+                        List<Usuario> personalMantenimiento = usuarioRepository.findByRolAppAndDeletedAtIsNull(Usuario.RolApp.MANTENIMIENTO);
+                        if (!personalMantenimiento.isEmpty()) {
+                            int cantidadItems = reservaDto.getItemsSolicitados().size();
+                            for (Usuario mantenimiento : personalMantenimiento) {
+                                boolean emailMantenimientoEnviado = emailService.enviarEmailNotificacionNuevaSolicitudInventario(
+                                    mantenimiento.getEmail(), reservaDto, cantidadItems);
+                                if (emailMantenimientoEnviado) {
+                                    log.info("Email de notificación de solicitud de inventario enviado a mantenimiento: {}", 
+                                            mantenimiento.getEmail());
+                                } else {
+                                    log.warn("No se pudo enviar email de notificación a mantenimiento: {}", 
+                                            mantenimiento.getEmail());
+                                }
+                            }
+                        } else {
+                            log.warn("No se encontró personal de mantenimiento para notificar sobre solicitud de inventario");
+                        }
+                    } catch (Exception e) {
+                        log.error("Error al enviar email de notificación a mantenimiento: {}", e.getMessage());
+                        // No lanzar excepción para no interrumpir el flujo
+                    }
+                }
+            } else if (nuevoEstado == Reserva.EstadoReserva.CANCELADO) {
+                boolean emailEnviado = emailService.enviarEmailNotificacionReservaRechazada(
+                    reserva.getUsuario().getEmail(), reservaDto);
+                if (emailEnviado) {
+                    log.info("Email de notificación de reserva rechazada enviado al usuario: {}", 
+                            reserva.getUsuario().getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación al usuario: {}", 
+                            reserva.getUsuario().getEmail());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación al usuario: {}", e.getMessage());
+            // No lanzar excepción para no interrumpir el flujo de cambio de estado
+        }
+        
+        return reservaDto;
     }
     
     /**
@@ -508,6 +824,48 @@ public class ReservaService {
         
         if (cambioHorarios) {
             log.info("Horarios actualizados para reserva ID: {}", id);
+            
+            // Enviar notificaciones sobre el cambio de horario
+            try {
+                ReservaResponseDto reservaDto = mapToResponseDto(updatedReserva);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                String horarioAnterior = reserva.getInicio().format(formatter) + " - " + reserva.getFin().format(formatter);
+                
+                // Notificar al usuario
+                boolean emailUsuarioEnviado = emailService.enviarEmailNotificacionReservaActualizada(
+                    reserva.getUsuario().getEmail(),
+                    reservaDto,
+                    horarioAnterior,
+                    false // esAnalista = false
+                );
+                if (emailUsuarioEnviado) {
+                    log.info("Email de notificación de actualización de reserva enviado al usuario: {}", 
+                            reserva.getUsuario().getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación al usuario: {}", 
+                            reserva.getUsuario().getEmail());
+                }
+                
+                // Notificar al analista si está asignado
+                if (reserva.getAnalistaAsignado() != null) {
+                    boolean emailAnalistaEnviado = emailService.enviarEmailNotificacionReservaActualizada(
+                        reserva.getAnalistaAsignado().getEmail(),
+                        reservaDto,
+                        horarioAnterior,
+                        true // esAnalista = true
+                    );
+                    if (emailAnalistaEnviado) {
+                        log.info("Email de notificación de actualización de reserva enviado al analista: {}", 
+                                reserva.getAnalistaAsignado().getEmail());
+                    } else {
+                        log.warn("No se pudo enviar email de notificación al analista: {}", 
+                                reserva.getAnalistaAsignado().getEmail());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error al enviar email de notificación de actualización de reserva: {}", e.getMessage());
+                // No lanzar excepción para no interrumpir el flujo
+            }
         }
         
         return mapToResponseDto(updatedReserva);
@@ -546,6 +904,25 @@ public class ReservaService {
         reservaRepository.save(reserva);
         
         log.info("Reserva ID: {} cancelada exitosamente", id);
+        
+        // Enviar notificación al analista si estaba asignado
+        if (reserva.getAnalistaAsignado() != null) {
+            try {
+                ReservaResponseDto reservaDto = mapToResponseDto(reserva);
+                boolean emailEnviado = emailService.enviarEmailNotificacionReservaCancelada(
+                    reserva.getAnalistaAsignado().getEmail(), reservaDto);
+                if (emailEnviado) {
+                    log.info("Email de notificación de reserva cancelada enviado al analista: {}", 
+                            reserva.getAnalistaAsignado().getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación al analista: {}", 
+                            reserva.getAnalistaAsignado().getEmail());
+                }
+            } catch (Exception e) {
+                log.error("Error al enviar email de notificación al analista: {}", e.getMessage());
+                // No lanzar excepción para no interrumpir el flujo de cancelación
+            }
+        }
     }
     
     /**
@@ -562,6 +939,7 @@ public class ReservaService {
     /**
      * Obtener todas las reservas del sistema (público, para visualización)
      * Permite filtros opcionales para visualización
+     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     @Transactional(readOnly = true)
     public List<ReservaResponseDto> getTodasLasReservas(
@@ -570,8 +948,10 @@ public class ReservaService {
             Long carreraId,
             Long tipoEspacioId,
             LocalDateTime fechaInicio,
-            LocalDateTime fechaFin) {
-        Specification<Reserva> spec = buildSpecificationPublico(estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin);
+            LocalDateTime fechaFin,
+            String userEmail,
+            String userRole) {
+        Specification<Reserva> spec = buildSpecificationPublico(estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin, userEmail, userRole);
         
         List<Reserva> reservas = reservaRepository.findAll(spec);
         return reservas.stream()
@@ -582,6 +962,7 @@ public class ReservaService {
     
     /**
      * Construir Specification para filtrar reservas públicas (sin filtrar por usuario)
+     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     private Specification<Reserva> buildSpecificationPublico(
             String estado,
@@ -589,11 +970,23 @@ public class ReservaService {
             Long carreraId,
             Long tipoEspacioId,
             LocalDateTime fechaInicio,
-            LocalDateTime fechaFin) {
+            LocalDateTime fechaFin,
+            String userEmail,
+            String userRole) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             
-            // NO filtrar por usuario - mostrar todas las reservas
+            // Si el usuario es ANALISTA, solo mostrar reservas asignadas a él
+            if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
+                Usuario analista = usuarioRepository.findByEmail(userEmail)
+                        .orElse(null);
+                if (analista != null) {
+                    predicates.add(cb.equal(root.get("analistaAsignado").get("id"), analista.getId()));
+                    log.debug("Filtrando reservas públicas para analista: {} (ID: {})", userEmail, analista.getId());
+                }
+            }
+            
+            // NO filtrar por usuario - mostrar todas las reservas (solo para ADMIN)
             
             // Filtro por estado
             if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
@@ -949,7 +1342,7 @@ public class ReservaService {
     /**
      * Mapear entidad Reserva a DTO de respuesta
      */
-    private ReservaResponseDto mapToResponseDto(Reserva reserva) {
+    public ReservaResponseDto mapToResponseDto(Reserva reserva) {
         ReservaResponseDto dto = new ReservaResponseDto();
         dto.setId(reserva.getId());
         dto.setEspacioId(reserva.getEspacio().getId());
@@ -970,6 +1363,12 @@ public class ReservaService {
             dto.setCarreraId(reserva.getCarrera().getId());
             dto.setCarreraNombre(reserva.getCarrera().getNombre());
             dto.setCarreraCodigo(reserva.getCarrera().getCodigo());
+        }
+        // Información del analista asignado
+        if (reserva.getAnalistaAsignado() != null) {
+            dto.setAnalistaId(reserva.getAnalistaAsignado().getId());
+            dto.setAnalistaNombre(reserva.getAnalistaAsignado().getNombre());
+            dto.setAnalistaEmail(reserva.getAnalistaAsignado().getEmail());
         }
         dto.setInicio(reserva.getInicio());
         dto.setFin(reserva.getFin());

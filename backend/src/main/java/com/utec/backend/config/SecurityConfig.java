@@ -61,6 +61,8 @@ public class SecurityConfig {
                 // Permitir acceso al perfil propio a todos los autenticados
                 .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/me").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/me").authenticated()
+                // Permitir a DOCENTE, ADMIN y ANALISTA listar analistas
+                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/analistas").hasAnyRole(ROLE_DOCENTE, ROLE_ADMIN, ROLE_ANALISTA)
                 // Resto de usuarios: solo ADMIN
                 .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
                 .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)

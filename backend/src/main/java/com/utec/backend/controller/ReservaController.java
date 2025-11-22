@@ -208,10 +208,12 @@ public class ReservaController {
     /**
      * Obtener todas las reservas del sistema (público, para visualización en calendario)
      * Accesible para todos los roles autenticados
+     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     @GetMapping("/todas")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<ReservaResponseDto>>> getTodasLasReservas(
+            Authentication authentication,
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) Long espacioId,
             @RequestParam(required = false) Long carreraId,
@@ -219,8 +221,16 @@ public class ReservaController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
         try {
+            String userEmail = authentication.getName();
+            String userRole = authentication.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .findFirst()
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .orElse("");
+            
             List<ReservaResponseDto> reservas = reservaService.getTodasLasReservas(
-                    estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin);
+                    estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin, userEmail, userRole);
             return ResponseEntity.ok(ApiResponse.success(reservas, "Reservas obtenidas exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -263,10 +273,12 @@ public class ReservaController {
     /**
      * Obtener todas las reservas del sistema (para ANALISTA/ADMIN)
      * Sin filtrar por usuario, con paginación y filtros
+     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     @GetMapping("/paged")
     @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
     public ResponseEntity<ApiResponse<PagedResponseDto<ReservaResponseDto>>> getAllReservasPaged(
+            Authentication authentication,
             @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) Long espacioId,
@@ -277,6 +289,14 @@ public class ReservaController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
             @RequestParam(required = false) String tiempo) {
         try {
+            String userEmail = authentication.getName();
+            String userRole = authentication.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .findFirst()
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .orElse("");
+            
             var reservasPage = reservaService.getAllReservasPaged(
                     pageable,
                     estado,
@@ -286,7 +306,9 @@ public class ReservaController {
                     usuarioId,
                     fechaInicio,
                     fechaFin,
-                    tiempo);
+                    tiempo,
+                    userEmail,
+                    userRole);
             
             PagedResponseDto<ReservaResponseDto> pagedResponse = PagedResponseDto.of(reservasPage);
             return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Reservas obtenidas exitosamente"));
@@ -314,7 +336,15 @@ public class ReservaController {
                         .body(ApiResponse.error("El campo 'estado' es requerido"));
             }
             
-            ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado);
+            String userEmail = authentication.getName();
+            String userRole = authentication.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .findFirst()
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .orElse("");
+            
+            ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado, userEmail, userRole);
             String mensaje = "APROBADO".equals(nuevoEstado) 
                     ? "Reserva aprobada exitosamente"
                     : "Reserva rechazada exitosamente";

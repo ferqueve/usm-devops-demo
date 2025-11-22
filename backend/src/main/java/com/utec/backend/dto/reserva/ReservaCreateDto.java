@@ -26,5 +26,18 @@ public class ReservaCreateDto {
     private LocalDateTime fin;
     
     private List<ReservaItemSolicitadoCreateDto> itemsSolicitados; // Opcional
+    
+    // Campos para reservas recurrentes/periódicas
+    private TipoRecurrencia tipoRecurrencia; // Opcional: DIARIA, SEMANAL, MENSUAL, null = no recurrente
+    private LocalDateTime fechaFinRecurrencia; // Opcional: fecha hasta la cual se repite
+    
+    // Campo para asignar analista (solo para docentes)
+    private Long analistaId; // Opcional: ID del analista al cual se asigna la solicitud
+    
+    public enum TipoRecurrencia {
+        DIARIA,    // Todos los días
+        SEMANAL,   // Misma hora, mismo día de la semana
+        MENSUAL    // Misma hora, mismo día del mes
+    }
 }
 

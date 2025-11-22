@@ -49,7 +49,18 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
     );
     
     // Buscar reserva por ID con datos relacionados
-    @Query("SELECT r FROM Reserva r JOIN FETCH r.espacio JOIN FETCH r.usuario LEFT JOIN FETCH r.carrera WHERE r.id = :id")
+    @Query("SELECT r FROM Reserva r JOIN FETCH r.espacio JOIN FETCH r.usuario LEFT JOIN FETCH r.carrera LEFT JOIN FETCH r.analistaAsignado WHERE r.id = :id")
     Reserva findByIdWithRelations(@Param("id") Long id);
+    
+    // Buscar reservas aprobadas que inician en un rango de tiempo (para recordatorios)
+    @Query("SELECT r FROM Reserva r JOIN FETCH r.espacio JOIN FETCH r.usuario LEFT JOIN FETCH r.carrera LEFT JOIN FETCH r.analistaAsignado " +
+           "WHERE r.estado = :estado " +
+           "AND r.inicio >= :inicioDesde AND r.inicio <= :inicioHasta " +
+           "ORDER BY r.inicio ASC")
+    List<Reserva> findReservasAprobadasEnRango(
+        @Param("estado") Reserva.EstadoReserva estado,
+        @Param("inicioDesde") LocalDateTime inicioDesde,
+        @Param("inicioHasta") LocalDateTime inicioHasta
+    );
 }
 

@@ -1,5 +1,6 @@
 package com.utec.backend.controller;
 
+import com.utec.backend.common.ApiResponse;
 import com.utec.backend.dto.usuario.CambioRolDto;
 import com.utec.backend.dto.usuario.PagedUsuarioResponseDto;
 import com.utec.backend.dto.usuario.UsuarioResponseDto;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -152,5 +154,18 @@ public class UsuarioController {
     public ResponseEntity<Void> restablecerPasswordPorAdmin(@PathVariable Long id) {
         boolean enviado = usuarioService.restablecerPasswordPorAdmin(id);
         return enviado ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    }
+
+    @Operation(summary = "Listar analistas disponibles", description = "Obtener lista de todos los analistas activos disponibles para asignar a solicitudes")
+    @GetMapping("/analistas")
+    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    public ResponseEntity<ApiResponse<List<UsuarioResponseDto>>> listarAnalistas() {
+        try {
+            List<UsuarioResponseDto> analistas = usuarioService.listarAnalistas();
+            return ResponseEntity.ok(ApiResponse.success(analistas, "Analistas obtenidos exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener analistas: " + e.getMessage()));
+        }
     }
 }

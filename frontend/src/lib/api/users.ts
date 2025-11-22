@@ -101,4 +101,11 @@ export const usuariosApi = {
       method: 'POST',
     });
   },
+
+  // Listar analistas disponibles
+  async listarAnalistas(): Promise<ApiResponse<User[]>> {
+    return apiRequest<User[]>('/usuarios/analistas', {
+      method: 'GET',
+    });
+  },
 };

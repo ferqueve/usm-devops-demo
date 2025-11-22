@@ -94,6 +94,21 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Listar todos los analistas activos disponibles
+     */
+    public List<UsuarioResponseDto> listarAnalistas() {
+        List<Usuario> analistas = usuarioRepository.findByRolAppAndDeletedAtIsNull(Usuario.RolApp.ANALISTA);
+        log.info("Encontrados {} analistas activos", analistas.size());
+        if (analistas.isEmpty()) {
+            log.warn("No se encontraron analistas activos en la base de datos");
+        }
+        return analistas.stream()
+                .map(this::convertirADto)
+                .sorted((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()))
+                .collect(Collectors.toList());
+    }
+
     public UsuarioResponseDto obtenerUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException(id));
@@ -111,6 +126,24 @@ public class UsuarioService {
         
         log.info("Rol de usuario ID {} ({}) cambiado de {} a {}", 
                 id, usuario.getEmail(), rolAnterior, cambioRolDto.getRolApp());
+        
+        // Enviar notificación al usuario sobre el cambio de rol
+        try {
+            boolean emailEnviado = emailService.enviarEmailNotificacionCambioRol(
+                usuario.getEmail(),
+                usuario.getNombre(),
+                rolAnterior != null ? rolAnterior.toString() : "N/A",
+                cambioRolDto.getRolApp() != null ? cambioRolDto.getRolApp().toString() : "N/A"
+            );
+            if (emailEnviado) {
+                log.info("Email de notificación de cambio de rol enviado al usuario: {}", usuario.getEmail());
+            } else {
+                log.warn("No se pudo enviar email de notificación de cambio de rol al usuario: {}", usuario.getEmail());
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación de cambio de rol: {}", e.getMessage());
+            // No lanzar excepción para no interrumpir el flujo
+        }
     }
 
     public PagedUsuarioResponseDto listarUsuariosPaginados(
@@ -200,17 +233,40 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException(id));
         
-        if (usuario.getDeletedAt() == null) {
+        boolean estabaActivo = usuario.getDeletedAt() == null;
+        boolean activado;
+        
+        if (estabaActivo) {
             // Desactivar (soft delete)
             usuario.setDeletedAt(LocalDateTime.now());
+            activado = false;
             log.info("Usuario ID {} ({}) desactivado", id, usuario.getEmail());
         } else {
             // Activar
             usuario.setDeletedAt(null);
+            activado = true;
             log.info("Usuario ID {} ({}) activado", id, usuario.getEmail());
         }
         
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        
+        // Enviar notificación al usuario sobre el cambio de estado
+        try {
+            boolean emailEnviado = emailService.enviarEmailNotificacionCambioEstado(
+                usuario.getEmail(),
+                usuario.getNombre(),
+                activado
+            );
+            if (emailEnviado) {
+                log.info("Email de notificación de cambio de estado enviado al usuario: {}", usuario.getEmail());
+            } else {
+                log.warn("No se pudo enviar email de notificación de cambio de estado al usuario: {}", usuario.getEmail());
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación de cambio de estado: {}", e.getMessage());
+            // No lanzar excepción para no interrumpir el flujo
+        }
+        
         return convertirADto(usuarioActualizado);
     }
 
@@ -274,6 +330,9 @@ public class UsuarioService {
         boolean cambioEmail = false;
         boolean cambioNombre = false;
         
+        // Guardar email anterior antes de cambiarlo
+        String emailAnterior = usuario.getEmail();
+        
         // Validar email si se está cambiando
         if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
             if (!usuario.getEmail().equals(dto.getEmail())) {
@@ -303,6 +362,26 @@ public class UsuarioService {
             log.info("Admin actualizó email del usuario ID {}", id);
         } else if (cambioNombre) {
             log.info("Admin actualizó nombre del usuario ID {}", id);
+        }
+        
+        // Enviar notificación si se cambió el email
+        if (cambioEmail) {
+            try {
+                String emailNuevo = dto.getEmail();
+                boolean emailEnviado = emailService.enviarEmailNotificacionCambioEmail(
+                    emailAnterior,
+                    emailNuevo,
+                    usuarioActualizado.getNombre() != null ? usuarioActualizado.getNombre() : "Usuario"
+                );
+                if (emailEnviado) {
+                    log.info("Email de notificación de cambio de email enviado al usuario (viejo y nuevo email)");
+                } else {
+                    log.warn("No se pudo enviar email de notificación de cambio de email");
+                }
+            } catch (Exception e) {
+                log.error("Error al enviar email de notificación de cambio de email: {}", e.getMessage());
+                // No lanzar excepción para no interrumpir el flujo
+            }
         }
         
         return convertirADto(usuarioActualizado);

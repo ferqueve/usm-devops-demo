@@ -22,7 +22,9 @@ import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 import { carrerasApi } from '@/lib/api/carreras';
+import { usuariosApi } from '@/lib/api/users';
 import type { Espacio, Reserva, Carrera, TipoElemento } from '@/lib/types/spaces';
+import type { User } from '@/lib/types/users';
 import { formatLocalDateTime } from './reservationUtils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +49,7 @@ export default function ReservationFormDialog({
   const [loading, setLoading] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [analistas, setAnalistas] = useState<User[]>([]);
   const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
   const [fecha, setFecha] = useState<Date | undefined>(new Date());
   const [horaError, setHoraError] = useState<string>('');
@@ -64,7 +67,10 @@ export default function ReservationFormDialog({
     horaInicioHora: '',
     horaInicioMinuto: '00',
     horaFinHora: '',
-    horaFinMinuto: '00'
+    horaFinMinuto: '00',
+    tipoRecurrencia: '' as '' | 'DIARIA' | 'SEMANAL' | 'MENSUAL',
+    fechaFinRecurrencia: undefined as Date | undefined,
+    analistaId: ''
   });
 
   // Generar opciones de hora
@@ -258,6 +264,9 @@ export default function ReservationFormDialog({
       fetchEspacios();
       fetchCarreras();
       fetchTiposElemento();
+      if (isDocente) {
+        fetchAnalistas();
+      }
       setFecha(new Date());
       setHoraError('');
       setItemsSolicitados([]);
@@ -267,10 +276,13 @@ export default function ReservationFormDialog({
         horaInicioHora: '',
         horaInicioMinuto: '00',
         horaFinHora: '',
-        horaFinMinuto: '00'
+        horaFinMinuto: '00',
+        tipoRecurrencia: '',
+        fechaFinRecurrencia: undefined,
+        analistaId: ''
       });
     }
-  }, [open]);
+  }, [open, isDocente]);
 
   // Calcular días completamente ocupados
   const calcularDiasOcupados = useCallback((reservas: Reserva[]) => {
@@ -387,6 +399,25 @@ export default function ReservationFormDialog({
     }
   };
 
+  const fetchAnalistas = async () => {
+    try {
+      const response = await usuariosApi.listarAnalistas();
+      if (response.data) {
+        setAnalistas(response.data);
+        if (response.data.length === 0) {
+          toast.warning('No hay analistas disponibles en el sistema. Contacta al administrador.', {
+            duration: 5000
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar analistas:', error);
+      toast.error('Error al cargar analistas disponibles', {
+        description: 'Por favor, contacta al administrador del sistema'
+      });
+    }
+  };
+
   const agregarItemSolicitado = () => {
     setItemsSolicitados(prev => [...prev, {
       tipoElementoId: tiposElemento[0]?.id || 0,
@@ -403,6 +434,35 @@ export default function ReservationFormDialog({
     setItemsSolicitados(prev => prev.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     ));
+  };
+
+  // Calcular cantidad aproximada de reservas que se crearán
+  const calcularCantidadReservas = (
+    fechaInicio: Date,
+    fechaFin: Date,
+    tipoRecurrencia: 'DIARIA' | 'SEMANAL' | 'MENSUAL'
+  ): number => {
+    if (!fechaInicio || !fechaFin || fechaFin <= fechaInicio) {
+      return 0;
+    }
+
+    const diffTime = fechaFin.getTime() - fechaInicio.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    switch (tipoRecurrencia) {
+      case 'DIARIA':
+        return diffDays + 1;
+      case 'SEMANAL':
+        return Math.floor(diffDays / 7) + 1;
+      case 'MENSUAL': {
+        // Aproximación: meses entre fechas
+        const meses = (fechaFin.getFullYear() - fechaInicio.getFullYear()) * 12 
+                   + (fechaFin.getMonth() - fechaInicio.getMonth());
+        return meses + 1;
+      }
+      default:
+        return 1;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -467,18 +527,42 @@ export default function ReservationFormDialog({
       return;
     }
 
+    // 9. Validar analista si es docente
+    if (isDocente && !formData.analistaId) {
+      toast.error('Por favor selecciona un analista para gestionar tu solicitud');
+      return;
+    }
+
+    // 10. Validar recurrencia si se especificó
+    if (formData.tipoRecurrencia) {
+      if (!formData.fechaFinRecurrencia) {
+        toast.error('Por favor selecciona la fecha de fin de recurrencia');
+        return;
+      }
+      if (formData.fechaFinRecurrencia <= fecha) {
+        toast.error('La fecha de fin de recurrencia debe ser posterior a la fecha de inicio');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       // Formatear fechas en formato ISO local (sin convertir a UTC)
       // Esto es necesario porque el backend usa LocalDateTime que no tiene zona horaria
       const inicioISO = formatLocalDateTime(inicio);
       const finISO = formatLocalDateTime(fin);
+      const fechaFinRecurrenciaISO = formData.fechaFinRecurrencia 
+        ? formatLocalDateTime(new Date(new Date(formData.fechaFinRecurrencia).setHours(23, 59, 59, 999)))
+        : undefined;
 
       await reservationsApi.crearReserva({
         espacioId: parseInt(formData.espacioId),
         carreraId: formData.carreraId ? parseInt(formData.carreraId) : undefined,
         inicio: inicioISO,
         fin: finISO,
+        tipoRecurrencia: formData.tipoRecurrencia || undefined,
+        fechaFinRecurrencia: fechaFinRecurrenciaISO,
+        analistaId: isDocente && formData.analistaId ? parseInt(formData.analistaId) : undefined,
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -487,10 +571,16 @@ export default function ReservationFormDialog({
         })) : undefined
       });
 
+      const cantidadReservas = formData.tipoRecurrencia && formData.fechaFinRecurrencia
+        ? calcularCantidadReservas(fecha, formData.fechaFinRecurrencia, formData.tipoRecurrencia)
+        : 1;
+      
       toast.success(
         isDocente 
-          ? 'Solicitud de reserva enviada exitosamente. Esperando aprobación.'
-          : 'Reserva creada exitosamente'
+          ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
+          : cantidadReservas > 1
+            ? `${cantidadReservas} reservas creadas exitosamente`
+            : 'Reserva creada exitosamente'
       );
       onOpenChange(false);
       onSuccess();
@@ -523,7 +613,8 @@ export default function ReservationFormDialog({
     fecha &&
     formData.horaInicioHora &&
     formData.horaFinHora &&
-    !horaError
+    !horaError &&
+    (!isDocente || formData.analistaId) // Analista requerido solo para docentes
   );
 
   return (
@@ -610,6 +701,44 @@ export default function ReservationFormDialog({
 
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Analista asignado - solo para docentes */}
+            {isDocente && (
+              <>
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="analista" className="text-sm font-semibold text-gray-700 min-w-[80px]">
+                    Analista *
+                  </Label>
+                  <div className="flex-1">
+                    <Select
+                      value={formData.analistaId}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, analistaId: value }))}
+                    >
+                      <SelectTrigger id="analista" className="h-10">
+                        <SelectValue placeholder="Seleccionar analista" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {analistas.length === 0 ? (
+                          <div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+                            <p className="font-medium mb-1">No hay analistas disponibles</p>
+                            <p className="text-xs">Contacta al administrador para crear un analista</p>
+                          </div>
+                        ) : (
+                          analistas.map((analista) => (
+                            <SelectItem key={analista.id} value={analista.id.toString()}>
+                              {analista.nombre} ({analista.email})
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Línea punteada */}
+                <div className="border-t border-dashed border-gray-300 my-4"></div>
+              </>
+            )}
 
             {/* Items Solicitados */}
             <div className="space-y-3">
@@ -842,6 +971,79 @@ export default function ReservationFormDialog({
             {horaError && (
               <p className="text-sm text-destructive font-medium">{horaError}</p>
             )}
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Recurrencia */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">Recurrencia</Label>
+                <div className="flex-1">
+                  <Select
+                    value={formData.tipoRecurrencia || "ninguna"}
+                    onValueChange={(value) => {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        tipoRecurrencia: value === "ninguna" ? '' : value as 'DIARIA' | 'SEMANAL' | 'MENSUAL',
+                        fechaFinRecurrencia: value === "ninguna" ? undefined : prev.fechaFinRecurrencia
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Seleccionar recurrencia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ninguna">Sin recurrencia (una sola vez)</SelectItem>
+                      <SelectItem value="DIARIA">Diaria (todos los días)</SelectItem>
+                      <SelectItem value="SEMANAL">Semanal (mismo día de la semana)</SelectItem>
+                      <SelectItem value="MENSUAL">Mensual (mismo día del mes)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Fecha fin de recurrencia - solo visible si hay recurrencia */}
+              {formData.tipoRecurrencia && (
+                <>
+                  <div className="flex items-center gap-4">
+                    <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">
+                      Hasta el día
+                    </Label>
+                    <div className="flex-1">
+                      <DatePicker
+                        value={formData.fechaFinRecurrencia}
+                        onChange={(date) => setFormData(prev => ({ ...prev, fechaFinRecurrencia: date }))}
+                        placeholder="Seleccionar fecha de fin"
+                        minDate={fecha ? new Date(fecha.getTime() + 24 * 60 * 60 * 1000) : new Date()}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Resumen de reservas que se crearán */}
+                  {formData.fechaFinRecurrencia && fecha && formData.tipoRecurrencia && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm font-medium text-blue-900">
+                        Se crearán aproximadamente{' '}
+                        <span className="font-bold">
+                          {calcularCantidadReservas(
+                            fecha,
+                            formData.fechaFinRecurrencia,
+                            formData.tipoRecurrencia
+                          )}
+                        </span>{' '}
+                        reservas
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        {formData.tipoRecurrencia === 'DIARIA' && 'Una reserva por día'}
+                        {formData.tipoRecurrencia === 'SEMANAL' && 'Una reserva por semana'}
+                        {formData.tipoRecurrencia === 'MENSUAL' && 'Una reserva por mes'}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
           {/* Footer tipo ticket */}

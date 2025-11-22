@@ -63,5 +63,15 @@
     "name": "gmail.api.client-id",
     "type": "java.lang.String",
     "description": "A description for 'gmail.api.client-id'"
+  },
+  {
+    "name": "app.reservas.reminder.hours-before",
+    "type": "java.lang.String",
+    "description": "A description for 'app.reservas.reminder.hours-before'"
+  },
+  {
+    "name": "app.reservas.reminder.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'app.reservas.reminder.enabled'"
   }
 ]}

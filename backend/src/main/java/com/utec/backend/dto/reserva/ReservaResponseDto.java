@@ -27,6 +27,9 @@ public class ReservaResponseDto {
     private Long carreraId;
     private String carreraNombre;
     private String carreraCodigo;
+    private Long analistaId;
+    private String analistaNombre;
+    private String analistaEmail;
     private LocalDateTime inicio;
     private LocalDateTime fin;
     private Reserva.EstadoReserva estado;

@@ -44,6 +44,9 @@ export const reservationsApi = {
     carreraId?: number; // Opcional
     inicio: string; // ISO datetime
     fin: string;
+    tipoRecurrencia?: 'DIARIA' | 'SEMANAL' | 'MENSUAL'; // Opcional
+    fechaFinRecurrencia?: string; // ISO datetime, requerido si tipoRecurrencia está presente
+    analistaId?: number; // Opcional: ID del analista asignado (requerido para docentes)
     itemsSolicitados?: Array<{
       tipoElementoId: number;
       inventarioItemId?: number;

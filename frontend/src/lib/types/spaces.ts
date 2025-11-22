@@ -122,6 +122,9 @@ export interface ReservaItemSolicitadoFilters {
 }
 
 export interface Reserva {
+  analistaId?: number | null;
+  analistaNombre?: string | null;
+  analistaEmail?: string | null;
   id: number;
   espacioId: number;
   espacioNombre: string;
