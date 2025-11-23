@@ -1,4 +1,4 @@
-import { useCallback, useMemo, memo } from 'react';
+import { useCallback, useMemo, memo, useState } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -8,12 +8,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { formatEmailForDisplay, formatNameForSidebar } from "@/lib/utils/text-formatters";
 import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/ui";
+import PreferencesModal from "@/components/preferences/PreferencesModal";
 
 // Tipos para las props del sidebar
 interface DashboardSidebarProps {
@@ -26,6 +27,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
 
   // Memoizar el handler de click para evitar re-renders innecesarios
   const handleMenuItemClick = useCallback((item: SidebarMenuItemType) => {
@@ -164,6 +166,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                     })()}
                   </div>
                 </div>
+                
+                {/* Ícono de configuración */}
+                <button
+                  onClick={() => setPreferencesOpen(true)}
+                  className="flex-shrink-0 p-1.5 rounded-md hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                  title="Preferencias"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
               </div>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -183,6 +194,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      
+      <PreferencesModal open={preferencesOpen} onOpenChange={setPreferencesOpen} />
     </Sidebar>
   );
 });

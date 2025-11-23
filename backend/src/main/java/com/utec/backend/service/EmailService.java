@@ -20,6 +20,7 @@ public class EmailService {
 
     private final GmailApiService gmailApiService;
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioConfiguracionService configuracionService;
 
     @Value("${gmail.api.from-email:usm.utec.uy@gmail.com}")
     private String fromEmail;
@@ -70,6 +71,11 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailVerificacion(String to, String verificationToken) {
+        if (!configuracionService.debeEnviarEmail(to, "verificacion")) {
+            log.debug("Email de verificación no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
+        
         String subject = "Verifica tu cuenta - UTEC Space Manager";
         String verificationUrl = frontendUrl + "/auth/verify?token=" + verificationToken;
         
@@ -99,6 +105,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailRestablecimientoPassword(String to, String nuevaPassword) {
+        if (!configuracionService.debeEnviarEmail(to, "restablecimientoPassword")) {
+            log.debug("Email de restablecimiento de contraseña no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Tu contraseña ha sido restablecida - UTEC Space Manager";
         
         String bodyText = """
@@ -125,6 +135,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionNuevaSolicitud(String to, ReservaResponseDto reserva) {
+        if (!configuracionService.debeEnviarEmail(to, "nuevaSolicitudReserva")) {
+            log.debug("Email de nueva solicitud no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Nueva solicitud de reserva - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -167,6 +181,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionReservaAprobada(String to, ReservaResponseDto reserva) {
+        if (!configuracionService.debeEnviarEmail(to, "reservaAprobada")) {
+            log.debug("Email de reserva aprobada no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Tu reserva ha sido aprobada - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -207,6 +225,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionReservaRechazada(String to, ReservaResponseDto reserva) {
+        if (!configuracionService.debeEnviarEmail(to, "reservaRechazada")) {
+            log.debug("Email de reserva rechazada no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Tu solicitud de reserva ha sido rechazada - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -247,6 +269,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionReservaCancelada(String to, ReservaResponseDto reserva) {
+        if (!configuracionService.debeEnviarEmail(to, "reservaCancelada")) {
+            log.debug("Email de reserva cancelada no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Reserva cancelada - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -290,6 +316,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailRecordatorioReserva(String to, ReservaResponseDto reserva, int horasAntes) {
+        if (!configuracionService.debeEnviarEmail(to, "recordatorioReserva")) {
+            log.debug("Email de recordatorio de reserva no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Recordatorio: Tienes una reserva en " + horasAntes + " horas - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -332,6 +362,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionCambioRol(String to, String nombreUsuario, String rolAnterior, String rolNuevo) {
+        if (!configuracionService.debeEnviarEmail(to, "cambioRol")) {
+            log.debug("Email de cambio de rol no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Tu rol ha sido actualizado - UTEC Space Manager";
         
         String bodyText = """
@@ -367,6 +401,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionCambioEstado(String to, String nombreUsuario, boolean activado) {
+        if (!configuracionService.debeEnviarEmail(to, "cambioEstado")) {
+            log.debug("Email de cambio de estado no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = activado 
             ? "Tu cuenta ha sido activada - UTEC Space Manager"
             : "Tu cuenta ha sido desactivada - UTEC Space Manager";
@@ -410,10 +448,20 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionCambioEmail(String toEmailViejo, String toEmailNuevo, String nombreUsuario) {
+        // Verificar preferencias para ambos emails
+        boolean enviarViejo = configuracionService.debeEnviarEmail(toEmailViejo, "cambioEmail");
+        boolean enviarNuevo = configuracionService.debeEnviarEmail(toEmailNuevo, "cambioEmail");
+        
+        if (!enviarViejo && !enviarNuevo) {
+            log.debug("Email de cambio de email no enviado por preferencias del usuario");
+            return false;
+        }
         String subject = "Tu email ha sido actualizado - UTEC Space Manager";
         
-        // Enviar al email viejo
-        String bodyTextEmailViejo = """
+        // Enviar al email viejo (si está permitido)
+        boolean enviadoViejo = true;
+        if (enviarViejo) {
+            String bodyTextEmailViejo = """
             Hola {nombreUsuario},
             
             Un administrador ha actualizado tu dirección de email en el sistema.
@@ -433,10 +481,13 @@ public class EmailService {
             .replace("{emailViejo}", toEmailViejo != null ? toEmailViejo : "N/A")
             .replace("{emailNuevo}", toEmailNuevo != null ? toEmailNuevo : "N/A");
 
-        boolean enviadoViejo = gmailApiService.sendEmail(toEmailViejo, subject, bodyTextEmailViejo);
+            enviadoViejo = gmailApiService.sendEmail(toEmailViejo, subject, bodyTextEmailViejo);
+        }
         
-        // Enviar al email nuevo
-        String bodyTextEmailNuevo = """
+        // Enviar al email nuevo (si está permitido)
+        boolean enviadoNuevo = true;
+        if (enviarNuevo) {
+            String bodyTextEmailNuevo = """
             Hola {nombreUsuario},
             
             Un administrador ha actualizado tu dirección de email en el sistema.
@@ -454,7 +505,8 @@ public class EmailService {
             .replace("{emailNuevo}", toEmailNuevo != null ? toEmailNuevo : "N/A")
             .replace("{frontendUrl}", frontendUrl);
 
-        boolean enviadoNuevo = gmailApiService.sendEmail(toEmailNuevo, subject, bodyTextEmailNuevo);
+            enviadoNuevo = gmailApiService.sendEmail(toEmailNuevo, subject, bodyTextEmailNuevo);
+        }
         
         return enviadoViejo && enviadoNuevo;
     }
@@ -469,6 +521,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionReservaActualizada(String toEmail, ReservaResponseDto reserva, String horarioAnterior, boolean esAnalista) {
+        if (!configuracionService.debeEnviarEmail(toEmail, "reservaActualizada")) {
+            log.debug("Email de reserva actualizada no enviado a {} por preferencias del usuario", toEmail);
+            return false;
+        }
         String subject = "Reserva actualizada - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -522,6 +578,10 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionNuevaSolicitudInventario(String to, ReservaResponseDto reserva, int cantidadItems) {
+        if (!configuracionService.debeEnviarEmail(to, "nuevaSolicitudInventario")) {
+            log.debug("Email de nueva solicitud de inventario no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         String subject = "Nueva solicitud de inventario - UTEC Space Manager";
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -573,6 +633,10 @@ public class EmailService {
             com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoResponseDto itemSolicitado,
             String estadoAnterior,
             String estadoNuevo) {
+        if (!configuracionService.debeEnviarEmail(to, "estadoSolicitudInventario")) {
+            log.debug("Email de estado de solicitud de inventario no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
         
         String subject = "Estado de tu solicitud de inventario actualizado - UTEC Space Manager";
         
