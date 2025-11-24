@@ -70,6 +70,7 @@ public class SecurityConfig {
                 
                 // PERMITIR LECTURA (GET) de espacios, tipos y carreras a todos los autenticados
                 // Esto permite que DOCENTE, ESTUDIANTE, EXTERNO puedan ver espacios para reservas/calendario
+                // Incluye GET de imágenes de espacios (acceso autenticado)
                 .requestMatchers(HttpMethod.GET, "/api/v1/espacios/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/tipos-espacio/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/tipos-elemento/**").authenticated()
@@ -77,6 +78,7 @@ public class SecurityConfig {
                 
                 // Escritura de espacios, inventario, tipos: ADMIN y MANTENIMIENTO (gestión), ANALISTA (solo visualización se maneja en métodos)
                 // NOTA: Los GET ya fueron permitidos arriba, así que esto solo afecta POST, PUT, DELETE
+                // Los endpoints POST/DELETE de imágenes están protegidos con @PreAuthorize en FileUploadController
                 .requestMatchers("/api/v1/espacios/**", "/api/v1/espacios/*/inventario/**", "/api/v1/tipos-elemento/**", "/api/v1/tipos-espacio/**", "/api/v1/inventario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
                 
                 // Escritura de carreras: ADMIN y ANALISTA

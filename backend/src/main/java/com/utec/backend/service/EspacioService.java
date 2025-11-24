@@ -6,6 +6,7 @@ import com.utec.backend.dto.espacio.EspacioUpdateDto;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.repository.EspacioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,12 +16,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class EspacioService {
     
     private final EspacioRepository espacioRepository;
+    private final FileStorageService fileStorageService;
     
     public EspacioResponseDto createEspacio(EspacioCreateDto createDto) {
         Espacio espacio = new Espacio();
@@ -72,9 +75,19 @@ public class EspacioService {
     }
     
     public void deleteEspacio(Long id) {
-        if (!espacioRepository.existsById(id)) {
-            throw new RuntimeException("Espacio no encontrado con ID: " + id);
+        Espacio espacio = espacioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
+        
+        // Eliminar imagen asociada si existe
+        if (espacio.getImagenUrl() != null && !espacio.getImagenUrl().trim().isEmpty()) {
+            try {
+                fileStorageService.deleteImage(espacio.getImagenUrl());
+            } catch (Exception e) {
+                // Log el error pero no fallar la eliminación del espacio
+                log.warn("Error al eliminar imagen del espacio {}: {}", id, e.getMessage());
+            }
         }
+        
         espacioRepository.deleteById(id);
     }
     
@@ -219,12 +232,45 @@ public class EspacioService {
         return espacioRepository.getCapacidadMinima();
     }
     
+    /**
+     * Actualiza solo la imagen de un espacio
+     *
+     * @param espacioId ID del espacio
+     * @param objectName Nombre del objeto en MinIO (o null para eliminar)
+     */
+    public void updateEspacioImagen(Long espacioId, String objectName) {
+        Espacio espacio = espacioRepository.findById(espacioId)
+                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + espacioId));
+        
+        // Si hay una imagen anterior y es diferente, eliminarla
+        String oldImageUrl = espacio.getImagenUrl();
+        if (oldImageUrl != null && !oldImageUrl.trim().isEmpty() && !oldImageUrl.equals(objectName)) {
+            try {
+                fileStorageService.deleteImage(oldImageUrl);
+            } catch (Exception e) {
+                log.warn("Error al eliminar imagen anterior del espacio {}: {}", espacioId, e.getMessage());
+            }
+        }
+        
+        espacio.setImagenUrl(objectName);
+        espacio.setUpdatedAt(LocalDateTime.now());
+        espacioRepository.save(espacio);
+    }
+    
     private EspacioResponseDto mapToResponseDto(Espacio espacio) {
         EspacioResponseDto dto = new EspacioResponseDto();
         dto.setId(espacio.getId());
         dto.setNombre(espacio.getNombre());
         dto.setCapacidad(espacio.getCapacidad());
-        dto.setImagenUrl(espacio.getImagenUrl());
+        
+        // Convertir ruta de MinIO a URL pública si es necesario
+        String imagenUrl = espacio.getImagenUrl();
+        if (imagenUrl != null && !imagenUrl.trim().isEmpty()) {
+            dto.setImagenUrl(fileStorageService.getImageUrl(imagenUrl));
+        } else {
+            dto.setImagenUrl(null);
+        }
+        
         dto.setTipoEspacioId(espacio.getTipoEspacioId());
         dto.setTipoEspacioNombre(espacio.getTipoEspacio() != null ? espacio.getTipoEspacio().getNombre() : null);
         dto.setTipoEspacioColor(espacio.getTipoEspacio() != null ? espacio.getTipoEspacio().getColor() : null);

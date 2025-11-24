@@ -26,13 +26,8 @@ interface PreferencesModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Mapeo de tipos de email a etiquetas
+// Mapeo de tipos de email a etiquetas (solo configurables, sin emails obligatorios del admin)
 const EMAIL_LABELS: Record<string, string> = {
-  verificacion: 'Verificación de cuenta',
-  restablecimientoPassword: 'Restablecimiento de contraseña',
-  cambioRol: 'Cambio de rol',
-  cambioEstado: 'Activación/Desactivación de cuenta',
-  cambioEmail: 'Cambio de email',
   reservaAprobada: 'Reserva aprobada',
   reservaRechazada: 'Reserva rechazada',
   reservaCancelada: 'Reserva cancelada',
@@ -60,20 +55,17 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
   const loadPreferences = async () => {
     try {
       setLoading(true);
-      const [emailResponse, vistaResponse] = await Promise.all([
-        preferencesApi.obtenerPreferenciasEmail(),
-        preferencesApi.obtenerPreferenciasVista(),
-      ]);
-
-      // El backend devuelve el DTO directamente, no envuelto en ApiResponse.data
-      const emailData = (emailResponse.data || emailResponse) as PreferenciasEmailResponse;
-      if (emailData && emailData.email) {
-        setEmailPrefs(emailData.email || {});
-      }
-      // El backend devuelve el DTO directamente, no envuelto en ApiResponse.data
-      const vistaData = (vistaResponse.data || vistaResponse) as PreferenciasVistaResponse;
-      if (vistaData && vistaData.vista) {
-        setVistaPrefs(vistaData.vista || {});
+      // UNA SOLA LLAMADA para evitar que se creen dos configuraciones cuando el usuario es nuevo
+      const response = await preferencesApi.obtenerPreferencias();
+      const data = (response.data || response) as { preferencias: { email?: PreferenciasEmail; vista?: PreferenciasVista } };
+      
+      if (data && data.preferencias) {
+        if (data.preferencias.email) {
+          setEmailPrefs(data.preferencias.email);
+        }
+        if (data.preferencias.vista) {
+          setVistaPrefs(data.preferencias.vista);
+        }
       }
     } catch (error) {
       console.error('Error al cargar preferencias:', error);

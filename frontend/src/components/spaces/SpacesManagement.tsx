@@ -44,9 +44,11 @@ import { toast } from 'sonner';
 import { exportEspaciosToCSV } from '@/lib/utils/csv-export';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { usePreferences } from '@/hooks/usePreferences';
 
 export default function SpacesManagement() {
   const navigate = useNavigate();
+  const { preferencias } = usePreferences();
   
   // Estados principales
   const [espacios, setEspacios] = useState<Espacio[]>([]);
@@ -54,7 +56,7 @@ export default function SpacesManagement() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [pageSize] = useState(12);
+  const pageSize = preferencias?.espaciosPageSize || 12;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<EspacioFilters>({});
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
@@ -65,8 +67,16 @@ export default function SpacesManagement() {
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   
-  // Estados de visualización
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+  // Estados de visualización - desde preferencias
+  const preferenciaViewMode = preferencias?.espaciosViewMode as 'table' | 'cards' | undefined;
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>(preferenciaViewMode || 'cards');
+  
+  // Aplicar preferencias cuando se carguen
+  useEffect(() => {
+    if (preferencias?.espaciosViewMode) {
+      setViewMode(preferencias.espaciosViewMode as 'table' | 'cards');
+    }
+  }, [preferencias]);
   const [sortConfig, setSortConfig] = useState<{ column: string | null; direction: 'asc' | 'desc' }>({ 
     column: null, 
     direction: 'asc' 

@@ -36,7 +36,7 @@ public class UsuarioConfiguracionService {
     }
 
     /**
-     * Obtiene solo las preferencias de email filtradas por rol (excluyendo obligatorios)
+     * Obtiene solo las preferencias de email filtradas por rol
      */
     @Transactional
     public PreferenciasEmailDto obtenerPreferenciasEmail(String userEmail) {
@@ -52,14 +52,9 @@ public class UsuarioConfiguracionService {
         // Obtener lista de emails permitidos para este rol
         Set<String> emailsPermitidos = obtenerEmailsPermitidosPorRol(usuario.getRolApp());
         
-        // Excluir emails obligatorios (crear una copia para no modificar el original)
-        Set<String> emailsObligatorios = getEmailsObligatorios();
-        Set<String> emailsConfigurables = new HashSet<>(emailsPermitidos);
-        emailsConfigurables.removeAll(emailsObligatorios);
-        
         // Construir el mapa con las preferencias del usuario (o true por defecto)
         Map<String, Boolean> emailPrefsFiltradas = new HashMap<>();
-        for (String key : emailsConfigurables) {
+        for (String key : emailsPermitidos) {
             emailPrefsFiltradas.put(key, emailPrefs.getOrDefault(key, true));
         }
         
@@ -96,12 +91,7 @@ public class UsuarioConfiguracionService {
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
-        // Asegurar que los emails obligatorios siempre estén en true
-        Set<String> emailsObligatorios = getEmailsObligatorios();
         Map<String, Boolean> emailPrefs = dto.getEmail();
-        for (String obligatorio : emailsObligatorios) {
-            emailPrefs.put(obligatorio, true);
-        }
         
         Map<String, Object> preferencias = config.getPreferencias();
         preferencias.put("email", emailPrefs);
@@ -140,10 +130,17 @@ public class UsuarioConfiguracionService {
 
     /**
      * Verifica si debe enviar un email según las preferencias del usuario
+     * Los emails obligatorios siempre se envían (no están en las preferencias)
      */
     @Transactional(readOnly = true)
     public boolean debeEnviarEmail(String userEmail, String tipoEmail) {
         try {
+            // Emails obligatorios siempre se envían
+            Set<String> emailsObligatorios = getEmailsObligatorios();
+            if (emailsObligatorios.contains(tipoEmail)) {
+                return true;
+            }
+            
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
                     .orElse(null);
             
@@ -176,35 +173,12 @@ public class UsuarioConfiguracionService {
     }
 
     /**
-     * Obtiene o crea la configuración del usuario, manejando duplicados si existen
+     * Obtiene o crea la configuración del usuario
+     * Si no existe, la crea. Si existe, la retorna para actualizar.
      */
     private UsuarioConfiguracion obtenerOcrearConfiguracion(Usuario usuario) {
-        try {
-            return configuracionRepository.findByUsuarioId(usuario.getId())
-                    .orElseGet(() -> crearConfiguracionPorDefecto(usuario));
-        } catch (Exception e) {
-            // Si hay duplicados, eliminar todos y crear uno nuevo
-            log.warn("Se detectaron configuraciones duplicadas para usuario {}: {}. Eliminando duplicados...", 
-                    usuario.getId(), e.getMessage());
-            
-            // Buscar todas las configuraciones para este usuario y eliminar todas excepto la primera
-            List<UsuarioConfiguracion> configs = configuracionRepository.findAll().stream()
-                    .filter(c -> c.getUsuario() != null && c.getUsuario().getId().equals(usuario.getId()))
-                    .toList();
-            
-            if (!configs.isEmpty()) {
-                // Mantener solo la primera y eliminar el resto
-                UsuarioConfiguracion primera = configs.get(0);
-                for (int i = 1; i < configs.size(); i++) {
-                    configuracionRepository.delete(configs.get(i));
-                }
-                log.info("Eliminados {} duplicados para usuario {}", configs.size() - 1, usuario.getId());
-                return primera;
-            }
-            
-            // Si no hay ninguna, crear una nueva
-            return crearConfiguracionPorDefecto(usuario);
-        }
+        return configuracionRepository.findByUsuarioId(usuario.getId())
+                .orElseGet(() -> crearConfiguracionPorDefecto(usuario));
     }
 
     /**
@@ -213,13 +187,8 @@ public class UsuarioConfiguracionService {
     private UsuarioConfiguracion crearConfiguracionPorDefecto(Usuario usuario) {
         Map<String, Object> preferencias = new HashMap<>();
         
-        // Preferencias de email por defecto (todos true)
+        // Preferencias de email por defecto (solo configurables)
         Map<String, Boolean> emailPrefs = new HashMap<>();
-        emailPrefs.put("verificacion", true);
-        emailPrefs.put("restablecimientoPassword", true);
-        emailPrefs.put("cambioRol", true);
-        emailPrefs.put("cambioEstado", true);
-        emailPrefs.put("cambioEmail", true);
         emailPrefs.put("reservaAprobada", true);
         emailPrefs.put("reservaRechazada", true);
         emailPrefs.put("reservaCancelada", true);

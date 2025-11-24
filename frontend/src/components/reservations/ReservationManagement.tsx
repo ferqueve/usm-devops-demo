@@ -20,6 +20,7 @@ import ReservationTableView from './ReservationTableView.tsx';
 import ReservationCalendarView from './ReservationCalendarView.tsx';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { usePreferences } from '@/hooks/usePreferences';
 import { ROLES } from '@/lib/config/constants';
 import {
   AlertDialog,
@@ -36,6 +37,7 @@ type ViewMode = 'cards' | 'table' | 'calendar';
 
 export default function ReservationManagement() {
   const { user } = useAuth();
+  const { preferencias } = usePreferences();
   const isDocente = user?.rol === ROLES.DOCENTE;
   const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
   
@@ -50,9 +52,10 @@ export default function ReservationManagement() {
   const [usuarioFilter, setUsuarioFilter] = useState<number | null>(null); // Solo para ANALISTA
   const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined);
   const [fechaFin, setFechaFin] = useState<Date | undefined>(undefined);
-  // Vista por defecto: Calendar para ANALISTA y DOCENTE, Cards para otros
+  // Vista desde preferencias o por defecto: Calendar para ANALISTA y DOCENTE, Cards para otros
   const defaultViewMode: ViewMode = (isAnalista || isDocente) ? 'calendar' : 'cards';
-  const [viewMode, setViewMode] = useState<ViewMode>(defaultViewMode);
+  const preferenciaViewMode = preferencias?.reservasViewMode as ViewMode | undefined;
+  const [viewMode, setViewMode] = useState<ViewMode>(preferenciaViewMode || defaultViewMode);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [createDialog, setCreateDialog] = useState(false);
   const [detailsDialog, setDetailsDialog] = useState(false);
@@ -60,11 +63,18 @@ export default function ReservationManagement() {
   const [cancelDialog, setCancelDialog] = useState(false);
   const [reservaToCancel, setReservaToCancel] = useState<Reserva | null>(null);
   
-  // Estado de paginación (solo para vista de tabla y cards)
+  // Estado de paginación (solo para vista de tabla y cards) - desde preferencias
   const [page, setPage] = useState(0);
-  const [pageSize] = useState(10);
+  const pageSize = preferencias?.reservasPageSize || 10;
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  
+  // Aplicar preferencias cuando se carguen
+  useEffect(() => {
+    if (preferencias?.reservasViewMode) {
+      setViewMode(preferencias.reservasViewMode as ViewMode);
+    }
+  }, [preferencias]);
   
   // Reservas pendientes separadas (solo para ANALISTA)
   const [reservasPendientes, setReservasPendientes] = useState<Reserva[]>([]);

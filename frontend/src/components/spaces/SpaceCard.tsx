@@ -1,8 +1,9 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
-import { Users, Eye, Edit, CheckCircle, Wrench, XCircle } from "lucide-react";
+import { Users, Eye, Edit, CheckCircle, Wrench, XCircle, Image as ImageIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { Espacio } from "@/lib/types/spaces";
 import PermissionGuard from '@/components/auth/PermissionGuard';
 
@@ -44,6 +45,7 @@ interface SpaceCardProps {
 
 export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
   const navigate = useNavigate();
+  const [imageError, setImageError] = useState(false);
 
   const handleViewDetails = (e?: React.MouseEvent) => {
     if (e) {
@@ -57,6 +59,10 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
     onEdit(espacio);
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
     <Card 
       className="group hover:shadow-md transition-all duration-200 cursor-pointer h-full flex flex-col border border-gray-200 hover:border-gray-300 overflow-hidden relative"
@@ -66,18 +72,26 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
       onClick={handleViewDetails}
     >
       {/* Imagen del espacio - más compacta */}
-      {espacio.imagenUrl ? (
-        <div className="aspect-[16/10] overflow-hidden bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200">
+      {espacio.imagenUrl && !imageError ? (
+        <div className="aspect-[16/10] overflow-hidden bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200 relative">
           <img 
             src={espacio.imagenUrl} 
             alt={espacio.nombre}
             className="w-full h-full object-cover"
             loading="lazy"
+            onError={handleImageError}
           />
         </div>
       ) : (
-        <div className="aspect-[16/10] bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-200">
-          <Users className="h-6 w-6 text-gray-400" />
+        <div className="aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors duration-200">
+          {imageError ? (
+            <>
+              <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+              <span className="text-xs text-gray-500">Error al cargar imagen</span>
+            </>
+          ) : (
+            <Users className="h-6 w-6 text-gray-400" />
+          )}
         </div>
       )}
 

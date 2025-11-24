@@ -59,6 +59,7 @@ import AssignSpaceDialog from './AssignSpaceDialog';
 import ImportCSVDialog from './ImportCSVDialog';
 import BulkActionsBar from './BulkActionsBar';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { usePreferences } from '@/hooks/usePreferences';
 
 type ViewMode = 'table' | 'cards';
 
@@ -71,7 +72,8 @@ export default function InventoryManagement() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [pageSize] = useState(25);
+  const { preferencias } = usePreferences();
+  const pageSize = preferencias?.inventarioPageSize || 25;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<InventarioFilters>({});
   
@@ -88,8 +90,16 @@ export default function InventoryManagement() {
     sinAsignar: number;
   } | null>(null);
   
-  // Estados de visualización y selección
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  // Estados de visualización y selección - desde preferencias
+  const preferenciaViewMode = preferencias?.inventarioViewMode as ViewMode | undefined;
+  const [viewMode, setViewMode] = useState<ViewMode>(preferenciaViewMode || 'table');
+  
+  // Aplicar preferencias cuando se carguen
+  useEffect(() => {
+    if (preferencias?.inventarioViewMode) {
+      setViewMode(preferencias.inventarioViewMode as ViewMode);
+    }
+  }, [preferencias]);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [sortConfig, setSortConfig] = useState<{ column: string | null; direction: 'asc' | 'desc' }>({ 
     column: null, 

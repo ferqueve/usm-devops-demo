@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from '@/hooks/useAuth';
+import { usePreferences } from '@/hooks/usePreferences';
 import { ROLES } from '@/lib/config/constants';
 
 interface Espacio {
@@ -105,11 +106,20 @@ export default function ReservationCalendarView({
   readOnly = false,
 }: ReservationCalendarViewProps) {
   const { user } = useAuth();
+  const { preferencias } = usePreferences();
   const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
   const isDocente = user?.rol === ROLES.DOCENTE;
-  // Vista por defecto: Semana para ANALISTA y DOCENTE, Mes para otros
+  // Vista desde preferencias o por defecto: Semana para ANALISTA y DOCENTE, Mes para otros
   const defaultCalendarViewMode: CalendarViewMode = (isAnalista || isDocente) ? 'week' : 'month';
-  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(defaultCalendarViewMode);
+  const preferenciaCalendarViewMode = preferencias?.reservasCalendarViewMode as CalendarViewMode | undefined;
+  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(preferenciaCalendarViewMode || defaultCalendarViewMode);
+  
+  // Aplicar preferencias cuando se carguen
+  useEffect(() => {
+    if (preferencias?.reservasCalendarViewMode) {
+      setCalendarViewMode(preferencias.reservasCalendarViewMode as CalendarViewMode);
+    }
+  }, [preferencias]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isFullScreenInternal, setIsFullScreenInternal] = useState(false);
   const [hideNightHours, setHideNightHours] = useState(true);

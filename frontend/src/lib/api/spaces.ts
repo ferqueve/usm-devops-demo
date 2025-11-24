@@ -270,4 +270,41 @@ export const espaciosApi = {
   async obtenerEspacios(): Promise<ApiResponse<Espacio[]>> {
     return apiRequest<Espacio[]>('/espacios', { method: 'GET' });
   },
+
+  // Gestión de imágenes de espacios
+  async subirImagenEspacio(
+    espacioId: number,
+    file: File
+  ): Promise<ApiResponse<{ objectName: string; imageUrl: string }>> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('token');
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+    const url = `${API_BASE_URL}/espacios/${espacioId}/imagen`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        // No establecer Content-Type, el navegador lo hará automáticamente con el boundary correcto
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Error al subir la imagen' }));
+      throw new Error(errorData.error || errorData.message || 'Error al subir la imagen');
+    }
+
+    return await response.json() as ApiResponse<{ objectName: string; imageUrl: string }>;
+  },
+
+  async eliminarImagenEspacio(espacioId: number): Promise<ApiResponse<void>> {
+    return apiRequest<void>(`/espacios/${espacioId}/imagen`, { method: 'DELETE' });
+  },
+
+  async obtenerUrlImagenEspacio(espacioId: number): Promise<ApiResponse<{ imageUrl: string | null; objectName: string | null }>> {
+    return apiRequest<{ imageUrl: string | null; objectName: string | null }>(`/espacios/${espacioId}/imagen`, { method: 'GET' });
+  },
 };

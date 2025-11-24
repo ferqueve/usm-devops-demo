@@ -24,7 +24,23 @@ export interface PreferenciasVistaResponse {
   vista: PreferenciasVista;
 }
 
+export interface PreferenciasCompletasResponse {
+  preferencias: {
+    email?: PreferenciasEmail;
+    vista?: PreferenciasVista;
+  };
+}
+
 export const preferencesApi = {
+  /**
+   * Obtener todas las preferencias (email y vista) - UNA SOLA LLAMADA para evitar duplicados
+   */
+  async obtenerPreferencias(): Promise<ApiResponse<PreferenciasCompletasResponse>> {
+    return apiRequest<PreferenciasCompletasResponse>('/preferencias', {
+      method: 'GET',
+    });
+  },
+
   /**
    * Obtener preferencias de email
    */

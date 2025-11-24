@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { espaciosApi } from '@/lib/api/spaces';
 import type { Espacio, TipoEspacio } from '@/lib/types/spaces';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save, X, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 
@@ -37,7 +37,10 @@ export function SpaceFormDialog({
   onSuccess 
 }: SpaceFormDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nombre: '',
     capacidad: 1,
@@ -68,6 +71,8 @@ export function SpaceFormDialog({
         imagenUrl: espacio.imagenUrl || '',
         estado: espacio.estado
       });
+      setImagePreview(espacio.imagenUrl || null);
+      setSelectedFile(null);
     } else {
       setFormData({
         nombre: '',
@@ -76,6 +81,8 @@ export function SpaceFormDialog({
         imagenUrl: '',
         estado: 'DISPONIBLE'
       });
+      setImagePreview(null);
+      setSelectedFile(null);
     }
   }, [espacio]);
 
@@ -89,6 +96,39 @@ export function SpaceFormDialog({
       console.error('Error al cargar tipos de espacio:', error);
       toast.error('Error al cargar tipos de espacio');
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Tipo de archivo no permitido. Use JPG, PNG, WebP o GIF');
+      return;
+    }
+
+    // Validar tamaño (50MB para imágenes de alta calidad)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      toast.error('El archivo es demasiado grande. Tamaño máximo: 50MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Crear preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,6 +167,27 @@ export function SpaceFormDialog({
       } else {
         response = await espaciosApi.crearEspacio(data);
       }
+
+      // Si hay un archivo seleccionado, subirlo después de crear/actualizar el espacio
+      if (selectedFile && response.data) {
+        try {
+          setUploadingImage(true);
+          const uploadResponse = await espaciosApi.subirImagenEspacio(response.data.id, selectedFile);
+          if (uploadResponse.data) {
+            // Actualizar el espacio con la nueva imagen
+            response.data.imagenUrl = uploadResponse.data.imageUrl;
+            toast.success('Imagen subida exitosamente');
+          }
+        } catch (uploadError: unknown) {
+          console.error('Error al subir imagen:', uploadError);
+          const errorMessage = uploadError instanceof Error ? uploadError.message : 'Intente subir la imagen nuevamente';
+          toast.error('Espacio guardado, pero hubo un error al subir la imagen', {
+            description: errorMessage
+          });
+        } finally {
+          setUploadingImage(false);
+        }
+      }
       
       toast.success(
         isEditing ? 'Espacio actualizado' : 'Espacio creado',
@@ -139,12 +200,13 @@ export function SpaceFormDialog({
         onSuccess(response.data);
         onOpenChange(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al guardar espacio:', error);
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo guardar el espacio';
       toast.error(
         isEditing ? 'Error al actualizar espacio' : 'Error al crear espacio',
         {
-          description: error.message || 'No se pudo guardar el espacio'
+          description: errorMessage
         }
       );
     } finally {
@@ -229,16 +291,89 @@ export function SpaceFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imagenUrl">URL de Imagen (Opcional)</Label>
-            <Input
-              id="imagenUrl"
-              type="url"
-              value={formData.imagenUrl}
-              onChange={(e) => setFormData(prev => ({ ...prev, imagenUrl: e.target.value }))}
-              placeholder="https://ejemplo.com/imagen.jpg"
-              disabled={loading}
-              className="w-full"
-            />
+            <Label htmlFor="imagen">Imagen del Espacio (Opcional)</Label>
+            
+            {/* Preview de imagen */}
+            {imagePreview && (
+              <div className="relative w-full h-48 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={handleRemoveImage}
+                  disabled={loading || uploadingImage}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Input de archivo */}
+            {!imagePreview && (
+              <div className="flex items-center justify-center w-full">
+                <label
+                  htmlFor="imagen"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Click para subir</span> o arrastra y suelta
+                    </p>
+                    <p className="text-xs text-gray-500">JPG, PNG, WebP o GIF (máx. 50MB)</p>
+                  </div>
+                  <input
+                    id="imagen"
+                    type="file"
+                    className="hidden"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    onChange={handleFileSelect}
+                    disabled={loading || uploadingImage}
+                  />
+                </label>
+              </div>
+            )}
+
+            {/* Botón para cambiar imagen si ya hay una */}
+            {imagePreview && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const input = document.getElementById('imagen') as HTMLInputElement;
+                    input?.click();
+                  }}
+                  disabled={loading || uploadingImage}
+                  className="w-full"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  {selectedFile ? 'Cambiar Imagen' : 'Cambiar Imagen'}
+                </Button>
+                <input
+                  id="imagen"
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  onChange={handleFileSelect}
+                  disabled={loading || uploadingImage}
+                />
+              </div>
+            )}
+
+            {uploadingImage && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Subiendo imagen...</span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -273,13 +408,13 @@ export function SpaceFormDialog({
             <X className="h-4 w-4 mr-1" />
             Cancelar
           </Button>
-          <Button type="button" onClick={handleSubmit} disabled={loading}>
-            {loading ? (
+          <Button type="button" onClick={handleSubmit} disabled={loading || uploadingImage}>
+            {(loading || uploadingImage) ? (
               <Loader2 className="h-4 w-4 mr-1 animate-spin" />
             ) : (
               <Save className="h-4 w-4 mr-1" />
             )}
-            {isEditing ? 'Actualizar' : 'Crear'}
+            {uploadingImage ? 'Subiendo...' : isEditing ? 'Actualizar' : 'Crear'}
           </Button>
         </DialogFooter>
       </DialogContent>
