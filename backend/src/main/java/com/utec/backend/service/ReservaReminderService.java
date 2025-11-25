@@ -10,14 +10,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Servicio para enviar recordatorios automáticos de reservas
  * Se ejecuta periódicamente para notificar a los usuarios sobre sus reservas próximas
+ * Usa Redis para rastrear recordatorios enviados con TTL automático
  */
 @Service
 @RequiredArgsConstructor
@@ -27,10 +29,11 @@ public class ReservaReminderService {
     private final ReservaRepository reservaRepository;
     private final EmailService emailService;
     private final ReservaService reservaService;
+    private final StringRedisTemplate redisTemplate;
     
-    // Set para rastrear reservas a las que ya se les envió recordatorio (evitar duplicados)
-    // En producción, esto debería ser una tabla en la BD o usar Redis
-    private final Set<Long> reservasConRecordatorioEnviado = ConcurrentHashMap.newKeySet();
+    private static final String REMINDER_SENT_KEY_PREFIX = "reminders:sent:";
+    // TTL de 48 horas para cubrir reservas hasta 24h después del evento
+    private static final Duration REMINDER_TTL = Duration.ofHours(48);
     
     @Value("${app.reservas.reminder.hours-before:24}")
     private int horasAntesRecordatorio;
@@ -75,8 +78,11 @@ public class ReservaReminderService {
             int errores = 0;
             
             for (Reserva reserva : reservas) {
-                // Verificar si ya se envió recordatorio para esta reserva
-                if (reservasConRecordatorioEnviado.contains(reserva.getId())) {
+                // Verificar si ya se envió recordatorio para esta reserva en Redis
+                String reminderKey = REMINDER_SENT_KEY_PREFIX + reserva.getId();
+                Boolean alreadySent = redisTemplate.hasKey(reminderKey);
+                
+                if (Boolean.TRUE.equals(alreadySent)) {
                     log.debug("Recordatorio ya enviado para reserva ID: {}", reserva.getId());
                     continue;
                 }
@@ -93,7 +99,8 @@ public class ReservaReminderService {
                     );
                     
                     if (emailEnviado) {
-                        reservasConRecordatorioEnviado.add(reserva.getId());
+                        // Guardar en Redis con TTL de 48 horas
+                        redisTemplate.opsForValue().set(reminderKey, "1", REMINDER_TTL);
                         enviados++;
                         log.info("Recordatorio enviado para reserva ID: {} al usuario: {}", 
                                 reserva.getId(), reserva.getUsuario().getEmail());
@@ -109,30 +116,10 @@ public class ReservaReminderService {
             }
             
             log.info("Proceso de recordatorios completado. Enviados: {}, Errores: {}", enviados, errores);
-            
-            // Limpiar set de recordatorios enviados para reservas pasadas (cada 24 horas)
-            limpiarRecordatoriosAntiguos(ahora);
+            // Redis maneja automáticamente la expiración de recordatorios mediante TTL
             
         } catch (Exception e) {
             log.error("Error en tarea programada de recordatorios: {}", e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Limpia el set de recordatorios enviados para reservas que ya pasaron
-     * Esto evita que el set crezca indefinidamente
-     */
-    private void limpiarRecordatoriosAntiguos(LocalDateTime ahora) {
-        // Esta es una implementación simple. En producción, se debería usar una tabla en BD
-        // o un sistema de cache con TTL como Redis
-        int tamañoAntes = reservasConRecordatorioEnviado.size();
-        
-        // Nota: En esta implementación simple, no podemos verificar fácilmente qué reservas
-        // ya pasaron sin hacer queries adicionales. Por simplicidad, limitamos el tamaño
-        // del set a 10000 entradas. En producción, usar BD o Redis con TTL.
-        if (tamañoAntes > 10000) {
-            reservasConRecordatorioEnviado.clear();
-            log.info("Set de recordatorios limpiado (límite alcanzado)");
         }
     }
     
@@ -156,7 +143,11 @@ public class ReservaReminderService {
         
         int enviados = 0;
         for (Reserva reserva : reservas) {
-            if (reservasConRecordatorioEnviado.contains(reserva.getId())) {
+            // Verificar si ya se envió recordatorio para esta reserva en Redis
+            String reminderKey = REMINDER_SENT_KEY_PREFIX + reserva.getId();
+            Boolean alreadySent = redisTemplate.hasKey(reminderKey);
+            
+            if (Boolean.TRUE.equals(alreadySent)) {
                 continue;
             }
             
@@ -170,7 +161,8 @@ public class ReservaReminderService {
                 );
                 
                 if (emailEnviado) {
-                    reservasConRecordatorioEnviado.add(reserva.getId());
+                    // Guardar en Redis con TTL de 48 horas
+                    redisTemplate.opsForValue().set(reminderKey, "1", REMINDER_TTL);
                     enviados++;
                 }
             } catch (Exception e) {

@@ -1,5 +1,8 @@
 package com.utec.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.utec.backend.dto.stats.ActiveUserDTO;
 import com.utec.backend.dto.stats.ActiveUsersStatsDTO;
 import com.utec.backend.model.Usuario;
@@ -7,19 +10,18 @@ import com.utec.backend.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Servicio para trackear actividad de usuarios en tiempo real
- * Usa ConcurrentHashMap para almacenar actividad en memoria
+ * Servicio para trackear actividad de usuarios en tiempo real usando Redis
+ * Redis maneja automáticamente la expiración de usuarios inactivos mediante TTL
  */
 @Service
 @RequiredArgsConstructor
@@ -27,15 +29,20 @@ import java.util.stream.Collectors;
 public class UserActivityTrackingService {
 
     private final UsuarioRepository usuarioRepository;
+    private final StringRedisTemplate redisTemplate;
     
-    // Almacenamiento en memoria de actividad de usuarios
-    private final Map<String, ActiveUserDTO> activeUsersMap = new ConcurrentHashMap<>();
+    // ObjectMapper local para serialización/deserialización JSON
+    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     
+    private static final String ACTIVITY_KEY_PREFIX = "user:activity:";
+    private static final String ACTIVITY_SET_KEY = "users:active";
     // Timeout de inactividad en minutos
     private static final int INACTIVITY_TIMEOUT_MINUTES = 5;
+    private static final Duration INACTIVITY_TIMEOUT = Duration.ofMinutes(INACTIVITY_TIMEOUT_MINUTES);
 
     /**
-     * Registra actividad de un usuario
+     * Registra actividad de un usuario en Redis
+     * El registro expira automáticamente después de INACTIVITY_TIMEOUT_MINUTES
      */
     public void trackUserActivity(String email, HttpServletRequest request) {
         if (email == null || email.isEmpty()) {
@@ -77,50 +84,68 @@ public class UserActivityTrackingService {
                     .userAgent(userAgent != null ? userAgent : "Unknown")
                     .build();
             
-            activeUsersMap.put(email, activeUser);
+            // Guardar en Redis con TTL automático
+            String key = ACTIVITY_KEY_PREFIX + email;
+            String jsonValue = objectMapper.writeValueAsString(activeUser);
+            redisTemplate.opsForValue().set(key, jsonValue, INACTIVITY_TIMEOUT);
             
+            // Agregar email al set de usuarios activos (también con TTL)
+            redisTemplate.opsForSet().add(ACTIVITY_SET_KEY, email);
+            redisTemplate.expire(ACTIVITY_SET_KEY, INACTIVITY_TIMEOUT);
+            
+        } catch (JsonProcessingException e) {
+            log.error("Error al serializar actividad del usuario {}: {}", email, e.getMessage());
         } catch (Exception e) {
             log.error("Error al trackear actividad del usuario {}: {}", email, e.getMessage());
         }
     }
 
     /**
-     * Obtiene estadísticas de usuarios activos
+     * Obtiene estadísticas de usuarios activos desde Redis
+     * Redis maneja automáticamente la eliminación de usuarios expirados mediante TTL
      */
     public ActiveUsersStatsDTO getActiveUsers() {
-        // Limpiar usuarios inactivos antes de retornar
-        cleanInactiveUsers();
-        
-        List<ActiveUserDTO> activeUsers = activeUsersMap.values().stream()
-                .sorted((a, b) -> b.getLastActivity().compareTo(a.getLastActivity()))
-                .collect(Collectors.toList());
-        
-        return ActiveUsersStatsDTO.builder()
-                .totalActiveUsers(activeUsers.size())
-                .activeUsers(activeUsers)
-                .build();
-    }
-
-    /**
-     * Limpia usuarios inactivos (más de 5 minutos sin actividad)
-     * Se ejecuta automáticamente cada minuto
-     */
-    @Scheduled(fixedRate = 60000) // Cada 60 segundos
-    public void cleanInactiveUsers() {
-        LocalDateTime cutoffTime = LocalDateTime.now().minus(INACTIVITY_TIMEOUT_MINUTES, ChronoUnit.MINUTES);
-        
-        List<String> inactiveUsers = activeUsersMap.entrySet().stream()
-                .filter(entry -> entry.getValue().getLastActivity().isBefore(cutoffTime))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-        
-        inactiveUsers.forEach(email -> {
-            activeUsersMap.remove(email);
-            log.debug("Usuario inactivo removido del tracking: {}", email);
-        });
-        
-        if (!inactiveUsers.isEmpty()) {
-            log.info("Limpieza de usuarios inactivos: {} usuarios removidos", inactiveUsers.size());
+        try {
+            // Obtener todos los emails de usuarios activos del set
+            Set<String> activeUserEmails = redisTemplate.opsForSet().members(ACTIVITY_SET_KEY);
+            
+            if (activeUserEmails == null || activeUserEmails.isEmpty()) {
+                return ActiveUsersStatsDTO.builder()
+                        .totalActiveUsers(0)
+                        .activeUsers(List.of())
+                        .build();
+            }
+            
+            // Obtener datos de cada usuario activo
+            List<ActiveUserDTO> activeUsers = activeUserEmails.stream()
+                    .map(email -> {
+                        String key = ACTIVITY_KEY_PREFIX + email;
+                        String jsonValue = redisTemplate.opsForValue().get(key);
+                        if (jsonValue != null) {
+                            try {
+                                return objectMapper.readValue(jsonValue, ActiveUserDTO.class);
+                            } catch (JsonProcessingException e) {
+                                log.warn("Error al deserializar actividad del usuario {}: {}", email, e.getMessage());
+                                return null;
+                            }
+                        }
+                        return null;
+                    })
+                    .filter(user -> user != null)
+                    .sorted((a, b) -> b.getLastActivity().compareTo(a.getLastActivity()))
+                    .collect(Collectors.toList());
+            
+            return ActiveUsersStatsDTO.builder()
+                    .totalActiveUsers(activeUsers.size())
+                    .activeUsers(activeUsers)
+                    .build();
+                    
+        } catch (Exception e) {
+            log.error("Error al obtener usuarios activos: {}", e.getMessage(), e);
+            return ActiveUsersStatsDTO.builder()
+                    .totalActiveUsers(0)
+                    .activeUsers(List.of())
+                    .build();
         }
     }
 

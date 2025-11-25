@@ -31,6 +31,21 @@ services:
       timeout: 20s
       retries: 3
 
+  redis:
+    image: redis:7-alpine
+    container_name: ut_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   backend:
     build: 
       context: ./backend
@@ -40,11 +55,13 @@ services:
       - backend/.env
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - REDIS_HOST=redis
     ports:
       - "8080:8080"
     depends_on:
       - db
       - minio
+      - redis
     restart: unless-stopped
     volumes:
       - maven-cache:/root/.m2
@@ -70,4 +87,5 @@ volumes:
   npm-cache:
   node-modules:
   minio-data:
+  redis-data:
 

@@ -25,6 +25,7 @@ public class EspacioService {
     private final EspacioRepository espacioRepository;
     private final FileStorageService fileStorageService;
     
+    @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public EspacioResponseDto createEspacio(EspacioCreateDto createDto) {
         Espacio espacio = new Espacio();
         espacio.setNombre(createDto.getNombre());
@@ -38,6 +39,7 @@ public class EspacioService {
     }
     
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "espacios", key = "'all'")
     public List<EspacioResponseDto> getAllEspacios() {
         return espacioRepository.findAll().stream()
                 .map(this::mapToResponseDto)
@@ -51,12 +53,14 @@ public class EspacioService {
     }
     
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "espacios", key = "#id")
     public EspacioResponseDto getEspacioById(Long id) {
         Espacio espacio = espacioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
         return mapToResponseDto(espacio);
     }
     
+    @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public EspacioResponseDto updateEspacio(Long id, EspacioUpdateDto updateDto) {
         Espacio espacio = espacioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
@@ -74,6 +78,7 @@ public class EspacioService {
         return mapToResponseDto(updatedEspacio);
     }
     
+    @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public void deleteEspacio(Long id) {
         Espacio espacio = espacioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
@@ -238,6 +243,7 @@ public class EspacioService {
      * @param espacioId ID del espacio
      * @param objectName Nombre del objeto en MinIO (o null para eliminar)
      */
+    @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public void updateEspacioImagen(Long espacioId, String objectName) {
         Espacio espacio = espacioRepository.findById(espacioId)
                 .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + espacioId));

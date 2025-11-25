@@ -34,12 +34,17 @@ public class StatisticsService {
     
     /**
      * Obtiene estadísticas detalladas de inventario con todos los análisis posibles
+     * Resultado cacheado en Redis por 5 minutos por defecto
      * 
      * @param espacioId Filtro opcional por espacio
      * @param tipoElementoId Filtro opcional por tipo de elemento
      * @param estado Filtro opcional por estado (DISPONIBLE, MANTENIMIENTO, DANADO)
      * @return Map con todas las estadísticas calculadas
      */
+    @org.springframework.cache.annotation.Cacheable(
+        value = "inventarioStatistics", 
+        key = "#espacioId != null ? #espacioId.toString() : 'all' + '_' + (#tipoElementoId != null ? #tipoElementoId.toString() : 'all') + '_' + (#estado != null ? #estado : 'all')"
+    )
     public Map<String, Object> getDetailedInventarioStatistics(Long espacioId, Long tipoElementoId, String estado) {
         log.info("Calculando estadísticas detalladas de inventario - espacioId: {}, tipoElementoId: {}, estado: {}", 
                 espacioId, tipoElementoId, estado);

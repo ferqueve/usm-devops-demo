@@ -1,46 +1,70 @@
 package com.utec.backend.security.jwt;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
+/**
+ * Servicio para gestionar tokens en blacklist usando Redis
+ * Redis maneja automáticamente la expiración de tokens mediante TTL
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TokenBlacklistService {
 
     private final JwtService jwtService;
-    private final ConcurrentHashMap<String, Long> blacklistedTokens = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final StringRedisTemplate redisTemplate;
+    
+    private static final String BLACKLIST_KEY_PREFIX = "token:blacklist:";
 
-    @PostConstruct
-    public void scheduleCleanup() {
-        // Limpiar tokens expirados cada hora
-        scheduler.scheduleAtFixedRate(this::cleanExpiredTokens, 1, 1, TimeUnit.HOURS);
-    }
-
+    /**
+     * Agrega un token a la blacklist en Redis con TTL automático
+     * El TTL se calcula basándose en el tiempo restante hasta la expiración del token
+     */
     public void blacklistToken(String token) {
         try {
             Long expiration = extractExpirationFromToken(token);
             if (expiration != null) {
-                blacklistedTokens.put(token, expiration);
-                log.info("Token agregado a blacklist");
+                long currentTime = System.currentTimeMillis();
+                long ttlMillis = expiration - currentTime;
+                
+                // Solo agregar si el token aún no ha expirado
+                if (ttlMillis > 0) {
+                    String key = BLACKLIST_KEY_PREFIX + token;
+                    // Usar SET con EX (expiration en segundos)
+                    redisTemplate.opsForValue().set(key, "1", Duration.ofMillis(ttlMillis));
+                    log.debug("Token agregado a blacklist en Redis con TTL de {} ms", ttlMillis);
+                } else {
+                    log.debug("Token ya expirado, no se agrega a blacklist");
+                }
             }
         } catch (Exception e) {
-            log.error("Error al agregar token a blacklist: {}", e.getMessage());
+            log.error("Error al agregar token a blacklist: {}", e.getMessage(), e);
         }
     }
 
+    /**
+     * Verifica si un token está en la blacklist
+     */
     public boolean isTokenBlacklisted(String token) {
-        return blacklistedTokens.containsKey(token);
+        try {
+            String key = BLACKLIST_KEY_PREFIX + token;
+            Boolean exists = redisTemplate.hasKey(key);
+            return Boolean.TRUE.equals(exists);
+        } catch (Exception e) {
+            log.error("Error al verificar token en blacklist: {}", e.getMessage(), e);
+            // En caso de error, retornar false para no bloquear requests
+            return false;
+        }
     }
 
+    /**
+     * Extrae la fecha de expiración del token JWT
+     */
     private Long extractExpirationFromToken(String token) {
         try {
             return jwtService.extractClaim(token, claims -> claims.getExpiration().getTime());
@@ -48,19 +72,5 @@ public class TokenBlacklistService {
             log.error("Error al extraer expiración del token: {}", e.getMessage());
             return null;
         }
-    }
-
-    private void cleanExpiredTokens() {
-        try {
-            long currentTime = System.currentTimeMillis();
-            blacklistedTokens.entrySet().removeIf(entry -> entry.getValue() < currentTime);
-            log.info("Tokens expirados removidos de blacklist. Tamaño actual: {}", blacklistedTokens.size());
-        } catch (Exception e) {
-            log.error("Error limpiando tokens expirados: {}", e.getMessage());
-        }
-    }
-
-    public void shutdown() {
-        scheduler.shutdown();
     }
 }

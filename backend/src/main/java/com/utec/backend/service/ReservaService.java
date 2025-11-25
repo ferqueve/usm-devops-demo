@@ -21,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -927,8 +928,10 @@ public class ReservaService {
     
     /**
      * Obtener reservas de un espacio específico
+     * Cacheado por 2 minutos ya que las reservas cambian frecuentemente
      */
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "reservas", key = "'espacio:' + #espacioId")
     public List<ReservaResponseDto> getReservasByEspacio(Long espacioId) {
         List<Reserva> reservas = reservaRepository.findByEspacioId(espacioId);
         return reservas.stream()
@@ -1304,6 +1307,7 @@ public class ReservaService {
     /**
      * Obtener estadísticas globales de todas las reservas (para ANALISTA/ADMIN)
      */
+    @Cacheable(value = "reservas", key = "'global-stats'")
     @Transactional(readOnly = true)
     public ReservaStatsDto obtenerEstadisticasGlobales() {
         log.info("Generando estadísticas globales de reservas");
