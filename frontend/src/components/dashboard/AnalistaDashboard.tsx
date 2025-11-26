@@ -11,7 +11,9 @@ import type { Reserva } from '@/lib/types/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
+import { recomendacionesApi } from '@/lib/api/recomendaciones';
+import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 
 export default function AnalistaDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -20,6 +22,8 @@ export default function AnalistaDashboard() {
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [allReservas, setAllReservas] = useState<Reserva[]>([]);
   const [reservasPendientes, setReservasPendientes] = useState<Reserva[]>([]);
+  const [reservasPrioritarias, setReservasPrioritarias] = useState<RecomendacionAnalista[]>([]);
+  const [loadingPrioritarias, setLoadingPrioritarias] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +43,19 @@ export default function AnalistaDashboard() {
           }
         } catch (error) {
           console.warn('No se pudieron cargar todas las reservas para gráficos:', error);
+        }
+
+        // Cargar reservas prioritarias
+        try {
+          setLoadingPrioritarias(true);
+          const prioritarias = await recomendacionesApi.obtenerReservasPrioritarias();
+          if (prioritarias.success && prioritarias.data) {
+            setReservasPrioritarias(prioritarias.data);
+          }
+        } catch (error) {
+          console.warn('No se pudieron cargar reservas prioritarias:', error);
+        } finally {
+          setLoadingPrioritarias(false);
         }
       } catch (error: unknown) {
         console.error('Error al cargar datos del dashboard:', error);
@@ -117,6 +134,86 @@ export default function AnalistaDashboard() {
         }}
         loading={loading}
       />
+
+      {/* Reservas Prioritarias */}
+      {!loadingPrioritarias && reservasPrioritarias.length > 0 && (
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-red-600" />
+              <CardTitle className="text-red-900">Reservas Prioritarias</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {reservasPrioritarias.slice(0, 5).map((rec) => {
+                const urgencia = rec.metadata?.urgencia as number || 0;
+                const reservaId = rec.metadata?.reservaId as number;
+                const isAltaUrgencia = urgencia >= 7;
+                
+                return (
+                  <div
+                    key={rec.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-white hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                        isAltaUrgencia ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                      }`}>
+                        <AlertTriangle className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold">
+                          Reserva #{reservaId || 'N/A'}
+                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{rec.razon}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs font-medium ${
+                            isAltaUrgencia ? 'text-red-600' : 'text-orange-600'
+                          }`}>
+                            Urgencia: {urgencia}/10
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            • {(rec.puntaje * 100).toFixed(0)}% prioridad
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (reservaId) {
+                          // Buscar la reserva en las reservas pendientes
+                          const reserva = reservasPendientes.find(r => r.id === reservaId);
+                          if (reserva) {
+                            handleViewDetails(reserva);
+                          } else {
+                            // Si no está en pendientes, navegar a la página de reservas
+                            window.location.href = `/reservations?reservaId=${reservaId}`;
+                          }
+                        }
+                      }}
+                      className="ml-4"
+                    >
+                      Revisar
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+            {reservasPrioritarias.length > 5 && (
+              <div className="mt-4 text-center">
+                <Link to="/reservations">
+                  <Button variant="outline" size="sm">
+                    Ver todas las prioritarias ({reservasPrioritarias.length})
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Contenido principal */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

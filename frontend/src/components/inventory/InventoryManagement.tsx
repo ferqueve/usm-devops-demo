@@ -14,7 +14,8 @@ import {
   Upload,
   LayoutGrid,
   LayoutList,
-  ArrowLeft
+  ArrowLeft,
+  ArrowRightLeft
 } from 'lucide-react';
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
@@ -60,11 +61,18 @@ import ImportCSVDialog from './ImportCSVDialog';
 import BulkActionsBar from './BulkActionsBar';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { usePreferences } from '@/hooks/usePreferences';
+import { MantenimientoRecomendaciones } from '@/components/recomendaciones/MantenimientoRecomendaciones';
+import { recomendacionesApi } from '@/lib/api/recomendaciones';
+import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
+import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 
 type ViewMode = 'table' | 'cards';
 
 export default function InventoryManagement() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdminOrAnalista = user?.rol === ROLES.ADMIN || user?.rol === ROLES.ANALISTA;
   
   // Estados principales
   const [items, setItems] = useState<InventarioItem[]>([]);
@@ -76,6 +84,7 @@ export default function InventoryManagement() {
   const pageSize = preferencias?.inventarioPageSize || 25;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<InventarioFilters>({});
+  const [reasignaciones, setReasignaciones] = useState<RecomendacionInventario[]>([]);
   
   // Estados de datos auxiliares
   const [espacios, setEspacios] = useState<Espacio[]>([]);
@@ -127,7 +136,24 @@ export default function InventoryManagement() {
     fetchEspacios();
     fetchTiposElemento();
     fetchStatistics();
-  }, []);
+    
+    // Cargar recomendaciones de reasignación (solo para ADMIN/ANALISTA)
+    if (isAdminOrAnalista) {
+      fetchReasignaciones();
+    }
+  }, [isAdminOrAnalista]);
+
+  // Función para cargar recomendaciones de reasignación
+  const fetchReasignaciones = async () => {
+    try {
+      const response = await recomendacionesApi.obtenerReasignaciones();
+      if (response.success && response.data) {
+        setReasignaciones(response.data);
+      }
+    } catch (error) {
+      console.warn('No se pudieron cargar recomendaciones de reasignación:', error);
+    }
+  };
 
   // Función para cargar estadísticas
   const fetchStatistics = async () => {
@@ -630,6 +656,59 @@ export default function InventoryManagement() {
 
       {/* Estadísticas */}
       <InventoryStatsCards statistics={statistics} />
+
+      {/* Recomendaciones de Mantenimiento */}
+      <MantenimientoRecomendaciones />
+
+      {/* Recomendaciones de Reasignación (solo para ADMIN/ANALISTA) */}
+      {isAdminOrAnalista && reasignaciones.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-blue-600" />
+              Reasignaciones Recomendadas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {reasignaciones.slice(0, 5).map((rec) => (
+                <div
+                  key={rec.id}
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (rec.inventarioItemId) {
+                      // Filtrar por itemId
+                      setFilters(prev => ({ ...prev, itemId: rec.inventarioItemId }));
+                    } else if (rec.espacioId) {
+                      navigate(`/rooms/${rec.espacioId}`);
+                    }
+                  }}
+                >
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{rec.razon}</p>
+                    {rec.metadata && (() => {
+                      const meta = rec.metadata as Record<string, unknown>;
+                      const itemNombre = meta.itemNombre as string | undefined;
+                      const espacioActual = meta.espacioActual as string | undefined;
+                      const espacioRecomendado = meta.espacioRecomendado as string | undefined;
+                      return (itemNombre || espacioActual || espacioRecomendado) ? (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {itemNombre && `Item: ${itemNombre}`}
+                          {espacioActual && ` • Espacio actual: ${espacioActual}`}
+                          {espacioRecomendado && ` • Espacio recomendado: ${espacioRecomendado}`}
+                        </p>
+                      ) : null;
+                    })()}
+                  </div>
+                  <span className="text-xs font-medium text-primary ml-2">
+                    {(rec.puntaje * 100).toFixed(0)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Barra de filtros */}
       <Card className="shadow-card">

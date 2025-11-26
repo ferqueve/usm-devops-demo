@@ -115,7 +115,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           <SidebarMenu className="bg-utec-dark">
             <SidebarMenuItem>
               <div className="flex flex-col gap-1 px-1 py-2">
-                {/* Fila superior: Ícono y Rol */}
+                {/* Fila superior: Ícono, Rol y Configuración */}
                 <div className="flex items-center gap-1">
                   {/* Avatar circular más pequeño */}
                   <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-utec-blue to-utec-purple rounded-full flex items-center justify-center">
@@ -128,6 +128,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                       {ROLE_LABELS[user.rol as keyof typeof ROLE_LABELS] || user.rol}
                     </span>
                   </div>
+                  
+                  {/* Ícono de configuración a la derecha */}
+                  <button
+                    onClick={() => setPreferencesOpen(true)}
+                    className="ml-auto flex-shrink-0 p-1.5 rounded-md hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                    title="Preferencias"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </button>
                 </div>
                 
                 {/* Información del usuario */}
@@ -166,15 +175,6 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                     })()}
                   </div>
                 </div>
-                
-                {/* Ícono de configuración */}
-                <button
-                  onClick={() => setPreferencesOpen(true)}
-                  className="flex-shrink-0 p-1.5 rounded-md hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
-                  title="Preferencias"
-                >
-                  <Settings className="h-4 w-4" />
-                </button>
               </div>
             </SidebarMenuItem>
           </SidebarMenu>

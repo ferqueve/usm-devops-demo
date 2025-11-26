@@ -11,17 +11,18 @@ import type { Espacio } from '@/lib/types/spaces';
 import type { Carrera } from '@/lib/types/spaces';
 import type { TipoEspacio } from '@/lib/types/spaces';
 // import type { User } from '@/lib/types/users'; // Se usará cuando se agregue el filtro de usuario
-import ReservationFormDialog from './ReservationFormDialog.tsx';
 import ReservationDetailsDialog from './ReservationDetailsDialog.tsx';
 import ReservationStats from './ReservationStats.tsx';
 import ReservationPendientes from './ReservationPendientes.tsx';
 import ReservationCardView from './ReservationCardView.tsx';
 import ReservationTableView from './ReservationTableView.tsx';
 import ReservationCalendarView from './ReservationCalendarView.tsx';
+import ReservationFormDialog from './ReservationFormDialog.tsx';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { usePreferences } from '@/hooks/usePreferences';
 import { ROLES } from '@/lib/config/constants';
+import { useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +39,7 @@ type ViewMode = 'cards' | 'table' | 'calendar';
 export default function ReservationManagement() {
   const { user } = useAuth();
   const { preferencias } = usePreferences();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isDocente = user?.rol === ROLES.DOCENTE;
   const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
   
@@ -57,7 +59,6 @@ export default function ReservationManagement() {
   const preferenciaViewMode = preferencias?.reservasViewMode as ViewMode | undefined;
   const [viewMode, setViewMode] = useState<ViewMode>(preferenciaViewMode || defaultViewMode);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [createDialog, setCreateDialog] = useState(false);
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [cancelDialog, setCancelDialog] = useState(false);
@@ -82,6 +83,18 @@ export default function ReservationManagement() {
   
   // Estado compartido para colapsar/expandir el panel lateral
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Estado para el modal del formulario
+  const shouldOpenForm = searchParams.get('new') === 'true';
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(shouldOpenForm);
+  
+  // Limpiar query param después de abrir
+  useEffect(() => {
+    if (shouldOpenForm) {
+      setSearchParams({}, { replace: true });
+      setIsFormDialogOpen(true);
+    }
+  }, [shouldOpenForm, setSearchParams]);
 
   const fetchReservas = useCallback(async () => {
     setCalendarLoading(true); // Solo afecta al contenido de calendar
@@ -280,17 +293,6 @@ export default function ReservationManagement() {
     }
   }, [viewMode, page, fetchReservasPaged]);
 
-  const handleCreateSuccess = () => {
-    if (viewMode === 'calendar') {
-      fetchReservas();
-      if (isAnalista) {
-        fetchReservasPendientes();
-      }
-    } else {
-      fetchReservasPaged();
-    }
-    // El toast de éxito ya se muestra en ReservationFormDialog
-  };
 
   const handleCancelReserva = (reserva: Reserva) => {
     setReservaToCancel(reserva);
@@ -530,7 +532,7 @@ export default function ReservationManagement() {
         onFechaFinChange={(date) => { setFechaFin(date); setPage(0); }}
         onViewModeChange={setViewMode}
         onClearFilters={handleClearFilters}
-        onCreateReserva={() => setCreateDialog(true)}
+        onCreateReserva={() => setIsFormDialogOpen(true)}
         onViewDetails={handleViewDetails}
         onCancelReserva={handleCancelReserva}
         isFullScreen={isFullScreen}
@@ -580,7 +582,7 @@ export default function ReservationManagement() {
         onFechaFinChange={(date) => { setFechaFin(date); setPage(0); }}
         onViewModeChange={setViewMode}
         onClearFilters={handleClearFilters}
-        onCreateReserva={() => setCreateDialog(true)}
+        onCreateReserva={() => setIsFormDialogOpen(true)}
         onViewDetails={handleViewDetails}
         onCancelReserva={handleCancelReserva}
         isFullScreen={isFullScreen}
@@ -628,7 +630,7 @@ export default function ReservationManagement() {
         onFechaFinChange={setFechaFin}
         onViewModeChange={setViewMode}
         onClearFilters={handleClearFilters}
-        onCreateReserva={() => setCreateDialog(true)}
+        onCreateReserva={() => setIsFormDialogOpen(true)}
         onViewDetails={handleViewDetails}
         onCancelReserva={handleCancelReserva}
         isFullScreen={isFullScreen}
@@ -653,7 +655,7 @@ export default function ReservationManagement() {
           </p>
         </div>
         <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
-          <Button onClick={() => setCreateDialog(true)} className="w-full sm:w-auto">
+          <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">
               {isDocente ? 'Nueva Solicitud' : 'Nueva Reserva'}
@@ -699,13 +701,27 @@ export default function ReservationManagement() {
         </div>
       </div>
 
-      {/* Modales */}
-      <ReservationFormDialog
-        open={createDialog}
-        onOpenChange={setCreateDialog}
-        onSuccess={handleCreateSuccess}
-      />
+      {/* Modal de formulario de reserva */}
+      <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+        <ReservationFormDialog
+          open={isFormDialogOpen}
+          onOpenChange={setIsFormDialogOpen}
+          onSuccess={() => {
+            // Recargar reservas después de crear exitosamente
+            if (viewMode === 'calendar') {
+              fetchReservas();
+            } else {
+              fetchReservasPaged();
+            }
+            if (isAnalista) {
+              fetchReservasPendientes();
+            }
+            setIsFormDialogOpen(false);
+          }}
+        />
+      </PermissionGuard>
 
+      {/* Modales */}
       {selectedReserva && (
         <ReservationDetailsDialog
           reserva={selectedReserva}

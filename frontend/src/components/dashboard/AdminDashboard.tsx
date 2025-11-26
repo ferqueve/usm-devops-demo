@@ -11,15 +11,24 @@ import type { Reserva } from '@/lib/types/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { AlertCircle, Package } from 'lucide-react';
+import { AlertCircle, Package, Sparkles, Wrench, ArrowRightLeft, ShoppingCart } from 'lucide-react';
+import { recomendacionesApi } from '@/lib/api/recomendaciones';
+import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
+import { RecomendacionPanel } from '@/components/recomendaciones/RecomendacionPanel';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [allReservas, setAllReservas] = useState<Reserva[]>([]);
   const [solicitudesPendientes, setSolicitudesPendientes] = useState(0);
+  const [mantenimientoUrgente, setMantenimientoUrgente] = useState<RecomendacionInventario[]>([]);
+  const [reasignaciones, setReasignaciones] = useState<RecomendacionInventario[]>([]);
+  const [comprasNecesarias, setComprasNecesarias] = useState<RecomendacionInventario[]>([]);
+  const [loadingRecomendaciones, setLoadingRecomendaciones] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,6 +59,30 @@ export default function AdminDashboard() {
           }
         } catch (error) {
           console.warn('No se pudieron cargar solicitudes de inventario:', error);
+        }
+
+        // Cargar recomendaciones para admin
+        try {
+          setLoadingRecomendaciones(true);
+          const [mantenimiento, reasignaciones, compras] = await Promise.all([
+            recomendacionesApi.obtenerItemsMantenimiento(),
+            recomendacionesApi.obtenerReasignaciones(),
+            recomendacionesApi.obtenerComprasNecesarias(),
+          ]);
+
+          if (mantenimiento.success && mantenimiento.data) {
+            setMantenimientoUrgente(mantenimiento.data);
+          }
+          if (reasignaciones.success && reasignaciones.data) {
+            setReasignaciones(reasignaciones.data);
+          }
+          if (compras.success && compras.data) {
+            setComprasNecesarias(compras.data);
+          }
+        } catch (error) {
+          console.warn('No se pudieron cargar recomendaciones:', error);
+        } finally {
+          setLoadingRecomendaciones(false);
         }
       } catch (error: unknown) {
         console.error('Error al cargar datos del dashboard:', error);
@@ -241,6 +274,75 @@ export default function AdminDashboard() {
           </Card>
         )}
       </div>
+
+      {/* Recomendaciones del Sistema */}
+      {!loadingRecomendaciones && (
+        mantenimientoUrgente.length > 0 || 
+        reasignaciones.length > 0 || 
+        comprasNecesarias.length > 0
+      ) && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <CardTitle>Recomendaciones del Sistema</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {mantenimientoUrgente.length > 0 && (
+                <RecomendacionPanel
+                  title="Mantenimiento Urgente"
+                  recomendaciones={mantenimientoUrgente}
+                  loading={loadingRecomendaciones}
+                  maxItems={5}
+                  icon={<Wrench className="h-5 w-5 text-amber-600" />}
+                  emptyMessage="No hay items que requieran mantenimiento urgente"
+                  onSelect={(rec) => {
+                    if (rec.inventarioItemId) {
+                      navigate(`/inventory?itemId=${rec.inventarioItemId}`);
+                    }
+                  }}
+                />
+              )}
+
+              {reasignaciones.length > 0 && (
+                <RecomendacionPanel
+                  title="Reasignaciones Recomendadas"
+                  recomendaciones={reasignaciones}
+                  loading={loadingRecomendaciones}
+                  maxItems={5}
+                  icon={<ArrowRightLeft className="h-5 w-5 text-blue-600" />}
+                  emptyMessage="No hay recomendaciones de reasignación"
+                  onSelect={(rec) => {
+                    if (rec.inventarioItemId) {
+                      navigate(`/inventory?itemId=${rec.inventarioItemId}`);
+                    } else if (rec.espacioId) {
+                      navigate(`/rooms/${rec.espacioId}`);
+                    }
+                  }}
+                />
+              )}
+
+              {comprasNecesarias.length > 0 && (
+                <RecomendacionPanel
+                  title="Compras Necesarias"
+                  recomendaciones={comprasNecesarias}
+                  loading={loadingRecomendaciones}
+                  maxItems={5}
+                  icon={<ShoppingCart className="h-5 w-5 text-green-600" />}
+                  emptyMessage="No hay recomendaciones de compras"
+                  onSelect={(rec) => {
+                    if (rec.tipoElementoId) {
+                      navigate(`/inventory?tipoElementoId=${rec.tipoElementoId}`);
+                    }
+                  }}
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Gráficos */}
       {!loading && allReservas.length > 0 && (

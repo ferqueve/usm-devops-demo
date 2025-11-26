@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { AlertCircle, Package, Building2, Wrench, CheckCircle2 } from 'lucide-react';
 import type { ReservaItemSolicitado, InventoryStats, Espacio } from '@/lib/types/spaces';
+import { MantenimientoRecomendaciones } from '@/components/recomendaciones/MantenimientoRecomendaciones';
 
 interface EspaciosStats {
   total: number;
@@ -210,6 +211,9 @@ export default function MantenimientoDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Recomendaciones de Mantenimiento */}
+      <MantenimientoRecomendaciones />
 
       {/* Solicitudes pendientes */}
       {!loading && solicitudesPendientes.length > 0 && (

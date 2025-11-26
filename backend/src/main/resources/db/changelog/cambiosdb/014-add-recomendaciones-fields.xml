@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Agregar campos a tabla recomendacion para sistema de recomendaciones inteligentes -->
+    <changeSet id="014" author="mathi">
+        <!-- Agregar columna tipo_recomendacion -->
+        <addColumn tableName="recomendacion">
+            <column name="tipo_recomendacion" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Agregar columna metadata (JSONB) -->
+        <addColumn tableName="recomendacion">
+            <column name="metadata" type="JSONB"/>
+        </addColumn>
+        
+        <!-- Agregar columna razon -->
+        <addColumn tableName="recomendacion">
+            <column name="razon" type="TEXT"/>
+        </addColumn>
+        
+        <!-- Actualizar unique constraint para incluir tipo_recomendacion -->
+        <dropUniqueConstraint tableName="recomendacion" constraintName="uk_recomendacion_usuario_espacio"/>
+        <addUniqueConstraint 
+            tableName="recomendacion" 
+            columnNames="usuario_id,espacio_id,tipo_recomendacion" 
+            constraintName="uk_recomendacion_usuario_espacio_tipo"/>
+        
+        <!-- Agregar índices para performance -->
+        <createIndex tableName="recomendacion" indexName="idx_recomendacion_usuario_tipo">
+            <column name="usuario_id"/>
+            <column name="tipo_recomendacion"/>
+        </createIndex>
+        
+        <createIndex tableName="recomendacion" indexName="idx_recomendacion_tipo">
+            <column name="tipo_recomendacion"/>
+        </createIndex>
+        
+        <createIndex tableName="recomendacion" indexName="idx_recomendacion_puntaje">
+            <column name="puntaje" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
+

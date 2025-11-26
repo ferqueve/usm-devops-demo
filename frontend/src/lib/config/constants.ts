@@ -91,7 +91,8 @@ export const ROLE_PERMISSIONS = {
       '/dashboard',
       '/rooms',
       '/rooms/:id',
-      '/reservations', 
+      '/reservations',
+      '/reservations/create',
       '/calendar',
       '/users',
       '/inventory',
@@ -121,6 +122,7 @@ export const ROLE_PERMISSIONS = {
       '/rooms',
       '/rooms/:id',
       '/reservations',
+      '/reservations/create',
       '/calendar',
       '/inventory',
       '/statistics'
@@ -140,6 +142,7 @@ export const ROLE_PERMISSIONS = {
     routes: [
       '/dashboard',
       '/reservations',
+      '/reservations/create',
       '/calendar'
     ],
     sidebarItems: [

@@ -12,6 +12,7 @@ import { AuthLayout } from './components/layouts/AuthLayout/AuthLayout';
 import DashboardPage from './app/dashboard/page';
 import CalendarPage from './app/calendar/page';
 import ReservationsPage from './app/reservations/page';
+import CreateReservationPage from './app/reservations/create/page';
 import RoomsPage from './app/rooms/page';
 import RoomDetailsPage from './app/rooms/[id]/page';
 import StatisticsPage from './app/statistics/page';
@@ -84,6 +85,15 @@ function AppRoutes() {
         element={
           <RoleProtectedRoute>
             <ReservationsPage />
+          </RoleProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/reservations/create" 
+        element={
+          <RoleProtectedRoute>
+            <CreateReservationPage />
           </RoleProtectedRoute>
         } 
       />

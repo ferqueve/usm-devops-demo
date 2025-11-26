@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ArrowLeft } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -35,17 +30,15 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
 
-interface ReservationFormDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface ReservationFormProps {
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export default function ReservationFormDialog({
-  open,
-  onOpenChange,
-  onSuccess
-}: ReservationFormDialogProps) {
+export default function ReservationForm({
+  onSuccess,
+  onCancel
+}: ReservationFormProps) {
   const { user } = useAuth();
   const isDocente = user?.rol === ROLES.DOCENTE;
   
@@ -618,33 +611,31 @@ export default function ReservationFormDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!grid-cols-1 w-[95vw] max-w-[900px] !p-0 !gap-0 max-h-[90vh] !flex !flex-col overflow-hidden">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
-          {/* Header compacto */}
-          <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 px-4 sm:px-6 pt-4 pb-3 flex-shrink-0">
-            <div className="flex items-center gap-3 mb-2">
-              <p className="text-xs font-medium text-white/90">NUEVA RESERVA</p>
-              <div className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                Crear
-              </div>
-            </div>
-            <DialogTitle className="text-lg font-bold text-white">
-              {isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
-            </DialogTitle>
-            {/* Puntos decorativos tipo ticket */}
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-            </div>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">
+            {isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Completa el formulario para {isDocente ? 'solicitar' : 'crear'} una reserva
+          </p>
+        </div>
+      </div>
 
-          {/* Contenido del formulario */}
-          <div className="bg-white flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6">
+      {/* Contenido del formulario */}
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg border shadow-sm">
+        <div className="p-6 space-y-6">
             {/* Espacio */}
             <div className="flex items-center gap-4">
               <Label htmlFor="espacio" className="text-sm font-semibold text-gray-700 min-w-[80px]">Espacio *</Label>
@@ -1121,39 +1112,26 @@ export default function ReservationFormDialog({
                 </>
               )}
             </div>
-          </div>
+        </div>
 
-          {/* Footer tipo ticket */}
-          <div className="relative bg-gray-50 px-5 py-3 border-t border-dashed border-gray-300 flex-shrink-0">
-            {/* Puntos decorativos inferiores */}
-            <div className="absolute top-0 left-0 right-0 flex justify-between px-4 -mt-1.5">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-            </div>
-            <DialogFooter className="mt-0 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
-                <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
-                </Button>
-              </PermissionGuard>
-            </DialogFooter>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        {/* Footer */}
+        <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+            <Button type="submit" disabled={loading || !isFormValid} className="bg-blue-600 hover:bg-blue-700">
+              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
+            </Button>
+          </PermissionGuard>
+        </div>
+      </form>
+    </div>
   );
 }

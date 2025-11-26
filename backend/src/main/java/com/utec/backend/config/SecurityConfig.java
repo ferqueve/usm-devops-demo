@@ -65,6 +65,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/analistas").hasAnyRole(ROLE_DOCENTE, ROLE_ADMIN, ROLE_ANALISTA)
                 // Resto de usuarios: solo ADMIN
                 .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
+                // Permitir estadísticas de inventario a ADMIN, ANALISTA y MANTENIMIENTO
+                .requestMatchers("/api/v1/stats/inventario/detailed").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
+                // Resto de estadísticas solo para ADMIN
                 .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
                 .requestMatchers("/api/v1/audit/**").hasRole(ROLE_ADMIN)
                 

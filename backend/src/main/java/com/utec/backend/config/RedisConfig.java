@@ -42,6 +42,12 @@ public class RedisConfig {
     @Value("${cache.reservas.ttl:120000}")
     private long reservasTtl;
 
+    @Value("${cache.recomendaciones.ttl:1800000}")
+    private long recomendacionesTtl; // 30 minutos
+
+    @Value("${cache.recomendaciones.metricas.ttl:86400000}")
+    private long recomendacionesMetricasTtl; // 24 horas
+
     /**
      * Configuración de ObjectMapper específico para Redis
      * Este mapper solo se usa para serialización de Redis, no afecta Spring MVC
@@ -109,6 +115,8 @@ public class RedisConfig {
         cacheConfigurations.put("inventarioStatistics", defaultConfig.entryTtl(Duration.ofMillis(inventarioStatisticsTtl)));
         cacheConfigurations.put("espacios", defaultConfig.entryTtl(Duration.ofMillis(espaciosTtl)));
         cacheConfigurations.put("reservas", defaultConfig.entryTtl(Duration.ofMillis(reservasTtl)));
+        cacheConfigurations.put("recomendaciones", defaultConfig.entryTtl(Duration.ofMillis(recomendacionesTtl)));
+        cacheConfigurations.put("recomendaciones:metricas", defaultConfig.entryTtl(Duration.ofMillis(recomendacionesMetricasTtl)));
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)

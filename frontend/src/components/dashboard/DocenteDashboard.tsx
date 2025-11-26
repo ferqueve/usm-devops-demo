@@ -10,15 +10,19 @@ import type { Reserva } from '@/lib/types/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, AlertCircle, Sparkles } from 'lucide-react';
+import { useRecomendacionesDashboard } from '@/hooks/useRecomendaciones';
+import { useNavigate } from 'react-router-dom';
 
 export default function DocenteDashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [myReservas, setMyReservas] = useState<Reserva[]>([]);
   const [reservasPendientes, setReservasPendientes] = useState<Reserva[]>([]);
+  const { recomendaciones, loading: loadingRecomendaciones } = useRecomendacionesDashboard();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,6 +129,78 @@ export default function DocenteDashboard() {
         }}
         loading={loading}
       />
+
+      {/* Recomendaciones */}
+      {!loadingRecomendaciones && recomendaciones && (
+        (recomendaciones.espaciosRecomendados && recomendaciones.espaciosRecomendados.length > 0) ||
+        (recomendaciones.itemsRecomendados && recomendaciones.itemsRecomendados.length > 0)
+      ) && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <CardTitle>Recomendaciones para Ti</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recomendaciones.espaciosRecomendados && recomendaciones.espaciosRecomendados.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">Espacios Recomendados</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {recomendaciones.espaciosRecomendados.slice(0, 4).map((rec) => (
+                      <Card
+                        key={rec.espacioId}
+                        className="hover:shadow-md transition-all cursor-pointer border-2 hover:border-primary/50"
+                        onClick={() => navigate(`/rooms/${rec.espacioId}`)}
+                        style={{
+                          borderTop: rec.tipoEspacioColor ? `4px solid ${rec.tipoEspacioColor}` : undefined,
+                        }}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm truncate">{rec.espacioNombre}</h4>
+                              {rec.tipoEspacioNombre && (
+                                <span className="text-xs text-muted-foreground">{rec.tipoEspacioNombre}</span>
+                              )}
+                            </div>
+                            <span className="text-xs font-medium text-primary">
+                              {(rec.puntaje * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-2">{rec.razon}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {recomendaciones.itemsRecomendados && recomendaciones.itemsRecomendados.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">Items Recomendados</h3>
+                  <div className="space-y-2">
+                    {recomendaciones.itemsRecomendados.slice(0, 3).map((rec) => (
+                      <div
+                        key={rec.tipoElementoId}
+                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{rec.tipoElementoNombre}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{rec.razon}</p>
+                        </div>
+                        <span className="text-xs font-medium text-primary ml-2">
+                          {(rec.puntaje * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Contenido principal */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

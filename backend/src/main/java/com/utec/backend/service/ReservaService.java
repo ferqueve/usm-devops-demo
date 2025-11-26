@@ -45,6 +45,7 @@ public class ReservaService {
     private final CarreraRepository carreraRepository;
     private final ReservaItemSolicitadoService reservaItemSolicitadoService;
     private final EmailService emailService;
+    private final RecomendacionService recomendacionService;
     
     /**
      * Crear una nueva reserva con manejo robusto de concurrencia
@@ -202,6 +203,13 @@ public class ReservaService {
         }
         
         ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
+        
+        // Invalidar caché de recomendaciones para el usuario
+        try {
+            recomendacionService.invalidarCacheRecomendaciones(usuario.getId());
+        } catch (Exception e) {
+            log.warn("Error invalidando caché de recomendaciones: {}", e.getMessage());
+        }
         
         // Enviar notificación al analista si es una solicitud pendiente
         if (estadoInicial == Reserva.EstadoReserva.PENDIENTE && analistaAsignado != null) {
@@ -667,6 +675,13 @@ public class ReservaService {
         
         log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
         
+        // Invalidar caché de recomendaciones para el usuario
+        try {
+            recomendacionService.invalidarCacheRecomendaciones(reserva.getUsuario().getId());
+        } catch (Exception e) {
+            log.warn("Error invalidando caché de recomendaciones: {}", e.getMessage());
+        }
+        
         ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
         
         // Enviar notificación al usuario sobre el cambio de estado
@@ -905,6 +920,13 @@ public class ReservaService {
         reservaRepository.save(reserva);
         
         log.info("Reserva ID: {} cancelada exitosamente", id);
+        
+        // Invalidar caché de recomendaciones para el usuario
+        try {
+            recomendacionService.invalidarCacheRecomendaciones(usuario.getId());
+        } catch (Exception e) {
+            log.warn("Error invalidando caché de recomendaciones: {}", e.getMessage());
+        }
         
         // Enviar notificación al analista si estaba asignado
         if (reserva.getAnalistaAsignado() != null) {

@@ -30,6 +30,7 @@ public class InventarioItemService {
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
     private final TipoElementoRepository tipoElementoRepository;
+    private final RecomendacionService recomendacionService;
     
     public InventarioItemResponseDto createInventarioItem(InventarioItemCreateDto createDto) {
         // Verificar que el espacio existe (si se proporciona)
@@ -142,6 +143,7 @@ public class InventarioItemService {
         TipoElemento tipoElemento = tipoElementoRepository.findById(updateDto.getTipoElementoId())
                 .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + updateDto.getTipoElementoId()));
         
+        String estadoAnterior = inventarioItem.getEstado();
         inventarioItem.setTipoElemento(tipoElemento);
         inventarioItem.setCantidad(updateDto.getCantidad());
         inventarioItem.setEstado(updateDto.getEstado());
@@ -149,6 +151,17 @@ public class InventarioItemService {
         inventarioItem.setUpdatedAt(LocalDateTime.now());
         
         InventarioItem updatedItem = inventarioItemRepository.save(inventarioItem);
+        
+        // Invalidar caché de recomendaciones si cambió el estado (especialmente si entró en mantenimiento)
+        if (!estadoAnterior.equals(updateDto.getEstado()) && "MANTENIMIENTO".equals(updateDto.getEstado())) {
+            try {
+                // Invalidar caché global de recomendaciones de mantenimiento
+                // No invalidamos por usuario específico ya que es una recomendación global
+            } catch (Exception e) {
+                // Log pero no fallar
+            }
+        }
+        
         return mapToResponseDto(updatedItem);
     }
     

@@ -4,14 +4,16 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "recomendacion", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"usuario_id", "espacio_id"})
+    @UniqueConstraint(columnNames = {"usuario_id", "espacio_id", "tipo_recomendacion"})
 })
 @Data
 @NoArgsConstructor
@@ -30,8 +32,19 @@ public class Recomendacion {
     @JoinColumn(name = "espacio_id", nullable = false)
     private Espacio espacio;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_recomendacion", nullable = false, length = 50)
+    private TipoRecomendacion tipoRecomendacion;
+    
     @Column(name = "puntaje", nullable = false, precision = 5, scale = 2)
     private BigDecimal puntaje = BigDecimal.ZERO;
+    
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "metadata", columnDefinition = "JSONB")
+    private String metadata;
+    
+    @Column(name = "razon", columnDefinition = "TEXT")
+    private String razon;
     
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)

@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Clock, User, Hourglass, CheckCircle2, Users, Eye, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Calendar, Clock, User, Hourglass, CheckCircle2, Users, Eye, ChevronRight, ChevronLeft, AlertTriangle } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import { getEstadoConfig, formatTime, formatShortDate } from './reservationUtils';
+import { recomendacionesApi } from '@/lib/api/recomendaciones';
+import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
+
 
 interface ReservationPendientesProps {
   reservasPendientes: Reserva[];
@@ -21,6 +24,7 @@ export default function ReservationPendientes({
   onCollapsedChange
 }: ReservationPendientesProps) {
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
+  const [reservasPrioritarias, setReservasPrioritarias] = useState<RecomendacionAnalista[]>([]);
 
   // Detectar cuando el layout está en vertical (menor a lg breakpoint)
   useEffect(() => {
@@ -39,6 +43,43 @@ export default function ReservationPendientes({
       onCollapsedChange(false);
     }
   }, [isVerticalLayout, collapsed, onCollapsedChange]);
+
+  // Cargar reservas prioritarias
+  useEffect(() => {
+    const fetchPrioritarias = async () => {
+      if (reservasPendientes.length === 0) return;
+      
+      try {
+        const response = await recomendacionesApi.obtenerReservasPrioritarias();
+        if (response.success && response.data) {
+          setReservasPrioritarias(response.data);
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar reservas prioritarias:', error);
+      }
+    };
+
+    fetchPrioritarias();
+  }, [reservasPendientes.length]);
+
+  // Función para obtener urgencia de una reserva
+  const getUrgencia = (reservaId: number): number => {
+    const rec = reservasPrioritarias.find(r => {
+      const reservaIdFromMeta = r.metadata?.reservaId as number;
+      return reservaIdFromMeta === reservaId;
+    });
+    if (rec && rec.metadata) {
+      return (rec.metadata.urgencia as number) || 0;
+    }
+    return 0;
+  };
+
+  // Ordenar reservas por urgencia (mayor primero)
+  const reservasOrdenadas = [...reservasPendientes].sort((a, b) => {
+    const urgenciaA = getUrgencia(a.id);
+    const urgenciaB = getUrgencia(b.id);
+    return urgenciaB - urgenciaA;
+  });
 
   // En modo vertical, forzar que siempre esté extendido
   const isCollapsed = isVerticalLayout ? false : collapsed;
@@ -118,13 +159,18 @@ export default function ReservationPendientes({
             </div>
           ) : (
             <div className="space-y-1.5 sm:space-y-2 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-0.5 sm:pr-1">
-              {reservasPendientes.map((reserva) => {
+              {reservasOrdenadas.map((reserva) => {
                 const estadoConfig = getEstadoConfig(reserva.estado);
+                const urgencia = getUrgencia(reserva.id);
+                const isPrioritaria = urgencia > 0;
+                const isAltaUrgencia = urgencia >= 7;
                 
                 return (
                   <div
                     key={reserva.id}
-                    className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer`}
+                    className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer ${
+                      isAltaUrgencia ? 'ring-2 ring-red-200' : isPrioritaria ? 'ring-1 ring-orange-200' : ''
+                    }`}
                     onClick={() => onViewDetails(reserva)}
                     >
                     {/* Franja de color recta en el lado izquierdo */}
@@ -143,6 +189,17 @@ export default function ReservationPendientes({
                                 </div>
                               );
                             })() : null}
+                            {/* Badge de urgencia */}
+                            {isPrioritaria && (
+                              <div className={`flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold shrink-0 ${
+                                isAltaUrgencia 
+                                  ? 'bg-red-100 text-red-700 border border-red-300' 
+                                  : 'bg-orange-100 text-orange-700 border border-orange-300'
+                              }`}>
+                                <AlertTriangle className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                                <span>{urgencia}/10</span>
+                              </div>
+                            )}
                             {/* Punto de color del tipo de espacio */}
                             {reserva.tipoEspacioColor ? (
                               <div 
