@@ -23,12 +23,14 @@ interface ReservationStatsProps {
   onRefresh?: () => void;
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
+  horizontal?: boolean; // Modo horizontal para cuando está arriba
 }
 
 export default function ReservationStats({ 
   onRefresh,
   collapsed: externalCollapsed,
-  onCollapsedChange
+  onCollapsedChange,
+  horizontal = false
 }: ReservationStatsProps) {
   const [stats, setStats] = useState<ReservaStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -178,8 +180,110 @@ export default function ReservationStats({
     <h3 className="text-sm font-semibold text-muted-foreground mb-3 col-span-2">{title}</h3>
   );
 
-  // En modo vertical, forzar que siempre esté extendido
-  const isCollapsed = isVerticalLayout ? false : collapsed;
+  // En modo vertical o horizontal, forzar que siempre esté extendido
+  const isCollapsed = (isVerticalLayout || horizontal) ? false : collapsed;
+
+  // Si está en modo horizontal, usar un layout diferente
+  if (horizontal) {
+    return (
+      <Card className="w-full overflow-hidden">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Estadísticas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+            {/* Resumen General */}
+            <MetricItem 
+              label="Total Reservas" 
+              value={<span className="text-lg">{stats.totalReservas}</span>} 
+              icon={<BarChart3 className="h-4 w-4" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Aprobadas" 
+              value={<span className="text-green-600">{stats.totalAprobadas}</span>} 
+              icon={<CheckCircle2 className="h-4 w-4 text-green-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Pendientes" 
+              value={<span className="text-yellow-600">{stats.totalPendientes}</span>} 
+              icon={<Hourglass className="h-4 w-4 text-yellow-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Canceladas" 
+              value={<span className="text-red-600">{stats.totalCanceladas}</span>} 
+              icon={<XCircle className="h-4 w-4 text-red-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Futuras" 
+              value={<span className="text-blue-600">{stats.totalFuturas}</span>} 
+              icon={<Calendar className="h-4 w-4 text-blue-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Pasadas" 
+              value={stats.totalPasadas} 
+              icon={<Clock className="h-4 w-4 text-gray-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Activas" 
+              value={<span className="text-green-600">{stats.totalActivas}</span>} 
+              icon={<Activity className="h-4 w-4 text-green-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Este Mes" 
+              value={
+                <div className="flex items-center gap-1">
+                  <span>{stats.reservasEsteMes}</span>
+                  {stats.diferenciaMesAnterior !== 0 && (
+                    <div className="flex items-center gap-0.5">
+                      {getTrendIcon(stats.diferenciaMesAnterior)}
+                      <span className={`text-xs ${getTrendColor(stats.diferenciaMesAnterior)}`}>
+                        {stats.diferenciaMesAnterior > 0 ? '+' : ''}{stats.diferenciaMesAnterior}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              } 
+              icon={<Calendar className="h-4 w-4 text-blue-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Próximo Mes" 
+              value={stats.reservasProximoMes} 
+              icon={<Calendar className="h-4 w-4" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Duración Total" 
+              value={formatHours(stats.duracionTotalHoras)} 
+              icon={<Clock className="h-4 w-4 text-blue-600" />}
+              collapsed={false}
+            />
+            <MetricItem 
+              label="Espacios Usados" 
+              value={stats.totalEspaciosUsados} 
+              icon={<MapPin className="h-4 w-4 text-green-600" />}
+              collapsed={false}
+            />
+            {stats.nombreEspacioMasUsado && (
+              <MetricItem 
+                label="Más Usado" 
+                value={<span className="text-xs font-normal truncate">{stats.nombreEspacioMasUsado}</span>} 
+                icon={<MapPin className="h-4 w-4" />}
+                collapsed={false}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={`h-fit overflow-hidden transition-all duration-500 ease-in-out ${

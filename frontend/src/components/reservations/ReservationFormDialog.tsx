@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/label';
 import {
@@ -17,7 +17,7 @@ import {
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimeSelect } from '@/components/ui/time-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Pencil, Plus, X } from 'lucide-react';
+import { Loader2, Pencil, Plus, X, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
@@ -34,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -48,8 +49,34 @@ export default function ReservationFormDialog({
 }: ReservationFormDialogProps) {
   const { user } = useAuth();
   const isDocente = user?.rol === ROLES.DOCENTE;
+  const isMobile = useIsMobile();
   
+  // Ref para medir la altura del formulario y aplicarla al panel de recomendaciones
+  const formContainerRef = useRef<HTMLDivElement>(null);
+  const [formHeight, setFormHeight] = useState<number | null>(null);
+
+  // Medir la altura del formulario cuando cambia
+  useEffect(() => {
+    const formContainer = formContainerRef.current;
+    if (!formContainer) return;
+
+    const updateHeight = () => {
+      // Usar offsetHeight para obtener la altura visible del contenedor (no el contenido scrolleable)
+      setFormHeight(formContainer.offsetHeight);
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    resizeObserver.observe(formContainer);
+    return () => resizeObserver.disconnect();
+  }, []);
+
   const [loading, setLoading] = useState(false);
+  const [showRecomendacionesMobile, setShowRecomendacionesMobile] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [analistas, setAnalistas] = useState<User[]>([]);
@@ -619,7 +646,7 @@ export default function ReservationFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!grid-cols-1 w-[95vw] max-w-[900px] !p-0 !gap-0 max-h-[90vh] !flex !flex-col overflow-hidden">
+      <DialogContent className="!grid-cols-1 w-[95vw] max-w-[1400px] lg:max-w-[1400px] !p-0 !gap-0 max-h-[90vh] !flex !flex-col overflow-hidden">
         <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
           {/* Header compacto */}
           <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 px-4 sm:px-6 pt-4 pb-3 flex-shrink-0">
@@ -643,8 +670,10 @@ export default function ReservationFormDialog({
             </div>
           </div>
 
-          {/* Contenido del formulario */}
-          <div className="bg-white flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6">
+          {/* Contenedor principal: formulario y recomendaciones */}
+          <div className="relative flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
+            {/* Contenido del formulario */}
+            <div ref={formContainerRef} className="bg-white lg:w-[calc(100%-400px)] min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6">
             {/* Espacio */}
             <div className="flex items-center gap-4">
               <Label htmlFor="espacio" className="text-sm font-semibold text-gray-700 min-w-[80px]">Espacio *</Label>
@@ -672,27 +701,6 @@ export default function ReservationFormDialog({
                 </Select>
               </div>
             </div>
-
-            {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas */}
-            {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && (
-              <div className="mt-4">
-                <EspaciosRecomendados
-                  inicio={(() => {
-                    const fechaStr = fecha.toISOString().split('T')[0];
-                    const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
-                    return new Date(`${fechaStr}T${horaInicio}`).toISOString();
-                  })()}
-                  fin={(() => {
-                    const fechaStr = fecha.toISOString().split('T')[0];
-                    const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
-                    return new Date(`${fechaStr}T${horaFin}`).toISOString();
-                  })()}
-                  onSelectEspacio={(espacioId) => {
-                    setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
-                  }}
-                />
-              </div>
-            )}
 
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
@@ -759,27 +767,6 @@ export default function ReservationFormDialog({
                 {/* Línea punteada */}
                 <div className="border-t border-dashed border-gray-300 my-4"></div>
               </>
-            )}
-
-            {/* Items recomendados - mostrar si hay espacio seleccionado */}
-            {formData.espacioId && (
-              <div className="mb-4">
-                <ItemsRecomendados
-                  espacioId={parseInt(formData.espacioId)}
-                  onSelectItem={(tipoElementoId, cantidad) => {
-                    // Verificar si el item ya está en la lista
-                    const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
-                    if (!existe) {
-                      setItemsSolicitados(prev => [...prev, {
-                        tipoElementoId,
-                        cantidadSolicitada: cantidad,
-                        observaciones: ''
-                      }]);
-                    }
-                  }}
-                  itemsSeleccionados={new Set(itemsSolicitados.map(item => item.tipoElementoId))}
-                />
-              </div>
             )}
 
             {/* Items Solicitados */}
@@ -1014,41 +1001,6 @@ export default function ReservationFormDialog({
               <p className="text-sm text-destructive font-medium">{horaError}</p>
             )}
 
-            {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
-            {formData.espacioId && fecha && (
-              <div className="mt-4">
-                <HorariosRecomendados
-                  espacioId={parseInt(formData.espacioId)}
-                  fecha={fecha}
-                  onSelectHorario={(inicio, fin) => {
-                    const inicioDate = new Date(inicio);
-                    const finDate = new Date(fin);
-                    setFormData(prev => ({
-                      ...prev,
-                      horaInicioHora: inicioDate.getHours().toString().padStart(2, '0'),
-                      horaInicioMinuto: inicioDate.getMinutes().toString().padStart(2, '0'),
-                      horaFinHora: finDate.getHours().toString().padStart(2, '0'),
-                      horaFinMinuto: finDate.getMinutes().toString().padStart(2, '0'),
-                    }));
-                  }}
-                  horarioSeleccionado={
-                    formData.horaInicioHora && formData.horaFinHora
-                      ? {
-                          inicio: (() => {
-                            const fechaStr = fecha.toISOString().split('T')[0];
-                            return `${fechaStr}T${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
-                          })(),
-                          fin: (() => {
-                            const fechaStr = fecha.toISOString().split('T')[0];
-                            return `${fechaStr}T${formData.horaFinHora}:${formData.horaFinMinuto}`;
-                          })(),
-                        }
-                      : undefined
-                  }
-                />
-              </div>
-            )}
-
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
@@ -1121,7 +1073,211 @@ export default function ReservationFormDialog({
                 </>
               )}
             </div>
+            </div>
+
+            {/* Panel de Recomendaciones - Lado derecho */}
+            <div 
+              className="hidden lg:flex lg:absolute lg:right-0 lg:top-0 w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 flex-col overflow-hidden"
+              style={{ height: formHeight ? `${formHeight}px` : '100%' }}
+            >
+              <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
+                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Recomendaciones del Sistema
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">Sugerencias opcionales basadas en tus preferencias</p>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
+                {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas pero NO espacio */}
+                {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && (
+                  <EspaciosRecomendados
+                    inicio={(() => {
+                      const fechaStr = fecha.toISOString().split('T')[0];
+                      const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
+                      return new Date(`${fechaStr}T${horaInicio}`).toISOString();
+                    })()}
+                    fin={(() => {
+                      const fechaStr = fecha.toISOString().split('T')[0];
+                      const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
+                      return new Date(`${fechaStr}T${horaFin}`).toISOString();
+                    })()}
+                    onSelectEspacio={(espacioId) => {
+                      setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
+                    }}
+                    espacioSeleccionadoId={formData.espacioId ? parseInt(formData.espacioId) : undefined}
+                  />
+                )}
+
+                {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
+                {formData.espacioId && fecha && (
+                  <HorariosRecomendados
+                    espacioId={parseInt(formData.espacioId)}
+                    fecha={fecha}
+                    onSelectHorario={(inicio, fin) => {
+                      const inicioDate = new Date(inicio);
+                      const finDate = new Date(fin);
+                      setFormData(prev => ({
+                        ...prev,
+                        horaInicioHora: inicioDate.getHours().toString().padStart(2, '0'),
+                        horaInicioMinuto: inicioDate.getMinutes().toString().padStart(2, '0'),
+                        horaFinHora: finDate.getHours().toString().padStart(2, '0'),
+                        horaFinMinuto: finDate.getMinutes().toString().padStart(2, '0'),
+                      }));
+                    }}
+                    horarioSeleccionado={
+                      formData.horaInicioHora && formData.horaFinHora
+                        ? {
+                            inicio: (() => {
+                              const fechaStr = fecha.toISOString().split('T')[0];
+                              return `${fechaStr}T${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
+                            })(),
+                            fin: (() => {
+                              const fechaStr = fecha.toISOString().split('T')[0];
+                              return `${fechaStr}T${formData.horaFinHora}:${formData.horaFinMinuto}`;
+                            })(),
+                          }
+                        : undefined
+                    }
+                  />
+                )}
+
+                {/* Items recomendados - mostrar si hay espacio seleccionado */}
+                {formData.espacioId && (
+                  <ItemsRecomendados
+                    espacioId={parseInt(formData.espacioId)}
+                    onSelectItem={(tipoElementoId, cantidad) => {
+                      // Verificar si el item ya está en la lista
+                      const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
+                      if (!existe) {
+                        setItemsSolicitados(prev => [...prev, {
+                          tipoElementoId,
+                          cantidadSolicitada: cantidad,
+                          observaciones: ''
+                        }]);
+                      }
+                    }}
+                    itemsSeleccionados={new Set(itemsSolicitados.map(item => item.tipoElementoId))}
+                  />
+                )}
+
+                {/* Mensaje cuando no hay recomendaciones disponibles */}
+                {(!fecha || !formData.horaInicioHora || !formData.horaFinHora) && !formData.espacioId && (
+                  <div className="text-center py-8 text-sm text-gray-500">
+                    <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                    <p>Completa el formulario para ver recomendaciones</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* Panel de Recomendaciones - Móvil (debajo del formulario) */}
+          {isMobile && (
+            <div className="w-full border-t border-gray-200 bg-gray-50 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowRecomendacionesMobile(!showRecomendacionesMobile)}
+                className="w-full bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-gray-700">Recomendaciones del Sistema</h3>
+                </div>
+                {showRecomendacionesMobile ? (
+                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
+              {showRecomendacionesMobile && (
+                <div className="px-4 py-4 space-y-4 max-h-[400px] overflow-y-auto">
+                  {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas pero NO espacio */}
+                  {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && (
+                    <EspaciosRecomendados
+                      inicio={(() => {
+                        if (!fecha) return '';
+                        const fechaStr = fecha.toISOString().split('T')[0];
+                        const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
+                        return new Date(`${fechaStr}T${horaInicio}`).toISOString();
+                      })()}
+                      fin={(() => {
+                        if (!fecha) return '';
+                        const fechaStr = fecha.toISOString().split('T')[0];
+                        const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
+                        return new Date(`${fechaStr}T${horaFin}`).toISOString();
+                      })()}
+                      onSelectEspacio={(espacioId) => {
+                        setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
+                      }}
+                      espacioSeleccionadoId={formData.espacioId ? parseInt(formData.espacioId) : undefined}
+                    />
+                  )}
+
+                  {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
+                  {formData.espacioId && fecha && (
+                    <HorariosRecomendados
+                      espacioId={parseInt(formData.espacioId)}
+                      fecha={fecha}
+                      onSelectHorario={(inicio, fin) => {
+                        const inicioDate = new Date(inicio);
+                        const finDate = new Date(fin);
+                        setFormData(prev => ({
+                          ...prev,
+                          horaInicioHora: inicioDate.getHours().toString().padStart(2, '0'),
+                          horaInicioMinuto: inicioDate.getMinutes().toString().padStart(2, '0'),
+                          horaFinHora: finDate.getHours().toString().padStart(2, '0'),
+                          horaFinMinuto: finDate.getMinutes().toString().padStart(2, '0'),
+                        }));
+                      }}
+                      horarioSeleccionado={
+                        formData.horaInicioHora && formData.horaFinHora && fecha
+                          ? {
+                              inicio: (() => {
+                                if (!fecha) return '';
+                                const fechaStr = fecha.toISOString().split('T')[0];
+                                return `${fechaStr}T${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
+                              })(),
+                              fin: (() => {
+                                if (!fecha) return '';
+                                const fechaStr = fecha.toISOString().split('T')[0];
+                                return `${fechaStr}T${formData.horaFinHora}:${formData.horaFinMinuto}`;
+                              })(),
+                            }
+                          : undefined
+                      }
+                    />
+                  )}
+
+                  {/* Items recomendados - mostrar si hay espacio seleccionado */}
+                  {formData.espacioId && (
+                    <ItemsRecomendados
+                      espacioId={parseInt(formData.espacioId)}
+                      onSelectItem={(tipoElementoId, cantidad) => {
+                        // Verificar si el item ya está en la lista
+                        const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
+                        if (!existe) {
+                          setItemsSolicitados(prev => [...prev, {
+                            tipoElementoId,
+                            cantidadSolicitada: cantidad,
+                            observaciones: ''
+                          }]);
+                        }
+                      }}
+                      itemsSeleccionados={new Set(itemsSolicitados.map(item => item.tipoElementoId))}
+                    />
+                  )}
+
+                  {/* Mensaje cuando no hay recomendaciones disponibles */}
+                  {(!fecha || !formData.horaInicioHora || !formData.horaFinHora) && !formData.espacioId && (
+                    <div className="text-center py-8 text-sm text-gray-500">
+                      <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p>Completa el formulario para ver recomendaciones</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Footer tipo ticket */}
           <div className="relative bg-gray-50 px-5 py-3 border-t border-dashed border-gray-300 flex-shrink-0">

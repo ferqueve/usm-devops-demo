@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Package, Sparkles, Loader2, Plus, CheckCircle } from "lucide-react";
@@ -47,11 +47,9 @@ export function ItemsRecomendados({
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div className={cn("flex items-center justify-center py-8", className)}>
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
@@ -60,15 +58,12 @@ export function ItemsRecomendados({
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <CardTitle className="text-base">Items Recomendados</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+    <div className={cn("space-y-3", className)}>
+      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <Sparkles className="h-4 w-4 text-primary" />
+        <span>Items Recomendados</span>
+      </div>
+      <div className="space-y-2">
           {items.slice(0, 5).map((item) => {
             const yaSeleccionado = itemsSeleccionados.has(item.tipoElementoId);
             return (
@@ -114,8 +109,7 @@ export function ItemsRecomendados({
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 

@@ -1055,8 +1055,8 @@ export default function ReservationCalendarView({
   };
 
   return (
-    <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : ''}>
-      <Card className={isFullScreen ? 'min-h-full flex flex-col' : ''}>
+    <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
+      <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
         <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
@@ -1157,7 +1157,7 @@ export default function ReservationCalendarView({
             )}
           </div>
         </CardHeader>
-      <CardContent className="pt-0 relative">
+      <CardContent className="pt-0 relative flex-1 flex flex-col min-h-0">
         {loading && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-md">
             <div className="text-center space-y-2">

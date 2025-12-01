@@ -115,16 +115,99 @@
     box-sizing: border-box;
   }
   
-body {
-  @apply bg-background text-foreground;
-  font-family: 'Gilroy', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-html {
-  overflow-x: hidden;
-}
+  /* Reducción global de tamaño para pantallas 1080p */
+  html {
+    overflow-x: hidden;
+    font-size: 87.5%; /* Reduce de 16px a 14px base (12.5% menos) */
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Gilroy', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.4; /* Reducido de 1.6 a 1.4 */
+    overflow-x: hidden;
+    font-size: 0.875rem; /* 14px base */
+  }
+  
+  /* Reducir tamaños de fuente globalmente */
+  h1 { font-size: 1.75rem; line-height: 1.3; } /* ~28px */
+  h2 { font-size: 1.5rem; line-height: 1.3; } /* ~24px */
+  h3 { font-size: 1.25rem; line-height: 1.3; } /* ~20px */
+  h4 { font-size: 1.125rem; line-height: 1.3; } /* ~18px */
+  h5 { font-size: 1rem; line-height: 1.3; } /* ~16px */
+  h6 { font-size: 0.875rem; line-height: 1.3; } /* ~14px */
+  
+  /* Reducir espaciados en padding y margin */
+  main, section, article {
+    font-size: 0.875rem; /* 14px base */
+  }
+  
+  /* Reducir altura de botones */
+  button {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  /* Reducir inputs y selects */
+  input, select, textarea {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  /* Reducir margin bottom en títulos y párrafos */
+  h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Reducir espaciado en secciones */
+  .section-separator {
+    padding-top: 1rem !important;
+    margin-top: 1rem !important;
+  }
+  
+  .section-title {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  /* Reducir espaciado en tablas */
+  table {
+    font-size: 0.875rem;
+  }
+  
+  th, td {
+    padding: 0.5rem;
+  }
+  
+  /* Reducir tamaño de badges y labels */
+  [class*="badge"], [class*="Badge"] {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  /* Reducir iconos SVG */
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  
+  svg[class*="size-4"] {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  
+  svg[class*="size-5"] {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  svg[class*="size-6"] {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
 
   /* Prevenir overflow horizontal */
   #root, #root > *, main, main > *, div, section, article {
@@ -267,11 +350,11 @@ html:has([data-slot="dialog"][data-state="open"]) {
 
   /* Secciones del sistema */
   .section-separator {
-    @apply border-t border-gray-200 pt-8 mt-8 max-w-full;
+    @apply border-t border-gray-200 pt-4 mt-4 max-w-full;
   }
 
   .section-title {
-    @apply text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2 sm:gap-3 flex-wrap;
+    @apply text-lg sm:text-xl font-bold mb-3 flex items-center gap-1.5 sm:gap-2 flex-wrap;
   }
 
   /* Log viewer */

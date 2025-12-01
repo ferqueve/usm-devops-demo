@@ -641,43 +641,68 @@ export default function ReservationManagement() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">
-            {isDocente ? 'Mis Solicitudes' : 'Gestión de Reservas'}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {isDocente 
-              ? 'Administra tus solicitudes de reserva de espacios'
-              : 'Administra todas las reservas y solicitudes del sistema'}
-          </p>
+    <div className="flex flex-col flex-1 min-h-[calc(100vh-8rem)]">
+      <div className="space-y-4 sm:space-y-6 flex-shrink-0">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold">
+              {isDocente ? 'Mis Solicitudes' : 'Gestión de Reservas'}
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {isDocente 
+                ? 'Administra tus solicitudes de reserva de espacios'
+                : 'Administra todas las reservas y solicitudes del sistema'}
+            </p>
+          </div>
+          <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+            <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">
+                {isDocente ? 'Nueva Solicitud' : 'Nueva Reserva'}
+              </span>
+              <span className="sm:hidden">{isDocente ? 'Solicitar' : 'Nueva'}</span>
+            </Button>
+          </PermissionGuard>
         </div>
-        <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
-          <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">
-              {isDocente ? 'Nueva Solicitud' : 'Nueva Reserva'}
-            </span>
-            <span className="sm:hidden">{isDocente ? 'Solicitar' : 'Nueva'}</span>
-          </Button>
+
+        {/* Estadísticas arriba (horizontal) */}
+        <PermissionGuard requiredPermission="estadisticas:ver" fallback={null} showFallback={false}>
+          <div className="w-full">
+            <ReservationStats 
+              onRefresh={viewMode === 'calendar' ? fetchReservas : fetchReservasPaged}
+              collapsed={false}
+              onCollapsedChange={() => {}}
+              horizontal={true}
+            />
+          </div>
         </PermissionGuard>
       </div>
 
-      {/* Layout principal: Gestión + Pendientes + Stats lateral */}
-      <div className="flex gap-4 sm:gap-6 flex-col lg:flex-row">
-        {/* Gestión de reservas (70%) */}
-        <div className="flex-1 space-y-4 sm:space-y-6">
+      {/* Layout principal: Calendario/Gestión + Pendientes */}
+      <div className="flex gap-4 sm:gap-6 flex-col lg:flex-row lg:items-stretch flex-1 min-h-0 mt-4 sm:mt-6">
+        {/* Gestión de reservas (calendario/cards/table) */}
+        <div className={`flex-1 flex flex-col min-h-0 ${viewMode !== 'calendar' ? '' : ''}`}>
           {/* Lista unificada de reservas */}
-          {viewMode === 'cards' && renderCardView(reservasFiltradas, getTituloReservas())}
-          {viewMode === 'table' && renderTableView(reservasFiltradas, getTituloReservas())}
-          {viewMode === 'calendar' && renderCalendarView(reservasFiltradas)}
+          {viewMode === 'cards' && (
+            <div className="flex-1 flex flex-col min-h-0">
+              {renderCardView(reservasFiltradas, getTituloReservas())}
+            </div>
+          )}
+          {viewMode === 'table' && (
+            <div className="flex-1 flex flex-col min-h-0">
+              {renderTableView(reservasFiltradas, getTituloReservas())}
+            </div>
+          )}
+          {viewMode === 'calendar' && (
+            <div className="flex-1 flex flex-col min-h-0">
+              {renderCalendarView(reservasFiltradas)}
+            </div>
+          )}
         </div>
 
-        {/* Lateral derecho: Pendientes + Estadísticas */}
-        <div className="w-full lg:w-auto lg:shrink-0 lg:order-last flex flex-col gap-4">
-          {/* Reservas Pendientes para ANALISTA - Colapsable */}
+        {/* Lateral derecho: Pendientes (misma altura que el contenido principal) */}
+        <div className="w-full lg:w-auto lg:shrink-0 lg:order-last flex flex-col min-h-0">
           <PermissionGuard requiredPermission="reservas:aprobar" fallback={null} showFallback={false}>
             {isAnalista && (
               <ReservationPendientes
@@ -688,15 +713,6 @@ export default function ReservationManagement() {
                 onCollapsedChange={setSidebarCollapsed}
               />
             )}
-          </PermissionGuard>
-
-          {/* Estadísticas */}
-          <PermissionGuard requiredPermission="estadisticas:ver" fallback={null} showFallback={false}>
-            <ReservationStats 
-              onRefresh={viewMode === 'calendar' ? fetchReservas : fetchReservasPaged}
-              collapsed={sidebarCollapsed}
-              onCollapsedChange={setSidebarCollapsed}
-            />
           </PermissionGuard>
         </div>
       </div>

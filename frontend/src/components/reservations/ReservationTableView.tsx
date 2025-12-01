@@ -201,8 +201,8 @@ export default function ReservationTableView({
     );
   };
   return (
-    <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : ''}>
-      <Card className={isFullScreen ? 'min-h-full flex flex-col' : ''}>
+    <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
+      <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
         <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
@@ -301,7 +301,7 @@ export default function ReservationTableView({
             )}
           </div>
         </CardHeader>
-      <CardContent className="pt-0 relative">
+      <CardContent className={`pt-0 relative flex-1 flex flex-col min-h-0 ${!isFullScreen ? 'overflow-y-auto' : ''}`}>
         {loading && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-md">
             <div className="text-center space-y-2">
@@ -311,7 +311,7 @@ export default function ReservationTableView({
           </div>
         )}
         {reservas.length === 0 ? (
-          <div className="py-8">
+          <div className="flex-1 flex items-center justify-center py-8">
             <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
               <EmptyState
                 icon={Calendar}
@@ -325,7 +325,7 @@ export default function ReservationTableView({
             </PermissionGuard>
           </div>
         ) : (
-          <div className="rounded-md border">
+          <div className="flex-1 overflow-y-auto min-h-0 rounded-md border">
             <UITable>
               <TableHeader>
                 <TableRow>
@@ -454,7 +454,7 @@ export default function ReservationTableView({
           </div>
         )}
         {reservas.length > 0 && renderPagination() && (
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t flex-shrink-0">
             {renderPagination()}
             <div className="text-sm text-muted-foreground text-center mt-2">
               Mostrando {reservas.length} de {totalElements} reservas

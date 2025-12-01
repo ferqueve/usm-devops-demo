@@ -85,10 +85,10 @@ export default function ReservationPendientes({
   const isCollapsed = isVerticalLayout ? false : collapsed;
 
   return (
-    <Card className={`h-fit overflow-hidden transition-all duration-500 ease-in-out ${
+    <Card className={`h-full flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
       isCollapsed 
         ? 'w-14 sm:w-16 md:w-20 max-w-20' 
-        : 'w-full sm:w-full md:w-full lg:w-[300px] xl:w-[328px] lg:max-w-[328px] lg:sticky lg:top-6'
+        : 'w-full sm:w-full md:w-full lg:w-[300px] xl:w-[328px] lg:max-w-[328px]'
     }`}>
       <CardHeader className={isCollapsed ? "pb-2 px-1.5 sm:px-2" : "pb-2 sm:pb-3 px-3 sm:px-4"}>
         {isCollapsed ? (
@@ -145,7 +145,7 @@ export default function ReservationPendientes({
             )}
           </CardContent>
         ) : (
-        <CardContent className="space-y-2 sm:space-y-3 px-3 sm:px-4 pb-3 sm:pb-4">
+        <CardContent className="flex-1 flex flex-col space-y-2 sm:space-y-3 px-3 sm:px-4 pb-3 sm:pb-4 overflow-hidden">
           {loading ? (
             <div className="text-center py-6 sm:py-8">
               <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-yellow-600"></div>
@@ -158,7 +158,7 @@ export default function ReservationPendientes({
               <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Todas las reservas están procesadas</p>
             </div>
           ) : (
-            <div className="space-y-1.5 sm:space-y-2 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-0.5 sm:pr-1">
+            <div className="flex-1 space-y-1.5 sm:space-y-2 overflow-y-auto pr-0.5 sm:pr-1">
               {reservasOrdenadas.map((reserva) => {
                 const estadoConfig = getEstadoConfig(reserva.estado);
                 const urgencia = getUrgencia(reserva.id);
