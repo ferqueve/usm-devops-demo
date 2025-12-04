@@ -33,6 +33,7 @@ public class ReservaResponseDto {
     private LocalDateTime inicio;
     private LocalDateTime fin;
     private Reserva.EstadoReserva estado;
+    private Boolean esPublica;
     private List<ReservaItemSolicitadoResponseDto> itemsSolicitados;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

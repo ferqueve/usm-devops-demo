@@ -114,7 +114,10 @@ public class ReservaService {
         
         // 7. Validar y obtener analista asignado si es docente
         Usuario analistaAsignado = null;
-        if (ROLE_DOCENTE.equals(userRole)) {
+        boolean esDocente = ROLE_DOCENTE.equals(userRole);
+        boolean esExterno = ROLE_EXTERNO.equals(userRole);
+        
+        if (esDocente) {
             if (createDto.getAnalistaId() == null) {
                 throw new RuntimeException("El docente debe seleccionar un analista para gestionar la solicitud");
             }
@@ -134,14 +137,25 @@ public class ReservaService {
             
             log.info("Analista {} asignado a solicitud de docente {}", analistaAsignado.getEmail(), userEmail);
         }
+        // Para externos, no se requiere analista asignado inicialmente
+        
+        // 7.5. Determinar si la reserva es pública
+        Boolean esPublica;
+        if (esExterno) {
+            // Los externos siempre crean reservas públicas
+            esPublica = true;
+            log.info("Usuario externo creando reserva pública");
+        } else {
+            // Para usuarios internos, usar el valor del DTO o false por defecto
+            esPublica = createDto.getEsPublica() != null ? createDto.getEsPublica() : false;
+        }
         
         // 8. Determinar el estado inicial según el rol
         Reserva.EstadoReserva estadoInicial;
-        boolean esDocente = ROLE_DOCENTE.equals(userRole);
         
-        if (esDocente) {
+        if (esDocente || esExterno) {
             estadoInicial = Reserva.EstadoReserva.PENDIENTE;
-            log.info("Docente creando solicitud pendiente");
+            log.info("{} creando solicitud pendiente", esDocente ? "Docente" : "Usuario externo");
         } else {
             estadoInicial = Reserva.EstadoReserva.APROBADO;
             log.info("Admin/Analista creando reserva auto-aprobada");
@@ -164,10 +178,10 @@ public class ReservaService {
         // 9. Crear reserva(s) - simple o recurrente
         if (createDto.getTipoRecurrencia() != null) {
             // Crear múltiples reservas recurrentes
-            return crearReservasRecurrentes(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial, esDocente);
+            return crearReservasRecurrentes(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial, esDocente, esPublica);
         } else {
             // Crear una sola reserva (comportamiento original)
-            return crearReservaSimple(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial);
+            return crearReservaSimple(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial, esPublica);
         }
     }
     
@@ -180,7 +194,8 @@ public class ReservaService {
             Espacio espacio,
             Carrera carrera,
             Usuario analistaAsignado,
-            Reserva.EstadoReserva estadoInicial) {
+            Reserva.EstadoReserva estadoInicial,
+            Boolean esPublica) {
         
         Reserva reserva = new Reserva();
         reserva.setEspacio(espacio);
@@ -190,6 +205,7 @@ public class ReservaService {
         reserva.setInicio(createDto.getInicio());
         reserva.setFin(createDto.getFin());
         reserva.setEstado(estadoInicial);
+        reserva.setEsPublica(esPublica);
         
         Reserva savedReserva = reservaRepository.save(reserva);
         log.info("Reserva creada exitosamente. ID: {}, Espacio: {}, Usuario: {}, Estado: {}", 
@@ -242,7 +258,8 @@ public class ReservaService {
             Carrera carrera,
             Usuario analistaAsignado,
             Reserva.EstadoReserva estadoInicial,
-            boolean esDocente) {
+            boolean esDocente,
+            Boolean esPublica) {
         
         List<LocalDateTime> fechasInicio = generarFechasRecurrentes(createDto);
         log.info("Generando {} reservas recurrentes de tipo {}", fechasInicio.size(), createDto.getTipoRecurrencia());
@@ -285,6 +302,7 @@ public class ReservaService {
             reserva.setInicio(fechaInicio);
             reserva.setFin(fechaFin);
             reserva.setEstado(estadoInicial);
+            reserva.setEsPublica(esPublica);
             
             Reserva savedReserva = reservaRepository.save(reserva);
             reservasCreadas.add(savedReserva);
@@ -633,20 +651,22 @@ public class ReservaService {
             throw new RuntimeException("Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: " + reserva.getEstado());
         }
         
-        // Si el usuario es ANALISTA, validar que la reserva está asignada a él
+        // Si el usuario es ANALISTA, validar permisos
         if (ROLE_ANALISTA.equals(userRole)) {
             Usuario analista = usuarioRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
             
-            if (reserva.getAnalistaAsignado() == null) {
-                throw new RuntimeException("Esta reserva no tiene un analista asignado");
+            // Si la reserva tiene analista asignado, solo ese analista puede gestionarla
+            // Si no tiene analista asignado (reservas de externos), cualquier analista puede gestionarla
+            if (reserva.getAnalistaAsignado() != null) {
+                if (!reserva.getAnalistaAsignado().getId().equals(analista.getId())) {
+                    throw new RuntimeException("No tienes permisos para gestionar esta reserva. Solo puedes gestionar las reservas asignadas a ti.");
+                }
+                log.info("Analista {} aprobando/rechazando reserva asignada a él", userEmail);
+            } else {
+                // Reserva sin analista asignado (probablemente de externo), cualquier analista puede gestionarla
+                log.info("Analista {} aprobando/rechazando reserva sin analista asignado (posible reserva de externo)", userEmail);
             }
-            
-            if (!reserva.getAnalistaAsignado().getId().equals(analista.getId())) {
-                throw new RuntimeException("No tienes permisos para gestionar esta reserva. Solo puedes gestionar las reservas asignadas a ti.");
-            }
-            
-            log.info("Analista {} aprobando/rechazando reserva asignada a él", userEmail);
         }
         
         // Si se aprueba, validar conflictos con otras reservas APROBADO
@@ -1001,6 +1021,12 @@ public class ReservaService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             
+            // Si el usuario es EXTERNO, solo mostrar reservas públicas
+            if (ROLE_EXTERNO.equals(userRole)) {
+                predicates.add(cb.equal(root.get("esPublica"), true));
+                log.debug("Filtrando solo reservas públicas para usuario externo: {}", userEmail);
+            }
+            
             // Si el usuario es ANALISTA, solo mostrar reservas asignadas a él
             if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
                 Usuario analista = usuarioRepository.findByEmail(userEmail)
@@ -1011,7 +1037,7 @@ public class ReservaService {
                 }
             }
             
-            // NO filtrar por usuario - mostrar todas las reservas (solo para ADMIN)
+            // NO filtrar por usuario - mostrar todas las reservas (solo para ADMIN y otros roles internos)
             
             // Filtro por estado
             if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
@@ -1399,6 +1425,7 @@ public class ReservaService {
         dto.setInicio(reserva.getInicio());
         dto.setFin(reserva.getFin());
         dto.setEstado(reserva.getEstado());
+        dto.setEsPublica(reserva.getEsPublica());
         // Mapear items solicitados
         if (reserva.getItemsSolicitados() != null && !reserva.getItemsSolicitados().isEmpty()) {
             dto.setItemsSolicitados(reservaItemSolicitadoService.obtenerPorReserva(reserva.getId()));

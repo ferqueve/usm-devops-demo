@@ -34,7 +34,10 @@ export function TimeSelect({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setInputValue(value);
+    if (value !== inputValue) {
+      setInputValue(value);
+      setIsTyping(false);
+    }
   }, [value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

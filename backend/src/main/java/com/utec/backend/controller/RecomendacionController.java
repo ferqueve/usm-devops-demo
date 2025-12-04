@@ -222,9 +222,10 @@ public class RecomendacionController {
     
     /**
      * Obtener reservas prioritarias para un analista
+     * Disponible para ANALISTA y ADMIN
      */
     @GetMapping("/analistas/prioritarias")
-    @PreAuthorize("hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<List<RecomendacionAnalistaDto>>> obtenerReservasPrioritarias(
             Authentication authentication) {
         try {

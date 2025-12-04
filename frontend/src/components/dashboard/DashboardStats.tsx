@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Building2, Users, BarChart3 } from 'lucide-react';
+import { BookOpen, Building2, Users, BarChart3, Calendar, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
 import type { DashboardStats as DashboardStatsType } from '@/lib/api/dashboard';
@@ -12,7 +12,45 @@ interface DashboardStatsProps {
 export default function DashboardStats({ stats, loading = false }: DashboardStatsProps) {
   const { user } = useAuth();
   const isAdmin = user?.rol === ROLES.ADMIN;
+  const isExterno = user?.rol === ROLES.EXTERNO;
   
+  // Estadísticas para usuarios externos (solo reservas públicas)
+  const statCardsExterno = [
+    {
+      label: "Reservas Públicas",
+      value: stats.totalReservas,
+      change: `${stats.reservasHoy} eventos hoy`,
+      trend: "up" as const,
+      icon: Calendar,
+      color: "text-blue-600"
+    },
+    {
+      label: "Eventos Aprobados",
+      value: stats.reservasAprobadas,
+      change: `${stats.reservasHoy} eventos públicos hoy`,
+      trend: "up" as const,
+      icon: BookOpen,
+      color: "text-green-600"
+    },
+    {
+      label: "Mis Solicitudes Pendientes",
+      value: stats.reservasPendientes,
+      change: "Esperando aprobación",
+      trend: stats.reservasPendientes > 0 ? "neutral" as const : "up" as const,
+      icon: Clock,
+      color: "text-yellow-600"
+    },
+    {
+      label: "Espacios Disponibles",
+      value: stats.espaciosDisponibles,
+      change: `${stats.totalEspacios} espacios totales`,
+      trend: "up" as const,
+      icon: Building2,
+      color: "text-purple-600"
+    }
+  ];
+
+  // Estadísticas para otros roles
   const statCards = [
     {
       label: "Reservas Activas",
@@ -48,9 +86,13 @@ export default function DashboardStats({ stats, loading = false }: DashboardStat
     }
   ];
 
+  // Usar estadísticas específicas para externos
+  const cardsToUse = isExterno ? statCardsExterno : statCards;
+
   if (loading) {
+    const cardCount = isExterno ? 4 : 4;
     return (
-      <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className={`grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-${cardCount}`}>
         {[1, 2, 3, 4].map((i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -67,8 +109,8 @@ export default function DashboardStats({ stats, loading = false }: DashboardStat
     );
   }
 
-  // Filtrar cards: solo ADMIN puede ver "Usuarios Activos"
-  const visibleCards = statCards.filter(stat => {
+  // Filtrar cards: solo ADMIN puede ver "Usuarios Activos" (solo para no-externos)
+  const visibleCards = cardsToUse.filter(stat => {
     if (stat.label === "Usuarios Activos") {
       return isAdmin;
     }

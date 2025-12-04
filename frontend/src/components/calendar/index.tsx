@@ -11,6 +11,9 @@ import type { Carrera } from '@/lib/types/spaces';
 import type { TipoEspacio } from '@/lib/types/spaces';
 import ReservationCalendarView from '@/components/reservations/ReservationCalendarView';
 import ReservationDetailsDialog from '@/components/reservations/ReservationDetailsDialog';
+import ReservationFormDialog from '@/components/reservations/ReservationFormDialog';
+import { Button } from '@/components/ui/Button';
+import { Plus } from 'lucide-react';
 
 interface EspacioOption {
   id: number;
@@ -33,6 +36,7 @@ interface TipoEspacioOption {
 export default function Calendar() {
   const { user } = useAuth();
   const isDocente = user?.rol === ROLES.DOCENTE;
+  const isExterno = user?.rol === ROLES.EXTERNO;
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
@@ -51,6 +55,9 @@ export default function Calendar() {
   // Diálogo de detalles
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
+  
+  // Diálogo de creación de reserva (para externos)
+  const [createReservaDialog, setCreateReservaDialog] = useState(false);
 
   // Cargar datos para los filtros
   useEffect(() => {
@@ -156,6 +163,16 @@ export default function Calendar() {
     setIsFullScreen(!isFullScreen);
   };
 
+  const handleCreateReserva = () => {
+    setCreateReservaDialog(true);
+  };
+
+  const handleReservaCreated = () => {
+    setCreateReservaDialog(false);
+    // Recargar reservas después de crear una
+    fetchReservas();
+  };
+
   // Obtener opciones para los filtros
   const espaciosUnicos: EspacioOption[] = espacios.map(e => ({ id: e.id, nombre: e.nombre }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -179,9 +196,15 @@ export default function Calendar() {
         <div>
           <h2 className="text-xl sm:text-2xl font-bold">Calendario de Reservas</h2>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Visualiza todas las reservas del sistema
+            {isExterno ? 'Visualiza las reservas públicas del sistema' : 'Visualiza todas las reservas del sistema'}
           </p>
         </div>
+        {isExterno && (
+          <Button onClick={handleCreateReserva} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Solicitar Reserva
+          </Button>
+        )}
       </div>
 
       {/* Vista de calendario */}
@@ -208,11 +231,11 @@ export default function Calendar() {
         onFechaFinChange={setFechaFin}
         onViewModeChange={() => {}} // Solo calendario
         onClearFilters={handleClearFilters}
-        onCreateReserva={() => {}} // No permitido en vista pública
+        onCreateReserva={isExterno ? handleCreateReserva : () => {}}
         onViewDetails={handleViewDetails}
         onCancelReserva={() => {}} // No permitido en vista pública
         loading={loading}
-        readOnly={true}
+        readOnly={!isExterno}
         isFullScreen={isFullScreen}
         onToggleFullScreen={handleToggleFullScreen}
       />
@@ -223,6 +246,15 @@ export default function Calendar() {
           reserva={selectedReserva}
           open={detailsDialog}
           onOpenChange={setDetailsDialog}
+        />
+      )}
+
+      {/* Diálogo de creación de reserva (para externos) */}
+      {isExterno && (
+        <ReservationFormDialog
+          open={createReservaDialog}
+          onOpenChange={setCreateReservaDialog}
+          onSuccess={handleReservaCreated}
         />
       )}
     </div>

@@ -17,7 +17,9 @@ import {
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimeSelect } from '@/components/ui/time-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Pencil, Plus, X, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Pencil, Plus, X, Sparkles, ChevronDown, ChevronUp, Users } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
@@ -29,12 +31,13 @@ import { formatLocalDateTime } from './reservationUtils';
 import { EspaciosRecomendados } from '@/components/recomendaciones/EspaciosRecomendados';
 import { HorariosRecomendados } from '@/components/recomendaciones/HorariosRecomendados';
 import { ItemsRecomendados } from '@/components/recomendaciones/ItemsRecomendados';
+import { recomendacionesApi } from '@/lib/api/recomendaciones';
+import type { DashboardRecomendaciones, RecomendacionEspacio } from '@/lib/types/recomendaciones';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -49,11 +52,15 @@ export default function ReservationFormDialog({
 }: ReservationFormDialogProps) {
   const { user } = useAuth();
   const isDocente = user?.rol === ROLES.DOCENTE;
-  const isMobile = useIsMobile();
+  const isExterno = user?.rol === ROLES.EXTERNO;
   
   // Ref para medir la altura del formulario y aplicarla al panel de recomendaciones
   const formContainerRef = useRef<HTMLDivElement>(null);
   const [formHeight, setFormHeight] = useState<number | null>(null);
+  
+  // Recomendaciones generales del dashboard (cuando no hay datos seleccionados)
+  const [recomendacionesGenerales, setRecomendacionesGenerales] = useState<DashboardRecomendaciones | null>(null);
+  const [loadingRecomendacionesGenerales, setLoadingRecomendacionesGenerales] = useState(false);
 
   // Medir la altura del formulario cuando cambia
   useEffect(() => {
@@ -289,6 +296,100 @@ export default function ReservationFormDialog({
   const minutosInicioDisponibles = getMinutosInicioDisponibles();
   const minutosFinDisponibles = getMinutosFinDisponibles();
 
+  // Cargar recomendaciones generales del dashboard
+  const fetchRecomendacionesGenerales = useCallback(async () => {
+    // Solo cargar si no hay datos seleccionados (sin espacio y sin horario completo)
+    const tieneEspacio = formData.espacioId && formData.espacioId.trim() !== '';
+    const tieneHorarioCompleto = formData.horaInicioHora && formData.horaFinHora;
+    
+    if (tieneEspacio || tieneHorarioCompleto) {
+      // Limpiar recomendaciones generales si hay datos seleccionados
+      setRecomendacionesGenerales(null);
+      return;
+    }
+    
+    setLoadingRecomendacionesGenerales(true);
+    try {
+      const response = await recomendacionesApi.obtenerRecomendacionesDashboard();
+      if (response.success && response.data) {
+        // Si hay espacios recomendados, usarlos
+        if (response.data.espaciosRecomendados && response.data.espaciosRecomendados.length > 0) {
+          setRecomendacionesGenerales(response.data);
+        } else {
+          // Si no hay recomendaciones del dashboard, usar espacios disponibles como alternativa
+          try {
+            const espaciosResponse = await espaciosApi.obtenerEspacios();
+            if (espaciosResponse.data && espaciosResponse.data.length > 0) {
+              // Convertir espacios a formato de recomendación
+              const espaciosRecomendados = espaciosResponse.data
+                .slice(0, 4) // Tomar los primeros 4
+                .map(espacio => ({
+                  espacioId: espacio.id,
+                  espacioNombre: espacio.nombre,
+                  capacidad: espacio.capacidad || 0,
+                  tipoEspacioNombre: espacio.tipoEspacioNombre,
+                  tipoEspacioColor: espacio.tipoEspacioColor,
+                  puntaje: 0.7, // Puntaje por defecto
+                  razon: 'Espacio disponible en el sistema',
+                  disponible: true,
+                  tipoRecomendacion: 'ESPACIO_PARA_RESERVA' as const
+                }));
+              setRecomendacionesGenerales({
+                espaciosRecomendados,
+                itemsRecomendados: [],
+                mantenimientoUrgente: [],
+                reservasPrioritarias: [],
+                totalRecomendaciones: espaciosRecomendados.length
+              });
+            } else {
+              setRecomendacionesGenerales(null);
+            }
+          } catch (espaciosError) {
+            console.error('Error cargando espacios como alternativa:', espaciosError);
+            setRecomendacionesGenerales(null);
+          }
+        }
+      } else {
+        // Si no hay respuesta exitosa, intentar con espacios disponibles
+        try {
+          const espaciosResponse = await espaciosApi.obtenerEspacios();
+          if (espaciosResponse.data && espaciosResponse.data.length > 0) {
+            const espaciosRecomendados: RecomendacionEspacio[] = espaciosResponse.data
+              .slice(0, 4)
+              .map(espacio => ({
+                tipoRecomendacion: 'ESPACIO_PARA_RESERVA' as const,
+                puntaje: 0.7,
+                razon: 'Espacio disponible en el sistema',
+                espacioId: espacio.id,
+                espacioNombre: espacio.nombre,
+                capacidad: espacio.capacidad || 0,
+                tipoEspacioNombre: espacio.tipoEspacioNombre,
+                tipoEspacioColor: espacio.tipoEspacioColor,
+                disponible: true
+              }));
+            setRecomendacionesGenerales({
+              espaciosRecomendados,
+              itemsRecomendados: [],
+              mantenimientoUrgente: [],
+              reservasPrioritarias: [],
+              totalRecomendaciones: espaciosRecomendados.length
+            });
+          } else {
+            setRecomendacionesGenerales(null);
+          }
+        } catch (espaciosError) {
+          console.error('Error cargando espacios como alternativa:', espaciosError);
+          setRecomendacionesGenerales(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando recomendaciones generales:', error);
+      setRecomendacionesGenerales(null);
+    } finally {
+      setLoadingRecomendacionesGenerales(false);
+    }
+  }, [formData.espacioId, formData.horaInicioHora, formData.horaFinHora]);
+
   useEffect(() => {
     fetchEspacios();
     fetchCarreras();
@@ -310,7 +411,13 @@ export default function ReservationFormDialog({
       fechaFinRecurrencia: undefined,
       analistaId: ''
     });
-  }, [isDocente]);
+    // Cargar recomendaciones generales cuando se abre el diálogo
+    if (open && !isExterno) {
+      // Llamar directamente sin incluir en dependencias para evitar ciclos
+      fetchRecomendacionesGenerales();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDocente, open, isExterno]);
 
   // Calcular días completamente ocupados
   const calcularDiasOcupados = useCallback((reservas: Reserva[]) => {
@@ -369,6 +476,13 @@ export default function ReservationFormDialog({
       setDisabledDates([]);
     }
   }, [formData.espacioId, fetchReservasEspacio]);
+
+  // Recargar recomendaciones generales cuando cambian los datos del formulario
+  useEffect(() => {
+    if (!isExterno && open) {
+      fetchRecomendacionesGenerales();
+    }
+  }, [formData.espacioId, formData.horaInicioHora, formData.horaFinHora, open, isExterno, fetchRecomendacionesGenerales]);
 
   // Validar horas en tiempo real
   useEffect(() => {
@@ -555,7 +669,7 @@ export default function ReservationFormDialog({
       return;
     }
 
-    // 9. Validar analista si es docente
+    // 9. Validar analista si es docente (externos no requieren analista)
     if (isDocente && !formData.analistaId) {
       toast.error('Por favor selecciona un analista para gestionar tu solicitud');
       return;
@@ -590,7 +704,8 @@ export default function ReservationFormDialog({
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: isDocente && formData.analistaId ? parseInt(formData.analistaId) : undefined,
+        analistaId: (isDocente && formData.analistaId) ? parseInt(formData.analistaId) : undefined,
+        esPublica: isExterno ? true : undefined, // Externos siempre crean reservas públicas
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -641,7 +756,7 @@ export default function ReservationFormDialog({
     formData.horaInicioHora &&
     formData.horaFinHora &&
     !horaError &&
-    (!isDocente || formData.analistaId) // Analista requerido solo para docentes
+    (!isDocente || formData.analistaId) // Analista requerido solo para docentes (externos no requieren)
   );
 
   return (
@@ -730,6 +845,26 @@ export default function ReservationFormDialog({
 
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Indicador de reserva pública - solo para externos */}
+            {isExterno && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="flex items-start gap-2">
+                  <div className="text-blue-600 mt-0.5">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900">Reserva Pública</p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Tu solicitud de reserva será pública y visible para todos los usuarios del sistema. 
+                      Un analista revisará y aprobará tu solicitud.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Analista asignado - solo para docentes */}
             {isDocente && (
@@ -916,6 +1051,7 @@ export default function ReservationFormDialog({
                 <div className="flex gap-3 items-center">
                   <div className="flex-1">
                     <TimeSelect
+                      key={`hora-inicio-${formData.horaInicioHora}`}
                       options={horasInicioDisponibles}
                       value={formData.horaInicioHora}
                       onChange={(value) => {
@@ -931,6 +1067,7 @@ export default function ReservationFormDialog({
                   <div className="text-lg font-semibold px-1.5">:</div>
                   <div className="flex-1">
                     <TimeSelect
+                      key={`minuto-inicio-${formData.horaInicioMinuto}`}
                       options={minutosInicioDisponibles}
                       value={formData.horaInicioMinuto}
                       onChange={(value) => {
@@ -962,6 +1099,7 @@ export default function ReservationFormDialog({
                 <div className="flex gap-3 items-center">
                   <div className="flex-1">
                     <TimeSelect
+                      key={`hora-fin-${formData.horaFinHora}`}
                       options={horasFinDisponibles}
                       value={formData.horaFinHora}
                       onChange={(value) => {
@@ -988,6 +1126,7 @@ export default function ReservationFormDialog({
                   <div className="text-lg font-semibold px-1.5">:</div>
                   <div className="flex-1">
                     <TimeSelect
+                      key={`minuto-fin-${formData.horaFinMinuto}`}
                       options={minutosFinDisponibles}
                       value={formData.horaFinMinuto}
                       onChange={(value) => setFormData(prev => ({ ...prev, horaFinMinuto: value }))}
@@ -1075,105 +1214,200 @@ export default function ReservationFormDialog({
             </div>
             </div>
 
-            {/* Panel de Recomendaciones - Lado derecho */}
-            <div 
-              className="hidden lg:flex lg:absolute lg:right-0 lg:top-0 w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 flex-col overflow-hidden"
-              style={{ height: formHeight ? `${formHeight}px` : '100%' }}
-            >
-              <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Recomendaciones del Sistema
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">Sugerencias opcionales basadas en tus preferencias</p>
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
-                {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas pero NO espacio */}
-                {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && (
-                  <EspaciosRecomendados
-                    inicio={(() => {
-                      const fechaStr = fecha.toISOString().split('T')[0];
-                      const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
-                      return new Date(`${fechaStr}T${horaInicio}`).toISOString();
-                    })()}
-                    fin={(() => {
-                      const fechaStr = fecha.toISOString().split('T')[0];
-                      const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
-                      return new Date(`${fechaStr}T${horaFin}`).toISOString();
-                    })()}
-                    onSelectEspacio={(espacioId) => {
-                      setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
-                    }}
-                    espacioSeleccionadoId={formData.espacioId ? parseInt(formData.espacioId) : undefined}
-                  />
-                )}
+            {/* Panel de Recomendaciones - Lado derecho (solo para usuarios internos) */}
+            {!isExterno && (
+              <div 
+                className="hidden lg:flex lg:absolute lg:right-0 lg:top-0 w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 flex-col overflow-hidden"
+                style={{ height: formHeight ? `${formHeight}px` : '100%' }}
+              >
+                <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Recomendaciones del Sistema
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">Sugerencias opcionales basadas en tus preferencias</p>
+                </div>
+                <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
+                  {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas pero NO espacio */}
+                  {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && (
+                    <EspaciosRecomendados
+                      inicio={(() => {
+                        const fechaStr = fecha.toISOString().split('T')[0];
+                        const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
+                        return new Date(`${fechaStr}T${horaInicio}`).toISOString();
+                      })()}
+                      fin={(() => {
+                        const fechaStr = fecha.toISOString().split('T')[0];
+                        const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
+                        return new Date(`${fechaStr}T${horaFin}`).toISOString();
+                      })()}
+                      onSelectEspacio={(espacioId) => {
+                        setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
+                      }}
+                      espacioSeleccionadoId={formData.espacioId ? parseInt(formData.espacioId) : undefined}
+                    />
+                  )}
 
-                {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
-                {formData.espacioId && fecha && (
-                  <HorariosRecomendados
-                    espacioId={parseInt(formData.espacioId)}
-                    fecha={fecha}
-                    onSelectHorario={(inicio, fin) => {
-                      const inicioDate = new Date(inicio);
-                      const finDate = new Date(fin);
-                      setFormData(prev => ({
-                        ...prev,
-                        horaInicioHora: inicioDate.getHours().toString().padStart(2, '0'),
-                        horaInicioMinuto: inicioDate.getMinutes().toString().padStart(2, '0'),
-                        horaFinHora: finDate.getHours().toString().padStart(2, '0'),
-                        horaFinMinuto: finDate.getMinutes().toString().padStart(2, '0'),
-                      }));
-                    }}
-                    horarioSeleccionado={
-                      formData.horaInicioHora && formData.horaFinHora
-                        ? {
-                            inicio: (() => {
-                              const fechaStr = fecha.toISOString().split('T')[0];
-                              return `${fechaStr}T${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
-                            })(),
-                            fin: (() => {
-                              const fechaStr = fecha.toISOString().split('T')[0];
-                              return `${fechaStr}T${formData.horaFinHora}:${formData.horaFinMinuto}`;
-                            })(),
+                  {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
+                  {formData.espacioId && fecha && (
+                    <HorariosRecomendados
+                      espacioId={parseInt(formData.espacioId)}
+                      fecha={fecha}
+                      onSelectHorario={(inicio, fin) => {
+                        try {
+                          const inicioDate = new Date(inicio);
+                          const finDate = new Date(fin);
+                          
+                          // Verificar que las fechas sean válidas
+                          if (isNaN(inicioDate.getTime()) || isNaN(finDate.getTime())) {
+                            toast.error('Error al seleccionar el horario. Por favor, inténtalo de nuevo.');
+                            return;
                           }
-                        : undefined
-                    }
-                  />
-                )}
-
-                {/* Items recomendados - mostrar si hay espacio seleccionado */}
-                {formData.espacioId && (
-                  <ItemsRecomendados
-                    espacioId={parseInt(formData.espacioId)}
-                    onSelectItem={(tipoElementoId, cantidad) => {
-                      // Verificar si el item ya está en la lista
-                      const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
-                      if (!existe) {
-                        setItemsSolicitados(prev => [...prev, {
-                          tipoElementoId,
-                          cantidadSolicitada: cantidad,
-                          observaciones: ''
-                        }]);
+                          
+                          // Obtener horas y minutos en la zona horaria local
+                          const horaInicio = inicioDate.getHours();
+                          const minutoInicio = inicioDate.getMinutes();
+                          const horaFin = finDate.getHours();
+                          const minutoFin = finDate.getMinutes();
+                          
+                          const horaInicioStr = horaInicio.toString().padStart(2, '0');
+                          const minutoInicioStr = minutoInicio.toString().padStart(2, '0');
+                          const horaFinStr = horaFin.toString().padStart(2, '0');
+                          const minutoFinStr = minutoFin.toString().padStart(2, '0');
+                          
+                          // Actualizar el estado directamente con los valores extraídos de las fechas
+                          setFormData(prev => ({
+                            ...prev,
+                            horaInicioHora: horaInicioStr,
+                            horaInicioMinuto: minutoInicioStr,
+                            horaFinHora: horaFinStr,
+                            horaFinMinuto: minutoFinStr,
+                          }));
+                        } catch (error) {
+                          console.error('Error al procesar horario seleccionado:', error);
+                          toast.error('Error al seleccionar el horario. Por favor, inténtalo de nuevo.');
+                        }
+                      }}
+                      horarioSeleccionado={
+                        formData.horaInicioHora && formData.horaFinHora
+                          ? {
+                              inicio: (() => {
+                                const fechaStr = fecha.toISOString().split('T')[0];
+                                return `${fechaStr}T${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
+                              })(),
+                              fin: (() => {
+                                const fechaStr = fecha.toISOString().split('T')[0];
+                                return `${fechaStr}T${formData.horaFinHora}:${formData.horaFinMinuto}`;
+                              })(),
+                            }
+                          : undefined
                       }
-                    }}
-                    itemsSeleccionados={new Set(itemsSolicitados.map(item => item.tipoElementoId))}
-                  />
-                )}
+                    />
+                  )}
 
-                {/* Mensaje cuando no hay recomendaciones disponibles */}
-                {(!fecha || !formData.horaInicioHora || !formData.horaFinHora) && !formData.espacioId && (
-                  <div className="text-center py-8 text-sm text-gray-500">
-                    <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                    <p>Completa el formulario para ver recomendaciones</p>
-                  </div>
-                )}
+                  {/* Items recomendados - mostrar si hay espacio seleccionado */}
+                  {formData.espacioId && (
+                    <ItemsRecomendados
+                      espacioId={parseInt(formData.espacioId)}
+                      onSelectItem={(tipoElementoId, cantidad) => {
+                        // Verificar si el item ya está en la lista
+                        const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
+                        if (!existe) {
+                          setItemsSolicitados(prev => [...prev, {
+                            tipoElementoId,
+                            cantidadSolicitada: cantidad,
+                            observaciones: ''
+                          }]);
+                        }
+                      }}
+                      itemsSeleccionados={new Set(itemsSolicitados.map(item => item.tipoElementoId))}
+                    />
+                  )}
+
+                  {/* Recomendaciones generales cuando no hay datos seleccionados */}
+                  {!formData.espacioId && !formData.horaInicioHora && !formData.horaFinHora && (
+                    <>
+                      {loadingRecomendacionesGenerales ? (
+                        <div className="text-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+                        </div>
+                      ) : recomendacionesGenerales && recomendacionesGenerales.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0 ? (
+                        <div className="space-y-2.5">
+                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
+                            <span>Espacios Recomendados</span>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
+                              <Card
+                                key={rec.espacioId}
+                                className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
+                                onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
+                                style={{
+                                  borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
+                                }}
+                              >
+                                <CardContent className="px-3 py-1.5">
+                                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {rec.tipoEspacioNombre && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[10px] px-1.5 py-0.5 h-5"
+                                            style={{
+                                              borderColor: rec.tipoEspacioColor,
+                                              color: rec.tipoEspacioColor,
+                                            }}
+                                          >
+                                            {rec.tipoEspacioNombre}
+                                          </Badge>
+                                        )}
+                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                          <Users className="h-3 w-3" />
+                                          <span>{rec.capacidad}</span>
+                                        </div>
+                                        {rec.disponible && (
+                                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                                            Disponible
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Badge
+                                      className={`text-xs px-2 py-0.5 h-5 shrink-0 ${
+                                        rec.puntaje >= 0.8
+                                          ? "bg-emerald-100 text-emerald-700"
+                                          : rec.puntaje >= 0.6
+                                          ? "bg-blue-100 text-blue-700"
+                                          : "bg-amber-100 text-amber-700"
+                                      }`}
+                                    >
+                                      {(rec.puntaje * 100).toFixed(0)}%
+                                    </Badge>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-sm text-gray-500">
+                          <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                          <p>Completa el formulario para ver recomendaciones</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Panel de Recomendaciones - Móvil (debajo del formulario) */}
-          {isMobile && (
-            <div className="w-full border-t border-gray-200 bg-gray-50 flex-shrink-0">
+          {/* Panel de Recomendaciones - Móvil (debajo del formulario) - se muestra cuando no está el panel lateral (solo para usuarios internos) */}
+          {!isExterno && (
+            <div className="w-full lg:hidden border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setShowRecomendacionesMobile(!showRecomendacionesMobile)}
@@ -1219,15 +1453,39 @@ export default function ReservationFormDialog({
                       espacioId={parseInt(formData.espacioId)}
                       fecha={fecha}
                       onSelectHorario={(inicio, fin) => {
-                        const inicioDate = new Date(inicio);
-                        const finDate = new Date(fin);
-                        setFormData(prev => ({
-                          ...prev,
-                          horaInicioHora: inicioDate.getHours().toString().padStart(2, '0'),
-                          horaInicioMinuto: inicioDate.getMinutes().toString().padStart(2, '0'),
-                          horaFinHora: finDate.getHours().toString().padStart(2, '0'),
-                          horaFinMinuto: finDate.getMinutes().toString().padStart(2, '0'),
-                        }));
+                        try {
+                          const inicioDate = new Date(inicio);
+                          const finDate = new Date(fin);
+                          
+                          // Verificar que las fechas sean válidas
+                          if (isNaN(inicioDate.getTime()) || isNaN(finDate.getTime())) {
+                            toast.error('Error al seleccionar el horario. Por favor, inténtalo de nuevo.');
+                            return;
+                          }
+                          
+                          // Obtener horas y minutos en la zona horaria local
+                          const horaInicio = inicioDate.getHours();
+                          const minutoInicio = inicioDate.getMinutes();
+                          const horaFin = finDate.getHours();
+                          const minutoFin = finDate.getMinutes();
+                          
+                          const horaInicioStr = horaInicio.toString().padStart(2, '0');
+                          const minutoInicioStr = minutoInicio.toString().padStart(2, '0');
+                          const horaFinStr = horaFin.toString().padStart(2, '0');
+                          const minutoFinStr = minutoFin.toString().padStart(2, '0');
+                          
+                          // Actualizar el estado directamente con los valores extraídos de las fechas
+                          setFormData(prev => ({
+                            ...prev,
+                            horaInicioHora: horaInicioStr,
+                            horaInicioMinuto: minutoInicioStr,
+                            horaFinHora: horaFinStr,
+                            horaFinMinuto: minutoFinStr,
+                          }));
+                        } catch (error) {
+                          console.error('Error al procesar horario seleccionado:', error);
+                          toast.error('Error al seleccionar el horario. Por favor, inténtalo de nuevo.');
+                        }
                       }}
                       horarioSeleccionado={
                         formData.horaInicioHora && formData.horaFinHora && fecha
@@ -1267,12 +1525,81 @@ export default function ReservationFormDialog({
                     />
                   )}
 
-                  {/* Mensaje cuando no hay recomendaciones disponibles */}
-                  {(!fecha || !formData.horaInicioHora || !formData.horaFinHora) && !formData.espacioId && (
-                    <div className="text-center py-8 text-sm text-gray-500">
-                      <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p>Completa el formulario para ver recomendaciones</p>
-                    </div>
+                  {/* Recomendaciones generales cuando no hay datos seleccionados */}
+                  {!formData.espacioId && !formData.horaInicioHora && !formData.horaFinHora && (
+                    <>
+                      {loadingRecomendacionesGenerales ? (
+                        <div className="text-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+                        </div>
+                      ) : recomendacionesGenerales && recomendacionesGenerales.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0 ? (
+                        <div className="space-y-2.5">
+                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
+                            <span>Espacios Recomendados</span>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
+                              <Card
+                                key={rec.espacioId}
+                                className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
+                                onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
+                                style={{
+                                  borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
+                                }}
+                              >
+                                <CardContent className="px-3 py-1.5">
+                                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {rec.tipoEspacioNombre && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[10px] px-1.5 py-0.5 h-5"
+                                            style={{
+                                              borderColor: rec.tipoEspacioColor,
+                                              color: rec.tipoEspacioColor,
+                                            }}
+                                          >
+                                            {rec.tipoEspacioNombre}
+                                          </Badge>
+                                        )}
+                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                          <Users className="h-3 w-3" />
+                                          <span>{rec.capacidad}</span>
+                                        </div>
+                                        {rec.disponible && (
+                                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                                            Disponible
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Badge
+                                      className={`text-xs px-2 py-0.5 h-5 shrink-0 ${
+                                        rec.puntaje >= 0.8
+                                          ? "bg-emerald-100 text-emerald-700"
+                                          : rec.puntaje >= 0.6
+                                          ? "bg-blue-100 text-blue-700"
+                                          : "bg-amber-100 text-amber-700"
+                                      }`}
+                                    >
+                                      {(rec.puntaje * 100).toFixed(0)}%
+                                    </Badge>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-sm text-gray-500">
+                          <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                          <p>Completa el formulario para ver recomendaciones</p>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

@@ -49,6 +49,9 @@ public class Reserva {
     @Column(name = "estado", nullable = false, length = 20)
     private EstadoReserva estado;
     
+    @Column(name = "es_publica", nullable = false)
+    private Boolean esPublica = false;
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

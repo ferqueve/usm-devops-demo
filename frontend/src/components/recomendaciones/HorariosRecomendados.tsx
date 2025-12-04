@@ -83,12 +83,17 @@ export function HorariosRecomendados({
           return (
             <Button
               key={index}
+              type="button"
               variant={isSelected ? "default" : "outline"}
               className={cn(
                 "h-auto py-2 px-3 flex flex-col items-start justify-center",
                 isSelected && "bg-primary text-primary-foreground"
               )}
-              onClick={() => onSelectHorario?.(horario.inicio, horario.fin)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelectHorario?.(horario.inicio, horario.fin);
+              }}
             >
               <div className="flex items-center gap-2 w-full">
                 <Clock className="h-3 w-3" />

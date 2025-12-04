@@ -47,6 +47,7 @@ export const reservationsApi = {
     tipoRecurrencia?: 'DIARIA' | 'SEMANAL' | 'MENSUAL'; // Opcional
     fechaFinRecurrencia?: string; // ISO datetime, requerido si tipoRecurrencia está presente
     analistaId?: number; // Opcional: ID del analista asignado (requerido para docentes)
+    esPublica?: boolean; // Opcional: marcar reserva como pública (para usuarios internos)
     itemsSolicitados?: Array<{
       tipoElementoId: number;
       inventarioItemId?: number;

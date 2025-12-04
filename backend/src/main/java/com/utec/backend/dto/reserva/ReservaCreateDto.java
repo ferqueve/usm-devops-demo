@@ -34,6 +34,9 @@ public class ReservaCreateDto {
     // Campo para asignar analista (solo para docentes)
     private Long analistaId; // Opcional: ID del analista al cual se asigna la solicitud
     
+    // Campo para marcar reserva como pública (opcional para usuarios internos)
+    private Boolean esPublica; // Opcional: si es true, la reserva será pública
+    
     public enum TipoRecurrencia {
         DIARIA,    // Todos los días
         SEMANAL,   // Misma hora, mismo día de la semana

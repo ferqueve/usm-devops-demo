@@ -155,8 +155,12 @@ export async function apiRequest<T>(
     
     if (shouldAttemptRefresh && token && token.length > 0) {
       try {
-        return await attemptTokenRefresh<T>(endpoint, options, config);
+        // Intentar refrescar el token y reintentar la petición
+        const refreshedResponse = await attemptTokenRefresh<T>(endpoint, options, config);
+        // Si el refresh fue exitoso, retornar la respuesta sin mostrar el error 401
+        return refreshedResponse;
       } catch {
+        // Solo manejar el error si el refresh falló
         handleRefreshFailure();
         throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
       }
@@ -171,7 +175,10 @@ export async function apiRequest<T>(
     
     return data || { success: true } as ApiResponse<T>;
   } catch (error) {
-    console.error('Error en API request:', error);
+    // Solo loggear errores que no sean de refresh exitoso
+    if (!(error instanceof Error && error.message.includes('Tu sesión ha expirado'))) {
+      console.error('Error en API request:', error);
+    }
     throw error;
   }
 }

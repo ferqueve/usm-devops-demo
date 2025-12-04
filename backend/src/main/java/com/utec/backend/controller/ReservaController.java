@@ -34,10 +34,11 @@ public class ReservaController {
     /**
      * Crear una nueva reserva
      * Admin y Analista: crean reservas auto-aprobadas (APROBADO)
-     * Docente: crea solicitudes pendientes (PENDIENTE)
+     * Docente y Externo: crean solicitudes pendientes (PENDIENTE)
+     * Externo: crea reservas públicas automáticamente
      */
     @PostMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> createReserva(
             @Valid @RequestBody ReservaCreateDto createDto,
             Authentication authentication) {
@@ -56,9 +57,12 @@ public class ReservaController {
             // log.info("Usuario {} con rol {} creando reserva", userEmail, userRole);
             
             ReservaResponseDto reserva = reservaService.createReserva(createDto, userEmail, userRole);
-            String mensaje = ROLE_DOCENTE.equals(userRole) 
-                    ? "Solicitud de reserva enviada exitosamente. Esperando aprobación."
-                    : "Reserva creada exitosamente";
+            String mensaje;
+            if (ROLE_DOCENTE.equals(userRole) || ROLE_EXTERNO.equals(userRole)) {
+                mensaje = "Solicitud de reserva enviada exitosamente. Esperando aprobación.";
+            } else {
+                mensaje = "Reserva creada exitosamente";
+            }
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(reserva, mensaje));
         } catch (RuntimeException e) {
@@ -69,10 +73,10 @@ public class ReservaController {
     
     /**
      * Obtener todas las reservas del usuario autenticado
-     * Disponible para ADMIN, ANALISTA y DOCENTE
+     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO
      */
     @GetMapping("/mis-reservas")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
     public ResponseEntity<ApiResponse<List<ReservaResponseDto>>> getMisReservas(
             Authentication authentication) {
         try {
@@ -87,10 +91,10 @@ public class ReservaController {
     
     /**
      * Obtener reservas del usuario autenticado con paginación y filtros
-     * Disponible para ADMIN, ANALISTA y DOCENTE
+     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO
      */
     @GetMapping("/mis-reservas/paged")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
     public ResponseEntity<ApiResponse<PagedResponseDto<ReservaResponseDto>>> getMisReservasPaged(
             Authentication authentication,
             @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,
@@ -124,10 +128,10 @@ public class ReservaController {
     }
         /**
      * Obtener una reserva por ID
-     * Disponible para ADMIN, ANALISTA y DOCENTE (solo sus propias reservas)
+     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO (solo sus propias reservas)
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> getReservaById(
             @PathVariable Long id,
             Authentication authentication) {
@@ -168,10 +172,10 @@ public class ReservaController {
     
     /**
      * Cancelar una reserva
-     * Disponible para ADMIN, ANALISTA y DOCENTE (solo sus propias reservas)
+     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO (solo sus propias reservas)
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
     public ResponseEntity<ApiResponse<Void>> cancelReserva(
             @PathVariable Long id,
             Authentication authentication) {
@@ -244,7 +248,7 @@ public class ReservaController {
      * ANALISTA/ADMIN: estadísticas globales (todas las reservas)
      */
     @GetMapping("/mis-reservas/stats")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
     public ResponseEntity<ApiResponse<ReservaStatsDto>> getMisReservasStats(
             Authentication authentication) {
         try {

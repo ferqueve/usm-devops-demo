@@ -142,6 +142,7 @@ export interface Reserva {
   inicio: string; // ISO datetime
   fin: string;
   estado: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
+  esPublica?: boolean;
   itemsSolicitados?: ReservaItemSolicitado[];
   createdAt: string;
   updatedAt: string;

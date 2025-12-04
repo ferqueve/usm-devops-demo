@@ -41,6 +41,7 @@ export default function ReservationForm({
 }: ReservationFormProps) {
   const { user } = useAuth();
   const isDocente = user?.rol === ROLES.DOCENTE;
+  const isExterno = user?.rol === ROLES.EXTERNO;
   
   const [loading, setLoading] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
@@ -664,8 +665,8 @@ export default function ReservationForm({
               </div>
             </div>
 
-            {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas */}
-            {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && (
+            {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas (solo para usuarios internos) */}
+            {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && !isExterno && (
               <div className="mt-4">
                 <EspaciosRecomendados
                   inicio={(() => {
@@ -752,8 +753,8 @@ export default function ReservationForm({
               </>
             )}
 
-            {/* Items recomendados - mostrar si hay espacio seleccionado */}
-            {formData.espacioId && (
+            {/* Items recomendados - mostrar si hay espacio seleccionado (solo para usuarios internos) */}
+            {formData.espacioId && !isExterno && (
               <div className="mb-4">
                 <ItemsRecomendados
                   espacioId={parseInt(formData.espacioId)}
@@ -1005,8 +1006,8 @@ export default function ReservationForm({
               <p className="text-sm text-destructive font-medium">{horaError}</p>
             )}
 
-            {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
-            {formData.espacioId && fecha && (
+            {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados (solo para usuarios internos) */}
+            {formData.espacioId && fecha && !isExterno && (
               <div className="mt-4">
                 <HorariosRecomendados
                   espacioId={parseInt(formData.espacioId)}

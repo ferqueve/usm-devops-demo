@@ -484,7 +484,8 @@ export const dashboardApi = {
     }
   },
 
-  // Dashboard EXTERNO - Similar a estudiante pero puede crear reservas
+  // Dashboard EXTERNO - Solo muestra información de reservas públicas
+  // Nota: obtenerTodasLasReservas() ya filtra automáticamente por reservas públicas para usuarios externos en el backend
   async obtenerDatosDashboardExterno(): Promise<DashboardData> {
     try {
       const hoy = new Date();
@@ -493,8 +494,8 @@ export const dashboardApi = {
       finHoy.setHours(23, 59, 59, 999);
 
       const promises = [
-        reservationsApi.obtenerTodasLasReservas(),
-        reservationsApi.obtenerMisReservas().catch(() => null), // Sus solicitudes
+        reservationsApi.obtenerTodasLasReservas(), // Ya filtra por reservas públicas para externos
+        reservationsApi.obtenerMisReservas().catch(() => null), // Sus propias solicitudes
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
       ];
@@ -507,18 +508,23 @@ export const dashboardApi = {
         espaciosStatsRes
       ] = results;
 
-      const reservas = extractReservasFromPromise(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      // Reservas públicas (ya filtradas por el backend para usuarios externos)
+      const reservasPublicas = extractReservasFromPromise(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      // Sus propias reservas (solicitudes)
       const misReservas: Reserva[] = misReservasRes?.status === 'fulfilled' && misReservasRes.value && 'data' in misReservasRes.value && Array.isArray(misReservasRes.value.data)
         ? (misReservasRes.value.data as Reserva[])
         : [];
-      const reservasHoyData = filtrarReservasHoy(reservas);
+      
+      const reservasHoyData = filtrarReservasHoy(reservasPublicas);
       const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
       const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
 
       const ahora = new Date();
+      // Estadísticas solo de reservas públicas
       const { reservasHoyCount, reservasAprobadas, reservasCanceladas } = 
-        calcularEstadisticasReservas(reservas, reservasHoyData);
-      const proximasReservas = obtenerProximasReservas(reservas, ahora);
+        calcularEstadisticasReservas(reservasPublicas, reservasHoyData);
+      // Próximas reservas públicas
+      const proximasReservas = obtenerProximasReservas(reservasPublicas, ahora);
       const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
         calcularEstadisticasEspacios(espacios);
 
@@ -528,12 +534,13 @@ export const dashboardApi = {
 
       const misReservasPendientes = misReservas.filter((r: Reserva) => r.estado === 'PENDIENTE').length;
 
+      // Estadísticas solo de reservas públicas
       const stats: DashboardStats = {
-        totalReservas: reservas.length,
-        reservasHoy: reservasHoyCount,
-        reservasPendientes: misReservasPendientes,
-        reservasAprobadas,
-        reservasCanceladas,
+        totalReservas: reservasPublicas.length, // Total de reservas públicas
+        reservasHoy: reservasHoyCount, // Reservas públicas de hoy
+        reservasPendientes: misReservasPendientes, // Sus propias solicitudes pendientes
+        reservasAprobadas, // Reservas públicas aprobadas
+        reservasCanceladas, // Reservas públicas canceladas
         totalEspacios: espaciosStats.totalEspacios || espacios.length,
         espaciosDisponibles,
         espaciosOcupados,
@@ -547,8 +554,8 @@ export const dashboardApi = {
 
       return {
         stats,
-        proximasReservas,
-        reservasHoy: reservasHoyData,
+        proximasReservas, // Próximas reservas públicas
+        reservasHoy: reservasHoyData, // Reservas públicas de hoy
         espacios
       };
     } catch (error) {

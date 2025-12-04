@@ -90,8 +90,8 @@ public class SecurityConfig {
                 // Estadísticas: ADMIN, ANALISTA (reservas), MANTENIMIENTO (inventario/espacios)
                 .requestMatchers("/api/v1/estadisticas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
                 .requestMatchers("/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
-                // Reservas: ADMIN, ANALISTA (CRUD), DOCENTE (solicitar), MANTENIMIENTO (ver para ocupación)
-                .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_MANTENIMIENTO)
+                // Reservas: ADMIN, ANALISTA (CRUD), DOCENTE (solicitar), EXTERNO (solicitar), MANTENIMIENTO (ver para ocupación)
+                .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_EXTERNO, ROLE_MANTENIMIENTO)
                 // Calendario: Todos los roles autenticados
                 .requestMatchers("/api/v1/calendario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE, ROLE_MANTENIMIENTO, ROLE_EXTERNO)
 
