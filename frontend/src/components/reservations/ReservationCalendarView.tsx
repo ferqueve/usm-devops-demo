@@ -62,7 +62,6 @@ interface ReservationCalendarViewProps {
   onViewModeChange: (mode: 'cards' | 'table' | 'calendar') => void;
   onClearFilters: () => void;
   // Acciones
-  onCreateReserva: () => void;
   onViewDetails: (reserva: Reserva) => void;
   onCancelReserva: (reserva: Reserva) => void;
   // Pantalla completa
@@ -97,7 +96,6 @@ export default function ReservationCalendarView({
   onFechaFinChange,
   onViewModeChange,
   onClearFilters,
-  onCreateReserva: _onCreateReserva,
   onViewDetails,
   onCancelReserva,
   isFullScreen: isFullScreenProp,
@@ -1064,8 +1062,8 @@ export default function ReservationCalendarView({
                 tiempoFilter={tiempoFilter}
                 estadoFilter={estadoFilter}
                 espacioFilter={espacioFilter}
-                carreraFilter={carreraFilter}
-                tipoEspacioFilter={tipoEspacioFilter}
+                carreraFilter={carreraFilter ?? null}
+                tipoEspacioFilter={tipoEspacioFilter ?? null}
                 fechaInicio={fechaInicio}
                 fechaFin={fechaFin}
                 espaciosUnicos={espaciosUnicos}
@@ -1075,8 +1073,8 @@ export default function ReservationCalendarView({
                 onTiempoFilterChange={onTiempoFilterChange}
                 onEstadoFilterChange={onEstadoFilterChange}
                 onEspacioFilterChange={onEspacioFilterChange}
-                onCarreraFilterChange={onCarreraFilterChange}
-                onTipoEspacioFilterChange={onTipoEspacioFilterChange}
+                onCarreraFilterChange={onCarreraFilterChange ?? (() => {})}
+                onTipoEspacioFilterChange={onTipoEspacioFilterChange ?? (() => {})}
                 onFechaInicioChange={onFechaInicioChange}
                 onFechaFinChange={onFechaFinChange}
                 onClearFilters={onClearFilters}

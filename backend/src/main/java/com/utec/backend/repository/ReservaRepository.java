@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -31,8 +31,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
            "AND ((r.inicio <= :fin AND r.fin >= :inicio))")
     List<Reserva> findConflictingReservas(
         @Param("espacioId") Long espacioId,
-        @Param("inicio") LocalDateTime inicio,
-        @Param("fin") LocalDateTime fin,
+        @Param("inicio") Instant inicio,
+        @Param("fin") Instant fin,
         @Param("estado") Reserva.EstadoReserva estado
     );
     
@@ -44,7 +44,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
            "AND r.inicio >= :now AND r.estado = :estado ORDER BY r.inicio ASC")
     List<Reserva> findFutureReservasByEspacio(
         @Param("espacioId") Long espacioId,
-        @Param("now") LocalDateTime now,
+        @Param("now") Instant now,
         @Param("estado") Reserva.EstadoReserva estado
     );
     
@@ -59,8 +59,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
            "ORDER BY r.inicio ASC")
     List<Reserva> findReservasAprobadasEnRango(
         @Param("estado") Reserva.EstadoReserva estado,
-        @Param("inicioDesde") LocalDateTime inicioDesde,
-        @Param("inicioHasta") LocalDateTime inicioHasta
+        @Param("inicioDesde") Instant inicioDesde,
+        @Param("inicioHasta") Instant inicioHasta
     );
 }
 

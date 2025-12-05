@@ -17,8 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +46,7 @@ public class RecomendacionService {
     
     // Claves de caché
     private static final String CACHE_RECOMENDACIONES = "recomendaciones:usuario:";
-    private static final String CACHE_METRICAS_BASE = "recomendaciones:metricas:";
-    private static final Duration TTL_RECOMENDACIONES = Duration.ofMinutes(30);
-    private static final Duration TTL_METRICAS = Duration.ofHours(24);
+    
     
     /**
      * Invalidar caché de recomendaciones para un usuario
@@ -105,12 +102,12 @@ public class RecomendacionService {
     // Métodos delegados a servicios auxiliares
     
     public List<RecomendacionEspacioDto> obtenerRecomendacionesEspacios(
-            Long usuarioId, LocalDateTime inicio, LocalDateTime fin, Integer capacidad) {
+            Long usuarioId, Instant inicio, Instant fin, Integer capacidad) {
         return recomendacionReservaService.obtenerRecomendacionesEspacios(usuarioId, inicio, fin, capacidad);
     }
     
     public List<HorarioRecomendadoDto> obtenerHorariosOptimos(
-            Long usuarioId, Long espacioId, LocalDateTime fecha) {
+            Long usuarioId, Long espacioId, Instant fecha) {
         return recomendacionReservaService.obtenerHorariosOptimos(usuarioId, espacioId, fecha);
     }
     
@@ -160,8 +157,8 @@ public class RecomendacionService {
         switch (rol) {
             case DOCENTE:
                 // Para docentes: espacios recomendados e items
-                LocalDateTime ahora = LocalDateTime.now();
-                LocalDateTime finSemana = ahora.plusDays(7);
+                Instant ahora = Instant.now();
+                Instant finSemana = ahora.plusSeconds(7 * 24 * 3600);
                 dto.setEspaciosRecomendados(
                     obtenerRecomendacionesEspacios(usuarioId, ahora, finSemana, null)
                 );

@@ -26,7 +26,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -134,8 +134,8 @@ public class ReservaItemSolicitadoService {
     public PagedResponseDto<ReservaItemSolicitadoResponseDto> buscarSolicitudes(
             List<ReservaItemSolicitado.EstadoSolicitud> estados,
             Long espacioId,
-            LocalDateTime fechaDesde,
-            LocalDateTime fechaHasta,
+            Instant fechaDesde,
+            Instant fechaHasta,
             String search,
             Pageable pageable
     ) {

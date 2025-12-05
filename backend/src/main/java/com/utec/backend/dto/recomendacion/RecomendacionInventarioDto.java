@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * DTO para recomendaciones de inventario y mantenimiento
@@ -26,7 +26,7 @@ public class RecomendacionInventarioDto {
     private String tipoElementoNombre;
     private Integer cantidad;
     private String estado; // DISPONIBLE, MANTENIMIENTO, DANADO
-    private LocalDateTime fechaUltimoMantenimiento;
+    private Instant fechaUltimoMantenimiento;
     private Long diasEnMantenimiento;
     
     // Información del espacio

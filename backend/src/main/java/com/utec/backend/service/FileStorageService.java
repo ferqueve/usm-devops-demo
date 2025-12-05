@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +42,7 @@ public class FileStorageService {
     @Value("${minio.allowed-mime-types:image/jpeg,image/jpg,image/png,image/webp,image/gif}")
     private String allowedMimeTypes;
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(java.time.ZoneOffset.UTC);
 
     /**
      * Sube una imagen para un espacio
@@ -60,7 +60,7 @@ public class FileStorageService {
             // Generar nombre único para el archivo
             String originalFilename = file.getOriginalFilename();
             String extension = getFileExtension(originalFilename);
-            String timestamp = LocalDateTime.now().format(DATE_FORMATTER);
+            String timestamp = Instant.now().atZone(java.time.ZoneOffset.UTC).format(DATE_FORMATTER);
             String uniqueFilename = String.format("%s-%s%s", timestamp, UUID.randomUUID().toString().substring(0, 8), extension);
             
             // Ruta del objeto: espacios/{espacioId}/{filename}

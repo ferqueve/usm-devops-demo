@@ -16,7 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,8 +51,8 @@ class TipoEspacioControllerTest {
         tipoEspacioResponseDto.setDescripcion("Espacio para clases");
         tipoEspacioResponseDto.setColor("#FF5733");
         tipoEspacioResponseDto.setActivo(true);
-        tipoEspacioResponseDto.setCreatedAt(LocalDateTime.now());
-        tipoEspacioResponseDto.setUpdatedAt(LocalDateTime.now());
+        tipoEspacioResponseDto.setCreatedAt(Instant.now());
+        tipoEspacioResponseDto.setUpdatedAt(Instant.now());
     }
 
     @Test

@@ -22,7 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -197,17 +198,19 @@ public class UsuarioService {
             spec = spec == null ? activoSpec : spec.and(activoSpec);
         }
         
-        // Filtro por fecha desde
+        // Filtro por fecha desde (convertir LocalDate a Instant en UTC)
         if (fechaDesde != null) {
+            Instant fechaDesdeInstant = fechaDesde.atStartOfDay(ZoneOffset.UTC).toInstant();
             Specification<Usuario> fechaDesdeSpec = (root, query, cb) -> 
-                cb.greaterThanOrEqualTo(root.get("createdAt"), fechaDesde.atStartOfDay());
+                cb.greaterThanOrEqualTo(root.get("createdAt"), fechaDesdeInstant);
             spec = spec == null ? fechaDesdeSpec : spec.and(fechaDesdeSpec);
         }
         
-        // Filtro por fecha hasta
+        // Filtro por fecha hasta (convertir LocalDate a Instant en UTC)
         if (fechaHasta != null) {
+            Instant fechaHastaInstant = fechaHasta.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant();
             Specification<Usuario> fechaHastaSpec = (root, query, cb) -> 
-                cb.lessThanOrEqualTo(root.get("createdAt"), fechaHasta.atTime(23, 59, 59));
+                cb.lessThanOrEqualTo(root.get("createdAt"), fechaHastaInstant);
             spec = spec == null ? fechaHastaSpec : spec.and(fechaHastaSpec);
         }
         
@@ -238,7 +241,7 @@ public class UsuarioService {
         
         if (estabaActivo) {
             // Desactivar (soft delete)
-            usuario.setDeletedAt(LocalDateTime.now());
+            usuario.setDeletedAt(Instant.now());
             activado = false;
             log.info("Usuario ID {} ({}) desactivado", id, usuario.getEmail());
         } else {
@@ -454,15 +457,19 @@ public class UsuarioService {
             spec = spec == null ? activoSpec : spec.and(activoSpec);
         }
         
+        // Filtro por fecha desde (convertir LocalDate a Instant en UTC)
         if (fechaDesde != null) {
+            Instant fechaDesdeInstant = fechaDesde.atStartOfDay(ZoneOffset.UTC).toInstant();
             Specification<Usuario> fechaDesdeSpec = (root, query, cb) -> 
-                cb.greaterThanOrEqualTo(root.get("createdAt"), fechaDesde.atStartOfDay());
+                cb.greaterThanOrEqualTo(root.get("createdAt"), fechaDesdeInstant);
             spec = spec == null ? fechaDesdeSpec : spec.and(fechaDesdeSpec);
         }
         
+        // Filtro por fecha hasta (convertir LocalDate a Instant en UTC)
         if (fechaHasta != null) {
+            Instant fechaHastaInstant = fechaHasta.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant();
             Specification<Usuario> fechaHastaSpec = (root, query, cb) -> 
-                cb.lessThanOrEqualTo(root.get("createdAt"), fechaHasta.atTime(23, 59, 59));
+                cb.lessThanOrEqualTo(root.get("createdAt"), fechaHastaInstant);
             spec = spec == null ? fechaHastaSpec : spec.and(fechaHastaSpec);
         }
         

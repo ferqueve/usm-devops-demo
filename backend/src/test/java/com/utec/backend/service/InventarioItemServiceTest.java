@@ -20,7 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -66,8 +66,8 @@ class InventarioItemServiceTest {
         itemTest.setCantidad(5);
         itemTest.setEstado(estadoDisponible);
         itemTest.setActivo(true);
-        itemTest.setCreatedAt(LocalDateTime.now());
-        itemTest.setUpdatedAt(LocalDateTime.now());
+        itemTest.setCreatedAt(Instant.now());
+        itemTest.setUpdatedAt(Instant.now());
     }
 
     @Test

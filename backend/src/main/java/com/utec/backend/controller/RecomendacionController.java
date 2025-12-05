@@ -7,14 +7,13 @@ import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
 import com.utec.backend.service.RecomendacionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import static com.utec.backend.security.Constants.*;
@@ -35,8 +34,8 @@ public class RecomendacionController {
     @GetMapping("/reservas/espacios")
     @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<List<RecomendacionEspacioDto>>> obtenerRecomendacionesEspacios(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin,
+            @RequestParam Instant inicio,
+            @RequestParam Instant fin,
             @RequestParam(required = false) Integer capacidad,
             Authentication authentication) {
         try {
@@ -59,7 +58,7 @@ public class RecomendacionController {
     @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
     public ResponseEntity<ApiResponse<List<HorarioRecomendadoDto>>> obtenerHorariosOptimos(
             @RequestParam Long espacioId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha,
+            @RequestParam Instant fecha,
             Authentication authentication) {
         try {
             String userEmail = authentication.getName();

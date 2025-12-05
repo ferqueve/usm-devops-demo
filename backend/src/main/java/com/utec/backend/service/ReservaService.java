@@ -22,11 +22,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +50,9 @@ public class ReservaService {
     private final ReservaItemSolicitadoService reservaItemSolicitadoService;
     private final EmailService emailService;
     private final RecomendacionService recomendacionService;
+    
+    @Value("${app.timezone:America/Montevideo}")
+    private String appTimezone;
     
     /**
      * Crear una nueva reserva con manejo robusto de concurrencia
@@ -87,7 +94,7 @@ public class ReservaService {
         }
         
         // 5. Validar que no sea en el pasado
-        if (createDto.getInicio().isBefore(LocalDateTime.now())) {
+        if (createDto.getInicio().isBefore(Instant.now())) {
             throw new RuntimeException("No se puede reservar en el pasado");
         }
         
@@ -112,10 +119,11 @@ public class ReservaService {
             }
         }
         
-        // 7. Validar y obtener analista asignado si es docente
+        // 7. Validar y obtener analista asignado
         Usuario analistaAsignado = null;
         boolean esDocente = ROLE_DOCENTE.equals(userRole);
         boolean esExterno = ROLE_EXTERNO.equals(userRole);
+        boolean esAnalista = ROLE_ANALISTA.equals(userRole);
         
         if (esDocente) {
             if (createDto.getAnalistaId() == null) {
@@ -136,6 +144,10 @@ public class ReservaService {
             }
             
             log.info("Analista {} asignado a solicitud de docente {}", analistaAsignado.getEmail(), userEmail);
+        } else if (esAnalista) {
+            // Si el usuario es ANALISTA, asignarse a sí mismo
+            analistaAsignado = usuario;
+            log.info("Analista {} se auto-asignó a la reserva que está creando", userEmail);
         }
         // Para externos, no se requiere analista asignado inicialmente
         
@@ -261,18 +273,18 @@ public class ReservaService {
             boolean esDocente,
             Boolean esPublica) {
         
-        List<LocalDateTime> fechasInicio = generarFechasRecurrentes(createDto);
+        List<Instant> fechasInicio = generarFechasRecurrentes(createDto);
         log.info("Generando {} reservas recurrentes de tipo {}", fechasInicio.size(), createDto.getTipoRecurrencia());
         
         long duracionMinutos = Duration.between(createDto.getInicio(), createDto.getFin()).toMinutes();
         List<Reserva> reservasCreadas = new ArrayList<>();
         List<Reserva> reservasConError = new ArrayList<>();
         
-        for (LocalDateTime fechaInicio : fechasInicio) {
-            LocalDateTime fechaFin = fechaInicio.plusMinutes(duracionMinutos);
+        for (Instant fechaInicio : fechasInicio) {
+            Instant fechaFin = fechaInicio.plusSeconds(duracionMinutos * 60);
             
             // Validar que no sea en el pasado
-            if (fechaInicio.isBefore(LocalDateTime.now())) {
+            if (fechaInicio.isBefore(Instant.now())) {
                 continue; // Saltar fechas pasadas
             }
             
@@ -347,16 +359,16 @@ public class ReservaService {
     /**
      * Generar lista de fechas de inicio para reservas recurrentes
      */
-    private List<LocalDateTime> generarFechasRecurrentes(ReservaCreateDto createDto) {
-        List<LocalDateTime> fechas = new ArrayList<>();
-        LocalDateTime fechaActual = createDto.getInicio();
-        LocalDateTime fechaFin = createDto.getFechaFinRecurrencia();
+    private List<Instant> generarFechasRecurrentes(ReservaCreateDto createDto) {
+        List<Instant> fechas = new ArrayList<>();
+        ZonedDateTime fechaActual = createDto.getInicio().atZone(ZoneOffset.UTC);
+        ZonedDateTime fechaFin = createDto.getFechaFinRecurrencia().atZone(ZoneOffset.UTC);
         
         // Ajustar fechaFin para incluir el día completo si es necesario
-        LocalDateTime fechaFinAjustada = fechaFin.plusDays(1).withHour(0).withMinute(0).minusMinutes(1);
+        ZonedDateTime fechaFinAjustada = fechaFin.plusDays(1).withHour(0).withMinute(0).minusMinutes(1);
         
         while (!fechaActual.isAfter(fechaFinAjustada)) {
-            fechas.add(fechaActual);
+            fechas.add(fechaActual.toInstant());
             
             switch (createDto.getTipoRecurrencia()) {
                 case DIARIA:
@@ -378,8 +390,8 @@ public class ReservaService {
      * Calcular el número máximo de reservas que se generarían
      */
     private long calcularMaxReservas(ReservaCreateDto createDto) {
-        LocalDateTime fechaInicio = createDto.getInicio();
-        LocalDateTime fechaFin = createDto.getFechaFinRecurrencia();
+        Instant fechaInicio = createDto.getInicio();
+        Instant fechaFin = createDto.getFechaFinRecurrencia();
         
         switch (createDto.getTipoRecurrencia()) {
             case DIARIA:
@@ -388,8 +400,10 @@ public class ReservaService {
                 return Duration.between(fechaInicio, fechaFin).toDays() / 7 + 1;
             case MENSUAL:
                 // Aproximación: meses entre fechas
-                long meses = (fechaFin.getYear() - fechaInicio.getYear()) * 12 
-                           + (fechaFin.getMonthValue() - fechaInicio.getMonthValue());
+                ZonedDateTime inicioZdt = fechaInicio.atZone(ZoneOffset.UTC);
+                ZonedDateTime finZdt = fechaFin.atZone(ZoneOffset.UTC);
+                long meses = (finZdt.getYear() - inicioZdt.getYear()) * 12 
+                           + (finZdt.getMonthValue() - inicioZdt.getMonthValue());
                 return meses + 1;
             default:
                 return 1;
@@ -430,8 +444,8 @@ public class ReservaService {
             Long espacioId,
             Long carreraId,
             Long tipoEspacioId,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
+            Instant fechaInicio,
+            Instant fechaFin,
             String tiempo) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
@@ -451,8 +465,8 @@ public class ReservaService {
             Long espacioId,
             Long carreraId,
             Long tipoEspacioId,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
+            Instant fechaInicio,
+            Instant fechaFin,
             String tiempo) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -496,7 +510,7 @@ public class ReservaService {
             }
             
             // Filtro por tiempo (pasadas/futuras)
-            LocalDateTime ahora = LocalDateTime.now();
+            Instant ahora = Instant.now();
             if ("futuras".equals(tiempo)) {
                 predicates.add(cb.greaterThan(root.get("inicio"), ahora));
             } else if ("pasadas".equals(tiempo)) {
@@ -523,8 +537,8 @@ public class ReservaService {
             Long carreraId,
             Long tipoEspacioId,
             Long usuarioId,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
+            Instant fechaInicio,
+            Instant fechaFin,
             String tiempo,
             String userEmail,
             String userRole) {
@@ -545,8 +559,8 @@ public class ReservaService {
             Long carreraId,
             Long tipoEspacioId,
             Long usuarioId,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
+            Instant fechaInicio,
+            Instant fechaFin,
             String tiempo,
             String userEmail,
             String userRole) {
@@ -604,7 +618,7 @@ public class ReservaService {
             }
             
             // Filtro por tiempo (pasadas/futuras)
-            LocalDateTime ahora = LocalDateTime.now();
+            Instant ahora = Instant.now();
             if ("futuras".equals(tiempo)) {
                 predicates.add(cb.greaterThan(root.get("inicio"), ahora));
             } else if ("pasadas".equals(tiempo)) {
@@ -808,7 +822,7 @@ public class ReservaService {
         }
         
         // Si ya pasó, no se puede editar
-        if (reserva.getInicio().isBefore(LocalDateTime.now())) {
+        if (reserva.getInicio().isBefore(Instant.now())) {
             throw new RuntimeException("No se puede editar una reserva que ya pasó");
         }
         
@@ -820,7 +834,7 @@ public class ReservaService {
                 throw new RuntimeException("La fecha de inicio debe ser anterior a la fecha de fin");
             }
             
-            if (updateDto.getInicio().isBefore(LocalDateTime.now())) {
+            if (updateDto.getInicio().isBefore(Instant.now())) {
                 throw new RuntimeException("No se puede reservar en el pasado");
             }
             
@@ -864,8 +878,8 @@ public class ReservaService {
             // Enviar notificaciones sobre el cambio de horario
             try {
                 ReservaResponseDto reservaDto = mapToResponseDto(updatedReserva);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-                String horarioAnterior = reserva.getInicio().format(formatter) + " - " + reserva.getFin().format(formatter);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+                String horarioAnterior = formatter.format(reserva.getInicio()) + " - " + formatter.format(reserva.getFin());
                 
                 // Notificar al usuario
                 boolean emailUsuarioEnviado = emailService.enviarEmailNotificacionReservaActualizada(
@@ -927,7 +941,7 @@ public class ReservaService {
         }
         
         // Si ya pasó, no se puede cancelar
-        if (reserva.getInicio().isBefore(LocalDateTime.now())) {
+        if (reserva.getInicio().isBefore(Instant.now())) {
             throw new RuntimeException("No se puede cancelar una reserva que ya pasó");
         }
         
@@ -992,8 +1006,8 @@ public class ReservaService {
             Long espacioId,
             Long carreraId,
             Long tipoEspacioId,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
+            Instant fechaInicio,
+            Instant fechaFin,
             String userEmail,
             String userRole) {
         Specification<Reserva> spec = buildSpecificationPublico(estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin, userEmail, userRole);
@@ -1014,8 +1028,8 @@ public class ReservaService {
             Long espacioId,
             Long carreraId,
             Long tipoEspacioId,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
+            Instant fechaInicio,
+            Instant fechaFin,
             String userEmail,
             String userRole) {
         return (root, query, cb) -> {
@@ -1112,11 +1126,12 @@ public class ReservaService {
      * Método auxiliar para calcular estadísticas a partir de una lista de reservas
      */
     private ReservaStatsDto calcularEstadisticasLegacy(List<Reserva> reservas) {
-        LocalDateTime now = LocalDateTime.now();
-        YearMonth mesActual = YearMonth.now();
+        Instant now = Instant.now();
+        ZonedDateTime nowZdt = now.atZone(ZoneOffset.UTC);
+        YearMonth mesActual = YearMonth.from(nowZdt);
         YearMonth proximoMes = mesActual.plusMonths(1);
         YearMonth mesAnterior = mesActual.minusMonths(1);
-        int anioActual = now.getYear();
+        int anioActual = nowZdt.getYear();
         
         // ========== MÉTRICAS BÁSICAS ==========
         long totalReservas = reservas.size();
@@ -1156,15 +1171,15 @@ public class ReservaService {
         
         // ========== MÉTRICAS TEMPORALES ==========
         long reservasEsteMes = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio()).equals(mesActual))
+                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesActual))
                 .count();
         
         long reservasProximoMes = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio()).equals(proximoMes))
+                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(proximoMes))
                 .count();
         
         long reservasEsteAnio = reservas.stream()
-                .filter(r -> r.getInicio().getYear() == anioActual)
+                .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).getYear() == anioActual)
                 .count();
         
         // Reservas por mes (últimos 12 meses)
@@ -1172,7 +1187,7 @@ public class ReservaService {
         for (int i = 11; i >= 0; i--) {
             YearMonth mes = mesActual.minusMonths(i);
             long count = reservas.stream()
-                    .filter(r -> YearMonth.from(r.getInicio()).equals(mes))
+                    .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mes))
                     .count();
             reservasPorMes.put(mes.toString(), count);
         }
@@ -1181,7 +1196,7 @@ public class ReservaService {
         Map<String, Long> reservasPorDiaSemana = new HashMap<>();
         for (DayOfWeek dia : DayOfWeek.values()) {
             long count = reservas.stream()
-                    .filter(r -> r.getInicio().getDayOfWeek() == dia)
+                    .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).getDayOfWeek() == dia)
                     .count();
             reservasPorDiaSemana.put(dia.name(), count);
         }
@@ -1253,7 +1268,7 @@ public class ReservaService {
         double reservaMasCortaHoras = reservaMasCortaOpt.isPresent() ? reservaMasCortaOpt.getAsDouble() : 0.0;
         
         double horasReservadasEsteMes = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio()).equals(mesActual))
+                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesActual))
                 .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
                 .sum();
         
@@ -1264,7 +1279,7 @@ public class ReservaService {
         
         long semanasTotales = 1;
         if (primeraReservaOpt.isPresent()) {
-            LocalDateTime primeraReserva = primeraReservaOpt.get().getInicio();
+            Instant primeraReserva = primeraReservaOpt.get().getInicio();
             long dias = Duration.between(primeraReserva, now).toDays();
             semanasTotales = Math.max(1, dias / 7);
         }
@@ -1279,7 +1294,7 @@ public class ReservaService {
                 .max(Comparator.comparing(Reserva::getFin));
         
         Long diasDesdeUltimaReserva = null;
-        LocalDateTime fechaUltimaReserva = null;
+        Instant fechaUltimaReserva = null;
         if (ultimaReservaOpt.isPresent()) {
             fechaUltimaReserva = ultimaReservaOpt.get().getFin();
             diasDesdeUltimaReserva = Duration.between(fechaUltimaReserva, now).toDays();
@@ -1291,7 +1306,7 @@ public class ReservaService {
                 .min(Comparator.comparing(Reserva::getInicio));
         
         Long diasHastaProximaReserva = null;
-        LocalDateTime fechaProximaReserva = null;
+        Instant fechaProximaReserva = null;
         if (proximaReservaOpt.isPresent()) {
             fechaProximaReserva = proximaReservaOpt.get().getInicio();
             diasHastaProximaReserva = Duration.between(now, fechaProximaReserva).toDays();
@@ -1301,7 +1316,7 @@ public class ReservaService {
         long reservasMesActual = reservasEsteMes;
         
         long reservasMesAnterior = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio()).equals(mesAnterior))
+                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesAnterior))
                 .count();
         
         long diferenciaMesAnterior = reservasMesActual - reservasMesAnterior;

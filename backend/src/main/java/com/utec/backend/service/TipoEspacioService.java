@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,7 +77,7 @@ public class TipoEspacioService {
             tipoEspacio.setColor(updateDto.getColor());
         }
         
-        tipoEspacio.setUpdatedAt(LocalDateTime.now());
+        tipoEspacio.setUpdatedAt(Instant.now());
         
         TipoEspacio updatedTipoEspacio = tipoEspacioRepository.save(tipoEspacio);
         return mapToResponseDto(updatedTipoEspacio);
@@ -89,8 +89,8 @@ public class TipoEspacioService {
         
         // Soft delete: marcar como inactivo
         tipoEspacio.setActivo(false);
-        tipoEspacio.setDeletedAt(LocalDateTime.now());
-        tipoEspacio.setUpdatedAt(LocalDateTime.now());
+        tipoEspacio.setDeletedAt(Instant.now());
+        tipoEspacio.setUpdatedAt(Instant.now());
         
         tipoEspacioRepository.save(tipoEspacio);
     }
@@ -100,7 +100,7 @@ public class TipoEspacioService {
                 .orElseThrow(() -> new RuntimeException("Tipo de espacio no encontrado con ID: " + id));
         
         tipoEspacio.setActivo(!tipoEspacio.getActivo());
-        tipoEspacio.setUpdatedAt(LocalDateTime.now());
+        tipoEspacio.setUpdatedAt(Instant.now());
         
         TipoEspacio updatedTipoEspacio = tipoEspacioRepository.save(tipoEspacio);
         return mapToResponseDto(updatedTipoEspacio);

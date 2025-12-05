@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -27,6 +28,9 @@ public class EmailService {
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
+
+    @Value("${app.timezone:America/Montevideo}")
+    private String appTimezone;
 
     /**
      * Verifica la configuración de email enviando un email de prueba
@@ -141,9 +145,9 @@ public class EmailService {
         }
         String subject = "Nueva solicitud de reserva - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicio = reserva.getInicio().format(formatter);
-        String fechaFin = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicio = formatter.format(reserva.getInicio());
+        String fechaFin = formatter.format(reserva.getFin());
         
         String bodyText = """
             Hola,
@@ -187,9 +191,9 @@ public class EmailService {
         }
         String subject = "Tu reserva ha sido aprobada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicio = reserva.getInicio().format(formatter);
-        String fechaFin = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicio = formatter.format(reserva.getInicio());
+        String fechaFin = formatter.format(reserva.getFin());
         
         String bodyText = """
             Hola {usuarioNombre},
@@ -231,9 +235,9 @@ public class EmailService {
         }
         String subject = "Tu solicitud de reserva ha sido rechazada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicio = reserva.getInicio().format(formatter);
-        String fechaFin = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicio = formatter.format(reserva.getInicio());
+        String fechaFin = formatter.format(reserva.getFin());
         
         String bodyText = """
             Hola {usuarioNombre},
@@ -275,9 +279,9 @@ public class EmailService {
         }
         String subject = "Reserva cancelada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicio = reserva.getInicio().format(formatter);
-        String fechaFin = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicio = formatter.format(reserva.getInicio());
+        String fechaFin = formatter.format(reserva.getFin());
         
         String bodyText = """
             Hola,
@@ -322,9 +326,9 @@ public class EmailService {
         }
         String subject = "Recordatorio: Tienes una reserva en " + horasAntes + " horas - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicio = reserva.getInicio().format(formatter);
-        String fechaFin = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicio = formatter.format(reserva.getInicio());
+        String fechaFin = formatter.format(reserva.getFin());
         
         String bodyText = """
             Hola {usuarioNombre},
@@ -527,9 +531,9 @@ public class EmailService {
         }
         String subject = "Reserva actualizada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicioNueva = reserva.getInicio().format(formatter);
-        String fechaFinNueva = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicioNueva = formatter.format(reserva.getInicio());
+        String fechaFinNueva = formatter.format(reserva.getFin());
         
         String destinatario = esAnalista ? "Hola," : "Hola " + (reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario") + ",";
         String mensaje = esAnalista 
@@ -584,9 +588,9 @@ public class EmailService {
         }
         String subject = "Nueva solicitud de inventario - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String fechaInicio = reserva.getInicio().format(formatter);
-        String fechaFin = reserva.getFin().format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        String fechaInicio = formatter.format(reserva.getInicio());
+        String fechaFin = formatter.format(reserva.getFin());
         
         String bodyText = """
             Hola,
@@ -640,9 +644,9 @@ public class EmailService {
         
         String subject = "Estado de tu solicitud de inventario actualizado - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
         String fechaReserva = itemSolicitado.getReservaInicio() != null 
-            ? itemSolicitado.getReservaInicio().format(formatter) 
+            ? formatter.format(itemSolicitado.getReservaInicio()) 
             : "N/A";
         
         String mensajeEstado = "";

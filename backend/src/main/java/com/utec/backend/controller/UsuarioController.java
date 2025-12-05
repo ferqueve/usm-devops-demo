@@ -34,6 +34,7 @@ import static com.utec.backend.security.Constants.*;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final CsvExportUtil csvExportUtil;
 
 
     @Operation(summary = "Obtener mi perfil", description = "Obtener información del usuario autenticado actual")
@@ -117,7 +118,7 @@ public class UsuarioController {
                 search, rol, verificado, activo, fechaDesde, fechaHasta
         );
         
-        String csvContent = CsvExportUtil.generateUsersCsv(usuarios);
+        String csvContent = csvExportUtil.generateUsersCsv(usuarios);
         String fileName = "usuarios_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".csv";
         
         HttpHeaders headers = new HttpHeaders();

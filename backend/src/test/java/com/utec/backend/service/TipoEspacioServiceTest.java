@@ -16,7 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -47,8 +47,8 @@ class TipoEspacioServiceTest {
         tipoEspacioTest.setDescripcion("Espacio para clases");
         tipoEspacioTest.setColor("#FF5733");
         tipoEspacioTest.setActivo(true);
-        tipoEspacioTest.setCreatedAt(LocalDateTime.now());
-        tipoEspacioTest.setUpdatedAt(LocalDateTime.now());
+        tipoEspacioTest.setCreatedAt(Instant.now());
+        tipoEspacioTest.setUpdatedAt(Instant.now());
         tipoEspacioTest.setEspacios(Arrays.asList());
     }
 

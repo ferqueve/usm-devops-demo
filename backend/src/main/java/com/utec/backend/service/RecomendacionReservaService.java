@@ -14,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,8 +38,8 @@ public class RecomendacionReservaService {
     @Transactional(readOnly = true)
     public List<RecomendacionEspacioDto> obtenerRecomendacionesEspacios(
             Long usuarioId, 
-            LocalDateTime inicio, 
-            LocalDateTime fin, 
+            Instant inicio, 
+            Instant fin, 
             Integer capacidadRequerida) {
         
         log.debug("Obteniendo recomendaciones de espacios para usuario {} entre {} y {}", 
@@ -45,9 +47,10 @@ public class RecomendacionReservaService {
         
         // 1. Obtener historial del usuario
         List<Reserva> historial = reservaRepository.findByUsuarioId(usuarioId);
+        Instant hace6Meses = Instant.now().minusSeconds(6 * 30 * 24 * 3600L);
         List<Reserva> historialAprobado = historial.stream()
             .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO)
-            .filter(r -> r.getInicio().isAfter(LocalDateTime.now().minusMonths(6))) // Últimos 6 meses
+            .filter(r -> r.getInicio().isAfter(hace6Meses)) // Últimos 6 meses
             .collect(Collectors.toList());
         
         // 2. Obtener espacios disponibles
@@ -129,7 +132,7 @@ public class RecomendacionReservaService {
     public List<HorarioRecomendadoDto> obtenerHorariosOptimos(
             Long usuarioId, 
             Long espacioId, 
-            LocalDateTime fecha) {
+            Instant fecha) {
         
         log.debug("Obteniendo horarios óptimos para usuario {} en espacio {} para fecha {}", 
                  usuarioId, espacioId, fecha);
@@ -142,18 +145,19 @@ public class RecomendacionReservaService {
             .collect(Collectors.toList());
         
         // 2. Analizar patrones de horarios
+        ZonedDateTime fechaZdt = fecha.atZone(ZoneOffset.UTC);
         Map<LocalTime, Long> horariosFrecuentes = new HashMap<>();
         for (Reserva r : historialAprobado) {
-            LocalTime horaInicio = r.getInicio().toLocalTime();
+            LocalTime horaInicio = r.getInicio().atZone(ZoneOffset.UTC).toLocalTime();
             horariosFrecuentes.put(horaInicio, horariosFrecuentes.getOrDefault(horaInicio, 0L) + 1);
         }
         
         // 3. Obtener reservas existentes del espacio en esa fecha
-        LocalDateTime inicioDia = fecha.withHour(0).withMinute(0);
+        ZonedDateTime inicioDia = fechaZdt.withHour(0).withMinute(0).withSecond(0).withNano(0);
         List<Reserva> reservasExistentes = reservaRepository.findFutureReservasByEspacio(
-            espacioId, inicioDia, Reserva.EstadoReserva.APROBADO);
+            espacioId, inicioDia.toInstant(), Reserva.EstadoReserva.APROBADO);
         reservasExistentes = reservasExistentes.stream()
-            .filter(r -> r.getInicio().toLocalDate().equals(fecha.toLocalDate()))
+            .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).toLocalDate().equals(fechaZdt.toLocalDate()))
             .collect(Collectors.toList());
         
         // 4. Generar horarios recomendados
@@ -162,19 +166,21 @@ public class RecomendacionReservaService {
         LocalTime horaFin = LocalTime.of(20, 0); // Hasta las 8 PM
         
         while (horaActual.isBefore(horaFin)) {
-            LocalDateTime inicio = fecha.with(horaActual);
-            LocalDateTime fin = inicio.plusHours(2); // Recomendar bloques de 2 horas
+            ZonedDateTime inicio = fechaZdt.with(horaActual);
+            ZonedDateTime fin = inicio.plusHours(2); // Recomendar bloques de 2 horas
+            Instant inicioInstant = inicio.toInstant();
+            Instant finInstant = fin.toInstant();
             
             // Verificar disponibilidad
             boolean disponible = reservasExistentes.stream()
                 .noneMatch(r -> {
-                    return (inicio.isBefore(r.getFin()) && fin.isAfter(r.getInicio()));
+                    return (inicioInstant.isBefore(r.getFin()) && finInstant.isAfter(r.getInicio()));
                 });
             
             if (disponible) {
                 HorarioRecomendadoDto dto = new HorarioRecomendadoDto();
-                dto.setInicio(inicio);
-                dto.setFin(fin);
+                dto.setInicio(inicioInstant);
+                dto.setFin(finInstant);
                 dto.setDisponible(true);
                 
                 // Calcular puntaje basado en frecuencia

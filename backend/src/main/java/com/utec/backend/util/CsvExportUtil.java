@@ -1,18 +1,26 @@
 package com.utec.backend.util;
 
 import com.utec.backend.dto.usuario.UsuarioResponseDto;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Component
 public class CsvExportUtil {
     
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private final DateTimeFormatter dateFormatter;
     private static final String CSV_HEADER = "ID,Email,Nombre,Rol,Verificado,Activo,Fecha Registro";
     private static final String CSV_SEPARATOR = ",";
     private static final String CSV_QUOTE = "\"";
     
-    public static String generateUsersCsv(List<UsuarioResponseDto> usuarios) {
+    public CsvExportUtil(@Value("${app.timezone:America/Montevideo}") String appTimezone) {
+        this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of(appTimezone));
+    }
+    
+    public String generateUsersCsv(List<UsuarioResponseDto> usuarios) {
         StringBuilder csv = new StringBuilder();
         
         // Agregar encabezados
@@ -32,14 +40,14 @@ public class CsvExportUtil {
                .append(CSV_SEPARATOR)
                .append(escapeCSVField(usuario.getActivo() ? "Sí" : "No"))
                .append(CSV_SEPARATOR)
-               .append(escapeCSVField(usuario.getCreatedAt().format(DATE_FORMATTER)))
+               .append(escapeCSVField(dateFormatter.format(usuario.getCreatedAt())))
                .append("\n");
         }
         
         return csv.toString();
     }
     
-    private static String escapeCSVField(String field) {
+    private String escapeCSVField(String field) {
         if (field == null) {
             return "";
         }

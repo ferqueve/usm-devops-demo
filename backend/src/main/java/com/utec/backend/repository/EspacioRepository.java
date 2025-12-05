@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -20,8 +20,8 @@ public interface EspacioRepository extends JpaRepository<Espacio, Long> {
     @Query("SELECT e FROM Espacio e WHERE e.id NOT IN " +
            "(SELECT r.espacio.id FROM Reserva r WHERE r.estado = 'APROBADO' " +
            "AND ((r.inicio <= :fin AND r.fin >= :inicio)))")
-    List<Espacio> findEspaciosDisponibles(@Param("inicio") LocalDateTime inicio, 
-                                         @Param("fin") LocalDateTime fin);
+    List<Espacio> findEspaciosDisponibles(@Param("inicio") Instant inicio, 
+                                         @Param("fin") Instant fin);
     
     // Buscar espacios por capacidad mínima
     List<Espacio> findByCapacidadGreaterThanEqual(Integer capacidadMinima);

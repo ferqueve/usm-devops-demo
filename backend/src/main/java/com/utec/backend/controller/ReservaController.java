@@ -12,14 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import static com.utec.backend.security.Constants.*;
@@ -102,8 +101,8 @@ public class ReservaController {
             @RequestParam(required = false) Long espacioId,
             @RequestParam(required = false) Long carreraId,
             @RequestParam(required = false) Long tipoEspacioId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @RequestParam(required = false) Instant fechaInicio,
+            @RequestParam(required = false) Instant fechaFin,
             @RequestParam(required = false) String tiempo) {
         try {
             String userEmail = authentication.getName();
@@ -222,8 +221,8 @@ public class ReservaController {
             @RequestParam(required = false) Long espacioId,
             @RequestParam(required = false) Long carreraId,
             @RequestParam(required = false) Long tipoEspacioId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
+            @RequestParam(required = false) Instant fechaInicio,
+            @RequestParam(required = false) Instant fechaFin) {
         try {
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
@@ -289,8 +288,8 @@ public class ReservaController {
             @RequestParam(required = false) Long carreraId,
             @RequestParam(required = false) Long tipoEspacioId,
             @RequestParam(required = false) Long usuarioId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @RequestParam(required = false) Instant fechaInicio,
+            @RequestParam(required = false) Instant fechaFin,
             @RequestParam(required = false) String tiempo) {
         try {
             String userEmail = authentication.getName();

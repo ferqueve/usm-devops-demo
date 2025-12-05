@@ -14,7 +14,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -79,7 +79,7 @@ public class UserActivityTrackingService {
                     .nombre(nombre)
                     .apellido(apellido)
                     .rol(usuario.getRolApp().name())
-                    .lastActivity(LocalDateTime.now())
+                    .lastActivity(Instant.now())
                     .ipAddress(ipAddress)
                     .userAgent(userAgent != null ? userAgent : "Unknown")
                     .build();

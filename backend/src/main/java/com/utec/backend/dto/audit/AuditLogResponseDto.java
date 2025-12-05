@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +18,7 @@ public class AuditLogResponseDto {
     private Long usuarioId;
     private String usuarioNombre;
     private String usuarioEmail;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
     private String datosPrevios;
     private String datosNuevos;
 }

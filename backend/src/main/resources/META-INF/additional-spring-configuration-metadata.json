@@ -73,5 +73,80 @@
     "name": "app.reservas.reminder.enabled",
     "type": "java.lang.String",
     "description": "A description for 'app.reservas.reminder.enabled'"
+  },
+  {
+    "name": "minio.endpoint",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.endpoint'"
+  },
+  {
+    "name": "minio.public-url",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.public-url'"
+  },
+  {
+    "name": "minio.access-key",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.access-key'"
+  },
+  {
+    "name": "minio.bucket-name",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.bucket-name'"
+  },
+  {
+    "name": "minio.region",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.region'"
+  },
+  {
+    "name": "minio.secret-key",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.secret-key'"
+  },
+  {
+    "name": "minio.max-file-size",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.max-file-size'"
+  },
+  {
+    "name": "minio.allowed-mime-types",
+    "type": "java.lang.String",
+    "description": "A description for 'minio.allowed-mime-types'"
+  },
+  {
+    "name": "cache.usuarioStats.ttl",
+    "type": "java.lang.String",
+    "description": "A description for 'cache.usuarioStats.ttl'"
+  },
+  {
+    "name": "cache.inventarioStatistics.ttl",
+    "type": "java.lang.String",
+    "description": "A description for 'cache.inventarioStatistics.ttl'"
+  },
+  {
+    "name": "cache.espacios.ttl",
+    "type": "java.lang.String",
+    "description": "A description for 'cache.espacios.ttl'"
+  },
+  {
+    "name": "cache.reservas.ttl",
+    "type": "java.lang.String",
+    "description": "A description for 'cache.reservas.ttl'"
+  },
+  {
+    "name": "app.timezone",
+    "type": "java.lang.String",
+    "description": "A description for 'app.timezone'"
+  },
+  {
+    "name": "cache.usuarioStats.ttl",
+    "type": "java.lang.String",
+    "description": "A description for 'cache.usuarioStats.ttl'"
+  },
+  {
+    "name": "cache.inventarioStatistics.ttl",
+    "type": "java.lang.String",
+    "description": "A description for 'cache.inventarioStatistics.ttl'"
   }
 ]}

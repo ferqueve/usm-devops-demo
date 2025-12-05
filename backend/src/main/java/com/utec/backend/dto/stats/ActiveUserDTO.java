@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * DTO para representar un usuario activo en el sistema
@@ -19,7 +19,7 @@ public class ActiveUserDTO {
     private String nombre;
     private String apellido;
     private String rol;
-    private LocalDateTime lastActivity;
+    private Instant lastActivity;
     private String ipAddress;
     private String userAgent;
 }

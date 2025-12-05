@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,7 +72,7 @@ public class EspacioService {
         if (updateDto.getEstado() != null) {
             espacio.setEstado(updateDto.getEstado());
         }
-        espacio.setUpdatedAt(LocalDateTime.now());
+        espacio.setUpdatedAt(Instant.now());
         
         Espacio updatedEspacio = espacioRepository.save(espacio);
         return mapToResponseDto(updatedEspacio);
@@ -211,7 +211,7 @@ public class EspacioService {
     }
     
     @Transactional(readOnly = true)
-    public List<EspacioResponseDto> getEspaciosDisponibles(LocalDateTime inicio, LocalDateTime fin) {
+    public List<EspacioResponseDto> getEspaciosDisponibles(Instant inicio, Instant fin) {
         return espacioRepository.findEspaciosDisponibles(inicio, fin).stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
@@ -259,7 +259,7 @@ public class EspacioService {
         }
         
         espacio.setImagenUrl(objectName);
-        espacio.setUpdatedAt(LocalDateTime.now());
+        espacio.setUpdatedAt(Instant.now());
         espacioRepository.save(espacio);
     }
     

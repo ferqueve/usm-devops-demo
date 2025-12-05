@@ -18,7 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,8 +57,8 @@ class UsuarioControllerTest {
                 true,  // verificado
                 true,  // activo
                 null,  // oauthProv
-                LocalDateTime.now(),  // createdAt
-                LocalDateTime.now()   // updatedAt
+                Instant.now(),  // createdAt
+                Instant.now()   // updatedAt
         );
     }
 
@@ -95,8 +95,8 @@ class UsuarioControllerTest {
                 true,
                 true,
                 null,
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                Instant.now(),
+                Instant.now()
         );
 
         when(usuarioService.actualizarPerfil(eq(testEmail), ArgumentMatchers.any(UsuarioUpdateDto.class)))
@@ -126,8 +126,8 @@ class UsuarioControllerTest {
                 true,
                 true,
                 null,
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                Instant.now(),
+                Instant.now()
         );
 
         List<UsuarioResponseDto> usuarios = Arrays.asList(usuarioResponseDto, usuario2);

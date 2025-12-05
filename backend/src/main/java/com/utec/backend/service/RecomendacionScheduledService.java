@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +36,7 @@ public class RecomendacionScheduledService {
         
         try {
             // Obtener usuarios activos (con reservas en últimos 30 días)
-            LocalDateTime fechaLimite = LocalDateTime.now().minusDays(30);
+            Instant fechaLimite = Instant.now().minusSeconds(30 * 24 * 3600);
             List<Reserva> reservasRecientes = reservaRepository.findAll();
             List<Long> usuariosActivos = reservasRecientes.stream()
                 .filter(r -> r.getInicio().isAfter(fechaLimite))
@@ -52,8 +52,8 @@ public class RecomendacionScheduledService {
             for (Long usuarioId : usuariosActivos) {
                 try {
                     // Calcular recomendaciones para el usuario
-                    LocalDateTime ahora = LocalDateTime.now();
-                    LocalDateTime finSemana = ahora.plusDays(7);
+                    Instant ahora = Instant.now();
+                    Instant finSemana = ahora.plusSeconds(7 * 24 * 3600);
                     List<RecomendacionEspacioDto> recomendaciones = recomendacionService
                         .obtenerRecomendacionesEspacios(usuarioId, ahora, finSemana, null);
                     

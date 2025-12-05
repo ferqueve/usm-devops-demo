@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -24,9 +24,9 @@ public class ReservaItemSolicitadoResponseDto {
     private Integer cantidadSolicitada;
     private ReservaItemSolicitado.EstadoSolicitud estado;
     private String observaciones;
-    private LocalDateTime reservaInicio;
-    private LocalDateTime reservaFin;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant reservaInicio;
+    private Instant reservaFin;
+    private Instant createdAt;
+    private Instant updatedAt;
 }
 

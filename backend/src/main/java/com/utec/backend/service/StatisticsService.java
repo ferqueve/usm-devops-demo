@@ -11,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -49,19 +51,24 @@ public class StatisticsService {
         log.info("Calculando estadísticas detalladas de inventario - espacioId: {}, tipoElementoId: {}, estado: {}", 
                 espacioId, tipoElementoId, estado);
         
-        LocalDateTime ahora = LocalDateTime.now();
-        LocalDateTime inicioMes = ahora.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime inicioAnio = ahora.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime hace30Dias = ahora.minusDays(30);
-        LocalDateTime hace3Meses = ahora.minusMonths(3);
-        LocalDateTime hace6Meses = ahora.minusMonths(6);
-        LocalDateTime hace12Meses = ahora.minusMonths(12);
-        LocalDateTime hace1Anio = ahora.minusYears(1);
-        LocalDateTime mesAnterior = inicioMes.minusMonths(1);
-        LocalDateTime inicioMesAnterior = mesAnterior.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime finMesAnterior = inicioMesAnterior.plusMonths(1).minusSeconds(1);
-        LocalDateTime inicioAnioAnterior = inicioAnio.minusYears(1);
-        LocalDateTime finAnioAnterior = inicioAnio.minusSeconds(1);
+        ZonedDateTime ahoraZdt = Instant.now().atZone(ZoneOffset.UTC);
+        Instant ahora = ahoraZdt.toInstant();
+        ZonedDateTime inicioMes = ahoraZdt.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        ZonedDateTime inicioAnio = ahoraZdt.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        Instant inicioMesInstant = inicioMes.toInstant();
+        Instant inicioAnioInstant = inicioAnio.toInstant();
+        Instant hace30Dias = ahora.minusSeconds(30 * 24 * 3600L);
+        Instant hace3Meses = ahoraZdt.minusMonths(3).toInstant();
+        Instant hace6Meses = ahoraZdt.minusMonths(6).toInstant();
+        Instant hace12Meses = ahoraZdt.minusMonths(12).toInstant();
+        Instant hace1Anio = ahoraZdt.minusYears(1).toInstant();
+        ZonedDateTime mesAnterior = inicioMes.minusMonths(1);
+        ZonedDateTime inicioMesAnterior = mesAnterior.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        Instant inicioMesAnteriorInstant = inicioMesAnterior.toInstant();
+        Instant finMesAnterior = inicioMesAnterior.plusMonths(1).minusSeconds(1).toInstant();
+        ZonedDateTime inicioAnioAnterior = inicioAnio.minusYears(1);
+        Instant inicioAnioAnteriorInstant = inicioAnioAnterior.toInstant();
+        Instant finAnioAnterior = inicioAnio.minusSeconds(1).toInstant();
         
         // Obtener todos los items activos y aplicar filtros
         List<InventarioItem> allItems = inventarioItemRepository.findAll().stream()
@@ -214,11 +221,11 @@ public class StatisticsService {
         
         // === ANÁLISIS TEMPORAL ===
         int itemsCreadosEsteMes = (int) allItems.stream()
-                .filter(item -> item.getCreatedAt() != null && item.getCreatedAt().isAfter(inicioMes))
+                .filter(item -> item.getCreatedAt() != null && item.getCreatedAt().isAfter(inicioMesInstant))
                 .count();
         
         int itemsCreadosEsteAnio = (int) allItems.stream()
-                .filter(item -> item.getCreatedAt() != null && item.getCreatedAt().isAfter(inicioAnio))
+                .filter(item -> item.getCreatedAt() != null && item.getCreatedAt().isAfter(inicioAnioInstant))
                 .count();
         
         int itemsCreadosUltimos6Meses = (int) allItems.stream()
@@ -230,11 +237,11 @@ public class StatisticsService {
                 .count();
         
         int itemsActualizadosEsteMes = (int) allItems.stream()
-                .filter(item -> item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(inicioMes))
+                .filter(item -> item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(inicioMesInstant))
                 .count();
         
         int itemsActualizadosUltimos7Dias = (int) allItems.stream()
-                .filter(item -> item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(ahora.minusDays(7)))
+                .filter(item -> item.getUpdatedAt() != null && item.getUpdatedAt().isAfter(ahora.minusSeconds(7 * 24 * 3600L)))
                 .count();
         
         stats.put("itemsCreadosEsteMes", itemsCreadosEsteMes);
@@ -404,8 +411,8 @@ public class StatisticsService {
         // === COMPARATIVAS ===
         int itemsMesAnterior = (int) allItems.stream()
                 .filter(item -> item.getCreatedAt() != null 
-                        && item.getCreatedAt().isAfter(inicioMesAnterior) 
-                        && item.getCreatedAt().isBefore(finMesAnterior.plusSeconds(1)))
+                        && item.getCreatedAt().isAfter(inicioMesAnteriorInstant) 
+                        && item.getCreatedAt().isBefore(finMesAnterior))
                 .count();
         
         int diferenciaMesAnterior = itemsCreadosEsteMes - itemsMesAnterior;
@@ -413,8 +420,8 @@ public class StatisticsService {
         
         int itemsAnioAnterior = (int) allItems.stream()
                 .filter(item -> item.getCreatedAt() != null 
-                        && item.getCreatedAt().isAfter(inicioAnioAnterior) 
-                        && item.getCreatedAt().isBefore(finAnioAnterior.plusSeconds(1)))
+                        && item.getCreatedAt().isAfter(inicioAnioAnteriorInstant) 
+                        && item.getCreatedAt().isBefore(finAnioAnterior))
                 .count();
         
         int diferenciaAnioAnterior = itemsCreadosEsteAnio - itemsAnioAnterior;

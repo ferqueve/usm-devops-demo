@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * DTO para recomendaciones de analistas y reservas prioritarias
@@ -36,8 +36,8 @@ public class RecomendacionAnalistaDto {
     private String docenteEmail;
     private Long espacioId;
     private String espacioNombre;
-    private LocalDateTime inicio;
-    private LocalDateTime fin;
+    private Instant inicio;
+    private Instant fin;
     private Integer diasPendiente;
     private Integer urgencia; // 1-10
     

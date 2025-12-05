@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,8 +166,8 @@ public class EspacioController {
     @GetMapping("/disponibles")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getEspaciosDisponibles(
-            @RequestParam LocalDateTime inicio,
-            @RequestParam LocalDateTime fin) {
+            @RequestParam Instant inicio,
+            @RequestParam Instant fin) {
         try {
             List<EspacioResponseDto> espacios = espacioService.getEspaciosDisponibles(inicio, fin);
             return ResponseEntity.ok(ApiResponse.success(espacios, "Espacios disponibles obtenidos exitosamente"));

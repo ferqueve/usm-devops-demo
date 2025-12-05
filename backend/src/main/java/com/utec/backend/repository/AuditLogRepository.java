@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -43,6 +43,6 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
      * Buscar logs por rango de fechas
      */
     @Query("SELECT a FROM AuditLog a WHERE a.timestamp BETWEEN :fechaDesde AND :fechaHasta ORDER BY a.timestamp DESC")
-    Page<AuditLog> findByTimestampBetween(@Param("fechaDesde") LocalDateTime fechaDesde, @Param("fechaHasta") LocalDateTime fechaHasta, Pageable pageable);
+    Page<AuditLog> findByTimestampBetween(@Param("fechaDesde") Instant fechaDesde, @Param("fechaHasta") Instant fechaHasta, Pageable pageable);
 }
 

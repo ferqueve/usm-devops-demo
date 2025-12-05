@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * DTO para recomendaciones de horarios
@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HorarioRecomendadoDto {
-    private LocalDateTime inicio;
-    private LocalDateTime fin;
+    private Instant inicio;
+    private Instant fin;
     private BigDecimal puntaje;
     private String razon;
     private Boolean disponible;

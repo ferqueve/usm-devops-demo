@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -54,9 +54,9 @@ public class ReservaReminderService {
         }
         
         try {
-            LocalDateTime ahora = LocalDateTime.now();
-            LocalDateTime inicioDesde = ahora.plusHours(horasAntesRecordatorio);
-            LocalDateTime inicioHasta = inicioDesde.plusHours(1); // Ventana de 1 hora
+            Instant ahora = Instant.now();
+            Instant inicioDesde = ahora.plusSeconds(horasAntesRecordatorio * 3600);
+            Instant inicioHasta = inicioDesde.plusSeconds(3600); // Ventana de 1 hora
             
             log.info("Buscando reservas para recordatorio entre {} y {}", inicioDesde, inicioHasta);
             
@@ -131,9 +131,9 @@ public class ReservaReminderService {
      */
     @Transactional(readOnly = true)
     public int enviarRecordatoriosManual(int horasAntes) {
-        LocalDateTime ahora = LocalDateTime.now();
-        LocalDateTime inicioDesde = ahora.plusHours(horasAntes);
-        LocalDateTime inicioHasta = inicioDesde.plusHours(1);
+        Instant ahora = Instant.now();
+        Instant inicioDesde = ahora.plusSeconds(horasAntes * 3600);
+        Instant inicioHasta = inicioDesde.plusSeconds(3600);
         
         List<Reserva> reservas = reservaRepository.findReservasAprobadasEnRango(
             Reserva.EstadoReserva.APROBADO,

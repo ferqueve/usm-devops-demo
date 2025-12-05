@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -20,16 +20,16 @@ public class ReservaCreateDto {
     private Long carreraId; // Opcional
     
     @NotNull(message = "La fecha de inicio es requerida")
-    private LocalDateTime inicio;
+    private Instant inicio;
     
     @NotNull(message = "La fecha de fin es requerida")
-    private LocalDateTime fin;
+    private Instant fin;
     
     private List<ReservaItemSolicitadoCreateDto> itemsSolicitados; // Opcional
     
     // Campos para reservas recurrentes/periódicas
     private TipoRecurrencia tipoRecurrencia; // Opcional: DIARIA, SEMANAL, MENSUAL, null = no recurrente
-    private LocalDateTime fechaFinRecurrencia; // Opcional: fecha hasta la cual se repite
+    private Instant fechaFinRecurrencia; // Opcional: fecha hasta la cual se repite
     
     // Campo para asignar analista (solo para docentes)
     private Long analistaId; // Opcional: ID del analista al cual se asigna la solicitud

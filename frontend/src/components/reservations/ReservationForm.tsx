@@ -20,7 +20,7 @@ import { carrerasApi } from '@/lib/api/carreras';
 import { usuariosApi } from '@/lib/api/users';
 import type { Espacio, Reserva, Carrera, TipoElemento } from '@/lib/types/spaces';
 import type { User } from '@/lib/types/users';
-import { formatLocalDateTime } from './reservationUtils';
+import { createLocalDateTimeUTC, toUTC } from '@/lib/utils/timezone';
 import { EspaciosRecomendados } from '@/components/recomendaciones/EspaciosRecomendados';
 import { HorariosRecomendados } from '@/components/recomendaciones/HorariosRecomendados';
 import { ItemsRecomendados } from '@/components/recomendaciones/ItemsRecomendados';
@@ -542,12 +542,15 @@ export default function ReservationForm({
 
     setLoading(true);
     try {
-      // Formatear fechas en formato ISO local (sin convertir a UTC)
-      // Esto es necesario porque el backend usa LocalDateTime que no tiene zona horaria
-      const inicioISO = formatLocalDateTime(inicio);
-      const finISO = formatLocalDateTime(fin);
+      // Convertir fechas locales a UTC ISO-8601 para enviar al backend
+      const inicioISO = toUTC(inicio);
+      const finISO = toUTC(fin);
       const fechaFinRecurrenciaISO = formData.fechaFinRecurrencia 
-        ? formatLocalDateTime(new Date(new Date(formData.fechaFinRecurrencia).setHours(23, 59, 59, 999)))
+        ? (() => {
+            const fechaFin = new Date(formData.fechaFinRecurrencia);
+            fechaFin.setHours(23, 59, 59, 999);
+            return toUTC(fechaFin);
+          })()
         : undefined;
 
       await reservationsApi.crearReserva({
@@ -670,14 +673,20 @@ export default function ReservationForm({
               <div className="mt-4">
                 <EspaciosRecomendados
                   inicio={(() => {
-                    const fechaStr = fecha.toISOString().split('T')[0];
-                    const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
-                    return new Date(`${fechaStr}T${horaInicio}`).toISOString();
+                    if (!fecha || !formData.horaInicioHora) return '';
+                    return createLocalDateTimeUTC(
+                      fecha,
+                      parseInt(formData.horaInicioHora),
+                      parseInt(formData.horaInicioMinuto || '0')
+                    );
                   })()}
                   fin={(() => {
-                    const fechaStr = fecha.toISOString().split('T')[0];
-                    const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
-                    return new Date(`${fechaStr}T${horaFin}`).toISOString();
+                    if (!fecha || !formData.horaFinHora) return '';
+                    return createLocalDateTimeUTC(
+                      fecha,
+                      parseInt(formData.horaFinHora),
+                      parseInt(formData.horaFinMinuto || '0')
+                    );
                   })()}
                   onSelectEspacio={(espacioId) => {
                     setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));

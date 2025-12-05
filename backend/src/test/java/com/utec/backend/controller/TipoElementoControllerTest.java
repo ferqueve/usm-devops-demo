@@ -16,7 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,8 +50,8 @@ class TipoElementoControllerTest {
         tipoElementoResponseDto.setNombre("Proyector");
         tipoElementoResponseDto.setDescripcion("Equipo de proyección");
         tipoElementoResponseDto.setActivo(true);
-        tipoElementoResponseDto.setCreatedAt(LocalDateTime.now());
-        tipoElementoResponseDto.setUpdatedAt(LocalDateTime.now());
+        tipoElementoResponseDto.setCreatedAt(Instant.now());
+        tipoElementoResponseDto.setUpdatedAt(Instant.now());
     }
 
     @Test

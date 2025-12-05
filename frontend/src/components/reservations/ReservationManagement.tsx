@@ -630,7 +630,6 @@ export default function ReservationManagement() {
         onFechaFinChange={setFechaFin}
         onViewModeChange={setViewMode}
         onClearFilters={handleClearFilters}
-        onCreateReserva={() => setIsFormDialogOpen(true)}
         onViewDetails={handleViewDetails}
         onCancelReserva={handleCancelReserva}
         isFullScreen={isFullScreen}

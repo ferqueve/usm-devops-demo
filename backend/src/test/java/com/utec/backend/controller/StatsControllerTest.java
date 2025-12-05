@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
@@ -42,7 +42,7 @@ class StatsControllerTest {
                 .nombre("Juan")
                 .apellido("Pérez")
                 .rol("ESTUDIANTE")
-                .lastActivity(LocalDateTime.now())
+                .lastActivity(Instant.now())
                 .ipAddress("192.168.1.1")
                 .userAgent("Mozilla/5.0")
                 .build();

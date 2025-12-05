@@ -16,7 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +55,8 @@ class InventarioItemControllerTest {
         itemResponseDto.setCantidad(5);
         itemResponseDto.setEstado("DISPONIBLE");
         itemResponseDto.setActivo(true);
-        itemResponseDto.setCreatedAt(LocalDateTime.now());
-        itemResponseDto.setUpdatedAt(LocalDateTime.now());
+        itemResponseDto.setCreatedAt(Instant.now());
+        itemResponseDto.setUpdatedAt(Instant.now());
     }
 
     @Test

@@ -16,7 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +30,6 @@ public class InventarioItemService {
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
     private final TipoElementoRepository tipoElementoRepository;
-    private final RecomendacionService recomendacionService;
     
     public InventarioItemResponseDto createInventarioItem(InventarioItemCreateDto createDto) {
         // Verificar que el espacio existe (si se proporciona)
@@ -148,7 +147,7 @@ public class InventarioItemService {
         inventarioItem.setCantidad(updateDto.getCantidad());
         inventarioItem.setEstado(updateDto.getEstado());
         inventarioItem.setObservaciones(updateDto.getObservaciones());
-        inventarioItem.setUpdatedAt(LocalDateTime.now());
+        inventarioItem.setUpdatedAt(Instant.now());
         
         InventarioItem updatedItem = inventarioItemRepository.save(inventarioItem);
         

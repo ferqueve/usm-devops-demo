@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -38,7 +38,7 @@ public class RecomendacionInventarioService {
         log.debug("Obteniendo items que necesitan mantenimiento urgente");
         
         List<InventarioItem> itemsMantenimiento = inventarioItemRepository.findByEstadoAndActivoTrue("MANTENIMIENTO");
-        LocalDateTime ahora = LocalDateTime.now();
+        Instant ahora = Instant.now();
         
         return itemsMantenimiento.stream()
             .map(item -> {

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,7 +68,7 @@ public class TipoElementoService {
         
         tipoElemento.setNombre(updateDto.getNombre());
         tipoElemento.setDescripcion(updateDto.getDescripcion());
-        tipoElemento.setUpdatedAt(LocalDateTime.now());
+        tipoElemento.setUpdatedAt(Instant.now());
         
         TipoElemento updatedTipoElemento = tipoElementoRepository.save(tipoElemento);
         return mapToResponseDto(updatedTipoElemento);
@@ -91,7 +91,7 @@ public class TipoElementoService {
                 .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + id));
         
         tipoElemento.setActivo(!tipoElemento.getActivo());
-        tipoElemento.setUpdatedAt(LocalDateTime.now());
+        tipoElemento.setUpdatedAt(Instant.now());
         
         TipoElemento updatedTipoElemento = tipoElementoRepository.save(tipoElemento);
         return mapToResponseDto(updatedTipoElemento);

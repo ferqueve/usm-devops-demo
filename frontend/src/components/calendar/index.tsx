@@ -72,8 +72,8 @@ export default function Calendar() {
         if (espaciosRes.data) setEspacios(espaciosRes.data);
         if (carrerasRes.data) setCarreras(carrerasRes.data);
         if (tiposEspacioRes.data) setTiposEspacio(tiposEspacioRes.data);
-      } catch (error: any) {
-        console.error('Error al cargar datos:', error);
+      } catch (error: unknown) {
+        console.error('Error al cargar datos:', error instanceof Error ? error.message : error);
       }
     };
     fetchData();
@@ -231,7 +231,6 @@ export default function Calendar() {
         onFechaFinChange={setFechaFin}
         onViewModeChange={() => {}} // Solo calendario
         onClearFilters={handleClearFilters}
-        onCreateReserva={isExterno ? handleCreateReserva : () => {}}
         onViewDetails={handleViewDetails}
         onCancelReserva={() => {}} // No permitido en vista pública
         loading={loading}

@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.Predicate;
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +30,7 @@ public class AuditService {
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
     
-    // Constructor para inicializar ObjectMapper con soporte para LocalDateTime
+        // Constructor para inicializar ObjectMapper con soporte para Instant
     public AuditService(AuditLogRepository auditLogRepository) {
         this.auditLogRepository = auditLogRepository;
         this.objectMapper = new ObjectMapper();
@@ -117,8 +117,8 @@ public class AuditService {
             String entidad,
             Long usuarioId,
             AuditLog.AccionAudit accion,
-            LocalDateTime fechaDesde,
-            LocalDateTime fechaHasta,
+            Instant fechaDesde,
+            Instant fechaHasta,
             String search,
             Pageable pageable
     ) {
@@ -161,8 +161,8 @@ public class AuditService {
             String entidad,
             Long usuarioId,
             AuditLog.AccionAudit accion,
-            LocalDateTime fechaDesde,
-            LocalDateTime fechaHasta,
+            Instant fechaDesde,
+            Instant fechaHasta,
             String search
     ) {
         return (root, query, cb) -> {
@@ -316,7 +316,7 @@ public class AuditService {
                clazz.equals(Double.class) ||
                clazz.equals(Float.class) ||
                clazz.equals(Boolean.class) ||
-               clazz.equals(java.time.LocalDateTime.class) ||
+               clazz.equals(java.time.Instant.class) ||
                clazz.equals(java.time.LocalDate.class) ||
                clazz.isEnum() ||
                Number.class.isAssignableFrom(clazz);

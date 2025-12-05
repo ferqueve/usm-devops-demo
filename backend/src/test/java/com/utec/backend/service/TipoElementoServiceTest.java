@@ -17,7 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,8 +48,8 @@ class TipoElementoServiceTest {
         tipoElementoTest.setNombre(nombreTipoElemento);
         tipoElementoTest.setDescripcion("Equipo de proyección");
         tipoElementoTest.setActivo(true);
-        tipoElementoTest.setCreatedAt(LocalDateTime.now());
-        tipoElementoTest.setUpdatedAt(LocalDateTime.now());
+        tipoElementoTest.setCreatedAt(Instant.now());
+        tipoElementoTest.setUpdatedAt(Instant.now());
         tipoElementoTest.setInventarioItems(Collections.emptyList());
     }
 

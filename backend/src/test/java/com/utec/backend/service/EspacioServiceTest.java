@@ -17,7 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -50,8 +50,8 @@ class EspacioServiceTest {
         espacioTest.setImagenUrl("imagen.jpg");
         espacioTest.setTipoEspacioId(1L);
         espacioTest.setEstado("DISPONIBLE");
-        espacioTest.setCreatedAt(LocalDateTime.now());
-        espacioTest.setUpdatedAt(LocalDateTime.now());
+        espacioTest.setCreatedAt(Instant.now());
+        espacioTest.setUpdatedAt(Instant.now());
         espacioTest.setInventarioItems(Collections.emptyList());
     }
 

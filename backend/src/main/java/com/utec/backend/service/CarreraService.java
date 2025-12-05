@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,7 +79,7 @@ public class CarreraService {
             carrera.setCodigo(updateDto.getCodigo().trim().isEmpty() ? null : updateDto.getCodigo());
         }
         
-        carrera.setUpdatedAt(LocalDateTime.now());
+        carrera.setUpdatedAt(Instant.now());
         
         Carrera updatedCarrera = carreraRepository.save(carrera);
         return mapToResponseDto(updatedCarrera);
@@ -90,8 +90,8 @@ public class CarreraService {
                 .orElseThrow(() -> new RuntimeException("Carrera no encontrada con ID: " + id));
         
         // Soft delete: marcar como eliminada
-        carrera.setDeletedAt(LocalDateTime.now());
-        carrera.setUpdatedAt(LocalDateTime.now());
+        carrera.setDeletedAt(Instant.now());
+        carrera.setUpdatedAt(Instant.now());
         
         carreraRepository.save(carrera);
     }

@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,7 +121,7 @@ public class RecomendacionAnalistaService {
             .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
             .collect(Collectors.toList());
         
-        LocalDateTime ahora = LocalDateTime.now();
+        Instant ahora = Instant.now();
         
         List<RecomendacionAnalistaDto> recomendaciones = new ArrayList<>();
         
