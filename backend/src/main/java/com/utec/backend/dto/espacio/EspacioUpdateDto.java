@@ -28,4 +28,6 @@ public class EspacioUpdateDto {
     private Long tipoEspacioId;
     
     private String estado;
+    
+    private Long edificioId;
 }

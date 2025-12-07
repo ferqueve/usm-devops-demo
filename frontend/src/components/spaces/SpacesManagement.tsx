@@ -22,7 +22,7 @@ import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
 import { espaciosApi } from '@/lib/api/spaces';
-import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, TipoElemento } from '@/lib/types/spaces';
+import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, TipoElemento, Edificio } from '@/lib/types/spaces';
 import { 
   Plus, 
   Search, 
@@ -61,6 +61,7 @@ export default function SpacesManagement() {
   const [filters, setFilters] = useState<EspacioFilters>({});
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
   const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
+  const [edificios, setEdificios] = useState<Edificio[]>([]);
   const [filtrosInventario, setFiltrosInventario] = useState<FiltroInventario[]>([]);
   
   // Estados de filtros
@@ -101,8 +102,8 @@ export default function SpacesManagement() {
       
       // Si hay filtros activos, usar el endpoint de filtros
       const hasActiveFilters = filtrosCompletos.search || filtrosCompletos.tipoEspacioId || 
-                               filtrosCompletos.capacidadMin || filtrosCompletos.capacidadMax ||
-                               filtrosCompletos.filtrosInventario;
+                               filtrosCompletos.edificioId || filtrosCompletos.capacidadMin || 
+                               filtrosCompletos.capacidadMax || filtrosCompletos.filtrosInventario;
       
       if (hasActiveFilters) {
         const response = await espaciosApi.filtrarEspacios(filtrosCompletos);
@@ -140,6 +141,7 @@ export default function SpacesManagement() {
     fetchEspacios();
     fetchTiposEspacio();
     fetchTiposElemento();
+    fetchEdificios();
   }, [fetchEspacios]);
 
   const fetchTiposEspacio = async () => {
@@ -161,6 +163,17 @@ export default function SpacesManagement() {
       }
     } catch (error) {
       console.error('Error al cargar tipos de elemento:', error);
+    }
+  };
+
+  const fetchEdificios = async () => {
+    try {
+      const response = await espaciosApi.listarEdificios();
+      if (response.data) {
+        setEdificios(response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar edificios:', error);
     }
   };
 
@@ -206,6 +219,14 @@ export default function SpacesManagement() {
     }));
   };
 
+  const handleEdificioFilter = (edificioId: string) => {
+    setPage(0);
+    setFilters(prev => ({ 
+      ...prev, 
+      edificioId: edificioId === 'all' ? undefined : parseInt(edificioId)
+    }));
+  };
+
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -241,8 +262,8 @@ export default function SpacesManagement() {
       
       // Verificar si hay filtros activos
       const hasActiveFilters = filtrosCompletos.search || filtrosCompletos.tipoEspacioId || 
-                               filtrosCompletos.capacidadMin || filtrosCompletos.capacidadMax ||
-                               filtrosCompletos.filtrosInventario;
+                               filtrosCompletos.edificioId || filtrosCompletos.capacidadMin || 
+                               filtrosCompletos.capacidadMax || filtrosCompletos.filtrosInventario;
       
       let espaciosParaExportar: Espacio[];
       
@@ -408,6 +429,16 @@ export default function SpacesManagement() {
       });
     }
     
+    if (filters.edificioId) {
+      const edificio = edificios.find(e => e.id === filters.edificioId);
+      items.push({
+        id: 'edificio',
+        label: `Edificio: ${edificio?.nombre || 'Desconocido'}`,
+        value: filters.edificioId,
+        onRemove: () => setFilters(prev => ({ ...prev, edificioId: undefined }))
+      });
+    }
+    
     if (filters.capacidadMin) {
       items.push({
         id: 'capacidadMin',
@@ -462,7 +493,7 @@ export default function SpacesManagement() {
     });
     
     return items;
-  }, [filters, tiposEspacio, filtrosInventario, eliminarFiltroInventario, obtenerNombreTipoElemento]);
+  }, [filters, tiposEspacio, edificios, filtrosInventario, eliminarFiltroInventario, obtenerNombreTipoElemento]);
 
   if (loading && espacios.length === 0) {
     return (
@@ -634,6 +665,20 @@ export default function SpacesManagement() {
                     }))
                   ],
                   onChange: (value) => handleTipoEspacioFilter(value)
+                },
+                {
+                  id: 'edificio-filter',
+                  label: 'Edificio',
+                  type: 'select',
+                  value: filters.edificioId?.toString() || 'all',
+                  options: [
+                    { value: 'all', label: 'Todos los edificios' },
+                    ...edificios.map(edificio => ({ 
+                      value: edificio.id.toString(), 
+                      label: edificio.nombre 
+                    }))
+                  ],
+                  onChange: (value) => handleEdificioFilter(value)
                 },
                 {
                   id: 'estado-filter',

@@ -29,7 +29,8 @@ import {
   AlertCircle,
   CheckCircle,
   Wrench,
-  Plus
+  Plus,
+  Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -344,6 +345,14 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                   </Badge>
                 )}
               </div>
+
+              {espacio.edificioNombre && (
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-gray-500" />
+                  <span className="font-medium">Edificio:</span>
+                  <span>{espacio.edificioNombre}</span>
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-gray-500" />

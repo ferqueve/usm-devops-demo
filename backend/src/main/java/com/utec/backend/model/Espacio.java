@@ -49,9 +49,16 @@ public class Espacio {
     @Column(name = "estado", nullable = false, length = 20)
     private String estado = "DISPONIBLE";
     
+    @Column(name = "edificio_id", nullable = true)
+    private Long edificioId;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_espacio_id", nullable = false, insertable = false, updatable = false)
     private TipoEspacio tipoEspacio;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "edificio_id", nullable = true, insertable = false, updatable = false)
+    private Edificio edificio;
     
     // Relaciones
     @OneToMany(mappedBy = "espacio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

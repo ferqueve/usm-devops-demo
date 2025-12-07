@@ -33,6 +33,7 @@ public class EspacioService {
         espacio.setImagenUrl(createDto.getImagenUrl());
         espacio.setTipoEspacioId(createDto.getTipoEspacioId());
         espacio.setEstado(createDto.getEstado() != null ? createDto.getEstado() : "DISPONIBLE");
+        espacio.setEdificioId(createDto.getEdificioId());
         
         Espacio savedEspacio = espacioRepository.save(espacio);
         return mapToResponseDto(savedEspacio);
@@ -72,6 +73,7 @@ public class EspacioService {
         if (updateDto.getEstado() != null) {
             espacio.setEstado(updateDto.getEstado());
         }
+        espacio.setEdificioId(updateDto.getEdificioId());
         espacio.setUpdatedAt(Instant.now());
         
         Espacio updatedEspacio = espacioRepository.save(espacio);
@@ -139,7 +141,7 @@ public class EspacioService {
     }
     
     @Transactional(readOnly = true)
-    public List<EspacioResponseDto> filterEspacios(String search, Long tipoEspacioId, Integer capacidadMin, Integer capacidadMax, 
+    public List<EspacioResponseDto> filterEspacios(String search, Long tipoEspacioId, Long edificioId, Integer capacidadMin, Integer capacidadMax, 
                                                    String estado, List<Long> tipoElementoIds, List<Integer> cantidadMins, List<Integer> cantidadMaxs) {
         List<Espacio> espacios = espacioRepository.findAll();
         
@@ -153,6 +155,12 @@ public class EspacioService {
         if (tipoEspacioId != null) {
             espacios = espacios.stream()
                     .filter(e -> e.getTipoEspacioId().equals(tipoEspacioId))
+                    .collect(Collectors.toList());
+        }
+        
+        if (edificioId != null) {
+            espacios = espacios.stream()
+                    .filter(e -> e.getEdificioId() != null && e.getEdificioId().equals(edificioId))
                     .collect(Collectors.toList());
         }
         
@@ -281,6 +289,9 @@ public class EspacioService {
         dto.setTipoEspacioNombre(espacio.getTipoEspacio() != null ? espacio.getTipoEspacio().getNombre() : null);
         dto.setTipoEspacioColor(espacio.getTipoEspacio() != null ? espacio.getTipoEspacio().getColor() : null);
         dto.setEstado(espacio.getEstado());
+        dto.setEdificioId(espacio.getEdificioId());
+        dto.setEdificioNombre(espacio.getEdificio() != null ? espacio.getEdificio().getNombre() : null);
+        dto.setEdificioCodigo(espacio.getEdificio() != null ? espacio.getEdificio().getCodigo() : null);
         dto.setCreatedAt(espacio.getCreatedAt());
         dto.setUpdatedAt(espacio.getUpdatedAt());
         return dto;

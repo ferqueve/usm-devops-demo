@@ -8,7 +8,8 @@ import type {
   PagedEspacios,
   PagedInventario,
   InventarioFilters,
-  InventoryStats
+  InventoryStats,
+  Edificio
 } from '../types/spaces';
 
 export const espaciosApi = {
@@ -25,6 +26,7 @@ export const espaciosApi = {
     
     if (filters?.search) params.append('search', filters.search);
     if (filters?.tipoEspacioId) params.append('tipoEspacioId', filters.tipoEspacioId.toString());
+    if (filters?.edificioId) params.append('edificioId', filters.edificioId.toString());
     if (filters?.capacidadMin) params.append('capacidadMin', filters.capacidadMin.toString());
     if (filters?.capacidadMax) params.append('capacidadMax', filters.capacidadMax.toString());
     if (filters?.estado) params.append('estado', filters.estado);
@@ -51,6 +53,7 @@ export const espaciosApi = {
     
     if (filters?.search) params.append('search', filters.search);
     if (filters?.tipoEspacioId) params.append('tipoEspacioId', filters.tipoEspacioId.toString());
+    if (filters?.edificioId) params.append('edificioId', filters.edificioId.toString());
     if (filters?.capacidadMin) params.append('capacidadMin', filters.capacidadMin.toString());
     if (filters?.capacidadMax) params.append('capacidadMax', filters.capacidadMax.toString());
     if (filters?.estado) params.append('estado', filters.estado);
@@ -269,6 +272,11 @@ export const espaciosApi = {
 
   async obtenerEspacios(): Promise<ApiResponse<Espacio[]>> {
     return apiRequest<Espacio[]>('/espacios', { method: 'GET' });
+  },
+
+  // Edificios
+  async listarEdificios(): Promise<ApiResponse<Edificio[]>> {
+    return apiRequest<Edificio[]>('/edificios', { method: 'GET' });
   },
 
   // Gestión de imágenes de espacios

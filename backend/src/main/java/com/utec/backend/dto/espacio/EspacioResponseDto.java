@@ -18,6 +18,9 @@ public class EspacioResponseDto {
     private String tipoEspacioNombre;
     private String tipoEspacioColor; // Color del tipo de espacio
     private String estado;
+    private Long edificioId;
+    private String edificioNombre;
+    private String edificioCodigo;
     private Instant createdAt;
     private Instant updatedAt;
 }

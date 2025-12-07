@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Agregar columna edificio_id a espacio -->
+    <changeSet id="001" author="mathi">
+        <addColumn tableName="espacio">
+            <column name="edificio_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Agregar foreign key constraint para edificio_id -->
+    <changeSet id="002" author="mathi">
+        <addForeignKeyConstraint baseTableName="espacio"
+                                 baseColumnNames="edificio_id"
+                                 constraintName="fk_espacio_edificio"
+                                 referencedTableName="edificio"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>
+

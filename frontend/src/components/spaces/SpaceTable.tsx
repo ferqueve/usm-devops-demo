@@ -91,6 +91,9 @@ export function SpaceTable({
               </button>
             </TableHead>
             <TableHead>
+              Edificio
+            </TableHead>
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('capacidad')}
                 className="flex items-center hover:text-utec-blue transition-colors"
@@ -126,6 +129,13 @@ export function SpaceTable({
                   <Badge variant="secondary" className="text-xs">
                     {espacio.tipoEspacioNombre || 'Sin tipo'}
                   </Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                {espacio.edificioNombre ? (
+                  <span className="text-sm text-gray-700">{espacio.edificioNombre}</span>
+                ) : (
+                  <span className="text-sm text-gray-400">Sin edificio</span>
                 )}
               </TableCell>
               <TableCell>

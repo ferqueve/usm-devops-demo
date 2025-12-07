@@ -133,6 +133,7 @@ public class EspacioController {
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> filterEspacios(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long tipoEspacioId,
+            @RequestParam(required = false) Long edificioId,
             @RequestParam(required = false) Integer capacidadMin,
             @RequestParam(required = false) Integer capacidadMax,
             @RequestParam(required = false) String estado,
@@ -141,7 +142,7 @@ public class EspacioController {
             @RequestParam(required = false) List<Integer> cantidadMaxs) {
         try {
             List<EspacioResponseDto> espacios = espacioService.filterEspacios(
-                search, tipoEspacioId, capacidadMin, capacidadMax, estado,
+                search, tipoEspacioId, edificioId, capacidadMin, capacidadMax, estado,
                 tipoElementoIds, cantidadMins, cantidadMaxs);
             return ResponseEntity.ok(ApiResponse.success(espacios, "Filtros aplicados exitosamente"));
         } catch (Exception e) {

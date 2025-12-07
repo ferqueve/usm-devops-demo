@@ -15,6 +15,19 @@ export interface Espacio {
   tipoEspacioNombre?: string;
   tipoEspacioColor?: string; // Color del tipo de espacio
   estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
+  edificioId?: number;
+  edificioNombre?: string;
+  edificioCodigo?: string;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Edificio {
+  id: number;
+  nombre: string;
+  codigo?: string;
+  descripcion?: string;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +64,7 @@ export interface FiltroInventario {
 export interface EspacioFilters {
   search?: string;
   tipoEspacioId?: number;
+  edificioId?: number;
   capacidadMin?: number;
   capacidadMax?: number;
   estado?: 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';

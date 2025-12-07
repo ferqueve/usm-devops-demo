@@ -28,4 +28,6 @@ public class EspacioCreateDto {
     private Long tipoEspacioId;
     
     private String estado = "DISPONIBLE";
+    
+    private Long edificioId;
 }

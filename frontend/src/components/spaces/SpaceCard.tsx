@@ -1,7 +1,7 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
-import { Users, Eye, Edit, CheckCircle, Wrench, XCircle, Image as ImageIcon } from "lucide-react";
+import { Users, Eye, Edit, CheckCircle, Wrench, XCircle, Image as ImageIcon, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import type { Espacio } from "@/lib/types/spaces";
@@ -115,12 +115,18 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
           )}
         </div>
 
-        {/* Capacidad y Estado */}
+        {/* Capacidad, Edificio y Estado */}
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
             <span className="text-sm text-gray-600 font-medium">{espacio.capacidad} personas</span>
           </div>
+          {espacio.edificioNombre && (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-600">{espacio.edificioNombre}</span>
+            </div>
+          )}
           <div>
             {(() => {
               const estadoConfig = getEstadoConfig(espacio.estado);

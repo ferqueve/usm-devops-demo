@@ -1,14 +1,18 @@
 package com.utec.backend.util;
 
 import com.utec.backend.model.Carrera;
+import com.utec.backend.model.Edificio;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.InventarioItem;
 import com.utec.backend.model.TipoElemento;
+import com.utec.backend.model.TipoEspacio;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.CarreraRepository;
+import com.utec.backend.repository.EdificioRepository;
 import com.utec.backend.repository.EspacioRepository;
 import com.utec.backend.repository.InventarioItemRepository;
 import com.utec.backend.repository.TipoElementoRepository;
+import com.utec.backend.repository.TipoEspacioRepository;
 import com.utec.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +40,8 @@ public class DevDataInitializer implements CommandLineRunner {
     private final EspacioRepository espacioRepository;
     private final InventarioItemRepository inventarioItemRepository;
     private final TipoElementoRepository tipoElementoRepository;
+    private final TipoEspacioRepository tipoEspacioRepository;
+    private final EdificioRepository edificioRepository;
     private final UsuarioRepository usuarioRepository;
     private final CarreraRepository carreraRepository;
     private final PasswordEncoder passwordEncoder;
@@ -51,8 +57,17 @@ public class DevDataInitializer implements CommandLineRunner {
         // Crear carreras de prueba (si no existen)
         createCarreras();
 
+        // Crear tipos de espacio (si no existen)
+        Map<String, TipoEspacio> tiposEspacio = createTiposEspacio();
+
+        // Crear tipos de elemento (si no existen)
+        createTiposElemento();
+
+        // Crear edificios (si no existen)
+        Map<String, Edificio> edificios = createEdificios();
+
         // Crear espacios de prueba (si no existen)
-        Map<String, Espacio> espacios = createEspacios();
+        Map<String, Espacio> espacios = createEspacios(edificios, tiposEspacio);
 
         // Crear inventario para los espacios (si no existe)
         createInventarioItems(espacios);
@@ -128,64 +143,165 @@ public class DevDataInitializer implements CommandLineRunner {
         return carreraRepository.save(carrera);
     }
 
-    private Map<String, Espacio> createEspacios() {
+    private Map<String, TipoEspacio> createTiposEspacio() {
+        // Verificar si ya hay tipos de espacio
+        if (tipoEspacioRepository.count() > 0) {
+            log.info("Ya existen tipos de espacio en la base de datos. Obteniendo tipos existentes.");
+            Map<String, TipoEspacio> tiposExistentes = new HashMap<>();
+            tipoEspacioRepository.findAll().forEach(tipo -> tiposExistentes.put(tipo.getNombre().toLowerCase(), tipo));
+            return tiposExistentes;
+        }
+
+        log.info("Creando tipos de espacio...");
+        Map<String, TipoEspacio> tiposEspacio = new HashMap<>();
+
+        tiposEspacio.put("aula", createTipoEspacio("Aula", "Aula de clases tradicional", "#3B82F6"));
+        tiposEspacio.put("anfiteatro", createTipoEspacio("Anfiteatro", "Anfiteatro para presentaciones y eventos", "#8B5CF6"));
+        tiposEspacio.put("laboratorio", createTipoEspacio("Laboratorio", "Laboratorio de computación o especializado", "#10B981"));
+        tiposEspacio.put("otro", createTipoEspacio("Otro", "Otro tipo de espacio", "#F59E0B"));
+
+        return tiposEspacio;
+    }
+
+    private TipoEspacio createTipoEspacio(String nombre, String descripcion, String color) {
+        // Verificar si el tipo ya existe
+        if (tipoEspacioRepository.existsByNombreIgnoreCase(nombre)) {
+            log.debug("Tipo de espacio {} ya existe, saltando creación.", nombre);
+            return tipoEspacioRepository.findByNombreContainingIgnoreCaseAndActivoTrue(nombre).stream()
+                    .filter(t -> t.getNombre().equalsIgnoreCase(nombre))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        TipoEspacio tipoEspacio = new TipoEspacio();
+        tipoEspacio.setNombre(nombre);
+        tipoEspacio.setDescripcion(descripcion);
+        tipoEspacio.setColor(color);
+        tipoEspacio.setActivo(true);
+        return tipoEspacioRepository.save(tipoEspacio);
+    }
+
+    private void createTiposElemento() {
+        // Verificar si ya hay tipos de elemento
+        if (tipoElementoRepository.count() > 0) {
+            log.info("Ya existen tipos de elemento en la base de datos. Saltando creación.");
+            return;
+        }
+
+        log.info("Creando tipos de elemento...");
+        createTipoElemento("Silla", "Silla individual para estudiantes");
+        createTipoElemento("Mesa", "Mesa individual o grupal");
+        createTipoElemento("Escritorio", "Escritorio para profesor");
+        createTipoElemento("Pizarra", "Pizarra blanca o verde");
+        createTipoElemento("Proyector", "Proyector multimedia");
+        createTipoElemento("Pantalla", "Pantalla de proyección");
+        createTipoElemento("Televisor", "Televisor LED/LCD");
+        createTipoElemento("Computadora", "PC de escritorio");
+        createTipoElemento("Sistema de Audio", "Sistema de sonido");
+        createTipoElemento("Aire Acondicionado", "Sistema de climatización");
+    }
+
+    private TipoElemento createTipoElemento(String nombre, String descripcion) {
+        // Verificar si el tipo ya existe
+        if (tipoElementoRepository.existsByNombreIgnoreCase(nombre)) {
+            log.debug("Tipo de elemento {} ya existe, saltando creación.", nombre);
+            return tipoElementoRepository.findByNombreContainingIgnoreCaseAndActivoTrue(nombre).stream()
+                    .filter(t -> t.getNombre().equalsIgnoreCase(nombre))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        TipoElemento tipoElemento = new TipoElemento();
+        tipoElemento.setNombre(nombre);
+        tipoElemento.setDescripcion(descripcion);
+        tipoElemento.setActivo(true);
+        return tipoElementoRepository.save(tipoElemento);
+    }
+
+    private Map<String, Edificio> createEdificios() {
+        // Verificar si ya hay edificios
+        if (edificioRepository.count() > 0) {
+            log.info("Ya existen edificios en la base de datos. Obteniendo edificios existentes.");
+            Map<String, Edificio> edificiosExistentes = new HashMap<>();
+            edificioRepository.findAll().forEach(edificio -> {
+                if (edificio.getCodigo() != null) {
+                    edificiosExistentes.put(edificio.getCodigo(), edificio);
+                }
+                edificiosExistentes.put(edificio.getNombre(), edificio);
+            });
+            return edificiosExistentes;
+        }
+
+        log.info("Creando edificios...");
+        Map<String, Edificio> edificios = new HashMap<>();
+
+        Edificio edificioAB = createEdificio("Edificio A y B", "A-B", "Edificio principal con aulas teóricas, anfiteatro y laboratorios");
+        edificios.put("A-B", edificioAB);
+        edificios.put("Edificio A y B", edificioAB);
+
+        Edificio edificioC = createEdificio("Edificio C (Logística)", "C", "Edificio de logística con aulas y servicios especiales");
+        edificios.put("C", edificioC);
+        edificios.put("Edificio C (Logística)", edificioC);
+
+        Edificio edificioE = createEdificio("Edificio E", "E", "Edificio con aulas de clases");
+        edificios.put("E", edificioE);
+        edificios.put("Edificio E", edificioE);
+
+        return edificios;
+    }
+
+    private Edificio createEdificio(String nombre, String codigo, String descripcion) {
+        Edificio edificio = new Edificio();
+        edificio.setNombre(nombre);
+        edificio.setCodigo(codigo);
+        edificio.setDescripcion(descripcion);
+        edificio.setActivo(true);
+        return edificioRepository.save(edificio);
+    }
+
+    private Map<String, Espacio> createEspacios(Map<String, Edificio> edificios, Map<String, TipoEspacio> tiposEspacio) {
         // Verificar si ya hay espacios
         if (espacioRepository.count() > 0) {
             log.info("Ya existen espacios en la base de datos. Obteniendo espacios existentes para inventario.");
-            // Obtener todos los espacios existentes y mapearlos por nombre
             Map<String, Espacio> espaciosExistentes = new HashMap<>();
             espacioRepository.findAll().forEach(espacio -> espaciosExistentes.put(espacio.getNombre(), espacio));
             return espaciosExistentes;
         }
 
-        log.info("Creando espacios de prueba...");
+        log.info("Creando espacios...");
         Map<String, Espacio> espacios = new HashMap<>();
 
-        // Aulas
-        espacios.put("Aula 101", createEspacio("Aula 101", 30, 1L));
-        espacios.put("Aula 102", createEspacio("Aula 102", 25, 1L));
-        espacios.put("Aula 201", createEspacio("Aula 201", 35, 1L));
-        espacios.put("Aula 202", createEspacio("Aula 202", 28, 1L));
-        espacios.put("Aula 301", createEspacio("Aula 301", 40, 1L));
+        // Edificio A y B
+        Edificio edificioAB = edificios.get("A-B");
+        espacios.put("Aula teórica 1", createEspacio("Aula teórica 1", 30, tiposEspacio.get("aula"), edificioAB));
+        espacios.put("Aula teórica 2", createEspacio("Aula teórica 2", 30, tiposEspacio.get("aula"), edificioAB));
+        espacios.put("Aula teórica 3", createEspacio("Aula teórica 3", 30, tiposEspacio.get("aula"), edificioAB));
+        espacios.put("Aula teórica 4", createEspacio("Aula teórica 4", 30, tiposEspacio.get("aula"), edificioAB));
+        espacios.put("Anfiteatro", createEspacio("Anfiteatro", 100, tiposEspacio.get("anfiteatro"), edificioAB));
+        espacios.put("Laboratorio Mecatrónica", createEspacio("Laboratorio Mecatrónica", 25, tiposEspacio.get("laboratorio"), edificioAB));
 
-        // Laboratorios
-        espacios.put("Laboratorio de Computación A", createEspacio("Laboratorio de Computación A", 20, 2L));
-        espacios.put("Laboratorio de Computación B", createEspacio("Laboratorio de Computación B", 20, 2L));
-        espacios.put("Laboratorio de Química", createEspacio("Laboratorio de Química", 15, 2L));
-        espacios.put("Laboratorio de Física", createEspacio("Laboratorio de Física", 18, 2L));
-        espacios.put("Laboratorio de Electrónica", createEspacio("Laboratorio de Electrónica", 12, 2L));
+        // Edificio C (Logística)
+        Edificio edificioC = edificios.get("C");
+        espacios.put("Aula 6", createEspacio("Aula 6", 30, tiposEspacio.get("aula"), edificioC));
+        espacios.put("Aula 7", createEspacio("Aula 7", 30, tiposEspacio.get("aula"), edificioC));
+        espacios.put("Sala de Lactancia", createEspacio("Sala de Lactancia", 5, tiposEspacio.get("otro"), edificioC));
 
-        // Auditorios
-        espacios.put("Auditorio Principal", createEspacio("Auditorio Principal", 150, 3L));
-        espacios.put("Auditorio Pequeño", createEspacio("Auditorio Pequeño", 80, 3L));
-
-        // Salas de Reuniones
-        espacios.put("Sala de Reuniones A", createEspacio("Sala de Reuniones A", 8, 4L));
-        espacios.put("Sala de Reuniones B", createEspacio("Sala de Reuniones B", 12, 4L));
-        espacios.put("Sala de Conferencias", createEspacio("Sala de Conferencias", 25, 4L));
-
-        // Oficinas
-        espacios.put("Oficina Administrativa", createEspacio("Oficina Administrativa", 6, 5L));
-        espacios.put("Oficina de Coordinación", createEspacio("Oficina de Coordinación", 4, 5L));
-
-        // Biblioteca
-        espacios.put("Sala de Estudio A", createEspacio("Sala de Estudio A", 20, 6L));
-        espacios.put("Sala de Estudio B", createEspacio("Sala de Estudio B", 15, 6L));
-
-        // Taller
-        espacios.put("Taller de Mecánica", createEspacio("Taller de Mecánica", 16, 7L));
-
-        // Gimnasio
-        espacios.put("Gimnasio Principal", createEspacio("Gimnasio Principal", 50, 8L));
+        // Edificio E
+        Edificio edificioE = edificios.get("E");
+        espacios.put("Aula 8", createEspacio("Aula 8", 30, tiposEspacio.get("aula"), edificioE));
+        espacios.put("Aula 9", createEspacio("Aula 9", 30, tiposEspacio.get("aula"), edificioE));
+        espacios.put("Aula 11", createEspacio("Aula 11", 30, tiposEspacio.get("aula"), edificioE));
+        espacios.put("Aula 13", createEspacio("Aula 13", 30, tiposEspacio.get("aula"), edificioE));
 
         return espacios;
     }
 
-    private Espacio createEspacio(String nombre, Integer capacidad, Long tipoEspacioId) {
+    private Espacio createEspacio(String nombre, Integer capacidad, TipoEspacio tipoEspacio, Edificio edificio) {
         Espacio espacio = new Espacio();
         espacio.setNombre(nombre);
         espacio.setCapacidad(capacidad);
-        espacio.setTipoEspacioId(tipoEspacioId);
+        espacio.setTipoEspacioId(tipoEspacio.getId());
+        espacio.setEdificioId(edificio != null ? edificio.getId() : null);
         espacio.setEstado("DISPONIBLE");
         return espacioRepository.save(espacio);
     }
@@ -218,120 +334,79 @@ public class DevDataInitializer implements CommandLineRunner {
 
         log.info("Creando items de inventario...");
 
-        // Inventario para Aula 101
-        createInventarioItem(espacios.get("Aula 101"), tiposElemento.get("silla"), 30, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 101"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 101"), tiposElemento.get("pizarra"), 2, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 101"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
+        // Edificio A y B - Aulas teóricas
+        createInventarioItem(espacios.get("Aula teórica 1"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 1"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 1"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 1"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Aula 102
-        createInventarioItem(espacios.get("Aula 102"), tiposElemento.get("silla"), 25, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 102"), tiposElemento.get("mesa"), 12, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 102"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 2"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 2"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 2"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 2"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Aula 201
-        createInventarioItem(espacios.get("Aula 201"), tiposElemento.get("silla"), 35, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 201"), tiposElemento.get("mesa"), 18, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 201"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 3"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 3"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 3"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 3"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Aula 202
-        createInventarioItem(espacios.get("Aula 202"), tiposElemento.get("silla"), 28, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 202"), tiposElemento.get("mesa"), 14, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 202"), tiposElemento.get("televisor"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 4"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 4"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 4"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula teórica 4"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Aula 301
-        createInventarioItem(espacios.get("Aula 301"), tiposElemento.get("silla"), 40, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 301"), tiposElemento.get("mesa"), 20, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 301"), tiposElemento.get("pizarra"), 2, "DISPONIBLE");
-        createInventarioItem(espacios.get("Aula 301"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
+        // Edificio A y B - Anfiteatro
+        createInventarioItem(espacios.get("Anfiteatro"), tiposElemento.get("silla"), 100, "DISPONIBLE");
+        createInventarioItem(espacios.get("Anfiteatro"), tiposElemento.get("sistema de audio"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Anfiteatro"), tiposElemento.get("pantalla"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Anfiteatro"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Laboratorio de Computación A
-        createInventarioItem(espacios.get("Laboratorio de Computación A"), tiposElemento.get("computadora"), 20, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Computación A"), tiposElemento.get("silla"), 20, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Computación A"), tiposElemento.get("mesa"), 10, "DISPONIBLE");
+        // Edificio A y B - Laboratorio Mecatrónica
+        createInventarioItem(espacios.get("Laboratorio Mecatrónica"), tiposElemento.get("silla"), 25, "DISPONIBLE");
+        createInventarioItem(espacios.get("Laboratorio Mecatrónica"), tiposElemento.get("mesa"), 12, "DISPONIBLE");
+        if (tiposElemento.containsKey("computadora")) {
+            createInventarioItem(espacios.get("Laboratorio Mecatrónica"), tiposElemento.get("computadora"), 12, "DISPONIBLE");
+        }
+        createInventarioItem(espacios.get("Laboratorio Mecatrónica"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
 
-        // Inventario para Laboratorio de Computación B
-        createInventarioItem(espacios.get("Laboratorio de Computación B"), tiposElemento.get("computadora"), 20, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Computación B"), tiposElemento.get("silla"), 20, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Computación B"), tiposElemento.get("mesa"), 10, "DISPONIBLE");
+        // Edificio C - Aulas
+        createInventarioItem(espacios.get("Aula 6"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 6"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 6"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 6"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Laboratorio de Química
-        createInventarioItem(espacios.get("Laboratorio de Química"), tiposElemento.get("silla"), 15, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Química"), tiposElemento.get("mesa"), 8, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Química"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 7"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 7"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 7"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 7"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Laboratorio de Física
-        createInventarioItem(espacios.get("Laboratorio de Física"), tiposElemento.get("silla"), 18, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Física"), tiposElemento.get("mesa"), 9, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Física"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
-
-        // Inventario para Laboratorio de Electrónica
-        createInventarioItem(espacios.get("Laboratorio de Electrónica"), tiposElemento.get("silla"), 12, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Electrónica"), tiposElemento.get("mesa"), 6, "DISPONIBLE");
-        createInventarioItem(espacios.get("Laboratorio de Electrónica"), tiposElemento.get("computadora"), 6, "DISPONIBLE");
-
-        // Inventario para Auditorio Principal
-        createInventarioItem(espacios.get("Auditorio Principal"), tiposElemento.get("silla"), 150, "DISPONIBLE");
-        createInventarioItem(espacios.get("Auditorio Principal"), tiposElemento.get("sistema de audio"), 1, "DISPONIBLE");
-        createInventarioItem(espacios.get("Auditorio Principal"), tiposElemento.get("pantalla"), 1, "DISPONIBLE");
-
-        // Inventario para Auditorio Pequeño
-        createInventarioItem(espacios.get("Auditorio Pequeño"), tiposElemento.get("silla"), 80, "DISPONIBLE");
-        createInventarioItem(espacios.get("Auditorio Pequeño"), tiposElemento.get("sistema de audio"), 1, "DISPONIBLE");
-        createInventarioItem(espacios.get("Auditorio Pequeño"), tiposElemento.get("pantalla"), 1, "DISPONIBLE");
-
-        // Inventario para Sala de Reuniones A
-        createInventarioItem(espacios.get("Sala de Reuniones A"), tiposElemento.get("silla"), 8, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Reuniones A"), tiposElemento.get("mesa"), 1, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Reuniones A"), tiposElemento.get("televisor"), 1, "DISPONIBLE");
-
-        // Inventario para Sala de Reuniones B
-        createInventarioItem(espacios.get("Sala de Reuniones B"), tiposElemento.get("silla"), 12, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Reuniones B"), tiposElemento.get("mesa"), 1, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Reuniones B"), tiposElemento.get("televisor"), 1, "DISPONIBLE");
-
-        // Inventario para Sala de Conferencias
-        createInventarioItem(espacios.get("Sala de Conferencias"), tiposElemento.get("silla"), 25, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Conferencias"), tiposElemento.get("mesa"), 2, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Conferencias"), tiposElemento.get("televisor"), 1, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Conferencias"), tiposElemento.get("sistema de audio"), 1, "DISPONIBLE");
-
-        // Inventario para Oficina Administrativa
-        createInventarioItem(espacios.get("Oficina Administrativa"), tiposElemento.get("silla"), 6, "DISPONIBLE");
-        createInventarioItem(espacios.get("Oficina Administrativa"), tiposElemento.get("mesa"), 3, "DISPONIBLE");
-        createInventarioItem(espacios.get("Oficina Administrativa"), tiposElemento.get("computadora"), 3, "DISPONIBLE");
-
-        // Inventario para Oficina de Coordinación
-        createInventarioItem(espacios.get("Oficina de Coordinación"), tiposElemento.get("silla"), 4, "DISPONIBLE");
-        createInventarioItem(espacios.get("Oficina de Coordinación"), tiposElemento.get("mesa"), 2, "DISPONIBLE");
-        createInventarioItem(espacios.get("Oficina de Coordinación"), tiposElemento.get("computadora"), 2, "DISPONIBLE");
-
-        // Inventario para Sala de Estudio A
-        createInventarioItem(espacios.get("Sala de Estudio A"), tiposElemento.get("silla"), 20, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Estudio A"), tiposElemento.get("mesa"), 10, "DISPONIBLE");
+        // Edificio C - Sala de Lactancia
+        createInventarioItem(espacios.get("Sala de Lactancia"), tiposElemento.get("silla"), 3, "DISPONIBLE");
+        createInventarioItem(espacios.get("Sala de Lactancia"), tiposElemento.get("mesa"), 1, "DISPONIBLE");
         if (tiposElemento.containsKey("aire acondicionado")) {
-            createInventarioItem(espacios.get("Sala de Estudio A"), tiposElemento.get("aire acondicionado"), 2, "DISPONIBLE");
+            createInventarioItem(espacios.get("Sala de Lactancia"), tiposElemento.get("aire acondicionado"), 1, "DISPONIBLE");
         }
 
-        // Inventario para Sala de Estudio B
-        createInventarioItem(espacios.get("Sala de Estudio B"), tiposElemento.get("silla"), 15, "DISPONIBLE");
-        createInventarioItem(espacios.get("Sala de Estudio B"), tiposElemento.get("mesa"), 8, "DISPONIBLE");
-        if (tiposElemento.containsKey("aire acondicionado")) {
-            createInventarioItem(espacios.get("Sala de Estudio B"), tiposElemento.get("aire acondicionado"), 1, "DISPONIBLE");
-        }
+        // Edificio E - Aulas
+        createInventarioItem(espacios.get("Aula 8"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 8"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 8"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 8"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Taller de Mecánica
-        createInventarioItem(espacios.get("Taller de Mecánica"), tiposElemento.get("silla"), 16, "DISPONIBLE");
-        createInventarioItem(espacios.get("Taller de Mecánica"), tiposElemento.get("mesa"), 8, "DISPONIBLE");
-        if (tiposElemento.containsKey("aire acondicionado")) {
-            createInventarioItem(espacios.get("Taller de Mecánica"), tiposElemento.get("aire acondicionado"), 2, "DISPONIBLE");
-        }
+        createInventarioItem(espacios.get("Aula 9"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 9"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 9"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 9"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
 
-        // Inventario para Gimnasio Principal
-        if (tiposElemento.containsKey("aire acondicionado")) {
-            createInventarioItem(espacios.get("Gimnasio Principal"), tiposElemento.get("aire acondicionado"), 4, "DISPONIBLE");
-        }
-        createInventarioItem(espacios.get("Gimnasio Principal"), tiposElemento.get("sistema de audio"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 11"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 11"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 11"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 11"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
+
+        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get("silla"), 30, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get("mesa"), 15, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get("pizarra"), 1, "DISPONIBLE");
+        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get("proyector"), 1, "DISPONIBLE");
     }
 
     private InventarioItem createInventarioItem(Espacio espacio, TipoElemento tipoElemento, Integer cantidad, String estado) {

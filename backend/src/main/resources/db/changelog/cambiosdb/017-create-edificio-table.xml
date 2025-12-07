@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Crear tabla edificio -->
+    <changeSet id="001" author="mathi">
+        <createTable tableName="edificio">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nombre" type="VARCHAR(100)">
+                <constraints notNullConstraintName="nn_edificio_nombre"/>
+            </column>
+            <column name="codigo" type="VARCHAR(20)"/>
+            <column name="descripcion" type="TEXT"/>
+            <column name="activo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints notNullConstraintName="nn_edificio_activo"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_edificio_created_at"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_edificio_updated_at"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMPTZ"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Agregar constraint unique para codigo (solo cuando no es null) -->
+    <changeSet id="002" author="mathi">
+        <sql>
+            CREATE UNIQUE INDEX uk_edificio_codigo ON edificio(codigo) WHERE codigo IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+
