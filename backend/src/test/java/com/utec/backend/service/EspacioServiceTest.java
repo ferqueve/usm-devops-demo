@@ -34,6 +34,9 @@ class EspacioServiceTest {
     @Mock
     private EspacioRepository espacioRepository;
 
+    @Mock
+    private FileStorageService fileStorageService;
+
     @InjectMocks
     private EspacioService espacioService;
 
@@ -53,6 +56,9 @@ class EspacioServiceTest {
         espacioTest.setCreatedAt(Instant.now());
         espacioTest.setUpdatedAt(Instant.now());
         espacioTest.setInventarioItems(Collections.emptyList());
+        
+        // Mock FileStorageService - lenient para evitar UnnecessaryStubbingException
+        lenient().when(fileStorageService.getImageUrl(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -192,16 +198,17 @@ class EspacioServiceTest {
 
     @Test
     @DisplayName("Debe eliminar espacio exitosamente")
-    void debeEliminarEspacioExitosamente() {
+    void debeEliminarEspacioExitosamente() throws Exception {
         // Given
-        when(espacioRepository.existsById(espacioId)).thenReturn(true);
+        when(espacioRepository.findById(espacioId)).thenReturn(Optional.of(espacioTest));
         doNothing().when(espacioRepository).deleteById(espacioId);
+        doNothing().when(fileStorageService).deleteImage(anyString());
 
         // When
         assertDoesNotThrow(() -> espacioService.deleteEspacio(espacioId));
 
         // Then
-        verify(espacioRepository).existsById(espacioId);
+        verify(espacioRepository).findById(espacioId);
         verify(espacioRepository).deleteById(espacioId);
     }
 
@@ -210,14 +217,14 @@ class EspacioServiceTest {
     void debeLanzarExcepcionEliminarEspacioInexistente() {
         // Given
         Long idInexistente = 999L;
-        when(espacioRepository.existsById(idInexistente)).thenReturn(false);
+        when(espacioRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(RuntimeException.class, () -> {
             espacioService.deleteEspacio(idInexistente);
         });
 
-        verify(espacioRepository).existsById(idInexistente);
+        verify(espacioRepository).findById(idInexistente);
         verify(espacioRepository, never()).deleteById(anyLong());
     }
 
@@ -318,7 +325,7 @@ class EspacioServiceTest {
 
         // When
         List<EspacioResponseDto> resultado = espacioService.filterEspacios(
-                search, tipoEspacioId, null, null, null, null, null, null);
+                search, tipoEspacioId, null, null, null, null, null, null, null);
 
         // Then
         assertNotNull(resultado);

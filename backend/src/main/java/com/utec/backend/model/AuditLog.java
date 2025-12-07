@@ -40,11 +40,11 @@ public class AuditLog {
     private Instant timestamp;
     
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "datos_previos", columnDefinition = "JSONB")
+    @Column(name = "datos_previos")
     private String datosPrevios;
     
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "datos_nuevos", columnDefinition = "JSONB")
+    @Column(name = "datos_nuevos")
     private String datosNuevos;
     
     // Enumeración para acciones

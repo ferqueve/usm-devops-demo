@@ -29,7 +29,7 @@ public class UsuarioConfiguracion {
     private Usuario usuario;
     
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "preferencias", columnDefinition = "JSONB")
+    @Column(name = "preferencias")
     private Map<String, Object> preferencias = new HashMap<>();
     
     @CreationTimestamp

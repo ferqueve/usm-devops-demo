@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -60,6 +61,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/espacios - Debe crear espacio exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeCrearEspacioExitosamente() throws Exception {
         // Given
         EspacioCreateDto createDto = new EspacioCreateDto();
@@ -82,6 +84,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios - Debe obtener todos los espacios")
+    @WithMockUser
     void debeObtenerTodosLosEspacios() throws Exception {
         // Given
         List<EspacioResponseDto> espacios = Arrays.asList(espacioResponseDto);
@@ -99,6 +102,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/{id} - Debe obtener espacio por ID")
+    @WithMockUser
     void debeObtenerEspacioPorId() throws Exception {
         // Given
         when(espacioService.getEspacioById(espacioId)).thenReturn(espacioResponseDto);
@@ -115,6 +119,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/{id} - Debe retornar 404 cuando no existe")
+    @WithMockUser
     void debeRetornar404CuandoNoExiste() throws Exception {
         // Given
         when(espacioService.getEspacioById(espacioId))
@@ -130,6 +135,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/espacios/{id} - Debe actualizar espacio exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeActualizarEspacioExitosamente() throws Exception {
         // Given
         EspacioUpdateDto updateDto = new EspacioUpdateDto();
@@ -152,6 +158,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/espacios/{id} - Debe eliminar espacio exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeEliminarEspacioExitosamente() throws Exception {
         // Given
         doNothing().when(espacioService).deleteEspacio(espacioId);
@@ -167,6 +174,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/search - Debe buscar espacios por nombre")
+    @WithMockUser
     void debeBuscarEspaciosPorNombre() throws Exception {
         // Given
         List<EspacioResponseDto> espacios = Arrays.asList(espacioResponseDto);
@@ -184,6 +192,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/stats - Debe obtener estadísticas")
+    @WithMockUser
     void debeObtenerEstadisticas() throws Exception {
         // Given
         when(espacioService.getTotalEspacios()).thenReturn(10L);

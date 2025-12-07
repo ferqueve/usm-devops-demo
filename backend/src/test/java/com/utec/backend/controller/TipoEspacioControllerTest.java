@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -57,6 +58,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/tipos-espacio - Debe crear tipo de espacio exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeCrearTipoEspacioExitosamente() throws Exception {
         // Given
         TipoEspacioCreateDto createDto = new TipoEspacioCreateDto();
@@ -79,6 +81,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio - Debe obtener todos los tipos de espacio")
+    @WithMockUser
     void debeObtenerTodosLosTiposEspacio() throws Exception {
         // Given
         List<TipoEspacioResponseDto> tipos = Arrays.asList(tipoEspacioResponseDto);
@@ -96,6 +99,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio/{id} - Debe obtener tipo de espacio por ID")
+    @WithMockUser
     void debeObtenerTipoEspacioPorId() throws Exception {
         // Given
         when(tipoEspacioService.getTipoEspacioById(tipoEspacioId)).thenReturn(tipoEspacioResponseDto);
@@ -112,6 +116,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/tipos-espacio/{id} - Debe actualizar tipo de espacio exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeActualizarTipoEspacioExitosamente() throws Exception {
         // Given
         TipoEspacioUpdateDto updateDto = new TipoEspacioUpdateDto();
@@ -133,6 +138,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/tipos-espacio/{id} - Debe eliminar tipo de espacio exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeEliminarTipoEspacioExitosamente() throws Exception {
         // Given
         doNothing().when(tipoEspacioService).deleteTipoEspacio(tipoEspacioId);
@@ -148,6 +154,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/tipos-espacio/{id}/toggle-activo - Debe toggle activo exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeToggleActivoExitosamente() throws Exception {
         // Given
         when(tipoEspacioService.toggleActivo(tipoEspacioId)).thenReturn(tipoEspacioResponseDto);
@@ -163,6 +170,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio/search - Debe buscar tipos de espacio por nombre")
+    @WithMockUser
     void debeBuscarTiposEspacioPorNombre() throws Exception {
         // Given
         List<TipoEspacioResponseDto> tipos = Arrays.asList(tipoEspacioResponseDto);
@@ -180,6 +188,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio/stats - Debe obtener estadísticas")
+    @WithMockUser
     void debeObtenerEstadisticas() throws Exception {
         // Given
         when(tipoEspacioService.getTotalTiposEspacio()).thenReturn(5L);

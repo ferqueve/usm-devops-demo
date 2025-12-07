@@ -40,7 +40,7 @@ public class Recomendacion {
     private BigDecimal puntaje = BigDecimal.ZERO;
     
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "JSONB")
+    @Column(name = "metadata")
     private String metadata;
     
     @Column(name = "razon", columnDefinition = "TEXT")

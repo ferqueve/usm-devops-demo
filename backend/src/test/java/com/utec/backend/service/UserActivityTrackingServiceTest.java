@@ -12,11 +12,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.SetOperations;
 
+import java.time.Duration;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +31,15 @@ class UserActivityTrackingServiceTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private StringRedisTemplate redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
+
+    @Mock
+    private SetOperations<String, String> setOperations;
 
     @Mock
     private HttpServletRequest request;
@@ -42,6 +57,10 @@ class UserActivityTrackingServiceTest {
         usuarioTest.setEmail(testEmail);
         usuarioTest.setNombre("Juan Pérez");
         usuarioTest.setRolApp(Usuario.RolApp.ESTUDIANTE);
+        
+        // Setup Redis mocks - lenient para evitar UnnecessaryStubbingException
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(redisTemplate.opsForSet()).thenReturn(setOperations);
     }
 
     @Test
@@ -51,6 +70,17 @@ class UserActivityTrackingServiceTest {
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(request.getHeader(anyString())).thenReturn(null); // Simplificar mock para headers múltiples
         when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        
+        // Mock Redis operations
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+        when(setOperations.add(anyString(), anyString())).thenReturn(1L);
+        when(redisTemplate.expire(anyString(), any(Duration.class))).thenReturn(true);
+        
+        // Mock getActiveUsers
+        Set<String> activeEmails = new HashSet<>();
+        activeEmails.add(testEmail);
+        when(setOperations.members(anyString())).thenReturn(activeEmails);
+        when(valueOperations.get(anyString())).thenReturn("{\"email\":\"" + testEmail + "\",\"nombre\":\"Juan\",\"apellido\":\"Pérez\",\"rol\":\"ESTUDIANTE\",\"lastActivity\":\"2024-01-01T00:00:00Z\",\"ipAddress\":\"192.168.1.1\",\"userAgent\":\"Unknown\"}");
 
         // When
         userActivityTrackingService.trackUserActivity(testEmail, request);
@@ -68,6 +98,9 @@ class UserActivityTrackingServiceTest {
     @Test
     @DisplayName("No debe trackear actividad si el email es null")
     void noDebeTrackearActividadSiEmailNull() {
+        // Given
+        when(setOperations.members(anyString())).thenReturn(null);
+        
         // When
         userActivityTrackingService.trackUserActivity(null, request);
 
@@ -83,6 +116,7 @@ class UserActivityTrackingServiceTest {
     void noDebeTrackearActividadSiUsuarioNoExiste() {
         // Given
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
+        when(setOperations.members(anyString())).thenReturn(null);
 
         // When
         userActivityTrackingService.trackUserActivity(testEmail, request);
@@ -101,8 +135,18 @@ class UserActivityTrackingServiceTest {
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(request.getHeader(anyString())).thenReturn(null);
         when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+        when(setOperations.add(anyString(), anyString())).thenReturn(1L);
+        when(redisTemplate.expire(anyString(), any(Duration.class))).thenReturn(true);
 
         userActivityTrackingService.trackUserActivity(testEmail, request);
+        
+        // Mock getActiveUsers
+        Set<String> activeEmails = new HashSet<>();
+        activeEmails.add(testEmail);
+        when(setOperations.members(anyString())).thenReturn(activeEmails);
+        when(valueOperations.get(anyString())).thenReturn("{\"email\":\"" + testEmail + "\",\"nombre\":\"Juan\",\"apellido\":\"Pérez\",\"rol\":\"ESTUDIANTE\",\"lastActivity\":\"2024-01-01T00:00:00Z\",\"ipAddress\":\"192.168.1.1\",\"userAgent\":\"Unknown\"}");
 
         // When
         ActiveUsersStatsDTO stats = userActivityTrackingService.getActiveUsers();
@@ -120,6 +164,15 @@ class UserActivityTrackingServiceTest {
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(request.getHeader(anyString())).thenReturn(null);
         when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+        when(setOperations.add(anyString(), anyString())).thenReturn(1L);
+        when(redisTemplate.expire(anyString(), any(Duration.class))).thenReturn(true);
+        
+        Set<String> activeEmails = new HashSet<>();
+        activeEmails.add(testEmail);
+        when(setOperations.members(anyString())).thenReturn(activeEmails);
+        when(valueOperations.get(anyString())).thenReturn("{\"email\":\"" + testEmail + "\",\"nombre\":\"Juan\",\"apellido\":\"Pérez\",\"rol\":\"ESTUDIANTE\",\"lastActivity\":\"2024-01-01T00:00:00Z\",\"ipAddress\":\"192.168.1.1\",\"userAgent\":\"Unknown\"}");
 
         // When
         userActivityTrackingService.trackUserActivity(testEmail, request);
@@ -137,6 +190,15 @@ class UserActivityTrackingServiceTest {
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(request.getHeader(anyString())).thenReturn(null);
         when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+        when(setOperations.add(anyString(), anyString())).thenReturn(1L);
+        when(redisTemplate.expire(anyString(), any(Duration.class))).thenReturn(true);
+        
+        Set<String> activeEmails = new HashSet<>();
+        activeEmails.add(testEmail);
+        when(setOperations.members(anyString())).thenReturn(activeEmails);
+        when(valueOperations.get(anyString())).thenReturn("{\"email\":\"" + testEmail + "\",\"nombre\":\"María\",\"apellido\":\"García López\",\"rol\":\"ESTUDIANTE\",\"lastActivity\":\"2024-01-01T00:00:00Z\",\"ipAddress\":\"192.168.1.1\",\"userAgent\":\"Unknown\"}");
 
         // When
         userActivityTrackingService.trackUserActivity(testEmail, request);
@@ -168,6 +230,9 @@ class UserActivityTrackingServiceTest {
     @Test
     @DisplayName("Debe retornar lista vacía cuando no hay usuarios activos")
     void debeRetornarListaVaciaSinUsuariosActivos() {
+        // Given
+        when(setOperations.members(anyString())).thenReturn(null);
+        
         // When
         ActiveUsersStatsDTO stats = userActivityTrackingService.getActiveUsers();
 

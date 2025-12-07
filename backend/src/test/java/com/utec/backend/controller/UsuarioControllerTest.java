@@ -17,6 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -116,6 +117,7 @@ class UsuarioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/usuarios - Debe listar usuarios con paginación")
+    @WithMockUser(roles = {"ADMIN"})
     void debeListarUsuariosPaginados() throws Exception {
         // Given
         UsuarioResponseDto usuario2 = new UsuarioResponseDto(
@@ -161,6 +163,7 @@ class UsuarioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/usuarios/{id} - Debe obtener usuario por ID")
+    @WithMockUser(roles = {"ADMIN"})
     void debeObtenerUsuarioPorId() throws Exception {
         // Given
         Long usuarioId = 1L;
@@ -179,6 +182,7 @@ class UsuarioControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/usuarios/{id}/rol - Debe cambiar rol de usuario")
+    @WithMockUser(roles = {"ADMIN"})
     void debeCambiarRolUsuario() throws Exception {
         // Given
         Long usuarioId = 1L;

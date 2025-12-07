@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -61,6 +62,7 @@ class InventarioItemControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/inventario - Debe crear item exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeCrearItemExitosamente() throws Exception {
         // Given
         InventarioItemCreateDto createDto = new InventarioItemCreateDto();
@@ -84,6 +86,7 @@ class InventarioItemControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/inventario - Debe obtener todos los items")
+    @WithMockUser(roles = {"ADMIN"})
     void debeObtenerTodosLosItems() throws Exception {
         // Given
         List<InventarioItemResponseDto> items = Arrays.asList(itemResponseDto);
@@ -101,6 +104,7 @@ class InventarioItemControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/inventario/{id} - Debe obtener item por ID")
+    @WithMockUser(roles = {"ADMIN"})
     void debeObtenerItemPorId() throws Exception {
         // Given
         when(inventarioItemService.getInventarioItemById(itemId)).thenReturn(itemResponseDto);
@@ -117,6 +121,7 @@ class InventarioItemControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/inventario/{id} - Debe actualizar item exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeActualizarItemExitosamente() throws Exception {
         // Given
         InventarioItemUpdateDto updateDto = new InventarioItemUpdateDto();
@@ -139,6 +144,7 @@ class InventarioItemControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/inventario/{id} - Debe eliminar item exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeEliminarItemExitosamente() throws Exception {
         // Given
         doNothing().when(inventarioItemService).deleteInventarioItem(itemId);
@@ -154,6 +160,7 @@ class InventarioItemControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/inventario/stats - Debe obtener estadísticas")
+    @WithMockUser(roles = {"ADMIN"})
     void debeObtenerEstadisticas() throws Exception {
         // Given
         Map<String, Object> stats = Map.of(

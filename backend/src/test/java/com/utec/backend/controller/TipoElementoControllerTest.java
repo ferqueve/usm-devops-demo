@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/tipos-elemento - Debe crear tipo de elemento exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeCrearTipoElementoExitosamente() throws Exception {
         // Given
         TipoElementoCreateDto createDto = new TipoElementoCreateDto();
@@ -78,6 +80,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento - Debe obtener todos los tipos de elemento")
+    @WithMockUser
     void debeObtenerTodosLosTiposElemento() throws Exception {
         // Given
         List<TipoElementoResponseDto> tipos = Arrays.asList(tipoElementoResponseDto);
@@ -95,6 +98,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento/{id} - Debe obtener tipo de elemento por ID")
+    @WithMockUser
     void debeObtenerTipoElementoPorId() throws Exception {
         // Given
         when(tipoElementoService.getTipoElementoById(tipoElementoId)).thenReturn(tipoElementoResponseDto);
@@ -111,6 +115,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/tipos-elemento/{id} - Debe actualizar tipo de elemento exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeActualizarTipoElementoExitosamente() throws Exception {
         // Given
         TipoElementoUpdateDto updateDto = new TipoElementoUpdateDto();
@@ -132,6 +137,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/tipos-elemento/{id} - Debe eliminar tipo de elemento exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeEliminarTipoElementoExitosamente() throws Exception {
         // Given
         doNothing().when(tipoElementoService).deleteTipoElemento(tipoElementoId);
@@ -147,6 +153,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/tipos-elemento/{id}/toggle-activo - Debe toggle activo exitosamente")
+    @WithMockUser(roles = {"ADMIN"})
     void debeToggleActivoExitosamente() throws Exception {
         // Given
         when(tipoElementoService.toggleActivo(tipoElementoId)).thenReturn(tipoElementoResponseDto);
@@ -162,6 +169,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento/search - Debe buscar tipos de elemento por nombre")
+    @WithMockUser
     void debeBuscarTiposElementoPorNombre() throws Exception {
         // Given
         List<TipoElementoResponseDto> tipos = Arrays.asList(tipoElementoResponseDto);
@@ -179,6 +187,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento/stats - Debe obtener estadísticas")
+    @WithMockUser
     void debeObtenerEstadisticas() throws Exception {
         // Given
         when(tipoElementoService.getTotalTiposElemento()).thenReturn(10L);
