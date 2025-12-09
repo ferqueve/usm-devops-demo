@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.utec.backend.service.CustomUserDetailsService;
+import com.utec.backend.repository.UsuarioRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, 
@@ -60,6 +62,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             userEmail = jwtService.extractUsername(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Verificar si el usuario está activo antes de cargar los detalles
+                var usuarioOpt = usuarioRepository.findByEmail(userEmail);
+                if (usuarioOpt.isPresent() && usuarioOpt.get().getDeletedAt() != null) {
+                    log.warn("Intento de acceso con token JWT para usuario inactivo: {}", userEmail);
+                    throw new RuntimeException("Usuario inactivo");
+                }
+                
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
                 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -77,13 +86,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.warn("Token JWT expirado detectado para usuario: {}", e.getClaims().getSubject());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"JWT token expired\",\"message\":\"Tu token ha expirado\"}");
+            response.getWriter().write("{\"error\":\"Token JWT expirado\",\"message\":\"Tu token ha expirado\"}");
             return;
+        } catch (RuntimeException e) {
+            if ("Usuario inactivo".equals(e.getMessage())) {
+                log.warn("Intento de acceso con token JWT para usuario inactivo");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Usuario inactivo\",\"message\":\"Tu cuenta ha sido desactivada. Por favor, contacta al administrador.\"}");
+                return;
+            }
+            throw e;
         } catch (Exception e) {
             log.warn("Token JWT inválido detectado: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Invalid JWT token\",\"message\":\"Token inválido\"}");
+            response.getWriter().write("{\"error\":\"Token JWT inválido\",\"message\":\"Token inválido\"}");
             return;
         }
     }

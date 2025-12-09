@@ -5,6 +5,29 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>USM UTEC Space Manager</title>
+    <script>
+      // Prevent Radix UI from hiding scrollbar
+      (function() {
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-scroll-locked') {
+              const body = document.body;
+              const html = document.documentElement;
+              if (body.hasAttribute('data-scroll-locked')) {
+                body.style.setProperty('overflow-y', 'auto', 'important');
+                body.style.setProperty('margin-right', '0px', 'important');
+                body.style.setProperty('padding-right', '0px', 'important');
+                if (html.hasAttribute('data-scroll-locked')) {
+                  html.style.setProperty('overflow-y', 'auto', 'important');
+                }
+              }
+            }
+          });
+        });
+        observer.observe(document.body, { attributes: true, attributeFilter: ['data-scroll-locked'] });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-scroll-locked'] });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,5 +1,7 @@
 package com.utec.backend.service;
 
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -53,7 +55,7 @@ public class GmailApiService {
             log.info("Gmail API service initialized successfully");
         } catch (GeneralSecurityException | IOException e) {
             log.error("Error initializing Gmail API service: {}", e.getMessage());
-            throw new RuntimeException("Failed to initialize Gmail API service", e);
+            throw new RuntimeException("Error al inicializar el servicio de Gmail API", e);
         }
     }
 
@@ -64,16 +66,16 @@ public class GmailApiService {
         if (clientId == null || clientId.trim().isEmpty() ||
             clientSecret == null || clientSecret.trim().isEmpty() ||
             refreshToken == null || refreshToken.trim().isEmpty()) {
-            throw new RuntimeException("Gmail API credentials not configured properly");
+            throw new RuntimeException("Las credenciales de Gmail API no están configuradas correctamente");
         }
 
         // Crear credencial con refresh token directamente
         Credential credential = new Credential.Builder(
-                com.google.api.client.auth.oauth2.BearerToken.authorizationHeaderAccessMethod())
+                BearerToken.authorizationHeaderAccessMethod())
                 .setTransport(httpTransport)
                 .setJsonFactory(JSON_FACTORY)
                 .setTokenServerEncodedUrl("https://oauth2.googleapis.com/token")
-                .setClientAuthentication(new com.google.api.client.auth.oauth2.ClientParametersAuthentication(clientId, clientSecret))
+                .setClientAuthentication(new ClientParametersAuthentication(clientId, clientSecret))
                 .build();
 
         // Establecer refresh token
@@ -141,13 +143,34 @@ public class GmailApiService {
     }
 
     /**
+     * Codifica el Subject según RFC 2047 para soportar caracteres especiales
+     */
+    private String encodeSubject(String subject) {
+        try {
+            // Verificar si el subject contiene caracteres no ASCII
+            boolean needsEncoding = subject.chars().anyMatch(c -> c > 127);
+            
+            if (!needsEncoding) {
+                return subject;
+            }
+            
+            // Codificar usando Base64 según RFC 2047
+            String encoded = Base64.getEncoder().encodeToString(subject.getBytes("UTF-8"));
+            return "=?UTF-8?B?" + encoded + "?=";
+        } catch (Exception e) {
+            log.warn("Error encoding subject, using original: {}", e.getMessage());
+            return subject;
+        }
+    }
+
+    /**
      * Crea el contenido del email en formato simple
      */
     private String createSimpleEmailContent(String to, String subject, String bodyText) {
         StringBuilder email = new StringBuilder();
         email.append("From: ").append(fromEmail).append("\r\n");
         email.append("To: ").append(to).append("\r\n");
-        email.append("Subject: ").append(subject).append("\r\n");
+        email.append("Subject: ").append(encodeSubject(subject)).append("\r\n");
         email.append("Content-Type: text/plain; charset=UTF-8\r\n");
         email.append("\r\n");
         email.append(bodyText);
@@ -161,7 +184,7 @@ public class GmailApiService {
         StringBuilder email = new StringBuilder();
         email.append("From: ").append(fromEmail).append("\r\n");
         email.append("To: ").append(to).append("\r\n");
-        email.append("Subject: ").append(subject).append("\r\n");
+        email.append("Subject: ").append(encodeSubject(subject)).append("\r\n");
         email.append("Content-Type: text/html; charset=UTF-8\r\n");
         email.append("\r\n");
         email.append(htmlBody);

@@ -14,4 +14,6 @@ public class UsuarioUpdateDto {
     
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
+    
+    private String currentPassword; // Contraseña actual para validar antes de cambiar
 }

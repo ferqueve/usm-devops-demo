@@ -68,7 +68,17 @@ export const actuatorApi = {
     });
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const statusMessages: Record<number, string> = {
+        400: 'Solicitud inválida',
+        401: 'No autorizado',
+        403: 'Acceso denegado',
+        404: 'Recurso no encontrado',
+        500: 'Error interno del servidor',
+        502: 'Error de puerta de enlace',
+        503: 'Servicio no disponible',
+      };
+      const message = statusMessages[response.status] || `Error ${response.status}`;
+      throw new Error(`Error ${response.status}: ${message}`);
     }
 
     return response.json();

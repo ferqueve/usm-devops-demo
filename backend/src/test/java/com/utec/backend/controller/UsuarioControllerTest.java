@@ -58,6 +58,7 @@ class UsuarioControllerTest {
                 true,  // verificado
                 true,  // activo
                 null,  // oauthProv
+                true,  // hasPassword
                 Instant.now(),  // createdAt
                 Instant.now()   // updatedAt
         );
@@ -96,6 +97,7 @@ class UsuarioControllerTest {
                 true,
                 true,
                 null,
+                true,  // hasPassword
                 Instant.now(),
                 Instant.now()
         );
@@ -128,6 +130,7 @@ class UsuarioControllerTest {
                 true,
                 true,
                 null,
+                true,  // hasPassword
                 Instant.now(),
                 Instant.now()
         );

@@ -1,0 +1,198 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { authApi } from '@/lib/api/auth';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Link } from 'react-router-dom';
+
+export default function ResetPasswordPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [token, setToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const tokenParam = searchParams.get('token');
+    
+    if (!tokenParam) {
+      setMessage({
+        type: 'error',
+        text: 'Token de recuperación no encontrado. Por favor, solicita un nuevo enlace.'
+      });
+      setIsValidToken(false);
+      return;
+    }
+
+    setToken(tokenParam);
+    setIsValidToken(true);
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage(null);
+
+    // Validar que las contraseñas coincidan
+    if (newPassword !== confirmPassword) {
+      setMessage({
+        type: 'error',
+        text: 'Las contraseñas no coinciden'
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Validar longitud mínima
+    if (newPassword.length < 6) {
+      setMessage({
+        type: 'error',
+        text: 'La contraseña debe tener al menos 6 caracteres'
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authApi.resetPassword(token, newPassword);
+      
+      if (response.success) {
+        setMessage({
+          type: 'success',
+          text: 'Contraseña restablecida exitosamente. Redirigiendo al inicio de sesión...'
+        });
+        
+        // Redirigir al login después de 3 segundos
+        setTimeout(() => {
+          navigate('/auth');
+        }, 3000);
+      } else {
+        setMessage({
+          type: 'error',
+          text: response.error || 'Error al restablecer la contraseña'
+        });
+      }
+    } catch (error: any) {
+      // Manejar errores específicos del backend
+      if (error?.response?.data?.error) {
+        setMessage({
+          type: 'error',
+          text: error.response.data.error
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'Error al procesar la solicitud. Por favor, intenta nuevamente.'
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isValidToken === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <h1 className="text-2xl font-bold">Token Inválido</h1>
+            <p className="text-muted-foreground text-sm text-balance">
+              El token de recuperación no es válido o ha expirado
+            </p>
+          </div>
+
+          {message && (
+            <div className="rounded-md p-4 bg-destructive/10 border border-destructive/20">
+              <p className="text-sm text-destructive">{message.text}</p>
+            </div>
+          )}
+
+          <div className="text-center space-y-4">
+            <Link to="/auth/forgot-password">
+              <Button variant="outline" className="w-full">
+                Solicitar nuevo enlace
+              </Button>
+            </Link>
+            <Link to="/auth" className="text-sm underline underline-offset-4 hover:text-primary block">
+              Volver al inicio de sesión
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">Restablecer Contraseña</h1>
+          <p className="text-muted-foreground text-sm text-balance">
+            Ingresa tu nueva contraseña
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid gap-3">
+            <Label htmlFor="newPassword">Nueva Contraseña</Label>
+            <Input 
+              id="newPassword" 
+              type="password" 
+              placeholder="Mínimo 6 caracteres" 
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required 
+              disabled={isLoading}
+              minLength={6}
+            />
+          </div>
+
+          <div className="grid gap-3">
+            <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+            <Input 
+              id="confirmPassword" 
+              type="password" 
+              placeholder="Confirma tu contraseña" 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required 
+              disabled={isLoading}
+              minLength={6}
+            />
+          </div>
+
+          {message && (
+            <div className={`rounded-md p-4 ${
+              message.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                : 'bg-destructive/10 border border-destructive/20'
+            }`}>
+              <p className={`text-sm ${
+                message.type === 'success'
+                  ? 'text-green-900 dark:text-green-100'
+                  : 'text-destructive'
+              }`}>
+                {message.text}
+              </p>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isLoading || !token}>
+            {isLoading ? 'Restableciendo...' : 'Restablecer contraseña'}
+          </Button>
+        </form>
+
+        <div className="text-center text-sm">
+          <Link to="/auth" className="underline underline-offset-4 hover:text-primary">
+            Volver al inicio de sesión
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+

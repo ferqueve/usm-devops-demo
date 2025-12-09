@@ -21,7 +21,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { espaciosApi } from '@/lib/api/spaces';
 import type { InventarioItem, TipoElemento, Espacio } from '@/lib/types/spaces';
 import { toast } from 'sonner';
-import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface InventoryFormDialogProps {
@@ -40,9 +39,6 @@ export default function InventoryFormDialog({
   const [loading, setLoading] = useState(false);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
-  
-  // Prevenir layout shift cuando el modal está abierto
-  useDialogScrollLock(open);
   
   // Form data
   const [formData, setFormData] = useState({

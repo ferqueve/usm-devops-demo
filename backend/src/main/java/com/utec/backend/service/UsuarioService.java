@@ -70,6 +70,17 @@ public class UsuarioService {
         }
         
         if (updateDto.getPassword() != null && !updateDto.getPassword().trim().isEmpty()) {
+            // Si el usuario ya tiene contraseña, validar la contraseña actual
+            if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
+                if (updateDto.getCurrentPassword() == null || updateDto.getCurrentPassword().trim().isEmpty()) {
+                    throw new AuthenticationException("Debes ingresar tu contraseña actual para cambiarla");
+                }
+                // Verificar que la contraseña actual sea correcta
+                if (!passwordEncoder.matches(updateDto.getCurrentPassword(), usuario.getPassword())) {
+                    throw new AuthenticationException("La contraseña actual es incorrecta");
+                }
+            }
+            // Si el usuario no tiene contraseña (OAuth), no requiere validación de contraseña actual
             usuario.setPassword(passwordEncoder.encode(updateDto.getPassword()));
             cambioPassword = true;
         }
@@ -531,6 +542,7 @@ public class UsuarioService {
                 usuario.getVerificado(),
                 usuario.getDeletedAt() == null, // activo si no está eliminado
                 usuario.getOauthProv(),
+                usuario.getPassword() != null && !usuario.getPassword().isEmpty(), // hasPassword
                 usuario.getCreatedAt(),
                 usuario.getUpdatedAt()
         );

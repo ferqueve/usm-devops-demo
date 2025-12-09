@@ -99,7 +99,7 @@ export const DashboardHeader = memo(function DashboardHeader({
             border: 'none'
           }}
           size="icon"
-          aria-label="Toggle Sidebar"
+          aria-label="Alternar barra lateral"
         >
           <Menu className="h-6 w-6" />
         </Button>

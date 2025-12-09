@@ -15,7 +15,6 @@ import { espaciosApi } from '@/lib/api/spaces';
 import type { TipoEspacio } from '@/lib/types/spaces';
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface TipoEspacioFormDialogProps {
@@ -37,8 +36,6 @@ export function TipoEspacioFormDialog({
     descripcion: '',
     color: ''
   });
-  
-  useDialogScrollLock(open);
 
   const isEditing = !!tipoEspacio;
 

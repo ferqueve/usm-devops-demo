@@ -7,6 +7,8 @@ import { ROLES } from '@/lib/config/constants';
 import { Toaster } from '@/components/ui/sonner';
 import AuthPage from './app/auth/page';
 import VerifyEmailPage from './app/auth/verify/page';
+import ForgotPasswordPage from './app/auth/forgot-password/page';
+import ResetPasswordPage from './app/auth/reset-password/page';
 import { AuthCallbackSuccess } from './app/auth/callback-success';
 import { AuthLayout } from './components/layouts/AuthLayout/AuthLayout';
 import DashboardPage from './app/dashboard/page';
@@ -52,6 +54,24 @@ function AppRoutes() {
         element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
           <AuthLayout>
             <VerifyEmailPage />
+          </AuthLayout>
+        )} 
+      />
+      
+      <Route 
+        path="/auth/forgot-password" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <AuthLayout>
+            <ForgotPasswordPage />
+          </AuthLayout>
+        )} 
+      />
+      
+      <Route 
+        path="/auth/reset-password" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <AuthLayout>
+            <ResetPasswordPage />
           </AuthLayout>
         )} 
       />

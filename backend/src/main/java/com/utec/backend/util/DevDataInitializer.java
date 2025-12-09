@@ -117,16 +117,33 @@ public class DevDataInitializer implements CommandLineRunner {
         }
 
         log.info("Creando carreras de prueba...");
-        createCarrera("Ingeniería de Sistemas", "IS");
-        createCarrera("Ingeniería Industrial", "II");
-        createCarrera("Ingeniería Mecánica", "IM");
-        createCarrera("Ingeniería Química", "IQ");
-        createCarrera("Ingeniería Electrónica", "IE");
-        createCarrera("Ingeniería en Energía", "IEN");
-        createCarrera("Tecnicatura en Mecánica Automotriz", "TMA");
-        createCarrera("Tecnicatura en Informática", "TI");
-        createCarrera("Tecnicatura en Química", "TQ");
-        createCarrera("Licenciatura en Administración", "LAD");
+        // Mecatrónica, Logística y Biomédica
+        createCarrera("Ingeniería en Logística", "ILOG");
+        createCarrera("Ingeniería Biomédica", "IBIO");
+        createCarrera("Ingeniería en Mecatrónica", "IMEC");
+        createCarrera("Ingeniería en Control y Automática", "ICAU");
+        createCarrera("Tecnólogo Industrial Mecánico", "TIM");
+        
+        // Alimentos
+        createCarrera("Licenciatura en Análisis Alimentario", "LAA");
+        createCarrera("Licenciatura en Ciencias y Tecnología de Lácteos", "LCTL");
+        createCarrera("Tecnólogo en Manejo de Sistemas de Producción Lechera", "TMSPL");
+        createCarrera("Tecnólogo Químico", "TQ");
+        
+        // Música, Innovación y Emprendimiento
+        createCarrera("Licenciatura en Jazz y Música Creativa", "LJMC");
+        
+        // Tecnologías de la Información
+        createCarrera("Licenciatura en Tecnologías de la Información", "LTI");
+        createCarrera("Licenciatura en Ingeniería de Datos e Inteligencia Artificial", "LIDIA");
+        createCarrera("Tecnólogo en Informática", "TINF");
+        createCarrera("Tecnólogo en Análisis y Desarrollo de Sistemas", "TADS");
+        
+        // Sostenibilidad Ambiental
+        createCarrera("Ingeniería en Agua y Desarrollo Sostenible", "IADS");
+        createCarrera("Ingeniería en Energías Renovables", "IER");
+        createCarrera("Ingeniería Agroambiental", "IAG");
+        createCarrera("Tecnólogo en Control Ambiental", "TCA");
     }
 
     private Carrera createCarrera(String nombre, String codigo) {

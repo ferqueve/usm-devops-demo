@@ -19,7 +19,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { espaciosApi } from '@/lib/api/spaces';
 import type { TipoElemento, InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
-import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface InventarioFormDialogProps {
@@ -45,9 +44,6 @@ export function InventarioFormDialog({
     estado: 'DISPONIBLE' as 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO',
     observaciones: '',
   });
-  
-  // Prevenir layout shift cuando el modal está abierto
-  useDialogScrollLock(open);
 
   const isEditing = !!inventarioItem;
 

@@ -144,4 +144,32 @@ public class JwtService {
             return false;
         }
     }
+
+    public String generatePasswordResetToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "password_reset");
+        return buildToken(claims, email, 3600000L); // 1 hora
+    }
+
+    public String extractUsernameFromPasswordResetToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String type = claims.get("type", String.class);
+            if ("password_reset".equals(type)) {
+                return claims.getSubject();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean isPasswordResetTokenValid(String token) {
+        try {
+            String email = extractUsernameFromPasswordResetToken(token);
+            return email != null && !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

@@ -13,6 +13,7 @@ export interface User {
   verificado: boolean;
   activo: boolean;
   oauthProv?: string;
+  hasPassword?: boolean; // true si el usuario tiene contraseña establecida
   createdAt: string;
   updatedAt: string;
 }
@@ -53,4 +54,10 @@ export interface UserStats {
 export interface UpdateUserData {
   email?: string;
   nombre?: string;
+}
+
+export interface UpdateProfileData {
+  nombre?: string;
+  password?: string;
+  currentPassword?: string; // Contraseña actual para validar antes de cambiar
 }

@@ -15,11 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { preferencesApi, type PreferenciasEmail, type PreferenciasVista, type PreferenciasEmailResponse, type PreferenciasVistaResponse } from '@/lib/api/preferences';
+import { usuariosApi } from '@/lib/api/users';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
+import { Input } from '@/components/ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import type { User, UpdateProfileData } from '@/lib/types/users';
 
 interface PreferencesModalProps {
   open: boolean;
@@ -44,11 +48,25 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
   const [saving, setSaving] = useState(false);
   const [emailPrefs, setEmailPrefs] = useState<PreferenciasEmail>({});
   const [vistaPrefs, setVistaPrefs] = useState<PreferenciasVista>({});
+  const [userProfile, setUserProfile] = useState<User | null>(null);
+  const [securityExpanded, setSecurityExpanded] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Usar el campo hasPassword del backend para determinar si tiene contraseña
+  const hasPassword = userProfile?.hasPassword === true;
 
   // Cargar preferencias al abrir el modal
   useEffect(() => {
     if (open) {
       loadPreferences();
+      loadUserProfile();
+      // Limpiar campos de contraseña al abrir
+      setCurrentPassword('');
+      setPassword('');
+      setConfirmPassword('');
+      setSecurityExpanded(false);
     }
   }, [open]);
 
@@ -75,6 +93,20 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
     }
   };
 
+  const loadUserProfile = async () => {
+    try {
+      const response = await usuariosApi.obtenerPerfilPropio();
+      // La respuesta puede venir en response.data o directamente
+      const userData = response.data || response;
+      if (userData && typeof userData === 'object' && 'email' in userData) {
+        setUserProfile(userData as User);
+      }
+    } catch (error) {
+      console.error('Error al cargar perfil:', error);
+      // No mostrar error al usuario, solo loguear
+    }
+  };
+
   const handleEmailChange = (key: string, value: boolean) => {
     setEmailPrefs((prev) => ({ ...prev, [key]: value }));
   };
@@ -86,15 +118,71 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
   const handleSave = async () => {
     try {
       setSaving(true);
-      await Promise.all([
+      
+      // Validar contraseña si se proporcionó
+      if (password || confirmPassword || currentPassword) {
+        // Si el usuario tiene contraseña, debe ingresar la actual
+        if (hasPassword && (!currentPassword || currentPassword.trim().length === 0)) {
+          toast.error('Debes ingresar tu contraseña actual para cambiarla');
+          setSaving(false);
+          return;
+        }
+        
+        if (!password || password.length < 6) {
+          toast.error('La contraseña debe tener al menos 6 caracteres');
+          setSaving(false);
+          return;
+        }
+        
+        if (password !== confirmPassword) {
+          toast.error('Las contraseñas no coinciden');
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Guardar preferencias y perfil en paralelo
+      const promises: Promise<any>[] = [
         preferencesApi.actualizarPreferenciasEmail({ email: emailPrefs }),
         preferencesApi.actualizarPreferenciasVista({ vista: vistaPrefs }),
-      ]);
+      ];
+
+      // Si hay contraseña, actualizar perfil
+      if (password && password === confirmPassword) {
+        const updateData: UpdateProfileData = { 
+          password,
+          ...(hasPassword && currentPassword ? { currentPassword } : {})
+        };
+        promises.push(usuariosApi.actualizarPerfilPropio(updateData));
+      }
+
+      await Promise.all(promises);
+      
+      // Si se actualizó la contraseña, actualizar el estado local y recargar el perfil
+      if (password && password === confirmPassword) {
+        // Actualizar estado local inmediatamente para reflejar que ahora tiene contraseña
+        if (userProfile) {
+          setUserProfile({
+            ...userProfile,
+            hasPassword: true
+          });
+        }
+        // También recargar desde el servidor para asegurar consistencia
+        await loadUserProfile();
+      }
+      
+      // Limpiar campos de contraseña
+      setCurrentPassword('');
+      setPassword('');
+      setConfirmPassword('');
+      setSecurityExpanded(false);
+      
       toast.success('Preferencias guardadas correctamente');
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al guardar preferencias:', error);
-      toast.error('Error al guardar preferencias');
+      const errorMessage = error?.response?.data?.error || error?.message || 'Error al guardar preferencias';
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -372,6 +460,90 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                 )}
               </div>
             </div>
+
+            {/* Sección de Seguridad - Colapsable */}
+            <Collapsible open={securityExpanded} onOpenChange={setSecurityExpanded}>
+              <div className="space-y-2">
+                <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-md border border-border hover:bg-accent transition-colors">
+                  <Label className="text-base font-semibold cursor-pointer">
+                    Seguridad
+                  </Label>
+                  {securityExpanded ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="space-y-4 pt-2">
+                  {userProfile?.oauthProv && !hasPassword && (
+                    <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
+                      <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                        Cuenta vinculada con Google
+                      </p>
+                      <p className="text-blue-700 dark:text-blue-300">
+                        Establece una contraseña para poder iniciar sesión también con email y contraseña.
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
+                    {hasPassword && (
+                      <div className="space-y-2">
+                        <Label htmlFor="currentPassword" className="text-sm">
+                          Contraseña actual <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="currentPassword"
+                          type="password"
+                          placeholder="Ingresa tu contraseña actual"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          disabled={saving}
+                          required
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-sm">
+                        {hasPassword ? 'Nueva contraseña' : 'Contraseña'}
+                      </Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Mínimo 6 caracteres"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        minLength={6}
+                        disabled={saving}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-sm">
+                        Confirmar contraseña
+                      </Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Repite la contraseña"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        minLength={6}
+                        disabled={saving}
+                      />
+                    </div>
+                    
+                    {(password || confirmPassword) && password !== confirmPassword && (
+                      <p className="text-sm text-red-600 dark:text-red-400">
+                        Las contraseñas no coinciden
+                      </p>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
 
             <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
               <Button

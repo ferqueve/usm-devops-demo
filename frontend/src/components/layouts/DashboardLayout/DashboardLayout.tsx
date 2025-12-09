@@ -85,7 +85,7 @@ export const DashboardLayout = memo(function DashboardLayout({ children, title, 
       <SidebarInset>
         <div className="flex flex-col h-full max-w-full overflow-hidden">
           <DashboardHeader title={pageTitle} />
-          <main className="flex-1 overflow-auto p-2 md:p-3 lg:p-4 bg-gray-50 flex flex-col">
+          <main className="flex-1 overflow-hidden p-2 md:p-3 lg:p-4 bg-gray-50 flex flex-col">
             <div className="mx-auto max-w-[1920px] min-w-0 w-full px-0 flex-1 flex flex-col min-h-full">
               {children}
             </div>

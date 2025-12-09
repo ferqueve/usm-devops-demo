@@ -21,7 +21,6 @@ import { espaciosApi } from '@/lib/api/spaces';
 import type { Espacio, TipoEspacio } from '@/lib/types/spaces';
 import { Loader2, Save, X, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 
 interface SpaceFormDialogProps {
   espacio: Espacio | null;
@@ -48,9 +47,6 @@ export function SpaceFormDialog({
     imagenUrl: '',
     estado: 'DISPONIBLE' as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE'
   });
-  
-  // Prevenir layout shift cuando el modal está abierto
-  useDialogScrollLock(open);
 
   const isEditing = !!espacio;
 

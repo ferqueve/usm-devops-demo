@@ -64,6 +64,12 @@ public class OAuth2Service {
             // Buscar o crear usuario
             Usuario usuario = findOrCreateOAuthUser(googleUser);
 
+            // Verificar si el usuario está activo (no eliminado)
+            if (usuario.getDeletedAt() != null) {
+                log.warn("Intento de login OAuth con usuario inactivo: {}", usuario.getEmail());
+                throw new AuthenticationException("Tu cuenta ha sido desactivada. Por favor, contacta al administrador para más información.");
+            }
+
             // Generar tokens JWT
             UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
             

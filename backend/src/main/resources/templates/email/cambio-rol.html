@@ -1,0 +1,55 @@
+<div style="color: #333333; font-size: 16px; line-height: 1.6;">
+    <h2 style="margin: 0 0 20px; color: #212529; font-size: 24px; font-weight: 600;">
+        Tu rol ha sido actualizado
+    </h2>
+    
+    <p style="margin: 0 0 20px;">
+        Hola <strong>{{nombreUsuario}}</strong>,
+    </p>
+    
+    <p style="margin: 0 0 20px;">
+        Un administrador ha actualizado tu rol en el sistema UTEC Space Manager.
+    </p>
+    
+    <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #184897;">
+        <h3 style="margin: 0 0 15px; color: #212529; font-size: 18px; font-weight: 600;">
+            Cambio de rol
+        </h3>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px; width: 140px;"><strong>Rol anterior:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">{{rolAnterior}}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px;"><strong>Nuevo rol:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">
+                    <span style="display: inline-block; padding: 4px 12px; background-color: #e8f5e9; color: #2d5016; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                        {{rolNuevo}}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div style="margin: 30px 0; padding: 15px; background-color: #e3f2fd; border-left: 4px solid #184897; border-radius: 4px;">
+        <p style="margin: 0; color: #0d47a1; font-size: 14px;">
+            <strong>¿Tienes preguntas?</strong> Si tienes alguna pregunta sobre este cambio, por favor contacta al administrador del sistema.
+        </p>
+    </div>
+    
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 30px 0;">
+        <tr>
+            <td align="center" style="background-color: #184897; border-radius: 6px;">
+                <a href="{{frontendUrl}}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 6px;">
+                    Acceder al sistema
+                </a>
+            </td>
+        </tr>
+    </table>
+    
+    <p style="margin: 30px 0 0; color: #6c757d; font-size: 14px;">
+        Saludos,<br>
+        <strong>Equipo UTEC Space Manager</strong>
+    </p>
+</div>
+

@@ -21,7 +21,6 @@ import { Trash2 } from "lucide-react";
 import { espaciosApi } from '@/lib/api/spaces';
 import type { InventarioItem, Espacio } from '@/lib/types/spaces';
 import { toast } from 'sonner';
-import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 
 interface AssignSpaceDialogProps {
   item: InventarioItem | null;
@@ -40,9 +39,6 @@ export default function AssignSpaceDialog({
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [selectedEspacioId, setSelectedEspacioId] = useState<number>(0);
   const [cantidad, setCantidad] = useState<number>(1);
-  
-  // Prevenir layout shift cuando el modal está abierto
-  useDialogScrollLock(open);
 
   useEffect(() => {
     if (open) {

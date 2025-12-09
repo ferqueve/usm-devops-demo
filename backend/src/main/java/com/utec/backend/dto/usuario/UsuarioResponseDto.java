@@ -19,6 +19,7 @@ public class UsuarioResponseDto {
     private Boolean verificado;
     private Boolean activo; // true si deletedAt es null
     private String oauthProv;
+    private Boolean hasPassword; // true si el usuario tiene contraseña establecida
     private Instant createdAt;
     private Instant updatedAt;
 }

@@ -225,8 +225,8 @@ public class UsuarioConfiguracionService {
      */
     public Set<String> getEmailsObligatorios() {
         return Set.of(
-            "verificacion", "restablecimientoPassword", "cambioRol", 
-            "cambioEstado", "cambioEmail"
+            "verificacion", "restablecimientoPassword", "recuperacionPassword", 
+            "cambioRol", "cambioEstado", "cambioEmail"
         );
     }
 

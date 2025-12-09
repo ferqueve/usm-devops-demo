@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -22,12 +24,16 @@ public class EmailService {
     private final GmailApiService gmailApiService;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioConfiguracionService configuracionService;
+    private final EmailTemplateService emailTemplateService;
 
     @Value("${gmail.api.from-email:usm.utec.uy@gmail.com}")
     private String fromEmail;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
+
+    @Value("${app.backend.url:http://localhost:8080}")
+    private String backendUrl;
 
     @Value("${app.timezone:America/Montevideo}")
     private String appTimezone;
@@ -83,22 +89,42 @@ public class EmailService {
         String subject = "Verifica tu cuenta - UTEC Space Manager";
         String verificationUrl = frontendUrl + "/auth/verify?token=" + verificationToken;
         
-        String bodyText = """
-            ¡Bienvenido a UTEC Space Manager!
-            
-            Para completar tu registro, por favor verifica tu email haciendo clic en el siguiente enlace:
-            
-            {verificationUrl}
-            
-            Este enlace expirará en 24 horas.
-            
-            Si no solicitaste este registro, puedes ignorar este email.
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """.replace("{verificationUrl}", verificationUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("verificationUrl", verificationUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("verificacion.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+    }
+
+    /**
+     * Envía email de recuperación de contraseña con enlace usando Gmail API
+     *
+     * @param to Email del destinatario
+     * @param resetToken Token de recuperación de contraseña
+     * @return true si se envió correctamente, false en caso contrario
+     */
+    public boolean enviarEmailRecuperacionPassword(String to, String resetToken) {
+        if (!configuracionService.debeEnviarEmail(to, "recuperacionPassword")) {
+            log.warn("Email de recuperación de contraseña no enviado a {} por preferencias del usuario", to);
+            return false;
+        }
+        
+        String subject = "Recuperación de contraseña - UTEC Space Manager";
+        String resetUrl = frontendUrl + "/auth/reset-password?token=" + resetToken;
+        
+        Map<String, String> variables = new HashMap<>();
+        variables.put("resetUrl", resetUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("recuperacion-password.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
+
+        boolean enviado = gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        if (!enviado) {
+            log.error("Error al enviar email de recuperación de contraseña a {}: Gmail API retornó false", to);
+        }
+        return enviado;
     }
 
     /**
@@ -115,20 +141,14 @@ public class EmailService {
         }
         String subject = "Tu contraseña ha sido restablecida - UTEC Space Manager";
         
-        String bodyText = """
-            Tu contraseña ha sido restablecida por un administrador.
-            
-            Tu nueva contraseña temporal es:
-            
-            {nuevaPassword}
-            
-            Por favor, cambia esta contraseña después de iniciar sesión.
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """.replace("{nuevaPassword}", nuevaPassword);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("nuevaPassword", nuevaPassword);
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("restablecimiento-password.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -149,32 +169,18 @@ public class EmailService {
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
-        String bodyText = """
-            Hola,
-            
-            Has recibido una nueva solicitud de reserva que requiere tu revisión.
-            
-            Detalles de la solicitud:
-            - Espacio: {espacioNombre}
-            - Solicitante: {usuarioNombre} ({usuarioEmail})
-            - Fecha y hora: {fechaInicio} - {fechaFin}
-            - Estado: PENDIENTE
-            
-            Por favor, revisa y aprueba o rechaza esta solicitud en el sistema.
-            
-            Puedes acceder al sistema en: {frontendUrl}
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{usuarioNombre}", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A")
-            .replace("{usuarioEmail}", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A")
-            .replace("{fechaInicio}", fechaInicio)
-            .replace("{fechaFin}", fechaFin)
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
+        variables.put("usuarioEmail", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("nueva-solicitud-reserva.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -195,30 +201,17 @@ public class EmailService {
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
-        String bodyText = """
-            Hola {usuarioNombre},
-            
-            ¡Excelente noticia! Tu solicitud de reserva ha sido aprobada.
-            
-            Detalles de tu reserva:
-            - Espacio: {espacioNombre}
-            - Fecha y hora: {fechaInicio} - {fechaFin}
-            - Estado: APROBADO
-            
-            Te recordamos que debes estar presente en el espacio en el horario reservado.
-            
-            Puedes ver todos tus detalles de reserva en: {frontendUrl}/reservas
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{usuarioNombre}", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario")
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{fechaInicio}", fechaInicio)
-            .replace("{fechaFin}", fechaFin)
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario");
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("reserva-aprobada.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -239,30 +232,17 @@ public class EmailService {
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
-        String bodyText = """
-            Hola {usuarioNombre},
-            
-            Lamentamos informarte que tu solicitud de reserva ha sido rechazada.
-            
-            Detalles de la solicitud rechazada:
-            - Espacio: {espacioNombre}
-            - Fecha y hora solicitada: {fechaInicio} - {fechaFin}
-            - Estado: CANCELADO
-            
-            Si tienes dudas sobre el motivo del rechazo, por favor contacta al analista asignado o al administrador del sistema.
-            
-            Puedes crear una nueva solicitud de reserva en: {frontendUrl}/reservas
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{usuarioNombre}", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario")
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{fechaInicio}", fechaInicio)
-            .replace("{fechaFin}", fechaFin)
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario");
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("reserva-rechazada.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -283,32 +263,18 @@ public class EmailService {
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
-        String bodyText = """
-            Hola,
-            
-            Se ha cancelado una reserva que estaba asignada a ti.
-            
-            Detalles de la reserva cancelada:
-            - Espacio: {espacioNombre}
-            - Usuario: {usuarioNombre} ({usuarioEmail})
-            - Fecha y hora: {fechaInicio} - {fechaFin}
-            - Estado: CANCELADO
-            
-            El espacio queda disponible nuevamente para otras reservas.
-            
-            Puedes ver más detalles en: {frontendUrl}
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{usuarioNombre}", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A")
-            .replace("{usuarioEmail}", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A")
-            .replace("{fechaInicio}", fechaInicio)
-            .replace("{fechaFin}", fechaFin)
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
+        variables.put("usuarioEmail", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("reserva-cancelada.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -330,30 +296,18 @@ public class EmailService {
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
-        String bodyText = """
-            Hola {usuarioNombre},
-            
-            Este es un recordatorio de que tienes una reserva programada.
-            
-            Detalles de tu reserva:
-            - Espacio: {espacioNombre}
-            - Fecha y hora: {fechaInicio} - {fechaFin}
-            - Estado: APROBADO
-            
-            Te recordamos que debes estar presente en el espacio en el horario reservado.
-            
-            Puedes ver todos tus detalles de reserva en: {frontendUrl}/reservas
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{usuarioNombre}", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario")
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{fechaInicio}", fechaInicio)
-            .replace("{fechaFin}", fechaFin)
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario");
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+        variables.put("horasAntes", String.valueOf(horasAntes));
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("recordatorio-reserva.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -372,28 +326,16 @@ public class EmailService {
         }
         String subject = "Tu rol ha sido actualizado - UTEC Space Manager";
         
-        String bodyText = """
-            Hola {nombreUsuario},
-            
-            Un administrador ha actualizado tu rol en el sistema.
-            
-            Cambio de rol:
-            - Rol anterior: {rolAnterior}
-            - Nuevo rol: {rolNuevo}
-            
-            Si tienes alguna pregunta sobre este cambio, por favor contacta al administrador del sistema.
-            
-            Puedes acceder al sistema en: {frontendUrl}
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{nombreUsuario}", nombreUsuario != null ? nombreUsuario : "Usuario")
-            .replace("{rolAnterior}", rolAnterior != null ? rolAnterior : "N/A")
-            .replace("{rolNuevo}", rolNuevo != null ? rolNuevo : "N/A")
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+        variables.put("rolAnterior", rolAnterior != null ? rolAnterior : "N/A");
+        variables.put("rolNuevo", rolNuevo != null ? rolNuevo : "N/A");
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("cambio-rol.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -418,29 +360,25 @@ public class EmailService {
             ? "Tu cuenta ha sido activada y ahora puedes acceder al sistema normalmente."
             : "Tu cuenta ha sido desactivada. Ya no podrás acceder al sistema. Si crees que esto es un error, por favor contacta al administrador.";
         
-        String bodyText = """
-            Hola {nombreUsuario},
-            
-            {mensaje}
-            
-            Estado de la cuenta: {accion}
-            
-            {mensajeAdicional}
-            
-            Puedes acceder al sistema en: {frontendUrl}
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{nombreUsuario}", nombreUsuario != null ? nombreUsuario : "Usuario")
-            .replace("{mensaje}", mensaje)
-            .replace("{accion}", accion)
-            .replace("{mensajeAdicional}", activado 
-                ? "Si tienes alguna pregunta, por favor contacta al administrador del sistema."
-                : "Si tienes alguna pregunta o crees que esto es un error, por favor contacta al administrador del sistema inmediatamente.")
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("tituloEstado", subject);
+        variables.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+        variables.put("mensaje", mensaje);
+        variables.put("accion", accion);
+        variables.put("mensajeAdicional", activado 
+            ? "Si tienes alguna pregunta, por favor contacta al administrador del sistema."
+            : "Si tienes alguna pregunta o crees que esto es un error, por favor contacta al administrador del sistema inmediatamente.");
+        variables.put("frontendUrl", frontendUrl);
+        variables.put("colorFondo", activado ? "#d1f2eb" : "#f8d7da");
+        variables.put("colorBorde", activado ? "#10b981" : "#dc3545");
+        variables.put("colorMensajeFondo", activado ? "#dbeafe" : "#fff3cd");
+        variables.put("colorMensajeBorde", activado ? "#3b82f6" : "#ffc107");
+        variables.put("colorMensajeTexto", activado ? "#1e40af" : "#856404");
+        
+        String htmlContent = emailTemplateService.loadTemplate("cambio-estado.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -465,51 +403,31 @@ public class EmailService {
         // Enviar al email viejo (si está permitido)
         boolean enviadoViejo = true;
         if (enviarViejo) {
-            String bodyTextEmailViejo = """
-            Hola {nombreUsuario},
+            Map<String, String> variablesViejo = new HashMap<>();
+            variablesViejo.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+            variablesViejo.put("emailViejo", toEmailViejo != null ? toEmailViejo : "N/A");
+            variablesViejo.put("emailNuevo", toEmailNuevo != null ? toEmailNuevo : "N/A");
+            variablesViejo.put("frontendUrl", frontendUrl);
             
-            Un administrador ha actualizado tu dirección de email en el sistema.
-            
-            Cambio de email:
-            - Email anterior: {emailViejo}
-            - Email nuevo: {emailNuevo}
-            
-            A partir de ahora, debes usar el nuevo email para iniciar sesión.
-            
-            Si no solicitaste este cambio, contacta al administrador inmediatamente.
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{nombreUsuario}", nombreUsuario != null ? nombreUsuario : "Usuario")
-            .replace("{emailViejo}", toEmailViejo != null ? toEmailViejo : "N/A")
-            .replace("{emailNuevo}", toEmailNuevo != null ? toEmailNuevo : "N/A");
+            String htmlContentViejo = emailTemplateService.loadTemplate("cambio-email.html", variablesViejo);
+            String htmlBodyViejo = emailTemplateService.wrapInBaseTemplate(htmlContentViejo, subject, frontendUrl);
 
-            enviadoViejo = gmailApiService.sendEmail(toEmailViejo, subject, bodyTextEmailViejo);
+            enviadoViejo = gmailApiService.sendHtmlEmail(toEmailViejo, subject, htmlBodyViejo);
         }
         
         // Enviar al email nuevo (si está permitido)
         boolean enviadoNuevo = true;
         if (enviarNuevo) {
-            String bodyTextEmailNuevo = """
-            Hola {nombreUsuario},
+            Map<String, String> variablesNuevo = new HashMap<>();
+            variablesNuevo.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+            variablesNuevo.put("emailViejo", toEmailViejo != null ? toEmailViejo : "N/A");
+            variablesNuevo.put("emailNuevo", toEmailNuevo != null ? toEmailNuevo : "N/A");
+            variablesNuevo.put("frontendUrl", frontendUrl);
             
-            Un administrador ha actualizado tu dirección de email en el sistema.
-            
-            Tu nuevo email es: {emailNuevo}
-            
-            A partir de ahora, debes usar este email para iniciar sesión en el sistema.
-            
-            Puedes acceder al sistema en: {frontendUrl}
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{nombreUsuario}", nombreUsuario != null ? nombreUsuario : "Usuario")
-            .replace("{emailNuevo}", toEmailNuevo != null ? toEmailNuevo : "N/A")
-            .replace("{frontendUrl}", frontendUrl);
+            String htmlContentNuevo = emailTemplateService.loadTemplate("cambio-email.html", variablesNuevo);
+            String htmlBodyNuevo = emailTemplateService.wrapInBaseTemplate(htmlContentNuevo, subject, frontendUrl);
 
-            enviadoNuevo = gmailApiService.sendEmail(toEmailNuevo, subject, bodyTextEmailNuevo);
+            enviadoNuevo = gmailApiService.sendHtmlEmail(toEmailNuevo, subject, htmlBodyNuevo);
         }
         
         return enviadoViejo && enviadoNuevo;
@@ -540,37 +458,23 @@ public class EmailService {
             ? "Se ha actualizado una reserva que está asignada a ti."
             : "Tu reserva ha sido actualizada.";
         
-        String bodyText = """
-            {destinatario}
-            
-            {mensaje}
-            
-            Detalles de la reserva actualizada:
-            - Espacio: {espacioNombre}
-            - Horario anterior: {horarioAnterior}
-            - Nuevo horario: {fechaInicioNueva} - {fechaFinNueva}
-            - Estado: {estado}
-            
-            {mensajeAdicional}
-            
-            Puedes ver los detalles completos en: {frontendUrl}/reservas
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{destinatario}", destinatario)
-            .replace("{mensaje}", mensaje)
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{horarioAnterior}", horarioAnterior != null ? horarioAnterior : "N/A")
-            .replace("{fechaInicioNueva}", fechaInicioNueva)
-            .replace("{fechaFinNueva}", fechaFinNueva)
-            .replace("{estado}", reserva.getEstado() != null ? reserva.getEstado().toString() : "N/A")
-            .replace("{mensajeAdicional}", esAnalista 
-                ? "Por favor, revisa los cambios y contacta al usuario si es necesario."
-                : "Por favor, ten en cuenta el nuevo horario de tu reserva.")
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("destinatario", destinatario);
+        variables.put("mensaje", mensaje);
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("horarioAnterior", horarioAnterior != null ? horarioAnterior : "N/A");
+        variables.put("fechaInicioNueva", fechaInicioNueva);
+        variables.put("fechaFinNueva", fechaFinNueva);
+        variables.put("estado", reserva.getEstado() != null ? reserva.getEstado().toString() : "N/A");
+        variables.put("mensajeAdicional", esAnalista 
+            ? "Por favor, revisa los cambios y contacta al usuario si es necesario."
+            : "Por favor, ten en cuenta el nuevo horario de tu reserva.");
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("reserva-actualizada.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(toEmail, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(toEmail, subject, htmlBody);
     }
 
     /**
@@ -592,35 +496,20 @@ public class EmailService {
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
-        String bodyText = """
-            Hola,
-            
-            Has recibido una nueva solicitud de inventario que requiere tu atención.
-            
-            Detalles de la solicitud:
-            - Reserva ID: {reservaId}
-            - Espacio: {espacioNombre}
-            - Solicitante: {usuarioNombre} ({usuarioEmail})
-            - Fecha y hora de la reserva: {fechaInicio} - {fechaFin}
-            - Cantidad de items solicitados: {cantidadItems}
-            
-            Por favor, revisa y gestiona las solicitudes de inventario en el sistema.
-            
-            Puedes acceder al sistema en: {frontendUrl}
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{reservaId}", reserva.getId() != null ? reserva.getId().toString() : "N/A")
-            .replace("{espacioNombre}", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A")
-            .replace("{usuarioNombre}", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A")
-            .replace("{usuarioEmail}", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A")
-            .replace("{fechaInicio}", fechaInicio)
-            .replace("{fechaFin}", fechaFin)
-            .replace("{cantidadItems}", String.valueOf(cantidadItems))
-            .replace("{frontendUrl}", frontendUrl);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("reservaId", reserva.getId() != null ? reserva.getId().toString() : "N/A");
+        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
+        variables.put("usuarioEmail", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
+        variables.put("fechaInicio", fechaInicio);
+        variables.put("fechaFin", fechaFin);
+        variables.put("cantidadItems", String.valueOf(cantidadItems));
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("nueva-solicitud-inventario.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 
     /**
@@ -650,53 +539,65 @@ public class EmailService {
             : "N/A";
         
         String mensajeEstado = "";
+        String colorFondo = "#f8f9fa";
+        String colorBorde = "#6c757d";
+        String colorEstadoFondo = "#f8f9fa";
+        String colorEstadoTexto = "#212529";
+        
         switch (estadoNuevo) {
             case "APROBADO":
                 mensajeEstado = "Tu solicitud de inventario ha sido aprobada. El item será preparado para la fecha de tu reserva.";
+                colorFondo = "#d1f2eb";
+                colorBorde = "#10b981";
+                colorEstadoFondo = "#d1f2eb";
+                colorEstadoTexto = "#065f46";
                 break;
             case "RECHAZADO":
                 mensajeEstado = "Lamentamos informarte que tu solicitud de inventario ha sido rechazada.";
+                colorFondo = "#f8d7da";
+                colorBorde = "#dc3545";
+                colorEstadoFondo = "#f8d7da";
+                colorEstadoTexto = "#721c24";
                 break;
             case "ENTREGADO":
                 mensajeEstado = "¡Excelente! El item de inventario ha sido entregado y está disponible para tu reserva.";
+                colorFondo = "#d1f2eb";
+                colorBorde = "#10b981";
+                colorEstadoFondo = "#d1f2eb";
+                colorEstadoTexto = "#065f46";
                 break;
             default:
                 mensajeEstado = "El estado de tu solicitud de inventario ha sido actualizado.";
         }
         
-        String bodyText = """
-            Hola {nombreUsuario},
-            
-            {mensajeEstado}
-            
-            Detalles de la solicitud:
-            - Item solicitado: {tipoElementoNombre}
-            - Cantidad: {cantidadSolicitada}
-            - Espacio: {espacioNombre}
-            - Fecha de la reserva: {fechaReserva}
-            - Estado anterior: {estadoAnterior}
-            - Estado actual: {estadoNuevo}
-            
-            {observaciones}
-            
-            Puedes ver los detalles completos en: {frontendUrl}/reservas
-            
-            Saludos,
-            Equipo UTEC Space Manager
-            """
-            .replace("{nombreUsuario}", itemSolicitado.getSolicitanteNombre() != null ? itemSolicitado.getSolicitanteNombre() : "Usuario")
-            .replace("{mensajeEstado}", mensajeEstado)
-            .replace("{tipoElementoNombre}", itemSolicitado.getTipoElementoNombre() != null ? itemSolicitado.getTipoElementoNombre() : "N/A")
-            .replace("{cantidadSolicitada}", itemSolicitado.getCantidadSolicitada() != null ? itemSolicitado.getCantidadSolicitada().toString() : "N/A")
-            .replace("{espacioNombre}", itemSolicitado.getEspacioNombre() != null ? itemSolicitado.getEspacioNombre() : "N/A")
-            .replace("{fechaReserva}", fechaReserva)
-            .replace("{estadoAnterior}", estadoAnterior != null ? estadoAnterior : "N/A")
-            .replace("{estadoNuevo}", estadoNuevo != null ? estadoNuevo : "N/A")
-            .replace("{observaciones}", itemSolicitado.getObservaciones() != null && !itemSolicitado.getObservaciones().trim().isEmpty()
-                ? "Observaciones: " + itemSolicitado.getObservaciones()
-                : "")
-            .replace("{frontendUrl}", frontendUrl);
+        String observacionesHtml = "";
+        if (itemSolicitado.getObservaciones() != null && !itemSolicitado.getObservaciones().trim().isEmpty()) {
+            observacionesHtml = String.format(
+                "<div style=\"margin: 20px 0; padding: 15px; background-color: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 4px;\">" +
+                "<p style=\"margin: 0; color: #1e40af; font-size: 14px;\"><strong>Observaciones:</strong> %s</p></div>",
+                itemSolicitado.getObservaciones()
+            );
+        }
+        
+        Map<String, String> variables = new HashMap<>();
+        variables.put("nombreUsuario", itemSolicitado.getSolicitanteNombre() != null ? itemSolicitado.getSolicitanteNombre() : "Usuario");
+        variables.put("mensajeEstado", mensajeEstado);
+        variables.put("tipoElementoNombre", itemSolicitado.getTipoElementoNombre() != null ? itemSolicitado.getTipoElementoNombre() : "N/A");
+        variables.put("cantidadSolicitada", itemSolicitado.getCantidadSolicitada() != null ? itemSolicitado.getCantidadSolicitada().toString() : "N/A");
+        variables.put("espacioNombre", itemSolicitado.getEspacioNombre() != null ? itemSolicitado.getEspacioNombre() : "N/A");
+        variables.put("fechaReserva", fechaReserva);
+        variables.put("estadoAnterior", estadoAnterior != null ? estadoAnterior : "N/A");
+        variables.put("estadoNuevo", estadoNuevo != null ? estadoNuevo : "N/A");
+        variables.put("observaciones", observacionesHtml);
+        variables.put("colorFondo", colorFondo);
+        variables.put("colorBorde", colorBorde);
+        variables.put("colorEstadoFondo", colorEstadoFondo);
+        variables.put("colorEstadoTexto", colorEstadoTexto);
+        variables.put("frontendUrl", frontendUrl);
+        
+        String htmlContent = emailTemplateService.loadTemplate("estado-solicitud-inventario.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendEmail(to, subject, bodyText);
+        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
     }
 }

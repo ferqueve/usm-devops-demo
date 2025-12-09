@@ -1,0 +1,67 @@
+<div style="color: #333333; font-size: 16px; line-height: 1.6;">
+    <h2 style="margin: 0 0 20px; color: #212529; font-size: 24px; font-weight: 600;">
+        Estado de tu solicitud de inventario actualizado
+    </h2>
+    
+    <p style="margin: 0 0 20px;">
+        Hola <strong>{{nombreUsuario}}</strong>,
+    </p>
+    
+    <p style="margin: 0 0 20px;">
+        {{mensajeEstado}}
+    </p>
+    
+    <div style="margin: 30px 0; padding: 20px; background-color: {{colorFondo}}; border-radius: 6px; border-left: 4px solid {{colorBorde}};">
+        <h3 style="margin: 0 0 15px; color: #212529; font-size: 18px; font-weight: 600;">
+            Detalles de la solicitud
+        </h3>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px; width: 140px;"><strong>Item solicitado:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">{{tipoElementoNombre}}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px;"><strong>Cantidad:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">{{cantidadSolicitada}}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px;"><strong>Espacio:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">{{espacioNombre}}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px;"><strong>Fecha de reserva:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">{{fechaReserva}}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px;"><strong>Estado anterior:</strong></td>
+                <td style="padding: 8px 0; color: #212529; font-size: 14px;">{{estadoAnterior}}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #6c757d; font-size: 14px;"><strong>Estado actual:</strong></td>
+                <td style="padding: 8px 0;">
+                    <span style="display: inline-block; padding: 4px 12px; background-color: {{colorEstadoFondo}}; color: {{colorEstadoTexto}}; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                        {{estadoNuevo}}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    {{observaciones}}
+    
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 30px 0;">
+        <tr>
+            <td align="center" style="background-color: #184897; border-radius: 6px;">
+                <a href="{{frontendUrl}}/reservations" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 6px;">
+                    Ver detalles
+                </a>
+            </td>
+        </tr>
+    </table>
+    
+    <p style="margin: 30px 0 0; color: #6c757d; font-size: 14px;">
+        Saludos,<br>
+        <strong>Equipo UTEC Space Manager</strong>
+    </p>
+</div>
+

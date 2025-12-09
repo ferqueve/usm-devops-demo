@@ -236,6 +236,20 @@ async function parseActuatorResponse(response: Response): Promise<unknown> {
   }
 }
 
+// Helper para obtener mensaje de error en español según el código de estado
+function getStatusTextInSpanish(status: number): string {
+  const statusMessages: Record<number, string> = {
+    400: 'Solicitud inválida',
+    401: 'No autorizado',
+    403: 'Acceso denegado',
+    404: 'Recurso no encontrado',
+    500: 'Error interno del servidor',
+    502: 'Error de puerta de enlace',
+    503: 'Servicio no disponible',
+  };
+  return statusMessages[status] || `Error ${status}`;
+}
+
 // Helper para hacer requests de Actuator con manejo de token refresh
 export async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<unknown> {
   const token = localStorage.getItem('token');
@@ -252,7 +266,7 @@ export async function actuatorRequest(endpoint: string, isRetry: boolean = false
   }
 
   if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
+    throw new Error(`Error ${response.status}: ${getStatusTextInSpanish(response.status)}`);
   }
 
   return parseActuatorResponse(response);

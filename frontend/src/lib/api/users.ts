@@ -1,5 +1,5 @@
 import { apiRequest, type ApiResponse } from './client';
-import type { User, UserRole, PagedUsers, UserFilters, UserStats, UpdateUserData } from '../types/users';
+import type { User, UserRole, PagedUsers, UserFilters, UserStats, UpdateUserData, UpdateProfileData } from '../types/users';
 
 // API de usuarios
 export const usuariosApi = {
@@ -106,6 +106,21 @@ export const usuariosApi = {
   async listarAnalistas(): Promise<ApiResponse<User[]>> {
     return apiRequest<User[]>('/usuarios/analistas', {
       method: 'GET',
+    });
+  },
+
+  // Obtener perfil propio
+  async obtenerPerfilPropio(): Promise<ApiResponse<User>> {
+    return apiRequest<User>('/usuarios/me', {
+      method: 'GET',
+    });
+  },
+
+  // Actualizar perfil propio
+  async actualizarPerfilPropio(data: UpdateProfileData): Promise<ApiResponse<User>> {
+    return apiRequest<User>('/usuarios/me', {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   },
 };

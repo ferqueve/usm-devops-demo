@@ -6,6 +6,8 @@ import com.utec.backend.dto.auth.AuthenticationResponse;
 import com.utec.backend.dto.auth.RegisterRequest;
 import com.utec.backend.dto.auth.RegisterResponse;
 import com.utec.backend.dto.auth.ResendVerificationRequest;
+import com.utec.backend.dto.auth.ForgotPasswordRequest;
+import com.utec.backend.dto.auth.ResetPasswordRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +84,28 @@ public class AuthController {
             return ResponseEntity.ok(ApiResponse.success("Se ha enviado un nuevo código de verificación a tu email"));
         } else {
             return ResponseEntity.badRequest().body(ApiResponse.error("No se pudo enviar el código de verificación. Inténtalo nuevamente."));
+        }
+    }
+
+    @Operation(summary = "Solicitar recuperación de contraseña", description = "Enviar email con enlace para recuperar contraseña")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        boolean sent = authenticationService.forgotPassword(request.getEmail());
+        if (sent) {
+            return ResponseEntity.ok(ApiResponse.success("Si el email existe y está verificado, recibirás un enlace para recuperar tu contraseña"));
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error("No se pudo enviar el email de recuperación. Inténtalo nuevamente."));
+        }
+    }
+
+    @Operation(summary = "Restablecer contraseña", description = "Restablecer contraseña usando el token recibido por email")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        boolean reset = authenticationService.resetPassword(request.getToken(), request.getNewPassword());
+        if (reset) {
+            return ResponseEntity.ok(ApiResponse.success("Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña"));
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error("No se pudo restablecer la contraseña. Verifica que el token sea válido y no haya expirado."));
         }
     }
 }
