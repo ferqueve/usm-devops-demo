@@ -3,7 +3,6 @@ package com.utec.backend.service;
 import com.utec.backend.dto.recomendacion.HorarioRecomendadoDto;
 import com.utec.backend.dto.recomendacion.RecomendacionEspacioDto;
 import com.utec.backend.model.Espacio;
-import com.utec.backend.model.Reserva;
 import com.utec.backend.repository.EspacioRepository;
 import com.utec.backend.repository.ReservaRepository;
 import org.junit.jupiter.api.BeforeEach;

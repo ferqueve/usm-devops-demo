@@ -1,6 +1,5 @@
 package com.utec.backend.service;
 
-import com.utec.backend.dto.auth.AuthenticationResponse;
 import com.utec.backend.exception.AuthenticationException;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
@@ -12,15 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para OAuth2Service")
@@ -39,8 +32,6 @@ class OAuth2ServiceTest {
     private OAuth2Service oAuth2Service;
 
     private Usuario usuarioTest;
-    private UserDetails userDetails;
-    private final String authorizationCode = "test-auth-code";
     private final String userEmail = "test@utec.edu.uy";
 
     @BeforeEach
@@ -55,11 +46,6 @@ class OAuth2ServiceTest {
         usuarioTest.setEmail(userEmail);
         usuarioTest.setNombre("Test User");
         usuarioTest.setRolApp(Usuario.RolApp.DOCENTE);
-
-        userDetails = User.withUsername(userEmail)
-                .password("")
-                .authorities("ROLE_DOCENTE")
-                .build();
     }
 
     @Test

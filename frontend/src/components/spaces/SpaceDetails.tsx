@@ -151,10 +151,16 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
 
   const handleInventarioSuccess = (item: InventarioItem) => {
     if (selectedInventarioItem) {
-      // Actualizar item existente
-      setInventario(prev => 
-        prev.map(i => i.id === item.id ? item : i)
-      );
+      // Actualizar item existente manteniendo su posición
+      setInventario(prev => {
+        const index = prev.findIndex(i => i.id === item.id);
+        if (index !== -1) {
+          const newInventario = [...prev];
+          newInventario[index] = item;
+          return newInventario;
+        }
+        return prev.map(i => i.id === item.id ? item : i);
+      });
     } else {
       // Agregar nuevo item
       setInventario(prev => [...prev, item]);

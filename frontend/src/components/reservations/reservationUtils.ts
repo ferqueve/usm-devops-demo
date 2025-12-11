@@ -16,11 +16,11 @@ export function getEstadoConfig(estado: Reserva['estado']) {
     case 'PENDIENTE':
       return {
         label: 'Pendiente',
-        color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-        iconColor: 'text-yellow-600',
-        stripeColor: 'bg-yellow-700',
-        borderColor: 'border-l-yellow-700',
-        cornerBorderColor: 'border-t-yellow-700',
+        color: 'bg-amber-50 text-amber-700 border-amber-200',
+        iconColor: 'text-amber-600',
+        stripeColor: 'bg-amber-600',
+        borderColor: 'border-l-amber-600',
+        cornerBorderColor: 'border-t-amber-600',
         icon: Hourglass
       };
     case 'CANCELADO':

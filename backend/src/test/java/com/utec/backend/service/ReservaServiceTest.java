@@ -119,6 +119,8 @@ class ReservaServiceTest {
         reservaTest.setFin(finFuturo);
         reservaTest.setEstado(Reserva.EstadoReserva.PENDIENTE);
         reservaTest.setEsPublica(false);
+        reservaTest.setTitulo("Reserva de prueba");
+        reservaTest.setMotivoSolicitud("Motivo de prueba");
         reservaTest.setCreatedAt(Instant.now());
         reservaTest.setUpdatedAt(Instant.now());
     }
@@ -129,6 +131,7 @@ class ReservaServiceTest {
         // Given
         ReservaCreateDto createDto = new ReservaCreateDto();
         createDto.setEspacioId(espacioId);
+        createDto.setTitulo("Reserva de prueba");
         createDto.setInicio(inicioFuturo);
         createDto.setFin(finFuturo);
 
@@ -158,6 +161,7 @@ class ReservaServiceTest {
         // Given
         ReservaCreateDto createDto = new ReservaCreateDto();
         createDto.setEspacioId(espacioId);
+        createDto.setTitulo("Reserva de prueba");
         createDto.setInicio(inicioFuturo);
         createDto.setFin(finFuturo);
         createDto.setAnalistaId(2L);
@@ -295,6 +299,7 @@ class ReservaServiceTest {
 
     @Test
     @DisplayName("Debe obtener reservas por usuario paginadas")
+    @SuppressWarnings("unchecked")
     void debeObtenerReservasPorUsuarioPaginadas() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
@@ -315,6 +320,7 @@ class ReservaServiceTest {
 
     @Test
     @DisplayName("Debe obtener todas las reservas paginadas")
+    @SuppressWarnings("unchecked")
     void debeObtenerTodasLasReservasPaginadas() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
@@ -344,7 +350,7 @@ class ReservaServiceTest {
         lenient().when(emailService.enviarEmailNotificacionReservaAprobada(anyString(), any())).thenReturn(true);
 
         // When
-        ReservaResponseDto resultado = reservaService.cambiarEstadoReserva(reservaId, "APROBADO", userEmail, ROLE_ADMIN);
+        ReservaResponseDto resultado = reservaService.cambiarEstadoReserva(reservaId, "APROBADO", userEmail, ROLE_ADMIN, null);
 
         // Then
         assertNotNull(resultado);

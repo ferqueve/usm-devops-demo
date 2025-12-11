@@ -165,10 +165,15 @@ public class InventarioItemService {
     }
     
     public void deleteInventarioItem(Long id) {
-        if (!inventarioItemRepository.existsById(id)) {
-            throw new RuntimeException("Item de inventario no encontrado con ID: " + id);
-        }
-        inventarioItemRepository.deleteById(id);
+        InventarioItem inventarioItem = inventarioItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Item de inventario no encontrado con ID: " + id));
+        
+        // Soft delete: marcar como inactivo y eliminado
+        inventarioItem.setActivo(false);
+        inventarioItem.setDeletedAt(Instant.now());
+        inventarioItem.setUpdatedAt(Instant.now());
+        
+        inventarioItemRepository.save(inventarioItem);
     }
     
     @Transactional(readOnly = true)

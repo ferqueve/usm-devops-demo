@@ -5,7 +5,7 @@
        http://www.liquibase.org/xml/ns/dbchangelog
        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="add-password-usuario" author="mathias">
+    <changeSet id="add-password-usuario" author="Mathias">
         <addColumn tableName="usuario">
             <column name="password" type="varchar(255)" />
         </addColumn>

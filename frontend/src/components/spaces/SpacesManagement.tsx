@@ -79,7 +79,7 @@ export default function SpacesManagement() {
     }
   }, [preferencias]);
   const [sortConfig, setSortConfig] = useState<{ column: string | null; direction: 'asc' | 'desc' }>({ 
-    column: null, 
+    column: 'nombre', 
     direction: 'asc' 
   });
   
@@ -103,7 +103,8 @@ export default function SpacesManagement() {
       // Si hay filtros activos, usar el endpoint de filtros
       const hasActiveFilters = filtrosCompletos.search || filtrosCompletos.tipoEspacioId || 
                                filtrosCompletos.edificioId || filtrosCompletos.capacidadMin || 
-                               filtrosCompletos.capacidadMax || filtrosCompletos.filtrosInventario;
+                               filtrosCompletos.capacidadMax || filtrosCompletos.estado || 
+                               filtrosCompletos.filtrosInventario;
       
       if (hasActiveFilters) {
         const response = await espaciosApi.filtrarEspacios(filtrosCompletos);
@@ -326,9 +327,17 @@ export default function SpacesManagement() {
   };
 
   const handleEditSuccess = (updatedSpace: Espacio) => {
-    setEspacios(prev => 
-      prev.map(space => space.id === updatedSpace.id ? updatedSpace : space)
-    );
+    setEspacios(prev => {
+      // Mantener la posición del elemento actualizado en la lista
+      const index = prev.findIndex(space => space.id === updatedSpace.id);
+      if (index !== -1) {
+        const newEspacios = [...prev];
+        newEspacios[index] = updatedSpace;
+        return newEspacios;
+      }
+      // Si no se encuentra, actualizar normalmente
+      return prev.map(space => space.id === updatedSpace.id ? updatedSpace : space);
+    });
   };
 
   const handleDeleteSuccess = () => {
@@ -360,14 +369,17 @@ export default function SpacesManagement() {
 
   // Aplicar ordenamiento a los espacios
   const sortedEspacios = useMemo(() => {
-    if (!sortConfig.column) return espacios;
-    
     const sorted = [...espacios];
+    
+    // Si no hay columna de ordenamiento, ordenar por nombre por defecto
+    const columnToSort = sortConfig.column || 'nombre';
+    const directionToSort = sortConfig.column ? sortConfig.direction : 'asc';
+    
     sorted.sort((a, b) => {
       let aValue: string | number | boolean;
       let bValue: string | number | boolean;
       
-      switch (sortConfig.column) {
+      switch (columnToSort) {
         case 'id':
           aValue = a.id;
           bValue = b.id;
@@ -389,11 +401,13 @@ export default function SpacesManagement() {
           bValue = b.activo;
           break;
         default:
-          return 0;
+          // Por defecto, ordenar por nombre
+          aValue = a.nombre.toLowerCase();
+          bValue = b.nombre.toLowerCase();
       }
       
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      if (aValue < bValue) return directionToSort === 'asc' ? -1 : 1;
+      if (aValue > bValue) return directionToSort === 'asc' ? 1 : -1;
       return 0;
     });
     

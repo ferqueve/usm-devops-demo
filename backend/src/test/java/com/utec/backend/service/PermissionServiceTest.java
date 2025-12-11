@@ -2,7 +2,6 @@ package com.utec.backend.service;
 
 import com.utec.backend.model.Usuario;
 import com.utec.backend.security.Permission;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

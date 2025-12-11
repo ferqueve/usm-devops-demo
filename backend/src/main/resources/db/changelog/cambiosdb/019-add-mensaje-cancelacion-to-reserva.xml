@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="019-add-titulo-motivo-mensaje-to-reserva" author="Mathias">
+        <!-- Agregar título obligatorio -->
+        <addColumn tableName="reserva">
+            <column name="titulo" type="VARCHAR(200)" defaultValue="Reserva sin título">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Agregar motivo de solicitud (opcional) -->
+        <addColumn tableName="reserva">
+            <column name="motivo_solicitud" type="TEXT" remarks="Motivo opcional del solicitante al crear la reserva">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Agregar mensaje del analista (opcional) -->
+        <addColumn tableName="reserva">
+            <column name="mensaje_analista" type="TEXT" remarks="Mensaje opcional del analista al aprobar o rechazar una reserva">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Actualizar registros existentes: si no tienen título, usar un valor por defecto -->
+        <sql>
+            UPDATE reserva SET titulo = 'Reserva sin título' WHERE titulo IS NULL OR titulo = '';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

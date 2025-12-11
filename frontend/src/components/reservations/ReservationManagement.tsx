@@ -41,12 +41,17 @@ export default function ReservationManagement() {
   const { preferencias } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
   const isDocente = user?.rol === ROLES.DOCENTE;
+  const isExterno = user?.rol === ROLES.EXTERNO;
   const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
+  const showPendienteFilter = isDocente || isExterno; // Solo docentes y externos pueden filtrar por pendientes
   
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [contentLoading, setContentLoading] = useState(false); // Loading solo para el contenido de table/cards
   const [calendarLoading, setCalendarLoading] = useState(false); // Loading solo para calendar
-  const [estadoFilter, setEstadoFilter] = useState<string>('todas');
+  // Para analistas, el filtro por defecto es 'APROBADO' (confirmadas), para otros es 'todas'
+  const [estadoFilter, setEstadoFilter] = useState<string>(() => {
+    return (user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN) ? 'APROBADO' : 'todas';
+  });
   const [tiempoFilter, setTiempoFilter] = useState<string>('todas');
   const [espacioFilter, setEspacioFilter] = useState<number | null>(null);
   const [carreraFilter, setCarreraFilter] = useState<number | null>(null);
@@ -100,20 +105,29 @@ export default function ReservationManagement() {
     setCalendarLoading(true); // Solo afecta al contenido de calendar
     try {
       let response;
-      if (isDocente) {
-        // DOCENTE: solo sus reservas (excluyendo pendientes)
-        // Las pendientes no deben aparecer en el calendario
+      if (isDocente || isExterno) {
+        // DOCENTE/EXTERNO: solo sus reservas
+        // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
+        const estadoParaFiltrar = estadoFilter === 'PENDIENTE' 
+          ? 'PENDIENTE' 
+          : (estadoFilter === 'todas' ? undefined : estadoFilter);
         response = await reservationsApi.obtenerMisReservas();
-        // Filtrar pendientes en el frontend también por si acaso
+        
         if (response.data) {
-          response.data = response.data.filter((r: Reserva) => r.estado !== 'PENDIENTE');
+          // Si el filtro es PENDIENTE, mostrar solo pendientes
+          if (estadoFilter === 'PENDIENTE') {
+            response.data = response.data.filter((r: Reserva) => r.estado === 'PENDIENTE');
+          } else if (estadoFilter !== 'todas') {
+            // Si el filtro es un estado específico, mostrar solo ese estado
+            response.data = response.data.filter((r: Reserva) => r.estado === estadoFilter);
+          }
+          // Si el filtro es 'todas', no filtrar por estado (mostrar todas incluyendo pendientes)
         }
       } else {
-        // ANALISTA: todas las reservas (excluyendo pendientes)
-        // Si el filtro es 'todas', excluir PENDIENTE explícitamente
-        const estadoParaFiltrar = estadoFilter !== 'todas' 
+        // ANALISTA/ADMIN: todas las reservas (excluyendo pendientes - se muestran en sidebar)
+        const estadoParaFiltrar = estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE'
           ? estadoFilter 
-          : undefined; // No filtrar por estado, pero excluiremos PENDIENTE después
+          : undefined;
         response = await reservationsApi.obtenerTodasLasReservas(
           estadoParaFiltrar,
           espacioFilter ?? undefined,
@@ -122,16 +136,18 @@ export default function ReservationManagement() {
           fechaInicio ?? undefined,
           fechaFin ?? undefined
         );
+        
+        if (response.data) {
+          // Siempre excluir PENDIENTE para analistas/admin (se muestran en sidebar)
+          response.data = response.data.filter(
+            (reserva: Reserva) => reserva.estado !== 'PENDIENTE'
+          );
+        }
       }
       
       if (response.data) {
-        // EXCLUIR reservas PENDIENTE - solo deben aparecer en el componente lateral
-        const reservasSinPendientes = response.data.filter(
-          (reserva: Reserva) => reserva.estado !== 'PENDIENTE'
-        );
-        
         // Ordenar por fecha descendente
-        const sorted = reservasSinPendientes.sort((a, b) =>
+        const sorted = response.data.sort((a, b) =>
           new Date(b.inicio).getTime() - new Date(a.inicio).getTime()
         );
         setReservas(sorted);
@@ -144,7 +160,7 @@ export default function ReservationManagement() {
     } finally {
       setCalendarLoading(false);
     }
-  }, [isDocente, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [isDocente, isExterno, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   // Cargar reservas pendientes separadamente (solo para ANALISTA)
   const fetchReservasPendientes = useCallback(async () => {
@@ -183,12 +199,12 @@ export default function ReservationManagement() {
     setContentLoading(true); // Solo afecta al contenido
     try {
       let response;
-      if (isDocente) {
-        // DOCENTE: solo sus reservas (excluyendo pendientes)
-        // Si el filtro es 'todas' o 'PENDIENTE', usar 'APROBADO' para excluir PENDIENTE
-        const estadoParaFiltrar = (estadoFilter === 'todas' || estadoFilter === 'PENDIENTE')
-          ? 'APROBADO' // Excluir pendientes cuando se muestran todas o se intenta filtrar por pendientes
-          : estadoFilter;
+      if (isDocente || isExterno) {
+        // DOCENTE/EXTERNO: solo sus reservas
+        // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
+        const estadoParaFiltrar = estadoFilter === 'PENDIENTE' 
+          ? 'PENDIENTE' 
+          : (estadoFilter === 'todas' ? undefined : estadoFilter);
         response = await reservationsApi.obtenerMisReservasPaged(
           page,
           pageSize,
@@ -200,16 +216,22 @@ export default function ReservationManagement() {
           fechaFin,
           tiempoFilter
         );
-        // Filtrar pendientes en el frontend también por si acaso
+        
         if (response.data) {
-          response.data.content = response.data.content.filter((r: Reserva) => r.estado !== 'PENDIENTE');
+          // Si el filtro es PENDIENTE, mostrar solo pendientes
+          if (estadoFilter === 'PENDIENTE') {
+            response.data.content = response.data.content.filter((r: Reserva) => r.estado === 'PENDIENTE');
+          } else if (estadoFilter !== 'todas') {
+            // Si el filtro es un estado específico, mostrar solo ese estado
+            response.data.content = response.data.content.filter((r: Reserva) => r.estado === estadoFilter);
+          }
+          // Si el filtro es 'todas', no filtrar por estado (mostrar todas incluyendo pendientes)
         }
       } else {
-        // ANALISTA: todas las reservas (excluyendo pendientes)
-        // Si el filtro es 'todas', usar 'APROBADO' para excluir PENDIENTE
-        const estadoParaFiltrar = estadoFilter === 'todas' 
-          ? 'APROBADO' // Excluir pendientes cuando se muestran todas
-          : (estadoFilter === 'PENDIENTE' ? 'APROBADO' : estadoFilter); // Nunca mostrar pendientes
+        // ANALISTA/ADMIN: todas las reservas (excluyendo pendientes - se muestran en sidebar)
+        const estadoParaFiltrar = estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE'
+          ? estadoFilter 
+          : undefined;
         response = await reservationsApi.obtenerTodasReservasPaged(
           page,
           pageSize,
@@ -222,15 +244,17 @@ export default function ReservationManagement() {
           fechaFin,
           tiempoFilter
         );
+        
+        if (response.data) {
+          // Siempre excluir PENDIENTE para analistas/admin (se muestran en sidebar)
+          response.data.content = response.data.content.filter(
+            (reserva: Reserva) => reserva.estado !== 'PENDIENTE'
+          );
+        }
       }
       
       if (response.data) {
-        // EXCLUIR reservas PENDIENTE - solo deben aparecer en el componente lateral
-        const reservasSinPendientes = response.data.content.filter(
-          (reserva: Reserva) => reserva.estado !== 'PENDIENTE'
-        );
-        
-        setReservas(reservasSinPendientes);
+        setReservas(response.data.content);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
       }
@@ -242,7 +266,7 @@ export default function ReservationManagement() {
     } finally {
       setContentLoading(false);
     }
-  }, [isDocente, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
+  }, [isDocente, isExterno, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
 
   const handleToggleFullScreen = () => {
     setIsFullScreen(!isFullScreen);
@@ -431,14 +455,20 @@ export default function ReservationManagement() {
   const ahora = new Date();
   const reservasFiltradas = viewMode === 'calendar' 
     ? reservas.filter((reserva: Reserva) => {
-        // EXCLUIR reservas PENDIENTE - solo deben aparecer en el componente lateral
-        if (reserva.estado === 'PENDIENTE') {
-          return false;
-        }
-        
         // Filtro por estado
         if (estadoFilter !== 'todas' && reserva.estado !== estadoFilter) {
           return false;
+        }
+        
+        // Para analistas/admin, excluir PENDIENTE siempre (se muestran en sidebar)
+        // Para docentes/externos, permitir PENDIENTE cuando el filtro es 'PENDIENTE' o 'todas'
+        if (reserva.estado === 'PENDIENTE') {
+          if (!showPendienteFilter) {
+            // Analistas/admin: nunca mostrar pendientes en el calendario
+            return false;
+          }
+          // Docentes/externos: mostrar pendientes cuando el filtro es 'PENDIENTE' o 'todas'
+          // (ya se filtró por estado arriba, así que si llegamos aquí y showPendienteFilter es true, se muestra)
         }
         // Filtro por tiempo
         if (tiempoFilter === 'futuras') {
@@ -515,10 +545,11 @@ export default function ReservationManagement() {
         fechaFin={fechaFin}
         viewMode={viewMode}
         hayFiltrosActivos={hayFiltrosActivos}
+        showPendienteFilter={showPendienteFilter}
         onTiempoFilterChange={(filter) => { setTiempoFilter(filter); setPage(0); }}
         onEstadoFilterChange={(filter) => { 
-          // No permitir filtrar por PENDIENTE - las pendientes solo se gestionan en el componente lateral
-          if (filter === 'PENDIENTE') {
+          // Permitir filtrar por PENDIENTE solo para docentes/externos
+          if (filter === 'PENDIENTE' && !showPendienteFilter) {
             setEstadoFilter('todas');
           } else {
             setEstadoFilter(filter);
@@ -565,10 +596,11 @@ export default function ReservationManagement() {
         fechaFin={fechaFin}
         viewMode={viewMode}
         hayFiltrosActivos={hayFiltrosActivos}
+        showPendienteFilter={showPendienteFilter}
         onTiempoFilterChange={(filter) => { setTiempoFilter(filter); setPage(0); }}
         onEstadoFilterChange={(filter) => { 
-          // No permitir filtrar por PENDIENTE - las pendientes solo se gestionan en el componente lateral
-          if (filter === 'PENDIENTE') {
+          // Permitir filtrar por PENDIENTE solo para docentes/externos
+          if (filter === 'PENDIENTE' && !showPendienteFilter) {
             setEstadoFilter('todas');
           } else {
             setEstadoFilter(filter);
@@ -614,14 +646,10 @@ export default function ReservationManagement() {
         fechaFin={fechaFin}
         viewMode={viewMode}
         hayFiltrosActivos={hayFiltrosActivos}
+        showPendienteFilter={showPendienteFilter}
         onTiempoFilterChange={setTiempoFilter}
         onEstadoFilterChange={(filter) => {
-          // No permitir filtrar por PENDIENTE - las pendientes solo se gestionan en el componente lateral
-          if (filter === 'PENDIENTE') {
-            setEstadoFilter('todas');
-          } else {
-            setEstadoFilter(filter);
-          }
+          setEstadoFilter(filter);
         }}
         onEspacioFilterChange={setEspacioFilter}
         onCarreraFilterChange={setCarreraFilter}

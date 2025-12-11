@@ -1,4 +1,4 @@
-import { Calendar, Clock, CheckCircle2, XCircle, Filter, BrushCleaning, Building2, CalendarArrowDown, CalendarArrowUp, GraduationCap, Tag } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, XCircle, Hourglass, Filter, BrushCleaning, Building2, CalendarArrowDown, CalendarArrowUp, GraduationCap, Tag } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -42,6 +42,8 @@ interface ReservationFiltersProps {
   carrerasUnicas: Carrera[];
   tiposEspacioUnicos: TipoEspacio[];
   hayFiltrosActivos: boolean;
+  showPendienteFilter?: boolean; // Solo para docentes/externos
+  hideEstadoFilter?: boolean; // Ocultar completamente el filtro de estado
   onTiempoFilterChange: (filter: string) => void;
   onEstadoFilterChange: (filter: string) => void;
   onEspacioFilterChange: (filter: number | null) => void;
@@ -64,6 +66,8 @@ export default function ReservationFilters({
   carrerasUnicas,
   tiposEspacioUnicos,
   hayFiltrosActivos,
+  showPendienteFilter = false,
+  hideEstadoFilter = false,
   onTiempoFilterChange,
   onEstadoFilterChange,
   onEspacioFilterChange,
@@ -235,6 +239,7 @@ export default function ReservationFilters({
         </Tooltip>
       </div>
       {/* Filtro por estado */}
+      {!hideEstadoFilter && (
       <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -264,6 +269,22 @@ export default function ReservationFilters({
           </TooltipTrigger>
           <TooltipContent>Reservas aprobadas</TooltipContent>
         </Tooltip>
+        {showPendienteFilter && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onEstadoFilterChange('PENDIENTE')}
+                className={`p-1.5 rounded transition-colors ${estadoFilter === 'PENDIENTE'
+                    ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
+                    : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                <Hourglass className={`h-3.5 w-3.5 ${estadoFilter === 'PENDIENTE' ? 'text-amber-600' : 'text-amber-500'}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Reservas pendientes</TooltipContent>
+          </Tooltip>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -279,6 +300,7 @@ export default function ReservationFilters({
           <TooltipContent>Reservas canceladas</TooltipContent>
         </Tooltip>
       </div>
+      )}
       {/* Filtro por espacio */}
       <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
         <Tooltip>

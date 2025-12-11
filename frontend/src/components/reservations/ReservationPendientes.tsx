@@ -209,7 +209,7 @@ export default function ReservationPendientes({
                               />
                             ) : null}
                             <h3 className="text-xs sm:text-sm font-semibold truncate">
-                              {reserva.espacioNombre}
+                              {reserva.titulo || reserva.espacioNombre}
                             </h3>
                           </div>
                           <div className="flex flex-wrap items-center gap-x-1.5 sm:gap-x-2 md:gap-x-3 gap-y-0.5 text-[10px] sm:text-xs text-muted-foreground">

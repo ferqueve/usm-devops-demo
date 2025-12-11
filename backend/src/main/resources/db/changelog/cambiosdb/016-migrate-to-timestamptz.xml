@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Migrar tabla reserva: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <sql>
             ALTER TABLE reserva 
             ALTER COLUMN inicio TYPE TIMESTAMPTZ USING inicio AT TIME ZONE 'UTC',
@@ -17,7 +17,7 @@
     </changeSet>
 
     <!-- Migrar tabla usuario: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <sql>
             ALTER TABLE usuario 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -27,7 +27,7 @@
     </changeSet>
 
     <!-- Migrar tabla espacio: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="003" author="mathi">
+    <changeSet id="003" author="Mathias">
         <sql>
             ALTER TABLE espacio 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -37,7 +37,7 @@
     </changeSet>
 
     <!-- Migrar tabla audit_log: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="004" author="mathi">
+    <changeSet id="004" author="Mathias">
         <sql>
             ALTER TABLE audit_log 
             ALTER COLUMN timestamp TYPE TIMESTAMPTZ USING timestamp AT TIME ZONE 'UTC';
@@ -45,7 +45,7 @@
     </changeSet>
 
     <!-- Migrar tabla carrera: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="005" author="mathi">
+    <changeSet id="005" author="Mathias">
         <sql>
             ALTER TABLE carrera 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -55,7 +55,7 @@
     </changeSet>
 
     <!-- Migrar tabla inventario_item: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="006" author="mathi">
+    <changeSet id="006" author="Mathias">
         <sql>
             ALTER TABLE inventario_item 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -65,7 +65,7 @@
     </changeSet>
 
     <!-- Migrar tabla tipo_espacio: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="007" author="mathi">
+    <changeSet id="007" author="Mathias">
         <sql>
             ALTER TABLE tipo_espacio 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -75,7 +75,7 @@
     </changeSet>
 
     <!-- Migrar tabla tipo_elemento: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="008" author="mathi">
+    <changeSet id="008" author="Mathias">
         <sql>
             ALTER TABLE tipo_elemento 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -85,7 +85,7 @@
     </changeSet>
 
     <!-- Migrar tabla recomendacion: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="009" author="mathi">
+    <changeSet id="009" author="Mathias">
         <sql>
             ALTER TABLE recomendacion 
             ALTER COLUMN updated_at TYPE TIMESTAMPTZ USING updated_at AT TIME ZONE 'UTC';
@@ -93,7 +93,7 @@
     </changeSet>
 
     <!-- Migrar tabla reserva_item_solicitado: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="010" author="mathi">
+    <changeSet id="010" author="Mathias">
         <sql>
             ALTER TABLE reserva_item_solicitado 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',
@@ -103,7 +103,7 @@
     </changeSet>
 
     <!-- Migrar tabla usuario_configuracion: TIMESTAMP a TIMESTAMPTZ -->
-    <changeSet id="011" author="mathi">
+    <changeSet id="011" author="Mathias">
         <sql>
             ALTER TABLE usuario_configuracion 
             ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC',

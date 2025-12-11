@@ -1,11 +1,9 @@
 package com.utec.backend.service;
 
 import com.utec.backend.dto.recomendacion.RecomendacionAnalistaDto;
-import com.utec.backend.model.Reserva;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.ReservaRepository;
 import com.utec.backend.repository.UsuarioRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

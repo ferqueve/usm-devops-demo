@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils/helpers"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { EmailVerificationMessage } from "./EmailVerificationMessage"
+import { TermsAndPrivacyDialog } from "./TermsAndPrivacyDialog"
 import { authApi } from "@/lib/api/auth"
 
 export function RegisterForm({
@@ -14,7 +16,6 @@ export function RegisterForm({
   showSuccessMessage = false,
   userEmail = "",
   onBackToLogin,
-  onResendEmail,
   ...props
 }: React.ComponentProps<"form"> & { 
   onRegister?: (userData: { 
@@ -23,12 +24,13 @@ export function RegisterForm({
     email: string; 
     password: string; 
     confirmPassword: string;
+    aceptaTerminos: boolean;
+    aceptaPolitica: boolean;
   }) => Promise<void>;
   isLoading?: boolean;
   showSuccessMessage?: boolean;
   userEmail?: string;
   onBackToLogin?: () => void;
-  onResendEmail?: () => void;
 }) {
   const [formData, setFormData] = useState({
     nombre: "",
@@ -37,6 +39,10 @@ export function RegisterForm({
     password: "",
     confirmPassword: ""
   });
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [aceptaPolitica, setAceptaPolitica] = useState(false);
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
+  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
 
@@ -62,14 +68,24 @@ export function RegisterForm({
     if (showSuccessMessage && resendCooldown === 0) {
       setResendCooldown(40);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showSuccessMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validar que se acepten los términos y la política
+    if (!aceptaTerminos || !aceptaPolitica) {
+      return;
+    }
+    
     if (onRegister) {
       try {
-        await onRegister(formData);
+        await onRegister({
+          ...formData,
+          aceptaTerminos,
+          aceptaPolitica
+        });
         // Limpiar formulario solo si el registro fue exitoso
         setFormData({
           nombre: "",
@@ -78,7 +94,9 @@ export function RegisterForm({
           password: "",
           confirmPassword: ""
         });
-      } catch (error) {
+        setAceptaTerminos(false);
+        setAceptaPolitica(false);
+      } catch {
         // El error se maneja en el AuthContext
       }
     }
@@ -108,7 +126,7 @@ export function RegisterForm({
       } else {
         setResendMessage("Error al reenviar el email");
       }
-    } catch (error) {
+    } catch {
       setResendMessage("Error al reenviar el email");
     }
   };
@@ -186,7 +204,20 @@ export function RegisterForm({
             type="password" 
             placeholder="Mínimo 8 caracteres"
             value={formData.password}
-            onChange={(e) => handleInputChange("password", e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              handleInputChange("password", value);
+              // Limpiar mensaje de error personalizado mientras se escribe
+              e.target.setCustomValidity('');
+            }}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.tooShort) {
+                target.setCustomValidity('La contraseña debe tener al menos 8 caracteres');
+              } else if (target.validity.valueMissing) {
+                target.setCustomValidity('Este campo es obligatorio');
+              }
+            }}
             required 
             minLength={8}
           />
@@ -198,12 +229,83 @@ export function RegisterForm({
             type="password" 
             placeholder="Repite tu contraseña"
             value={formData.confirmPassword}
-            onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              handleInputChange("confirmPassword", value);
+              // Limpiar mensaje de error personalizado mientras se escribe
+              e.target.setCustomValidity('');
+            }}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.tooShort) {
+                target.setCustomValidity('La contraseña debe tener al menos 8 caracteres');
+              } else if (target.validity.valueMissing) {
+                target.setCustomValidity('Este campo es obligatorio');
+              }
+            }}
             required 
             minLength={8}
           />
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        
+        {/* Checkboxes de aceptación */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-start space-x-2">
+            <Checkbox
+              id="aceptaTerminos"
+              checked={aceptaTerminos}
+              onCheckedChange={(checked) => setAceptaTerminos(checked as boolean)}
+              required
+            />
+            <div className="flex-1 space-y-1">
+              <Label
+                htmlFor="aceptaTerminos"
+                className="text-sm font-normal cursor-pointer leading-tight"
+              >
+                Acepto los{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowTermsDialog(true)}
+                  className="text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  Términos y Condiciones
+                </button>
+                <span className="text-red-500">*</span>
+              </Label>
+            </div>
+          </div>
+          
+          <div className="flex items-start space-x-2">
+            <Checkbox
+              id="aceptaPolitica"
+              checked={aceptaPolitica}
+              onCheckedChange={(checked) => setAceptaPolitica(checked as boolean)}
+              required
+            />
+            <div className="flex-1 space-y-1">
+              <Label
+                htmlFor="aceptaPolitica"
+                className="text-sm font-normal cursor-pointer leading-tight"
+              >
+                Acepto la{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacyDialog(true)}
+                  className="text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  Política de Privacidad
+                </button>
+                <span className="text-red-500">*</span>
+              </Label>
+            </div>
+          </div>
+        </div>
+        
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading || !aceptaTerminos || !aceptaPolitica}
+        >
           {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
         </Button>
       </div>
@@ -213,6 +315,16 @@ export function RegisterForm({
           Inicia sesión
         </Link>
       </div>
+      
+      {/* Diálogos de términos y política */}
+      <TermsAndPrivacyDialog
+        open={showTermsDialog}
+        onOpenChange={setShowTermsDialog}
+      />
+      <TermsAndPrivacyDialog
+        open={showPrivacyDialog}
+        onOpenChange={setShowPrivacyDialog}
+      />
     </form>
   )
 }

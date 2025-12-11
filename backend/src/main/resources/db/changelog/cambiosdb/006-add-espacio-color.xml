@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="006-add-espacio-color" author="system">
+    <changeSet id="006-add-espacio-color" author="Mathias">
         <addColumn tableName="espacio">
             <column name="color" type="VARCHAR(7)">
                 <constraints nullable="true"/>

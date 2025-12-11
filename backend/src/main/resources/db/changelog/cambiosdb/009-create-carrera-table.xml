@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Crear tabla carrera -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <createTable tableName="carrera">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -26,7 +26,7 @@
     </changeSet>
 
     <!-- Agregar constraint unique para codigo (solo cuando no es null) -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <sql>
             CREATE UNIQUE INDEX uk_carrera_codigo ON carrera(codigo) WHERE codigo IS NOT NULL;
         </sql>

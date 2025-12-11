@@ -218,6 +218,8 @@ public class ReservaService {
         reserva.setFin(createDto.getFin());
         reserva.setEstado(estadoInicial);
         reserva.setEsPublica(esPublica);
+        reserva.setTitulo(createDto.getTitulo());
+        reserva.setMotivoSolicitud(createDto.getMotivoSolicitud());
         
         Reserva savedReserva = reservaRepository.save(reserva);
         log.info("Reserva creada exitosamente. ID: {}, Espacio: {}, Usuario: {}, Estado: {}", 
@@ -315,6 +317,8 @@ public class ReservaService {
             reserva.setFin(fechaFin);
             reserva.setEstado(estadoInicial);
             reserva.setEsPublica(esPublica);
+            reserva.setTitulo(createDto.getTitulo());
+            reserva.setMotivoSolicitud(createDto.getMotivoSolicitud());
             
             Reserva savedReserva = reservaRepository.save(reserva);
             reservasCreadas.add(savedReserva);
@@ -567,13 +571,16 @@ public class ReservaService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             
-            // Si el usuario es ANALISTA, solo mostrar reservas asignadas a él
+            // Si el usuario es ANALISTA, mostrar reservas asignadas a él O sin analista asignado (incluye externos)
             if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
                 Usuario analista = usuarioRepository.findByEmail(userEmail)
                         .orElse(null);
                 if (analista != null) {
-                    predicates.add(cb.equal(root.get("analistaAsignado").get("id"), analista.getId()));
-                    log.debug("Filtrando reservas para analista: {} (ID: {})", userEmail, analista.getId());
+                    // Mostrar reservas asignadas a este analista O sin analista asignado (null)
+                    Predicate asignadasAMi = cb.equal(root.get("analistaAsignado").get("id"), analista.getId());
+                    Predicate sinAnalista = cb.isNull(root.get("analistaAsignado"));
+                    predicates.add(cb.or(asignadasAMi, sinAnalista));
+                    log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail, analista.getId());
                 }
             }
             
@@ -638,7 +645,7 @@ public class ReservaService {
      * Si el usuario es ANALISTA, solo puede aprobar/rechazar reservas asignadas a él
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
-    public ReservaResponseDto cambiarEstadoReserva(Long id, String nuevoEstadoStr, String userEmail, String userRole) {
+    public ReservaResponseDto cambiarEstadoReserva(Long id, String nuevoEstadoStr, String userEmail, String userRole, String mensajeAnalista) {
         log.info("Cambiando estado de reserva ID: {} a {} por usuario: {} (rol: {})", id, nuevoEstadoStr, userEmail, userRole);
         
         // Validar que el nuevo estado es válido
@@ -705,6 +712,13 @@ public class ReservaService {
         
         // Cambiar el estado
         reserva.setEstado(nuevoEstado);
+        // Guardar mensaje del analista si se proporciona (tanto para aprobar como rechazar)
+        if (mensajeAnalista != null && !mensajeAnalista.trim().isEmpty()) {
+            reserva.setMensajeAnalista(mensajeAnalista.trim());
+        } else {
+            // Si no se proporciona mensaje, mantener el existente o dejarlo null
+            // No se limpia automáticamente para permitir que el analista pueda actualizarlo después
+        }
         Reserva savedReserva = reservaRepository.save(reserva);
         
         log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
@@ -1041,13 +1055,16 @@ public class ReservaService {
                 log.debug("Filtrando solo reservas públicas para usuario externo: {}", userEmail);
             }
             
-            // Si el usuario es ANALISTA, solo mostrar reservas asignadas a él
+            // Si el usuario es ANALISTA, mostrar reservas asignadas a él O sin analista asignado (incluye externos)
             if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
                 Usuario analista = usuarioRepository.findByEmail(userEmail)
                         .orElse(null);
                 if (analista != null) {
-                    predicates.add(cb.equal(root.get("analistaAsignado").get("id"), analista.getId()));
-                    log.debug("Filtrando reservas públicas para analista: {} (ID: {})", userEmail, analista.getId());
+                    // Mostrar reservas asignadas a este analista O sin analista asignado (null)
+                    Predicate asignadasAMi = cb.equal(root.get("analistaAsignado").get("id"), analista.getId());
+                    Predicate sinAnalista = cb.isNull(root.get("analistaAsignado"));
+                    predicates.add(cb.or(asignadasAMi, sinAnalista));
+                    log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail, analista.getId());
                 }
             }
             
@@ -1441,6 +1458,9 @@ public class ReservaService {
         dto.setFin(reserva.getFin());
         dto.setEstado(reserva.getEstado());
         dto.setEsPublica(reserva.getEsPublica());
+        dto.setTitulo(reserva.getTitulo());
+        dto.setMotivoSolicitud(reserva.getMotivoSolicitud());
+        dto.setMensajeAnalista(reserva.getMensajeAnalista());
         // Mapear items solicitados
         if (reserva.getItemsSolicitados() != null && !reserva.getItemsSolicitados().isEmpty()) {
             dto.setItemsSolicitados(reservaItemSolicitadoService.obtenerPorReserva(reserva.getId()));

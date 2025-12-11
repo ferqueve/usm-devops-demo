@@ -66,13 +66,14 @@ import { recomendacionesApi } from '@/lib/api/recomendaciones';
 import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
+import { TipoElementoManagement } from './TipoElementoManagement';
 
 type ViewMode = 'table' | 'cards';
 
 export default function InventoryManagement() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdminOrAnalista = user?.rol === ROLES.ADMIN || user?.rol === ROLES.ANALISTA;
+  const isAdminOrMantenimiento = user?.rol === ROLES.ADMIN || user?.rol === ROLES.MANTENIMIENTO;
   
   // Estados principales
   const [items, setItems] = useState<InventarioItem[]>([]);
@@ -129,6 +130,7 @@ export default function InventoryManagement() {
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [assignDialog, setAssignDialog] = useState(false);
   const [importDialog, setImportDialog] = useState(false);
+  const [showTiposManagement, setShowTiposManagement] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventarioItem | null>(null);
 
   // Cargar espacios, tipos y estadísticas
@@ -137,11 +139,11 @@ export default function InventoryManagement() {
     fetchTiposElemento();
     fetchStatistics();
     
-    // Cargar recomendaciones de reasignación (solo para ADMIN/ANALISTA)
-    if (isAdminOrAnalista) {
+    // Cargar recomendaciones de reasignación (solo para ADMIN/MANTENIMIENTO)
+    if (isAdminOrMantenimiento) {
       fetchReasignaciones();
     }
-  }, [isAdminOrAnalista]);
+  }, [isAdminOrMantenimiento]);
 
   // Función para cargar recomendaciones de reasignación
   const fetchReasignaciones = async () => {
@@ -309,9 +311,17 @@ export default function InventoryManagement() {
   };
 
   const handleEditSuccess = async (updatedItem: InventarioItem) => {
-    setItems(prev => 
-      prev.map(item => item.id === updatedItem.id ? updatedItem : item)
-    );
+    setItems(prev => {
+      // Mantener la posición del elemento actualizado en la lista
+      const index = prev.findIndex(item => item.id === updatedItem.id);
+      if (index !== -1) {
+        const newItems = [...prev];
+        newItems[index] = updatedItem;
+        return newItems;
+      }
+      // Si no se encuentra, actualizar normalmente
+      return prev.map(item => item.id === updatedItem.id ? updatedItem : item);
+    });
     await fetchStatistics();
   };
 
@@ -651,17 +661,29 @@ export default function InventoryManagement() {
               <span className="sm:hidden">Agregar</span>
             </Button>
           </PermissionGuard>
+          
+          <PermissionGuard requiredPermissions={['tipos_elemento:crear', 'tipos_elemento:editar']} requireAll={false}>
+            <Button 
+              onClick={() => setShowTiposManagement(true)} 
+              variant="outline" 
+              className="h-10 flex-1 sm:flex-none"
+            >
+              <Package className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Gestionar Tipos</span>
+              <span className="sm:hidden">Tipos</span>
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 
       {/* Estadísticas */}
       <InventoryStatsCards statistics={statistics} />
 
-      {/* Recomendaciones de Mantenimiento */}
-      <MantenimientoRecomendaciones />
+      {/* Recomendaciones de Mantenimiento (solo para ADMIN/MANTENIMIENTO) */}
+      {isAdminOrMantenimiento && <MantenimientoRecomendaciones />}
 
-      {/* Recomendaciones de Reasignación (solo para ADMIN/ANALISTA) */}
-      {isAdminOrAnalista && reasignaciones.length > 0 && (
+      {/* Recomendaciones de Reasignación (solo para ADMIN/MANTENIMIENTO) */}
+      {isAdminOrMantenimiento && reasignaciones.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -1039,6 +1061,14 @@ export default function InventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <TipoElementoManagement
+        open={showTiposManagement}
+        onOpenChange={setShowTiposManagement}
+        onSuccess={() => {
+          fetchTiposElemento(); // Recargar tipos cuando cambian
+        }}
+      />
     </div>
   );
 }

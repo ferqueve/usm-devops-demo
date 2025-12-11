@@ -44,7 +44,8 @@ export default function Calendar() {
   const [loading, setLoading] = useState(false);
   
   // Filtros simplificados para visualización
-  const [estadoFilter, setEstadoFilter] = useState<string>('todas');
+  // En el calendario público solo se muestran reservas confirmadas (APROBADO)
+  const estadoFilter = 'APROBADO'; // Fijo: solo confirmadas
   const [espacioFilter, setEspacioFilter] = useState<number | null>(null);
   const [carreraFilter, setCarreraFilter] = useState<number | null>(null);
   const [tipoEspacioFilter, setTipoEspacioFilter] = useState<number | null>(null);
@@ -84,10 +85,11 @@ export default function Calendar() {
     setLoading(true);
     try {
       // DOCENTE solo puede ver sus propias reservas, otros roles pueden ver todas
+      // En el calendario público solo se muestran reservas confirmadas (APROBADO)
       const response = isDocente
         ? await reservationsApi.obtenerMisReservas()
         : await reservationsApi.obtenerTodasLasReservas(
-            estadoFilter !== 'todas' ? estadoFilter : undefined,
+            'APROBADO', // Solo confirmadas
             espacioFilter,
             carreraFilter,
             tipoEspacioFilter,
@@ -98,11 +100,11 @@ export default function Calendar() {
       if (response.data) {
         let reservasFiltradas = response.data;
         
-        // Si es DOCENTE, aplicar filtros en el cliente
+        // Filtrar solo reservas confirmadas (APROBADO)
+        reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'APROBADO');
+        
+        // Si es DOCENTE, aplicar otros filtros en el cliente
         if (isDocente) {
-          if (estadoFilter !== 'todas') {
-            reservasFiltradas = reservasFiltradas.filter(r => r.estado === estadoFilter);
-          }
           if (espacioFilter !== null) {
             reservasFiltradas = reservasFiltradas.filter(r => r.espacioId === espacioFilter);
           }
@@ -130,7 +132,7 @@ export default function Calendar() {
     } finally {
       setLoading(false);
     }
-  }, [isDocente, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [isDocente, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   // Cargar reservas cuando cambian los filtros o el rol
   useEffect(() => {
@@ -143,7 +145,6 @@ export default function Calendar() {
   };
 
   const handleClearFilters = () => {
-    setEstadoFilter('todas');
     setEspacioFilter(null);
     setCarreraFilter(null);
     setTipoEspacioFilter(null);
@@ -151,8 +152,8 @@ export default function Calendar() {
     setFechaFin(undefined);
   };
 
-  // Verificar si hay filtros activos
-  const hayFiltrosActivos = estadoFilter !== 'todas' || 
+  // Verificar si hay filtros activos (sin incluir estado, que siempre es APROBADO)
+  const hayFiltrosActivos = 
     espacioFilter !== null || 
     carreraFilter !== null ||
     tipoEspacioFilter !== null ||
@@ -222,8 +223,10 @@ export default function Calendar() {
         fechaFin={fechaFin}
         viewMode="calendar"
         hayFiltrosActivos={hayFiltrosActivos}
+        showPendienteFilter={false} // No mostrar filtro de pendientes en calendario público
+        hideEstadoFilter={true} // Ocultar completamente el filtro de estado (siempre APROBADO)
         onTiempoFilterChange={() => {}} // No usado en vista pública
-        onEstadoFilterChange={setEstadoFilter}
+        onEstadoFilterChange={() => {}} // No permitir cambiar estado (siempre APROBADO)
         onEspacioFilterChange={setEspacioFilter}
         onCarreraFilterChange={setCarreraFilter}
         onTipoEspacioFilterChange={setTipoEspacioFilter}

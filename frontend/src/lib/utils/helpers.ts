@@ -106,7 +106,7 @@ export const validation = {
    * Valida si una contraseña cumple los requisitos mínimos
    */
   isValidPassword: (password: string): boolean => {
-    return password.length >= 6;
+    return password.length >= 8;
   },
 
   /**

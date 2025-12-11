@@ -119,8 +119,12 @@ public class OAuth2Service {
                 expiresIn
             );
 
+        } catch (AuthenticationException e) {
+            // Re-lanzar AuthenticationException sin modificar el mensaje
+            log.error("Error de autenticación en callback de Google OAuth: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            log.error("Error en callback de Google OAuth: {}", e.getMessage());
+            log.error("Error en callback de Google OAuth: {}", e.getMessage(), e);
             throw new AuthenticationException("Error al procesar autenticación con Google");
         }
     }

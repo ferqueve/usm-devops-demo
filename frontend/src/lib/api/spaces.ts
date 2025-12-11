@@ -153,6 +153,30 @@ export const espaciosApi = {
     return apiRequest<TipoElemento[]>('/tipos-elemento', { method: 'GET' });
   },
   
+  async crearTipoElemento(data: {
+    nombre: string;
+    descripcion?: string;
+  }): Promise<ApiResponse<TipoElemento>> {
+    return apiRequest<TipoElemento>('/tipos-elemento', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  async actualizarTipoElemento(id: number, data: {
+    nombre: string;
+    descripcion?: string;
+  }): Promise<ApiResponse<TipoElemento>> {
+    return apiRequest<TipoElemento>(`/tipos-elemento/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  async eliminarTipoElemento(id: number): Promise<ApiResponse<void>> {
+    return apiRequest<void>(`/tipos-elemento/${id}`, { method: 'DELETE' });
+  },
+  
   // Gestión de Inventario
   async crearInventarioItem(data: {
     espacioId: number;

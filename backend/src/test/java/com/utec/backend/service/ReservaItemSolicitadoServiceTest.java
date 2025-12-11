@@ -29,7 +29,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -183,6 +182,7 @@ class ReservaItemSolicitadoServiceTest {
 
     @Test
     @DisplayName("Debe buscar solicitudes con paginación")
+    @SuppressWarnings("unchecked")
     void debeBuscarSolicitudes() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);

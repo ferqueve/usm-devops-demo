@@ -52,6 +52,15 @@ public class Reserva {
     @Column(name = "es_publica", nullable = false)
     private Boolean esPublica = false;
     
+    @Column(name = "titulo", nullable = false, length = 200)
+    private String titulo;
+    
+    @Column(name = "motivo_solicitud", columnDefinition = "TEXT")
+    private String motivoSolicitud;
+    
+    @Column(name = "mensaje_analista", columnDefinition = "TEXT")
+    private String mensajeAnalista;
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

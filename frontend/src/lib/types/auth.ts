@@ -13,6 +13,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   confirmPassword: string;
+  aceptaTerminos: boolean;
+  aceptaPolitica: boolean;
 }
 
 export interface LoginResponse {

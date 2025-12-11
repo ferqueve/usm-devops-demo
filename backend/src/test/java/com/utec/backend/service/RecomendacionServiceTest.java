@@ -3,7 +3,6 @@ package com.utec.backend.service;
 import com.utec.backend.dto.recomendacion.DashboardRecomendacionesDto;
 import com.utec.backend.dto.recomendacion.RecomendacionEspacioDto;
 import com.utec.backend.model.Espacio;
-import com.utec.backend.model.Recomendacion;
 import com.utec.backend.model.TipoRecomendacion;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.EspacioRepository;
@@ -19,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
@@ -27,7 +25,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;

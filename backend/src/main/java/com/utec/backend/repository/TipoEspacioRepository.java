@@ -21,6 +21,10 @@ public interface TipoEspacioRepository extends JpaRepository<TipoEspacio, Long> 
     // Verificar si existe un tipo con el mismo nombre
     boolean existsByNombreIgnoreCase(String nombre);
     
+    // Buscar por nombre ignorando si está activo o no
+    @Query("SELECT t FROM TipoEspacio t WHERE LOWER(t.nombre) = LOWER(:nombre)")
+    java.util.Optional<TipoEspacio> findByNombreIgnoreCase(@Param("nombre") String nombre);
+    
     // Verificar si existe un tipo con el mismo nombre excluyendo un ID específico
     @Query("SELECT COUNT(t) > 0 FROM TipoEspacio t WHERE LOWER(t.nombre) = LOWER(:nombre) AND t.id != :id")
     boolean existsByNombreIgnoreCaseAndIdNot(@Param("nombre") String nombre, @Param("id") Long id);

@@ -117,36 +117,36 @@
   {
     "name": "cache.usuarioStats.ttl",
     "type": "java.lang.String",
-    "description": "A description for 'cache.usuarioStats.ttl'"
+    "description": "Time to live (TTL) in milliseconds for usuarioStats cache. Default: 600000 (10 minutes)"
   },
   {
     "name": "cache.inventarioStatistics.ttl",
     "type": "java.lang.String",
-    "description": "A description for 'cache.inventarioStatistics.ttl'"
+    "description": "Time to live (TTL) in milliseconds for inventarioStatistics cache. Default: 300000 (5 minutes)"
   },
   {
     "name": "cache.espacios.ttl",
     "type": "java.lang.String",
-    "description": "A description for 'cache.espacios.ttl'"
+    "description": "Time to live (TTL) in milliseconds for espacios cache. Default: 900000 (15 minutes)"
   },
   {
     "name": "cache.reservas.ttl",
     "type": "java.lang.String",
-    "description": "A description for 'cache.reservas.ttl'"
+    "description": "Time to live (TTL) in milliseconds for reservas cache. Default: 120000 (2 minutes)"
+  },
+  {
+    "name": "cache.recomendaciones.ttl",
+    "type": "java.lang.String",
+    "description": "Time to live (TTL) in milliseconds for recomendaciones cache. Default: 1800000 (30 minutes)"
+  },
+  {
+    "name": "cache.recomendaciones.metricas.ttl",
+    "type": "java.lang.String",
+    "description": "Time to live (TTL) in milliseconds for recomendaciones metricas cache. Default: 86400000 (24 hours)"
   },
   {
     "name": "app.timezone",
     "type": "java.lang.String",
     "description": "A description for 'app.timezone'"
-  },
-  {
-    "name": "cache.usuarioStats.ttl",
-    "type": "java.lang.String",
-    "description": "A description for 'cache.usuarioStats.ttl'"
-  },
-  {
-    "name": "cache.inventarioStatistics.ttl",
-    "type": "java.lang.String",
-    "description": "A description for 'cache.inventarioStatistics.ttl'"
   }
 ]}

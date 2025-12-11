@@ -44,6 +44,8 @@ export const reservationsApi = {
     carreraId?: number; // Opcional
     inicio: string; // ISO datetime
     fin: string;
+    titulo: string; // Obligatorio
+    motivoSolicitud?: string; // Opcional
     tipoRecurrencia?: 'DIARIA' | 'SEMANAL' | 'MENSUAL'; // Opcional
     fechaFinRecurrencia?: string; // ISO datetime, requerido si tipoRecurrencia está presente
     analistaId?: number; // Opcional: ID del analista asignado (requerido para docentes)
@@ -181,21 +183,30 @@ export const reservationsApi = {
   },
 
   // Rechazar una reserva pendiente
-  async rechazarReserva(id: number): Promise<ApiResponse<Reserva>> {
+  async rechazarReserva(id: number, mensajeAnalista?: string): Promise<ApiResponse<Reserva>> {
+    const body: { estado: string; mensajeAnalista?: string } = { estado: 'CANCELADO' };
+    if (mensajeAnalista && mensajeAnalista.trim()) {
+      body.mensajeAnalista = mensajeAnalista.trim();
+    }
     return apiRequest<Reserva>(`/reservas/${id}/estado`, {
       method: 'PATCH',
-      body: JSON.stringify({ estado: 'CANCELADO' }),
+      body: JSON.stringify(body),
     });
   },
 
   // Cambiar el estado de una reserva (método genérico)
   async cambiarEstadoReserva(
     id: number,
-    estado: 'APROBADO' | 'CANCELADO'
+    estado: 'APROBADO' | 'CANCELADO',
+    mensajeAnalista?: string
   ): Promise<ApiResponse<Reserva>> {
+    const body: { estado: string; mensajeAnalista?: string } = { estado };
+    if (mensajeAnalista && mensajeAnalista.trim()) {
+      body.mensajeAnalista = mensajeAnalista.trim();
+    }
     return apiRequest<Reserva>(`/reservas/${id}/estado`, {
       method: 'PATCH',
-      body: JSON.stringify({ estado }),
+      body: JSON.stringify(body),
     });
   },
 

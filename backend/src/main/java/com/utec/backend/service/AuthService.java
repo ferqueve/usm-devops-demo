@@ -106,6 +106,15 @@ public class AuthService {
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new AuthenticationException("Las contraseñas no coinciden. Verifica que hayas escrito la misma contraseña en ambos campos.");
         }
+        
+        // Validar aceptación de términos y política
+        if (request.getAceptaTerminos() == null || !request.getAceptaTerminos()) {
+            throw new AuthenticationException("Debes aceptar los términos y condiciones para registrarte.");
+        }
+        
+        if (request.getAceptaPolitica() == null || !request.getAceptaPolitica()) {
+            throw new AuthenticationException("Debes aceptar la política de privacidad para registrarte.");
+        }
 
         // Verificar si el usuario ya existe
         Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(request.getEmail());

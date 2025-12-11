@@ -15,9 +15,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
+import java.util.Properties;
 
 /**
  * Servicio para el envío de emails usando Gmail API
@@ -94,9 +100,10 @@ public class GmailApiService {
      */
     public boolean sendEmail(String to, String subject, String bodyText) {
         try {
-            // Crear mensaje simple sin MIME
+            // Crear mensaje sin encoding especial
             String emailContent = createSimpleEmailContent(to, subject, bodyText);
-            String encodedEmail = Base64.getUrlEncoder().withoutPadding().encodeToString(emailContent.getBytes("UTF-8"));
+            byte[] emailBytes = emailContent.getBytes();
+            String encodedEmail = Base64.getUrlEncoder().withoutPadding().encodeToString(emailBytes);
             
             Message message = new Message();
             message.setRaw(encodedEmail);
@@ -123,9 +130,27 @@ public class GmailApiService {
      */
     public boolean sendHtmlEmail(String to, String subject, String htmlBody) {
         try {
-            // Crear mensaje HTML simple
-            String emailContent = createHtmlEmailContent(to, subject, htmlBody);
-            String encodedEmail = Base64.getUrlEncoder().withoutPadding().encodeToString(emailContent.getBytes("UTF-8"));
+            // Configurar sesión con charset UTF-8 como se sugiere
+            Properties props = new Properties();
+            props.put("mail.mime.charset", "UTF-8");
+            Session session = Session.getInstance(props);
+            
+            // Crear MimeMessage
+            MimeMessage email = new MimeMessage(session);
+            email.setFrom(new InternetAddress(fromEmail));
+            email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
+            
+            // Usar setSubject y setContent con UTF-8 explícito como se sugiere
+            email.setSubject(subject, "UTF-8");
+            email.setContent(htmlBody, "text/html; charset=UTF-8");
+            
+            // Codificar y envolver el mensaje MIME en un mensaje de Gmail
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            email.writeTo(buffer);
+            byte[] rawMessageBytes = buffer.toByteArray();
+            
+            // Usar Base64 URL-safe encoding
+            String encodedEmail = Base64.getUrlEncoder().withoutPadding().encodeToString(rawMessageBytes);
             
             Message message = new Message();
             message.setRaw(encodedEmail);
@@ -136,6 +161,9 @@ public class GmailApiService {
             log.info("HTML email sent successfully to {} with message ID: {}", to, message.getId());
             return true;
             
+        } catch (MessagingException | IOException e) {
+            log.error("Error sending HTML email to {}: {}", to, e.getMessage(), e);
+            return false;
         } catch (Exception e) {
             log.error("Error sending HTML email to {}: {}", to, e.getMessage());
             return false;
@@ -143,52 +171,43 @@ public class GmailApiService {
     }
 
     /**
-     * Codifica el Subject según RFC 2047 para soportar caracteres especiales
-     */
-    private String encodeSubject(String subject) {
-        try {
-            // Verificar si el subject contiene caracteres no ASCII
-            boolean needsEncoding = subject.chars().anyMatch(c -> c > 127);
-            
-            if (!needsEncoding) {
-                return subject;
-            }
-            
-            // Codificar usando Base64 según RFC 2047
-            String encoded = Base64.getEncoder().encodeToString(subject.getBytes("UTF-8"));
-            return "=?UTF-8?B?" + encoded + "?=";
-        } catch (Exception e) {
-            log.warn("Error encoding subject, using original: {}", e.getMessage());
-            return subject;
-        }
-    }
-
-    /**
-     * Crea el contenido del email en formato simple
+     * Crea el contenido del email en formato simple (para emails de texto plano)
      */
     private String createSimpleEmailContent(String to, String subject, String bodyText) {
-        StringBuilder email = new StringBuilder();
-        email.append("From: ").append(fromEmail).append("\r\n");
-        email.append("To: ").append(to).append("\r\n");
-        email.append("Subject: ").append(encodeSubject(subject)).append("\r\n");
-        email.append("Content-Type: text/plain; charset=UTF-8\r\n");
-        email.append("\r\n");
-        email.append(bodyText);
-        return email.toString();
-    }
-
-    /**
-     * Crea el contenido del email HTML en formato simple
-     */
-    private String createHtmlEmailContent(String to, String subject, String htmlBody) {
-        StringBuilder email = new StringBuilder();
-        email.append("From: ").append(fromEmail).append("\r\n");
-        email.append("To: ").append(to).append("\r\n");
-        email.append("Subject: ").append(encodeSubject(subject)).append("\r\n");
-        email.append("Content-Type: text/html; charset=UTF-8\r\n");
-        email.append("\r\n");
-        email.append(htmlBody);
-        return email.toString();
+        try {
+            // Configurar sesión con charset UTF-8 como se sugiere
+            Properties props = new Properties();
+            props.put("mail.mime.charset", "UTF-8");
+            Session session = Session.getInstance(props);
+            
+            MimeMessage email = new MimeMessage(session);
+            email.setFrom(new InternetAddress(fromEmail));
+            email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
+            
+            // Usar setSubject y setText con UTF-8 explícito como se sugiere
+            email.setSubject(subject, "UTF-8");
+            email.setText(bodyText, "UTF-8");
+            
+            // Convertir MimeMessage a bytes
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            email.writeTo(buffer);
+            byte[] rawMessageBytes = buffer.toByteArray();
+            
+            // Retornar como string para codificar después
+            return new String(rawMessageBytes);
+            
+        } catch (Exception e) {
+            log.error("Error creating simple email content: {}", e.getMessage());
+            // Fallback a método simple
+            StringBuilder email = new StringBuilder();
+            email.append("From: ").append(fromEmail).append("\r\n");
+            email.append("To: ").append(to).append("\r\n");
+            email.append("Subject: ").append(subject).append("\r\n");
+            email.append("Content-Type: text/plain; charset=UTF-8\r\n");
+            email.append("\r\n");
+            email.append(bodyText);
+            return email.toString();
+        }
     }
 
     /**

@@ -6,12 +6,12 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Hacer espacio_id nullable para permitir desasignación -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <dropNotNullConstraint tableName="inventario_item" columnName="espacio_id" columnDataType="BIGINT"/>
     </changeSet>
 
     <!-- Opcional: Establecer un valor por defecto o NULL para items sin espacio asignado -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <sql>
             UPDATE inventario_item SET espacio_id = NULL WHERE espacio_id IS NULL OR espacio_id = 0;
         </sql>

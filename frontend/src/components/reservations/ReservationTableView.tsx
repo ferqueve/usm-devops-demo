@@ -62,6 +62,7 @@ interface ReservationTableViewProps {
   fechaFin: Date | undefined;
   viewMode: 'cards' | 'table' | 'calendar';
   hayFiltrosActivos: boolean;
+  showPendienteFilter?: boolean;
   onTiempoFilterChange: (filter: string) => void;
   onEstadoFilterChange: (filter: string) => void;
   onEspacioFilterChange: (filter: number | null) => void;
@@ -101,6 +102,7 @@ export default function ReservationTableView({
   fechaFin,
   viewMode,
   hayFiltrosActivos,
+  showPendienteFilter = false,
   onTiempoFilterChange,
   onEstadoFilterChange,
   onEspacioFilterChange,
@@ -218,6 +220,7 @@ export default function ReservationTableView({
                 carrerasUnicas={carrerasUnicas}
                 tiposEspacioUnicos={tiposEspacioUnicos}
                 hayFiltrosActivos={hayFiltrosActivos}
+                showPendienteFilter={showPendienteFilter}
                 onTiempoFilterChange={onTiempoFilterChange}
                 onEstadoFilterChange={onEstadoFilterChange}
                 onEspacioFilterChange={onEspacioFilterChange}
@@ -361,7 +364,9 @@ export default function ReservationTableView({
                                 title={reserva.tipoEspacioNombre || 'Tipo de espacio'}
                               />
                             ) : null}
-                            <span className="truncate">{reserva.espacioNombre}</span>
+                            <span className="truncate" title={reserva.titulo || reserva.espacioNombre}>
+                              {reserva.titulo || reserva.espacioNombre}
+                            </span>
                           </div>
                           {/* Fecha visible solo en móviles */}
                           <div className={`flex items-center gap-1 text-xs text-muted-foreground md:hidden mt-0.5`}>

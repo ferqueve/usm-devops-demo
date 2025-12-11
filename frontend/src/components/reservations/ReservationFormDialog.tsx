@@ -53,6 +53,7 @@ export default function ReservationFormDialog({
   const { user } = useAuth();
   const isDocente = user?.rol === ROLES.DOCENTE;
   const isExterno = user?.rol === ROLES.EXTERNO;
+  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
   
   // Ref para medir la altura del formulario y aplicarla al panel de recomendaciones
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -101,6 +102,8 @@ export default function ReservationFormDialog({
   const [formData, setFormData] = useState({
     espacioId: '',
     carreraId: '',
+    titulo: '',
+    motivoSolicitud: '',
     horaInicioHora: '',
     horaInicioMinuto: '00',
     horaFinHora: '',
@@ -403,6 +406,8 @@ export default function ReservationFormDialog({
     setFormData({
       espacioId: '',
       carreraId: '',
+      titulo: '',
+      motivoSolicitud: '',
       horaInicioHora: '',
       horaInicioMinuto: '00',
       horaFinHora: '',
@@ -612,25 +617,31 @@ export default function ReservationFormDialog({
 
     // ===== VALIDACIONES =====
     
-    // 1. Validar Espacio (obligatorio)
+    // 1. Validar Título (obligatorio)
+    if (!formData.titulo || formData.titulo.trim() === '') {
+      toast.error('Por favor ingresa un título para la reserva');
+      return;
+    }
+
+    // 2. Validar Espacio (obligatorio)
     if (!formData.espacioId) {
       toast.error('Por favor selecciona un espacio');
       return;
     }
 
-    // 2. Validar Fecha (obligatorio)
+    // 3. Validar Fecha (obligatorio)
     if (!fecha) {
       toast.error('Por favor selecciona una fecha');
       return;
     }
 
-    // 3. Validar Hora de Inicio (obligatorio)
+    // 4. Validar Hora de Inicio (obligatorio)
     if (!formData.horaInicioHora) {
       toast.error('Por favor selecciona la hora de inicio');
       return;
     }
 
-    // 4. Validar Hora de Fin (obligatorio)
+    // 5. Validar Hora de Fin (obligatorio)
     if (!formData.horaFinHora) {
       toast.error('Por favor selecciona la hora de fin');
       return;
@@ -640,7 +651,7 @@ export default function ReservationFormDialog({
     const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
     const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
 
-    // 5. Validar formato de horas
+    // 6. Validar formato de horas
     const fechaStr = fecha.toISOString().split('T')[0];
     const inicio = new Date(`${fechaStr}T${horaInicio}`);
     const fin = new Date(`${fechaStr}T${horaFin}`);
@@ -650,32 +661,32 @@ export default function ReservationFormDialog({
       return;
     }
 
-    // 6. Validar que fin > inicio
+    // 7. Validar que fin > inicio
     if (fin <= inicio) {
       toast.error('La hora de fin debe ser posterior a la hora de inicio');
       return;
     }
 
-    // 7. Validar que no sea en el pasado
+    // 8. Validar que no sea en el pasado
     if (inicio < new Date()) {
       toast.error('No se puede reservar en el pasado');
       return;
     }
 
-    // 8. Validar duración mínima (30 minutos)
+    // 9. Validar duración mínima (30 minutos)
     const diferenciaMinutos = (fin.getTime() - inicio.getTime()) / (1000 * 60);
     if (diferenciaMinutos < 30) {
       toast.error('La reserva debe tener una duración mínima de 30 minutos');
       return;
     }
 
-    // 9. Validar analista si es docente (externos no requieren analista)
+    // 10. Validar analista si es docente (externos no requieren analista)
     if (isDocente && !formData.analistaId) {
       toast.error('Por favor selecciona un analista para gestionar tu solicitud');
       return;
     }
 
-    // 10. Validar recurrencia si se especificó
+    // 11. Validar recurrencia si se especificó
     if (formData.tipoRecurrencia) {
       if (!formData.fechaFinRecurrencia) {
         toast.error('Por favor selecciona la fecha de fin de recurrencia');
@@ -703,6 +714,8 @@ export default function ReservationFormDialog({
       await reservationsApi.crearReserva({
         espacioId: parseInt(formData.espacioId),
         carreraId: formData.carreraId ? parseInt(formData.carreraId) : undefined,
+        titulo: formData.titulo.trim(),
+        motivoSolicitud: formData.motivoSolicitud?.trim() || undefined,
         inicio: inicioISO,
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
@@ -722,11 +735,13 @@ export default function ReservationFormDialog({
         : 1;
       
       toast.success(
-        isDocente 
-          ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
-          : cantidadReservas > 1
-            ? `${cantidadReservas} reservas creadas exitosamente`
-            : 'Reserva creada exitosamente'
+        isExterno
+          ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} creada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
+          : isDocente 
+            ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
+            : cantidadReservas > 1
+              ? `${cantidadReservas} reservas creadas exitosamente`
+              : 'Reserva creada exitosamente'
       );
       onSuccess();
     } catch (error: unknown) {
@@ -754,6 +769,8 @@ export default function ReservationFormDialog({
 
   // Verificar si el formulario está completo y sin errores
   const isFormValid = !!(
+    formData.titulo &&
+    formData.titulo.trim() !== '' &&
     formData.espacioId &&
     fecha &&
     formData.horaInicioHora &&
@@ -775,7 +792,7 @@ export default function ReservationFormDialog({
               </div>
             </div>
             <DialogTitle className="text-lg font-bold text-white">
-              {isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
+              {isExterno ? 'Nueva Solicitud de Reserva' : isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
             </DialogTitle>
             {/* Puntos decorativos tipo ticket */}
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
@@ -791,7 +808,7 @@ export default function ReservationFormDialog({
           {/* Contenedor principal: formulario y recomendaciones */}
           <div className="relative flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
             {/* Contenido del formulario */}
-            <div ref={formContainerRef} className="bg-white lg:w-[calc(100%-400px)] min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6">
+            <div ref={formContainerRef} className={`bg-white min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6 ${!isExterno ? 'lg:w-[calc(100%-400px)]' : 'lg:w-full'}`}>
             {/* Espacio */}
             <div className="flex items-center gap-4">
               <Label htmlFor="espacio" className="text-sm font-semibold text-gray-700 min-w-[80px]">Espacio *</Label>
@@ -823,7 +840,8 @@ export default function ReservationFormDialog({
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
-            {/* Carrera */}
+            {/* Carrera - Oculto para usuarios externos */}
+            {!isExterno && (
             <div className="flex items-center gap-4">
               <Label htmlFor="carrera" className="text-sm font-semibold text-gray-700 min-w-[80px]">Carrera</Label>
               <div className="flex-1">
@@ -845,9 +863,46 @@ export default function ReservationFormDialog({
                 </Select>
               </div>
             </div>
+            )}
 
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Título */}
+            <div className="space-y-2">
+              <Label htmlFor="titulo" className="text-sm font-semibold text-gray-700">Título *</Label>
+              <Input
+                id="titulo"
+                value={formData.titulo}
+                onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+                placeholder="Ej: Clase de Matemáticas, Reunión de equipo, etc."
+                className="h-10"
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500">{formData.titulo.length}/200 caracteres</p>
+            </div>
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Motivo de solicitud - Solo visible para docentes/externos, NO para analistas/admin */}
+            {!isAnalista && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-gray-700">Motivo de la solicitud</Label>
+                  <Textarea
+                    id="motivoSolicitud"
+                    value={formData.motivoSolicitud}
+                    onChange={(e) => setFormData(prev => ({ ...prev, motivoSolicitud: e.target.value }))}
+                    placeholder="Explica brevemente el motivo de tu solicitud (opcional)"
+                    className="min-h-[80px] resize-none"
+                  />
+                </div>
+
+                {/* Línea punteada */}
+                <div className="border-t border-dashed border-gray-300 my-4"></div>
+              </>
+            )}
 
             {/* Indicador de reserva pública - solo para externos */}
             {isExterno && (
@@ -1639,7 +1694,7 @@ export default function ReservationFormDialog({
               <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
                 <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
+                  {isExterno ? 'Crear Solicitud' : isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
                 </Button>
               </PermissionGuard>
             </DialogFooter>

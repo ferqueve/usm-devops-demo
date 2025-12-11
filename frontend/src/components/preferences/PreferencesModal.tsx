@@ -17,12 +17,13 @@ import {
 } from '@/components/ui/select';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { preferencesApi, type PreferenciasEmail, type PreferenciasVista, type PreferenciasEmailResponse, type PreferenciasVistaResponse } from '@/lib/api/preferences';
+import { preferencesApi, type PreferenciasEmail, type PreferenciasVista } from '@/lib/api/preferences';
 import { usuariosApi } from '@/lib/api/users';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/config/constants';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { TermsAndPrivacyDialog } from '@/components/public/auth/TermsAndPrivacyDialog';
 import type { User, UpdateProfileData } from '@/lib/types/users';
 
 interface PreferencesModalProps {
@@ -53,6 +54,8 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
+  const [termsDialogTab, setTermsDialogTab] = useState<"terms" | "privacy">("terms");
 
   // Usar el campo hasPassword del backend para determinar si tiene contraseña
   const hasPassword = userProfile?.hasPassword === true;
@@ -142,7 +145,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
       }
 
       // Guardar preferencias y perfil en paralelo
-      const promises: Promise<any>[] = [
+      const promises: Promise<unknown>[] = [
         preferencesApi.actualizarPreferenciasEmail({ email: emailPrefs }),
         preferencesApi.actualizarPreferenciasVista({ vista: vistaPrefs }),
       ];
@@ -179,9 +182,15 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
       
       toast.success('Preferencias guardadas correctamente');
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al guardar preferencias:', error);
-      const errorMessage = error?.response?.data?.error || error?.message || 'Error al guardar preferencias';
+      let errorMessage = 'Error al guardar preferencias';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } }; message?: string };
+        errorMessage = axiosError.response?.data?.error || axiosError.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
       toast.error(errorMessage);
     } finally {
       setSaving(false);
@@ -256,7 +265,8 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
               )}
             </div>
 
-            {/* Sección de Preferencias de Vista */}
+            {/* Sección de Preferencias de Vista - Oculto para usuarios externos */}
+            {user?.rol !== ROLES.EXTERNO && (
             <div className="space-y-4">
               <Label className="text-base font-semibold">Preferencias de Vista</Label>
               <div className="space-y-4">
@@ -460,6 +470,50 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                 )}
               </div>
             </div>
+            )}
+
+            {/* Sección de Términos y Políticas */}
+            <div className="space-y-4">
+              <Label className="text-base font-semibold">Términos y Políticas</Label>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-md border border-border">
+                  <div>
+                    <Label className="text-sm font-medium">Términos y Condiciones</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Consulta los términos y condiciones de uso del sistema
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTermsDialogTab("terms");
+                      setShowTermsDialog(true);
+                    }}
+                  >
+                    Ver Términos
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-md border border-border">
+                  <div>
+                    <Label className="text-sm font-medium">Política de Privacidad</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Consulta cómo manejamos tus datos personales
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTermsDialogTab("privacy");
+                      setShowTermsDialog(true);
+                    }}
+                  >
+                    Ver Política
+                  </Button>
+                </div>
+              </div>
+            </div>
 
             {/* Sección de Seguridad - Colapsable */}
             <Collapsible open={securityExpanded} onOpenChange={setSecurityExpanded}>
@@ -512,10 +566,23 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                       <Input
                         id="password"
                         type="password"
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Mínimo 8 caracteres"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        minLength={6}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setPassword(value);
+                          // Limpiar mensaje de error personalizado mientras se escribe
+                          e.target.setCustomValidity('');
+                        }}
+                        onInvalid={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          if (target.validity.tooShort) {
+                            target.setCustomValidity('La contraseña debe tener al menos 8 caracteres');
+                          } else if (target.validity.valueMissing) {
+                            target.setCustomValidity('Este campo es obligatorio');
+                          }
+                        }}
+                        minLength={8}
                         disabled={saving}
                       />
                     </div>
@@ -529,8 +596,21 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                         type="password"
                         placeholder="Repite la contraseña"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        minLength={6}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setConfirmPassword(value);
+                          // Limpiar mensaje de error personalizado mientras se escribe
+                          e.target.setCustomValidity('');
+                        }}
+                        onInvalid={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          if (target.validity.tooShort) {
+                            target.setCustomValidity('La contraseña debe tener al menos 8 caracteres');
+                          } else if (target.validity.valueMissing) {
+                            target.setCustomValidity('Este campo es obligatorio');
+                          }
+                        }}
+                        minLength={8}
                         disabled={saving}
                       />
                     </div>
@@ -560,6 +640,13 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
             </div>
           </div>
         )}
+        
+        {/* Diálogo de términos y política */}
+        <TermsAndPrivacyDialog
+          open={showTermsDialog}
+          onOpenChange={setShowTermsDialog}
+          defaultTab={termsDialogTab}
+        />
       </DialogContent>
     </Dialog>
   );

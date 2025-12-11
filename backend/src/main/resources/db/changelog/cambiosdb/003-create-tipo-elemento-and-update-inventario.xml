@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Crear tabla tipo_espacio -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <createTable tableName="tipo_espacio">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -29,14 +29,14 @@
     </changeSet>
 
     <!-- Agregar columna tipo_espacio_id a espacio -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <addColumn tableName="espacio">
             <column name="tipo_espacio_id" type="BIGINT"/>
         </addColumn>
     </changeSet>
 
     <!-- Agregar foreign key constraint para tipo_espacio_id -->
-    <changeSet id="003" author="mathi">
+    <changeSet id="003" author="Mathias">
         <addForeignKeyConstraint baseTableName="espacio"
                                  baseColumnNames="tipo_espacio_id"
                                  constraintName="fk_espacio_tipo_espacio"
@@ -45,14 +45,14 @@
     </changeSet>
 
     <!-- Agregar columna deleted_at a espacio -->
-    <changeSet id="004" author="mathi">
+    <changeSet id="004" author="Mathias">
         <addColumn tableName="espacio">
             <column name="deleted_at" type="TIMESTAMP"/>
         </addColumn>
     </changeSet>
 
     <!-- Crear tabla tipo_elemento -->
-    <changeSet id="005" author="mathi">
+    <changeSet id="005" author="Mathias">
         <createTable tableName="tipo_elemento">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -75,14 +75,14 @@
     </changeSet>
 
     <!-- Agregar columna tipo_elemento_id a inventario_item -->
-    <changeSet id="006" author="mathi">
+    <changeSet id="006" author="Mathias">
         <addColumn tableName="inventario_item">
             <column name="tipo_elemento_id" type="BIGINT"/>
         </addColumn>
     </changeSet>
 
     <!-- Agregar foreign key constraint para tipo_elemento_id -->
-    <changeSet id="007" author="mathi">
+    <changeSet id="007" author="Mathias">
         <addForeignKeyConstraint baseTableName="inventario_item"
                                  baseColumnNames="tipo_elemento_id"
                                  constraintName="fk_inventario_tipo_elemento"
@@ -91,7 +91,7 @@
     </changeSet>
 
     <!-- Agregar nuevas columnas a inventario_item -->
-    <changeSet id="008" author="mathi">
+    <changeSet id="008" author="Mathias">
         <addColumn tableName="inventario_item">
             <column name="marca" type="VARCHAR(100)"/>
             <column name="modelo" type="VARCHAR(100)"/>
@@ -113,7 +113,7 @@
     </changeSet>
 
     <!-- Eliminar columna tipo antigua de inventario_item -->
-    <changeSet id="009" author="mathi">
+    <changeSet id="009" author="Mathias">
         <dropColumn tableName="inventario_item" columnName="tipo"/>
     </changeSet>
 

@@ -23,11 +23,26 @@ public class TipoEspacioService {
     private final TipoEspacioRepository tipoEspacioRepository;
     
     public TipoEspacioResponseDto createTipoEspacio(TipoEspacioCreateDto createDto) {
-        // Verificar si ya existe un tipo con el mismo nombre
-        if (tipoEspacioRepository.existsByNombreIgnoreCase(createDto.getNombre())) {
-            throw new RuntimeException("Ya existe un tipo de espacio con el nombre: " + createDto.getNombre());
+        // Buscar si existe un tipo con el mismo nombre (incluyendo desactivados)
+        java.util.Optional<TipoEspacio> tipoExistente = tipoEspacioRepository.findByNombreIgnoreCase(createDto.getNombre());
+        
+        if (tipoExistente.isPresent()) {
+            TipoEspacio tipo = tipoExistente.get();
+            // Si está activo, lanzar error
+            if (tipo.getActivo()) {
+                throw new RuntimeException("Ya existe un tipo de espacio activo con el nombre: " + createDto.getNombre());
+            }
+            // Si está desactivado, reactivarlo
+            tipo.setActivo(true);
+            tipo.setDescripcion(createDto.getDescripcion());
+            tipo.setColor(createDto.getColor() != null ? createDto.getColor() : generarColor(createDto.getNombre()));
+            tipo.setDeletedAt(null);
+            tipo.setUpdatedAt(Instant.now());
+            TipoEspacio savedTipoEspacio = tipoEspacioRepository.save(tipo);
+            return mapToResponseDto(savedTipoEspacio);
         }
         
+        // Si no existe, crear uno nuevo
         TipoEspacio tipoEspacio = new TipoEspacio();
         tipoEspacio.setNombre(createDto.getNombre());
         tipoEspacio.setDescripcion(createDto.getDescripcion());

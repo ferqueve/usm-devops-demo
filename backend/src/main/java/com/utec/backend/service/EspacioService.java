@@ -27,6 +27,28 @@ public class EspacioService {
     
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public EspacioResponseDto createEspacio(EspacioCreateDto createDto) {
+        // Buscar si existe un espacio con el mismo nombre (incluyendo eliminados)
+        java.util.Optional<Espacio> espacioExistente = espacioRepository.findByNombreIgnoreCase(createDto.getNombre());
+        
+        if (espacioExistente.isPresent()) {
+            Espacio espacio = espacioExistente.get();
+            // Si no está eliminado, lanzar error
+            if (espacio.getDeletedAt() == null) {
+                throw new RuntimeException("Ya existe un espacio activo con el nombre: " + createDto.getNombre());
+            }
+            // Si está eliminado, reactivarlo
+            espacio.setCapacidad(createDto.getCapacidad());
+            espacio.setImagenUrl(createDto.getImagenUrl());
+            espacio.setTipoEspacioId(createDto.getTipoEspacioId());
+            espacio.setEstado(createDto.getEstado() != null ? createDto.getEstado() : "DISPONIBLE");
+            espacio.setEdificioId(createDto.getEdificioId());
+            espacio.setDeletedAt(null);
+            espacio.setUpdatedAt(Instant.now());
+            Espacio savedEspacio = espacioRepository.save(espacio);
+            return mapToResponseDto(savedEspacio);
+        }
+        
+        // Si no existe, crear uno nuevo
         Espacio espacio = new Espacio();
         espacio.setNombre(createDto.getNombre());
         espacio.setCapacidad(createDto.getCapacidad());
@@ -85,17 +107,11 @@ public class EspacioService {
         Espacio espacio = espacioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
         
-        // Eliminar imagen asociada si existe
-        if (espacio.getImagenUrl() != null && !espacio.getImagenUrl().trim().isEmpty()) {
-            try {
-                fileStorageService.deleteImage(espacio.getImagenUrl());
-            } catch (Exception e) {
-                // Log el error pero no fallar la eliminación del espacio
-                log.warn("Error al eliminar imagen del espacio {}: {}", id, e.getMessage());
-            }
-        }
+        // Soft delete: marcar como eliminado
+        espacio.setDeletedAt(Instant.now());
+        espacio.setUpdatedAt(Instant.now());
         
-        espacioRepository.deleteById(id);
+        espacioRepository.save(espacio);
     }
     
     @Transactional(readOnly = true)

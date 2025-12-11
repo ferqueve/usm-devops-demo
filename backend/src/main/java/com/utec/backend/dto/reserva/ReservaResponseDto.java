@@ -34,6 +34,9 @@ public class ReservaResponseDto {
     private Instant fin;
     private Reserva.EstadoReserva estado;
     private Boolean esPublica;
+    private String titulo;
+    private String motivoSolicitud;
+    private String mensajeAnalista;
     private List<ReservaItemSolicitadoResponseDto> itemsSolicitados;
     private Instant createdAt;
     private Instant updatedAt;

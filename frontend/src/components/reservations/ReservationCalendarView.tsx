@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
-import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, Maximize2, Minimize2, CheckCircle2, XCircle, Loader2, LayoutGrid, Table as TableIcon, CalendarDays } from 'lucide-react';
+import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, Maximize2, Minimize2, CheckCircle2, XCircle, Hourglass, Loader2, LayoutGrid, Table as TableIcon, CalendarDays } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import { getEstadoConfig, formatTime } from './reservationUtils';
 import ReservationFilters from './ReservationFilters';
@@ -52,6 +52,8 @@ interface ReservationCalendarViewProps {
   fechaFin: Date | undefined;
   viewMode: 'cards' | 'table' | 'calendar';
   hayFiltrosActivos: boolean;
+  showPendienteFilter?: boolean;
+  hideEstadoFilter?: boolean; // Ocultar completamente el filtro de estado
   onTiempoFilterChange: (filter: string) => void;
   onEstadoFilterChange: (filter: string) => void;
   onEspacioFilterChange: (filter: number | null) => void;
@@ -87,6 +89,8 @@ export default function ReservationCalendarView({
   fechaFin,
   viewMode,
   hayFiltrosActivos,
+  showPendienteFilter = false,
+  hideEstadoFilter = false,
   onTiempoFilterChange,
   onEstadoFilterChange,
   onEspacioFilterChange,
@@ -559,7 +563,7 @@ export default function ReservationCalendarView({
                                 esPasada ? 'text-muted-foreground' : 'text-foreground'
                               }`}
                             >
-                              {reserva.espacioNombre}
+                              {reserva.titulo || reserva.espacioNombre}
                             </h4>
                             <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
                               <div className="flex items-center gap-1">
@@ -770,13 +774,14 @@ export default function ReservationCalendarView({
                      new Date(a.inicio).getTime() - new Date(b.inicio).getTime()
                    );
 
-                   // Primero, agrupar reservas con el MISMO rango (mismo inicio y fin)
+                   // Primero, agrupar reservas con el MISMO rango Y MISMO estado (mismo inicio, fin y estado)
                    const reservasAgrupadasPorRango: Array<{
                      reservas: typeof reservasOrdenadas;
                      inicio: Date;
                      fin: Date;
                      minutosInicio: number;
                      minutosFin: number;
+                     estado: string;
                    }> = [];
 
                    reservasOrdenadas.forEach(reserva => {
@@ -785,13 +790,15 @@ export default function ReservationCalendarView({
                      const minutosInicio = inicioReserva.getHours() * 60 + inicioReserva.getMinutes();
                      const minutosFin = finReserva.getHours() * 60 + finReserva.getMinutes();
 
-                     // Buscar si ya existe un grupo con exactamente el mismo rango
+                     // Buscar si ya existe un grupo con exactamente el mismo rango Y mismo estado
                      const grupoExistente = reservasAgrupadasPorRango.find(grupo =>
-                       grupo.minutosInicio === minutosInicio && grupo.minutosFin === minutosFin
+                       grupo.minutosInicio === minutosInicio && 
+                       grupo.minutosFin === minutosFin &&
+                       grupo.estado === reserva.estado
                      );
 
                      if (grupoExistente) {
-                       // Agregar a grupo existente con mismo rango
+                       // Agregar a grupo existente con mismo rango y estado
                        grupoExistente.reservas.push(reserva);
                      } else {
                        // Crear nuevo grupo
@@ -800,76 +807,93 @@ export default function ReservationCalendarView({
                          inicio: inicioReserva,
                          fin: finReserva,
                          minutosInicio,
-                         minutosFin
+                         minutosFin,
+                         estado: reserva.estado
                        });
                      }
                    });
 
-                   // Ahora agrupar grupos que se solapan (pero con rangos diferentes) para distribución horizontal
-                   const gruposSolapados: Array<Array<typeof reservasAgrupadasPorRango[0]>> = [];
+                   // Algoritmo inteligente de posicionamiento: distribuir reservas en columnas
+                   // Las reservas que NO se solapan pueden compartir la misma columna
+                   // Las reservas que SÍ se solapan van en columnas diferentes
+                   const columnas: Array<Array<typeof reservasAgrupadasPorRango[0]>> = [];
 
-                   reservasAgrupadasPorRango.forEach(grupoActual => {
-                     const gruposSuperpuestos: number[] = [];
-
-                     gruposSolapados.forEach((grupoSolapado, grupoIndex) => {
-                       const haySolapamiento = grupoSolapado.some(grupoEnSolapado => {
+                   reservasAgrupadasPorRango.forEach(grupoRango => {
+                     // Buscar la primera columna donde esta reserva NO se solapa con ninguna existente
+                     let columnaEncontrada = -1;
+                     
+                     for (let i = 0; i < columnas.length; i++) {
+                       const columna = columnas[i];
+                       // Verificar si esta reserva se solapa con alguna reserva en esta columna
+                       const haySolapamiento = columna.some(grupoEnColumna => {
                          return (
-                           (grupoActual.minutosInicio < grupoEnSolapado.minutosFin && grupoActual.minutosFin > grupoEnSolapado.minutosInicio)
+                           grupoRango.minutosInicio < grupoEnColumna.minutosFin && 
+                           grupoRango.minutosFin > grupoEnColumna.minutosInicio
                          );
                        });
-
-                       if (haySolapamiento) {
-                         gruposSuperpuestos.push(grupoIndex);
+                       
+                       // Si no hay solapamiento, esta columna es válida
+                       if (!haySolapamiento) {
+                         columnaEncontrada = i;
+                         break;
                        }
-                     });
-
-                     if (gruposSuperpuestos.length === 0) {
-                       gruposSolapados.push([grupoActual]);
+                     }
+                     
+                     // Si no se encontró una columna existente, crear una nueva
+                     if (columnaEncontrada === -1) {
+                       columnas.push([grupoRango]);
+                       columnaEncontrada = columnas.length - 1;
                      } else {
-                       // Fusionar grupos superpuestos
-                       const grupoFusionado = gruposSuperpuestos.flatMap(idx => gruposSolapados[idx]);
-                       grupoFusionado.push(grupoActual);
-                       gruposSuperpuestos.reverse().forEach(idx => gruposSolapados.splice(idx, 1));
-                       gruposSolapados.push(grupoFusionado);
+                       // Agregar a la columna encontrada
+                       columnas[columnaEncontrada].push(grupoRango);
                      }
                    });
 
-                   // Crear el resultado: cada grupo de reservas con mismo rango se trata como una unidad
+                   // Crear el resultado con las posiciones calculadas
                    const resultado: Array<{
                      reservas: typeof reservasOrdenadas;
                      inicio: Date;
                      fin: Date;
                      minutosInicio: number;
                      minutosFin: number;
+                     estado: string;
                      columna: number;
                      totalColumnas: number;
                    }> = [];
 
+                   // Calcular el número total de columnas necesarias
+                   const totalColumnas = columnas.length;
+
+                   // Asignar posición a cada grupo
                    reservasAgrupadasPorRango.forEach(grupoRango => {
-                     // Encontrar en qué grupo solapado está
-                     const grupoSolapado = gruposSolapados.find(gs =>
-                       gs.some(g => g.minutosInicio === grupoRango.minutosInicio && g.minutosFin === grupoRango.minutosFin)
-                     );
-
-                     if (!grupoSolapado) {
-                       resultado.push({
-                         ...grupoRango,
-                         columna: 0,
-                         totalColumnas: 1
-                       });
-                     } else {
-                       // Ordenar grupo solapado por hora de inicio
-                       const grupoSolapadoOrdenado = [...grupoSolapado].sort((a, b) => a.minutosInicio - b.minutosInicio);
-                       const indiceEnGrupo = grupoSolapadoOrdenado.findIndex(
-                         g => g.minutosInicio === grupoRango.minutosInicio && g.minutosFin === grupoRango.minutosFin
-                       );
-
-                       resultado.push({
-                         ...grupoRango,
-                         columna: indiceEnGrupo,
-                         totalColumnas: grupoSolapadoOrdenado.length
-                       });
+                     // Encontrar en qué columna está este grupo
+                     let columnaIndex = -1;
+                     for (let i = 0; i < columnas.length; i++) {
+                       if (columnas[i].some(g => 
+                         g.minutosInicio === grupoRango.minutosInicio && 
+                         g.minutosFin === grupoRango.minutosFin &&
+                         g.estado === grupoRango.estado
+                       )) {
+                         columnaIndex = i;
+                         break;
+                       }
                      }
+
+                     if (columnaIndex === -1) {
+                       // No debería pasar, pero por seguridad
+                       columnaIndex = 0;
+                     }
+
+                     resultado.push({
+                       reservas: grupoRango.reservas,
+                       inicio: grupoRango.inicio,
+                       fin: grupoRango.fin,
+                       minutosInicio: grupoRango.minutosInicio,
+                       minutosFin: grupoRango.minutosFin,
+                       estado: grupoRango.estado,
+                       columna: columnaIndex,
+                       totalColumnas: totalColumnas
+                     });
                    });
 
                    return resultado;
@@ -894,7 +918,7 @@ export default function ReservationCalendarView({
 
                                                                                                                                                                        {/* Barras finas para cada grupo de reservas */}
                        {reservasConPosiciones.map((grupo, index) => {
-                         const { reservas, inicio, fin, columna } = grupo;
+                         const { reservas, inicio, fin, columna, estado } = grupo;
                          if (!reservas || reservas.length === 0) return null;
                          const cantidadReservas = reservas.length;
                          const horaInicio = inicio.getHours() + inicio.getMinutes() / 60;
@@ -911,23 +935,44 @@ export default function ReservationCalendarView({
                           // Ancho fijo de 8px para todas las barras
                           const anchoFijo = 8;
                           const paddingLateral = 2; // margen desde el borde izquierdo
-                          // Calcular posición horizontal: offset fijo basado en la columna
-                          const left = paddingLateral + (columna * anchoFijo * 1.5); // 1.5x para separación entre barras
+                          const separacionEntreBarras = 2; // espacio entre barras en px
+                          // Calcular posición horizontal: una al lado de la otra sin solaparse
+                          const left = paddingLateral + (columna * (anchoFijo + separacionEntreBarras));
 
-                                                     // Colores según la posición de la columna (primario, secundario, terciario, etc.)
-                           const coloresPorColumna = [
-                             { bg: 'bg-blue-500', border: 'border-blue-600', hoverBg: 'hover:bg-blue-600', hoverBorder: 'hover:border-blue-700' }, // Primario
-                             { bg: 'bg-green-500', border: 'border-green-600', hoverBg: 'hover:bg-green-600', hoverBorder: 'hover:border-green-700' }, // Secundario
-                             { bg: 'bg-purple-500', border: 'border-purple-600', hoverBg: 'hover:bg-purple-600', hoverBorder: 'hover:border-purple-700' }, // Terciario
-                             { bg: 'bg-orange-500', border: 'border-orange-600', hoverBg: 'hover:bg-orange-600', hoverBorder: 'hover:border-orange-700' }, // Cuarto
-                             { bg: 'bg-pink-500', border: 'border-pink-600', hoverBg: 'hover:bg-pink-600', hoverBorder: 'hover:border-pink-700' }, // Quinto
-                             { bg: 'bg-cyan-500', border: 'border-cyan-600', hoverBg: 'hover:bg-cyan-600', hoverBorder: 'hover:border-cyan-700' }, // Sexto
-                             { bg: 'bg-yellow-500', border: 'border-yellow-600', hoverBg: 'hover:bg-yellow-600', hoverBorder: 'hover:border-yellow-700' }, // Séptimo
-                           ];
-                          const colorConfig = coloresPorColumna[columna % coloresPorColumna.length];
-
-                          // Si hay múltiples reservas con el mismo rango, mostrar la primera para el click
+                          // Usar el estado del grupo (ya está normalizado)
+                          const estadoNormalizado = estado?.toUpperCase() || 'APROBADO';
                           const reservaPrincipal = reservas[0];
+                          
+                          // Colores según el estado con diferentes tonalidades según la columna
+                          const getColorConfigByEstado = (estado: string, columnaIndex: number) => {
+                            // Paletas de colores por estado (diferentes tonalidades)
+                            const paletasPorEstado: Record<string, Array<{ bg: string; border: string; hoverBg: string; hoverBorder: string }>> = {
+                              'CANCELADO': [
+                                { bg: 'bg-red-600', border: 'border-red-700', hoverBg: 'hover:bg-red-700', hoverBorder: 'hover:border-red-800' }, // Rojo oscuro
+                                { bg: 'bg-red-500', border: 'border-red-600', hoverBg: 'hover:bg-red-600', hoverBorder: 'hover:border-red-700' }, // Rojo medio
+                                { bg: 'bg-red-400', border: 'border-red-500', hoverBg: 'hover:bg-red-500', hoverBorder: 'hover:border-red-600' }, // Rojo claro
+                                { bg: 'bg-red-300', border: 'border-red-400', hoverBg: 'hover:bg-red-400', hoverBorder: 'hover:border-red-500' }, // Rojo muy claro
+                              ],
+                              'PENDIENTE': [
+                                { bg: 'bg-amber-500', border: 'border-amber-600', hoverBg: 'hover:bg-amber-600', hoverBorder: 'hover:border-amber-700' }, // Ámbar medio
+                                { bg: 'bg-amber-400', border: 'border-amber-500', hoverBg: 'hover:bg-amber-500', hoverBorder: 'hover:border-amber-600' }, // Ámbar claro
+                                { bg: 'bg-orange-400', border: 'border-orange-500', hoverBg: 'hover:bg-orange-500', hoverBorder: 'hover:border-orange-600' }, // Naranja claro
+                                { bg: 'bg-orange-300', border: 'border-orange-400', hoverBg: 'hover:bg-orange-400', hoverBorder: 'hover:border-orange-500' }, // Naranja muy claro
+                              ],
+                              'APROBADO': [
+                                { bg: 'bg-blue-600', border: 'border-blue-700', hoverBg: 'hover:bg-blue-700', hoverBorder: 'hover:border-blue-800' }, // Azul oscuro
+                                { bg: 'bg-blue-500', border: 'border-blue-600', hoverBg: 'hover:bg-blue-600', hoverBorder: 'hover:border-blue-700' }, // Azul medio
+                                { bg: 'bg-blue-400', border: 'border-blue-500', hoverBg: 'hover:bg-blue-500', hoverBorder: 'hover:border-blue-600' }, // Azul claro
+                                { bg: 'bg-blue-300', border: 'border-blue-400', hoverBg: 'hover:bg-blue-400', hoverBorder: 'hover:border-blue-500' }, // Azul muy claro
+                              ],
+                            };
+                            
+                            const estadoUpper = estado.toUpperCase();
+                            const paleta = paletasPorEstado[estadoUpper] || paletasPorEstado['APROBADO'];
+                            return paleta[columnaIndex % paleta.length];
+                          };
+                          
+                          const colorConfig = getColorConfigByEstado(estadoNormalizado, columna);
                           const tituloTooltip = cantidadReservas > 1 
                             ? `${cantidadReservas} reservas de ${formatTime(inicio.toISOString())} a ${formatTime(fin.toISOString())}`
                             : `${reservaPrincipal.espacioNombre} - ${formatTime(inicio.toISOString())} a ${formatTime(fin.toISOString())}`;
@@ -980,6 +1025,10 @@ export default function ReservationCalendarView({
     const reservasPorDia = new Map<string, Reserva[]>();
     
     reservasMes.forEach(reserva => {
+      // Filtrar pendientes para analistas/admin (no deben aparecer en la vista principal)
+      if (reserva.estado === 'PENDIENTE' && !showPendienteFilter) {
+        return;
+      }
       const fechaReserva = new Date(reserva.inicio);
       const key = format(fechaReserva, 'yyyy-MM-dd');
       if (!reservasPorDia.has(key)) {
@@ -1008,6 +1057,7 @@ export default function ReservationCalendarView({
             // Contar reservas por estado
             const confirmadas = reservasDia.filter(r => r.estado === 'APROBADO').length;
             const canceladas = reservasDia.filter(r => r.estado === 'CANCELADO').length;
+            const pendientes = reservasDia.filter(r => r.estado === 'PENDIENTE').length;
             const tieneReservas = reservasDia.length > 0;
 
             return (
@@ -1034,6 +1084,12 @@ export default function ReservationCalendarView({
                       <div className="flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" />
                         <span className="text-[9px] font-medium text-foreground">{confirmadas}</span>
+                      </div>
+                    )}
+                    {pendientes > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Hourglass className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span className="text-[9px] font-medium text-foreground">{pendientes}</span>
                       </div>
                     )}
                     {canceladas > 0 && (
@@ -1070,6 +1126,8 @@ export default function ReservationCalendarView({
                 carrerasUnicas={carrerasUnicas}
                 tiposEspacioUnicos={tiposEspacioUnicos}
                 hayFiltrosActivos={hayFiltrosActivos}
+                showPendienteFilter={showPendienteFilter}
+                hideEstadoFilter={hideEstadoFilter}
                 onTiempoFilterChange={onTiempoFilterChange}
                 onEstadoFilterChange={onEstadoFilterChange}
                 onEspacioFilterChange={onEspacioFilterChange}

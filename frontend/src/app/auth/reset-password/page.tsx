@@ -48,10 +48,10 @@ export default function ResetPasswordPage() {
     }
 
     // Validar longitud mínima
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       setMessage({
         type: 'error',
-        text: 'La contraseña debe tener al menos 6 caracteres'
+        text: 'La contraseña debe tener al menos 8 caracteres'
       });
       setIsLoading(false);
       return;
@@ -76,13 +76,21 @@ export default function ResetPasswordPage() {
           text: response.error || 'Error al restablecer la contraseña'
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Manejar errores específicos del backend
-      if (error?.response?.data?.error) {
-        setMessage({
-          type: 'error',
-          text: error.response.data.error
-        });
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        if (axiosError.response?.data?.error) {
+          setMessage({
+            type: 'error',
+            text: axiosError.response.data.error
+          });
+        } else {
+          setMessage({
+            type: 'error',
+            text: 'Error al procesar la solicitud. Por favor, intenta nuevamente.'
+          });
+        }
       } else {
         setMessage({
           type: 'error',
@@ -96,103 +104,127 @@ export default function ResetPasswordPage() {
 
   if (isValidToken === false) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="w-full max-w-md space-y-6">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">Token Inválido</h1>
-            <p className="text-muted-foreground text-sm text-balance">
-              El token de recuperación no es válido o ha expirado
-            </p>
+      <>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">Token Inválido</h1>
+          <p className="text-muted-foreground text-sm text-balance">
+            El token de recuperación no es válido o ha expirado
+          </p>
+        </div>
+
+        {message && (
+          <div className="rounded-md p-4 bg-destructive/10 border border-destructive/20">
+            <p className="text-sm text-destructive">{message.text}</p>
           </div>
+        )}
 
-          {message && (
-            <div className="rounded-md p-4 bg-destructive/10 border border-destructive/20">
-              <p className="text-sm text-destructive">{message.text}</p>
-            </div>
-          )}
-
-          <div className="text-center space-y-4">
-            <Link to="/auth/forgot-password">
-              <Button variant="outline" className="w-full">
-                Solicitar nuevo enlace
-              </Button>
-            </Link>
-            <Link to="/auth" className="text-sm underline underline-offset-4 hover:text-primary block">
+        <div className="flex flex-col gap-6">
+          <Link to="/auth/forgot-password">
+            <Button variant="outline" className="w-full">
+              Solicitar nuevo enlace
+            </Button>
+          </Link>
+          <div className="text-center text-sm">
+            <Link to="/auth" className="underline underline-offset-4 hover:text-primary">
               Volver al inicio de sesión
             </Link>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-bold">Restablecer Contraseña</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            Ingresa tu nueva contraseña
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-3">
-            <Label htmlFor="newPassword">Nueva Contraseña</Label>
-            <Input 
-              id="newPassword" 
-              type="password" 
-              placeholder="Mínimo 6 caracteres" 
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required 
-              disabled={isLoading}
-              minLength={6}
-            />
-          </div>
-
-          <div className="grid gap-3">
-            <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-            <Input 
-              id="confirmPassword" 
-              type="password" 
-              placeholder="Confirma tu contraseña" 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required 
-              disabled={isLoading}
-              minLength={6}
-            />
-          </div>
-
-          {message && (
-            <div className={`rounded-md p-4 ${
-              message.type === 'success'
-                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                : 'bg-destructive/10 border border-destructive/20'
-            }`}>
-              <p className={`text-sm ${
-                message.type === 'success'
-                  ? 'text-green-900 dark:text-green-100'
-                  : 'text-destructive'
-              }`}>
-                {message.text}
-              </p>
-            </div>
-          )}
-
-          <Button type="submit" className="w-full" disabled={isLoading || !token}>
-            {isLoading ? 'Restableciendo...' : 'Restablecer contraseña'}
-          </Button>
-        </form>
-
-        <div className="text-center text-sm">
-          <Link to="/auth" className="underline underline-offset-4 hover:text-primary">
-            Volver al inicio de sesión
-          </Link>
-        </div>
+    <>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-2xl font-bold">Restablecer Contraseña</h1>
+        <p className="text-muted-foreground text-sm text-balance">
+          Ingresa tu nueva contraseña
+        </p>
       </div>
-    </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="grid gap-3">
+          <Label htmlFor="newPassword">Nueva Contraseña</Label>
+          <Input 
+            id="newPassword" 
+            type="password" 
+            placeholder="Mínimo 8 caracteres" 
+            value={newPassword}
+            onChange={(e) => {
+              const value = e.target.value;
+              setNewPassword(value);
+              // Limpiar mensaje de error personalizado mientras se escribe
+              e.target.setCustomValidity('');
+            }}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.tooShort) {
+                target.setCustomValidity('La contraseña debe tener al menos 8 caracteres');
+              } else if (target.validity.valueMissing) {
+                target.setCustomValidity('Este campo es obligatorio');
+              }
+            }}
+            required 
+            disabled={isLoading}
+            minLength={8}
+          />
+        </div>
+
+        <div className="grid gap-3">
+          <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+          <Input 
+            id="confirmPassword" 
+            type="password" 
+            placeholder="Confirma tu contraseña" 
+            value={confirmPassword}
+            onChange={(e) => {
+              const value = e.target.value;
+              setConfirmPassword(value);
+              // Limpiar mensaje de error personalizado mientras se escribe
+              e.target.setCustomValidity('');
+            }}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.tooShort) {
+                target.setCustomValidity('La contraseña debe tener al menos 8 caracteres');
+              } else if (target.validity.valueMissing) {
+                target.setCustomValidity('Este campo es obligatorio');
+              }
+            }}
+            required 
+            disabled={isLoading}
+            minLength={8}
+          />
+        </div>
+
+        {message && (
+          <div className={`rounded-md p-4 ${
+            message.type === 'success'
+              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+              : 'bg-destructive/10 border border-destructive/20'
+          }`}>
+            <p className={`text-sm ${
+              message.type === 'success'
+                ? 'text-green-900 dark:text-green-100'
+                : 'text-destructive'
+            }`}>
+              {message.text}
+            </p>
+          </div>
+        )}
+
+        <Button type="submit" className="w-full" disabled={isLoading || !token}>
+          {isLoading ? 'Restableciendo...' : 'Restablecer contraseña'}
+        </Button>
+      </form>
+
+      <div className="text-center text-sm mt-6">
+        <Link to="/auth" className="underline underline-offset-4 hover:text-primary">
+          Volver al inicio de sesión
+        </Link>
+      </div>
+    </>
   );
 }
 

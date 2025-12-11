@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Agregar campo es_publica a tabla reserva -->
-    <changeSet id="015" author="mathi">
+    <changeSet id="015" author="Mathias">
         <addColumn tableName="reserva">
             <column name="es_publica" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>

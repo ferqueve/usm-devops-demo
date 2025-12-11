@@ -21,7 +21,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

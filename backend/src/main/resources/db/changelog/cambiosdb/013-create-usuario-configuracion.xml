@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Crear tabla usuario_configuracion -->
-    <changeSet id="013-001" author="mathi">
+    <changeSet id="013-001" author="Mathias">
         <createTable tableName="usuario_configuracion">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -30,7 +30,7 @@
     </changeSet>
 
     <!-- Crear índice para búsquedas por usuario_id -->
-    <changeSet id="013-002" author="mathi">
+    <changeSet id="013-002" author="Mathias">
         <createIndex indexName="idx_config_usuario_id" tableName="usuario_configuracion">
             <column name="usuario_id"/>
         </createIndex>

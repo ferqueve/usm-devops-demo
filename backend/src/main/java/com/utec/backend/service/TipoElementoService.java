@@ -23,11 +23,25 @@ public class TipoElementoService {
     private final TipoElementoRepository tipoElementoRepository;
     
     public TipoElementoResponseDto createTipoElemento(TipoElementoCreateDto createDto) {
-        // Verificar si ya existe un tipo con el mismo nombre
-        if (tipoElementoRepository.existsByNombreIgnoreCase(createDto.getNombre())) {
-            throw new RuntimeException("Ya existe un tipo de elemento con el nombre: " + createDto.getNombre());
+        // Buscar si existe un tipo con el mismo nombre (incluyendo desactivados)
+        java.util.Optional<TipoElemento> tipoExistente = tipoElementoRepository.findByNombreIgnoreCase(createDto.getNombre());
+        
+        if (tipoExistente.isPresent()) {
+            TipoElemento tipo = tipoExistente.get();
+            // Si está activo, lanzar error
+            if (tipo.getActivo()) {
+                throw new RuntimeException("Ya existe un tipo de elemento activo con el nombre: " + createDto.getNombre());
+            }
+            // Si está desactivado, reactivarlo
+            tipo.setActivo(true);
+            tipo.setDescripcion(createDto.getDescripcion());
+            tipo.setDeletedAt(null);
+            tipo.setUpdatedAt(Instant.now());
+            TipoElemento savedTipoElemento = tipoElementoRepository.save(tipo);
+            return mapToResponseDto(savedTipoElemento);
         }
         
+        // Si no existe, crear uno nuevo
         TipoElemento tipoElemento = new TipoElemento();
         tipoElemento.setNombre(createDto.getNombre());
         tipoElemento.setDescripcion(createDto.getDescripcion());
@@ -78,12 +92,12 @@ public class TipoElementoService {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + id));
         
-        // Verificar si tiene items de inventario asociados
-        if (!tipoElemento.getInventarioItems().isEmpty()) {
-            throw new RuntimeException("No se puede eliminar el tipo de elemento porque tiene items de inventario asociados");
-        }
+        // Soft delete: marcar como inactivo
+        tipoElemento.setActivo(false);
+        tipoElemento.setDeletedAt(Instant.now());
+        tipoElemento.setUpdatedAt(Instant.now());
         
-        tipoElementoRepository.deleteById(id);
+        tipoElementoRepository.save(tipoElemento);
     }
     
     public TipoElementoResponseDto toggleActivo(Long id) {

@@ -31,4 +31,8 @@ public class RegisterRequest {
     
     @NotBlank(message = "La confirmación de contraseña es requerida")
     private String confirmPassword;
+    
+    private Boolean aceptaTerminos;
+    
+    private Boolean aceptaPolitica;
 }

@@ -53,6 +53,7 @@ interface ReservationCardViewProps {
   fechaFin: Date | undefined;
   viewMode: 'cards' | 'table' | 'calendar';
   hayFiltrosActivos: boolean;
+  showPendienteFilter?: boolean;
   onTiempoFilterChange: (filter: string) => void;
   onEstadoFilterChange: (filter: string) => void;
   onEspacioFilterChange: (filter: number | null) => void;
@@ -92,6 +93,7 @@ export default function ReservationCardView({
   fechaFin,
   viewMode,
   hayFiltrosActivos,
+  showPendienteFilter = false,
   onTiempoFilterChange,
   onEstadoFilterChange,
   onEspacioFilterChange,
@@ -210,6 +212,7 @@ export default function ReservationCardView({
                 carrerasUnicas={carrerasUnicas}
                 tiposEspacioUnicos={tiposEspacioUnicos}
                 hayFiltrosActivos={hayFiltrosActivos}
+                showPendienteFilter={showPendienteFilter}
                 onTiempoFilterChange={onTiempoFilterChange}
                 onEstadoFilterChange={onEstadoFilterChange}
                 onEspacioFilterChange={onEspacioFilterChange}
@@ -381,7 +384,7 @@ export default function ReservationCardView({
                             />
                           ) : null}
                           <h3 className={`text-sm font-semibold truncate ${esPasada ? 'text-muted-foreground' : ''}`}>
-                            {reserva.espacioNombre}
+                            {reserva.titulo || reserva.espacioNombre}
                           </h3>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">

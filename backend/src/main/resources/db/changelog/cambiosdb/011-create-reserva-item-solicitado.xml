@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Crear tabla reserva_item_solicitado -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <createTable tableName="reserva_item_solicitado">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -38,7 +38,7 @@
     </changeSet>
 
     <!-- Agregar foreign keys -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <addForeignKeyConstraint
                 baseTableName="reserva_item_solicitado"
                 baseColumnNames="reserva_id"
@@ -49,7 +49,7 @@
                 onUpdate="CASCADE"/>
     </changeSet>
 
-    <changeSet id="003" author="mathi">
+    <changeSet id="003" author="Mathias">
         <addForeignKeyConstraint
                 baseTableName="reserva_item_solicitado"
                 baseColumnNames="tipo_elemento_id"
@@ -60,7 +60,7 @@
                 onUpdate="CASCADE"/>
     </changeSet>
 
-    <changeSet id="004" author="mathi">
+    <changeSet id="004" author="Mathias">
         <addForeignKeyConstraint
                 baseTableName="reserva_item_solicitado"
                 baseColumnNames="inventario_item_id"
@@ -72,7 +72,7 @@
     </changeSet>
 
     <!-- Agregar índice para búsquedas por reserva -->
-    <changeSet id="005" author="mathi">
+    <changeSet id="005" author="Mathias">
         <createIndex indexName="idx_reserva_item_solicitado_reserva_id"
                      tableName="reserva_item_solicitado">
             <column name="reserva_id"/>
@@ -80,7 +80,7 @@
     </changeSet>
 
     <!-- Agregar índice para búsquedas por estado -->
-    <changeSet id="006" author="mathi">
+    <changeSet id="006" author="Mathias">
         <createIndex indexName="idx_reserva_item_solicitado_estado"
                      tableName="reserva_item_solicitado">
             <column name="estado"/>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="007-move-color-to-tipo-espacio" author="system">
+    <changeSet id="007-move-color-to-tipo-espacio" author="Mathias">
         <!-- Agregar columna color a tipo_espacio -->
         <addColumn tableName="tipo_espacio">
             <column name="color" type="VARCHAR(7)">

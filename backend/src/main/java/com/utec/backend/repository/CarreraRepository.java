@@ -24,6 +24,10 @@ public interface CarreraRepository extends JpaRepository<Carrera, Long> {
     @Query("SELECT c FROM Carrera c WHERE LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) AND c.deletedAt IS NULL")
     List<Carrera> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
+    // Buscar carrera por código (incluyendo eliminadas)
+    @Query("SELECT c FROM Carrera c WHERE c.codigo = :codigo")
+    Optional<Carrera> findByCodigoIncludingDeleted(@Param("codigo") String codigo);
+    
     // Verificar si existe una carrera con el mismo código (ignorando eliminadas)
     @Query("SELECT COUNT(c) > 0 FROM Carrera c WHERE c.codigo = :codigo AND c.deletedAt IS NULL")
     boolean existsByCodigo(@Param("codigo") String codigo);

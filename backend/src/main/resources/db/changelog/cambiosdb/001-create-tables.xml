@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Crear tabla usuario -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <createTable tableName="usuario">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -30,7 +30,7 @@
     </changeSet>
 
     <!-- Crear tabla salon -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <createTable tableName="salon">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -52,7 +52,7 @@
     </changeSet>
 
     <!-- Crear tabla inventario_item -->
-    <changeSet id="003" author="mathi">
+    <changeSet id="003" author="Mathias">
         <createTable tableName="inventario_item">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -73,7 +73,7 @@
     </changeSet>
 
     <!-- Crear tabla reserva -->
-    <changeSet id="004" author="mathi">
+    <changeSet id="004" author="Mathias">
         <createTable tableName="reserva">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -103,7 +103,7 @@
     </changeSet>
 
     <!-- Crear tabla evento_externo -->
-    <changeSet id="005" author="mathi">
+    <changeSet id="005" author="Mathias">
         <createTable tableName="evento_externo">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -117,7 +117,7 @@
     </changeSet>
 
     <!-- Crear tabla recomendacion -->
-    <changeSet id="006" author="mathi">
+    <changeSet id="006" author="Mathias">
         <createTable tableName="recomendacion">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>
@@ -140,7 +140,7 @@
     </changeSet>
 
     <!-- Crear tabla audit_log -->
-    <changeSet id="007" author="mathi">
+    <changeSet id="007" author="Mathias">
         <createTable tableName="audit_log">
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true"/>

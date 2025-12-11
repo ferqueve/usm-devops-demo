@@ -168,6 +168,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     email: string; 
     password: string; 
     confirmPassword: string;
+    aceptaTerminos: boolean;
+    aceptaPolitica: boolean;
   }) => {
     try {
       setIsLoading(true);
@@ -196,13 +198,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('Las contraseñas no coinciden');
       }
 
+      // Validar aceptación de términos y política
+      if (!userData.aceptaTerminos || !userData.aceptaPolitica) {
+        throw new Error('Debes aceptar los términos y condiciones y la política de privacidad');
+      }
+      
       // Preparar datos para el backend
       const registerRequest: RegisterRequest = {
         nombre,
         apellido,
         email,
         password,
-        confirmPassword
+        confirmPassword,
+        aceptaTerminos: userData.aceptaTerminos,
+        aceptaPolitica: userData.aceptaPolitica
       };
       
       // Llamar a la API del backend

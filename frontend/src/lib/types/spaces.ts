@@ -147,6 +147,8 @@ export interface Reserva {
   tipoEspacioId?: number;
   tipoEspacioNombre?: string;
   tipoEspacioColor?: string; // Color del tipo de espacio
+  titulo: string;
+  motivoSolicitud?: string;
   usuarioId: number;
   usuarioNombre: string;
   usuarioEmail: string;
@@ -157,6 +159,7 @@ export interface Reserva {
   fin: string;
   estado: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
   esPublica?: boolean;
+  mensajeAnalista?: string;
   itemsSolicitados?: ReservaItemSolicitado[];
   createdAt: string;
   updatedAt: string;

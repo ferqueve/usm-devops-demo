@@ -339,6 +339,8 @@ public class ReservaController {
                         .body(ApiResponse.error("El campo 'estado' es requerido"));
             }
             
+            String mensajeAnalista = requestBody.get("mensajeAnalista");
+            
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
@@ -347,7 +349,7 @@ public class ReservaController {
                     .map(auth -> auth.replace("ROLE_", ""))
                     .orElse("");
             
-            ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado, userEmail, userRole);
+            ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado, userEmail, userRole, mensajeAnalista);
             String mensaje = "APROBADO".equals(nuevoEstado) 
                     ? "Reserva aprobada exitosamente"
                     : "Reserva rechazada exitosamente";

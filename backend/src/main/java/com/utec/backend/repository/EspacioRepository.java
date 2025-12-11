@@ -16,6 +16,10 @@ public interface EspacioRepository extends JpaRepository<Espacio, Long> {
     @Query("SELECT e FROM Espacio e WHERE LOWER(e.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))")
     List<Espacio> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
+    // Buscar espacio por nombre exacto (incluyendo eliminados)
+    @Query("SELECT e FROM Espacio e WHERE LOWER(e.nombre) = LOWER(:nombre)")
+    java.util.Optional<Espacio> findByNombreIgnoreCase(@Param("nombre") String nombre);
+    
     // Buscar espacios disponibles (sin reservas activas en un rango de tiempo)
     @Query("SELECT e FROM Espacio e WHERE e.id NOT IN " +
            "(SELECT r.espacio.id FROM Reserva r WHERE r.estado = 'APROBADO' " +

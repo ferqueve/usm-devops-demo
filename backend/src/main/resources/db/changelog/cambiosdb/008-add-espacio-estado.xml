@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Agregar columna estado a espacio -->
-    <changeSet id="001" author="mathi">
+    <changeSet id="001" author="Mathias">
         <addColumn tableName="espacio">
             <column name="estado" type="VARCHAR(20)" defaultValue="DISPONIBLE">
                 <constraints notNullConstraintName="nn_espacio_estado"/>
@@ -15,7 +15,7 @@
     </changeSet>
 
     <!-- Agregar constraint CHECK para validar valores válidos de estado -->
-    <changeSet id="002" author="mathi">
+    <changeSet id="002" author="Mathias">
         <sql>
             ALTER TABLE espacio ADD CONSTRAINT ck_espacio_estado 
             CHECK (estado IN ('DISPONIBLE', 'MANTENIMIENTO', 'NO_DISPONIBLE'));

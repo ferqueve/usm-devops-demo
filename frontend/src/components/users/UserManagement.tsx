@@ -216,13 +216,20 @@ export default function UserManagement() {
       setChangingRole(true);
       await usuariosApi.cambiarRol(selectedUser.id, newRole);
       
-      setUsers(prevUsers => 
-        prevUsers.map(u => 
+      setUsers(prevUsers => {
+        // Mantener la posición del elemento actualizado en la lista
+        const index = prevUsers.findIndex(u => u.id === selectedUser.id);
+        if (index !== -1) {
+          const newUsers = [...prevUsers];
+          newUsers[index] = { ...newUsers[index], rolApp: newRole };
+          return newUsers;
+        }
+        return prevUsers.map(u => 
           u.id === selectedUser.id 
             ? { ...u, rolApp: newRole }
             : u
-        )
-      );
+        );
+      });
       
       toast.success('Rol actualizado', {
         description: `El rol de ${selectedUser.nombre} se actualizó a ${ROLE_LABELS[newRole]}`
@@ -255,13 +262,20 @@ export default function UserManagement() {
       const newStatus = !userToToggle.activo;
       const action = newStatus ? 'activado' : 'desactivado';
       
-      setUsers(prevUsers => 
-        prevUsers.map(u => 
+      setUsers(prevUsers => {
+        // Mantener la posición del elemento actualizado en la lista
+        const index = prevUsers.findIndex(u => u.id === userToToggle.id);
+        if (index !== -1) {
+          const newUsers = [...prevUsers];
+          newUsers[index] = { ...newUsers[index], activo: newStatus };
+          return newUsers;
+        }
+        return prevUsers.map(u => 
           u.id === userToToggle.id 
             ? { ...u, activo: newStatus }
             : u
-        )
-      );
+        );
+      });
       
       toast.success(`Usuario ${action}`, {
         description: `${userToToggle.nombre} ha sido ${action} exitosamente`
@@ -307,11 +321,17 @@ export default function UserManagement() {
   };
 
   const handleEditSuccess = (updatedUser: User) => {
-    setUsers(prevUsers => 
-      prevUsers.map(u => 
-        u.id === updatedUser.id ? updatedUser : u
-      )
-    );
+    setUsers(prevUsers => {
+      // Mantener la posición del elemento actualizado en la lista
+      const index = prevUsers.findIndex(u => u.id === updatedUser.id);
+      if (index !== -1) {
+        const newUsers = [...prevUsers];
+        newUsers[index] = updatedUser;
+        return newUsers;
+      }
+      // Si no se encuentra, actualizar normalmente
+      return prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
+    });
     setEditDialog(false);
   };
 

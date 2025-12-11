@@ -100,7 +100,7 @@ public class TipoElementoController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
     public ResponseEntity<ApiResponse<Void>> deleteTipoElemento(@PathVariable Long id) {
         try {
             tipoElementoService.deleteTipoElemento(id);

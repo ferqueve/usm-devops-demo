@@ -1,6 +1,7 @@
 package com.utec.backend.dto.reserva;
 
 import com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoCreateDto;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,11 @@ public class ReservaCreateDto {
     
     @NotNull(message = "La fecha de fin es requerida")
     private Instant fin;
+    
+    @NotBlank(message = "El título es requerido")
+    private String titulo;
+    
+    private String motivoSolicitud; // Opcional
     
     private List<ReservaItemSolicitadoCreateDto> itemsSolicitados; // Opcional
     

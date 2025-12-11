@@ -150,10 +150,11 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     // Estadísticas - Inventario y espacios
     'estadisticas:ver',
     'estadisticas:exportar',
-    // Tipos - Crear, leer y editar (excepto eliminar)
+    // Tipos - Crear, leer, editar y eliminar
     'tipos_elemento:crear',
     'tipos_elemento:leer',
     'tipos_elemento:editar',
+    'tipos_elemento:eliminar',
     'tipos_espacio:crear',
     'tipos_espacio:leer',
     'tipos_espacio:editar',

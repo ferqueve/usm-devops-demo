@@ -20,7 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,6 +99,7 @@ class AuditServiceTest {
 
     @Test
     @DisplayName("Debe buscar logs con filtros y paginación")
+    @SuppressWarnings("unchecked")
     void debeBuscarLogs() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
@@ -119,6 +119,7 @@ class AuditServiceTest {
 
     @Test
     @DisplayName("Debe buscar logs con todos los filtros")
+    @SuppressWarnings("unchecked")
     void debeBuscarLogsConTodosLosFiltros() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);

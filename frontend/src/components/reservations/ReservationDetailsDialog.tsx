@@ -3,13 +3,28 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Calendar, Clock, User, GraduationCap, CheckCircle2, XCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { MapPin, Users, Calendar, Clock, User, GraduationCap, CheckCircle2, XCircle, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 import type { Reserva } from '@/lib/types/spaces';
+import { useState } from 'react';
 
 interface ReservationDetailsDialogProps {
   reserva: Reserva;
@@ -28,7 +43,7 @@ function getEstadoConfig(estado: Reserva['estado']) {
     case 'PENDIENTE':
       return {
         label: 'Pendiente',
-        color: 'bg-yellow-50 text-yellow-700 border-yellow-200'
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
       };
     case 'CANCELADO':
       return {
@@ -49,6 +64,15 @@ export default function ReservationDetailsDialog({
   onOpenChange,
   onReservaUpdated
 }: ReservationDetailsDialogProps) {
+  const { user } = useAuth();
+  // Verificar si el usuario es analista o admin (no deben ver el motivo de solicitud)
+  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
+  const puedeVerMotivoSolicitud = !isAnalista; // Solo docentes y externos pueden ver el motivo
+  const [showRechazarDialog, setShowRechazarDialog] = useState(false);
+  const [showAprobarDialog, setShowAprobarDialog] = useState(false);
+  const [mensajeAnalista, setMensajeAnalista] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   const estadoConfig = getEstadoConfig(reserva.estado);
   const esFutura = new Date(reserva.inicio) > new Date();
 
@@ -71,9 +95,19 @@ export default function ReservationDetailsDialog({
 
   const duracionHoras = Math.round((new Date(reserva.fin).getTime() - new Date(reserva.inicio).getTime()) / (1000 * 60 * 60) * 10) / 10;
 
+  const handleAprobarClick = () => {
+    setMensajeAnalista('');
+    setShowAprobarDialog(true);
+  };
+
   const handleAprobarReserva = async () => {
     try {
-      const response = await reservationsApi.aprobarReserva(reserva.id);
+      setLoading(true);
+      const response = await reservationsApi.cambiarEstadoReserva(
+        reserva.id,
+        'APROBADO',
+        mensajeAnalista.trim() || undefined
+      );
       if (response.data) {
         toast.success('Reserva aprobada', {
           description: `La reserva de ${reserva.espacioNombre} ha sido aprobada exitosamente.`
@@ -81,6 +115,7 @@ export default function ReservationDetailsDialog({
         if (onReservaUpdated) {
           onReservaUpdated();
         }
+        setShowAprobarDialog(false);
         onOpenChange(false);
       }
     } catch (error: unknown) {
@@ -88,12 +123,24 @@ export default function ReservationDetailsDialog({
       toast.error('Error al aprobar reserva', {
         description: errorMessage
       });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleRechazarClick = () => {
+    setMensajeAnalista('');
+    setShowRechazarDialog(true);
   };
 
   const handleRechazarReserva = async () => {
     try {
-      const response = await reservationsApi.rechazarReserva(reserva.id);
+      setLoading(true);
+      const response = await reservationsApi.cambiarEstadoReserva(
+        reserva.id,
+        'CANCELADO',
+        mensajeAnalista.trim() || undefined
+      );
       if (response.data) {
         toast.success('Reserva rechazada', {
           description: `La reserva de ${reserva.espacioNombre} ha sido rechazada.`
@@ -101,6 +148,7 @@ export default function ReservationDetailsDialog({
         if (onReservaUpdated) {
           onReservaUpdated();
         }
+        setShowRechazarDialog(false);
         onOpenChange(false);
       }
     } catch (error: unknown) {
@@ -108,6 +156,8 @@ export default function ReservationDetailsDialog({
       toast.error('Error al rechazar reserva', {
         description: errorMessage
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,8 +171,16 @@ export default function ReservationDetailsDialog({
             <Badge className="bg-white/90 text-gray-900 border-0 font-semibold shadow-sm flex-shrink-0">
               {estadoConfig.label}
             </Badge>
+            {reserva.esPublica && (
+              <Badge className="bg-white/90 text-blue-700 border-0 font-semibold shadow-sm flex-shrink-0">
+                Externa
+              </Badge>
+            )}
           </div>
-          <DialogTitle className="text-lg font-bold truncate">{reserva.espacioNombre}</DialogTitle>
+          <DialogTitle className="text-lg font-bold truncate">{reserva.titulo || reserva.espacioNombre}</DialogTitle>
+          {reserva.titulo && reserva.espacioNombre && (
+            <p className="text-sm text-white/80 truncate mt-1">{reserva.espacioNombre}</p>
+          )}
           {/* Puntos decorativos tipo ticket */}
           <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
             <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
@@ -158,6 +216,22 @@ export default function ReservationDetailsDialog({
 
           {/* Contenedor con padding para el contenido */}
           <div className="px-5 py-3 space-y-2.5">
+            {/* Título */}
+            {reserva.titulo && (
+              <div className="bg-blue-50 border-l-4 border-blue-400 rounded p-3 space-y-1">
+                <p className="text-xs font-semibold text-blue-800">Título</p>
+                <p className="text-sm text-blue-900 font-medium">{reserva.titulo}</p>
+              </div>
+            )}
+
+            {/* Motivo de solicitud - Solo visible para docentes/externos, NO para analistas/admin */}
+            {puedeVerMotivoSolicitud && reserva.motivoSolicitud && (
+              <div className="bg-gray-50 border-l-4 border-gray-400 rounded p-3 space-y-1">
+                <p className="text-xs font-semibold text-gray-800">Motivo de la solicitud</p>
+                <p className="text-xs text-gray-700 whitespace-pre-wrap">{reserva.motivoSolicitud}</p>
+              </div>
+            )}
+
             {/* Información en grid compacto */}
             <div className="grid grid-cols-2 gap-2">
               {/* Fecha */}
@@ -253,6 +327,31 @@ export default function ReservationDetailsDialog({
                 <p className="text-[10px] text-blue-700">Reserva completada</p>
               </div>
             )}
+
+            {/* Mensaje del analista si existe */}
+            {reserva.mensajeAnalista && (
+              <div className={`border-l-4 rounded p-3 space-y-2 ${
+                reserva.estado === 'CANCELADO' 
+                  ? 'bg-red-50 border-red-400' 
+                  : 'bg-green-50 border-green-400'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className={`h-4 w-4 flex-shrink-0 ${
+                    reserva.estado === 'CANCELADO' ? 'text-red-600' : 'text-green-600'
+                  }`} />
+                  <p className={`text-xs font-semibold ${
+                    reserva.estado === 'CANCELADO' ? 'text-red-800' : 'text-green-800'
+                  }`}>
+                    {reserva.estado === 'CANCELADO' ? 'Mensaje del analista' : 'Mensaje del analista'}
+                  </p>
+                </div>
+                <p className={`text-xs whitespace-pre-wrap ${
+                  reserva.estado === 'CANCELADO' ? 'text-red-700' : 'text-green-700'
+                }`}>
+                  {reserva.mensajeAnalista}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -274,7 +373,7 @@ export default function ReservationDetailsDialog({
               <div className="flex flex-col sm:flex-row gap-2 mb-2">
                 <Button
                   variant="default"
-                  onClick={handleAprobarReserva}
+                  onClick={handleAprobarClick}
                   className="flex-1 h-9 bg-green-600 hover:bg-green-700 text-white font-semibold"
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -282,7 +381,7 @@ export default function ReservationDetailsDialog({
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={handleRechazarReserva}
+                  onClick={handleRechazarClick}
                   className="flex-1 h-9 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold"
                 >
                   <XCircle className="h-4 w-4 mr-2" />
@@ -297,6 +396,92 @@ export default function ReservationDetailsDialog({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Diálogo de confirmación para aprobar con mensaje opcional */}
+      <AlertDialog open={showAprobarDialog} onOpenChange={setShowAprobarDialog}>
+        <AlertDialogContent className="sm:max-w-[500px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aprobar Reserva</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas aprobar esta reserva? Puedes agregar un mensaje opcional.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="mensaje-aprobar">Mensaje (Opcional)</Label>
+              <Textarea
+                id="mensaje-aprobar"
+                placeholder="Mensaje opcional para el solicitante..."
+                value={mensajeAnalista}
+                onChange={(e) => setMensajeAnalista(e.target.value)}
+                rows={4}
+                className="resize-none"
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Este mensaje será visible para el solicitante de la reserva.
+              </p>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowAprobarDialog(false)} disabled={loading}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleAprobarReserva}
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {loading ? 'Aprobando...' : 'Aprobar Reserva'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Diálogo de confirmación para rechazar con mensaje opcional */}
+      <AlertDialog open={showRechazarDialog} onOpenChange={setShowRechazarDialog}>
+        <AlertDialogContent className="sm:max-w-[500px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Rechazar Reserva</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas rechazar esta reserva? Puedes agregar un mensaje opcional explicando el motivo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="mensaje-rechazar">Mensaje (Opcional)</Label>
+              <Textarea
+                id="mensaje-rechazar"
+                placeholder="Explica el motivo del rechazo..."
+                value={mensajeAnalista}
+                onChange={(e) => setMensajeAnalista(e.target.value)}
+                rows={4}
+                className="resize-none"
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Este mensaje será visible para el solicitante de la reserva.
+              </p>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowRechazarDialog(false)} disabled={loading}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRechazarReserva}
+              disabled={loading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {loading ? 'Rechazando...' : 'Rechazar Reserva'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

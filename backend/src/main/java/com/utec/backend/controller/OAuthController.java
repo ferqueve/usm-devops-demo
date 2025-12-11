@@ -1,6 +1,7 @@
 package com.utec.backend.controller;
 
 import com.utec.backend.dto.auth.AuthenticationResponse;
+import com.utec.backend.exception.AuthenticationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -77,13 +78,13 @@ public class OAuthController {
         
         if (error != null) {
             log.error("Error en OAuth callback: {}", error);
-            response.sendRedirect(frontendUrl + "/auth/login?error=oauth_error");
+            response.sendRedirect(frontendUrl + "/auth?error=oauth_error");
             return;
         }
 
         if (code == null) {
             log.error("Código de autorización no recibido");
-            response.sendRedirect(frontendUrl + "/auth/login?error=no_code");
+            response.sendRedirect(frontendUrl + "/auth?error=no_code");
             return;
         }
 
@@ -105,9 +106,19 @@ public class OAuthController {
             log.info("OAuth exitoso, redirigiendo a frontend");
             response.sendRedirect(redirectUrl);
             
+        } catch (AuthenticationException e) {
+            // Capturar específicamente AuthenticationException y pasar el mensaje
+            log.error("Error de autenticación en callback de Google: {}", e.getMessage());
+            String errorMessage = e.getMessage() != null ? e.getMessage() : "Error de autenticación";
+            String redirectUrl = String.format(
+                "%s/auth?error=%s",
+                frontendUrl,
+                URLEncoder.encode(errorMessage, StandardCharsets.UTF_8)
+            );
+            response.sendRedirect(redirectUrl);
         } catch (Exception e) {
             log.error("Error procesando callback de Google: {}", e.getMessage());
-            response.sendRedirect(frontendUrl + "/auth/login?error=callback_error");
+            response.sendRedirect(frontendUrl + "/auth?error=callback_error");
         }
     }
 

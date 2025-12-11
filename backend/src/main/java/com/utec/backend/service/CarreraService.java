@@ -23,13 +23,26 @@ public class CarreraService {
     private final CarreraRepository carreraRepository;
     
     public CarreraResponseDto createCarrera(CarreraCreateDto createDto) {
-        // Verificar si ya existe una carrera con el mismo código (si se proporciona)
+        // Si se proporciona código, buscar si existe una carrera con el mismo código (incluyendo eliminadas)
         if (createDto.getCodigo() != null && !createDto.getCodigo().trim().isEmpty()) {
-            if (carreraRepository.existsByCodigo(createDto.getCodigo())) {
-                throw new RuntimeException("Ya existe una carrera con el código: " + createDto.getCodigo());
+            java.util.Optional<Carrera> carreraExistente = carreraRepository.findByCodigoIncludingDeleted(createDto.getCodigo());
+            
+            if (carreraExistente.isPresent()) {
+                Carrera carrera = carreraExistente.get();
+                // Si no está eliminada, lanzar error
+                if (carrera.getDeletedAt() == null) {
+                    throw new RuntimeException("Ya existe una carrera activa con el código: " + createDto.getCodigo());
+                }
+                // Si está eliminada, reactivarla
+                carrera.setNombre(createDto.getNombre());
+                carrera.setDeletedAt(null);
+                carrera.setUpdatedAt(Instant.now());
+                Carrera savedCarrera = carreraRepository.save(carrera);
+                return mapToResponseDto(savedCarrera);
             }
         }
         
+        // Si no existe, crear una nueva
         Carrera carrera = new Carrera();
         carrera.setNombre(createDto.getNombre());
         carrera.setCodigo(createDto.getCodigo() != null && !createDto.getCodigo().trim().isEmpty() 

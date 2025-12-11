@@ -64,6 +64,8 @@ class ReservaControllerTest {
         reservaResponseDto.setInicio(inicioFuturo);
         reservaResponseDto.setFin(finFuturo);
         reservaResponseDto.setEstado(Reserva.EstadoReserva.PENDIENTE);
+        reservaResponseDto.setTitulo("Reserva de prueba");
+        reservaResponseDto.setMotivoSolicitud("Motivo de prueba");
         reservaResponseDto.setCreatedAt(Instant.now());
         reservaResponseDto.setUpdatedAt(Instant.now());
     }
@@ -75,6 +77,8 @@ class ReservaControllerTest {
         // Given
         ReservaCreateDto createDto = new ReservaCreateDto();
         createDto.setEspacioId(1L);
+        createDto.setTitulo("Reserva de prueba");
+        createDto.setMotivoSolicitud("Motivo de prueba");
         createDto.setInicio(inicioFuturo);
         createDto.setFin(finFuturo);
 
@@ -191,7 +195,7 @@ class ReservaControllerTest {
     void debeCambiarEstadoReserva() throws Exception {
         // Given
         reservaResponseDto.setEstado(Reserva.EstadoReserva.APROBADO);
-        when(reservaService.cambiarEstadoReserva(eq(reservaId), eq("APROBADO"), eq("admin@utec.edu.uy"), eq("ADMIN")))
+        when(reservaService.cambiarEstadoReserva(eq(reservaId), eq("APROBADO"), eq("admin@utec.edu.uy"), eq("ADMIN"), any()))
                 .thenReturn(reservaResponseDto);
 
         // When & Then
@@ -201,7 +205,7 @@ class ReservaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(reservaService).cambiarEstadoReserva(eq(reservaId), eq("APROBADO"), eq("admin@utec.edu.uy"), eq("ADMIN"));
+        verify(reservaService).cambiarEstadoReserva(eq(reservaId), eq("APROBADO"), eq("admin@utec.edu.uy"), eq("ADMIN"), any());
     }
 
     @Test
