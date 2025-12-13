@@ -47,67 +47,80 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                // Rutas públicas
-                .requestMatchers("/api/v1/auth/**", "/api/v1/oauth2/**", "/error").permitAll()
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        // Rutas públicas
+                        .requestMatchers("/api/v1/auth/**", "/api/v1/oauth2/**", "/error").permitAll()
 
-                // Actuator y Swagger SOLO para ADMIN
-                .requestMatchers("/actuator/**").hasRole(ROLE_ADMIN)
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").hasRole(ROLE_ADMIN)
+                        // Actuator y Swagger SOLO para ADMIN
+                        .requestMatchers("/actuator/**").hasRole(ROLE_ADMIN)
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").hasRole(ROLE_ADMIN)
 
-                // Rutas protegidas por rol
-                // Permitir acceso al perfil propio a todos los autenticados
-                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/me").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/me").authenticated()
-                // Permitir a DOCENTE, ADMIN y ANALISTA listar analistas
-                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/analistas").hasAnyRole(ROLE_DOCENTE, ROLE_ADMIN, ROLE_ANALISTA)
-                // Resto de usuarios: solo ADMIN
-                .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
-                // Permitir estadísticas de inventario a ADMIN, ANALISTA y MANTENIMIENTO
-                .requestMatchers("/api/v1/stats/inventario/detailed").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
-                // Resto de estadísticas solo para ADMIN
-                .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
-                .requestMatchers("/api/v1/audit/**").hasRole(ROLE_ADMIN)
-                
-                // PERMITIR LECTURA (GET) de espacios, tipos y carreras a todos los autenticados
-                // Esto permite que DOCENTE, ESTUDIANTE, EXTERNO puedan ver espacios para reservas/calendario
-                // Incluye GET de imágenes de espacios (acceso autenticado)
-                .requestMatchers(HttpMethod.GET, "/api/v1/espacios/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/v1/tipos-espacio/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/v1/tipos-elemento/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/v1/carreras/**").authenticated()
-                
-                // Escritura de espacios, inventario, tipos: ADMIN y MANTENIMIENTO (gestión), ANALISTA (solo visualización se maneja en métodos)
-                // NOTA: Los GET ya fueron permitidos arriba, así que esto solo afecta POST, PUT, DELETE
-                // Los endpoints POST/DELETE de imágenes están protegidos con @PreAuthorize en FileUploadController
-                .requestMatchers("/api/v1/espacios/**", "/api/v1/espacios/*/inventario/**", "/api/v1/tipos-elemento/**", "/api/v1/tipos-espacio/**", "/api/v1/inventario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
-                
-                // Escritura de carreras: ADMIN y ANALISTA
-                .requestMatchers("/api/v1/carreras/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
-                
-                // Estadísticas: ADMIN, ANALISTA (reservas), MANTENIMIENTO (inventario/espacios)
-                .requestMatchers("/api/v1/estadisticas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
-                .requestMatchers("/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
-                // Reservas: ADMIN, ANALISTA (CRUD), DOCENTE (solicitar), EXTERNO (solicitar), MANTENIMIENTO (ver para ocupación)
-                .requestMatchers("/api/v1/reservas/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_EXTERNO, ROLE_MANTENIMIENTO)
-                // Calendario: Todos los roles autenticados
-                .requestMatchers("/api/v1/calendario/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE, ROLE_MANTENIMIENTO, ROLE_EXTERNO)
+                        // Rutas protegidas por rol
+                        // Permitir acceso al perfil propio a todos los autenticados
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/me").authenticated()
+                        // Permitir a DOCENTE, ADMIN y ANALISTA listar analistas
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/analistas")
+                        .hasAnyRole(ROLE_DOCENTE, ROLE_ADMIN, ROLE_ANALISTA)
+                        // Resto de usuarios: solo ADMIN
+                        .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
+                        // Permitir estadísticas de inventario a ADMIN, ANALISTA y MANTENIMIENTO
+                        .requestMatchers("/api/v1/stats/inventario/detailed").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
+                        // Resto de estadísticas solo para ADMIN
+                        .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
+                        .requestMatchers("/api/v1/audit/**").hasRole(ROLE_ADMIN)
 
-                // Solicitudes de inventario: ADMIN, ANALISTA (crear), MANTENIMIENTO (aceptar/rechazar)
-                .requestMatchers("/api/v1/reservas/items-solicitados/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
-                
-                // Rutas autenticadas generales
-                .requestMatchers("/api/v1/recomendaciones/**").authenticated()
+                        // PERMITIR LECTURA (GET) de espacios, tipos y carreras a todos los autenticados
+                        // Esto permite que DOCENTE, ESTUDIANTE, EXTERNO puedan ver espacios para
+                        // reservas/calendario
+                        // Incluye GET de imágenes de espacios (acceso autenticado)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/espacios/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tipos-espacio/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tipos-elemento/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/carreras/**").authenticated()
 
-                // Cualquier otra ruta requiere autenticación
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Escritura de espacios, inventario, tipos: ADMIN y MANTENIMIENTO (gestión),
+                        // ANALISTA (solo visualización se maneja en métodos)
+                        // NOTA: Los GET ya fueron permitidos arriba, así que esto solo afecta POST,
+                        // PUT, DELETE
+                        // Los endpoints POST/DELETE de imágenes están protegidos con @PreAuthorize en
+                        // FileUploadController
+                        .requestMatchers("/api/v1/espacios/**", "/api/v1/espacios/*/inventario/**",
+                                "/api/v1/tipos-elemento/**", "/api/v1/tipos-espacio/**", "/api/v1/inventario/**")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+
+                        // Escritura de carreras: ADMIN y ANALISTA
+                        .requestMatchers("/api/v1/carreras/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
+
+                        // Estadísticas: ADMIN, ANALISTA (reservas), MANTENIMIENTO (inventario/espacios)
+                        .requestMatchers("/api/v1/estadisticas/**")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+                        .requestMatchers("/api/v1/configuracion/**").hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA)
+                        // Reservas: ADMIN, ANALISTA (CRUD), DOCENTE (solicitar), EXTERNO (solicitar),
+                        // MANTENIMIENTO (ver para ocupación), ESTUDIANTE (ver en calendario)
+                        .requestMatchers("/api/v1/reservas/**")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_EXTERNO, ROLE_MANTENIMIENTO,
+                                ROLE_ESTUDIANTE)
+                        // Calendario: Todos los roles autenticados
+                        .requestMatchers("/api/v1/calendario/**")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_DOCENTE, ROLE_ESTUDIANTE, ROLE_MANTENIMIENTO,
+                                ROLE_EXTERNO)
+
+                        // Solicitudes de inventario: ADMIN, ANALISTA (crear), MANTENIMIENTO
+                        // (aceptar/rechazar)
+                        .requestMatchers("/api/v1/reservas/items-solicitados/**")
+                        .hasAnyRole(ROLE_ADMIN, ROLE_ANALISTA, ROLE_MANTENIMIENTO)
+
+                        // Rutas autenticadas generales
+                        .requestMatchers("/api/v1/recomendaciones/**").authenticated()
+
+                        // Cualquier otra ruta requiere autenticación
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -115,13 +128,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
+
         // Usar configuraciones desde application.properties
         configuration.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList(allowedMethods.split(",")));
         configuration.setAllowedHeaders(Arrays.asList(allowedHeaders.split(",")));
         configuration.setAllowCredentials(allowCredentials);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

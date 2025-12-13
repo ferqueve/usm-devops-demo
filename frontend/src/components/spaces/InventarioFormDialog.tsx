@@ -81,7 +81,7 @@ export function InventarioFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.tipoElementoId === 0) {
       toast.error('Por favor selecciona un tipo de elemento');
       return;
@@ -94,7 +94,7 @@ export function InventarioFormDialog({
 
     try {
       setLoading(true);
-      
+
       const data = {
         espacioId,
         tipoElementoId: formData.tipoElementoId,
@@ -128,105 +128,107 @@ export function InventarioFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-full sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-hidden mx-4">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Editar Elemento de Inventario' : 'Agregar Elemento de Inventario'}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-full sm:max-w-2xl lg:max-w-3xl max-h-[90vh] !flex !flex-col overflow-hidden mx-4 !p-0 !gap-0">
+        <div className="px-6 py-4 border-b">
+          <DialogHeader className="!p-0">
+            <DialogTitle>
+              {isEditing ? 'Editar Elemento de Inventario' : 'Agregar Elemento de Inventario'}
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-6rem)] -mx-6 px-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            {/* Tipo de Elemento */}
-            <div className="space-y-2">
-              <Label htmlFor="tipo-elemento">Tipo de Elemento *</Label>
-              <Select 
-                value={formData.tipoElementoId === 0 ? "seleccionar" : formData.tipoElementoId.toString()} 
-                onValueChange={(value) => {
-                  if (value !== "seleccionar") {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      tipoElementoId: parseInt(value) 
-                    }));
+        <div className="flex-1 overflow-y-auto p-6">
+          <form id="inventario-form" onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+              {/* Tipo de Elemento */}
+              <div className="space-y-2">
+                <Label htmlFor="tipo-elemento">Tipo de Elemento *</Label>
+                <Select
+                  value={formData.tipoElementoId === 0 ? "seleccionar" : formData.tipoElementoId.toString()}
+                  onValueChange={(value) => {
+                    if (value !== "seleccionar") {
+                      setFormData(prev => ({
+                        ...prev,
+                        tipoElementoId: parseInt(value)
+                      }));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="seleccionar" disabled>Seleccionar</SelectItem>
+                    {tiposElemento.map(tipo => (
+                      <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                        {tipo.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Cantidad */}
+              <div className="space-y-2">
+                <Label htmlFor="cantidad">Cantidad *</Label>
+                <Input
+                  id="cantidad"
+                  type="number"
+                  min="1"
+                  value={formData.cantidad}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    cantidad: parseInt(e.target.value) || 1
+                  }))}
+                  required
+                  className="w-full"
+                />
+              </div>
+
+              {/* Estado */}
+              <div className="space-y-2">
+                <Label htmlFor="estado">Estado *</Label>
+                <Select
+                  value={formData.estado}
+                  onValueChange={(value: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO') =>
+                    setFormData(prev => ({ ...prev, estado: value }))
                   }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="seleccionar" disabled>Seleccionar</SelectItem>
-                  {tiposElemento.map(tipo => (
-                    <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                      {tipo.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DISPONIBLE">Disponible</SelectItem>
+                    <SelectItem value="MANTENIMIENTO">Mantenimiento</SelectItem>
+                    <SelectItem value="DANADO">Dañado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Cantidad */}
-            <div className="space-y-2">
-              <Label htmlFor="cantidad">Cantidad *</Label>
-              <Input
-                id="cantidad"
-                type="number"
-                min="1"
-                value={formData.cantidad}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  cantidad: parseInt(e.target.value) || 1 
+            {/* Observaciones */}
+            <div className="space-y-2 w-full">
+              <Label htmlFor="observaciones">Observaciones</Label>
+              <Textarea
+                id="observaciones"
+                value={formData.observaciones}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  observaciones: e.target.value
                 }))}
-                required
-                className="w-full"
+                placeholder="Observaciones adicionales sobre el elemento..."
+                rows={3}
+                className="w-full min-h-[80px]"
               />
             </div>
-
-            {/* Estado */}
-            <div className="space-y-2">
-              <Label htmlFor="estado">Estado *</Label>
-              <Select 
-                value={formData.estado} 
-                onValueChange={(value: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO') => 
-                  setFormData(prev => ({ ...prev, estado: value }))
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DISPONIBLE">Disponible</SelectItem>
-                  <SelectItem value="MANTENIMIENTO">Mantenimiento</SelectItem>
-                  <SelectItem value="DANADO">Dañado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Observaciones */}
-          <div className="space-y-2 w-full">
-            <Label htmlFor="observaciones">Observaciones</Label>
-            <Textarea
-              id="observaciones"
-              value={formData.observaciones}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                observaciones: e.target.value 
-              }))}
-              placeholder="Observaciones adicionales sobre el elemento..."
-              rows={3}
-              className="w-full min-h-[80px]"
-            />
-          </div>
-        </form>
+          </form>
         </div>
 
         {/* Botones */}
-        <div className="flex justify-end gap-2 pt-4 px-6">
-          <Button 
-            type="button" 
-            variant="outline" 
+        <div className="flex-shrink-0 bg-gray-50 px-6 py-4 border-t flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
@@ -239,6 +241,6 @@ export function InventarioFormDialog({
           </PermissionGuard>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }

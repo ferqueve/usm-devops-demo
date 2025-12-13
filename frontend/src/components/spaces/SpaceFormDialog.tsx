@@ -29,11 +29,11 @@ interface SpaceFormDialogProps {
   onSuccess: (espacio: Espacio) => void;
 }
 
-export function SpaceFormDialog({ 
-  espacio, 
-  open, 
-  onOpenChange, 
-  onSuccess 
+export function SpaceFormDialog({
+  espacio,
+  open,
+  onOpenChange,
+  onSuccess
 }: SpaceFormDialogProps) {
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -113,7 +113,7 @@ export function SpaceFormDialog({
     }
 
     setSelectedFile(file);
-    
+
     // Crear preview
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -129,7 +129,7 @@ export function SpaceFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validaciones básicas
     if (!formData.nombre?.trim()) {
       toast.error('El nombre del espacio es requerido');
@@ -148,7 +148,7 @@ export function SpaceFormDialog({
 
     try {
       setLoading(true);
-      
+
       const data = {
         nombre: formData.nombre.trim(),
         capacidad: formData.capacidad,
@@ -184,14 +184,14 @@ export function SpaceFormDialog({
           setUploadingImage(false);
         }
       }
-      
+
       toast.success(
         isEditing ? 'Espacio actualizado' : 'Espacio creado',
         {
           description: `${formData.nombre} ha sido ${isEditing ? 'actualizado' : 'creado'} exitosamente`
         }
       );
-      
+
       if (response.data) {
         onSuccess(response.data);
         onOpenChange(false);
@@ -218,112 +218,141 @@ export function SpaceFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
+        <DialogHeader className="p-6 pb-2 space-y-1">
           <DialogTitle>
             {isEditing ? 'Editar Espacio' : 'Crear Nuevo Espacio'}
           </DialogTitle>
           <DialogDescription>
-            {isEditing 
+            {isEditing
               ? 'Modifica la información del espacio seleccionado.'
               : 'Completa la información para crear un nuevo espacio.'
             }
           </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-8rem)] -mx-6 px-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre del Espacio</Label>
-            <Input
-              id="nombre"
-              value={formData.nombre}
-              onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-              placeholder="Ej: Aula 101"
-              disabled={loading}
-              required
-              className="w-full"
-            />
-          </div>
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <form id="space-form" onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nombre">Nombre del Espacio</Label>
+              <Input
+                id="nombre"
+                value={formData.nombre}
+                onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
+                placeholder="Ej: Aula 101"
+                disabled={loading}
+                required
+                className="w-full"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tipoEspacio">Tipo de Espacio</Label>
-            <Select
-              value={formData.tipoEspacioId === 0 ? "seleccionar" : formData.tipoEspacioId?.toString() || "seleccionar"}
-              onValueChange={(value) => {
-                if (value !== "seleccionar") {
-                  setFormData(prev => ({ ...prev, tipoEspacioId: parseInt(value) }));
-                }
-              }}
-              disabled={loading}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleccionar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="seleccionar" disabled>Seleccionar</SelectItem>
-                {tiposEspacio.map((tipo) => (
-                  <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="tipoEspacio">Tipo de Espacio</Label>
+              <Select
+                value={formData.tipoEspacioId === 0 ? "seleccionar" : formData.tipoEspacioId?.toString() || "seleccionar"}
+                onValueChange={(value) => {
+                  if (value !== "seleccionar") {
+                    setFormData(prev => ({ ...prev, tipoEspacioId: parseInt(value) }));
+                  }
+                }}
+                disabled={loading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="seleccionar" disabled>Seleccionar</SelectItem>
+                  {tiposEspacio.map((tipo) => (
+                    <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                      {tipo.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="capacidad">Capacidad</Label>
-            <Input
-              id="capacidad"
-              type="number"
-              min="1"
-              value={formData.capacidad}
-              onChange={(e) => setFormData(prev => ({ ...prev, capacidad: parseInt(e.target.value) || 1 }))}
-              placeholder="Ej: 30"
-              disabled={loading}
-              required
-              className="w-full"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="capacidad">Capacidad</Label>
+              <Input
+                id="capacidad"
+                type="number"
+                min="1"
+                value={formData.capacidad}
+                onChange={(e) => setFormData(prev => ({ ...prev, capacidad: parseInt(e.target.value) || 1 }))}
+                placeholder="Ej: 30"
+                disabled={loading}
+                required
+                className="w-full"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="imagen">Imagen del Espacio (Opcional)</Label>
-            
-            {/* Preview de imagen */}
-            {imagePreview && (
-              <div className="relative w-full h-48 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={handleRemoveImage}
-                  disabled={loading || uploadingImage}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="imagen">Imagen del Espacio (Opcional)</Label>
 
-            {/* Input de archivo */}
-            {!imagePreview && (
-              <div className="flex items-center justify-center w-full">
-                <label
-                  htmlFor="imagen"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Click para subir</span> o arrastra y suelta
-                    </p>
-                    <p className="text-xs text-gray-500">JPG, PNG, WebP o GIF (máx. 50MB)</p>
-                  </div>
+              {/* Preview de imagen */}
+              {imagePreview && (
+                <div className="relative w-full h-48 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={handleRemoveImage}
+                    disabled={loading || uploadingImage}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Input de archivo */}
+              {!imagePreview && (
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    htmlFor="imagen"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Click para subir</span> o arrastra y suelta
+                      </p>
+                      <p className="text-xs text-gray-500">JPG, PNG, WebP o GIF (máx. 50MB)</p>
+                    </div>
+                    <input
+                      id="imagen"
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                      onChange={handleFileSelect}
+                      disabled={loading || uploadingImage}
+                    />
+                  </label>
+                </div>
+              )}
+
+              {/* Botón para cambiar imagen si ya hay una */}
+              {imagePreview && (
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const input = document.getElementById('imagen') as HTMLInputElement;
+                      input?.click();
+                    }}
+                    disabled={loading || uploadingImage}
+                    className="w-full"
+                  >
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    {selectedFile ? 'Cambiar Imagen' : 'Cambiar Imagen'}
+                  </Button>
                   <input
                     id="imagen"
                     type="file"
@@ -332,69 +361,40 @@ export function SpaceFormDialog({
                     onChange={handleFileSelect}
                     disabled={loading || uploadingImage}
                   />
-                </label>
-              </div>
-            )}
+                </div>
+              )}
 
-            {/* Botón para cambiar imagen si ya hay una */}
-            {imagePreview && (
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const input = document.getElementById('imagen') as HTMLInputElement;
-                    input?.click();
-                  }}
-                  disabled={loading || uploadingImage}
-                  className="w-full"
-                >
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  {selectedFile ? 'Cambiar Imagen' : 'Cambiar Imagen'}
-                </Button>
-                <input
-                  id="imagen"
-                  type="file"
-                  className="hidden"
-                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                  onChange={handleFileSelect}
-                  disabled={loading || uploadingImage}
-                />
-              </div>
-            )}
+              {uploadingImage && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Subiendo imagen...</span>
+                </div>
+              )}
+            </div>
 
-            {uploadingImage && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Subiendo imagen...</span>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="estado">Estado</Label>
-            <Select
-              value={formData.estado}
-              onValueChange={(value) => {
-                setFormData(prev => ({ ...prev, estado: value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE' }));
-              }}
-              disabled={loading}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleccionar estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DISPONIBLE">Disponible</SelectItem>
-                <SelectItem value="MANTENIMIENTO">En Mantenimiento</SelectItem>
-                <SelectItem value="NO_DISPONIBLE">No Disponible</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </form>
+            <div className="space-y-2">
+              <Label htmlFor="estado">Estado</Label>
+              <Select
+                value={formData.estado}
+                onValueChange={(value) => {
+                  setFormData(prev => ({ ...prev, estado: value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE' }));
+                }}
+                disabled={loading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DISPONIBLE">Disponible</SelectItem>
+                  <SelectItem value="MANTENIMIENTO">En Mantenimiento</SelectItem>
+                  <SelectItem value="NO_DISPONIBLE">No Disponible</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </form>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="p-6 pt-2">
           <Button
             type="button"
             variant="outline"

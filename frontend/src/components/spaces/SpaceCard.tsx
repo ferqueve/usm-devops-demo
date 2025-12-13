@@ -11,26 +11,26 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 function getEstadoConfig(estado: string) {
   switch (estado) {
     case 'DISPONIBLE':
-      return { 
-        label: 'Disponible', 
+      return {
+        label: 'Disponible',
         color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         icon: CheckCircle
       };
     case 'MANTENIMIENTO':
-      return { 
-        label: 'En Mantenimiento', 
+      return {
+        label: 'En Mantenimiento',
         color: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Wrench
       };
     case 'NO_DISPONIBLE':
-      return { 
-        label: 'No Disponible', 
+      return {
+        label: 'No Disponible',
         color: 'bg-red-50 text-red-700 border-red-200',
         icon: XCircle
       };
     default:
-      return { 
-        label: estado, 
+      return {
+        label: estado,
         color: 'bg-gray-50 text-gray-700 border-gray-200',
         icon: CheckCircle
       };
@@ -64,18 +64,18 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
   };
 
   return (
-    <Card 
+    <Card
       className="group hover:shadow-md transition-all duration-200 cursor-pointer h-full flex flex-col border border-gray-200 hover:border-gray-300 overflow-hidden relative"
-      style={{ 
-        borderTop: espacio.tipoEspacioColor ? `6px solid ${espacio.tipoEspacioColor}` : undefined 
+      style={{
+        borderTop: espacio.tipoEspacioColor ? `6px solid ${espacio.tipoEspacioColor}` : undefined
       }}
       onClick={handleViewDetails}
     >
       {/* Imagen del espacio - más compacta */}
       {espacio.imagenUrl && !imageError ? (
         <div className="aspect-[16/10] overflow-hidden bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200 relative">
-          <img 
-            src={espacio.imagenUrl} 
+          <img
+            src={espacio.imagenUrl}
             alt={espacio.nombre}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -102,7 +102,7 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
             {espacio.nombre}
           </CardTitle>
           {espacio.tipoEspacioColor ? (
-            <span 
+            <span
               className="px-2 py-0.5 rounded text-white text-xs font-medium flex-shrink-0"
               style={{ backgroundColor: espacio.tipoEspacioColor }}
             >
@@ -143,9 +143,9 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
 
         {/* Botones de acción */}
         <div className={`flex gap-2 mt-auto ${canEdit ? 'flex-col' : ''}`}>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             className={`${canEdit ? 'w-full' : 'w-full'} h-8 text-sm hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors duration-200`}
             onClick={handleViewDetails}
           >
@@ -153,9 +153,9 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
             Ver Detalles
           </Button>
           <PermissionGuard requiredPermission="espacios:editar">
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               className="w-full h-8 text-sm hover:bg-green-50 hover:border-green-200 hover:text-green-700 transition-colors duration-200"
               onClick={handleEdit}
             >

@@ -72,7 +72,7 @@ export default function ReservationDetailsDialog({
   const [showAprobarDialog, setShowAprobarDialog] = useState(false);
   const [mensajeAnalista, setMensajeAnalista] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const estadoConfig = getEstadoConfig(reserva.estado);
   const esFutura = new Date(reserva.inicio) > new Date();
 
@@ -330,24 +330,20 @@ export default function ReservationDetailsDialog({
 
             {/* Mensaje del analista si existe */}
             {reserva.mensajeAnalista && (
-              <div className={`border-l-4 rounded p-3 space-y-2 ${
-                reserva.estado === 'CANCELADO' 
-                  ? 'bg-red-50 border-red-400' 
+              <div className={`border-l-4 rounded p-3 space-y-2 ${reserva.estado === 'CANCELADO'
+                  ? 'bg-red-50 border-red-400'
                   : 'bg-green-50 border-green-400'
-              }`}>
+                }`}>
                 <div className="flex items-center gap-2">
-                  <MessageSquare className={`h-4 w-4 flex-shrink-0 ${
-                    reserva.estado === 'CANCELADO' ? 'text-red-600' : 'text-green-600'
-                  }`} />
-                  <p className={`text-xs font-semibold ${
-                    reserva.estado === 'CANCELADO' ? 'text-red-800' : 'text-green-800'
-                  }`}>
+                  <MessageSquare className={`h-4 w-4 flex-shrink-0 ${reserva.estado === 'CANCELADO' ? 'text-red-600' : 'text-green-600'
+                    }`} />
+                  <p className={`text-xs font-semibold ${reserva.estado === 'CANCELADO' ? 'text-red-800' : 'text-green-800'
+                    }`}>
                     {reserva.estado === 'CANCELADO' ? 'Mensaje del analista' : 'Mensaje del analista'}
                   </p>
                 </div>
-                <p className={`text-xs whitespace-pre-wrap ${
-                  reserva.estado === 'CANCELADO' ? 'text-red-700' : 'text-green-700'
-                }`}>
+                <p className={`text-xs whitespace-pre-wrap ${reserva.estado === 'CANCELADO' ? 'text-red-700' : 'text-green-700'
+                  }`}>
                   {reserva.mensajeAnalista}
                 </p>
               </div>
@@ -366,7 +362,7 @@ export default function ReservationDetailsDialog({
             <div className="w-3 h-3 bg-white rounded-full"></div>
             <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
-          
+
           {/* Botones de acción para reservas pendientes */}
           {reserva.estado === 'PENDIENTE' && (
             <PermissionGuard requiredPermission="reservas:aprobar" fallback={null} showFallback={false}>
@@ -390,7 +386,7 @@ export default function ReservationDetailsDialog({
               </div>
             </PermissionGuard>
           )}
-          
+
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full h-9 text-sm">
             Cerrar
           </Button>
@@ -406,7 +402,7 @@ export default function ReservationDetailsDialog({
               ¿Estás seguro de que deseas aprobar esta reserva? Puedes agregar un mensaje opcional.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
+
           <div className="space-y-3 py-4">
             <div className="space-y-2">
               <Label htmlFor="mensaje-aprobar">Mensaje (Opcional)</Label>
@@ -449,7 +445,7 @@ export default function ReservationDetailsDialog({
               ¿Estás seguro de que deseas rechazar esta reserva? Puedes agregar un mensaje opcional explicando el motivo.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
+
           <div className="space-y-3 py-4">
             <div className="space-y-2">
               <Label htmlFor="mensaje-rechazar">Mensaje (Opcional)</Label>

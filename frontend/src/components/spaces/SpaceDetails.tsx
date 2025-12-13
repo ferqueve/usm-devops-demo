@@ -19,11 +19,11 @@ import { DeleteInventarioDialog } from './DeleteInventarioDialog';
 import { espaciosApi } from '@/lib/api/spaces';
 import type { Espacio, InventarioItem } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  Users, 
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Users,
   Calendar,
   Package,
   AlertCircle,
@@ -43,26 +43,26 @@ interface SpaceDetailsProps {
 function getEstadoConfig(estado: string) {
   switch (estado) {
     case 'DISPONIBLE':
-      return { 
-        label: 'Disponible', 
+      return {
+        label: 'Disponible',
         color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         icon: CheckCircle
       };
     case 'MANTENIMIENTO':
-      return { 
-        label: 'Mantenimiento', 
+      return {
+        label: 'Mantenimiento',
         color: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Wrench
       };
     case 'DANADO':
-      return { 
-        label: 'Dañado', 
+      return {
+        label: 'Dañado',
         color: 'bg-red-50 text-red-700 border-red-200',
         icon: AlertCircle
       };
     default:
-      return { 
-        label: estado, 
+      return {
+        label: estado,
         color: 'bg-gray-50 text-gray-700 border-gray-200',
         icon: AlertCircle
       };
@@ -76,7 +76,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
   const [inventario, setInventario] = useState<InventarioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingInventario, setLoadingInventario] = useState(true);
-  
+
   // Modales
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -132,7 +132,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
     } else {
       document.title = 'Espacios';
     }
-    
+
     return () => {
       // Resetear título al desmontar
       document.title = 'USM Space Manager';
@@ -170,7 +170,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
 
   const handleDeleteInventarioSuccess = () => {
     if (selectedInventarioItem) {
-      setInventario(prev => 
+      setInventario(prev =>
         prev.filter(i => i.id !== selectedInventarioItem.id)
       );
       setSelectedInventarioItem(null);
@@ -272,7 +272,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
             </div>
             <div className="flex items-center gap-2">
               {espacio.tipoEspacioColor ? (
-                <span 
+                <span
                   className="px-2 py-0.5 rounded text-white text-xs font-medium"
                   style={{ backgroundColor: espacio.tipoEspacioColor }}
                 >
@@ -286,7 +286,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="flex gap-2 flex-wrap">
           <PermissionGuard requiredPermission="espacios:editar">
             <Button variant="outline" onClick={() => setEditDialog(true)} className="flex-1 sm:flex-none">
@@ -314,8 +314,8 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
             <div>
               {espacio.imagenUrl ? (
                 <div className="aspect-video rounded-md overflow-hidden bg-gray-100">
-                  <img 
-                    src={espacio.imagenUrl} 
+                  <img
+                    src={espacio.imagenUrl}
                     alt={espacio.nombre}
                     className="w-full h-full object-cover"
                   />
@@ -339,7 +339,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                 <Package className="h-5 w-5 text-gray-500" />
                 <span className="font-medium">Tipo:</span>
                 {espacio.tipoEspacioColor ? (
-                  <span 
+                  <span
                     className="px-2 py-0.5 rounded text-white text-xs font-medium"
                     style={{ backgroundColor: espacio.tipoEspacioColor }}
                   >
@@ -405,7 +405,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                 {inventario.map((item) => {
                   const estadoConfig = getEstadoConfig(item.estado);
                   const EstadoIcon = estadoConfig.icon;
-                  
+
                   return (
                     <Card key={item.id} className="shadow-sm">
                       <CardContent className="p-4 space-y-3">
@@ -421,7 +421,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                             {estadoConfig.label}
                           </Badge>
                         </div>
-                        
+
                         <div className="flex gap-2 pt-2 border-t">
                           <PermissionGuard requiredPermission="inventario:editar">
                             <Button
@@ -469,7 +469,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                     {inventario.map((item) => {
                       const estadoConfig = getEstadoConfig(item.estado);
                       const EstadoIcon = estadoConfig.icon;
-                      
+
                       return (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">
