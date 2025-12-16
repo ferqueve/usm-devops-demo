@@ -672,11 +672,12 @@ export default function InventoryRequestsManagement() {
         open={manageDialogOpen && !!selectedRequest}
         onOpenChange={handleManageDialogChange}
       >
-        <DialogContent className="max-w-[520px] gap-0 p-0 overflow-hidden border border-slate-200 bg-white shadow-2xl">
+        <DialogContent className="max-w-[520px] max-h-[85vh] gap-0 p-0 overflow-hidden border border-slate-200 bg-white shadow-2xl flex flex-col">
           {selectedRequest ? (
-            <div className="flex flex-col">
+            <>
+              {/* Header fijo */}
               <DialogHeader
-                className={`gap-2 bg-gradient-to-br px-5 py-4 text-left text-white sm:text-left ${ESTADO_ACCENT[selectedRequest.estado] ?? 'from-slate-600 to-slate-800'}`}
+                className={`shrink-0 gap-2 bg-gradient-to-br px-5 py-4 text-left text-white sm:text-left ${ESTADO_ACCENT[selectedRequest.estado] ?? 'from-slate-600 to-slate-800'}`}
               >
                 <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/70">
                   <span>Solicitud #{selectedRequest.id}</span>
@@ -711,7 +712,8 @@ export default function InventoryRequestsManagement() {
                 </div>
               </DialogHeader>
 
-              <div className="px-5 py-4 space-y-3 text-sm text-slate-900">
+              {/* Contenido scrolleable */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 text-sm text-slate-900">
                 <div className="grid gap-2">
                   <div className="flex items-start gap-2">
                     <UserIcon className="mt-0.5 h-4 w-4 text-muted-foreground" />
@@ -896,39 +898,21 @@ export default function InventoryRequestsManagement() {
                     </Button>
                   </div>
                 </div>
+              </div>
 
-                <PermissionGuard requiredPermissions={['solicitudes_inventario:aprobar', 'solicitudes_inventario:rechazar']} requireAll={false}>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Acciones
-                    </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <PermissionGuard requiredPermission="solicitudes_inventario:aprobar">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}
-                          onClick={() => {
-                            if (!selectedRequest) {
-                              return;
-                            }
-                            if (!canApprove) {
-                              toast.error('Asigna un item antes de aprobar la solicitud');
-                              return;
-                            }
-                            updateRequest(
-                              selectedRequest,
-                              { estado: 'APROBADO' },
-                              'Solicitud aprobada'
-                            );
-                          }}
-                          disabled={updatingRequest || !canApprove}
-                          className="justify-center"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Aprobar
-                        </Button>
-                      </PermissionGuard>
+              {/* Footer fijo con acciones */}
+              <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-5 py-3">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-4"
+                    onClick={() => handleManageDialogChange(false)}
+                  >
+                    Cerrar
+                  </Button>
+                  <PermissionGuard requiredPermissions={['solicitudes_inventario:aprobar', 'solicitudes_inventario:rechazar']} requireAll={false}>
+                    <div className="flex items-center gap-2">
                       <PermissionGuard requiredPermission="solicitudes_inventario:rechazar">
                         <Button
                           size="sm"
@@ -945,28 +929,42 @@ export default function InventoryRequestsManagement() {
                             );
                           }}
                           disabled={updatingRequest || !canReject}
-                          className="justify-center"
+                          className="h-9 border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
                         >
-                          <XCircle className="h-3.5 w-3.5" />
+                          <XCircle className="h-4 w-4" />
                           Rechazar
                         </Button>
                       </PermissionGuard>
+                      <PermissionGuard requiredPermission="solicitudes_inventario:aprobar">
+                        <Button
+                          size="sm"
+                          title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}
+                          onClick={() => {
+                            if (!selectedRequest) {
+                              return;
+                            }
+                            if (!canApprove) {
+                              toast.error('Asigna un item antes de aprobar la solicitud');
+                              return;
+                            }
+                            updateRequest(
+                              selectedRequest,
+                              { estado: 'APROBADO' },
+                              'Solicitud aprobada'
+                            );
+                          }}
+                          disabled={updatingRequest || !canApprove}
+                          className="h-9 bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Aprobar
+                        </Button>
+                      </PermissionGuard>
                     </div>
-                  </div>
-                </PermissionGuard>
+                  </PermissionGuard>
+                </div>
               </div>
-
-              <div className="border-t border-slate-100 bg-slate-50 px-5 py-3 text-right">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-4"
-                  onClick={() => handleManageDialogChange(false)}
-                >
-                  Cerrar
-                </Button>
-              </div>
-            </div>
+            </>
           ) : null}
         </DialogContent>
       </Dialog>

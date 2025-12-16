@@ -61,7 +61,7 @@ class TipoEspacioServiceTest {
         createDto.setDescripcion("Espacio para prácticas");
         createDto.setColor("#33FF57");
 
-        when(tipoEspacioRepository.existsByNombreIgnoreCase(anyString())).thenReturn(false);
+        when(tipoEspacioRepository.findByNombreIgnoreCase(anyString())).thenReturn(java.util.Optional.empty());
         when(tipoEspacioRepository.save(any(TipoEspacio.class))).thenReturn(tipoEspacioTest);
 
         // When
@@ -69,7 +69,7 @@ class TipoEspacioServiceTest {
 
         // Then
         assertNotNull(resultado);
-        verify(tipoEspacioRepository).existsByNombreIgnoreCase(anyString());
+        verify(tipoEspacioRepository).findByNombreIgnoreCase(createDto.getNombre());
         verify(tipoEspacioRepository).save(any(TipoEspacio.class));
     }
 
@@ -78,16 +78,19 @@ class TipoEspacioServiceTest {
     void debeLanzarExcepcionNombreDuplicado() {
         // Given
         TipoEspacioCreateDto createDto = new TipoEspacioCreateDto();
-        createDto.setNombre(nombreTipoEspacio);
+        createDto.setNombre("Laboratorio");
 
-        when(tipoEspacioRepository.existsByNombreIgnoreCase(nombreTipoEspacio)).thenReturn(true);
+        // Simular que ya existe
+        TipoEspacio existente = new TipoEspacio();
+        existente.setNombre("Laboratorio");
+        when(tipoEspacioRepository.findByNombreIgnoreCase("Laboratorio")).thenReturn(java.util.Optional.of(existente));
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             tipoEspacioService.createTipoEspacio(createDto);
         });
 
-        assertTrue(exception.getMessage().contains("Ya existe un tipo de espacio"));
+        assertTrue(exception.getMessage().contains("Ya existe"));
         verify(tipoEspacioRepository, never()).save(any(TipoEspacio.class));
     }
 
@@ -180,7 +183,8 @@ class TipoEspacioServiceTest {
         updateDto.setNombre("Nombre Duplicado");
 
         when(tipoEspacioRepository.findById(tipoEspacioId)).thenReturn(Optional.of(tipoEspacioTest));
-        when(tipoEspacioRepository.existsByNombreIgnoreCaseAndIdNot("Nombre Duplicado", tipoEspacioId)).thenReturn(true);
+        when(tipoEspacioRepository.existsByNombreIgnoreCaseAndIdNot("Nombre Duplicado", tipoEspacioId))
+                .thenReturn(true);
 
         // When & Then
         assertThrows(RuntimeException.class, () -> {

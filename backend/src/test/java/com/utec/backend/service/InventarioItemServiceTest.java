@@ -185,7 +185,8 @@ class InventarioItemServiceTest {
                 .thenReturn(page);
 
         // When
-        Page<InventarioItemResponseDto> resultado = inventarioItemService.getAllInventarioItemsPaged(PageRequest.of(0, 10));
+        Page<InventarioItemResponseDto> resultado = inventarioItemService
+                .getAllInventarioItemsPaged(PageRequest.of(0, 10));
 
         // Then
         assertNotNull(resultado);
@@ -264,18 +265,20 @@ class InventarioItemServiceTest {
     }
 
     @Test
-    @DisplayName("Debe eliminar item exitosamente")
+    @DisplayName("Debe eliminar item exitosamente (soft delete)")
     void debeEliminarItemExitosamente() {
         // Given
-        when(inventarioItemRepository.existsById(itemId)).thenReturn(true);
-        doNothing().when(inventarioItemRepository).deleteById(itemId);
+        when(inventarioItemRepository.findById(itemId)).thenReturn(Optional.of(itemTest));
+        when(inventarioItemRepository.save(any(InventarioItem.class))).thenReturn(itemTest);
 
         // When
         assertDoesNotThrow(() -> inventarioItemService.deleteInventarioItem(itemId));
 
         // Then
-        verify(inventarioItemRepository).existsById(itemId);
-        verify(inventarioItemRepository).deleteById(itemId);
+        verify(inventarioItemRepository).findById(itemId);
+        verify(inventarioItemRepository).save(itemTest);
+        assertFalse(itemTest.getActivo());
+        assertNotNull(itemTest.getDeletedAt());
     }
 
     @Test

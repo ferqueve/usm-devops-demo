@@ -56,7 +56,7 @@ class EspacioServiceTest {
         espacioTest.setCreatedAt(Instant.now());
         espacioTest.setUpdatedAt(Instant.now());
         espacioTest.setInventarioItems(Collections.emptyList());
-        
+
         // Mock FileStorageService - lenient para evitar UnnecessaryStubbingException
         lenient().when(fileStorageService.getImageUrl(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
     }
@@ -201,15 +201,15 @@ class EspacioServiceTest {
     void debeEliminarEspacioExitosamente() throws Exception {
         // Given
         when(espacioRepository.findById(espacioId)).thenReturn(Optional.of(espacioTest));
-        doNothing().when(espacioRepository).deleteById(espacioId);
-        doNothing().when(fileStorageService).deleteImage(anyString());
 
         // When
         assertDoesNotThrow(() -> espacioService.deleteEspacio(espacioId));
 
         // Then
+        // Then
         verify(espacioRepository).findById(espacioId);
-        verify(espacioRepository).deleteById(espacioId);
+        verify(espacioRepository).save(espacioTest);
+        assertNotNull(espacioTest.getDeletedAt());
     }
 
     @Test
@@ -320,7 +320,7 @@ class EspacioServiceTest {
         // Given
         String search = "Aula";
         Long tipoEspacioId = 1L;
-        
+
         when(espacioRepository.findAll()).thenReturn(Arrays.asList(espacioTest));
 
         // When

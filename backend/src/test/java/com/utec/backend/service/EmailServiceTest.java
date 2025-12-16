@@ -18,6 +18,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para EmailService")
@@ -32,6 +33,9 @@ class EmailServiceTest {
     @Mock
     private UsuarioConfiguracionService configuracionService;
 
+    @Mock
+    private EmailTemplateService emailTemplateService;
+
     @InjectMocks
     private EmailService emailService;
 
@@ -45,10 +49,18 @@ class EmailServiceTest {
         usuarioTest.setEmail(userEmail);
         usuarioTest.setNombre("Test User");
         usuarioTest.setVerificado(false);
-        
+
         // Configurar propiedades para los tests
         org.springframework.test.util.ReflectionTestUtils.setField(emailService, "appTimezone", "America/Montevideo");
-        org.springframework.test.util.ReflectionTestUtils.setField(emailService, "frontendUrl", "http://localhost:5173");
+        org.springframework.test.util.ReflectionTestUtils.setField(emailService, "frontendUrl",
+                "http://localhost:5173");
+        org.springframework.test.util.ReflectionTestUtils.setField(emailService, "backendUrl",
+                "http://localhost:8080");
+
+        // Configurar mocks lenient para EmailTemplateService
+        lenient().when(emailTemplateService.loadTemplate(anyString(), anyMap())).thenReturn("<html>Test</html>");
+        lenient().when(emailTemplateService.wrapInBaseTemplate(anyString(), anyString(), anyString()))
+                .thenReturn("<html>Wrapped Test</html>");
     }
 
     @Test
@@ -102,7 +114,7 @@ class EmailServiceTest {
         // Given
         String token = "test-token";
         when(configuracionService.debeEnviarEmail(userEmail, "verificacion")).thenReturn(true);
-        when(gmailApiService.sendEmail(anyString(), anyString(), anyString())).thenReturn(true);
+        when(gmailApiService.sendHtmlEmail(anyString(), anyString(), anyString())).thenReturn(true);
 
         // When
         boolean resultado = emailService.enviarEmailVerificacion(userEmail, token);
@@ -110,7 +122,7 @@ class EmailServiceTest {
         // Then
         assertTrue(resultado);
         verify(configuracionService).debeEnviarEmail(userEmail, "verificacion");
-        verify(gmailApiService).sendEmail(anyString(), anyString(), anyString());
+        verify(gmailApiService).sendHtmlEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -125,7 +137,7 @@ class EmailServiceTest {
 
         // Then
         assertFalse(resultado);
-        verify(gmailApiService, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(gmailApiService, never()).sendHtmlEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -134,14 +146,14 @@ class EmailServiceTest {
         // Given
         String nuevaPassword = "temp-password";
         when(configuracionService.debeEnviarEmail(userEmail, "restablecimientoPassword")).thenReturn(true);
-        when(gmailApiService.sendEmail(anyString(), anyString(), anyString())).thenReturn(true);
+        when(gmailApiService.sendHtmlEmail(anyString(), anyString(), anyString())).thenReturn(true);
 
         // When
         boolean resultado = emailService.enviarEmailRestablecimientoPassword(userEmail, nuevaPassword);
 
         // Then
         assertTrue(resultado);
-        verify(gmailApiService).sendEmail(anyString(), anyString(), anyString());
+        verify(gmailApiService).sendHtmlEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -154,16 +166,16 @@ class EmailServiceTest {
         reserva.setInicio(Instant.now());
         reserva.setFin(Instant.now().plus(2, ChronoUnit.HOURS));
         reserva.setUsuarioNombre("Test User");
-        
+
         when(configuracionService.debeEnviarEmail(userEmail, "nuevaSolicitudReserva")).thenReturn(true);
-        when(gmailApiService.sendEmail(anyString(), anyString(), anyString())).thenReturn(true);
+        when(gmailApiService.sendHtmlEmail(anyString(), anyString(), anyString())).thenReturn(true);
 
         // When
         boolean resultado = emailService.enviarEmailNotificacionNuevaSolicitud(userEmail, reserva);
 
         // Then
         assertTrue(resultado);
-        verify(gmailApiService).sendEmail(anyString(), anyString(), anyString());
+        verify(gmailApiService).sendHtmlEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -176,16 +188,16 @@ class EmailServiceTest {
         reserva.setInicio(Instant.now());
         reserva.setFin(Instant.now().plus(2, ChronoUnit.HOURS));
         reserva.setUsuarioNombre("Test User");
-        
+
         when(configuracionService.debeEnviarEmail(userEmail, "reservaAprobada")).thenReturn(true);
-        when(gmailApiService.sendEmail(anyString(), anyString(), anyString())).thenReturn(true);
+        when(gmailApiService.sendHtmlEmail(anyString(), anyString(), anyString())).thenReturn(true);
 
         // When
         boolean resultado = emailService.enviarEmailNotificacionReservaAprobada(userEmail, reserva);
 
         // Then
         assertTrue(resultado);
-        verify(gmailApiService).sendEmail(anyString(), anyString(), anyString());
+        verify(gmailApiService).sendHtmlEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -198,16 +210,15 @@ class EmailServiceTest {
         reserva.setInicio(Instant.now().plus(2, ChronoUnit.HOURS));
         reserva.setFin(Instant.now().plus(4, ChronoUnit.HOURS));
         reserva.setUsuarioNombre("Test User");
-        
+
         when(configuracionService.debeEnviarEmail(userEmail, "recordatorioReserva")).thenReturn(true);
-        when(gmailApiService.sendEmail(anyString(), anyString(), anyString())).thenReturn(true);
+        when(gmailApiService.sendHtmlEmail(anyString(), anyString(), anyString())).thenReturn(true);
 
         // When
         boolean resultado = emailService.enviarEmailRecordatorioReserva(userEmail, reserva, 2);
 
         // Then
         assertTrue(resultado);
-        verify(gmailApiService).sendEmail(anyString(), anyString(), anyString());
+        verify(gmailApiService).sendHtmlEmail(anyString(), anyString(), anyString());
     }
 }
-

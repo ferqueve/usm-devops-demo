@@ -86,7 +86,7 @@ class AuthenticationServiceTest {
     void debeAutenticarUsuarioExitosamente() {
         // Given
         AuthenticationRequest request = new AuthenticationRequest(testEmail, testPassword);
-        
+
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(userDetailsService.loadUserByUsername(testEmail)).thenReturn(userDetails);
         when(jwtService.generateToken(userDetails)).thenReturn("accessToken");
@@ -102,7 +102,7 @@ class AuthenticationServiceTest {
         assertEquals("refreshToken", response.getRefreshToken());
         assertEquals(testEmail, response.getEmail());
         assertEquals("Juan Pérez", response.getNombre());
-        
+
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(usuarioRepository).findByEmail(testEmail);
         verify(jwtService).generateToken(userDetails);
@@ -115,7 +115,7 @@ class AuthenticationServiceTest {
         // Given
         usuarioTest.setVerificado(false);
         AuthenticationRequest request = new AuthenticationRequest(testEmail, testPassword);
-        
+
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
 
         // When & Then
@@ -133,7 +133,7 @@ class AuthenticationServiceTest {
     void debeLanzarExcepcionCredencialesInvalidas() {
         // Given
         AuthenticationRequest request = new AuthenticationRequest(testEmail, "wrongPassword");
-        
+
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
@@ -143,7 +143,7 @@ class AuthenticationServiceTest {
         });
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(usuarioRepository, never()).findByEmail(anyString());
+        verify(usuarioRepository).findByEmail(testEmail);
     }
 
     @Test
@@ -156,6 +156,8 @@ class AuthenticationServiceTest {
         request.setEmail("nuevo@utec.edu.uy");
         request.setPassword(testPassword);
         request.setConfirmPassword(testPassword);
+        request.setAceptaTerminos(true);
+        request.setAceptaPolitica(true);
 
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setId(2L);
@@ -175,7 +177,7 @@ class AuthenticationServiceTest {
         assertNotNull(response);
         assertEquals("nuevo@utec.edu.uy", response.getEmail());
         assertEquals("Juan Pérez", response.getNombre());
-        
+
         verify(usuarioRepository).findByEmail("nuevo@utec.edu.uy");
         verify(passwordEncoder).encode(testPassword);
         verify(usuarioRepository).save(any(Usuario.class));
@@ -211,6 +213,8 @@ class AuthenticationServiceTest {
         request.setEmail(testEmail);
         request.setPassword(testPassword);
         request.setConfirmPassword(testPassword);
+        request.setAceptaTerminos(true);
+        request.setAceptaPolitica(true);
 
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
 
@@ -241,7 +245,7 @@ class AuthenticationServiceTest {
     void debeVerificarTokenValido() {
         // Given
         String authHeader = "Bearer validToken";
-        
+
         when(tokenBlacklistService.isTokenBlacklisted("validToken")).thenReturn(false);
         when(jwtService.isTokenValid("validToken")).thenReturn(true);
 
@@ -259,7 +263,7 @@ class AuthenticationServiceTest {
     void debeRechazarTokenEnBlacklist() {
         // Given
         String authHeader = "Bearer blacklistedToken";
-        
+
         when(tokenBlacklistService.isTokenBlacklisted("blacklistedToken")).thenReturn(true);
 
         // When
@@ -276,7 +280,7 @@ class AuthenticationServiceTest {
     void debeRefrescarTokenExitosamente() {
         // Given
         String refreshToken = "validRefreshToken";
-        
+
         when(jwtService.extractUsername(refreshToken)).thenReturn(testEmail);
         when(jwtService.isTokenValid(refreshToken)).thenReturn(true);
         when(userDetailsService.loadUserByUsername(testEmail)).thenReturn(userDetails);
@@ -293,7 +297,7 @@ class AuthenticationServiceTest {
         assertEquals("newAccessToken", response.getToken());
         assertEquals("newRefreshToken", response.getRefreshToken());
         assertEquals(testEmail, response.getEmail());
-        
+
         verify(jwtService).extractUsername(refreshToken);
         verify(jwtService).isTokenValid(refreshToken);
         verify(jwtService).generateToken(userDetails);
@@ -305,7 +309,7 @@ class AuthenticationServiceTest {
         // Given
         String verificationToken = "validVerificationToken";
         usuarioTest.setVerificado(false);
-        
+
         when(jwtService.extractUsernameFromVerificationToken(verificationToken)).thenReturn(testEmail);
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioTest);
@@ -326,7 +330,7 @@ class AuthenticationServiceTest {
     void debeReenviarEmailVerificacionExitosamente() {
         // Given
         usuarioTest.setVerificado(false);
-        
+
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
         when(jwtService.generateVerificationToken(testEmail)).thenReturn("newVerificationToken");
         when(emailService.enviarEmailVerificacion(testEmail, "newVerificationToken")).thenReturn(true);
@@ -346,7 +350,7 @@ class AuthenticationServiceTest {
     void noDebeReenviarEmailSiYaVerificado() {
         // Given
         usuarioTest.setVerificado(true);
-        
+
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
 
         // When
@@ -358,4 +362,3 @@ class AuthenticationServiceTest {
         verify(emailService, never()).enviarEmailVerificacion(anyString(), anyString());
     }
 }
-

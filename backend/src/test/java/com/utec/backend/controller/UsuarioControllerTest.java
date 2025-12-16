@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,209 +30,222 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.*;
 import org.mockito.ArgumentMatchers;
 
-@SpringBootTest
+@WebMvcTest(UsuarioController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @DisplayName("Tests de integración para UsuarioController")
 class UsuarioControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private UsuarioService usuarioService;
+        @MockitoBean
+        private UsuarioService usuarioService;
 
-    private UsuarioResponseDto usuarioResponseDto;
-    private final String testEmail = "test@utec.edu.uy";
+        @MockitoBean
+        private com.utec.backend.security.jwt.JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @BeforeEach
-    void setUp() {
-        usuarioResponseDto = new UsuarioResponseDto(
-                1L,
-                testEmail,
-                "Juan Pérez",
-                Usuario.RolApp.EXTERNO,
-                true,  // verificado
-                true,  // activo
-                null,  // oauthProv
-                true,  // hasPassword
-                Instant.now(),  // createdAt
-                Instant.now()   // updatedAt
-        );
-    }
+        @MockitoBean
+        private com.utec.backend.service.UserActivityTrackingService userActivityTrackingService;
 
-    @Test
-    @DisplayName("GET /api/v1/usuarios/me - Debe obtener perfil propio")
-    void debeObtenerPerfilPropio() throws Exception {
-        // Given
-        when(usuarioService.obtenerPerfilPropio(testEmail)).thenReturn(usuarioResponseDto);
+        @MockitoBean
+        private com.utec.backend.security.jwt.JwtService jwtService;
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/usuarios/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .principal(() -> testEmail))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(testEmail))
-                .andExpect(jsonPath("$.nombre").value("Juan Pérez"))
-                .andExpect(jsonPath("$.rolApp").value("EXTERNO"));
+        @MockitoBean
+        private com.utec.backend.util.CsvExportUtil csvExportUtil;
 
-        verify(usuarioService).obtenerPerfilPropio(testEmail);
-    }
+        private UsuarioResponseDto usuarioResponseDto;
+        private final String testEmail = "test@utec.edu.uy";
 
-    @Test
-    @DisplayName("PUT /api/v1/usuarios/me - Debe actualizar perfil propio")
-    void debeActualizarPerfilPropio() throws Exception {
-        // Given
-        UsuarioUpdateDto updateDto = new UsuarioUpdateDto();
-        updateDto.setNombre("Juan Carlos Pérez");
+        @BeforeEach
+        void setUp() {
+                usuarioResponseDto = new UsuarioResponseDto(
+                                1L,
+                                testEmail,
+                                "Juan Pérez",
+                                Usuario.RolApp.EXTERNO,
+                                true, // verificado
+                                true, // activo
+                                null, // oauthProv
+                                true, // hasPassword
+                                Instant.now(), // createdAt
+                                Instant.now() // updatedAt
+                );
+        }
 
-        UsuarioResponseDto usuarioActualizado = new UsuarioResponseDto(
-                1L,
-                testEmail,
-                "Juan Carlos Pérez",
-                Usuario.RolApp.EXTERNO,
-                true,
-                true,
-                null,
-                true,  // hasPassword
-                Instant.now(),
-                Instant.now()
-        );
+        @Test
+        @DisplayName("GET /api/v1/usuarios/me - Debe obtener perfil propio")
+        void debeObtenerPerfilPropio() throws Exception {
+                // Given
+                when(usuarioService.obtenerPerfilPropio(testEmail)).thenReturn(usuarioResponseDto);
 
-        when(usuarioService.actualizarPerfil(eq(testEmail), ArgumentMatchers.any(UsuarioUpdateDto.class)))
-                .thenReturn(usuarioActualizado);
+                // When & Then
+                mockMvc.perform(get("/api/v1/usuarios/me")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .principal(() -> testEmail))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.email").value(testEmail))
+                                .andExpect(jsonPath("$.nombre").value("Juan Pérez"))
+                                .andExpect(jsonPath("$.rolApp").value("EXTERNO"));
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/usuarios/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto))
-                        .principal(() -> testEmail))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Juan Carlos Pérez"))
-                .andExpect(jsonPath("$.email").value(testEmail));
+                verify(usuarioService).obtenerPerfilPropio(testEmail);
+        }
 
-        verify(usuarioService).actualizarPerfil(eq(testEmail), ArgumentMatchers.any(UsuarioUpdateDto.class));
-    }
+        @Test
+        @DisplayName("PUT /api/v1/usuarios/me - Debe actualizar perfil propio")
+        void debeActualizarPerfilPropio() throws Exception {
+                // Given
+                UsuarioUpdateDto updateDto = new UsuarioUpdateDto();
+                updateDto.setNombre("Juan Carlos Pérez");
 
-    @Test
-    @DisplayName("GET /api/v1/usuarios - Debe listar usuarios con paginación")
-    @WithMockUser(roles = {"ADMIN"})
-    void debeListarUsuariosPaginados() throws Exception {
-        // Given
-        UsuarioResponseDto usuario2 = new UsuarioResponseDto(
-                2L,
-                "otro@utec.edu.uy",
-                "Otro Usuario",
-                Usuario.RolApp.DOCENTE,
-                true,
-                true,
-                null,
-                true,  // hasPassword
-                Instant.now(),
-                Instant.now()
-        );
+                UsuarioResponseDto usuarioActualizado = new UsuarioResponseDto(
+                                1L,
+                                testEmail,
+                                "Juan Carlos Pérez",
+                                Usuario.RolApp.EXTERNO,
+                                true,
+                                true,
+                                null,
+                                true, // hasPassword
+                                Instant.now(),
+                                Instant.now());
 
-        List<UsuarioResponseDto> usuarios = Arrays.asList(usuarioResponseDto, usuario2);
-        PagedUsuarioResponseDto pagedResponse = new PagedUsuarioResponseDto(
-                usuarios,
-                0,      // pageNumber
-                10,     // pageSize
-                2L,     // totalElements
-                1,      // totalPages
-                true,   // first
-                true    // last
-        );
-        
-        when(usuarioService.listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull(), isNull(), isNull()))
-                .thenReturn(pagedResponse);
+                when(usuarioService.actualizarPerfil(eq(testEmail), ArgumentMatchers.any(UsuarioUpdateDto.class)))
+                                .thenReturn(usuarioActualizado);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/usuarios")
-                        .param("page", "0")
-                        .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].email").value(testEmail))
-                .andExpect(jsonPath("$.content[1].email").value("otro@utec.edu.uy"))
-                .andExpect(jsonPath("$.totalElements").value(2))
-                .andExpect(jsonPath("$.totalPages").value(1));
+                // When & Then
+                mockMvc.perform(put("/api/v1/usuarios/me")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updateDto))
+                                .principal(() -> testEmail))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.nombre").value("Juan Carlos Pérez"))
+                                .andExpect(jsonPath("$.email").value(testEmail));
 
-        verify(usuarioService).listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
-    }
+                verify(usuarioService).actualizarPerfil(eq(testEmail), ArgumentMatchers.any(UsuarioUpdateDto.class));
+        }
 
-    @Test
-    @DisplayName("GET /api/v1/usuarios/{id} - Debe obtener usuario por ID")
-    @WithMockUser(roles = {"ADMIN"})
-    void debeObtenerUsuarioPorId() throws Exception {
-        // Given
-        Long usuarioId = 1L;
-        when(usuarioService.obtenerUsuarioPorId(usuarioId)).thenReturn(usuarioResponseDto);
+        @Test
+        @DisplayName("GET /api/v1/usuarios - Debe listar usuarios con paginación")
+        @WithMockUser(roles = { "ADMIN" })
+        void debeListarUsuariosPaginados() throws Exception {
+                // Given
+                UsuarioResponseDto usuario2 = new UsuarioResponseDto(
+                                2L,
+                                "otro@utec.edu.uy",
+                                "Otro Usuario",
+                                Usuario.RolApp.DOCENTE,
+                                true,
+                                true,
+                                null,
+                                true, // hasPassword
+                                Instant.now(),
+                                Instant.now());
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/usuarios/{id}", usuarioId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(usuarioId))
-                .andExpect(jsonPath("$.email").value(testEmail))
-                .andExpect(jsonPath("$.nombre").value("Juan Pérez"));
+                List<UsuarioResponseDto> usuarios = Arrays.asList(usuarioResponseDto, usuario2);
+                PagedUsuarioResponseDto pagedResponse = new PagedUsuarioResponseDto(
+                                usuarios,
+                                0, // pageNumber
+                                10, // pageSize
+                                2L, // totalElements
+                                1, // totalPages
+                                true, // first
+                                true // last
+                );
 
-        verify(usuarioService).obtenerUsuarioPorId(usuarioId);
-    }
+                when(usuarioService.listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull(),
+                                isNull(), isNull()))
+                                .thenReturn(pagedResponse);
 
-    @Test
-    @DisplayName("PUT /api/v1/usuarios/{id}/rol - Debe cambiar rol de usuario")
-    @WithMockUser(roles = {"ADMIN"})
-    void debeCambiarRolUsuario() throws Exception {
-        // Given
-        Long usuarioId = 1L;
-        CambioRolDto cambioRolDto = new CambioRolDto();
-        cambioRolDto.setRolApp(Usuario.RolApp.DOCENTE);
+                // When & Then
+                mockMvc.perform(get("/api/v1/usuarios")
+                                .param("page", "0")
+                                .param("size", "10")
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content", hasSize(2)))
+                                .andExpect(jsonPath("$.content[0].email").value(testEmail))
+                                .andExpect(jsonPath("$.content[1].email").value("otro@utec.edu.uy"))
+                                .andExpect(jsonPath("$.totalElements").value(2))
+                                .andExpect(jsonPath("$.totalPages").value(1));
 
-        doNothing().when(usuarioService).cambiarRolUsuario(eq(usuarioId), ArgumentMatchers.any(CambioRolDto.class));
+                verify(usuarioService).listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull(),
+                                isNull(), isNull());
+        }
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/usuarios/{id}/rol", usuarioId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(cambioRolDto)))
-                .andExpect(status().isNoContent());
+        @Test
+        @DisplayName("GET /api/v1/usuarios/{id} - Debe obtener usuario por ID")
+        @WithMockUser(roles = { "ADMIN" })
+        void debeObtenerUsuarioPorId() throws Exception {
+                // Given
+                Long usuarioId = 1L;
+                when(usuarioService.obtenerUsuarioPorId(usuarioId)).thenReturn(usuarioResponseDto);
 
-        verify(usuarioService).cambiarRolUsuario(eq(usuarioId), ArgumentMatchers.any(CambioRolDto.class));
-    }
+                // When & Then
+                mockMvc.perform(get("/api/v1/usuarios/{id}", usuarioId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(usuarioId))
+                                .andExpect(jsonPath("$.email").value(testEmail))
+                                .andExpect(jsonPath("$.nombre").value("Juan Pérez"));
 
-    @Test
-    @DisplayName("GET /api/v1/usuarios/me - Debe obtener datos con principal mock")
-    void debeObtenerDatosConPrincipalMock() throws Exception {
-        // Given
-        when(usuarioService.obtenerPerfilPropio(testEmail)).thenReturn(usuarioResponseDto);
+                verify(usuarioService).obtenerUsuarioPorId(usuarioId);
+        }
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/usuarios/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .principal(() -> testEmail))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(testEmail));
-        
-        verify(usuarioService).obtenerPerfilPropio(testEmail);
-    }
+        @Test
+        @DisplayName("PUT /api/v1/usuarios/{id}/rol - Debe cambiar rol de usuario")
+        @WithMockUser(roles = { "ADMIN" })
+        void debeCambiarRolUsuario() throws Exception {
+                // Given
+                Long usuarioId = 1L;
+                CambioRolDto cambioRolDto = new CambioRolDto();
+                cambioRolDto.setRolApp(Usuario.RolApp.DOCENTE);
 
-    @Test
-    @DisplayName("PUT /api/v1/usuarios/me - Debe validar datos de entrada")
-    void debeValidarDatosEntrada() throws Exception {
-        // Given - nombre muy corto (menos de 2 caracteres)
-        UsuarioUpdateDto updateDto = new UsuarioUpdateDto();
-        updateDto.setNombre("J");
+                doNothing().when(usuarioService).cambiarRolUsuario(eq(usuarioId),
+                                ArgumentMatchers.any(CambioRolDto.class));
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/usuarios/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isBadRequest());
+                // When & Then
+                mockMvc.perform(put("/api/v1/usuarios/{id}/rol", usuarioId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(cambioRolDto)))
+                                .andExpect(status().isNoContent());
 
-        verify(usuarioService, never()).actualizarPerfil(anyString(), ArgumentMatchers.any(UsuarioUpdateDto.class));
-    }
+                verify(usuarioService).cambiarRolUsuario(eq(usuarioId), ArgumentMatchers.any(CambioRolDto.class));
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/usuarios/me - Debe obtener datos con principal mock")
+        void debeObtenerDatosConPrincipalMock() throws Exception {
+                // Given
+                when(usuarioService.obtenerPerfilPropio(testEmail)).thenReturn(usuarioResponseDto);
+
+                // When & Then
+                mockMvc.perform(get("/api/v1/usuarios/me")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .principal(() -> testEmail))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.email").value(testEmail));
+
+                verify(usuarioService).obtenerPerfilPropio(testEmail);
+        }
+
+        @Test
+        @DisplayName("PUT /api/v1/usuarios/me - Debe validar datos de entrada")
+        void debeValidarDatosEntrada() throws Exception {
+                // Given - nombre muy corto (menos de 2 caracteres)
+                UsuarioUpdateDto updateDto = new UsuarioUpdateDto();
+                updateDto.setNombre("J");
+
+                // When & Then
+                mockMvc.perform(put("/api/v1/usuarios/me")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updateDto)))
+                                .andExpect(status().isBadRequest());
+
+                verify(usuarioService, never()).actualizarPerfil(anyString(),
+                                ArgumentMatchers.any(UsuarioUpdateDto.class));
+        }
 }
-

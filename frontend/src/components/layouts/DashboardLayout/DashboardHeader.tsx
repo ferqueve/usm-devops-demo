@@ -66,8 +66,8 @@ export const DashboardHeader = memo(function DashboardHeader({
             />
           </div>
           <div className="h-6 w-px bg-white/20"></div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-utec-title" style={{ color: '#d1d5db' }}>
+          <div className="flex items-center gap-3 h-16">
+            <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
               {title}
             </h1>
           </div>

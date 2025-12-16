@@ -58,7 +58,6 @@ class CarreraServiceTest {
         createDto.setNombre("Nueva Carrera");
         createDto.setCodigo("NC");
 
-        when(carreraRepository.existsByCodigo("NC")).thenReturn(false);
         when(carreraRepository.save(any(Carrera.class))).thenReturn(carreraTest);
 
         // When
@@ -77,14 +76,19 @@ class CarreraServiceTest {
         createDto.setNombre("Nueva Carrera");
         createDto.setCodigo("ING");
 
-        when(carreraRepository.existsByCodigo("ING")).thenReturn(true);
+        // Simular que ya existe una carrera activa con ese código
+        Carrera carreraExistente = new Carrera();
+        carreraExistente.setCodigo("ING");
+        carreraExistente.setNombre("Ingeniería");
+        carreraExistente.setDeletedAt(null); // Activa
+        when(carreraRepository.findByCodigoIncludingDeleted("ING")).thenReturn(Optional.of(carreraExistente));
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             carreraService.createCarrera(createDto);
         });
 
-        assertTrue(exception.getMessage().contains("Ya existe una carrera con el código"));
+        assertTrue(exception.getMessage().contains("Ya existe una carrera"));
         verify(carreraRepository, never()).save(any(Carrera.class));
     }
 
@@ -245,4 +249,3 @@ class CarreraServiceTest {
         verify(carreraRepository).countByActivoTrue();
     }
 }
-

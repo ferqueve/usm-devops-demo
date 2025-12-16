@@ -98,7 +98,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           
           {/* USM a la derecha */}
           <Link to="/dashboard" className="flex items-center sidebar-menu-item px-3 py-1.5 rounded-md transition-all hover:scale-105">
-            <span className="text-lg font-utec-brand tracking-wider">USM</span>
+            <span className="text-lg font-utec tracking-wider">USM</span>
           </Link>
         </div>
       </SidebarHeader>

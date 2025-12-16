@@ -3,11 +3,8 @@ package com.utec.backend.security.jwt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,19 +12,27 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
 @DisplayName("Tests para JwtService")
 class JwtServiceTest {
 
-    @Autowired
     private JwtService jwtService;
 
     private UserDetails userDetails;
     private final String testEmail = "test@utec.edu.uy";
+    private final String secretKey = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    private final long jwtExpiration = 3600000;
+    private final long refreshExpiration = 86400000;
 
     @BeforeEach
     void setUp() {
+        jwtService = new JwtService();
+        // Inyectar propiedades manualmente usando ReflectionTestUtils (parte de
+        // spring-test) o reflexión pura.
+        // Como spring-test está en el classpath, usamos ReflectionTestUtils.
+        org.springframework.test.util.ReflectionTestUtils.setField(jwtService, "secretKey", secretKey);
+        org.springframework.test.util.ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
+        org.springframework.test.util.ReflectionTestUtils.setField(jwtService, "refreshExpiration", refreshExpiration);
+
         userDetails = User.builder()
                 .username(testEmail)
                 .password("password")
@@ -200,4 +205,3 @@ class JwtServiceTest {
         assertEquals(testEmail, username);
     }
 }
-

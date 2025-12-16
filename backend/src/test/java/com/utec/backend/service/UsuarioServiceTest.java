@@ -134,8 +134,10 @@ class UsuarioServiceTest {
         UsuarioUpdateDto updateDto = new UsuarioUpdateDto();
         updateDto.setNombre("Juan Carlos Pérez");
         updateDto.setPassword("newPassword123");
+        updateDto.setCurrentPassword("oldPassword");
 
         when(usuarioRepository.findByEmail(testEmail)).thenReturn(Optional.of(usuarioTest));
+        when(passwordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(true);
         when(passwordEncoder.encode("newPassword123")).thenReturn("newEncodedPassword");
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioTest);
 
@@ -263,4 +265,3 @@ class UsuarioServiceTest {
         verify(usuarioRepository, never()).save(any(Usuario.class));
     }
 }
-

@@ -137,20 +137,54 @@ export default function AnalistaDashboard() {
 
       {/* Reservas Prioritarias */}
       {!loadingPrioritarias && reservasPrioritarias.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-amber-200 bg-amber-50">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-red-600" />
-              <CardTitle className="text-red-900">Reservas Prioritarias</CardTitle>
+              <Sparkles className="h-5 w-5 text-amber-600" />
+              <CardTitle className="text-amber-900">Reservas Prioritarias</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {reservasPrioritarias.slice(0, 5).map((rec) => {
-                const urgencia = rec.metadata?.urgencia as number || 0;
-                const reservaId = rec.metadata?.reservaId as number;
+                const urgencia = (rec.metadata?.urgencia as number) ?? rec.urgencia ?? 0;
                 const isAltaUrgencia = urgencia >= 7;
-                
+
+                // Intentar obtener un reservaId fiable desde varias fuentes
+                let inferredReservaId: number | undefined;
+                if (typeof rec.reservaId === 'number') {
+                  inferredReservaId = rec.reservaId;
+                } else if (typeof rec.metadata?.reservaId === 'number' || typeof rec.metadata?.reservaId === 'string') {
+                  inferredReservaId = Number(rec.metadata?.reservaId);
+                } else {
+                  // Intentar emparejar con reservas pendientes por inicio/fin/espacio
+                  if (rec.inicio && rec.fin) {
+                    const match = reservasPendientes.find(r => r.inicio === rec.inicio && r.fin === rec.fin && (rec.espacioNombre ? r.espacioNombre === rec.espacioNombre : true));
+                    if (match) inferredReservaId = match.id;
+                  }
+                  // Intentar extraer ID desde la razón (ej. "Reserva #123")
+                  if (!inferredReservaId && rec.razon) {
+                    const m = String(rec.razon).match(/#(\d+)/);
+                    if (m) inferredReservaId = Number(m[1]);
+                  }
+                }
+
+                const displayLabel = inferredReservaId ? `Reserva #${inferredReservaId}` : 'Buscar reserva relacionada';
+                const onReviewClick = () => {
+                  if (inferredReservaId) {
+                    const reserva = reservasPendientes.find(r => r.id === Number(inferredReservaId));
+                    if (reserva) {
+                      handleViewDetails(reserva);
+                      return;
+                    }
+                    window.location.href = `/reservations?reservaId=${inferredReservaId}`;
+                  } else {
+                    // Buscar por texto relevante en la lista de reservas
+                    const q = encodeURIComponent(rec.razon || rec.espacioNombre || '');
+                    window.location.href = `/reservations?search=${q}`;
+                  }
+                };
+
                 return (
                   <div
                     key={rec.id}
@@ -158,20 +192,18 @@ export default function AnalistaDashboard() {
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                        isAltaUrgencia ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                        isAltaUrgencia ? 'bg-amber-100 text-amber-700' : 'bg-amber-50 text-amber-700'
                       }`}>
                         <AlertTriangle className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold">
-                          Reserva #{reservaId || 'N/A'}
+                          {displayLabel}
                         </p>
                         <p className="text-xs text-muted-foreground line-clamp-1">{rec.razon}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-xs font-medium ${
-                            isAltaUrgencia ? 'text-red-600' : 'text-orange-600'
-                          }`}>
-                            Urgencia: {urgencia}/10
+                          <span className="text-xs font-medium text-amber-600">
+                            Urgencia: {urgencia > 0 ? `${urgencia}/10` : 'N/D'}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             • {(rec.puntaje * 100).toFixed(0)}% prioridad
@@ -182,18 +214,7 @@ export default function AnalistaDashboard() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        if (reservaId) {
-                          // Buscar la reserva en las reservas pendientes
-                          const reserva = reservasPendientes.find(r => r.id === reservaId);
-                          if (reserva) {
-                            handleViewDetails(reserva);
-                          } else {
-                            // Si no está en pendientes, navegar a la página de reservas
-                            window.location.href = `/reservations?reservaId=${reservaId}`;
-                          }
-                        }
-                      }}
+                      onClick={onReviewClick}
                       className="ml-4"
                     >
                       Revisar
@@ -275,34 +296,7 @@ export default function AnalistaDashboard() {
           </Card>
         )}
 
-        {/* Acciones rápidas */}
-        {!loading && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Acciones Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Link to="/reservations" className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Aprobar reservas
-                  </Button>
-                </Link>
-                <Link to="/reservations" className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    Crear nueva reserva
-                  </Button>
-                </Link>
-                <Link to="/calendar" className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    Ver calendario
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Se elimina la tarjeta vertical de 'Acciones Rápidas' para usar solo el componente QuickActions */}
       </div>
 
       {/* Gráficos */}

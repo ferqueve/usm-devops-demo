@@ -61,7 +61,7 @@ class TipoElementoServiceTest {
         createDto.setNombre("Pizarra");
         createDto.setDescripcion("Pizarra blanca");
 
-        when(tipoElementoRepository.existsByNombreIgnoreCase(anyString())).thenReturn(false);
+        when(tipoElementoRepository.findByNombreIgnoreCase("Pizarra")).thenReturn(Optional.empty());
         when(tipoElementoRepository.save(any(TipoElemento.class))).thenReturn(tipoElementoTest);
 
         // When
@@ -69,7 +69,7 @@ class TipoElementoServiceTest {
 
         // Then
         assertNotNull(resultado);
-        verify(tipoElementoRepository).existsByNombreIgnoreCase(anyString());
+        verify(tipoElementoRepository).findByNombreIgnoreCase("Pizarra");
         verify(tipoElementoRepository).save(any(TipoElemento.class));
     }
 
@@ -80,7 +80,11 @@ class TipoElementoServiceTest {
         TipoElementoCreateDto createDto = new TipoElementoCreateDto();
         createDto.setNombre(nombreTipoElemento);
 
-        when(tipoElementoRepository.existsByNombreIgnoreCase(nombreTipoElemento)).thenReturn(true);
+        // Simular que ya existe un tipo activo con ese nombre
+        TipoElemento tipoExistente = new TipoElemento();
+        tipoExistente.setNombre(nombreTipoElemento);
+        tipoExistente.setActivo(true);
+        when(tipoElementoRepository.findByNombreIgnoreCase(nombreTipoElemento)).thenReturn(Optional.of(tipoExistente));
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -172,37 +176,41 @@ class TipoElementoServiceTest {
     }
 
     @Test
-    @DisplayName("Debe eliminar tipo de elemento exitosamente")
+    @DisplayName("Debe eliminar tipo de elemento exitosamente (soft delete)")
     void debeEliminarTipoElementoExitosamente() {
-        // Given - Sin items asociados
+        // Given
         tipoElementoTest.setInventarioItems(Collections.emptyList());
         when(tipoElementoRepository.findById(tipoElementoId)).thenReturn(Optional.of(tipoElementoTest));
-        doNothing().when(tipoElementoRepository).deleteById(tipoElementoId);
+        when(tipoElementoRepository.save(any(TipoElemento.class))).thenReturn(tipoElementoTest);
 
         // When
         assertDoesNotThrow(() -> tipoElementoService.deleteTipoElemento(tipoElementoId));
 
         // Then
         verify(tipoElementoRepository).findById(tipoElementoId);
-        verify(tipoElementoRepository).deleteById(tipoElementoId);
+        verify(tipoElementoRepository).save(tipoElementoTest);
+        assertFalse(tipoElementoTest.getActivo());
+        assertNotNull(tipoElementoTest.getDeletedAt());
     }
 
     @Test
-    @DisplayName("Debe lanzar excepción al eliminar tipo con items asociados")
-    void debeLanzarExcepcionAlEliminarConItemsAsociados() {
+    @DisplayName("Debe eliminar tipo con items asociados (soft delete siempre)")
+    void debeEliminarConItemsAsociados() {
         // Given - Con items asociados
         InventarioItem item = new InventarioItem();
         tipoElementoTest.setInventarioItems(Arrays.asList(item));
 
         when(tipoElementoRepository.findById(tipoElementoId)).thenReturn(Optional.of(tipoElementoTest));
+        when(tipoElementoRepository.save(any(TipoElemento.class))).thenReturn(tipoElementoTest);
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            tipoElementoService.deleteTipoElemento(tipoElementoId);
-        });
+        // When
+        assertDoesNotThrow(() -> tipoElementoService.deleteTipoElemento(tipoElementoId));
 
-        assertTrue(exception.getMessage().contains("tiene items de inventario asociados"));
-        verify(tipoElementoRepository, never()).deleteById(anyLong());
+        // Then - Debe hacer soft delete sin importar si tiene items
+        verify(tipoElementoRepository).findById(tipoElementoId);
+        verify(tipoElementoRepository).save(tipoElementoTest);
+        assertFalse(tipoElementoTest.getActivo());
+        assertNotNull(tipoElementoTest.getDeletedAt());
     }
 
     @Test

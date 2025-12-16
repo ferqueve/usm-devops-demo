@@ -1318,6 +1318,18 @@ export default function ReservationFormDialog({
                       espacioId={parseInt(formData.espacioId)}
                       fecha={fecha}
                       onSelectHorario={(inicio, fin) => {
+                        // Si vienen cadenas vacías significa que se debe deseleccionar
+                        if (!inicio && !fin) {
+                          setFormData(prev => ({
+                            ...prev,
+                            horaInicioHora: '',
+                            horaInicioMinuto: '00',
+                            horaFinHora: '',
+                            horaFinMinuto: '00',
+                          }));
+                          return;
+                        }
+
                         try {
                           const inicioDate = new Date(inicio);
                           const finDate = new Date(fin);
@@ -1517,6 +1529,18 @@ export default function ReservationFormDialog({
                       espacioId={parseInt(formData.espacioId)}
                       fecha={fecha}
                       onSelectHorario={(inicio, fin) => {
+                        // Soporta deselección mediante cadenas vacías
+                        if (!inicio && !fin) {
+                          setFormData(prev => ({
+                            ...prev,
+                            horaInicioHora: '',
+                            horaInicioMinuto: '00',
+                            horaFinHora: '',
+                            horaFinMinuto: '00',
+                          }));
+                          return;
+                        }
+
                         try {
                           const inicioDate = new Date(inicio);
                           const finDate = new Date(fin);
