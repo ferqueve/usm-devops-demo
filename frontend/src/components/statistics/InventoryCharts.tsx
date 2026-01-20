@@ -181,10 +181,10 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
           </CardContent>
         </Card>
 
-        {/* Gráfico de barras: Top Tipos por Cantidad */}
+        {/* Gráfico de barras agrupadas: Top Tipos */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Tipos por Cantidad</CardTitle>
+            <CardTitle>Top 10 Tipos de Elemento</CardTitle>
           </CardHeader>
           <CardContent>
             {topTiposChart.length > 0 ? (
@@ -196,11 +196,13 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
                     type="category"
                     dataKey="nombre"
                     stroke="#9ca3af"
-                    style={{ fontSize: '12px' }}
+                    style={{ fontSize: '11px' }}
                     width={90}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="cantidad" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                  <Legend />
+                  <Bar dataKey="cantidad" fill="#8b5cf6" name="Unidades" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="items" fill="#3b82f6" name="Registros" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -212,77 +214,12 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
         </Card>
       </div>
 
-      {/* Segunda fila: Items por Tipo y Items por Espacio */}
+      {/* Segunda fila: Top Espacios y Estados por Tipo */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Gráfico de barras: Items por Tipo */}
+        {/* Gráfico de barras agrupadas: Top Espacios */}
         <Card>
           <CardHeader>
-            <CardTitle>Items por Tipo (Top 10)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {itemsPorTipoChart.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={itemsPorTipoChart} margin={{ bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="nombre"
-                    stroke="#9ca3af"
-                    style={{ fontSize: '12px' }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="items" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-muted-foreground">
-                <p>No hay datos para mostrar</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Gráfico de barras: Items por Espacio */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Items por Espacio (Top 10)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {itemsPorEspacioChart.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={itemsPorEspacioChart} margin={{ bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="nombre"
-                    stroke="#9ca3af"
-                    style={{ fontSize: '12px' }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="items" fill="#10b981" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-muted-foreground">
-                <p>No hay datos para mostrar</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tercera fila: Top Espacios y Estados por Tipo */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Gráfico de barras horizontales: Top Espacios */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Espacios por Cantidad</CardTitle>
+            <CardTitle>Top 10 Espacios</CardTitle>
           </CardHeader>
           <CardContent>
             {topEspaciosChart.length > 0 ? (
@@ -294,11 +231,13 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
                     type="category"
                     dataKey="nombre"
                     stroke="#9ca3af"
-                    style={{ fontSize: '12px' }}
+                    style={{ fontSize: '11px' }}
                     width={90}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="cantidad" fill="#ec4899" radius={[0, 4, 4, 0]} />
+                  <Legend />
+                  <Bar dataKey="cantidad" fill="#ec4899" name="Unidades" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="items" fill="#10b981" name="Registros" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -330,9 +269,9 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
                   <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
-                  <Bar dataKey="disponibles" stackId="a" fill={COLORS.DISPONIBLE} />
-                  <Bar dataKey="mantenimiento" stackId="a" fill={COLORS.MANTENIMIENTO} />
-                  <Bar dataKey="danados" stackId="a" fill={COLORS.DANADO} />
+                  <Bar dataKey="disponibles" stackId="a" fill={COLORS.DISPONIBLE} name="Disponibles" />
+                  <Bar dataKey="mantenimiento" stackId="a" fill={COLORS.MANTENIMIENTO} name="Mantenimiento" />
+                  <Bar dataKey="danados" stackId="a" fill={COLORS.DANADO} name="Dañados" />
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (

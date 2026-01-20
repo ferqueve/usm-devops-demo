@@ -57,7 +57,7 @@ export default function ReservationCharts({
 }: ReservationChartsProps) {
   return (
     <div className="space-y-6">
-      {/* Primera fila: Distribución por estado y Reservas por mes */}
+      {/* Primera fila: Distribución por estado y Tendencia mensual */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Gráfico de pastel: Distribución por estado */}
         {distribucionPorEstadoData.length > 0 && (
@@ -89,18 +89,18 @@ export default function ReservationCharts({
           </Card>
         )}
 
-        {/* Gráfico de barras: Reservas por mes */}
+        {/* Gráfico de línea: Tendencia de reservas por mes */}
         {reservasPorMesData.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Reservas por Mes</CardTitle>
+              <CardTitle className="text-lg">Tendencia de Reservas por Mes</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={reservasPorMesData} margin={{ bottom: 20 }}>
+                <LineChart data={reservasPorMesData} margin={{ bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="mes" 
+                  <XAxis
+                    dataKey="mes"
                     angle={-45}
                     textAnchor="end"
                     height={80}
@@ -108,8 +108,15 @@ export default function ReservationCharts({
                   />
                   <YAxis />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="cantidad" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="cantidad"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={{ fill: '#3b82f6', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -170,75 +177,6 @@ export default function ReservationCharts({
           </Card>
         )}
       </div>
-
-      {/* Tercera fila: Gráfico combinado de tendencia mensual */}
-      {reservasPorMesData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Tendencia de Reservas por Mes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={reservasPorMesData} margin={{ bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="mes" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis />
-                <Tooltip content={<CustomTooltip />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="cantidad" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  dot={{ fill: '#3b82f6', r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Cuarta fila: Comparación mes actual vs anterior */}
-      {stats.reservasMesActual !== undefined && stats.reservasMesAnterior !== undefined && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Comparación Mensual</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={[
-                  { periodo: 'Mes Anterior', cantidad: stats.reservasMesAnterior },
-                  { periodo: 'Mes Actual', cantidad: stats.reservasMesActual },
-                ]}
-                margin={{ bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="periodo" />
-                <YAxis />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar 
-                  dataKey="cantidad" 
-                  fill="#f59e0b"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Cambio: {stats.diferenciaMesAnterior > 0 ? '+' : ''}{stats.diferenciaMesAnterior} 
-                ({stats.porcentajeCambioMesAnterior > 0 ? '+' : ''}{stats.porcentajeCambioMesAnterior.toFixed(1)}%)
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

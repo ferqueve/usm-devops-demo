@@ -16,23 +16,21 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.List;
 
-import static com.utec.backend.security.Constants.*;
-
 @RestController
 @RequestMapping("/api/v1/recomendaciones")
 @RequiredArgsConstructor
 public class RecomendacionController {
-    
+
     private final RecomendacionService recomendacionService;
     private final UsuarioRepository usuarioRepository;
-    
+
     // ========== RECOMENDACIONES DE RESERVAS ==========
-    
+
     /**
      * Obtener recomendaciones de espacios para crear una reserva
      */
     @GetMapping("/reservas/espacios")
-    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:solicitar')")
     public ResponseEntity<ApiResponse<List<RecomendacionEspacioDto>>> obtenerRecomendacionesEspacios(
             @RequestParam Instant inicio,
             @RequestParam Instant fin,
@@ -50,12 +48,12 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener recomendaciones: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener horarios óptimos para un espacio y fecha
      */
     @GetMapping("/reservas/horarios")
-    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:solicitar')")
     public ResponseEntity<ApiResponse<List<HorarioRecomendadoDto>>> obtenerHorariosOptimos(
             @RequestParam Long espacioId,
             @RequestParam Instant fecha,
@@ -72,12 +70,12 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener horarios: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener espacios similares a uno dado
      */
     @GetMapping("/reservas/espacios-similares")
-    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:solicitar')")
     public ResponseEntity<ApiResponse<List<RecomendacionEspacioDto>>> obtenerEspaciosSimilares(
             @RequestParam Long espacioId,
             Authentication authentication) {
@@ -93,14 +91,14 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener espacios similares: " + e.getMessage()));
         }
     }
-    
+
     // ========== RECOMENDACIONES DE INVENTARIO ==========
-    
+
     /**
      * Obtener items que necesitan mantenimiento urgente
      */
     @GetMapping("/inventario/mantenimiento")
-    @PreAuthorize("hasRole('" + ROLE_MANTENIMIENTO + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:gestionar_estado')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerItemsMantenimiento(
             Authentication authentication) {
         try {
@@ -111,12 +109,12 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener items de mantenimiento: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener espacios que requieren atención
      */
     @GetMapping("/inventario/espacios-atencion")
-    @PreAuthorize("hasRole('" + ROLE_MANTENIMIENTO + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:gestionar_estado')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerEspaciosAtencion(
             Authentication authentication) {
         try {
@@ -127,12 +125,12 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener recomendaciones de reasignación de items
      */
     @GetMapping("/inventario/reasignaciones")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:ver_estadisticas')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerReasignaciones(
             Authentication authentication) {
         try {
@@ -143,12 +141,12 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener reasignaciones: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener recomendaciones de compras necesarias
      */
     @GetMapping("/inventario/compras")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:ver_compras')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerComprasNecesarias(
             Authentication authentication) {
         try {
@@ -159,14 +157,14 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener compras: " + e.getMessage()));
         }
     }
-    
+
     // ========== RECOMENDACIONES DE ITEMS ==========
-    
+
     /**
      * Obtener items recomendados para una reserva
      */
     @GetMapping("/items/para-reserva")
-    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:solicitar')")
     public ResponseEntity<ApiResponse<List<RecomendacionItemDto>>> obtenerItemsParaReserva(
             @RequestParam Long espacioId,
             Authentication authentication) {
@@ -182,12 +180,12 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener items: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener combinaciones de items frecuentes
      */
     @GetMapping("/items/combinaciones")
-    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:solicitar')")
     public ResponseEntity<ApiResponse<List<RecomendacionItemDto>>> obtenerCombinacionesItems(
             @RequestParam Long espacioId,
             Authentication authentication) {
@@ -199,14 +197,14 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener combinaciones: " + e.getMessage()));
         }
     }
-    
+
     // ========== RECOMENDACIONES DE ANALISTAS ==========
-    
+
     /**
      * Obtener analista recomendado para un docente
      */
     @GetMapping("/analistas/asignacion")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:gestionar_asignaciones')")
     public ResponseEntity<ApiResponse<List<RecomendacionAnalistaDto>>> obtenerAnalistaRecomendado(
             @RequestParam Long docenteId,
             Authentication authentication) {
@@ -218,13 +216,13 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener analistas: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener reservas prioritarias para un analista
      * Disponible para ANALISTA y ADMIN
      */
     @GetMapping("/analistas/prioritarias")
-    @PreAuthorize("hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:ver_estadisticas')")
     public ResponseEntity<ApiResponse<List<RecomendacionAnalistaDto>>> obtenerReservasPrioritarias(
             Authentication authentication) {
         try {
@@ -239,13 +237,14 @@ public class RecomendacionController {
                 .body(ApiResponse.error("Error al obtener reservas prioritarias: " + e.getMessage()));
         }
     }
-    
+
     // ========== RECOMENDACIONES DEL DASHBOARD ==========
-    
+
     /**
      * Obtener recomendaciones personalizadas del dashboard según el rol
      */
     @GetMapping("/dashboard")
+    @PreAuthorize("hasPermission(null, 'recomendacion:ver')")
     public ResponseEntity<ApiResponse<DashboardRecomendacionesDto>> obtenerRecomendacionesDashboard(
             Authentication authentication) {
         try {
@@ -261,4 +260,3 @@ public class RecomendacionController {
         }
     }
 }
-

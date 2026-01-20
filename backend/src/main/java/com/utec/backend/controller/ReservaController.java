@@ -27,9 +27,9 @@ import static com.utec.backend.security.Constants.*;
 @RequestMapping("/api/v1/reservas")
 @RequiredArgsConstructor
 public class ReservaController {
-    
+
     private final ReservaService reservaService;
-    
+
     /**
      * Crear una nueva reserva
      * Admin y Analista: crean reservas auto-aprobadas (APROBADO)
@@ -37,7 +37,7 @@ public class ReservaController {
      * Externo: crea reservas públicas automáticamente
      */
     @PostMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:crear')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> createReserva(
             @Valid @RequestBody ReservaCreateDto createDto,
             Authentication authentication) {
@@ -51,10 +51,10 @@ public class ReservaController {
                     .findFirst()
                     .map(auth -> auth.replace("ROLE_", ""))
                     .orElse("");
-            
+
             // Log para debug: verificar que el rol se obtiene correctamente
             // log.info("Usuario {} con rol {} creando reserva", userEmail, userRole);
-            
+
             ReservaResponseDto reserva = reservaService.createReserva(createDto, userEmail, userRole);
             String mensaje;
             if (ROLE_DOCENTE.equals(userRole) || ROLE_EXTERNO.equals(userRole)) {
@@ -69,13 +69,12 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al crear reserva: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener todas las reservas del usuario autenticado
-     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO
      */
     @GetMapping("/mis-reservas")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_propias')")
     public ResponseEntity<ApiResponse<List<ReservaResponseDto>>> getMisReservas(
             Authentication authentication) {
         try {
@@ -87,13 +86,12 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener reservas del usuario autenticado con paginación y filtros
-     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO
      */
     @GetMapping("/mis-reservas/paged")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_propias')")
     public ResponseEntity<ApiResponse<PagedResponseDto<ReservaResponseDto>>> getMisReservasPaged(
             Authentication authentication,
             @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,
@@ -106,7 +104,7 @@ public class ReservaController {
             @RequestParam(required = false) String tiempo) {
         try {
             String userEmail = authentication.getName();
-            
+
             var reservasPage = reservaService.getReservasByUsuarioPaged(
                     userEmail,
                     pageable,
@@ -117,7 +115,7 @@ public class ReservaController {
                     fechaInicio,
                     fechaFin,
                     tiempo);
-            
+
             PagedResponseDto<ReservaResponseDto> pagedResponse = PagedResponseDto.of(reservasPage);
             return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Reservas obtenidas exitosamente"));
         } catch (Exception e) {
@@ -125,12 +123,12 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
         }
     }
-        /**
+
+    /**
      * Obtener una reserva por ID
-     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO (solo sus propias reservas)
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_propias')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> getReservaById(
             @PathVariable Long id,
             Authentication authentication) {
@@ -146,12 +144,12 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener reserva: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Actualizar una reserva
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:editar')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> updateReserva(
             @PathVariable Long id,
             @RequestBody ReservaUpdateDto updateDto,
@@ -168,13 +166,12 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al actualizar reserva: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Cancelar una reserva
-     * Disponible para ADMIN, ANALISTA, DOCENTE y EXTERNO (solo sus propias reservas)
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:cancelar')")
     public ResponseEntity<ApiResponse<Void>> cancelReserva(
             @PathVariable Long id,
             Authentication authentication) {
@@ -190,7 +187,7 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al cancelar reserva: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener reservas de un espacio específico
      * Disponible para todos los autenticados (necesario para ver disponibilidad al crear reservas)
@@ -207,14 +204,14 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener reservas del espacio: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener todas las reservas del sistema (público, para visualización en calendario)
      * Accesible para todos los roles autenticados
      * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     @GetMapping("/todas")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_todas')")
     public ResponseEntity<ApiResponse<List<ReservaResponseDto>>> getTodasLasReservas(
             Authentication authentication,
             @RequestParam(required = false) String estado,
@@ -231,7 +228,7 @@ public class ReservaController {
                     .findFirst()
                     .map(auth -> auth.replace("ROLE_", ""))
                     .orElse("");
-            
+
             List<ReservaResponseDto> reservas = reservaService.getTodasLasReservas(
                     estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin, userEmail, userRole);
             return ResponseEntity.ok(ApiResponse.success(reservas, "Reservas obtenidas exitosamente"));
@@ -240,14 +237,14 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener estadísticas de reservas
      * DOCENTE: estadísticas personales (solo sus reservas)
      * ANALISTA/ADMIN: estadísticas globales (todas las reservas)
      */
     @GetMapping("/mis-reservas/stats")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_EXTERNO + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_propias')")
     public ResponseEntity<ApiResponse<ReservaStatsDto>> getMisReservasStats(
             Authentication authentication) {
         try {
@@ -257,7 +254,7 @@ public class ReservaController {
                     .findFirst()
                     .map(auth -> auth.getAuthority().replace("ROLE_", ""))
                     .orElse("");
-            
+
             ReservaStatsDto stats;
             if (ROLE_DOCENTE.equals(userRole)) {
                 // DOCENTE: estadísticas personales
@@ -272,14 +269,14 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener estadísticas: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Obtener todas las reservas del sistema (para ANALISTA/ADMIN)
      * Sin filtrar por usuario, con paginación y filtros
      * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     @GetMapping("/paged")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_todas')")
     public ResponseEntity<ApiResponse<PagedResponseDto<ReservaResponseDto>>> getAllReservasPaged(
             Authentication authentication,
             @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,
@@ -299,7 +296,7 @@ public class ReservaController {
                     .findFirst()
                     .map(auth -> auth.replace("ROLE_", ""))
                     .orElse("");
-            
+
             var reservasPage = reservaService.getAllReservasPaged(
                     pageable,
                     estado,
@@ -312,7 +309,7 @@ public class ReservaController {
                     tiempo,
                     userEmail,
                     userRole);
-            
+
             PagedResponseDto<ReservaResponseDto> pagedResponse = PagedResponseDto.of(reservasPage);
             return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Reservas obtenidas exitosamente"));
         } catch (Exception e) {
@@ -320,14 +317,14 @@ public class ReservaController {
                     .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
         }
     }
-    
+
     /**
      * Cambiar el estado de una reserva (aprobar/rechazar)
-     * Solo disponible para ADMIN y ANALISTA
+     * Solo disponible para quienes tienen permiso de aprobar
      * Solo permite cambiar de PENDIENTE a APROBADO o CANCELADO
      */
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("hasPermission(null, 'reserva:aprobar')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> cambiarEstadoReserva(
             @PathVariable Long id,
             @RequestBody java.util.Map<String, String> requestBody,
@@ -338,9 +335,9 @@ public class ReservaController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(ApiResponse.error("El campo 'estado' es requerido"));
             }
-            
+
             String mensajeAnalista = requestBody.get("mensajeAnalista");
-            
+
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
@@ -348,9 +345,9 @@ public class ReservaController {
                     .findFirst()
                     .map(auth -> auth.replace("ROLE_", ""))
                     .orElse("");
-            
+
             ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado, userEmail, userRole, mensajeAnalista);
-            String mensaje = "APROBADO".equals(nuevoEstado) 
+            String mensaje = "APROBADO".equals(nuevoEstado)
                     ? "Reserva aprobada exitosamente"
                     : "Reserva rechazada exitosamente";
             return ResponseEntity.ok(ApiResponse.success(reserva, mensaje));
@@ -363,4 +360,3 @@ public class ReservaController {
         }
     }
 }
-

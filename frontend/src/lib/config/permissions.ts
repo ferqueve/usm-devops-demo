@@ -3,182 +3,296 @@ import { ROLES, type Role } from './constants';
 /**
  * Tipos de permisos del sistema
  * Formato: modulo:accion
+ *
+ * IMPORTANTE: Estos permisos deben coincidir exactamente con los definidos en:
+ * backend/src/main/java/com/utec/backend/security/RolePermissions.java
  */
 export type Permission =
+  // Reservas
+  | 'reserva:crear'
+  | 'reserva:ver_propias'
+  | 'reserva:ver_todas'
+  | 'reserva:editar'
+  | 'reserva:cancelar'
+  | 'reserva:aprobar'
+  // Espacios
+  | 'espacio:ver'
+  | 'espacio:crear'
+  | 'espacio:editar'
+  | 'espacio:eliminar'
   // Inventario
+  | 'inventario:ver'
   | 'inventario:crear'
-  | 'inventario:leer'
   | 'inventario:editar'
   | 'inventario:eliminar'
   | 'inventario:asignar'
-  | 'inventario:exportar'
-  | 'inventario:importar'
-  // Espacios
-  | 'espacios:crear'
-  | 'espacios:leer'
-  | 'espacios:editar'
-  | 'espacios:eliminar'
-  | 'espacios:gestionar_estado'
-  // Reservas
-  | 'reservas:crear'
-  | 'reservas:leer'
-  | 'reservas:editar'
-  | 'reservas:eliminar'
-  | 'reservas:aprobar'
-  | 'reservas:cancelar'
-  | 'reservas:solicitar'
+  // Tipos (TipoElemento, TipoEspacio)
+  | 'tipo:ver'
+  | 'tipo:crear'
+  | 'tipo:editar'
+  | 'tipo:eliminar'
+  // Carreras
+  | 'carrera:ver'
+  | 'carrera:crear'
+  | 'carrera:editar'
+  | 'carrera:eliminar'
   // Solicitudes de Inventario
-  | 'solicitudes_inventario:crear'
-  | 'solicitudes_inventario:leer'
-  | 'solicitudes_inventario:aprobar'
-  | 'solicitudes_inventario:rechazar'
-  | 'solicitudes_inventario:entregar'
-  // Usuarios
-  | 'usuarios:gestionar'
-  | 'usuarios:ver'
+  | 'solicitud_inventario:ver'
+  | 'solicitud_inventario:crear'
+  | 'solicitud_inventario:aprobar'
+  | 'solicitud_inventario:rechazar'
+  | 'solicitud_inventario:entregar'
   // Estadísticas
   | 'estadisticas:ver'
+  | 'estadisticas:ver_reservas'
+  | 'estadisticas:ver_inventario'
+  | 'estadisticas:ver_espacios'
   | 'estadisticas:exportar'
+  // Recomendaciones
+  | 'recomendacion:ver'
+  | 'recomendacion:solicitar'
+  | 'recomendacion:ver_estadisticas'
+  | 'recomendacion:gestionar_estado'
+  // Usuarios
+  | 'usuario:ver'
+  | 'usuario:ver_analistas'
+  | 'usuario:crear'
+  | 'usuario:editar'
+  | 'usuario:eliminar'
+  | 'usuario:gestionar'
+  // Archivos
+  | 'archivo:ver'
+  | 'archivo:subir'
   // Sistema
   | 'sistema:acceder'
-  // Tipos
-  | 'tipos_elemento:crear'
-  | 'tipos_elemento:leer'
-  | 'tipos_elemento:editar'
-  | 'tipos_elemento:eliminar'
-  | 'tipos_espacio:crear'
-  | 'tipos_espacio:leer'
-  | 'tipos_espacio:editar'
-  | 'tipos_espacio:eliminar'
-  // Carreras
-  | 'carreras:gestionar';
+  // Auditoría
+  | 'auditoria:ver';
 
 /**
  * Mapeo de permisos por rol
- * Basado en ROLES_AND_PERMISSIONS.md
+ * Sincronizado con backend/src/main/java/com/utec/backend/security/RolePermissions.java
  */
 export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
   [ROLES.ADMIN]: [
+    // ADMIN tiene acceso completo a todo (wildcard "*" en backend)
+    // Listamos todos los permisos explícitamente para el frontend
+
+    // Reservas - Acceso completo
+    'reserva:crear',
+    'reserva:ver_propias',
+    'reserva:ver_todas',
+    'reserva:editar',
+    'reserva:cancelar',
+    'reserva:aprobar',
+
+    // Espacios - Acceso completo
+    'espacio:ver',
+    'espacio:crear',
+    'espacio:editar',
+    'espacio:eliminar',
+
     // Inventario - Acceso completo
+    'inventario:ver',
     'inventario:crear',
-    'inventario:leer',
     'inventario:editar',
     'inventario:eliminar',
     'inventario:asignar',
-    'inventario:exportar',
-    'inventario:importar',
-    // Espacios - Acceso completo
-    'espacios:crear',
-    'espacios:leer',
-    'espacios:editar',
-    'espacios:eliminar',
-    'espacios:gestionar_estado',
-    // Reservas - Acceso completo
-    'reservas:crear',
-    'reservas:leer',
-    'reservas:editar',
-    'reservas:eliminar',
-    'reservas:aprobar',
-    'reservas:cancelar',
-    'reservas:solicitar',
+
+    // Tipos - Acceso completo
+    'tipo:ver',
+    'tipo:crear',
+    'tipo:editar',
+    'tipo:eliminar',
+
+    // Carreras - Acceso completo
+    'carrera:ver',
+    'carrera:crear',
+    'carrera:editar',
+    'carrera:eliminar',
+
     // Solicitudes de Inventario - Acceso completo
-    'solicitudes_inventario:crear',
-    'solicitudes_inventario:leer',
-    'solicitudes_inventario:aprobar',
-    'solicitudes_inventario:rechazar',
-    'solicitudes_inventario:entregar',
-    // Usuarios - Acceso completo
-    'usuarios:gestionar',
-    'usuarios:ver',
+    'solicitud_inventario:ver',
+    'solicitud_inventario:crear',
+    'solicitud_inventario:aprobar',
+    'solicitud_inventario:rechazar',
+    'solicitud_inventario:entregar',
+
     // Estadísticas - Acceso completo
     'estadisticas:ver',
+    'estadisticas:ver_reservas',
+    'estadisticas:ver_inventario',
+    'estadisticas:ver_espacios',
     'estadisticas:exportar',
+
+    // Recomendaciones - Acceso completo
+    'recomendacion:ver',
+    'recomendacion:solicitar',
+    'recomendacion:ver_estadisticas',
+    'recomendacion:gestionar_estado',
+
+    // Usuarios - Acceso completo
+    'usuario:ver',
+    'usuario:ver_analistas',
+    'usuario:crear',
+    'usuario:editar',
+    'usuario:eliminar',
+    'usuario:gestionar',
+
+    // Archivos - Acceso completo
+    'archivo:ver',
+    'archivo:subir',
+
     // Sistema - Acceso exclusivo
     'sistema:acceder',
-    // Tipos - Acceso completo
-    'tipos_elemento:crear',
-    'tipos_elemento:leer',
-    'tipos_elemento:editar',
-    'tipos_elemento:eliminar',
-    'tipos_espacio:crear',
-    'tipos_espacio:leer',
-    'tipos_espacio:editar',
-    'tipos_espacio:eliminar',
-    // Carreras - Acceso completo
-    'carreras:gestionar',
+
+    // Auditoría - Acceso completo
+    'auditoria:ver',
   ],
+
   [ROLES.ANALISTA]: [
-    // Inventario - Solo lectura
-    'inventario:leer',
-    // Espacios - Solo lectura
-    'espacios:leer',
     // Reservas - CRUD completo
-    'reservas:crear',
-    'reservas:leer',
-    'reservas:editar',
-    'reservas:eliminar',
-    'reservas:aprobar',
-    'reservas:cancelar',
-    'reservas:solicitar',
-    // Estadísticas - Solo reservas
+    'reserva:crear',
+    'reserva:ver_propias',
+    'reserva:ver_todas',
+    'reserva:editar',
+    'reserva:cancelar',
+    'reserva:aprobar',
+
+    // Espacios - Solo lectura
+    'espacio:ver',
+
+    // Inventario - Solo lectura
+    'inventario:ver',
+
+    // Tipos - Solo lectura
+    'tipo:ver',
+
+    // Carreras - CRUD
+    'carrera:ver',
+    'carrera:crear',
+    'carrera:editar',
+    'carrera:eliminar',
+
+    // Estadísticas - Reservas
     'estadisticas:ver',
-    'estadisticas:exportar',
-    // Tipos - Solo lectura (para ver al crear reservas/solicitudes)
-    'tipos_elemento:leer',
-    'tipos_espacio:leer',
+    'estadisticas:ver_reservas',
+
+    // Recomendaciones
+    'recomendacion:ver',
+    'recomendacion:solicitar',
+    'recomendacion:ver_estadisticas',
+
+    // Usuarios
+    'usuario:ver_analistas',
+
+    // Archivos
+    'archivo:ver',
+    'archivo:subir',
   ],
+
   [ROLES.MANTENIMIENTO]: [
-    // Inventario - Gestión completa (excepto eliminar)
+    // Reservas - Solo lectura (para ver ocupación)
+    'reserva:ver_todas',
+
+    // Espacios - CRUD (excepto eliminar)
+    'espacio:ver',
+    'espacio:crear',
+    'espacio:editar',
+
+    // Inventario - CRUD completo
+    'inventario:ver',
     'inventario:crear',
-    'inventario:leer',
     'inventario:editar',
+    'inventario:eliminar',
     'inventario:asignar',
-    'inventario:exportar',
-    'inventario:importar',
-    // Espacios - Gestión completa (excepto eliminar)
-    'espacios:crear',
-    'espacios:leer',
-    'espacios:editar',
-    'espacios:gestionar_estado',
-    // Reservas - Solo lectura (para conocer ocupación)
-    'reservas:leer',
-    // Solicitudes de Inventario - Aprobar/rechazar/entregar
-    'solicitudes_inventario:leer',
-    'solicitudes_inventario:aprobar',
-    'solicitudes_inventario:rechazar',
-    'solicitudes_inventario:entregar',
+
+    // Tipos - CRUD (excepto eliminar)
+    'tipo:ver',
+    'tipo:crear',
+    'tipo:editar',
+
+    // Solicitudes de inventario
+    'solicitud_inventario:ver',
+    'solicitud_inventario:aprobar',
+
     // Estadísticas - Inventario y espacios
     'estadisticas:ver',
-    'estadisticas:exportar',
-    // Tipos - Crear, leer, editar y eliminar
-    'tipos_elemento:crear',
-    'tipos_elemento:leer',
-    'tipos_elemento:editar',
-    'tipos_elemento:eliminar',
-    'tipos_espacio:crear',
-    'tipos_espacio:leer',
-    'tipos_espacio:editar',
+    'estadisticas:ver_inventario',
+    'estadisticas:ver_espacios',
+
+    // Recomendaciones - gestionar estado
+    'recomendacion:gestionar_estado',
+
+    // Archivos
+    'archivo:ver',
+    'archivo:subir',
   ],
+
   [ROLES.DOCENTE]: [
-    // Reservas - Ver todas y solicitar
-    'reservas:leer',
-    'reservas:solicitar',
-    'reservas:cancelar', // Puede cancelar sus propias reservas
+    // Reservas - crear solicitudes y ver
+    'reserva:crear',
+    'reserva:ver_propias',
+    'reserva:ver_todas',
+    'reserva:cancelar',
+
     // Espacios - Solo lectura
-    'espacios:leer',
+    'espacio:ver',
+
+    // Tipos - Solo lectura
+    'tipo:ver',
+
+    // Carreras - Solo lectura
+    'carrera:ver',
+
+    // Recomendaciones
+    'recomendacion:ver',
+    'recomendacion:solicitar',
+
+    // Usuarios
+    'usuario:ver_analistas',
+
+    // Archivos - Solo lectura
+    'archivo:ver',
   ],
+
   [ROLES.ESTUDIANTE]: [
-    // Reservas - Solo lectura
-    'reservas:leer',
+    // Reservas - Solo ver
+    'reserva:ver_todas',
+
     // Espacios - Solo lectura
-    'espacios:leer',
+    'espacio:ver',
+
+    // Tipos - Solo lectura
+    'tipo:ver',
+
+    // Carreras - Solo lectura
+    'carrera:ver',
+
+    // Estadísticas básicas
+    'estadisticas:ver',
+
+    // Archivos - Solo lectura
+    'archivo:ver',
   ],
+
   [ROLES.EXTERNO]: [
-    // Reservas - Solicitar y ver públicas
-    'reservas:solicitar',
-    'reservas:leer', // Solo reservas públicas/aprobadas
-    // Espacios - Solo lectura básica
-    'espacios:leer',
+    // Reservas - crear solicitudes y ver propias
+    'reserva:crear',
+    'reserva:ver_propias',
+    'reserva:ver_todas',
+    'reserva:cancelar',
+
+    // Espacios - Solo lectura
+    'espacio:ver',
+
+    // Tipos - Solo lectura
+    'tipo:ver',
+
+    // Carreras - Solo lectura
+    'carrera:ver',
+
+    // Archivos - Solo lectura
+    'archivo:ver',
   ],
 };
 
@@ -218,7 +332,19 @@ export function hasAllPermissions(role: Role | null, permissions: Permission[]):
 /**
  * Recursos del sistema para funciones de conveniencia
  */
-export type Resource = 'inventario' | 'espacios' | 'reservas' | 'solicitudes_inventario' | 'usuarios' | 'estadisticas' | 'sistema' | 'tipos_elemento' | 'tipos_espacio' | 'carreras';
+export type Resource =
+  | 'reserva'
+  | 'espacio'
+  | 'inventario'
+  | 'tipo'
+  | 'carrera'
+  | 'solicitud_inventario'
+  | 'estadisticas'
+  | 'recomendacion'
+  | 'usuario'
+  | 'archivo'
+  | 'sistema'
+  | 'auditoria';
 
 /**
  * Funciones de conveniencia para verificar permisos por recurso
@@ -228,7 +354,11 @@ export const permissionHelpers = {
     return hasPermission(role, `${resource}:crear` as Permission);
   },
   canRead: (role: Role | null, resource: Resource): boolean => {
-    return hasPermission(role, `${resource}:leer` as Permission);
+    // Para recursos que usan "ver" en lugar de "leer"
+    if (resource === 'reserva') {
+      return hasAnyPermission(role, ['reserva:ver_propias' as Permission, 'reserva:ver_todas' as Permission]);
+    }
+    return hasPermission(role, `${resource}:ver` as Permission);
   },
   canEdit: (role: Role | null, resource: Resource): boolean => {
     return hasPermission(role, `${resource}:editar` as Permission);
@@ -237,38 +367,41 @@ export const permissionHelpers = {
     return hasPermission(role, `${resource}:eliminar` as Permission);
   },
   canApprove: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'reservas') {
-      return hasPermission(role, 'reservas:aprobar');
+    if (resource === 'reserva') {
+      return hasPermission(role, 'reserva:aprobar');
     }
-    if (resource === 'solicitudes_inventario') {
-      return hasPermission(role, 'solicitudes_inventario:aprobar');
+    if (resource === 'solicitud_inventario') {
+      return hasPermission(role, 'solicitud_inventario:aprobar');
     }
     return false;
   },
   canCancel: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'reservas') {
-      return hasPermission(role, 'reservas:cancelar');
+    if (resource === 'reserva') {
+      return hasPermission(role, 'reserva:cancelar');
     }
     return false;
   },
   canRequest: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'reservas') {
-      return hasPermission(role, 'reservas:solicitar');
+    if (resource === 'reserva') {
+      return hasPermission(role, 'reserva:crear');
     }
-    if (resource === 'solicitudes_inventario') {
-      return hasPermission(role, 'solicitudes_inventario:crear');
+    if (resource === 'solicitud_inventario') {
+      return hasPermission(role, 'solicitud_inventario:crear');
+    }
+    if (resource === 'recomendacion') {
+      return hasPermission(role, 'recomendacion:solicitar');
     }
     return false;
   },
   canReject: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'solicitudes_inventario') {
-      return hasPermission(role, 'solicitudes_inventario:rechazar');
+    if (resource === 'solicitud_inventario') {
+      return hasPermission(role, 'solicitud_inventario:rechazar');
     }
     return false;
   },
   canDeliver: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'solicitudes_inventario') {
-      return hasPermission(role, 'solicitudes_inventario:entregar');
+    if (resource === 'solicitud_inventario') {
+      return hasPermission(role, 'solicitud_inventario:entregar');
     }
     return false;
   },
@@ -279,16 +412,48 @@ export const permissionHelpers = {
     return false;
   },
   canExport: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'inventario' || resource === 'estadisticas') {
-      return hasPermission(role, `${resource}:exportar` as Permission);
+    if (resource === 'estadisticas') {
+      return hasPermission(role, 'estadisticas:exportar');
+    }
+    return false;
+  },
+  canManage: (role: Role | null, resource: Resource): boolean => {
+    if (resource === 'usuario') {
+      return hasPermission(role, 'usuario:gestionar');
+    }
+    return false;
+  },
+  canViewOwn: (role: Role | null, resource: Resource): boolean => {
+    if (resource === 'reserva') {
+      return hasPermission(role, 'reserva:ver_propias');
+    }
+    return false;
+  },
+  canViewAll: (role: Role | null, resource: Resource): boolean => {
+    if (resource === 'reserva') {
+      return hasPermission(role, 'reserva:ver_todas');
+    }
+    return false;
+  },
+  canUpload: (role: Role | null, resource: Resource): boolean => {
+    if (resource === 'archivo') {
+      return hasPermission(role, 'archivo:subir');
     }
     return false;
   },
   canManageState: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'espacios') {
-      return hasPermission(role, 'espacios:gestionar_estado');
+    if (resource === 'recomendacion') {
+      return hasPermission(role, 'recomendacion:gestionar_estado');
+    }
+    return false;
+  },
+  canViewStatistics: (role: Role | null, resource: Resource): boolean => {
+    if (resource === 'estadisticas') {
+      return hasPermission(role, 'estadisticas:ver');
+    }
+    if (resource === 'recomendacion') {
+      return hasPermission(role, 'recomendacion:ver_estadisticas');
     }
     return false;
   },
 };
-

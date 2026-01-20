@@ -21,8 +21,7 @@ import { MapPin, Users, Calendar, Clock, User, GraduationCap, CheckCircle2, XCir
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import PermissionGuard from '@/components/auth/PermissionGuard';
-import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/config/constants';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import type { Reserva } from '@/lib/types/spaces';
 import { useState } from 'react';
 
@@ -64,10 +63,9 @@ export default function ReservationDetailsDialog({
   onOpenChange,
   onReservaUpdated
 }: ReservationDetailsDialogProps) {
-  const { user } = useAuth();
-  // Verificar si el usuario es analista o admin (no deben ver el motivo de solicitud)
-  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
-  const puedeVerMotivoSolicitud = !isAnalista; // Solo docentes y externos pueden ver el motivo
+  const { hasPermission } = useRolePermissions();
+  // Usuarios que necesitan aprobación (DOCENTE/EXTERNO) pueden ver el motivo de solicitud
+  const puedeVerMotivoSolicitud = !hasPermission('reserva:aprobar');
   const [showRechazarDialog, setShowRechazarDialog] = useState(false);
   const [showAprobarDialog, setShowAprobarDialog] = useState(false);
   const [mensajeAnalista, setMensajeAnalista] = useState('');
@@ -365,7 +363,7 @@ export default function ReservationDetailsDialog({
 
           {/* Botones de acción para reservas pendientes */}
           {reserva.estado === 'PENDIENTE' && (
-            <PermissionGuard requiredPermission="reservas:aprobar" fallback={null} showFallback={false}>
+            <PermissionGuard requiredPermission="reserva:aprobar" fallback={null} showFallback={false}>
               <div className="flex flex-col sm:flex-row gap-2 mb-2">
                 <Button
                   variant="default"

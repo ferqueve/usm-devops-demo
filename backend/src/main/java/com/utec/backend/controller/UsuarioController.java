@@ -25,8 +25,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static com.utec.backend.security.Constants.*;
-
 @Tag(name = "Usuarios", description = "Endpoints para gestión de usuarios")
 @RestController
 @RequestMapping("/api/v1/usuarios")
@@ -54,7 +52,7 @@ public class UsuarioController {
 
     @Operation(summary = "Listar usuarios", description = "Obtener lista paginada de todos los usuarios con filtros opcionales")
     @GetMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<PagedUsuarioResponseDto> listarTodosLosUsuarios(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -73,7 +71,7 @@ public class UsuarioController {
 
     @Operation(summary = "Obtener usuario por ID", description = "Obtener información detallada de un usuario específico")
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<UsuarioResponseDto> obtenerUsuarioPorId(@PathVariable Long id) {
         UsuarioResponseDto usuario = usuarioService.obtenerUsuarioPorId(id);
         return ResponseEntity.ok(usuario);
@@ -81,7 +79,7 @@ public class UsuarioController {
 
     @Operation(summary = "Cambiar rol de usuario", description = "Modificar el rol asignado a un usuario")
     @PutMapping("/{id}/rol")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<Void> cambiarRolUsuario(@PathVariable Long id, @RequestBody CambioRolDto cambioRolDto) {
         usuarioService.cambiarRolUsuario(id, cambioRolDto);
         return ResponseEntity.noContent().build();
@@ -89,7 +87,7 @@ public class UsuarioController {
 
     @Operation(summary = "Activar/desactivar usuario", description = "Cambiar el estado activo/inactivo de un usuario")
     @PutMapping("/{id}/toggle-activo")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<UsuarioResponseDto> toggleUsuarioActivo(@PathVariable Long id) {
         UsuarioResponseDto usuario = usuarioService.toggleUsuarioActivo(id);
         return ResponseEntity.ok(usuario);
@@ -97,7 +95,7 @@ public class UsuarioController {
 
     @Operation(summary = "Obtener estadísticas de usuarios", description = "Obtener métricas y estadísticas de usuarios del sistema")
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<UsuarioStatsDto> obtenerEstadisticas() {
         UsuarioStatsDto stats = usuarioService.obtenerEstadisticas();
         return ResponseEntity.ok(stats);
@@ -105,7 +103,7 @@ public class UsuarioController {
 
     @Operation(summary = "Exportar usuarios a CSV", description = "Exportar lista de usuarios filtrada a formato CSV")
     @GetMapping(value = "/export", produces = "text/csv")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<String> exportarUsuarios(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String rol,
@@ -117,14 +115,14 @@ public class UsuarioController {
         List<UsuarioResponseDto> usuarios = usuarioService.obtenerUsuariosParaExport(
                 search, rol, verificado, activo, fechaDesde, fechaHasta
         );
-        
+
         String csvContent = csvExportUtil.generateUsersCsv(usuarios);
         String fileName = "usuarios_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".csv";
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv"));
         headers.setContentDispositionFormData("attachment", fileName);
-        
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(csvContent);
@@ -132,9 +130,9 @@ public class UsuarioController {
 
     @Operation(summary = "Actualizar usuario por admin", description = "Permitir a un admin actualizar información de cualquier usuario")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<UsuarioResponseDto> actualizarUsuarioPorAdmin(
-            @PathVariable Long id, 
+            @PathVariable Long id,
             @Valid @RequestBody UsuarioAdminUpdateDto updateDto
     ) {
         UsuarioResponseDto usuarioActualizado = usuarioService.actualizarUsuarioPorAdmin(id, updateDto);
@@ -143,7 +141,7 @@ public class UsuarioController {
 
     @Operation(summary = "Reenviar verificación por admin", description = "Permitir a un admin reenviar email de verificación a un usuario")
     @PostMapping("/{id}/resend-verification")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<Void> reenviarVerificacionPorAdmin(@PathVariable Long id) {
         boolean enviado = usuarioService.reenviarVerificacionPorAdmin(id);
         return enviado ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -151,7 +149,7 @@ public class UsuarioController {
 
     @Operation(summary = "Restablecer contraseña por admin", description = "Permitir a un admin restablecer la contraseña de un usuario y enviarle la nueva por email")
     @PostMapping("/{id}/reset-password")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:gestionar')")
     public ResponseEntity<Void> restablecerPasswordPorAdmin(@PathVariable Long id) {
         boolean enviado = usuarioService.restablecerPasswordPorAdmin(id);
         return enviado ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -159,7 +157,7 @@ public class UsuarioController {
 
     @Operation(summary = "Listar analistas disponibles", description = "Obtener lista de todos los analistas activos disponibles para asignar a solicitudes")
     @GetMapping("/analistas")
-    @PreAuthorize("hasRole('" + ROLE_DOCENTE + "') or hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "')")
+    @PreAuthorize("hasPermission(null, 'usuario:ver_analistas')")
     public ResponseEntity<ApiResponse<List<UsuarioResponseDto>>> listarAnalistas() {
         try {
             List<UsuarioResponseDto> analistas = usuarioService.listarAnalistas();

@@ -1,18 +1,19 @@
-import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/config/constants';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import InventoryStats from './InventoryStats';
 import ReservationStatsAnalista from './ReservationStatsAnalista';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Package } from 'lucide-react';
 
 export default function Statistics() {
-  const { user } = useAuth();
-  const isAdmin = user?.rol === ROLES.ADMIN;
-  const isAnalista = user?.rol === ROLES.ANALISTA;
-  const isMantenimiento = user?.rol === ROLES.MANTENIMIENTO;
+  const { hasPermission } = useRolePermissions();
 
-  // ADMIN ve ambos con tabs
-  if (isAdmin) {
+  // Permission-based logic
+  const canViewReservationStats = hasPermission('estadisticas:ver');
+  const canManageInventory = hasPermission('inventario:gestionar');
+  const canViewInventoryStats = hasPermission('inventario:ver');
+
+  // ADMIN (usuarios que pueden gestionar inventario Y ver estadísticas) ven ambos con tabs
+  if (canManageInventory && canViewReservationStats) {
     return (
       <div className="space-y-6">
         <div>
@@ -43,8 +44,8 @@ export default function Statistics() {
     );
   }
 
-  // ANALISTA solo ve estadísticas de reservas
-  if (isAnalista) {
+  // ANALISTA (usuarios que pueden ver estadísticas pero NO gestionar inventario) solo ven estadísticas de reservas
+  if (canViewReservationStats && !canManageInventory) {
     return (
       <div className="space-y-6">
         <ReservationStatsAnalista />
@@ -52,8 +53,8 @@ export default function Statistics() {
     );
   }
 
-  // MANTENIMIENTO solo ve estadísticas de inventario
-  if (isMantenimiento) {
+  // MANTENIMIENTO (usuarios que pueden ver inventario pero NO estadísticas) solo ven estadísticas de inventario
+  if (canViewInventoryStats && !canViewReservationStats) {
     return (
       <div className="space-y-6">
         <InventoryStats />

@@ -14,9 +14,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAuth } from '@/hooks/useAuth';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { usePreferences } from '@/hooks/usePreferences';
-import { ROLES } from '@/lib/config/constants';
 
 interface Espacio {
   id: number;
@@ -107,12 +106,14 @@ export default function ReservationCalendarView({
   loading = false,
   readOnly = false,
 }: ReservationCalendarViewProps) {
-  const { user } = useAuth();
+  const { hasPermission } = useRolePermissions();
   const { preferencias } = usePreferences();
-  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
-  const isDocente = user?.rol === ROLES.DOCENTE;
-  // Vista desde preferencias o por defecto: Semana para ANALISTA y DOCENTE, Mes para otros
-  const defaultCalendarViewMode: CalendarViewMode = (isAnalista || isDocente) ? 'week' : 'month';
+
+  // Permission-based logic
+  const canApprove = hasPermission('reserva:aprobar');
+  const canViewRecommendations = hasPermission('recomendacion:ver');
+  // Vista desde preferencias o por defecto: Semana para usuarios que pueden aprobar o ver recomendaciones, Mes para otros
+  const defaultCalendarViewMode: CalendarViewMode = (canApprove || canViewRecommendations) ? 'week' : 'month';
   const preferenciaCalendarViewMode = preferencias?.reservasCalendarViewMode as CalendarViewMode | undefined;
   const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(preferenciaCalendarViewMode || defaultCalendarViewMode);
   

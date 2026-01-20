@@ -306,7 +306,7 @@ export default function ReservationCardView({
           )}
           {reservas.length === 0 ? (
             <div className="flex-1 flex items-center justify-center py-8">
-              <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+              <PermissionGuard requiredPermissions={['reserva:crear']}>
                 <EmptyState
                   icon={Calendar}
                   title="No hay reservas"
@@ -402,7 +402,7 @@ export default function ReservationCardView({
                         {/* Acciones - a la derecha */}
                         <div className="flex-shrink-0 flex items-center gap-2">
                           {/* Botón Ver como icono */}
-                          <PermissionGuard requiredPermission="reservas:leer">
+                          <PermissionGuard requiredPermission="reserva:ver_todas">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
@@ -418,7 +418,7 @@ export default function ReservationCardView({
                             </Tooltip>
                           </PermissionGuard>
                           {!esPasada && esFutura && reserva.estado === 'APROBADO' && (
-                            <PermissionGuard requiredPermission="reservas:cancelar">
+                            <PermissionGuard requiredPermission="reserva:cancelar">
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button

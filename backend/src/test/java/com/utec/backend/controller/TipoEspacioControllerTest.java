@@ -81,7 +81,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio - Debe obtener todos los tipos de espacio")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTodosLosTiposEspacio() throws Exception {
         // Given
         List<TipoEspacioResponseDto> tipos = Arrays.asList(tipoEspacioResponseDto);
@@ -99,7 +99,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio/{id} - Debe obtener tipo de espacio por ID")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTipoEspacioPorId() throws Exception {
         // Given
         when(tipoEspacioService.getTipoEspacioById(tipoEspacioId)).thenReturn(tipoEspacioResponseDto);
@@ -170,7 +170,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio/search - Debe buscar tipos de espacio por nombre")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeBuscarTiposEspacioPorNombre() throws Exception {
         // Given
         List<TipoEspacioResponseDto> tipos = Arrays.asList(tipoEspacioResponseDto);
@@ -188,7 +188,7 @@ class TipoEspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-espacio/stats - Debe obtener estadísticas")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerEstadisticas() throws Exception {
         // Given
         when(tipoEspacioService.getTotalTiposEspacio()).thenReturn(5L);

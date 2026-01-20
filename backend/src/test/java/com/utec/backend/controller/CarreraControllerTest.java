@@ -82,7 +82,7 @@ class CarreraControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/carreras - Debe obtener todas las carreras")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTodasLasCarreras() throws Exception {
         // Given
         List<CarreraResponseDto> carreras = Arrays.asList(carreraResponseDto);
@@ -100,7 +100,7 @@ class CarreraControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/carreras/paged - Debe obtener carreras paginadas")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerCarrerasPaginadas() throws Exception {
         // Given
         Page<CarreraResponseDto> page = new PageImpl<>(Arrays.asList(carreraResponseDto), PageRequest.of(0, 10), 1);
@@ -119,7 +119,7 @@ class CarreraControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/carreras/{id} - Debe obtener carrera por ID")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerCarreraPorId() throws Exception {
         // Given
         when(carreraService.getCarreraById(carreraId)).thenReturn(carreraResponseDto);
@@ -173,7 +173,7 @@ class CarreraControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/carreras/search - Debe buscar carreras por nombre")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeBuscarCarrerasPorNombre() throws Exception {
         // Given
         List<CarreraResponseDto> carreras = Arrays.asList(carreraResponseDto);

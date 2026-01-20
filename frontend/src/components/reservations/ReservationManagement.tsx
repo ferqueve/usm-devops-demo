@@ -19,9 +19,8 @@ import ReservationTableView from './ReservationTableView.tsx';
 import ReservationCalendarView from './ReservationCalendarView.tsx';
 import ReservationFormDialog from './ReservationFormDialog.tsx';
 import PermissionGuard from '@/components/auth/PermissionGuard';
-import { useAuth } from '@/hooks/useAuth';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { usePreferences } from '@/hooks/usePreferences';
-import { ROLES } from '@/lib/config/constants';
 import { useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
@@ -37,20 +36,21 @@ import {
 type ViewMode = 'cards' | 'table' | 'calendar';
 
 export default function ReservationManagement() {
-  const { user } = useAuth();
+  const { hasPermission } = useRolePermissions();
   const { preferencias } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
-  const isDocente = user?.rol === ROLES.DOCENTE;
-  const isExterno = user?.rol === ROLES.EXTERNO;
-  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
-  const showPendienteFilter = isDocente || isExterno; // Solo docentes y externos pueden filtrar por pendientes
+
+  // Permission-based logic
+  const canApprove = hasPermission('reserva:aprobar'); // ANALISTA/ADMIN can approve
+  const canViewRecommendations = hasPermission('recomendacion:ver'); // DOCENTE can view recommendations
+  const showPendienteFilter = !canApprove; // DOCENTE/EXTERNO can filter their own pending reservations
   
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [contentLoading, setContentLoading] = useState(false); // Loading solo para el contenido de table/cards
   const [calendarLoading, setCalendarLoading] = useState(false); // Loading solo para calendar
-  // Para analistas, el filtro por defecto es 'APROBADO' (confirmadas), para otros es 'todas'
+  // Para usuarios que pueden aprobar (analistas/admin), el filtro por defecto es 'APROBADO' (confirmadas), para otros es 'todas'
   const [estadoFilter, setEstadoFilter] = useState<string>(() => {
-    return (user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN) ? 'APROBADO' : 'todas';
+    return canApprove ? 'APROBADO' : 'todas';
   });
   const [tiempoFilter, setTiempoFilter] = useState<string>('todas');
   const [espacioFilter, setEspacioFilter] = useState<number | null>(null);
@@ -59,8 +59,8 @@ export default function ReservationManagement() {
   const [usuarioFilter, setUsuarioFilter] = useState<number | null>(null); // Solo para ANALISTA
   const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined);
   const [fechaFin, setFechaFin] = useState<Date | undefined>(undefined);
-  // Vista desde preferencias o por defecto: Calendar para ANALISTA y DOCENTE, Cards para otros
-  const defaultViewMode: ViewMode = (isAnalista || isDocente) ? 'calendar' : 'cards';
+  // Vista desde preferencias o por defecto: Calendar para usuarios que pueden aprobar o ver recomendaciones, Cards para otros
+  const defaultViewMode: ViewMode = (canApprove || canViewRecommendations) ? 'calendar' : 'cards';
   const preferenciaViewMode = preferencias?.reservasViewMode as ViewMode | undefined;
   const [viewMode, setViewMode] = useState<ViewMode>(preferenciaViewMode || defaultViewMode);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -105,7 +105,7 @@ export default function ReservationManagement() {
     setCalendarLoading(true); // Solo afecta al contenido de calendar
     try {
       let response;
-      if (isDocente || isExterno) {
+      if (showPendienteFilter) {
         // DOCENTE/EXTERNO: solo sus reservas
         // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
         const estadoParaFiltrar = estadoFilter === 'PENDIENTE' 
@@ -160,11 +160,11 @@ export default function ReservationManagement() {
     } finally {
       setCalendarLoading(false);
     }
-  }, [isDocente, isExterno, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [showPendienteFilter, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
-  // Cargar reservas pendientes separadamente (solo para ANALISTA)
+  // Cargar reservas pendientes separadamente (solo para usuarios que pueden aprobar)
   const fetchReservasPendientes = useCallback(async () => {
-    if (!isAnalista) {
+    if (!canApprove) {
       setReservasPendientes([]);
       return;
     }
@@ -193,13 +193,13 @@ export default function ReservationManagement() {
     } finally {
       setPendientesLoading(false);
     }
-  }, [isAnalista, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [canApprove, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   const fetchReservasPaged = useCallback(async () => {
     setContentLoading(true); // Solo afecta al contenido
     try {
       let response;
-      if (isDocente || isExterno) {
+      if (showPendienteFilter) {
         // DOCENTE/EXTERNO: solo sus reservas
         // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
         const estadoParaFiltrar = estadoFilter === 'PENDIENTE' 
@@ -266,7 +266,7 @@ export default function ReservationManagement() {
     } finally {
       setContentLoading(false);
     }
-  }, [isDocente, isExterno, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
+  }, [showPendienteFilter, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
 
   const handleToggleFullScreen = () => {
     setIsFullScreen(!isFullScreen);
@@ -294,12 +294,12 @@ export default function ReservationManagement() {
     }
   }, [viewMode, fetchReservas]);
 
-  // Cargar reservas pendientes siempre para ANALISTA
+  // Cargar reservas pendientes siempre para usuarios que pueden aprobar
   useEffect(() => {
-    if (isAnalista) {
+    if (canApprove) {
       fetchReservasPendientes();
     }
-  }, [isAnalista, fetchReservasPendientes]);
+  }, [canApprove, fetchReservasPendientes]);
 
   // Resetear página cuando cambian filtros o vista (solo para table y cards)
   // Esto se ejecuta antes del useEffect que carga los datos
@@ -331,7 +331,7 @@ export default function ReservationManagement() {
       toast.success('Reserva cancelada exitosamente');
       if (viewMode === 'calendar') {
         fetchReservas();
-        if (isAnalista) {
+        if (canApprove) {
           fetchReservasPendientes();
         }
       } else {
@@ -425,7 +425,7 @@ export default function ReservationManagement() {
       }
     };
     fetchData();
-  }, [isAnalista]);
+  }, [canApprove]);
 
   // Obtener espacios únicos (usar todos los espacios cargados, no solo los de las reservas)
   const espaciosUnicos = espacios.map(e => ({ id: e.id, nombre: e.nombre }))
@@ -514,9 +514,10 @@ export default function ReservationManagement() {
     : reservas; // Para table y cards, las reservas ya vienen filtradas del servidor
 
 
-  // Obtener título dinámico según filtros y rol
+  // Obtener título dinámico según filtros y permisos
   const getTituloReservas = () => {
-    if (isDocente) {
+    if (canViewRecommendations && !canApprove) {
+      // DOCENTE: usa "Solicitudes"
       if (tiempoFilter === 'futuras') return 'Mis Solicitudes Futuras';
       if (tiempoFilter === 'pasadas') return 'Mis Solicitudes Pasadas';
       return 'Mis Solicitudes';
@@ -674,21 +675,21 @@ export default function ReservationManagement() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold">
-              {isDocente ? 'Mis Solicitudes' : 'Gestión de Reservas'}
+              {canViewRecommendations && !canApprove ? 'Mis Solicitudes' : 'Gestión de Reservas'}
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {isDocente 
+              {canViewRecommendations && !canApprove
                 ? 'Administra tus solicitudes de reserva de espacios'
                 : 'Administra todas las reservas y solicitudes del sistema'}
             </p>
           </div>
-          <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+          <PermissionGuard requiredPermissions={['reserva:crear']}>
             <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">
-                {isDocente ? 'Nueva Solicitud' : 'Nueva Reserva'}
+                {canViewRecommendations && !canApprove ? 'Nueva Solicitud' : 'Nueva Reserva'}
               </span>
-              <span className="sm:hidden">{isDocente ? 'Solicitar' : 'Nueva'}</span>
+              <span className="sm:hidden">{canViewRecommendations && !canApprove ? 'Solicitar' : 'Nueva'}</span>
             </Button>
           </PermissionGuard>
         </div>
@@ -730,8 +731,8 @@ export default function ReservationManagement() {
 
         {/* Lateral derecho: Pendientes (misma altura que el contenido principal) */}
         <div className="w-full lg:w-auto lg:shrink-0 lg:order-last flex flex-col min-h-0">
-          <PermissionGuard requiredPermission="reservas:aprobar" fallback={null} showFallback={false}>
-            {isAnalista && (
+          <PermissionGuard requiredPermission="reserva:aprobar" fallback={null} showFallback={false}>
+            {canApprove && (
               <ReservationPendientes
                 reservasPendientes={reservasPendientes}
                 loading={pendientesLoading}
@@ -745,7 +746,7 @@ export default function ReservationManagement() {
       </div>
 
       {/* Modal de formulario de reserva */}
-      <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+      <PermissionGuard requiredPermissions={['reserva:crear']}>
         <ReservationFormDialog
           open={isFormDialogOpen}
           onOpenChange={setIsFormDialogOpen}
@@ -756,7 +757,7 @@ export default function ReservationManagement() {
             } else {
               fetchReservasPaged();
             }
-            if (isAnalista) {
+            if (canApprove) {
               fetchReservasPendientes();
             }
             setIsFormDialogOpen(false);
@@ -782,7 +783,7 @@ export default function ReservationManagement() {
             } else {
               fetchReservasPaged();
             }
-            if (isAnalista) {
+            if (canApprove) {
               fetchReservasPendientes();
             }
           }}

@@ -84,7 +84,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios - Debe obtener todos los espacios")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTodosLosEspacios() throws Exception {
         // Given
         List<EspacioResponseDto> espacios = Arrays.asList(espacioResponseDto);
@@ -102,7 +102,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/{id} - Debe obtener espacio por ID")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerEspacioPorId() throws Exception {
         // Given
         when(espacioService.getEspacioById(espacioId)).thenReturn(espacioResponseDto);
@@ -119,7 +119,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/{id} - Debe retornar 404 cuando no existe")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeRetornar404CuandoNoExiste() throws Exception {
         // Given
         when(espacioService.getEspacioById(espacioId))
@@ -174,7 +174,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/search - Debe buscar espacios por nombre")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeBuscarEspaciosPorNombre() throws Exception {
         // Given
         List<EspacioResponseDto> espacios = Arrays.asList(espacioResponseDto);
@@ -192,7 +192,7 @@ class EspacioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/stats - Debe obtener estadísticas")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerEstadisticas() throws Exception {
         // Given
         when(espacioService.getTotalEspacios()).thenReturn(10L);

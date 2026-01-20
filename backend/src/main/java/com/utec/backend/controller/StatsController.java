@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-import static com.utec.backend.security.Constants.*;
-
 /**
  * Controller para estadísticas del sistema
  */
@@ -37,7 +35,7 @@ public class StatsController {
      */
     @Operation(summary = "Obtener usuarios activos", description = "Obtener lista de usuarios actualmente conectados (solo ADMIN)")
     @GetMapping("/active-users")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'sistema:acceder')")
     public ResponseEntity<ActiveUsersStatsDTO> getActiveUsers() {
         log.info("Solicitando estadísticas de usuarios activos");
         ActiveUsersStatsDTO stats = activityTrackingService.getActiveUsers();
@@ -47,16 +45,16 @@ public class StatsController {
     /**
      * Obtiene estadísticas detalladas de inventario
      */
-    @Operation(summary = "Obtener estadísticas detalladas de inventario", 
+    @Operation(summary = "Obtener estadísticas detalladas de inventario",
                description = "Obtiene todas las estadísticas posibles del inventario con filtros opcionales")
     @GetMapping("/inventario/detailed")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_inventario')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDetailedInventarioStats(
             @RequestParam(required = false) Long espacioId,
             @RequestParam(required = false) Long tipoElementoId,
             @RequestParam(required = false) String estado) {
         try {
-            log.info("Solicitando estadísticas detalladas de inventario - espacioId: {}, tipoElementoId: {}, estado: {}", 
+            log.info("Solicitando estadísticas detalladas de inventario - espacioId: {}, tipoElementoId: {}, estado: {}",
                     espacioId, tipoElementoId, estado);
             Map<String, Object> stats = statisticsService.getDetailedInventarioStatistics(espacioId, tipoElementoId, estado);
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas detalladas obtenidas exitosamente"));
@@ -67,4 +65,3 @@ public class StatsController {
         }
     }
 }
-

@@ -51,9 +51,9 @@ export default function QuickActions() {
             // Determinar permisos según la acción
             let requiredPermissions: Permission[] | undefined;
             if (action.label === "Nueva Reserva") {
-              requiredPermissions = ['reservas:crear', 'reservas:solicitar'] as Permission[];
+              requiredPermissions = ['reserva:crear'] as Permission[];
             } else if (action.label === "Gestionar Espacios") {
-              requiredPermissions = ['espacios:leer'] as Permission[];
+              requiredPermissions = ['espacio:ver'] as Permission[];
             } else if (action.label === "Ver Estadísticas") {
               requiredPermissions = ['estadisticas:ver'] as Permission[];
             }

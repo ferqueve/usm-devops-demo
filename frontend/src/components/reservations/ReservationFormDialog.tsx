@@ -21,11 +21,9 @@ import { Loader2, Pencil, Plus, X, Sparkles, ChevronDown, ChevronUp, Users } fro
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
-import { carrerasApi } from '@/lib/api/carreras';
 import { usuariosApi } from '@/lib/api/users';
-import type { Espacio, Reserva, Carrera, TipoElemento } from '@/lib/types/spaces';
+import type { Reserva } from '@/lib/types/spaces';
 import type { User } from '@/lib/types/users';
 import { createLocalDateTimeUTC, toUTC } from '@/lib/utils/timezone';
 import { EspaciosRecomendados } from '@/components/recomendaciones/EspaciosRecomendados';
@@ -36,8 +34,10 @@ import type { DashboardRecomendaciones, RecomendacionEspacio } from '@/lib/types
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
-import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/config/constants';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { useEspacios } from '@/hooks/useEspacios';
+import { useCarreras } from '@/hooks/useCarreras';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
 
 interface ReservationFormDialogProps {
   open: boolean;
@@ -50,10 +50,12 @@ export default function ReservationFormDialog({
   onOpenChange,
   onSuccess
 }: ReservationFormDialogProps) {
-  const { user } = useAuth();
-  const isDocente = user?.rol === ROLES.DOCENTE;
-  const isExterno = user?.rol === ROLES.EXTERNO;
-  const isAnalista = user?.rol === ROLES.ANALISTA || user?.rol === ROLES.ADMIN;
+  const { hasPermission } = useRolePermissions();
+
+  // Permission-based logic
+  const canApprove = hasPermission('reserva:aprobar'); // ANALISTA/ADMIN can approve
+  const canViewRecommendations = hasPermission('recomendacion:ver'); // DOCENTE can view recommendations
+  const needsAnalystAssignment = !canApprove; // Users who can't approve need analyst assignment
   
   // Ref para medir la altura del formulario y aplicarla al panel de recomendaciones
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -83,12 +85,14 @@ export default function ReservationFormDialog({
     return () => resizeObserver.disconnect();
   }, []);
 
+  // Usar hooks compartidos con caché
+  const { espacios } = useEspacios();
+  const { carreras } = useCarreras();
+  const { tiposElemento } = useTiposElemento();
+
   const [loading, setLoading] = useState(false);
   const [showRecomendacionesMobile, setShowRecomendacionesMobile] = useState(false);
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
-  const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [analistas, setAnalistas] = useState<User[]>([]);
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
   const [fecha, setFecha] = useState<Date | undefined>(new Date());
   const [horaError, setHoraError] = useState<string>('');
   const [reservasEspacio, setReservasEspacio] = useState<Reserva[]>([]);
@@ -394,10 +398,8 @@ export default function ReservationFormDialog({
   }, [formData.espacioId, formData.horaInicioHora, formData.horaFinHora]);
 
   useEffect(() => {
-    fetchEspacios();
-    fetchCarreras();
-    fetchTiposElemento();
-    if (isDocente) {
+    if (needsAnalystAssignment && canViewRecommendations) {
+      // DOCENTE needs analyst assignment
       fetchAnalistas();
     }
     setFecha(new Date());
@@ -416,13 +418,13 @@ export default function ReservationFormDialog({
       fechaFinRecurrencia: undefined,
       analistaId: ''
     });
-    // Cargar recomendaciones generales cuando se abre el diálogo
-    if (open && !isExterno) {
+    // Cargar recomendaciones generales cuando se abre el diálogo (solo para DOCENTE)
+    if (open && canViewRecommendations) {
       // Llamar directamente sin incluir en dependencias para evitar ciclos
       fetchRecomendacionesGenerales();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDocente, open, isExterno]);
+  }, [needsAnalystAssignment, canViewRecommendations, open]);
 
   // Calcular días completamente ocupados
   const calcularDiasOcupados = useCallback((reservas: Reserva[]) => {
@@ -484,10 +486,10 @@ export default function ReservationFormDialog({
 
   // Recargar recomendaciones generales cuando cambian los datos del formulario
   useEffect(() => {
-    if (!isExterno && open) {
+    if (canViewRecommendations && open) {
       fetchRecomendacionesGenerales();
     }
-  }, [formData.espacioId, formData.horaInicioHora, formData.horaFinHora, open, isExterno, fetchRecomendacionesGenerales]);
+  }, [formData.espacioId, formData.horaInicioHora, formData.horaFinHora, open, canViewRecommendations, fetchRecomendacionesGenerales]);
 
   // Validar horas en tiempo real
   useEffect(() => {
@@ -508,43 +510,6 @@ export default function ReservationFormDialog({
       setHoraError('');
     }
   }, [formData, fecha]);
-
-  const fetchEspacios = async () => {
-    try {
-      const response = await espaciosApi.obtenerEspacios();
-      if (response.data) {
-        setEspacios(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar espacios:', error);
-      toast.error('Error al cargar espacios');
-    }
-  };
-
-  const fetchCarreras = async () => {
-    try {
-      const response = await carrerasApi.obtenerCarreras();
-      if (response.data) {
-        setCarreras(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar carreras:', error);
-      // No mostramos error porque la carrera es opcional
-    }
-  };
-
-  const fetchTiposElemento = async () => {
-    try {
-      const response = await espaciosApi.listarTiposElemento();
-      if (response.data) {
-        const tiposActivos = response.data.filter(t => t.activo);
-        setTiposElemento(tiposActivos);
-      }
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
-      // No mostramos error porque los items son opcionales
-    }
-  };
 
   const fetchAnalistas = async () => {
     try {
@@ -680,8 +645,8 @@ export default function ReservationFormDialog({
       return;
     }
 
-    // 10. Validar analista si es docente (externos no requieren analista)
-    if (isDocente && !formData.analistaId) {
+    // 10. Validar analista si necesita asignación de analista (DOCENTE requiere, EXTERNO no)
+    if (needsAnalystAssignment && canViewRecommendations && !formData.analistaId) {
       toast.error('Por favor selecciona un analista para gestionar tu solicitud');
       return;
     }
@@ -720,8 +685,8 @@ export default function ReservationFormDialog({
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: (isDocente && formData.analistaId) ? parseInt(formData.analistaId) : undefined,
-        esPublica: isExterno ? true : undefined, // Externos siempre crean reservas públicas
+        analistaId: (needsAnalystAssignment && canViewRecommendations && formData.analistaId) ? parseInt(formData.analistaId) : undefined,
+        esPublica: !canViewRecommendations ? true : undefined, // Externos (sin permiso recomendacion:ver) siempre crean reservas públicas
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -735,13 +700,13 @@ export default function ReservationFormDialog({
         : 1;
       
       toast.success(
-        isExterno
-          ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} creada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
-          : isDocente 
-            ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
-            : cantidadReservas > 1
-              ? `${cantidadReservas} reservas creadas exitosamente`
-              : 'Reserva creada exitosamente'
+        needsAnalystAssignment
+          ? canViewRecommendations
+            ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.` // DOCENTE
+            : `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} creada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.` // EXTERNO
+          : cantidadReservas > 1
+            ? `${cantidadReservas} reservas creadas exitosamente` // ANALISTA/ADMIN
+            : 'Reserva creada exitosamente'
       );
       onSuccess();
     } catch (error: unknown) {
@@ -776,7 +741,7 @@ export default function ReservationFormDialog({
     formData.horaInicioHora &&
     formData.horaFinHora &&
     !horaError &&
-    (!isDocente || formData.analistaId) // Analista requerido solo para docentes (externos no requieren)
+    (!(needsAnalystAssignment && canViewRecommendations) || formData.analistaId) // Analista requerido solo para DOCENTE (EXTERNO no requiere)
   );
 
   return (
@@ -792,7 +757,7 @@ export default function ReservationFormDialog({
               </div>
             </div>
             <DialogTitle className="text-lg font-bold text-white">
-              {isExterno ? 'Nueva Solicitud de Reserva' : isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
+              {needsAnalystAssignment ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
             </DialogTitle>
             {/* Puntos decorativos tipo ticket */}
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
@@ -808,7 +773,7 @@ export default function ReservationFormDialog({
           {/* Contenedor principal: formulario y recomendaciones */}
           <div className="relative flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
             {/* Contenido del formulario */}
-            <div ref={formContainerRef} className={`bg-white min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6 ${!isExterno ? 'lg:w-[calc(100%-400px)]' : 'lg:w-full'}`}>
+            <div ref={formContainerRef} className={`bg-white min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6 ${canViewRecommendations ? 'lg:w-[calc(100%-400px)]' : 'lg:w-full'}`}>
             {/* Espacio */}
             <div className="flex items-center gap-4">
               <Label htmlFor="espacio" className="text-sm font-semibold text-gray-700 min-w-[80px]">Espacio *</Label>
@@ -840,8 +805,8 @@ export default function ReservationFormDialog({
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
-            {/* Carrera - Oculto para usuarios externos */}
-            {!isExterno && (
+            {/* Carrera - Oculto para usuarios externos (sin permiso recomendacion:ver) */}
+            {canViewRecommendations && (
             <div className="flex items-center gap-4">
               <Label htmlFor="carrera" className="text-sm font-semibold text-gray-700 min-w-[80px]">Carrera</Label>
               <div className="flex-1">
@@ -885,8 +850,8 @@ export default function ReservationFormDialog({
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
-            {/* Motivo de solicitud - Solo visible para docentes/externos, NO para analistas/admin */}
-            {!isAnalista && (
+            {/* Motivo de solicitud - Solo visible para usuarios que necesitan aprobación */}
+            {needsAnalystAssignment && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-gray-700">Motivo de la solicitud</Label>
@@ -904,8 +869,8 @@ export default function ReservationFormDialog({
               </>
             )}
 
-            {/* Indicador de reserva pública - solo para externos */}
-            {isExterno && (
+            {/* Indicador de reserva pública - solo para externos (sin permiso recomendacion:ver) */}
+            {!canViewRecommendations && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                 <div className="flex items-start gap-2">
                   <div className="text-blue-600 mt-0.5">
@@ -924,8 +889,8 @@ export default function ReservationFormDialog({
               </div>
             )}
 
-            {/* Analista asignado - solo para docentes */}
-            {isDocente && (
+            {/* Analista asignado - solo para DOCENTE (necesita asignación y puede ver recomendaciones) */}
+            {needsAnalystAssignment && canViewRecommendations && (
               <>
                 <div className="flex items-center gap-4">
                   <Label htmlFor="analista" className="text-sm font-semibold text-gray-700 min-w-[80px]">
@@ -1272,8 +1237,8 @@ export default function ReservationFormDialog({
             </div>
             </div>
 
-            {/* Panel de Recomendaciones - Lado derecho (solo para usuarios internos) */}
-            {!isExterno && (
+            {/* Panel de Recomendaciones - Lado derecho (solo para usuarios con permiso recomendacion:ver) */}
+            {canViewRecommendations && (
               <div 
                 className="hidden lg:flex lg:absolute lg:right-0 lg:top-0 w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 flex-col overflow-hidden"
                 style={{ height: formHeight ? `${formHeight}px` : '100%' }}
@@ -1481,8 +1446,8 @@ export default function ReservationFormDialog({
             )}
           </div>
 
-          {/* Panel de Recomendaciones - Móvil (debajo del formulario) - se muestra cuando no está el panel lateral (solo para usuarios internos) */}
-          {!isExterno && (
+          {/* Panel de Recomendaciones - Móvil (debajo del formulario) - se muestra cuando no está el panel lateral (solo para usuarios con permiso recomendacion:ver) */}
+          {canViewRecommendations && (
             <div className="w-full lg:hidden border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <button
                 type="button"
@@ -1715,10 +1680,10 @@ export default function ReservationFormDialog({
               >
                 Cancelar
               </Button>
-              <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+              <PermissionGuard requiredPermissions={['reserva:crear']}>
                 <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {isExterno ? 'Crear Solicitud' : isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
+                  {needsAnalystAssignment ? (canViewRecommendations ? 'Enviar Solicitud' : 'Crear Solicitud') : 'Crear Reserva'}
                 </Button>
               </PermissionGuard>
             </DialogFooter>

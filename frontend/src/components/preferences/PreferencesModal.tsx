@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { preferencesApi, type PreferenciasEmail, type PreferenciasVista } from '@/lib/api/preferences';
 import { usuariosApi } from '@/lib/api/users';
 import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/config/constants';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { TermsAndPrivacyDialog } from '@/components/public/auth/TermsAndPrivacyDialog';
@@ -45,6 +45,7 @@ const EMAIL_LABELS: Record<string, string> = {
 
 export default function PreferencesModal({ open, onOpenChange }: PreferencesModalProps) {
   const { user } = useAuth();
+  const { hasPermission } = useRolePermissions();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [emailPrefs, setEmailPrefs] = useState<PreferenciasEmail>({});
@@ -202,22 +203,24 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
     return Object.keys(emailPrefs);
   }, [emailPrefs]);
 
-  // Determinar qué secciones de vista mostrar según el rol
+  // Determinar qué secciones de vista mostrar según permisos
   const puedeVerSeccion = (seccion: 'reservas' | 'espacios' | 'inventario' | 'usuarios' | 'auditoria') => {
-    if (!user?.rol) return false;
-    
-    if (user.rol === ROLES.ADMIN) return true;
-    
     switch (seccion) {
       case 'reservas':
-        return user.rol === ROLES.ANALISTA || user.rol === ROLES.DOCENTE;
+        // Usuarios que pueden ver estadísticas o ver recomendaciones (ANALISTA, DOCENTE)
+        return hasPermission('estadisticas:ver') || hasPermission('recomendacion:ver');
       case 'espacios':
-        return user.rol === ROLES.ANALISTA || user.rol === ROLES.MANTENIMIENTO;
+        // Usuarios que pueden ver espacios (ANALISTA, MANTENIMIENTO, ADMIN)
+        return hasPermission('espacio:ver');
       case 'inventario':
-        return user.rol === ROLES.ANALISTA || user.rol === ROLES.MANTENIMIENTO;
+        // Usuarios que pueden ver inventario (ANALISTA, MANTENIMIENTO, ADMIN)
+        return hasPermission('inventario:ver');
       case 'usuarios':
+        // Solo usuarios que pueden gestionar usuarios (ADMIN)
+        return hasPermission('usuario:gestionar');
       case 'auditoria':
-        return false; // Solo ADMIN
+        // Solo usuarios que pueden ver auditoría (ADMIN)
+        return hasPermission('auditoria:ver');
       default:
         return false;
     }

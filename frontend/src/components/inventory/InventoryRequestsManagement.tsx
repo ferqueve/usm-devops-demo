@@ -597,7 +597,7 @@ export default function InventoryRequestsManagement() {
                         </TableCell>
                         <TableCell>{formatDateTime(item.createdAt)}</TableCell>
                         <TableCell className="flex items-center justify-end gap-2">
-                          <PermissionGuard requiredPermission="solicitudes_inventario:entregar">
+                          <PermissionGuard requiredPermission="solicitud_inventario:entregar">
                             {item.estado === 'APROBADO' && (
                               <Button
                                 size="sm"
@@ -791,7 +791,7 @@ export default function InventoryRequestsManagement() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <PermissionGuard requiredPermission="solicitudes_inventario:aprobar">
+                  <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Button
                         size="sm"
@@ -911,9 +911,9 @@ export default function InventoryRequestsManagement() {
                   >
                     Cerrar
                   </Button>
-                  <PermissionGuard requiredPermissions={['solicitudes_inventario:aprobar', 'solicitudes_inventario:rechazar']} requireAll={false}>
+                  <PermissionGuard requiredPermissions={['solicitud_inventario:aprobar', 'solicitud_inventario:rechazar']} requireAll={false}>
                     <div className="flex items-center gap-2">
-                      <PermissionGuard requiredPermission="solicitudes_inventario:rechazar">
+                      <PermissionGuard requiredPermission="solicitud_inventario:rechazar">
                         <Button
                           size="sm"
                           variant="outline"
@@ -935,7 +935,7 @@ export default function InventoryRequestsManagement() {
                           Rechazar
                         </Button>
                       </PermissionGuard>
-                      <PermissionGuard requiredPermission="solicitudes_inventario:aprobar">
+                      <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                         <Button
                           size="sm"
                           title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}

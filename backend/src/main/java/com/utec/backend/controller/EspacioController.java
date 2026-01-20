@@ -20,17 +20,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.utec.backend.security.Constants.*;
-
 @RestController
 @RequestMapping("/api/v1/espacios")
 @RequiredArgsConstructor
 public class EspacioController {
-    
+
     private final EspacioService espacioService;
-    
+
     @PostMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'espacio:crear')")
     public ResponseEntity<ApiResponse<EspacioResponseDto>> createEspacio(
             @Valid @RequestBody EspacioCreateDto createDto) {
         try {
@@ -42,9 +40,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al crear espacio: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getAllEspacios() {
         try {
             List<EspacioResponseDto> espacios = espacioService.getAllEspacios();
@@ -54,9 +52,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/paged")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<PagedResponseDto<EspacioResponseDto>>> getAllEspaciosPaged(Pageable pageable) {
         try {
             Page<EspacioResponseDto> espacios = espacioService.getAllEspaciosPaged(pageable);
@@ -67,9 +65,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<EspacioResponseDto>> getEspacioById(@PathVariable Long id) {
         try {
             EspacioResponseDto espacio = espacioService.getEspacioById(id);
@@ -82,9 +80,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al obtener espacio: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'espacio:editar')")
     public ResponseEntity<ApiResponse<EspacioResponseDto>> updateEspacio(
             @PathVariable Long id,
             @Valid @RequestBody EspacioUpdateDto updateDto) {
@@ -99,9 +97,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al actualizar espacio: " + e.getMessage()));
         }
     }
-    
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'espacio:eliminar')")
     public ResponseEntity<ApiResponse<Void>> deleteEspacio(@PathVariable Long id) {
         try {
             espacioService.deleteEspacio(id);
@@ -114,9 +112,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al eliminar espacio: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/search")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> searchEspaciosByNombre(
             @RequestParam String nombre) {
         try {
@@ -127,9 +125,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error en la búsqueda: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/filter")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> filterEspacios(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long tipoEspacioId,
@@ -150,9 +148,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al aplicar filtros: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/capacidad/{capacidadMinima}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getEspaciosByCapacidadMinima(
             @PathVariable Integer capacidadMinima) {
         try {
@@ -163,9 +161,9 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/disponibles")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getEspaciosDisponibles(
             @RequestParam Instant inicio,
             @RequestParam Instant fin) {
@@ -177,23 +175,23 @@ public class EspacioController {
                     .body(ApiResponse.error("Error al obtener espacios disponibles: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/stats")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<Object>> getEspacioStats() {
         try {
             Long totalEspacios = espacioService.getTotalEspacios();
             Double capacidadPromedio = espacioService.getCapacidadPromedio();
             Integer capacidadMaxima = espacioService.getCapacidadMaxima();
             Integer capacidadMinima = espacioService.getCapacidadMinima();
-            
+
             // Crear un Map para las estadísticas
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalEspacios", totalEspacios);
             stats.put("capacidadPromedio", capacidadPromedio);
             stats.put("capacidadMaxima", capacidadMaxima);
             stats.put("capacidadMinima", capacidadMinima);
-            
+
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas obtenidas exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

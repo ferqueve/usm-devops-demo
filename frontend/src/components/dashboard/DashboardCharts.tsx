@@ -50,7 +50,7 @@ export default function DashboardCharts({ reservas, loading = false }: Dashboard
     }));
   }, [reservas]);
 
-  // Datos para gráfico de ocupación de espacios (top 10)
+  // Datos para gráfico de ocupación de espacios (top 5 para resumen)
   const ocupacionPorEspacio = useMemo(() => {
     const espacios = reservas.reduce((acc, reserva) => {
       if (!acc[reserva.espacioNombre]) {
@@ -65,7 +65,7 @@ export default function DashboardCharts({ reservas, loading = false }: Dashboard
     return Object.entries(espacios)
       .map(([nombre, cantidad]) => ({ nombre, cantidad }))
       .sort((a, b) => b.cantidad - a.cantidad)
-      .slice(0, 10);
+      .slice(0, 5);
   }, [reservas]);
 
   if (loading) {
@@ -169,7 +169,7 @@ export default function DashboardCharts({ reservas, loading = false }: Dashboard
       {ocupacionPorEspacio.length > 0 && (
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Espacios Más Utilizados</CardTitle>
+            <CardTitle>Top 5 Espacios Más Utilizados</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>

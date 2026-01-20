@@ -180,7 +180,7 @@ export default function InventoryRequestsCardView({
               <span className="hidden rounded-md border border-dashed border-slate-300 px-2 py-1 text-center text-[10px] text-slate-500 lg:block">
                 Creada {formatDateTime(request.createdAt)}
               </span>
-              <PermissionGuard requiredPermission="solicitudes_inventario:entregar">
+              <PermissionGuard requiredPermission="solicitud_inventario:entregar">
                 {request.estado === 'APROBADO' && request.inventarioItemId != null && onDeliver && (
                   <button
                     type="button"

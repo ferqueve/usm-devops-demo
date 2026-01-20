@@ -204,7 +204,7 @@ export function SpaceTable({
                       <TooltipContent>Ver Detalles</TooltipContent>
                     </Tooltip>
                     
-                    <PermissionGuard requiredPermission="espacios:editar">
+                    <PermissionGuard requiredPermission="espacio:editar">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button 
@@ -220,7 +220,7 @@ export function SpaceTable({
                       </Tooltip>
                     </PermissionGuard>
                     
-                    <PermissionGuard requiredPermission="espacios:eliminar">
+                    <PermissionGuard requiredPermission="espacio:eliminar">
                       {onDelete && (
                         <Tooltip>
                           <TooltipTrigger asChild>

@@ -52,7 +52,7 @@ class EdificioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/edificios - Debe obtener todos los edificios")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTodosLosEdificios() throws Exception {
         // Given
         List<EdificioResponseDto> edificios = Arrays.asList(edificioResponseDto);
@@ -70,7 +70,7 @@ class EdificioControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/edificios/{id} - Debe obtener edificio por ID")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerEdificioPorId() throws Exception {
         // Given
         when(edificioService.getEdificioById(edificioId)).thenReturn(edificioResponseDto);

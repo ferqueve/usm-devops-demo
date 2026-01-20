@@ -130,7 +130,7 @@ export function TipoEspacioManagement({
                       )}
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      <PermissionGuard requiredPermission="tipos_espacio:editar">
+                      <PermissionGuard requiredPermission="tipo:editar">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -139,7 +139,7 @@ export function TipoEspacioManagement({
                           <Edit className="h-4 w-4" />
                         </Button>
                       </PermissionGuard>
-                      <PermissionGuard requiredPermission="tipos_espacio:eliminar">
+                      <PermissionGuard requiredPermission="tipo:eliminar">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -160,7 +160,7 @@ export function TipoEspacioManagement({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cerrar
             </Button>
-            <PermissionGuard requiredPermission="tipos_espacio:crear">
+            <PermissionGuard requiredPermission="tipo:crear">
               <Button onClick={handleCreateClick}>
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Tipo

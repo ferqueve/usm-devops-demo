@@ -14,11 +14,9 @@ import { TimeSelect } from '@/components/ui/time-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Loader2, Pencil, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
-import { carrerasApi } from '@/lib/api/carreras';
 import { usuariosApi } from '@/lib/api/users';
-import type { Espacio, Reserva, Carrera, TipoElemento } from '@/lib/types/spaces';
+import type { Reserva } from '@/lib/types/spaces';
 import type { User } from '@/lib/types/users';
 import { createLocalDateTimeUTC, toUTC } from '@/lib/utils/timezone';
 import { EspaciosRecomendados } from '@/components/recomendaciones/EspaciosRecomendados';
@@ -27,8 +25,10 @@ import { ItemsRecomendados } from '@/components/recomendaciones/ItemsRecomendado
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
-import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/config/constants';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { useEspacios } from '@/hooks/useEspacios';
+import { useCarreras } from '@/hooks/useCarreras';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
 
 interface ReservationFormProps {
   onSuccess: () => void;
@@ -39,15 +39,20 @@ export default function ReservationForm({
   onSuccess,
   onCancel
 }: ReservationFormProps) {
-  const { user } = useAuth();
-  const isDocente = user?.rol === ROLES.DOCENTE;
-  const isExterno = user?.rol === ROLES.EXTERNO;
-  
+  const { hasPermission } = useRolePermissions();
+
+  // Lógica basada en permisos, no en roles
+  const canApprove = hasPermission('reserva:aprobar');
+  const canViewRecommendations = hasPermission('recomendacion:ver');
+  const needsAnalystAssignment = !canApprove; // Si no puede aprobar, debe asignar analista
+
+  // Usar hooks compartidos con caché
+  const { espacios } = useEspacios();
+  const { carreras } = useCarreras();
+  const { tiposElemento } = useTiposElemento();
+
   const [loading, setLoading] = useState(false);
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
-  const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [analistas, setAnalistas] = useState<User[]>([]);
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
   const [fecha, setFecha] = useState<Date | undefined>(new Date());
   const [horaError, setHoraError] = useState<string>('');
   const [reservasEspacio, setReservasEspacio] = useState<Reserva[]>([]);
@@ -257,10 +262,7 @@ export default function ReservationForm({
   const minutosFinDisponibles = getMinutosFinDisponibles();
 
   useEffect(() => {
-    fetchEspacios();
-    fetchCarreras();
-    fetchTiposElemento();
-    if (isDocente) {
+    if (needsAnalystAssignment) {
       fetchAnalistas();
     }
     setFecha(new Date());
@@ -277,7 +279,7 @@ export default function ReservationForm({
       fechaFinRecurrencia: undefined,
       analistaId: ''
     });
-  }, [isDocente]);
+  }, [needsAnalystAssignment]);
 
   // Calcular días completamente ocupados
   const calcularDiasOcupados = useCallback((reservas: Reserva[]) => {
@@ -356,43 +358,6 @@ export default function ReservationForm({
       setHoraError('');
     }
   }, [formData, fecha]);
-
-  const fetchEspacios = async () => {
-    try {
-      const response = await espaciosApi.obtenerEspacios();
-      if (response.data) {
-        setEspacios(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar espacios:', error);
-      toast.error('Error al cargar espacios');
-    }
-  };
-
-  const fetchCarreras = async () => {
-    try {
-      const response = await carrerasApi.obtenerCarreras();
-      if (response.data) {
-        setCarreras(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar carreras:', error);
-      // No mostramos error porque la carrera es opcional
-    }
-  };
-
-  const fetchTiposElemento = async () => {
-    try {
-      const response = await espaciosApi.listarTiposElemento();
-      if (response.data) {
-        const tiposActivos = response.data.filter(t => t.activo);
-        setTiposElemento(tiposActivos);
-      }
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
-      // No mostramos error porque los items son opcionales
-    }
-  };
 
   const fetchAnalistas = async () => {
     try {
@@ -522,8 +487,8 @@ export default function ReservationForm({
       return;
     }
 
-    // 9. Validar analista si es docente
-    if (isDocente && !formData.analistaId) {
+    // 9. Validar analista si no puede auto-aprobar
+    if (needsAnalystAssignment && !formData.analistaId) {
       toast.error('Por favor selecciona un analista para gestionar tu solicitud');
       return;
     }
@@ -560,7 +525,7 @@ export default function ReservationForm({
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: isDocente && formData.analistaId ? parseInt(formData.analistaId) : undefined,
+        analistaId: needsAnalystAssignment && formData.analistaId ? parseInt(formData.analistaId) : undefined,
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -572,9 +537,9 @@ export default function ReservationForm({
       const cantidadReservas = formData.tipoRecurrencia && formData.fechaFinRecurrencia
         ? calcularCantidadReservas(fecha, formData.fechaFinRecurrencia, formData.tipoRecurrencia)
         : 1;
-      
+
       toast.success(
-        isDocente 
+        needsAnalystAssignment 
           ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
           : cantidadReservas > 1
             ? `${cantidadReservas} reservas creadas exitosamente`
@@ -611,7 +576,7 @@ export default function ReservationForm({
     formData.horaInicioHora &&
     formData.horaFinHora &&
     !horaError &&
-    (!isDocente || formData.analistaId) // Analista requerido solo para docentes
+    (!needsAnalystAssignment || formData.analistaId) // Analista requerido si no puede auto-aprobar
   );
 
   return (
@@ -629,10 +594,10 @@ export default function ReservationForm({
         </Button>
         <div>
           <h1 className="text-3xl font-bold">
-            {isDocente ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
+            {needsAnalystAssignment ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Completa el formulario para {isDocente ? 'solicitar' : 'crear'} una reserva
+            Completa el formulario para {needsAnalystAssignment ? 'solicitar' : 'crear'} una reserva
           </p>
         </div>
       </div>
@@ -668,8 +633,8 @@ export default function ReservationForm({
               </div>
             </div>
 
-            {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas (solo para usuarios internos) */}
-            {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && !isExterno && (
+            {/* Recomendaciones de espacios - mostrar si hay fecha y hora seleccionadas y tiene permiso */}
+            {fecha && formData.horaInicioHora && formData.horaFinHora && !formData.espacioId && canViewRecommendations && (
               <div className="mt-4">
                 <EspaciosRecomendados
                   inicio={(() => {
@@ -724,8 +689,8 @@ export default function ReservationForm({
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
-            {/* Analista asignado - solo para docentes */}
-            {isDocente && (
+            {/* Analista asignado - solo si necesita asignación */}
+            {needsAnalystAssignment && (
               <>
                 <div className="flex items-center gap-4">
                   <Label htmlFor="analista" className="text-sm font-semibold text-gray-700 min-w-[80px]">
@@ -762,8 +727,8 @@ export default function ReservationForm({
               </>
             )}
 
-            {/* Items recomendados - mostrar si hay espacio seleccionado (solo para usuarios internos) */}
-            {formData.espacioId && !isExterno && (
+            {/* Items recomendados - mostrar si hay espacio seleccionado y tiene permiso */}
+            {formData.espacioId && canViewRecommendations && (
               <div className="mb-4">
                 <ItemsRecomendados
                   espacioId={parseInt(formData.espacioId)}
@@ -1015,8 +980,8 @@ export default function ReservationForm({
               <p className="text-sm text-destructive font-medium">{horaError}</p>
             )}
 
-            {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados (solo para usuarios internos) */}
-            {formData.espacioId && fecha && !isExterno && (
+            {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados y tiene permiso */}
+            {formData.espacioId && fecha && canViewRecommendations && (
               <div className="mt-4">
                 <HorariosRecomendados
                   espacioId={parseInt(formData.espacioId)}
@@ -1134,10 +1099,10 @@ export default function ReservationForm({
           >
             Cancelar
           </Button>
-          <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+          <PermissionGuard requiredPermissions={['reserva:crear']}>
             <Button type="submit" disabled={loading || !isFormValid} className="bg-blue-600 hover:bg-blue-700">
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isDocente ? 'Enviar Solicitud' : 'Crear Reserva'}
+              {needsAnalystAssignment ? 'Enviar Solicitud' : 'Crear Reserva'}
             </Button>
           </PermissionGuard>
         </div>

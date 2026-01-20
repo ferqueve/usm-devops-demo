@@ -288,13 +288,13 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          <PermissionGuard requiredPermission="espacios:editar">
+          <PermissionGuard requiredPermission="espacio:editar">
             <Button variant="outline" onClick={() => setEditDialog(true)} className="flex-1 sm:flex-none">
               <Edit className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Editar</span>
             </Button>
           </PermissionGuard>
-          <PermissionGuard requiredPermission="espacios:eliminar">
+          <PermissionGuard requiredPermission="espacio:eliminar">
             <Button variant="outline" onClick={() => setDeleteDialog(true)} className="flex-1 sm:flex-none">
               <Trash2 className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Eliminar</span>

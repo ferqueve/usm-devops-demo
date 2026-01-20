@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.utec.backend.security.Constants.*;
-
 /**
  * Controlador para gestionar la subida y eliminación de imágenes de espacios
  */
@@ -37,7 +35,7 @@ public class FileUploadController {
      * @return URL de la imagen subida
      */
     @PostMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'archivo:subir')")
     public ResponseEntity<ApiResponse<Map<String, String>>> uploadImage(
             @PathVariable("id") Long espacioId,
             @RequestParam("file") MultipartFile file) {
@@ -82,7 +80,7 @@ public class FileUploadController {
      * @return Respuesta de éxito
      */
     @DeleteMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'archivo:subir')")
     public ResponseEntity<ApiResponse<Void>> deleteImage(@PathVariable("id") Long espacioId) {
         try {
             // Obtener el espacio para acceder a la imagen actual
@@ -116,7 +114,7 @@ public class FileUploadController {
      * @return URL de la imagen
      */
     @GetMapping("/{id}/imagen")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'archivo:ver')")
     public ResponseEntity<ApiResponse<Map<String, String>>> getImageUrl(@PathVariable("id") Long espacioId) {
         try {
             var espacio = espacioService.getEspacioById(espacioId);
@@ -141,4 +139,3 @@ public class FileUploadController {
         }
     }
 }
-

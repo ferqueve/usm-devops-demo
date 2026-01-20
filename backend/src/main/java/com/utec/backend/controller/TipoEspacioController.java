@@ -19,17 +19,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.utec.backend.security.Constants.*;
-
 @RestController
 @RequestMapping("/api/v1/tipos-espacio")
 @RequiredArgsConstructor
 public class TipoEspacioController {
-    
+
     private final TipoEspacioService tipoEspacioService;
-    
+
     @PostMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'tipo:crear')")
     public ResponseEntity<ApiResponse<TipoEspacioResponseDto>> createTipoEspacio(
             @Valid @RequestBody TipoEspacioCreateDto createDto) {
         try {
@@ -41,9 +39,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al crear tipo de espacio: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'tipo:ver')")
     public ResponseEntity<ApiResponse<List<TipoEspacioResponseDto>>> getAllTiposEspacio() {
         try {
             List<TipoEspacioResponseDto> tiposEspacio = tipoEspacioService.getAllTiposEspacio();
@@ -53,9 +51,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al obtener tipos de espacio: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/paged")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'tipo:ver')")
     public ResponseEntity<ApiResponse<PagedResponseDto<TipoEspacioResponseDto>>> getAllTiposEspacioPaged(Pageable pageable) {
         try {
             Page<TipoEspacioResponseDto> tiposEspacio = tipoEspacioService.getAllTiposEspacioPaged(pageable);
@@ -66,9 +64,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al obtener tipos de espacio: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'tipo:ver')")
     public ResponseEntity<ApiResponse<TipoEspacioResponseDto>> getTipoEspacioById(@PathVariable Long id) {
         try {
             TipoEspacioResponseDto tipoEspacio = tipoEspacioService.getTipoEspacioById(id);
@@ -81,9 +79,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al obtener tipo de espacio: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'tipo:editar')")
     public ResponseEntity<ApiResponse<TipoEspacioResponseDto>> updateTipoEspacio(
             @PathVariable Long id,
             @Valid @RequestBody TipoEspacioUpdateDto updateDto) {
@@ -98,9 +96,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al actualizar tipo de espacio: " + e.getMessage()));
         }
     }
-    
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'tipo:eliminar')")
     public ResponseEntity<ApiResponse<Void>> deleteTipoEspacio(@PathVariable Long id) {
         try {
             tipoEspacioService.deleteTipoEspacio(id);
@@ -113,9 +111,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al eliminar tipo de espacio: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}/toggle-activo")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'tipo:editar')")
     public ResponseEntity<ApiResponse<TipoEspacioResponseDto>> toggleActivo(@PathVariable Long id) {
         try {
             TipoEspacioResponseDto tipoEspacio = tipoEspacioService.toggleActivo(id);
@@ -128,9 +126,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al actualizar estado: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/search")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'tipo:ver')")
     public ResponseEntity<ApiResponse<List<TipoEspacioResponseDto>>> searchTiposEspacioByNombre(
             @RequestParam String nombre) {
         try {
@@ -141,9 +139,9 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error en la búsqueda: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/mas-utilizados")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'tipo:ver')")
     public ResponseEntity<ApiResponse<List<TipoEspacioResponseDto>>> getTiposMasUtilizados() {
         try {
             List<TipoEspacioResponseDto> tiposEspacio = tipoEspacioService.getTiposMasUtilizados();
@@ -153,16 +151,16 @@ public class TipoEspacioController {
                     .body(ApiResponse.error("Error al obtener tipos más utilizados: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/stats")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'tipo:ver')")
     public ResponseEntity<ApiResponse<Object>> getTipoEspacioStats() {
         try {
             Long totalTipos = tipoEspacioService.getTotalTiposEspacio();
-            
+
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalTipos", totalTipos);
-            
+
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas obtenidas exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

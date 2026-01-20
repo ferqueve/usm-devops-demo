@@ -548,7 +548,7 @@ export default function SpacesManagement() {
             <span className="sm:hidden">Inventario</span>
           </Button>
 
-          <PermissionGuard requiredPermission="solicitudes_inventario:leer">
+          <PermissionGuard requiredPermission="solicitud_inventario:ver">
             <Button
               variant="outline"
               onClick={() => navigate('/inventory/requests')}
@@ -560,7 +560,7 @@ export default function SpacesManagement() {
             </Button>
           </PermissionGuard>
           
-          <PermissionGuard requiredPermission="espacios:leer">
+          <PermissionGuard requiredPermission="espacio:ver">
             <Button 
               variant="outline"
               onClick={handleExport}
@@ -600,14 +600,14 @@ export default function SpacesManagement() {
             </Button>
           </div>
           
-          <PermissionGuard requiredPermissions={['espacios:crear', 'tipos_espacio:crear']} requireAll={false}>
+          <PermissionGuard requiredPermissions={['espacio:crear', 'tipo:crear']} requireAll={false}>
             <Button onClick={() => setShowTiposManagement(true)} variant="outline" className="h-10 flex-1 sm:flex-none">
               <Building2 className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Tipos de Espacios</span>
               <span className="sm:hidden">Tipos</span>
             </Button>
           </PermissionGuard>
-          <PermissionGuard requiredPermission="espacios:crear">
+          <PermissionGuard requiredPermission="espacio:crear">
             <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
               <Plus className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Agregar Espacio</span>

@@ -19,17 +19,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.utec.backend.security.Constants.*;
-
 @RestController
 @RequestMapping("/api/v1/carreras")
 @RequiredArgsConstructor
 public class CarreraController {
-    
+
     private final CarreraService carreraService;
-    
+
     @PostMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'carrera:crear')")
     public ResponseEntity<ApiResponse<CarreraResponseDto>> createCarrera(
             @Valid @RequestBody CarreraCreateDto createDto) {
         try {
@@ -41,9 +39,9 @@ public class CarreraController {
                     .body(ApiResponse.error("Error al crear carrera: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'carrera:ver')")
     public ResponseEntity<ApiResponse<List<CarreraResponseDto>>> getAllCarreras() {
         try {
             List<CarreraResponseDto> carreras = carreraService.getAllCarreras();
@@ -53,9 +51,9 @@ public class CarreraController {
                     .body(ApiResponse.error("Error al obtener carreras: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/paged")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'carrera:ver')")
     public ResponseEntity<ApiResponse<PagedResponseDto<CarreraResponseDto>>> getAllCarrerasPaged(Pageable pageable) {
         try {
             Page<CarreraResponseDto> carreras = carreraService.getAllCarrerasPaged(pageable);
@@ -66,9 +64,9 @@ public class CarreraController {
                     .body(ApiResponse.error("Error al obtener carreras: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'carrera:ver')")
     public ResponseEntity<ApiResponse<CarreraResponseDto>> getCarreraById(@PathVariable Long id) {
         try {
             CarreraResponseDto carrera = carreraService.getCarreraById(id);
@@ -81,9 +79,9 @@ public class CarreraController {
                     .body(ApiResponse.error("Error al obtener carrera: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'carrera:editar')")
     public ResponseEntity<ApiResponse<CarreraResponseDto>> updateCarrera(
             @PathVariable Long id,
             @Valid @RequestBody CarreraUpdateDto updateDto) {
@@ -98,9 +96,9 @@ public class CarreraController {
                     .body(ApiResponse.error("Error al actualizar carrera: " + e.getMessage()));
         }
     }
-    
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'carrera:eliminar')")
     public ResponseEntity<ApiResponse<Void>> deleteCarrera(@PathVariable Long id) {
         try {
             carreraService.deleteCarrera(id);
@@ -113,9 +111,9 @@ public class CarreraController {
                     .body(ApiResponse.error("Error al eliminar carrera: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/search")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'carrera:ver')")
     public ResponseEntity<ApiResponse<List<CarreraResponseDto>>> searchCarrerasByNombre(
             @RequestParam String nombre) {
         try {
@@ -126,16 +124,16 @@ public class CarreraController {
                     .body(ApiResponse.error("Error en la búsqueda: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/stats")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'carrera:ver')")
     public ResponseEntity<ApiResponse<Object>> getCarreraStats() {
         try {
             Long totalCarreras = carreraService.getTotalCarreras();
-            
+
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalCarreras", totalCarreras);
-            
+
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas obtenidas exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -143,4 +141,3 @@ public class CarreraController {
         }
     }
 }
-

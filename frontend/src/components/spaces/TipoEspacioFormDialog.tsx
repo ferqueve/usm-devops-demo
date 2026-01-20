@@ -191,7 +191,7 @@ export function TipoEspacioFormDialog({
             <X className="h-4 w-4 mr-1" />
             Cancelar
           </Button>
-          <PermissionGuard requiredPermissions={isEditing ? ['tipos_espacio:editar'] : ['tipos_espacio:crear']}>
+          <PermissionGuard requiredPermissions={isEditing ? ['tipo:editar'] : ['tipo:crear']}>
             <Button type="button" onClick={handleSubmit} disabled={loading}>
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />

@@ -18,17 +18,15 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
-import static com.utec.backend.security.Constants.*;
-
 @RestController
 @RequestMapping("/api/v1/inventario")
 @RequiredArgsConstructor
 public class InventarioItemController {
-    
+
     private final InventarioItemService inventarioItemService;
-    
+
     @PostMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:crear')")
     public ResponseEntity<ApiResponse<InventarioItemResponseDto>> createInventarioItem(
             @Valid @RequestBody InventarioItemCreateDto createDto) {
         try {
@@ -40,9 +38,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al crear item de inventario: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getAllInventarioItems() {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getAllInventarioItems();
@@ -52,9 +50,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener items de inventario: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/paged")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<PagedResponseDto<InventarioItemResponseDto>>> getAllInventarioItemsPaged(
             Pageable pageable,
             @RequestParam(required = false) String search,
@@ -72,9 +70,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener items de inventario: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<InventarioItemResponseDto>> getInventarioItemById(@PathVariable Long id) {
         try {
             InventarioItemResponseDto inventarioItem = inventarioItemService.getInventarioItemById(id);
@@ -87,9 +85,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener item de inventario: " + e.getMessage()));
         }
     }
-    
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:editar')")
     public ResponseEntity<ApiResponse<InventarioItemResponseDto>> updateInventarioItem(
             @PathVariable Long id,
             @Valid @RequestBody InventarioItemUpdateDto updateDto) {
@@ -104,9 +102,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al actualizar item de inventario: " + e.getMessage()));
         }
     }
-    
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:eliminar')")
     public ResponseEntity<ApiResponse<Void>> deleteInventarioItem(@PathVariable Long id) {
         try {
             inventarioItemService.deleteInventarioItem(id);
@@ -119,9 +117,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al eliminar item de inventario: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/espacio/{espacioId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByEspacio(@PathVariable Long espacioId) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByEspacio(espacioId);
@@ -131,9 +129,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener inventario del espacio: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/tipo-elemento/{tipoElementoId}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByTipoElemento(@PathVariable Long tipoElementoId) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByTipoElemento(tipoElementoId);
@@ -143,10 +141,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener inventario por tipo: " + e.getMessage()));
         }
     }
-    
-    
+
     @GetMapping("/estado/{estado}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> getInventarioByEstado(@PathVariable String estado) {
         try {
             List<InventarioItemResponseDto> inventarioItems = inventarioItemService.getInventarioByEstado(estado);
@@ -156,9 +153,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener inventario por estado: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_inventario')")
     public ResponseEntity<ApiResponse<Object>> getInventarioStats() {
         try {
             Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
@@ -168,9 +165,9 @@ public class InventarioItemController {
                     .body(ApiResponse.error("Error al obtener estadísticas: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/filter")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "') or hasRole('" + ROLE_ANALISTA + "') or hasRole('" + ROLE_MANTENIMIENTO + "')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<InventarioItemResponseDto>>> filterInventario(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long espacioId,

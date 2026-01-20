@@ -27,8 +27,8 @@ export interface DashboardStats {
   usuariosActivos: number;
   usuariosNuevosHoy: number;
   
-  // Ocupación
-  ocupacionPromedio: number;
+  // Promedio de reservas por espacio (ratio, no porcentaje)
+  promedioReservasPorEspacio: number;
 }
 
 export interface EspacioStats {
@@ -181,8 +181,9 @@ export const dashboardApi = {
       const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
         calcularEstadisticasEspacios(espacios);
 
-      const ocupacionPromedio = espacios.length > 0
-        ? Math.round((reservasAprobadas / espacios.length) * 100)
+      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
+      const promedioReservasPorEspacio = espacios.length > 0
+        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -199,7 +200,7 @@ export const dashboardApi = {
         totalUsuarios: userStats?.totalUsuarios || 0,
         usuariosActivos: activeUsers?.totalActiveUsers || 0,
         usuariosNuevosHoy: 0,
-        ocupacionPromedio
+        promedioReservasPorEspacio
       };
 
       return {
@@ -254,11 +255,12 @@ export const dashboardApi = {
       const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
         calcularEstadisticasReservas(reservas, reservasHoyData);
       const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
+      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
         calcularEstadisticasEspacios(espacios);
 
-      const ocupacionPromedio = espacios.length > 0
-        ? Math.round((reservasAprobadas / espacios.length) * 100)
+      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
+      const promedioReservasPorEspacio = espacios.length > 0
+        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -275,7 +277,7 @@ export const dashboardApi = {
         totalUsuarios: 0,
         usuariosActivos: 0,
         usuariosNuevosHoy: 0,
-        ocupacionPromedio
+        promedioReservasPorEspacio
       };
 
       return {
@@ -381,11 +383,12 @@ export const dashboardApi = {
       const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
         calcularEstadisticasReservas(reservas, reservasHoyData);
       const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
+      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
         calcularEstadisticasEspacios(espacios);
 
-      const ocupacionPromedio = espacios.length > 0
-        ? Math.round((reservasAprobadas / espacios.length) * 100)
+      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
+      const promedioReservasPorEspacio = espacios.length > 0
+        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -402,7 +405,7 @@ export const dashboardApi = {
         totalUsuarios: 0,
         usuariosActivos: 0,
         usuariosNuevosHoy: 0,
-        ocupacionPromedio
+        promedioReservasPorEspacio
       };
 
       return {
@@ -448,11 +451,12 @@ export const dashboardApi = {
       const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
         calcularEstadisticasReservas(reservas, reservasHoyData);
       const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
+      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
         calcularEstadisticasEspacios(espacios);
 
-      const ocupacionPromedio = espacios.length > 0
-        ? Math.round((reservasAprobadas / espacios.length) * 100)
+      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
+      const promedioReservasPorEspacio = espacios.length > 0
+        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -469,7 +473,7 @@ export const dashboardApi = {
         totalUsuarios: 0,
         usuariosActivos: 0,
         usuariosNuevosHoy: 0,
-        ocupacionPromedio
+        promedioReservasPorEspacio
       };
 
       return {
@@ -525,11 +529,12 @@ export const dashboardApi = {
         calcularEstadisticasReservas(reservasPublicas, reservasHoyData);
       // Próximas reservas públicas
       const proximasReservas = obtenerProximasReservas(reservasPublicas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
+      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
         calcularEstadisticasEspacios(espacios);
 
-      const ocupacionPromedio = espacios.length > 0
-        ? Math.round((reservasAprobadas / espacios.length) * 100)
+      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
+      const promedioReservasPorEspacio = espacios.length > 0
+        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const misReservasPendientes = misReservas.filter((r: Reserva) => r.estado === 'PENDIENTE').length;
@@ -549,7 +554,7 @@ export const dashboardApi = {
         totalUsuarios: 0,
         usuariosActivos: 0,
         usuariosNuevosHoy: 0,
-        ocupacionPromedio
+        promedioReservasPorEspacio
       };
 
       return {

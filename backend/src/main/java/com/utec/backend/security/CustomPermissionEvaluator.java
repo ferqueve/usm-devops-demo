@@ -9,21 +9,23 @@ import java.io.Serializable;
 
 /**
  * Evaluador de permisos personalizado para Spring Security.
- * Verifica si el usuario autenticado tiene el permiso solicitado.
+ * Verifica si el usuario autenticado tiene el permiso solicitado
+ * basándose en el mapeo centralizado de RolePermissions.
+ *
+ * Uso en controllers:
+ *   @PreAuthorize("hasPermission(null, 'reserva:crear')")
  */
 @Component
 public class CustomPermissionEvaluator implements PermissionEvaluator {
 
-    private static final String PERMISSION_PREFIX = "PERMISSION_";
+    private static final String ROLE_PREFIX = "ROLE_";
 
     @Override
     public boolean hasPermission(Authentication auth, Object targetDomainObject, Object permission) {
         if (auth == null || permission == null) {
             return false;
         }
-
-        String permissionString = permission.toString();
-        return hasAuthority(auth, permissionString);
+        return checkPermission(auth, permission.toString());
     }
 
     @Override
@@ -31,32 +33,27 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         if (auth == null || permission == null) {
             return false;
         }
-
-        String permissionString = permission.toString();
-        return hasAuthority(auth, permissionString);
+        return checkPermission(auth, permission.toString());
     }
 
     /**
-     * Verifica si el usuario tiene la autoridad (permiso) especificada
+     * Verifica si el usuario tiene el permiso solicitado.
+     * Busca el rol del usuario y consulta RolePermissions para verificar.
      */
-    private boolean hasAuthority(Authentication auth, String permission) {
-        String permissionAuthority = PERMISSION_PREFIX + permission;
-
+    private boolean checkPermission(Authentication auth, String permission) {
         for (GrantedAuthority authority : auth.getAuthorities()) {
             String authorityName = authority.getAuthority();
-            
-            // Verificar si coincide exactamente con el permiso
-            if (authorityName.equals(permissionAuthority)) {
-                return true;
-            }
-            
-            // ADMIN tiene todos los permisos, verificar si es ADMIN
-            if (authorityName.equals("ROLE_ADMIN")) {
-                return true;
+
+            // Extraer el nombre del rol (sin el prefijo ROLE_)
+            if (authorityName.startsWith(ROLE_PREFIX)) {
+                String role = authorityName.substring(ROLE_PREFIX.length());
+
+                // Consultar el mapeo centralizado
+                if (RolePermissions.hasPermission(role, permission)) {
+                    return true;
+                }
             }
         }
-
         return false;
     }
 }
-

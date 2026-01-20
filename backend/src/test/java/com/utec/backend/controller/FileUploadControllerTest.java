@@ -91,7 +91,7 @@ class FileUploadControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/espacios/{id}/imagen - Debe obtener URL de imagen")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerUrlImagen() throws Exception {
         // Given
         when(espacioService.getEspacioById(espacioId)).thenReturn(espacioResponseDto);

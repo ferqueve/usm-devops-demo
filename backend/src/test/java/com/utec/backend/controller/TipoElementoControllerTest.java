@@ -80,7 +80,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento - Debe obtener todos los tipos de elemento")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTodosLosTiposElemento() throws Exception {
         // Given
         List<TipoElementoResponseDto> tipos = Arrays.asList(tipoElementoResponseDto);
@@ -98,7 +98,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento/{id} - Debe obtener tipo de elemento por ID")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerTipoElementoPorId() throws Exception {
         // Given
         when(tipoElementoService.getTipoElementoById(tipoElementoId)).thenReturn(tipoElementoResponseDto);
@@ -169,7 +169,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento/search - Debe buscar tipos de elemento por nombre")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeBuscarTiposElementoPorNombre() throws Exception {
         // Given
         List<TipoElementoResponseDto> tipos = Arrays.asList(tipoElementoResponseDto);
@@ -187,7 +187,7 @@ class TipoElementoControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/tipos-elemento/stats - Debe obtener estadísticas")
-    @WithMockUser
+    @WithMockUser(roles = {"DOCENTE"})
     void debeObtenerEstadisticas() throws Exception {
         // Given
         when(tipoElementoService.getTotalTiposElemento()).thenReturn(10L);

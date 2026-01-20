@@ -315,7 +315,7 @@ export default function ReservationTableView({
         )}
         {reservas.length === 0 ? (
           <div className="flex-1 flex items-center justify-center py-8">
-            <PermissionGuard requiredPermissions={['reservas:crear', 'reservas:solicitar']}>
+            <PermissionGuard requiredPermissions={['reserva:crear']}>
               <EmptyState
                 icon={Calendar}
                 title="No hay reservas"
@@ -417,7 +417,7 @@ export default function ReservationTableView({
                       <TableCell className="py-2 text-right">
                         <div className="flex justify-end gap-2">
                           {/* Botón Ver como icono */}
-                          <PermissionGuard requiredPermission="reservas:leer">
+                          <PermissionGuard requiredPermission="reserva:ver_todas">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
@@ -433,7 +433,7 @@ export default function ReservationTableView({
                             </Tooltip>
                           </PermissionGuard>
                           {!esPasada && esFutura && reserva.estado === 'APROBADO' && (
-                            <PermissionGuard requiredPermission="reservas:cancelar">
+                            <PermissionGuard requiredPermission="reserva:cancelar">
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button

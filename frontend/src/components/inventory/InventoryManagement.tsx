@@ -48,7 +48,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { espaciosApi } from '@/lib/api/spaces';
-import type { InventarioItem, InventarioFilters, TipoElemento, Espacio } from '@/lib/types/spaces';
+import type { InventarioItem, InventarioFilters } from '@/lib/types/spaces';
 import { exportInventarioToCSV } from '@/lib/utils/csv-export';
 import InventoryTable from './InventoryTable';
 import InventoryCardView from './InventoryCardView';
@@ -64,17 +64,24 @@ import { usePreferences } from '@/hooks/usePreferences';
 import { MantenimientoRecomendaciones } from '@/components/recomendaciones/MantenimientoRecomendaciones';
 import { recomendacionesApi } from '@/lib/api/recomendaciones';
 import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
-import { useAuth } from '@/hooks/useAuth';
-import { ROLES } from '@/lib/config/constants';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { TipoElementoManagement } from './TipoElementoManagement';
+import { useEspacios } from '@/hooks/useEspacios';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
 
 type ViewMode = 'table' | 'cards';
 
 export default function InventoryManagement() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const isAdminOrMantenimiento = user?.rol === ROLES.ADMIN || user?.rol === ROLES.MANTENIMIENTO;
-  
+  const { hasPermission } = useRolePermissions();
+
+  // Permission-based logic
+  const canManageInventory = hasPermission('inventario:gestionar'); // ADMIN/MANTENIMIENTO can manage inventory
+
+  // Usar hooks compartidos con caché
+  const { espacios, refresh: refreshEspacios } = useEspacios();
+  const { tiposElemento, refresh: refreshTiposElemento } = useTiposElemento();
+
   // Estados principales
   const [items, setItems] = useState<InventarioItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -86,10 +93,6 @@ export default function InventoryManagement() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<InventarioFilters>({});
   const [reasignaciones, setReasignaciones] = useState<RecomendacionInventario[]>([]);
-  
-  // Estados de datos auxiliares
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
   
   // Estado para estadísticas globales
   const [statistics, setStatistics] = useState<{
@@ -133,17 +136,15 @@ export default function InventoryManagement() {
   const [showTiposManagement, setShowTiposManagement] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventarioItem | null>(null);
 
-  // Cargar espacios, tipos y estadísticas
+  // Cargar estadísticas y recomendaciones
   useEffect(() => {
-    fetchEspacios();
-    fetchTiposElemento();
     fetchStatistics();
-    
-    // Cargar recomendaciones de reasignación (solo para ADMIN/MANTENIMIENTO)
-    if (isAdminOrMantenimiento) {
+
+    // Cargar recomendaciones de reasignación (solo para usuarios con permiso inventario:gestionar)
+    if (canManageInventory) {
       fetchReasignaciones();
     }
-  }, [isAdminOrMantenimiento]);
+  }, [canManageInventory]);
 
   // Función para cargar recomendaciones de reasignación
   const fetchReasignaciones = async () => {
@@ -247,28 +248,6 @@ export default function InventoryManagement() {
       fetchItems(false); // false para NO mostrar loading spinner
     }
   }, [fetchItems, sortConfig.column, sortConfig.direction]);
-
-  const fetchEspacios = async () => {
-    try {
-      const response = await espaciosApi.obtenerEspacios();
-      if (response.data) {
-        setEspacios(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar espacios:', error);
-    }
-  };
-
-  const fetchTiposElemento = async () => {
-    try {
-      const response = await espaciosApi.listarTiposElemento();
-      if (response.data) {
-        setTiposElemento(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
-    }
-  };
 
   const handleFilterChange = (key: keyof InventarioFilters, value: string | number | boolean | undefined) => {
     setPage(0);
@@ -662,7 +641,7 @@ export default function InventoryManagement() {
             </Button>
           </PermissionGuard>
           
-          <PermissionGuard requiredPermissions={['tipos_elemento:crear', 'tipos_elemento:editar']} requireAll={false}>
+          <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
             <Button 
               onClick={() => setShowTiposManagement(true)} 
               variant="outline" 
@@ -679,11 +658,11 @@ export default function InventoryManagement() {
       {/* Estadísticas */}
       <InventoryStatsCards statistics={statistics} />
 
-      {/* Recomendaciones de Mantenimiento (solo para ADMIN/MANTENIMIENTO) */}
-      {isAdminOrMantenimiento && <MantenimientoRecomendaciones />}
+      {/* Recomendaciones de Mantenimiento (solo para usuarios con permiso inventario:gestionar) */}
+      {canManageInventory && <MantenimientoRecomendaciones />}
 
-      {/* Recomendaciones de Reasignación (solo para ADMIN/MANTENIMIENTO) */}
-      {isAdminOrMantenimiento && reasignaciones.length > 0 && (
+      {/* Recomendaciones de Reasignación (solo para usuarios con permiso inventario:gestionar) */}
+      {canManageInventory && reasignaciones.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -1066,7 +1045,7 @@ export default function InventoryManagement() {
         open={showTiposManagement}
         onOpenChange={setShowTiposManagement}
         onSuccess={() => {
-          fetchTiposElemento(); // Recargar tipos cuando cambian
+          refreshTiposElemento(); // Recargar tipos cuando cambian
         }}
       />
     </div>

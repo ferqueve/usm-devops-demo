@@ -17,17 +17,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 
-import static com.utec.backend.security.Constants.ROLE_ADMIN;
-
 @RestController
 @RequestMapping("/api/v1/audit")
 @RequiredArgsConstructor
 public class AuditController {
-    
+
     private final AuditService auditService;
-    
+
     @GetMapping
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'auditoria:ver')")
     public ResponseEntity<ApiResponse<PagedResponseDto<AuditLogResponseDto>>> listarLogs(
             @RequestParam(required = false) String entidad,
             @RequestParam(required = false) Long usuarioId,
@@ -46,11 +44,11 @@ public class AuditController {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Acción inválida: " + accion);
                 }
             }
-            
+
             PagedResponseDto<AuditLogResponseDto> resultado = auditService.buscarLogs(
                     entidad, usuarioId, accionEnum, fechaDesde, fechaHasta, search, pageable
             );
-            
+
             return ResponseEntity.ok(ApiResponse.success(resultado, "Logs de auditoría obtenidos exitosamente"));
         } catch (ResponseStatusException e) {
             throw e;
@@ -59,9 +57,9 @@ public class AuditController {
                     .body(ApiResponse.error("Error al obtener logs de auditoría: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('" + ROLE_ADMIN + "')")
+    @PreAuthorize("hasPermission(null, 'auditoria:ver')")
     public ResponseEntity<ApiResponse<AuditLogResponseDto>> obtenerLog(@PathVariable Long id) {
         try {
             AuditLogResponseDto log = auditService.obtenerLogPorId(id);
@@ -75,4 +73,3 @@ public class AuditController {
         }
     }
 }
-

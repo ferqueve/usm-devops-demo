@@ -152,7 +152,7 @@ export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
             <Eye className="h-4 w-4 mr-1.5" />
             Ver Detalles
           </Button>
-          <PermissionGuard requiredPermission="espacios:editar">
+          <PermissionGuard requiredPermission="espacio:editar">
             <Button
               size="sm"
               variant="outline"

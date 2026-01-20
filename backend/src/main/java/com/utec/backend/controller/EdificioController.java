@@ -15,11 +15,11 @@ import java.util.List;
 @RequestMapping("/api/v1/edificios")
 @RequiredArgsConstructor
 public class EdificioController {
-    
+
     private final EdificioService edificioService;
-    
+
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<List<EdificioResponseDto>>> getAllEdificios() {
         try {
             List<EdificioResponseDto> edificios = edificioService.getAllEdificios();
@@ -29,9 +29,9 @@ public class EdificioController {
                     .body(ApiResponse.error("Error al obtener edificios: " + e.getMessage()));
         }
     }
-    
+
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission(null, 'espacio:ver')")
     public ResponseEntity<ApiResponse<EdificioResponseDto>> getEdificioById(@PathVariable Long id) {
         try {
             EdificioResponseDto edificio = edificioService.getEdificioById(id);
@@ -45,4 +45,3 @@ public class EdificioController {
         }
     }
 }
-
