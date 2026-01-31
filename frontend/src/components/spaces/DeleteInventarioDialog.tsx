@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import { AlertTriangle } from "lucide-react";
-import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface DeleteInventarioDialogProps {
   inventarioItem: InventarioItem;
@@ -26,7 +27,7 @@ export function DeleteInventarioDialog({
 }: DeleteInventarioDialogProps) {
   const handleDelete = async () => {
     try {
-      await espaciosApi.eliminarInventarioItem(inventarioItem.id);
+      await inventarioApi.eliminarInventarioItem(inventarioItem.id);
       onSuccess();
       onOpenChange(false);
       toast.success('Elemento eliminado exitosamente');
@@ -61,18 +62,20 @@ export function DeleteInventarioDialog({
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
           >
             Cancelar
           </Button>
-          <Button 
-            variant="destructive" 
-            onClick={handleDelete}
-          >
-            Eliminar
-          </Button>
+          <PermissionGuard requiredPermission="inventario:eliminar">
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              Eliminar
+            </Button>
+          </PermissionGuard>
         </div>
       </DialogContent>
     </Dialog>

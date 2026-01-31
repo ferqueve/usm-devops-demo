@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Reserva } from '@/lib/types/spaces';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 interface DashboardChartsProps {
   reservas: Reserva[];
@@ -15,8 +13,6 @@ const COLORS = {
   PENDIENTE: '#f59e0b', // yellow
   CANCELADO: '#ef4444', // red
 };
-
-const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
 
 export default function DashboardCharts({ reservas, loading = false }: DashboardChartsProps) {
   // Datos para gráfico de reservas por estado

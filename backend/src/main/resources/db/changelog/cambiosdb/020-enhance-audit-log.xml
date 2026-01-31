@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="020-1-enhance-audit-log" author="system">
+        <comment>Enhance audit_log table with additional traceability fields</comment>
+
+        <!-- Cambiar entidad_id de INT a BIGINT para evitar overflow -->
+        <modifyDataType tableName="audit_log" columnName="entidad_id" newDataType="BIGINT"/>
+
+        <!-- Agregar campo ip_address -->
+        <addColumn tableName="audit_log">
+            <column name="ip_address" type="VARCHAR(45)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addNotNullConstraint tableName="audit_log" columnName="ip_address" columnDataType="VARCHAR(45)" defaultNullValue="UNKNOWN"/>
+
+        <!-- Agregar campo http_method -->
+        <addColumn tableName="audit_log">
+            <column name="http_method" type="VARCHAR(10)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Agregar campo endpoint -->
+        <addColumn tableName="audit_log">
+            <column name="endpoint" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Agregar campo user_agent -->
+        <addColumn tableName="audit_log">
+            <column name="user_agent" type="VARCHAR(500)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="audit_log" columnName="user_agent"/>
+            <dropColumn tableName="audit_log" columnName="endpoint"/>
+            <dropColumn tableName="audit_log" columnName="http_method"/>
+            <dropColumn tableName="audit_log" columnName="ip_address"/>
+            <modifyDataType tableName="audit_log" columnName="entidad_id" newDataType="INT"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="020-2-add-audit-log-indexes" author="system">
+        <comment>Add indexes to audit_log table for better query performance</comment>
+
+        <!-- Índice para búsquedas por usuario -->
+        <createIndex indexName="idx_audit_log_usuario_id" tableName="audit_log">
+            <column name="usuario_id"/>
+        </createIndex>
+
+        <!-- Índice para búsquedas por timestamp -->
+        <createIndex indexName="idx_audit_log_timestamp" tableName="audit_log">
+            <column name="timestamp"/>
+        </createIndex>
+
+        <!-- Índice para búsquedas por entidad -->
+        <createIndex indexName="idx_audit_log_entidad" tableName="audit_log">
+            <column name="entidad"/>
+        </createIndex>
+
+        <!-- Índice compuesto para búsquedas frecuentes -->
+        <createIndex indexName="idx_audit_log_entidad_accion" tableName="audit_log">
+            <column name="entidad"/>
+            <column name="accion"/>
+        </createIndex>
+
+        <!-- Índice para búsquedas por IP (seguridad) -->
+        <createIndex indexName="idx_audit_log_ip_address" tableName="audit_log">
+            <column name="ip_address"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_audit_log_ip_address" tableName="audit_log"/>
+            <dropIndex indexName="idx_audit_log_entidad_accion" tableName="audit_log"/>
+            <dropIndex indexName="idx_audit_log_entidad" tableName="audit_log"/>
+            <dropIndex indexName="idx_audit_log_timestamp" tableName="audit_log"/>
+            <dropIndex indexName="idx_audit_log_usuario_id" tableName="audit_log"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

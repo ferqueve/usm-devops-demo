@@ -485,7 +485,7 @@ export default function UserManagement() {
             <span className="text-sm text-muted-foreground whitespace-nowrap">usuarios</span>
           </div>
           
-          <PermissionGuard requiredPermission="usuarios:gestionar">
+          <PermissionGuard requiredPermission="usuario:gestionar">
             <Button 
               variant="outline"
               onClick={handleExportCSV}
@@ -682,7 +682,7 @@ export default function UserManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            <PermissionGuard requiredPermission="usuarios:gestionar">
+                            <PermissionGuard requiredPermission="usuario:gestionar">
                               <div className="flex items-center justify-center gap-2">
                                 <Switch
                                   checked={user.activo}
@@ -705,7 +705,7 @@ export default function UserManagement() {
                                 <Eye className="h-4 w-4 mr-2" />
                                 Ver
                               </Button>
-                              <PermissionGuard requiredPermission="usuarios:gestionar">
+                              <PermissionGuard requiredPermission="usuario:gestionar">
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -716,7 +716,7 @@ export default function UserManagement() {
                                   Editar
                                 </Button>
                               </PermissionGuard>
-                              <PermissionGuard requiredPermission="usuarios:gestionar">
+                              <PermissionGuard requiredPermission="usuario:gestionar">
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -751,7 +751,7 @@ export default function UserManagement() {
                               {user.email}
                             </p>
                           </div>
-                          <PermissionGuard requiredPermission="usuarios:gestionar">
+                          <PermissionGuard requiredPermission="usuario:gestionar">
                             <Switch
                               checked={user.activo}
                               onCheckedChange={() => openConfirmStatusDialog(user)}
@@ -788,7 +788,7 @@ export default function UserManagement() {
                             <Eye className="h-4 w-4 mr-2" />
                             Ver
                           </Button>
-                          <PermissionGuard requiredPermission="usuarios:gestionar">
+                          <PermissionGuard requiredPermission="usuario:gestionar">
                             <Button
                               variant="outline"
                               size="sm"
@@ -799,7 +799,7 @@ export default function UserManagement() {
                               Editar
                             </Button>
                           </PermissionGuard>
-                          <PermissionGuard requiredPermission="usuarios:gestionar">
+                          <PermissionGuard requiredPermission="usuario:gestionar">
                             <Button
                               variant="outline"
                               size="sm"
@@ -981,7 +981,7 @@ export default function UserManagement() {
                       label={userDetails.verificado ? 'Verificado' : 'Pendiente'}
                     />
                     {!userDetails.verificado && (
-                      <PermissionGuard requiredPermission="usuarios:gestionar">
+                      <PermissionGuard requiredPermission="usuario:gestionar">
                         <Button
                           variant="outline"
                           size="sm"
@@ -1038,7 +1038,7 @@ export default function UserManagement() {
               
               {/* Botón de restablecer contraseña */}
               <div className="col-span-2 pt-2 border-t">
-                <PermissionGuard requiredPermission="usuarios:gestionar">
+                <PermissionGuard requiredPermission="usuario:gestionar">
                   <Button
                     variant="outline"
                     size="sm"

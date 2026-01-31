@@ -18,8 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
-import { espaciosApi } from '@/lib/api/spaces';
-import type { InventarioItem, Espacio } from '@/lib/types/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
+import { useEspacios } from '@/hooks/useEspacios';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
+import type { InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
 
 interface AssignSpaceDialogProps {
@@ -29,21 +31,20 @@ interface AssignSpaceDialogProps {
   onSuccess: () => void;
 }
 
-export default function AssignSpaceDialog({ 
-  item, 
-  open, 
-  onOpenChange, 
-  onSuccess 
+export default function AssignSpaceDialog({
+  item,
+  open,
+  onOpenChange,
+  onSuccess
 }: AssignSpaceDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
+  const { espacios } = useEspacios();
+  const { hasPermission } = useRolePermissions();
   const [selectedEspacioId, setSelectedEspacioId] = useState<number>(0);
   const [cantidad, setCantidad] = useState<number>(1);
 
   useEffect(() => {
     if (open) {
-      fetchEspacios();
-      
       if (item) {
         setSelectedEspacioId(item.espacioId || 0);
         setCantidad(item.cantidad);
@@ -53,17 +54,6 @@ export default function AssignSpaceDialog({
       }
     }
   }, [open, item]);
-
-  const fetchEspacios = async () => {
-    try {
-      const response = await espaciosApi.obtenerEspacios();
-      if (response.data) {
-        setEspacios(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar espacios:', error);
-    }
-  };
 
   const handleDesasignar = async () => {
     if (!item) return;
@@ -84,8 +74,16 @@ export default function AssignSpaceDialog({
 
       // Si la cantidad es menor que el total, dividir el inventario
       if (cantidad < item.cantidad) {
+        // Validar permiso para crear nuevo item (split)
+        if (!hasPermission('inventario:crear')) {
+          toast.error('Permiso denegado', {
+            description: 'No tienes permiso para dividir inventario (requiere inventario:crear)'
+          });
+          return;
+        }
+
         // Actualizar el item actual reduciendo la cantidad
-        await espaciosApi.actualizarInventarioItem(item.id, {
+        await inventarioApi.actualizarInventarioItem(item.id, {
           espacioId: item.espacioId,
           tipoElementoId: item.tipoElementoId,
           cantidad: item.cantidad - cantidad,
@@ -94,7 +92,7 @@ export default function AssignSpaceDialog({
         });
 
         // Crear un nuevo item sin asignar con la cantidad desasignada
-        await espaciosApi.crearInventarioItem({
+        await inventarioApi.crearInventarioItem({
           espacioId: 0, // Sin asignar
           tipoElementoId: item.tipoElementoId,
           cantidad: cantidad,
@@ -106,7 +104,7 @@ export default function AssignSpaceDialog({
         onSuccess();
       } else {
         // Si es la cantidad total, desasignar todo
-        await espaciosApi.actualizarInventarioItem(item.id, {
+        await inventarioApi.actualizarInventarioItem(item.id, {
           espacioId: 0, // 0 significa desasignar en el backend
           tipoElementoId: item.tipoElementoId,
           cantidad: item.cantidad,
@@ -152,11 +150,19 @@ export default function AssignSpaceDialog({
     
     try {
       setLoading(true);
-      
+
       // Si la cantidad es menor que el total, dividir el inventario
       if (cantidad < item.cantidad) {
+        // Validar permiso para crear nuevo item (split)
+        if (!hasPermission('inventario:crear')) {
+          toast.error('Permiso denegado', {
+            description: 'No tienes permiso para dividir inventario (requiere inventario:crear)'
+          });
+          return;
+        }
+
         // Actualizar el item actual con la cantidad restante
-        await espaciosApi.actualizarInventarioItem(item.id, {
+        await inventarioApi.actualizarInventarioItem(item.id, {
           espacioId: item.espacioId,
           tipoElementoId: item.tipoElementoId,
           cantidad: item.cantidad - cantidad,
@@ -165,7 +171,7 @@ export default function AssignSpaceDialog({
         });
 
         // Crear un nuevo item con la cantidad asignada al nuevo espacio
-        await espaciosApi.crearInventarioItem({
+        await inventarioApi.crearInventarioItem({
           espacioId: selectedEspacioId,
           tipoElementoId: item.tipoElementoId,
           cantidad: cantidad,
@@ -177,7 +183,7 @@ export default function AssignSpaceDialog({
         onSuccess();
       } else {
         // Si es la cantidad total, solo actualizar el espacio
-        await espaciosApi.actualizarInventarioItem(item.id, {
+        await inventarioApi.actualizarInventarioItem(item.id, {
           espacioId: selectedEspacioId,
           tipoElementoId: item.tipoElementoId,
           cantidad: item.cantidad,

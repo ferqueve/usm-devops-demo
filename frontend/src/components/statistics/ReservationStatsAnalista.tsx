@@ -315,7 +315,7 @@ export default function ReservationStatsAnalista() {
             <RefreshCw className="h-4 w-4" />
             Actualizar
           </Button>
-          <PermissionGuard requiredPermission="estadisticas:exportar">
+          <PermissionGuard requiredPermission="estadisticas:ver_reservas">
             <Button
               variant="outline"
               size="sm"
@@ -513,8 +513,7 @@ export default function ReservationStatsAnalista() {
 
       {/* Gráficos */}
       {stats && (
-        <ReservationCharts 
-          stats={stats}
+        <ReservationCharts
           reservasPorMesData={reservasPorMesData}
           reservasPorDiaSemanaData={reservasPorDiaSemanaData}
           reservasPorEspacioData={reservasPorEspacioData}

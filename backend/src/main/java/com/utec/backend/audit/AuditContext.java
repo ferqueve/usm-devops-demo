@@ -2,9 +2,15 @@ package com.utec.backend.audit;
 
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Contexto ThreadLocal para almacenar el usuario actual durante operaciones de auditoría.
@@ -12,8 +18,23 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 @Slf4j
 public class AuditContext {
-    
+
     private static final ThreadLocal<Usuario> currentUser = new ThreadLocal<>();
+    private static final ThreadLocal<Map<Object, Object>> previousStates = new ThreadLocal<>();
+    private static final ThreadLocal<RequestInfo> requestInfo = new ThreadLocal<>();
+
+    /**
+     * Información de la request HTTP para auditoría
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RequestInfo {
+        private String ipAddress;
+        private String httpMethod;
+        private String endpoint;
+        private String userAgent;
+    }
     
     /**
      * Establecer el usuario actual en el contexto ThreadLocal
@@ -43,6 +64,58 @@ public class AuditContext {
             log.debug("Limpiando AuditContext para usuario: {}", usuario.getEmail());
         }
         currentUser.remove();
+        previousStates.remove();
+        requestInfo.remove();
+    }
+
+    /**
+     * Guardar el estado anterior de una entidad antes de actualizar
+     */
+    public static void setPreviousState(Object entity, Object state) {
+        Map<Object, Object> states = previousStates.get();
+        if (states == null) {
+            states = new HashMap<>();
+            previousStates.set(states);
+        }
+        states.put(entity, state);
+        log.debug("Estado anterior guardado para entidad: {}", entity.getClass().getSimpleName());
+    }
+
+    /**
+     * Obtener el estado anterior de una entidad
+     */
+    public static Object getPreviousState(Object entity) {
+        Map<Object, Object> states = previousStates.get();
+        if (states == null) {
+            return null;
+        }
+        return states.get(entity);
+    }
+
+    /**
+     * Limpiar el estado anterior de una entidad
+     */
+    public static void clearPreviousState(Object entity) {
+        Map<Object, Object> states = previousStates.get();
+        if (states != null) {
+            states.remove(entity);
+        }
+    }
+
+    /**
+     * Establecer información de la request HTTP
+     */
+    public static void setRequestInfo(String ipAddress, String httpMethod, String endpoint, String userAgent) {
+        RequestInfo info = new RequestInfo(ipAddress, httpMethod, endpoint, userAgent);
+        requestInfo.set(info);
+        log.debug("Request info establecida: {} {} desde {}", httpMethod, endpoint, ipAddress);
+    }
+
+    /**
+     * Obtener información de la request HTTP
+     */
+    public static RequestInfo getRequestInfo() {
+        return requestInfo.get();
     }
     
     /**

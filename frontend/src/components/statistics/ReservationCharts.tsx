@@ -14,10 +14,8 @@ import {
   Line,
 } from 'recharts';
 import type { TooltipProps } from 'recharts';
-import type { ReservaStats } from '@/lib/types/spaces';
 
 interface ReservationChartsProps {
-  stats: ReservaStats;
   reservasPorMesData: Array<{ mes: string; cantidad: number; mesCompleto: string }>;
   reservasPorDiaSemanaData: Array<{ dia: string; cantidad: number; orden: number }>;
   reservasPorEspacioData: Array<{ espacioId: number; nombre: string; cantidad: number }>;
@@ -49,7 +47,6 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
 };
 
 export default function ReservationCharts({
-  stats,
   reservasPorMesData,
   reservasPorDiaSemanaData,
   reservasPorEspacioData,

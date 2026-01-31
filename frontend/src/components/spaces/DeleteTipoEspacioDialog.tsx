@@ -13,6 +13,7 @@ import { espaciosApi } from '@/lib/api/spaces';
 import type { TipoEspacio } from '@/lib/types/spaces';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface DeleteTipoEspacioDialogProps {
   tipoEspacio: TipoEspacio | null;
@@ -82,16 +83,18 @@ export function DeleteTipoEspacioDialog({
           <AlertDialogCancel onClick={handleCancel} disabled={loading}>
             Cancelar
           </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={loading}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-            ) : null}
-            Desactivar
-          </AlertDialogAction>
+          <PermissionGuard requiredPermission="tipo:eliminar">
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={loading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : null}
+              Desactivar
+            </AlertDialogAction>
+          </PermissionGuard>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

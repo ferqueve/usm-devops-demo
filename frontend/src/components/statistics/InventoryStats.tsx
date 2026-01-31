@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { TipoElemento, Espacio } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import {
@@ -162,7 +163,7 @@ export default function InventoryStats() {
       try {
         const [espaciosRes, tiposRes] = await Promise.all([
           espaciosApi.obtenerEspacios(),
-          espaciosApi.listarTiposElemento(),
+          inventarioApi.listarTiposElemento(),
         ]);
         
         if (espaciosRes.data) setEspacios(espaciosRes.data);
@@ -182,7 +183,7 @@ export default function InventoryStats() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await espaciosApi.obtenerEstadisticasDetalladasInventario(
+        const response = await inventarioApi.obtenerEstadisticasDetalladasInventario(
           filterEspacio,
           filterTipoElemento,
           filterEstado
@@ -248,7 +249,7 @@ export default function InventoryStats() {
 
   const handleRefresh = async () => {
     try {
-      const response = await espaciosApi.obtenerEstadisticasDetalladasInventario(
+      const response = await inventarioApi.obtenerEstadisticasDetalladasInventario(
         filterEspacio,
         filterTipoElemento,
         filterEstado
@@ -309,7 +310,7 @@ export default function InventoryStats() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
           </Button>
-          <PermissionGuard requiredPermission="estadisticas:exportar">
+          <PermissionGuard requiredPermission="estadisticas:ver_inventario">
             <Button onClick={handleExport}>
               <FileDown className="h-4 w-4 mr-2" />
               Exportar

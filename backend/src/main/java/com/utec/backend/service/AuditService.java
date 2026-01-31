@@ -50,14 +50,24 @@ public class AuditService {
         try {
             AuditLog auditLog = new AuditLog();
             auditLog.setEntidad(entidad);
-            auditLog.setEntidadId(entidadId.intValue());
+            auditLog.setEntidadId(entidadId);
             auditLog.setAccion(AuditLog.AccionAudit.CREATE);
             auditLog.setUsuario(usuario);
             auditLog.setDatosNuevos(convertToJson(datosNuevos));
-            
+
+            // Agregar información de request HTTP si está disponible
+            AuditContext.RequestInfo requestInfo = AuditContext.getRequestInfo();
+            if (requestInfo != null) {
+                auditLog.setIpAddress(requestInfo.getIpAddress());
+                auditLog.setHttpMethod(requestInfo.getHttpMethod());
+                auditLog.setEndpoint(requestInfo.getEndpoint());
+                auditLog.setUserAgent(requestInfo.getUserAgent());
+            }
+
             auditLogRepository.save(auditLog);
-            log.info("Audit log creado: {} {} por usuario {}", 
-                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema");
+            log.info("Audit log creado: {} {} por usuario {} desde {}",
+                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema",
+                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
         } catch (Exception e) {
             log.error("Error al crear audit log para {} {}: {}", entidad, entidadId, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
@@ -73,14 +83,25 @@ public class AuditService {
         try {
             AuditLog auditLog = new AuditLog();
             auditLog.setEntidad(entidad);
-            auditLog.setEntidadId(entidadId.intValue());
+            auditLog.setEntidadId(entidadId);
             auditLog.setAccion(AuditLog.AccionAudit.UPDATE);
             auditLog.setUsuario(usuario);
             auditLog.setDatosPrevios(convertToJson(datosPrevios));
             auditLog.setDatosNuevos(convertToJson(datosNuevos));
-            
+
+            // Agregar información de request HTTP si está disponible
+            AuditContext.RequestInfo requestInfo = AuditContext.getRequestInfo();
+            if (requestInfo != null) {
+                auditLog.setIpAddress(requestInfo.getIpAddress());
+                auditLog.setHttpMethod(requestInfo.getHttpMethod());
+                auditLog.setEndpoint(requestInfo.getEndpoint());
+                auditLog.setUserAgent(requestInfo.getUserAgent());
+            }
+
             auditLogRepository.save(auditLog);
-            log.info("Audit log actualizado: {} {} por usuario {}", entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema");
+            log.info("Audit log actualizado: {} {} por usuario {} desde {}",
+                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema",
+                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
         } catch (Exception e) {
             log.error("Error al crear audit log de actualización para {} {}: {}", entidad, entidadId, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
@@ -96,19 +117,84 @@ public class AuditService {
         try {
             AuditLog auditLog = new AuditLog();
             auditLog.setEntidad(entidad);
-            auditLog.setEntidadId(entidadId.intValue());
+            auditLog.setEntidadId(entidadId);
             auditLog.setAccion(AuditLog.AccionAudit.DELETE);
             auditLog.setUsuario(usuario);
             auditLog.setDatosPrevios(convertToJson(datosPrevios));
-            
+
+            // Agregar información de request HTTP si está disponible
+            AuditContext.RequestInfo requestInfo = AuditContext.getRequestInfo();
+            if (requestInfo != null) {
+                auditLog.setIpAddress(requestInfo.getIpAddress());
+                auditLog.setHttpMethod(requestInfo.getHttpMethod());
+                auditLog.setEndpoint(requestInfo.getEndpoint());
+                auditLog.setUserAgent(requestInfo.getUserAgent());
+            }
+
             auditLogRepository.save(auditLog);
-            log.info("Audit log eliminado: {} {} por usuario {}", entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema");
+            log.info("Audit log eliminado: {} {} por usuario {} desde {}",
+                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema",
+                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
         } catch (Exception e) {
             log.error("Error al crear audit log de eliminación para {} {}: {}", entidad, entidadId, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
         }
     }
-    
+
+    /**
+     * Registrar evento de autenticación (login, logout, registro, etc.)
+     * Este método es para eventos que no están asociados a una entidad específica con ID
+     *
+     * @param eventoTipo Tipo de evento (ej: "LOGIN", "LOGOUT", "REGISTRO", "PASSWORD_RESET")
+     * @param usuarioEmail Email del usuario involucrado
+     * @param exitoso Si el evento fue exitoso o no
+     * @param detalles Detalles adicionales del evento (opcional)
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void logAuthenticationEvent(String eventoTipo, String usuarioEmail, boolean exitoso, Map<String, Object> detalles) {
+        try {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setEntidad("Autenticacion");
+            auditLog.setEntidadId(0L); // 0 para eventos no asociados a una entidad específica
+
+            // Usar CREATE para eventos exitosos, DELETE para fallos (convención)
+            auditLog.setAccion(exitoso ? AuditLog.AccionAudit.CREATE : AuditLog.AccionAudit.DELETE);
+
+            // No establecer usuario aquí porque puede que aún no esté autenticado
+            auditLog.setUsuario(null);
+
+            // Crear datos del evento
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("eventoTipo", eventoTipo);
+            eventData.put("usuarioEmail", usuarioEmail);
+            eventData.put("exitoso", exitoso);
+            eventData.put("timestamp", Instant.now().toString());
+            if (detalles != null && !detalles.isEmpty()) {
+                eventData.put("detalles", detalles);
+            }
+
+            auditLog.setDatosNuevos(objectMapper.writeValueAsString(eventData));
+
+            // Agregar información de request HTTP si está disponible
+            com.utec.backend.audit.AuditContext.RequestInfo requestInfo =
+                com.utec.backend.audit.AuditContext.getRequestInfo();
+            if (requestInfo != null) {
+                auditLog.setIpAddress(requestInfo.getIpAddress());
+                auditLog.setHttpMethod(requestInfo.getHttpMethod());
+                auditLog.setEndpoint(requestInfo.getEndpoint());
+                auditLog.setUserAgent(requestInfo.getUserAgent());
+            }
+
+            auditLogRepository.save(auditLog);
+            log.info("Audit log de autenticación: {} para {} - {} desde {}",
+                    eventoTipo, usuarioEmail, exitoso ? "EXITOSO" : "FALLIDO",
+                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
+        } catch (Exception e) {
+            log.error("Error al crear audit log de autenticación para {}: {}", eventoTipo, e.getMessage(), e);
+            // No lanzar excepción para no interrumpir el flujo principal
+        }
+    }
+
     /**
      * Buscar logs con filtros y paginación
      */

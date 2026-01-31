@@ -16,6 +16,7 @@ export interface RegisterRequest {
 }
 
 export interface LoginResponse {
+  id: number;
   token: string;
   refreshToken: string;
   email: string;

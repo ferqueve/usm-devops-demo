@@ -48,21 +48,40 @@ public class GmailApiService {
     @Value("${gmail.api.from-email:usm.utec.uy@gmail.com}")
     private String fromEmail;
 
+    @Value("${gmail.api.enabled:false}")
+    private boolean gmailEnabled;
+
     private Gmail gmailService;
     private NetHttpTransport httpTransport;
+    private boolean initialized = false;
 
     @PostConstruct
     public void initializeGmailService() {
+        if (!gmailEnabled) {
+            log.warn("Gmail API is DISABLED. Email functionality will not be available.");
+            log.warn("To enable Gmail API, set gmail.api.enabled=true and configure credentials.");
+            return;
+        }
+
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             gmailService = new Gmail.Builder(httpTransport, JSON_FACTORY, getCredentials())
                     .setApplicationName(APPLICATION_NAME)
                     .build();
+            initialized = true;
             log.info("Gmail API service initialized successfully");
-        } catch (GeneralSecurityException | IOException e) {
+        } catch (Exception e) {
             log.error("Error initializing Gmail API service: {}", e.getMessage());
-            throw new RuntimeException("Error al inicializar el servicio de Gmail API", e);
+            log.warn("Gmail API will be DISABLED. Email functionality will not be available.");
+            initialized = false;
         }
+    }
+
+    /**
+     * Verifica si el servicio de Gmail API está disponible
+     */
+    public boolean isAvailable() {
+        return gmailEnabled && initialized && gmailService != null;
     }
 
     /**
@@ -99,6 +118,11 @@ public class GmailApiService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean sendEmail(String to, String subject, String bodyText) {
+        if (!isAvailable()) {
+            log.warn("Cannot send email to {}: Gmail API is not available", to);
+            return false;
+        }
+
         try {
             // Crear mensaje sin encoding especial
             String emailContent = createSimpleEmailContent(to, subject, bodyText);
@@ -129,6 +153,11 @@ public class GmailApiService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean sendHtmlEmail(String to, String subject, String htmlBody) {
+        if (!isAvailable()) {
+            log.warn("Cannot send HTML email to {}: Gmail API is not available", to);
+            return false;
+        }
+
         try {
             // Configurar sesión con charset UTF-8 como se sugiere
             Properties props = new Properties();
@@ -217,6 +246,11 @@ public class GmailApiService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean verificarConfiguracionGmailApi(String to) {
+        if (!isAvailable()) {
+            log.warn("Cannot verify Gmail API configuration: Gmail API is not available");
+            return false;
+        }
+
         String subject = "Verificación de Configuración - UTEC Space Manager (Gmail API)";
         String body = """
             Este es un email de verificación para confirmar que la configuración de Gmail API está funcionando correctamente.

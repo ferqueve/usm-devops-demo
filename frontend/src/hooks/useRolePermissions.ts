@@ -76,20 +76,8 @@ export function useRolePermissions() {
     return permissionHelpers.canRequest(userRole, resource);
   };
 
-  const canReject = (resource: Resource): boolean => {
-    return permissionHelpers.canReject(userRole, resource);
-  };
-
-  const canDeliver = (resource: Resource): boolean => {
-    return permissionHelpers.canDeliver(userRole, resource);
-  };
-
   const canAssign = (resource: Resource): boolean => {
     return permissionHelpers.canAssign(userRole, resource);
-  };
-
-  const canExport = (resource: Resource): boolean => {
-    return permissionHelpers.canExport(userRole, resource);
   };
 
   const canManage = (resource: Resource): boolean => {
@@ -144,17 +132,13 @@ export function useRolePermissions() {
       // Solicitudes de inventario
       'inventory_requests.view': 'solicitud_inventario:ver',
       'inventory_requests.approve': 'solicitud_inventario:aprobar',
-      'inventory_requests.reject': 'solicitud_inventario:rechazar',
-      'inventory_requests.deliver': 'solicitud_inventario:entregar',
 
       // Usuarios
       'users.manage': 'usuario:gestionar',
-      'users.view': 'usuario:ver',
       'users.view_analysts': 'usuario:ver_analistas',
 
       // Estadísticas
       'statistics.view': 'estadisticas:ver',
-      'statistics.export': 'estadisticas:exportar',
       'statistics.view_reservations': 'estadisticas:ver_reservas',
       'statistics.view_inventory': 'estadisticas:ver_inventario',
       'statistics.view_spaces': 'estadisticas:ver_espacios',
@@ -214,10 +198,7 @@ export function useRolePermissions() {
     canApprove,
     canCancel,
     canRequest,
-    canReject,
-    canDeliver,
     canAssign,
-    canExport,
     canManage,
     canViewOwn,
     canViewAll,

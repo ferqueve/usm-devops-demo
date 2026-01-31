@@ -7,8 +7,9 @@ import {
   type InventoryRequestUpdatePayload,
   type PagedResponse,
 } from '@/lib/api/reservations';
-import { espaciosApi } from '@/lib/api/spaces';
-import type { Espacio, InventarioItem, ReservaItemSolicitado, ReservaItemSolicitadoEstado } from '@/lib/types/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
+import { useEspacios } from '@/hooks/useEspacios';
+import type { InventarioItem, ReservaItemSolicitado, ReservaItemSolicitadoEstado } from '@/lib/types/spaces';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -85,8 +86,8 @@ const ESTADO_ACCENT: Record<ReservaItemSolicitadoEstado, string> = {
 
 export default function InventoryRequestsManagement() {
   const navigate = useNavigate();
+  const { espacios } = useEspacios();
 
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [requestsPage, setRequestsPage] = useState<PagedResponse<ReservaItemSolicitado> | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -127,16 +128,6 @@ export default function InventoryRequestsManagement() {
     [selectedEstados, selectedEspacio, fechaDesde, fechaHasta, searchTerm]
   );
 
-  const fetchEspacios = useCallback(async () => {
-    try {
-      const response = await espaciosApi.obtenerEspacios();
-      setEspacios(response.data ?? []);
-    } catch (error: unknown) {
-      console.error('Error al cargar espacios', error);
-      const message = error instanceof Error ? error.message : undefined;
-      toast.error(message || 'No se pudieron cargar los espacios');
-    }
-  }, []);
 
   const fetchRequests = useCallback(
     async (opts?: Partial<InventoryRequestsQuery>) => {
@@ -185,10 +176,6 @@ export default function InventoryRequestsManagement() {
   );
 
   useEffect(() => {
-    fetchEspacios();
-  }, [fetchEspacios]);
-
-  useEffect(() => {
     setPage(0);
   }, [selectedEstados, selectedEspacio, fechaDesde, fechaHasta, searchTerm]);
 
@@ -221,7 +208,7 @@ export default function InventoryRequestsManagement() {
 
     setInventoryLoading(true);
     try {
-      const response = await espaciosApi.filtrarInventario(
+      const response = await inventarioApi.filtrarInventario(
         { tipoElementoId: selectedRequest.tipoElementoId, estado: 'DISPONIBLE' },
         'id',
         'asc'
@@ -597,7 +584,7 @@ export default function InventoryRequestsManagement() {
                         </TableCell>
                         <TableCell>{formatDateTime(item.createdAt)}</TableCell>
                         <TableCell className="flex items-center justify-end gap-2">
-                          <PermissionGuard requiredPermission="solicitud_inventario:entregar">
+                          <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                             {item.estado === 'APROBADO' && (
                               <Button
                                 size="sm"
@@ -911,9 +898,9 @@ export default function InventoryRequestsManagement() {
                   >
                     Cerrar
                   </Button>
-                  <PermissionGuard requiredPermissions={['solicitud_inventario:aprobar', 'solicitud_inventario:rechazar']} requireAll={false}>
+                  <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                     <div className="flex items-center gap-2">
-                      <PermissionGuard requiredPermission="solicitud_inventario:rechazar">
+                      <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                         <Button
                           size="sm"
                           variant="outline"

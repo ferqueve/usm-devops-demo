@@ -2,13 +2,8 @@ import { apiRequest, type ApiResponse } from './client';
 import type { 
   Espacio, 
   TipoEspacio, 
-  InventarioItem, 
-  TipoElemento, 
   EspacioFilters,
   PagedEspacios,
-  PagedInventario,
-  InventarioFilters,
-  InventoryStats,
   Edificio
 } from '../types/spaces';
 
@@ -141,158 +136,7 @@ export const espaciosApi = {
     return apiRequest<void>(`/tipos-espacio/${id}`, { method: 'DELETE' });
   },
   
-  // Inventario con paginación
-  async listarInventarioPorEspacio(
-    espacioId: number
-  ): Promise<ApiResponse<InventarioItem[]>> {
-    return apiRequest<InventarioItem[]>(`/inventario/espacio/${espacioId}`, { method: 'GET' });
-  },
-  
-  // Tipos de Elemento
-  async listarTiposElemento(): Promise<ApiResponse<TipoElemento[]>> {
-    return apiRequest<TipoElemento[]>('/tipos-elemento', { method: 'GET' });
-  },
-  
-  async crearTipoElemento(data: {
-    nombre: string;
-    descripcion?: string;
-  }): Promise<ApiResponse<TipoElemento>> {
-    return apiRequest<TipoElemento>('/tipos-elemento', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-  
-  async actualizarTipoElemento(id: number, data: {
-    nombre: string;
-    descripcion?: string;
-  }): Promise<ApiResponse<TipoElemento>> {
-    return apiRequest<TipoElemento>(`/tipos-elemento/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-  
-  async eliminarTipoElemento(id: number): Promise<ApiResponse<void>> {
-    return apiRequest<void>(`/tipos-elemento/${id}`, { method: 'DELETE' });
-  },
-  
-  // Gestión de Inventario
-  async crearInventarioItem(data: {
-    espacioId: number;
-    tipoElementoId: number;
-    cantidad: number;
-    marca?: string;
-    modelo?: string;
-    numeroSerie?: string;
-    estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO';
-    observaciones?: string;
-    fechaAdquisicion?: string;
-    valorEstimado?: number;
-  }): Promise<ApiResponse<InventarioItem>> {
-    return apiRequest<InventarioItem>('/inventario', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-  
-  async actualizarInventarioItem(id: number, data: {
-    espacioId: number | null;
-    tipoElementoId: number;
-    cantidad: number;
-    marca?: string;
-    modelo?: string;
-    numeroSerie?: string;
-    estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO';
-    observaciones?: string;
-    fechaAdquisicion?: string;
-    valorEstimado?: number;
-  }): Promise<ApiResponse<InventarioItem>> {
-    return apiRequest<InventarioItem>(`/inventario/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-  
-  async eliminarInventarioItem(id: number): Promise<ApiResponse<void>> {
-    return apiRequest<void>(`/inventario/${id}`, { method: 'DELETE' });
-  },
-
-  // Gestión global de inventario
-  async listarInventario(
-    page: number = 0,
-    size: number = 12,
-    filters?: InventarioFilters,
-    sortBy?: string,
-    sortDir?: 'asc' | 'desc'
-  ): Promise<ApiResponse<PagedInventario>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-    });
-    
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.espacioId) params.append('espacioId', filters.espacioId.toString());
-    if (filters?.tipoElementoId) params.append('tipoElementoId', filters.tipoElementoId.toString());
-    if (filters?.estado) params.append('estado', filters.estado);
-    if (filters?.sinAsignar === true) {
-      params.append('sinAsignar', 'true');
-    }
-    // Spring Data JPA espera formato: sort=field,direction
-    if (sortBy && sortDir) {
-      params.append('sort', `${sortBy},${sortDir}`);
-    }
-    
-    return apiRequest<PagedInventario>(`/inventario/paged?${params.toString()}`, { method: 'GET' });
-  },
-
-  async filtrarInventario(
-    filters?: InventarioFilters,
-    sortBy?: string,
-    sortDir?: 'asc' | 'desc'
-  ): Promise<ApiResponse<InventarioItem[]>> {
-    const params = new URLSearchParams();
-    
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.espacioId) params.append('espacioId', filters.espacioId.toString());
-    if (filters?.tipoElementoId) params.append('tipoElementoId', filters.tipoElementoId.toString());
-    if (filters?.estado) params.append('estado', filters.estado);
-    if (filters?.sinAsignar === true) {
-      params.append('sinAsignar', 'true');
-    }
-    if (sortBy) params.append('sortBy', sortBy);
-    if (sortDir) params.append('sortDir', sortDir);
-    
-    return apiRequest<InventarioItem[]>(`/inventario/filter?${params.toString()}`, { method: 'GET' });
-  },
-
-  async obtenerEstadisticasInventario(): Promise<ApiResponse<InventoryStats>> {
-    return apiRequest<InventoryStats>('/inventario/stats', { method: 'GET' });
-  },
-
-  async obtenerEstadisticasDetalladasInventario(
-    espacioId?: number | null,
-    tipoElementoId?: number | null,
-    estado?: string
-  ): Promise<ApiResponse<InventoryStats>> {
-    const params = new URLSearchParams();
-    if (espacioId !== null && espacioId !== undefined) {
-      params.append('espacioId', espacioId.toString());
-    }
-    if (tipoElementoId !== null && tipoElementoId !== undefined) {
-      params.append('tipoElementoId', tipoElementoId.toString());
-    }
-    if (estado && estado !== 'todos') {
-      params.append('estado', estado);
-    }
-    const queryString = params.toString();
-    return apiRequest<InventoryStats>(`/stats/inventario/detailed${queryString ? '?' + queryString : ''}`, { method: 'GET' });
-  },
-
-  // Obtener tod el inventario sin paginación (para exportar)
-  async obtenerTodoElInventario(): Promise<ApiResponse<InventarioItem[]>> {
-    return apiRequest<InventarioItem[]>('/inventario', { method: 'GET' });
-  },
+  // Inventory methods moved to frontend/src/lib/api/inventory.ts
 
   async obtenerEspacios(): Promise<ApiResponse<Espacio[]>> {
     return apiRequest<Espacio[]>('/espacios', { method: 'GET' });
@@ -338,5 +182,9 @@ export const espaciosApi = {
 
   async obtenerUrlImagenEspacio(espacioId: number): Promise<ApiResponse<{ imageUrl: string | null; objectName: string | null }>> {
     return apiRequest<{ imageUrl: string | null; objectName: string | null }>(`/espacios/${espacioId}/imagen`, { method: 'GET' });
+  },
+
+  async obtenerEstadisticasEspacios(): Promise<ApiResponse<any>> {
+    return apiRequest<any>('/espacios/stats', { method: 'GET' });
   },
 };

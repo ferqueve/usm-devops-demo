@@ -173,7 +173,7 @@ export default function ImportCSVDialog({
             >
               Cancelar
             </Button>
-            <PermissionGuard requiredPermission="inventario:importar">
+            <PermissionGuard requiredPermission="inventario:crear">
               <Button 
                 onClick={handleImport} 
                 disabled={!file}

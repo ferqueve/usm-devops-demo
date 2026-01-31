@@ -5,8 +5,8 @@ import com.utec.backend.dto.espacio.EspacioResponseDto;
 import com.utec.backend.dto.espacio.EspacioUpdateDto;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.repository.EspacioRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,12 +18,17 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class EspacioService {
-    
+
     private final EspacioRepository espacioRepository;
-    private final FileStorageService fileStorageService;
+
+    @Autowired(required = false)
+    private FileStorageService fileStorageService;
+
+    public EspacioService(EspacioRepository espacioRepository) {
+        this.espacioRepository = espacioRepository;
+    }
     
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public EspacioResponseDto createEspacio(EspacioCreateDto createDto) {

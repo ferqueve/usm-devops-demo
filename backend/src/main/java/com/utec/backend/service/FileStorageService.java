@@ -2,8 +2,8 @@ package com.utec.backend.service;
 
 import io.minio.*;
 import io.minio.errors.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,10 +22,10 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FileStorageService {
 
-    private final MinioClient minioClient;
+    @Autowired(required = false)
+    private MinioClient minioClient;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
@@ -45,6 +45,13 @@ public class FileStorageService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(java.time.ZoneOffset.UTC);
 
     /**
+     * Verifica si MinIO está disponible
+     */
+    public boolean isAvailable() {
+        return minioClient != null;
+    }
+
+    /**
      * Sube una imagen para un espacio
      *
      * @param file      Archivo a subir
@@ -53,6 +60,11 @@ public class FileStorageService {
      * @throws IOException Si hay error al leer el archivo
      */
     public String uploadImage(MultipartFile file, Long espacioId) throws IOException {
+        if (!isAvailable()) {
+            log.warn("Cannot upload image: MinIO is not available");
+            throw new IOException("MinIO is not available. File storage is disabled.");
+        }
+
         // Validar archivo
         validateFile(file);
 
@@ -91,6 +103,11 @@ public class FileStorageService {
      * @throws IOException Si hay error al eliminar
      */
     public void deleteImage(String objectName) throws IOException {
+        if (!isAvailable()) {
+            log.warn("Cannot delete image {}: MinIO is not available", objectName);
+            return; // No lanzar excepción, solo ignorar
+        }
+
         if (objectName == null || objectName.trim().isEmpty()) {
             log.warn("Intento de eliminar imagen con objectName vacío");
             return;
@@ -130,6 +147,11 @@ public class FileStorageService {
         // Si ya es una URL externa, retornarla tal cual
         if (objectName.startsWith("http://") || objectName.startsWith("https://")) {
             return objectName;
+        }
+
+        if (!isAvailable()) {
+            log.warn("Cannot get image URL for {}: MinIO is not available", objectName);
+            return null;
         }
 
         try {
@@ -208,6 +230,11 @@ public class FileStorageService {
      * @return true si existe, false en caso contrario
      */
     public boolean objectExists(String objectName) {
+        if (!isAvailable()) {
+            log.warn("Cannot check if object {} exists: MinIO is not available", objectName);
+            return false;
+        }
+
         if (objectName == null || objectName.trim().isEmpty()) {
             return false;
         }

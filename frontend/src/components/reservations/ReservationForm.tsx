@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { useAuth } from '@/hooks/useAuth';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useCarreras } from '@/hooks/useCarreras';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
@@ -40,11 +41,12 @@ export default function ReservationForm({
   onCancel
 }: ReservationFormProps) {
   const { hasPermission } = useRolePermissions();
+  const { user } = useAuth();
 
   // Lógica basada en permisos, no en roles
   const canApprove = hasPermission('reserva:aprobar');
   const canViewRecommendations = hasPermission('recomendacion:ver');
-  const needsAnalystAssignment = !canApprove; // Si no puede aprobar, debe asignar analista
+  const needsAnalystAssignment = !canApprove; // Si no puede aprobar, debe seleccionar analista
 
   // Usar hooks compartidos con caché
   const { espacios } = useEspacios();
@@ -66,6 +68,8 @@ export default function ReservationForm({
   const [formData, setFormData] = useState({
     espacioId: '',
     carreraId: '',
+    titulo: '',
+    motivoSolicitud: '',
     horaInicioHora: '',
     horaInicioMinuto: '00',
     horaFinHora: '',
@@ -271,6 +275,8 @@ export default function ReservationForm({
     setFormData({
       espacioId: '',
       carreraId: '',
+      titulo: '',
+      motivoSolicitud: '',
       horaInicioHora: '',
       horaInicioMinuto: '00',
       horaFinHora: '',
@@ -429,26 +435,32 @@ export default function ReservationForm({
     e.preventDefault();
 
     // ===== VALIDACIONES =====
-    
-    // 1. Validar Espacio (obligatorio)
+
+    // 1. Validar Título (obligatorio)
+    if (!formData.titulo || formData.titulo.trim() === '') {
+      toast.error('Por favor ingresa un título para la reserva');
+      return;
+    }
+
+    // 2. Validar Espacio (obligatorio)
     if (!formData.espacioId) {
       toast.error('Por favor selecciona un espacio');
       return;
     }
 
-    // 2. Validar Fecha (obligatorio)
+    // 3. Validar Fecha (obligatorio)
     if (!fecha) {
       toast.error('Por favor selecciona una fecha');
       return;
     }
 
-    // 3. Validar Hora de Inicio (obligatorio)
+    // 4. Validar Hora de Inicio (obligatorio)
     if (!formData.horaInicioHora) {
       toast.error('Por favor selecciona la hora de inicio');
       return;
     }
 
-    // 4. Validar Hora de Fin (obligatorio)
+    // 5. Validar Hora de Fin (obligatorio)
     if (!formData.horaFinHora) {
       toast.error('Por favor selecciona la hora de fin');
       return;
@@ -510,7 +522,7 @@ export default function ReservationForm({
       // Convertir fechas locales a UTC ISO-8601 para enviar al backend
       const inicioISO = toUTC(inicio);
       const finISO = toUTC(fin);
-      const fechaFinRecurrenciaISO = formData.fechaFinRecurrencia 
+      const fechaFinRecurrenciaISO = formData.fechaFinRecurrencia
         ? (() => {
             const fechaFin = new Date(formData.fechaFinRecurrencia);
             fechaFin.setHours(23, 59, 59, 999);
@@ -521,11 +533,17 @@ export default function ReservationForm({
       await reservationsApi.crearReserva({
         espacioId: parseInt(formData.espacioId),
         carreraId: formData.carreraId ? parseInt(formData.carreraId) : undefined,
+        titulo: formData.titulo.trim(),
+        motivoSolicitud: formData.motivoSolicitud?.trim() || undefined,
         inicio: inicioISO,
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: needsAnalystAssignment && formData.analistaId ? parseInt(formData.analistaId) : undefined,
+        analistaId: canApprove
+          ? user?.id // ADMIN/ANALISTA se asigna a sí mismo
+          : needsAnalystAssignment && formData.analistaId
+            ? parseInt(formData.analistaId) // DOCENTE/EXTERNO selecciona analista
+            : undefined,
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -571,12 +589,14 @@ export default function ReservationForm({
 
   // Verificar si el formulario está completo y sin errores
   const isFormValid = !!(
+    formData.titulo &&
+    formData.titulo.trim() !== '' &&
     formData.espacioId &&
     fecha &&
     formData.horaInicioHora &&
     formData.horaFinHora &&
     !horaError &&
-    (!needsAnalystAssignment || formData.analistaId) // Analista requerido si no puede auto-aprobar
+    (!needsAnalystAssignment || formData.analistaId) // DOCENTE/EXTERNO must select analyst
   );
 
   return (
@@ -663,7 +683,56 @@ export default function ReservationForm({
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
-            {/* Carrera */}
+            {/* Título */}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="titulo" className="text-sm font-semibold text-gray-700 min-w-[80px]">Título *</Label>
+              <div className="flex-1">
+                <Input
+                  id="titulo"
+                  type="text"
+                  value={formData.titulo}
+                  onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+                  placeholder="Ej: Clase de Programación, Reunión de equipo, etc."
+                  maxLength={200}
+                  className="h-10"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formData.titulo.length}/200 caracteres
+                </p>
+              </div>
+            </div>
+
+            {/* Línea punteada */}
+            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+            {/* Motivo de solicitud - Solo visible para usuarios que necesitan aprobación */}
+            {needsAnalystAssignment && (
+              <>
+                <div className="flex items-center gap-4">
+                  <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-gray-700 min-w-[80px]">Motivo</Label>
+                  <div className="flex-1">
+                    <Textarea
+                      id="motivoSolicitud"
+                      value={formData.motivoSolicitud}
+                      onChange={(e) => setFormData(prev => ({ ...prev, motivoSolicitud: e.target.value }))}
+                      placeholder="Describe brevemente el motivo de tu solicitud"
+                      rows={3}
+                      maxLength={500}
+                      className="resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formData.motivoSolicitud.length}/500 caracteres (opcional)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Línea punteada */}
+                <div className="border-t border-dashed border-gray-300 my-4"></div>
+              </>
+            )}
+
+            {/* Carrera - Oculto para usuarios externos (sin permiso recomendacion:ver) */}
+            {canViewRecommendations && (
             <div className="flex items-center gap-4">
               <Label htmlFor="carrera" className="text-sm font-semibold text-gray-700 min-w-[80px]">Carrera</Label>
               <div className="flex-1">
@@ -685,11 +754,12 @@ export default function ReservationForm({
                 </Select>
               </div>
             </div>
+            )}
 
             {/* Línea punteada */}
             <div className="border-t border-dashed border-gray-300 my-4"></div>
 
-            {/* Analista asignado - solo si necesita asignación */}
+            {/* Analista asignado - solo si necesita asignación (DOCENTE/EXTERNO) */}
             {needsAnalystAssignment && (
               <>
                 <div className="flex items-center gap-4">

@@ -12,10 +12,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ComposedChart,
-  Line
+  ComposedChart
 } from 'recharts';
-import type { InventoryStats } from './InventoryStats';
+import type { InventoryStats } from '@/lib/types/spaces';
 
 interface InventoryChartsProps {
   stats: InventoryStats;
@@ -44,36 +43,6 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
       { name: 'Sin Asignar', value: stats.sinAsignar, color: COLORS.SIN_ASIGNAR },
     ].filter(item => item.value > 0);
   }, [stats]);
-
-  // Datos para gráfico de items por tipo (top 10)
-  const itemsPorTipoChart = useMemo(() => {
-    return stats.itemsPorTipo
-      .slice(0, 10)
-      .map((tipo, index) => ({
-        nombre: tipo.tipoNombre,
-        items: tipo.items,
-        cantidad: tipo.cantidad,
-        disponibles: tipo.disponibles,
-        mantenimiento: tipo.mantenimiento,
-        danados: tipo.danados,
-        color: CHART_COLORS[index % CHART_COLORS.length]
-      }));
-  }, [stats.itemsPorTipo]);
-
-  // Datos para gráfico de items por espacio (top 10)
-  const itemsPorEspacioChart = useMemo(() => {
-    return stats.itemsPorEspacio
-      .slice(0, 10)
-      .map((espacio, index) => ({
-        nombre: espacio.espacioNombre,
-        items: espacio.items,
-        cantidad: espacio.cantidad,
-        disponibles: espacio.disponibles,
-        mantenimiento: espacio.mantenimiento,
-        danados: espacio.danados,
-        color: CHART_COLORS[index % CHART_COLORS.length]
-      }));
-  }, [stats.itemsPorEspacio]);
 
   // Datos para gráfico de top espacios
   const topEspaciosChart = useMemo(() => {

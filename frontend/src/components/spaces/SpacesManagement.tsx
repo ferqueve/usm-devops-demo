@@ -22,7 +22,8 @@ import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
 import { espaciosApi } from '@/lib/api/spaces';
-import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, TipoElemento, Edificio } from '@/lib/types/spaces';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
+import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, Edificio } from '@/lib/types/spaces';
 import { 
   Plus, 
   Search, 
@@ -60,7 +61,7 @@ export default function SpacesManagement() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<EspacioFilters>({});
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
+  const { tiposElemento } = useTiposElemento();
   const [edificios, setEdificios] = useState<Edificio[]>([]);
   const [filtrosInventario, setFiltrosInventario] = useState<FiltroInventario[]>([]);
   
@@ -141,7 +142,6 @@ export default function SpacesManagement() {
   useEffect(() => {
     fetchEspacios();
     fetchTiposEspacio();
-    fetchTiposElemento();
     fetchEdificios();
   }, [fetchEspacios]);
 
@@ -153,17 +153,6 @@ export default function SpacesManagement() {
       }
     } catch (error) {
       console.error('Error al cargar tipos de espacio:', error);
-    }
-  };
-
-  const fetchTiposElemento = async () => {
-    try {
-      const response = await espaciosApi.listarTiposElemento();
-      if (response.data) {
-        setTiposElemento(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
     }
   };
 
@@ -415,7 +404,7 @@ export default function SpacesManagement() {
   }, [espacios, sortConfig]);
 
   const { canEdit: canEditResource } = useRolePermissions();
-  const canEdit = canEditResource('espacios');
+  const canEdit = canEditResource('espacio');
 
   // Crear array de filtros activos para FilterBar
   const activeFilters: FilterItem[] = useMemo(() => {

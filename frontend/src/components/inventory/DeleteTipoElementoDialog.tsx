@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { TipoElemento } from '@/lib/types/spaces';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,7 +34,7 @@ export function DeleteTipoElementoDialog({
 
     try {
       setLoading(true);
-      await espaciosApi.eliminarTipoElemento(tipoElemento.id);
+      await inventarioApi.eliminarTipoElemento(tipoElemento.id);
       
       toast.success('Tipo de elemento desactivado', {
         description: `${tipoElemento.nombre} ha sido marcado como inactivo exitosamente`

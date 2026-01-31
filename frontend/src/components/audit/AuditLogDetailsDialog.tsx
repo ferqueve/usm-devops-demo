@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, User, Calendar, Database, Eye, X } from 'lucide-react';
+import { FileText, User, Calendar, Database, Eye, X, Globe, Navigation, Monitor } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { AuditLog } from '@/lib/types/audit';
@@ -115,6 +115,52 @@ export default function AuditLogDetailsDialog({
                 </p>
               </div>
             </div>
+
+            {/* Información de Request HTTP */}
+            {(log.ipAddress || log.httpMethod || log.endpoint || log.userAgent) && (
+              <div className="border rounded-lg p-4 bg-slate-50">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Información de Request HTTP
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {log.ipAddress && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Globe className="h-3 w-3" />
+                        <span>Dirección IP</span>
+                      </div>
+                      <p className="text-sm font-mono">{log.ipAddress}</p>
+                    </div>
+                  )}
+
+                  {log.httpMethod && log.endpoint && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Navigation className="h-3 w-3" />
+                        <span>Endpoint</span>
+                      </div>
+                      <p className="text-sm font-mono">
+                        <Badge variant="outline" className="mr-2 font-mono text-xs">{log.httpMethod}</Badge>
+                        {log.endpoint}
+                      </p>
+                    </div>
+                  )}
+
+                  {log.userAgent && (
+                    <div className="space-y-1 md:col-span-2">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Monitor className="h-3 w-3" />
+                        <span>User-Agent</span>
+                      </div>
+                      <p className="text-xs font-mono text-muted-foreground truncate" title={log.userAgent}>
+                        {log.userAgent}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Datos previos */}
             {log.datosPrevios && (

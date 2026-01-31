@@ -4,12 +4,10 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';
-import { carrerasApi } from '@/lib/api/carreras';
+import { useEspacios } from '@/hooks/useEspacios';
+import { useCarreras } from '@/hooks/useCarreras';
 // import { usuariosApi } from '@/lib/api/users'; // Se usará cuando se agregue el filtro de usuario
-import type { Reserva } from '@/lib/types/spaces';
-import type { Espacio } from '@/lib/types/spaces';
-import type { Carrera } from '@/lib/types/spaces';
-import type { TipoEspacio } from '@/lib/types/spaces';
+import type { Reserva, TipoEspacio } from '@/lib/types/spaces';
 // import type { User } from '@/lib/types/users'; // Se usará cuando se agregue el filtro de usuario
 import ReservationDetailsDialog from './ReservationDetailsDialog.tsx';
 import ReservationStats from './ReservationStats.tsx';
@@ -20,6 +18,7 @@ import ReservationCalendarView from './ReservationCalendarView.tsx';
 import ReservationFormDialog from './ReservationFormDialog.tsx';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { useAuth } from '@/hooks/useAuth';
 import { usePreferences } from '@/hooks/usePreferences';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -37,6 +36,7 @@ type ViewMode = 'cards' | 'table' | 'calendar';
 
 export default function ReservationManagement() {
   const { hasPermission } = useRolePermissions();
+  const { user } = useAuth();
   const { preferencias } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -107,10 +107,6 @@ export default function ReservationManagement() {
       let response;
       if (showPendienteFilter) {
         // DOCENTE/EXTERNO: solo sus reservas
-        // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
-        const estadoParaFiltrar = estadoFilter === 'PENDIENTE' 
-          ? 'PENDIENTE' 
-          : (estadoFilter === 'todas' ? undefined : estadoFilter);
         response = await reservationsApi.obtenerMisReservas();
         
         if (response.data) {
@@ -124,9 +120,9 @@ export default function ReservationManagement() {
           // Si el filtro es 'todas', no filtrar por estado (mostrar todas incluyendo pendientes)
         }
       } else {
-        // ANALISTA/ADMIN: todas las reservas (excluyendo pendientes - se muestran en sidebar)
+        // ANALISTA/ADMIN: solo sus reservas + las asignadas a ellos
         const estadoParaFiltrar = estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE'
-          ? estadoFilter 
+          ? estadoFilter
           : undefined;
         response = await reservationsApi.obtenerTodasLasReservas(
           estadoParaFiltrar,
@@ -136,12 +132,18 @@ export default function ReservationManagement() {
           fechaInicio ?? undefined,
           fechaFin ?? undefined
         );
-        
-        if (response.data) {
-          // Siempre excluir PENDIENTE para analistas/admin (se muestran en sidebar)
-          response.data = response.data.filter(
-            (reserva: Reserva) => reserva.estado !== 'PENDIENTE'
-          );
+
+        if (response.data && user?.id) {
+          // Filtrar para mostrar solo:
+          // 1. Reservas creadas por el usuario (usuarioId === user.id)
+          // 2. Reservas asignadas al analista (analistaId === user.id)
+          response.data = response.data.filter((reserva: Reserva) => {
+            const esPropia = reserva.usuarioId === user.id;
+            const esAsignada = reserva.analistaId === user.id;
+            const noEsPendiente = reserva.estado !== 'PENDIENTE'; // Excluir pendientes (se muestran en sidebar)
+
+            return (esPropia || esAsignada) && noEsPendiente;
+          });
         }
       }
       
@@ -160,7 +162,7 @@ export default function ReservationManagement() {
     } finally {
       setCalendarLoading(false);
     }
-  }, [showPendienteFilter, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [showPendienteFilter, user?.id, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   // Cargar reservas pendientes separadamente (solo para usuarios que pueden aprobar)
   const fetchReservasPendientes = useCallback(async () => {
@@ -179,10 +181,15 @@ export default function ReservationManagement() {
         fechaInicio ?? undefined,
         fechaFin ?? undefined
       );
-      
-      if (response.data) {
+
+      if (response.data && user?.id) {
+        // Filtrar solo las reservas pendientes asignadas a este analista
+        let pendientesFiltradas = response.data.filter((reserva: Reserva) =>
+          reserva.analistaId === user.id
+        );
+
         // Ordenar por fecha de creación descendente (más recientes primero)
-        const sorted = response.data.sort((a, b) =>
+        const sorted = pendientesFiltradas.sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setReservasPendientes(sorted);
@@ -193,7 +200,7 @@ export default function ReservationManagement() {
     } finally {
       setPendientesLoading(false);
     }
-  }, [canApprove, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [canApprove, user?.id, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   const fetchReservasPaged = useCallback(async () => {
     setContentLoading(true); // Solo afecta al contenido
@@ -228,9 +235,9 @@ export default function ReservationManagement() {
           // Si el filtro es 'todas', no filtrar por estado (mostrar todas incluyendo pendientes)
         }
       } else {
-        // ANALISTA/ADMIN: todas las reservas (excluyendo pendientes - se muestran en sidebar)
+        // ANALISTA/ADMIN: solo sus reservas + las asignadas a ellos
         const estadoParaFiltrar = estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE'
-          ? estadoFilter 
+          ? estadoFilter
           : undefined;
         response = await reservationsApi.obtenerTodasReservasPaged(
           page,
@@ -244,12 +251,18 @@ export default function ReservationManagement() {
           fechaFin,
           tiempoFilter
         );
-        
-        if (response.data) {
-          // Siempre excluir PENDIENTE para analistas/admin (se muestran en sidebar)
-          response.data.content = response.data.content.filter(
-            (reserva: Reserva) => reserva.estado !== 'PENDIENTE'
-          );
+
+        if (response.data && user?.id) {
+          // Filtrar para mostrar solo:
+          // 1. Reservas creadas por el usuario (usuarioId === user.id)
+          // 2. Reservas asignadas al analista (analistaId === user.id)
+          response.data.content = response.data.content.filter((reserva: Reserva) => {
+            const esPropia = reserva.usuarioId === user.id;
+            const esAsignada = reserva.analistaId === user.id;
+            const noEsPendiente = reserva.estado !== 'PENDIENTE'; // Excluir pendientes (se muestran en sidebar)
+
+            return (esPropia || esAsignada) && noEsPendiente;
+          });
         }
       }
       
@@ -266,7 +279,7 @@ export default function ReservationManagement() {
     } finally {
       setContentLoading(false);
     }
-  }, [showPendienteFilter, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
+  }, [showPendienteFilter, user?.id, page, pageSize, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin, tiempoFilter]);
 
   const handleToggleFullScreen = () => {
     setIsFullScreen(!isFullScreen);
@@ -378,54 +391,28 @@ export default function ReservationManagement() {
     fechaInicio !== undefined || 
     fechaFin !== undefined;
 
-  // Estados para carreras, tipos de espacio, espacios y usuarios
-  const [carreras, setCarreras] = useState<Carrera[]>([]);
+  // Hooks compartidos para carreras, espacios
+  const { espacios } = useEspacios();
+  const { carreras } = useCarreras();
+
+  // Estados para tipos de espacio (aún no hay hook dedicado)
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
   // const [usuarios, setUsuarios] = useState<User[]>([]); // Solo para ANALISTA - se usará cuando se agregue el filtro de usuario
 
-  // Cargar carreras, tipos de espacio, espacios y usuarios para los filtros
+  // Cargar tipos de espacio para los filtros
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTiposEspacio = async () => {
       try {
-        const promises: Promise<unknown>[] = [
-          carrerasApi.obtenerCarreras(),
-          espaciosApi.listarTiposEspacio(),
-          espaciosApi.obtenerEspacios()
-        ];
-        
-        // Cargar usuarios para filtro (se implementará cuando se agregue el filtro de usuario a las vistas)
-        // if (isAnalista) {
-        //   promises.push(usuariosApi.listarUsuarios(0, 1000, {}));
-        // }
-        
-        const results = await Promise.all(promises);
-        
-        const carrerasRes = results[0] as { data?: Carrera[] };
-        if (carrerasRes?.data) {
-          setCarreras(carrerasRes.data);
-        }
-        const tiposEspacioRes = results[1] as { data?: TipoEspacio[] };
+        const tiposEspacioRes = await espaciosApi.listarTiposEspacio();
         if (tiposEspacioRes?.data) {
           setTiposEspacio(tiposEspacioRes.data);
         }
-        const espaciosRes = results[2] as { data?: Espacio[] };
-        if (espaciosRes?.data) {
-          setEspacios(espaciosRes.data);
-        }
-        // Cargar usuarios para filtro (se implementará cuando se agregue el filtro de usuario a las vistas)
-        // if (isAnalista && results[3]) {
-        //   const usuariosRes = results[3] as { data?: { content: User[] } };
-        //   if (usuariosRes?.data && 'content' in usuariosRes.data) {
-        //     setUsuarios(usuariosRes.data.content);
-        //   }
-        // }
       } catch (error: unknown) {
-        console.error('Error al cargar datos para filtros:', error);
+        console.error('Error al cargar tipos de espacio:', error);
       }
     };
-    fetchData();
-  }, [canApprove]);
+    fetchTiposEspacio();
+  }, []);
 
   // Obtener espacios únicos (usar todos los espacios cargados, no solo los de las reservas)
   const espaciosUnicos = espacios.map(e => ({ id: e.id, nombre: e.nombre }))

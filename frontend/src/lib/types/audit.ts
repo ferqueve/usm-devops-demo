@@ -11,6 +11,11 @@ export interface AuditLog {
   timestamp: string;
   datosPrevios: string | null;
   datosNuevos: string | null;
+  // Nuevos campos de trazabilidad
+  ipAddress?: string;
+  httpMethod?: string;
+  endpoint?: string;
+  userAgent?: string;
 }
 
 export interface AuditLogFilters {

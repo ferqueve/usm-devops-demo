@@ -20,7 +20,7 @@ export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
   '/inventory': ['inventario:ver'],
   '/inventory/requests': ['solicitud_inventario:ver'],
   '/statistics': ['estadisticas:ver'],
-  '/users': ['usuario:ver'],
+  '/users': ['usuario:gestionar'],
   '/system': ['sistema:acceder'],
   '/audit': ['auditoria:ver'],
 
@@ -52,15 +52,11 @@ export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
   // ===== COMPONENTES DE SOLICITUDES DE INVENTARIO =====
   'InventoryRequestsManagement': [
     'solicitud_inventario:ver', // Ver solicitudes
-    'solicitud_inventario:aprobar', // Botón aprobar
-    'solicitud_inventario:rechazar', // Botón rechazar
-    'solicitud_inventario:entregar', // Botón entregado
+    'solicitud_inventario:aprobar', // Aprobar/rechazar/entregar solicitudes
   ],
   'InventoryRequestsCardView': [
     'solicitud_inventario:ver', // Ver cards
-    'solicitud_inventario:aprobar', // Botón aprobar
-    'solicitud_inventario:rechazar', // Botón rechazar
-    'solicitud_inventario:entregar', // Botón entregado
+    'solicitud_inventario:aprobar', // Aprobar/rechazar/entregar solicitudes
   ],
 
   // ===== COMPONENTES DE ESPACIOS =====
@@ -120,26 +116,26 @@ export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
 
   // ===== COMPONENTES DE USUARIOS =====
   'UserManagement': [
-    'usuario:ver', // Ver usuarios
+    'usuario:gestionar', // Ver usuarios
     'usuario:gestionar', // Todas las acciones (crear, editar, eliminar, cambiar rol)
   ],
 
   // ===== COMPONENTES DE ESTADÍSTICAS =====
   'StatisticsPage': [
     'estadisticas:ver', // Ver estadísticas
-    'estadisticas:exportar', // Exportar reportes
+    'estadisticas:ver', // Exportar reportes
   ],
   'InventoryStats': [
     'estadisticas:ver_inventario', // Ver estadísticas de inventario
-    'estadisticas:exportar', // Exportar reportes
+    'estadisticas:ver', // Exportar reportes
   ],
   'ReservationStats': [
     'estadisticas:ver_reservas', // Ver estadísticas de reservas
-    'estadisticas:exportar', // Exportar reportes
+    'estadisticas:ver', // Exportar reportes
   ],
   'SpaceStats': [
     'estadisticas:ver_espacios', // Ver estadísticas de espacios
-    'estadisticas:exportar', // Exportar reportes
+    'estadisticas:ver', // Exportar reportes
   ],
 
   // ===== COMPONENTES DE RECOMENDACIONES =====

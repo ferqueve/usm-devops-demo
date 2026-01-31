@@ -33,6 +33,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService userDetailsService;
     private final EmailService emailService;
+    private final AuditService auditService;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         // PRIMERO: Verificar si el usuario existe y su tipo ANTES de intentar autenticar
@@ -56,6 +57,14 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (Exception e) {
+            // Registrar intento de login fallido en auditoría
+            java.util.Map<String, Object> detalles = new java.util.HashMap<>();
+            detalles.put("motivo", "credenciales_invalidas");
+            if (usuarioOpt.isPresent() && usuarioOpt.get().getOauthProv() != null) {
+                detalles.put("tipoUsuario", "oauth");
+            }
+            auditService.logAuthenticationEvent("LOGIN", request.getEmail(), false, detalles);
+
             // Si falla la autenticación, verificar si es usuario OAuth con contraseña establecida
             if (usuarioOpt.isPresent() && usuarioOpt.get().getOauthProv() != null) {
                 log.warn("Intento de login manual fallido para usuario OAuth con contraseña: {}", request.getEmail());
@@ -75,12 +84,20 @@ public class AuthService {
         // Verificar si el usuario ha verificado su email
         if (!usuario.getVerificado()) {
             log.warn("Intento de login con email no verificado: {}", request.getEmail());
+            // Registrar en auditoría
+            java.util.Map<String, Object> detalles = new java.util.HashMap<>();
+            detalles.put("motivo", "email_no_verificado");
+            auditService.logAuthenticationEvent("LOGIN", request.getEmail(), false, detalles);
             throw new AuthenticationException("Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo código de verificación.");
         }
 
         // Verificar si el usuario está activo (no eliminado)
         if (usuario.getDeletedAt() != null) {
             log.warn("Intento de login con usuario inactivo: {}", request.getEmail());
+            // Registrar en auditoría
+            java.util.Map<String, Object> detalles = new java.util.HashMap<>();
+            detalles.put("motivo", "cuenta_inactiva");
+            auditService.logAuthenticationEvent("LOGIN", request.getEmail(), false, detalles);
             throw new AuthenticationException("Tu cuenta ha sido desactivada. Por favor, contacta al administrador para más información.");
         }
 
@@ -91,13 +108,20 @@ public class AuthService {
 
         log.info("Login exitoso para usuario: {} (rol: {})", usuario.getEmail(), usuario.getRolApp());
 
+        // Registrar login exitoso en auditoría
+        java.util.Map<String, Object> detalles = new java.util.HashMap<>();
+        detalles.put("rol", usuario.getRolApp().name());
+        detalles.put("userId", usuario.getId());
+        auditService.logAuthenticationEvent("LOGIN", usuario.getEmail(), true, detalles);
+
         return new AuthenticationResponse(
             token,
             refreshToken,
             usuario.getEmail(),
             usuario.getNombre(),
             usuario.getRolApp().name(),
-            jwtService.getExpirationTime()
+            jwtService.getExpirationTime(),
+            usuario.getId()
         );
     }
 
@@ -120,16 +144,24 @@ public class AuthService {
         Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(request.getEmail());
         if (usuarioExistente.isPresent()) {
             Usuario usuario = usuarioExistente.get();
-            
+
+            // Registrar intento fallido en auditoría
+            java.util.Map<String, Object> detalles = new java.util.HashMap<>();
+            detalles.put("motivo", "email_duplicado");
+
             // Caso: Email existe por OAuth
             if (usuario.getOauthProv() != null) {
                 log.warn("Intento de registro con email que ya existe por OAuth: {}", request.getEmail());
+                detalles.put("tipoExistente", "oauth");
+                auditService.logAuthenticationEvent("REGISTRO", request.getEmail(), false, detalles);
                 throw new AuthenticationException(
                     "Ya existe una cuenta registrada con este email usando Google. Por favor, inicia sesión con Google o establece una contraseña desde las preferencias de tu perfil después de autenticarte con Google."
                 );
             }
-            
+
             // Caso: Email existe por registro manual
+            detalles.put("tipoExistente", "manual");
+            auditService.logAuthenticationEvent("REGISTRO", request.getEmail(), false, detalles);
             throw new AuthenticationException(
                 "Ya existe una cuenta registrada con este email. Si ya tienes una cuenta, intenta iniciar sesión o usa el enlace '¿Olvidaste tu contraseña?'"
             );
@@ -149,6 +181,12 @@ public class AuthService {
 
         // Guardar usuario
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        // Registrar registro exitoso en auditoría
+        java.util.Map<String, Object> detalles = new java.util.HashMap<>();
+        detalles.put("rol", usuarioGuardado.getRolApp().name());
+        detalles.put("userId", usuarioGuardado.getId());
+        auditService.logAuthenticationEvent("REGISTRO", usuarioGuardado.getEmail(), true, detalles);
 
         // Generar y enviar email de verificación
         try {
@@ -176,12 +214,17 @@ public class AuthService {
             String token = authHeader.substring("Bearer ".length());
             // Agregar token a blacklist
             tokenBlacklistService.blacklistToken(token);
-            
+
             try {
                 String userEmail = jwtService.extractUsername(token);
                 log.info("Logout exitoso para usuario: {}", userEmail);
+
+                // Registrar logout en auditoría
+                auditService.logAuthenticationEvent("LOGOUT", userEmail, true, null);
             } catch (Exception e) {
                 log.info("Logout exitoso (no se pudo extraer email del token)");
+                // Registrar logout sin email
+                auditService.logAuthenticationEvent("LOGOUT", "UNKNOWN", true, null);
             }
         }
     }

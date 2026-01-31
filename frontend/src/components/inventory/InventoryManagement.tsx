@@ -47,7 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { InventarioItem, InventarioFilters } from '@/lib/types/spaces';
 import { exportInventarioToCSV } from '@/lib/utils/csv-export';
 import InventoryTable from './InventoryTable';
@@ -76,10 +76,10 @@ export default function InventoryManagement() {
   const { hasPermission } = useRolePermissions();
 
   // Permission-based logic
-  const canManageInventory = hasPermission('inventario:gestionar'); // ADMIN/MANTENIMIENTO can manage inventory
+  const canManageInventory = hasPermission('inventario:editar'); // ADMIN/MANTENIMIENTO can manage inventory
 
   // Usar hooks compartidos con caché
-  const { espacios, refresh: refreshEspacios } = useEspacios();
+  const { espacios } = useEspacios();
   const { tiposElemento, refresh: refreshTiposElemento } = useTiposElemento();
 
   // Estados principales
@@ -140,7 +140,7 @@ export default function InventoryManagement() {
   useEffect(() => {
     fetchStatistics();
 
-    // Cargar recomendaciones de reasignación (solo para usuarios con permiso inventario:gestionar)
+    // Cargar recomendaciones de reasignación (solo para usuarios con permiso inventario:editar)
     if (canManageInventory) {
       fetchReasignaciones();
     }
@@ -161,7 +161,7 @@ export default function InventoryManagement() {
   // Función para cargar estadísticas
   const fetchStatistics = async () => {
     try {
-      const response = await espaciosApi.obtenerEstadisticasInventario();
+      const response = await inventarioApi.obtenerEstadisticasInventario();
       const statsData = response.data;
       
       if (statsData) {
@@ -204,7 +204,7 @@ export default function InventoryManagement() {
         : undefined;
       
       // Siempre usar el endpoint paginado con filtros
-      const response = await espaciosApi.listarInventario(
+      const response = await inventarioApi.listarInventario(
         page, 
         pageSize, 
         filters, 
@@ -336,7 +336,7 @@ export default function InventoryManagement() {
   const handleExport = async () => {
     try {
       // Obtener TODO el inventario de la BD sin paginación ni filtros
-      const response = await espaciosApi.obtenerTodoElInventario();
+      const response = await inventarioApi.obtenerTodoElInventario();
       const allItems = response.data || [];
       
       if (!allItems || allItems.length === 0) {
@@ -407,7 +407,7 @@ export default function InventoryManagement() {
         itemsToUpdate.map(async (id) => {
           const item = items.find(i => i.id === id);
           if (item) {
-            await espaciosApi.actualizarInventarioItem(id, {
+            await inventarioApi.actualizarInventarioItem(id, {
               espacioId: item.espacioId,
               tipoElementoId: item.tipoElementoId,
               cantidad: item.cantidad,
@@ -449,7 +449,7 @@ export default function InventoryManagement() {
         itemsToUnassign.map(async (id) => {
           const item = items.find(i => i.id === id);
           if (item && item.espacioId) {
-            await espaciosApi.actualizarInventarioItem(id, {
+            await inventarioApi.actualizarInventarioItem(id, {
               espacioId: 0, // Desasignar
               tipoElementoId: item.tipoElementoId,
               cantidad: item.cantidad,
@@ -502,7 +502,7 @@ export default function InventoryManagement() {
         itemsToAssign.map(async (id) => {
           const item = items.find(i => i.id === id);
           if (item) {
-            await espaciosApi.actualizarInventarioItem(id, {
+            await inventarioApi.actualizarInventarioItem(id, {
               espacioId: bulkEspacio,
               tipoElementoId: item.tipoElementoId,
               cantidad: item.cantidad,
@@ -601,7 +601,7 @@ export default function InventoryManagement() {
             <span className="text-sm text-muted-foreground hidden sm:inline">items</span>
           </div>
           
-          <PermissionGuard requiredPermission="inventario:importar">
+          <PermissionGuard requiredPermission="inventario:crear">
             <Button 
               variant="outline"
               onClick={() => setImportDialog(true)}
@@ -613,7 +613,7 @@ export default function InventoryManagement() {
             </Button>
           </PermissionGuard>
           
-          <PermissionGuard requiredPermission="inventario:exportar">
+          <PermissionGuard requiredPermission="inventario:ver">
             <Button 
               variant="outline"
               onClick={handleExport}
@@ -658,10 +658,10 @@ export default function InventoryManagement() {
       {/* Estadísticas */}
       <InventoryStatsCards statistics={statistics} />
 
-      {/* Recomendaciones de Mantenimiento (solo para usuarios con permiso inventario:gestionar) */}
+      {/* Recomendaciones de Mantenimiento (solo para usuarios con permiso inventario:editar) */}
       {canManageInventory && <MantenimientoRecomendaciones />}
 
-      {/* Recomendaciones de Reasignación (solo para usuarios con permiso inventario:gestionar) */}
+      {/* Recomendaciones de Reasignación (solo para usuarios con permiso inventario:editar) */}
       {canManageInventory && reasignaciones.length > 0 && (
         <Card>
           <CardHeader>

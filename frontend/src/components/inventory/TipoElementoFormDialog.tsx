@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { TipoElemento } from '@/lib/types/spaces';
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -70,9 +70,9 @@ export function TipoElementoFormDialog({
 
       let response;
       if (isEditing && tipoElemento) {
-        response = await espaciosApi.actualizarTipoElemento(tipoElemento.id, data);
+        response = await inventarioApi.actualizarTipoElemento(tipoElemento.id, data);
       } else {
-        response = await espaciosApi.crearTipoElemento(data);
+        response = await inventarioApi.crearTipoElemento(data);
       }
       
       toast.success(

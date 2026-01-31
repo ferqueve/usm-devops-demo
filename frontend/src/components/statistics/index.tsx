@@ -9,7 +9,7 @@ export default function Statistics() {
 
   // Permission-based logic
   const canViewReservationStats = hasPermission('estadisticas:ver');
-  const canManageInventory = hasPermission('inventario:gestionar');
+  const canManageInventory = hasPermission('inventario:editar');
   const canViewInventoryStats = hasPermission('inventario:ver');
 
   // ADMIN (usuarios que pueden gestionar inventario Y ver estadísticas) ven ambos con tabs

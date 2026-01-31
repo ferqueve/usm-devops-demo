@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/lib/api/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 
 export default function ForgotPasswordPage() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

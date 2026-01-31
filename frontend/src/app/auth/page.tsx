@@ -207,9 +207,6 @@ export default function AuthPage() {
             showSuccessMessage={registrationSuccess}
             userEmail={lastRegisteredEmail}
             onBackToLogin={handleBackToLogin}
-            onResendEmail={async () => {
-              // Esta función se manejará desde el RegisterForm
-            }}
           />
         ) : (
           <LoginForm 

@@ -5,17 +5,20 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: {
+    id: number;
     email: string;
     nombre: string;
     rol: string;
   } | null;
   login: (credentials?: { email: string; password: string }) => Promise<void>;
-  register: (userData: { 
-    nombre: string; 
-    apellido: string; 
-    email: string; 
-    password: string; 
+  register: (userData: {
+    nombre: string;
+    apellido: string;
+    email: string;
+    password: string;
     confirmPassword: string;
+    aceptaTerminos: boolean;
+    aceptaPolitica: boolean;
   }) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;

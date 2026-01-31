@@ -18,6 +18,7 @@ import {
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { preferencesApi, type PreferenciasEmail, type PreferenciasVista } from '@/lib/api/preferences';
+import { ROLES } from '@/lib/config/constants';
 import { usuariosApi } from '@/lib/api/users';
 import { useAuth } from '@/hooks/useAuth';
 import { useRolePermissions } from '@/hooks/useRolePermissions';

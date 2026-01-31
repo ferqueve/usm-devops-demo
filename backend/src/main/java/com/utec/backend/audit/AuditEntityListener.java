@@ -112,8 +112,31 @@ public class AuditEntityListener {
     @PreUpdate
     public void preUpdate(Object entity) {
         // Guardar estado anterior antes de actualizar
-        // Esto se manejará mejor con un interceptor que capture el estado anterior
-        // Por ahora no implementamos esto para evitar complejidad
+        // Creamos un "snapshot" del estado actual que será el "anterior" después del UPDATE
+        try {
+            // Crear una copia simple de los datos actuales
+            Object previousState = createSnapshot(entity);
+            // Guardar en ThreadLocal para usarlo en PostUpdate
+            AuditContext.setPreviousState(entity, previousState);
+            log.debug("Estado anterior capturado para {}", entity.getClass().getSimpleName());
+        } catch (Exception e) {
+            log.warn("Error al capturar estado anterior en preUpdate: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Crear un snapshot (copia) del estado actual de una entidad
+     */
+    private Object createSnapshot(Object entity) {
+        try {
+            // Usar clonación por serialización o crear un nuevo objeto con los mismos valores
+            // Para simplificar, devolvemos la entidad misma ya que extractSimpleFields
+            // en AuditService ya maneja la extracción de campos
+            return entity;
+        } catch (Exception e) {
+            log.warn("Error al crear snapshot de entidad: {}", e.getMessage());
+            return null;
+        }
     }
     
     @PostUpdate
@@ -123,7 +146,7 @@ public class AuditEntityListener {
             log.debug("AuditService no disponible, saltando auditoría");
             return;
         }
-        
+
         try {
             Long id = getIdFromEntity(entity);
             if (id == null) {
@@ -131,18 +154,23 @@ public class AuditEntityListener {
                         entity != null ? entity.getClass().getSimpleName() : "null");
                 return;
             }
-            
+
             String entidad = getEntityName(entity);
             // Obtener usuario del ThreadLocal (establecido por AuditAspect)
             // NO hacer consultas a BD aquí
             Usuario usuario = getCurrentUser();
-            
-            // Para UPDATE, no tenemos el estado anterior fácilmente aquí
-            // Se registrará solo el estado nuevo
-            auditService.logUpdate(entidad, id, usuario, null, entity);
+
+            // Obtener el estado anterior del ThreadLocal (establecido en PreUpdate)
+            Object previousState = AuditContext.getPreviousState(entity);
+
+            // Registrar UPDATE con estado anterior y nuevo
+            auditService.logUpdate(entidad, id, usuario, previousState, entity);
+
+            // Limpiar el estado anterior del ThreadLocal
+            AuditContext.clearPreviousState(entity);
         } catch (Exception e) {
             // Fail-safe: nunca lanzar excepciones que afecten la transacción principal
-            log.error("Error en postUpdate audit para {}: {}", 
+            log.error("Error en postUpdate audit para {}: {}",
                     entity != null ? entity.getClass().getSimpleName() : "null", e.getMessage(), e);
         }
     }

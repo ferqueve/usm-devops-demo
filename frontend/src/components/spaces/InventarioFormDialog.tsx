@@ -16,8 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { espaciosApi } from '@/lib/api/spaces';
-import type { TipoElemento, InventarioItem } from '@/lib/types/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
+import type { InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 
@@ -36,7 +37,7 @@ export function InventarioFormDialog({
   onOpenChange,
   onSuccess
 }: InventarioFormDialogProps) {
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
+  const { tiposElemento } = useTiposElemento();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     tipoElementoId: 0,
@@ -49,7 +50,6 @@ export function InventarioFormDialog({
 
   useEffect(() => {
     if (open) {
-      fetchTiposElemento();
       if (inventarioItem) {
         setFormData({
           tipoElementoId: inventarioItem.tipoElementoId,
@@ -67,17 +67,6 @@ export function InventarioFormDialog({
       }
     }
   }, [open, inventarioItem]);
-
-  const fetchTiposElemento = async () => {
-    try {
-      const response = await espaciosApi.listarTiposElemento();
-      if (response.data) {
-        setTiposElemento(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,9 +94,9 @@ export function InventarioFormDialog({
 
       let response;
       if (isEditing && inventarioItem) {
-        response = await espaciosApi.actualizarInventarioItem(inventarioItem.id, data);
+        response = await inventarioApi.actualizarInventarioItem(inventarioItem.id, data);
       } else {
-        response = await espaciosApi.crearInventarioItem(data);
+        response = await inventarioApi.crearInventarioItem(data);
       }
 
       if (response.data) {

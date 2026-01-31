@@ -18,8 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { espaciosApi } from '@/lib/api/spaces';
-import type { InventarioItem, TipoElemento, Espacio } from '@/lib/types/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
+import { useEspacios } from '@/hooks/useEspacios';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
+import type { InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 
@@ -30,16 +32,16 @@ interface InventoryFormDialogProps {
   onSuccess: (item: InventarioItem) => void;
 }
 
-export default function InventoryFormDialog({ 
-  item, 
-  open, 
-  onOpenChange, 
-  onSuccess 
+export default function InventoryFormDialog({
+  item,
+  open,
+  onOpenChange,
+  onSuccess
 }: InventoryFormDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [espacios, setEspacios] = useState<Espacio[]>([]);
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
-  
+  const { espacios } = useEspacios();
+  const { tiposElemento } = useTiposElemento();
+
   // Form data
   const [formData, setFormData] = useState({
     espacioId: null as number | null,
@@ -51,9 +53,6 @@ export default function InventoryFormDialog({
 
   useEffect(() => {
     if (open) {
-      fetchEspacios();
-      fetchTiposElemento();
-      
       if (item) {
         setFormData({
           espacioId: item.espacioId ?? null,
@@ -74,28 +73,6 @@ export default function InventoryFormDialog({
       }
     }
   }, [open, item]);
-
-  const fetchEspacios = async () => {
-    try {
-      const response = await espaciosApi.obtenerEspacios();
-      if (response.data) {
-        setEspacios(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar espacios:', error);
-    }
-  };
-
-  const fetchTiposElemento = async () => {
-    try {
-      const response = await espaciosApi.listarTiposElemento();
-      if (response.data) {
-        setTiposElemento(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,10 +102,10 @@ export default function InventoryFormDialog({
       let result: InventarioItem;
       
       if (item) {
-        const response = await espaciosApi.actualizarInventarioItem(item.id, submitData);
+        const response = await inventarioApi.actualizarInventarioItem(item.id, submitData);
         result = (response.data || response) as InventarioItem;
       } else {
-        const response = await espaciosApi.crearInventarioItem(submitData);
+        const response = await inventarioApi.crearInventarioItem(submitData);
         result = (response.data || response) as InventarioItem;
       }
       

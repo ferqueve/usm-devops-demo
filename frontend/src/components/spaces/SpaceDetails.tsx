@@ -17,6 +17,7 @@ import { DeleteSpaceDialog } from './DeleteSpaceDialog';
 import { InventarioFormDialog } from './InventarioFormDialog';
 import { DeleteInventarioDialog } from './DeleteInventarioDialog';
 import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { Espacio, InventarioItem } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import {
@@ -105,7 +106,7 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
   const fetchInventario = useCallback(async () => {
     try {
       setLoadingInventario(true);
-      const response = await espaciosApi.listarInventarioPorEspacio(espacioId);
+      const response = await inventarioApi.listarInventarioPorEspacio(espacioId);
       if (response.data) {
         setInventario(response.data);
       }

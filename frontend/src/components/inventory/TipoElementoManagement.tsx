@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -8,13 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { espaciosApi } from '@/lib/api/spaces';
-import type { TipoElemento } from '@/lib/types/spaces';
+import { useTiposElemento } from '@/hooks/useTiposElemento';
 import { Plus, Edit, Trash2, Package } from 'lucide-react';
-import { toast } from 'sonner';
 import { TipoElementoFormDialog } from './TipoElementoFormDialog';
 import { DeleteTipoElementoDialog } from './DeleteTipoElementoDialog';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import type { TipoElemento } from '@/lib/types/spaces';
 
 interface TipoElementoManagementProps {
   open: boolean;
@@ -22,39 +21,18 @@ interface TipoElementoManagementProps {
   onSuccess: () => void;
 }
 
-export function TipoElementoManagement({ 
-  open, 
-  onOpenChange, 
-  onSuccess 
+export function TipoElementoManagement({
+  open,
+  onOpenChange,
+  onSuccess
 }: TipoElementoManagementProps) {
-  const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
-  const [loading, setLoading] = useState(false);
-  
+  const { tiposElemento, loading, refresh: refreshTiposElemento } = useTiposElemento();
+
   // Estados para modales
   const [createDialog, setCreateDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedTipo, setSelectedTipo] = useState<TipoElemento | null>(null);
-
-  // Cargar tipos
-  useEffect(() => {
-    if (open) {
-      fetchTiposElemento();
-    }
-  }, [open]);
-
-  const fetchTiposElemento = async () => {
-    try {
-      setLoading(true);
-      const response = await espaciosApi.listarTiposElemento();
-      setTiposElemento(response.data || []);
-    } catch (error) {
-      console.error('Error al cargar tipos de elemento:', error);
-      toast.error('Error al cargar tipos de elemento');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreateClick = () => {
     setSelectedTipo(null);
@@ -72,14 +50,14 @@ export function TipoElementoManagement({
   };
 
   const handleFormSuccess = () => {
-    fetchTiposElemento();
+    refreshTiposElemento();
     onSuccess();
     setCreateDialog(false);
     setEditDialog(false);
   };
 
   const handleDeleteSuccess = () => {
-    fetchTiposElemento();
+    refreshTiposElemento();
     onSuccess();
     setDeleteDialog(false);
   };

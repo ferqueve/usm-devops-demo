@@ -56,7 +56,7 @@ export default function BulkActionsBar({
           </Button>
         </PermissionGuard>
 
-        <PermissionGuard requiredPermission="inventario:exportar">
+        <PermissionGuard requiredPermission="inventario:ver">
           <Button
             variant="outline"
             size="sm"

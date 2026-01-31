@@ -3,8 +3,8 @@ package com.utec.backend.service;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.time.ZoneId;
@@ -17,14 +17,24 @@ import java.util.Optional;
  * Servicio para el envío de emails usando Gmail API
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final GmailApiService gmailApiService;
+    @Autowired(required = false)
+    private GmailApiService gmailApiService;
+
     private final UsuarioRepository usuarioRepository;
     private final UsuarioConfiguracionService configuracionService;
     private final EmailTemplateService emailTemplateService;
+
+    public EmailService(
+            UsuarioRepository usuarioRepository,
+            UsuarioConfiguracionService configuracionService,
+            EmailTemplateService emailTemplateService) {
+        this.usuarioRepository = usuarioRepository;
+        this.configuracionService = configuracionService;
+        this.emailTemplateService = emailTemplateService;
+    }
 
     @Value("${gmail.api.from-email:usm.utec.uy@gmail.com}")
     private String fromEmail;
@@ -39,12 +49,34 @@ public class EmailService {
     private String appTimezone;
 
     /**
+     * Verifica si el servicio de email está disponible
+     */
+    private boolean isEmailAvailable() {
+        return gmailApiService != null && gmailApiService.isAvailable();
+    }
+
+    /**
+     * Envía un email HTML de forma segura (chequea disponibilidad primero)
+     */
+    private boolean sendHtmlEmailSafe(String to, String subject, String htmlBody) {
+        if (!isEmailAvailable()) {
+            log.warn("Cannot send email to {}: Gmail API is not available", to);
+            return false;
+        }
+        return sendHtmlEmailSafe(to, subject, htmlBody);
+    }
+
+    /**
      * Verifica la configuración de email enviando un email de prueba
      *
      * @param to Email del destinatario para la prueba
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean verificarConfiguracionEmail(String to) {
+        if (!isEmailAvailable()) {
+            log.warn("Cannot send verification email to {}: Gmail API is not available", to);
+            return false;
+        }
         return gmailApiService.verificarConfiguracionGmailApi(to);
     }
 
@@ -95,7 +127,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("verificacion.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -120,7 +152,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("recuperacion-password.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        boolean enviado = gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        boolean enviado = sendHtmlEmailSafe(to, subject, htmlBody);
         if (!enviado) {
             log.error("Error al enviar email de recuperación de contraseña a {}: Gmail API retornó false", to);
         }
@@ -148,7 +180,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("restablecimiento-password.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -180,7 +212,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("nueva-solicitud-reserva.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -211,7 +243,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("reserva-aprobada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -242,7 +274,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("reserva-rechazada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -274,7 +306,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("reserva-cancelada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -307,7 +339,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("recordatorio-reserva.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -335,7 +367,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("cambio-rol.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -378,7 +410,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("cambio-estado.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -412,7 +444,7 @@ public class EmailService {
             String htmlContentViejo = emailTemplateService.loadTemplate("cambio-email.html", variablesViejo);
             String htmlBodyViejo = emailTemplateService.wrapInBaseTemplate(htmlContentViejo, subject, frontendUrl);
 
-            enviadoViejo = gmailApiService.sendHtmlEmail(toEmailViejo, subject, htmlBodyViejo);
+            enviadoViejo = sendHtmlEmailSafe(toEmailViejo, subject, htmlBodyViejo);
         }
         
         // Enviar al email nuevo (si está permitido)
@@ -427,7 +459,7 @@ public class EmailService {
             String htmlContentNuevo = emailTemplateService.loadTemplate("cambio-email.html", variablesNuevo);
             String htmlBodyNuevo = emailTemplateService.wrapInBaseTemplate(htmlContentNuevo, subject, frontendUrl);
 
-            enviadoNuevo = gmailApiService.sendHtmlEmail(toEmailNuevo, subject, htmlBodyNuevo);
+            enviadoNuevo = sendHtmlEmailSafe(toEmailNuevo, subject, htmlBodyNuevo);
         }
         
         return enviadoViejo && enviadoNuevo;
@@ -474,7 +506,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("reserva-actualizada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(toEmail, subject, htmlBody);
+        return sendHtmlEmailSafe(toEmail, subject, htmlBody);
     }
 
     /**
@@ -509,7 +541,7 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("nueva-solicitud-inventario.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 
     /**
@@ -598,6 +630,6 @@ public class EmailService {
         String htmlContent = emailTemplateService.loadTemplate("estado-solicitud-inventario.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
 
-        return gmailApiService.sendHtmlEmail(to, subject, htmlBody);
+        return sendHtmlEmailSafe(to, subject, htmlBody);
     }
 }

@@ -8,10 +8,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface DeleteInventoryDialogProps {
   item: InventarioItem | null;
@@ -33,7 +34,7 @@ export default function DeleteInventoryDialog({
     
     try {
       setLoading(true);
-      await espaciosApi.eliminarInventarioItem(item.id);
+      await inventarioApi.eliminarInventarioItem(item.id);
       onSuccess();
       onOpenChange(false);
       toast.success('Item eliminado exitosamente');
@@ -60,13 +61,15 @@ export default function DeleteInventoryDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleDelete} 
-            disabled={loading}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {loading ? 'Eliminando...' : 'Eliminar'}
-          </AlertDialogAction>
+          <PermissionGuard requiredPermission="inventario:eliminar">
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={loading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {loading ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </PermissionGuard>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

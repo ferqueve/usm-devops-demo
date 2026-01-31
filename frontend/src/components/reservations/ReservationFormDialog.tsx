@@ -22,6 +22,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
+import { espaciosApi } from '@/lib/api/spaces';
 import { usuariosApi } from '@/lib/api/users';
 import type { Reserva } from '@/lib/types/spaces';
 import type { User } from '@/lib/types/users';
@@ -35,6 +36,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { useAuth } from '@/hooks/useAuth';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useCarreras } from '@/hooks/useCarreras';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
@@ -51,11 +53,12 @@ export default function ReservationFormDialog({
   onSuccess
 }: ReservationFormDialogProps) {
   const { hasPermission } = useRolePermissions();
+  const { user } = useAuth();
 
   // Permission-based logic
   const canApprove = hasPermission('reserva:aprobar'); // ANALISTA/ADMIN can approve
   const canViewRecommendations = hasPermission('recomendacion:ver'); // DOCENTE can view recommendations
-  const needsAnalystAssignment = !canApprove; // Users who can't approve need analyst assignment
+  const needsAnalystAssignment = !canApprove; // Users who can't approve need analyst selection
   
   // Ref para medir la altura del formulario y aplicarla al panel de recomendaciones
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -398,8 +401,8 @@ export default function ReservationFormDialog({
   }, [formData.espacioId, formData.horaInicioHora, formData.horaFinHora]);
 
   useEffect(() => {
-    if (needsAnalystAssignment && canViewRecommendations) {
-      // DOCENTE needs analyst assignment
+    if (needsAnalystAssignment) {
+      // DOCENTE and EXTERNO need analyst selection
       fetchAnalistas();
     }
     setFecha(new Date());
@@ -645,8 +648,8 @@ export default function ReservationFormDialog({
       return;
     }
 
-    // 10. Validar analista si necesita asignación de analista (DOCENTE requiere, EXTERNO no)
-    if (needsAnalystAssignment && canViewRecommendations && !formData.analistaId) {
+    // 10. Validar analista si necesita asignación (DOCENTE/EXTERNO deben seleccionar analista)
+    if (needsAnalystAssignment && !formData.analistaId) {
       toast.error('Por favor selecciona un analista para gestionar tu solicitud');
       return;
     }
@@ -685,7 +688,11 @@ export default function ReservationFormDialog({
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: (needsAnalystAssignment && canViewRecommendations && formData.analistaId) ? parseInt(formData.analistaId) : undefined,
+        analistaId: canApprove
+          ? user?.id // ADMIN/ANALISTA se asigna a sí mismo
+          : needsAnalystAssignment && formData.analistaId
+            ? parseInt(formData.analistaId) // DOCENTE/EXTERNO selecciona analista
+            : undefined,
         esPublica: !canViewRecommendations ? true : undefined, // Externos (sin permiso recomendacion:ver) siempre crean reservas públicas
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
@@ -741,7 +748,7 @@ export default function ReservationFormDialog({
     formData.horaInicioHora &&
     formData.horaFinHora &&
     !horaError &&
-    (!(needsAnalystAssignment && canViewRecommendations) || formData.analistaId) // Analista requerido solo para DOCENTE (EXTERNO no requiere)
+    (!needsAnalystAssignment || formData.analistaId) // DOCENTE/EXTERNO must select analyst
   );
 
   return (
@@ -889,8 +896,8 @@ export default function ReservationFormDialog({
               </div>
             )}
 
-            {/* Analista asignado - solo para DOCENTE (necesita asignación y puede ver recomendaciones) */}
-            {needsAnalystAssignment && canViewRecommendations && (
+            {/* Analista asignado - para usuarios que necesitan solicitar (DOCENTE/EXTERNO) */}
+            {needsAnalystAssignment && (
               <>
                 <div className="flex items-center gap-4">
                   <Label htmlFor="analista" className="text-sm font-semibold text-gray-700 min-w-[80px]">

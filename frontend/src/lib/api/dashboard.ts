@@ -1,5 +1,6 @@
 import { apiRequest, type ApiResponse } from './client';
 import { espaciosApi } from './spaces';
+import { inventarioApi } from './inventory';
 import { reservationsApi } from './reservations';
 import { usuariosApi } from './users';
 import { statsApi } from './stats';
@@ -152,7 +153,7 @@ export const dashboardApi = {
         usuariosApi.obtenerEstadisticas().catch(() => null),
         reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
         statsApi.getActiveUsers().catch(() => null),
-        espaciosApi.obtenerEstadisticasInventario().catch(() => null),
+        inventarioApi.obtenerEstadisticasInventario().catch(() => null),
       ];
 
       const results = await Promise.allSettled(promises);
@@ -231,7 +232,7 @@ export const dashboardApi = {
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
         reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
-        espaciosApi.obtenerEstadisticasInventario().catch(() => null),
+        inventarioApi.obtenerEstadisticasInventario().catch(() => null),
       ];
 
       const results = await Promise.allSettled(promises);
@@ -299,7 +300,7 @@ export const dashboardApi = {
       const promises = [
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
-        espaciosApi.obtenerEstadisticasInventario().catch(() => null),
+        inventarioApi.obtenerEstadisticasInventario().catch(() => null),
         reservationsApi.obtenerTodasLasReservas().catch(() => null), // Solo lectura para ver ocupación
       ];
 
@@ -334,7 +335,7 @@ export const dashboardApi = {
         totalUsuarios: 0,
         usuariosActivos: 0,
         usuariosNuevosHoy: 0,
-        ocupacionPromedio: 0
+        promedioReservasPorEspacio: 0
       };
 
       return {

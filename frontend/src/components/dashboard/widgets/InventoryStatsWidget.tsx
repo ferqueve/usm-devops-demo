@@ -1,13 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Package, CheckCircle2, Wrench, AlertTriangle, Archive } from 'lucide-react';
-
-interface InventoryStats {
-  totalItems: number;
-  disponibles: number;
-  enMantenimiento: number;
-  danados: number;
-  sinAsignar: number;
-}
+import type { InventoryStats } from '@/lib/types/spaces';
 
 interface InventoryStatsWidgetProps {
   stats: InventoryStats | null;
@@ -57,7 +50,7 @@ export default function InventoryStatsWidget({ stats, loading }: InventoryStatsW
     },
     {
       label: 'En Mantenimiento',
-      value: stats.enMantenimiento,
+      value: stats.mantenimiento,
       icon: Wrench,
       color: 'text-yellow-600'
     },

@@ -22,6 +22,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [lastRegisteredEmail, setLastRegisteredEmail] = useState("");
   const [user, setUser] = useState<{
+    id: number;
     email: string;
     nombre: string;
     rol: string;
@@ -130,15 +131,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (response.success && response.data) {
           // Guardar tokens y datos del usuario
           const userData = {
+            id: response.data.id,
             email: response.data.email,
             nombre: response.data.nombre,
             rol: response.data.rol
           };
-          
+
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('refreshToken', response.data.refreshToken);
           localStorage.setItem('user', JSON.stringify(userData));
-          
+
           // Guardar en el estado del contexto
           setUser(userData);
         } else {

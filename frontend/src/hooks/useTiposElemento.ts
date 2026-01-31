@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { espaciosApi } from '@/lib/api/spaces';
+import { inventarioApi } from '@/lib/api/inventory';
 import type { TipoElemento } from '@/lib/types/spaces';
 import { toast } from 'sonner';
 
@@ -60,7 +60,7 @@ export function useTiposElemento() {
 
     pendingRequest = (async () => {
       try {
-        const response = await espaciosApi.listarTiposElemento();
+        const response = await inventarioApi.listarTiposElemento();
 
         if (response.data) {
           // Actualizar caché global

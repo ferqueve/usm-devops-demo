@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { dashboardApi, type DashboardData } from '@/lib/api/dashboard';
 import { espaciosApi } from '@/lib/api/spaces';
 import { inventarioApi } from '@/lib/api/inventory';
 import { recomendacionesApi } from '@/lib/api/recomendaciones';
 import { reservationsApi } from '@/lib/api/reservations';
-import type { Reserva } from '@/lib/types/spaces';
+import type { Reserva, InventoryStats as InventoryStatsType } from '@/lib/types/spaces';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import { AlertCircle, Package, Sparkles, AlertTriangle } from 'lucide-react';
 
 // Importar widgets
 import DashboardStats from './DashboardStats';
@@ -24,14 +20,6 @@ import SpaceStatsWidget from './widgets/SpaceStatsWidget';
 import PendingReservationsAlert from './widgets/PendingReservationsAlert';
 import PriorityReservationsWidget from './widgets/PriorityReservationsWidget';
 import PendingInventoryRequestsAlert from './widgets/PendingInventoryRequestsAlert';
-
-interface InventoryStats {
-  totalItems: number;
-  disponibles: number;
-  enMantenimiento: number;
-  danados: number;
-  sinAsignar: number;
-}
 
 interface EspaciosStats {
   totalEspacios: number;
@@ -46,8 +34,7 @@ export default function UnifiedDashboard() {
   // Permission-based visibility
   const canViewReservationStats = hasPermission('estadisticas:ver'); // ANALISTA, ADMIN
   const canApproveReservations = hasPermission('reserva:aprobar'); // ANALISTA, ADMIN
-  const canManageInventory = hasPermission('inventario:gestionar'); // ADMIN, MANTENIMIENTO
-  const canViewInventory = hasPermission('inventario:ver'); // ANALISTA, ADMIN, MANTENIMIENTO
+  const canManageInventory = hasPermission('inventario:editar'); // ADMIN, MANTENIMIENTO
   const canViewRecommendations = hasPermission('recomendacion:ver'); // DOCENTE
   const canCreateReservations = hasPermission('reserva:crear'); // All except ALUMNO
 
@@ -64,7 +51,7 @@ export default function UnifiedDashboard() {
   const [loadingPrioritarias, setLoadingPrioritarias] = useState(false);
 
   // Estados para Mantenimiento
-  const [inventarioStats, setInventarioStats] = useState<InventoryStats | null>(null);
+  const [inventarioStats, setInventarioStats] = useState<InventoryStatsType | null>(null);
   const [espaciosStats, setEspaciosStats] = useState<EspaciosStats | null>(null);
   const [pendingInventoryRequests, setPendingInventoryRequests] = useState(0);
 
@@ -88,8 +75,8 @@ export default function UnifiedDashboard() {
           // EXTERNO
           dashboardData = await dashboardApi.obtenerDatosDashboardExterno();
         } else {
-          // ALUMNO (default)
-          dashboardData = await dashboardApi.obtenerDatosDashboardAlumno();
+          // ESTUDIANTE (default)
+          dashboardData = await dashboardApi.obtenerDatosDashboardEstudiante();
         }
 
         setData(dashboardData);
@@ -136,12 +123,12 @@ export default function UnifiedDashboard() {
         if (canManageInventory && !canApproveReservations) {
           try {
             const [inventarioRes, espaciosRes] = await Promise.all([
-              inventarioApi.obtenerEstadisticas(),
-              espaciosApi.obtenerEstadisticas()
+              inventarioApi.obtenerEstadisticasInventario(),
+              espaciosApi.obtenerEstadisticasEspacios()
             ]);
 
             if (inventarioRes.data) {
-              setInventarioStats(inventarioRes.data as InventoryStats);
+              setInventarioStats(inventarioRes.data);
             }
             if (espaciosRes.data) {
               setEspaciosStats(espaciosRes.data as EspaciosStats);

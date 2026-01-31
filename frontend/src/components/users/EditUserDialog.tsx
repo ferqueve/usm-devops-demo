@@ -165,7 +165,7 @@ export function EditUserDialog({
               <X className="h-4 w-4 mr-2" />
               Cancelar
             </Button>
-            <PermissionGuard requiredPermission="usuarios:gestionar">
+            <PermissionGuard requiredPermission="usuario:gestionar">
               <Button 
                 type="submit" 
                 disabled={loading || !formData.email?.trim() || !formData.nombre?.trim()}

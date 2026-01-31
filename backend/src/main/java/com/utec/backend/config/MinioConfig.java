@@ -31,8 +31,17 @@ public class MinioConfig {
     @Value("${minio.region}")
     private String region;
 
+    @Value("${minio.enabled:false}")
+    private boolean minioEnabled;
+
     @Bean
     public MinioClient minioClient() {
+        if (!minioEnabled) {
+            log.warn("MinIO is DISABLED. File storage functionality will not be available.");
+            log.warn("To enable MinIO, set minio.enabled=true and configure connection settings.");
+            return null;
+        }
+
         try {
             MinioClient client = MinioClient.builder()
                     .endpoint(endpoint)
@@ -45,8 +54,9 @@ public class MinioConfig {
             log.info("MinIO client configurado correctamente. Endpoint: {}", endpoint);
             return client;
         } catch (Exception e) {
-            log.error("Error al configurar MinIO client", e);
-            throw new RuntimeException("No se pudo inicializar MinIO client", e);
+            log.error("Error al configurar MinIO client: {}", e.getMessage());
+            log.warn("MinIO will be DISABLED. File storage functionality will not be available.");
+            return null;
         }
     }
 

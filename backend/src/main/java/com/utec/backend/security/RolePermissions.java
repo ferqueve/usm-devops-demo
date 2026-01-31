@@ -23,10 +23,12 @@ public final class RolePermissions {
 
         // ===== ADMIN - Todos los permisos =====
         // ADMIN tiene acceso total (wildcard)
-        map.put(ROLE_ADMIN, Set.of("*"));
+        // Incluye explícitamente auditoria:ver para documentación
+        map.put(ROLE_ADMIN, Set.of("*", "auditoria:ver"));
 
         // Nota: Para ADMIN no es necesario listar permisos individuales
         // porque el wildcard "*" le da acceso a todo
+        // El permiso auditoria:ver se lista explícitamente solo para claridad
 
         // ===== ANALISTA =====
         // Autoridad completa sobre reservas, visualización de espacios e inventario
@@ -77,10 +79,11 @@ public final class RolePermissions {
             // Reservas - Solo lectura (para ver ocupación)
             "reserva:ver_todas",
 
-            // Espacios - CRUD (excepto eliminar)
+            // Espacios - CRUD completo
             "espacio:ver",
             "espacio:crear",
             "espacio:editar",
+            "espacio:eliminar",
 
             // Inventario - CRUD completo
             "inventario:ver",
@@ -89,10 +92,11 @@ public final class RolePermissions {
             "inventario:eliminar",
             "inventario:asignar",
 
-            // Tipos - CRUD (excepto eliminar)
+            // Tipos - CRUD completo
             "tipo:ver",
             "tipo:crear",
             "tipo:editar",
+            "tipo:eliminar",
 
             // Solicitudes de inventario
             "solicitud_inventario:ver",
@@ -103,8 +107,10 @@ public final class RolePermissions {
             "estadisticas:ver_inventario",
             "estadisticas:ver_espacios",
 
-            // Recomendaciones - gestionar estado
+            // Recomendaciones - gestionar estado y asignaciones
             "recomendacion:gestionar_estado",
+            "recomendacion:gestionar_asignaciones",
+            "recomendacion:ver_compras",
 
             // Archivos
             "archivo:subir",

@@ -38,27 +38,21 @@ export type Permission =
   | 'carrera:eliminar'
   // Solicitudes de Inventario
   | 'solicitud_inventario:ver'
-  | 'solicitud_inventario:crear'
   | 'solicitud_inventario:aprobar'
-  | 'solicitud_inventario:rechazar'
-  | 'solicitud_inventario:entregar'
   // Estadísticas
   | 'estadisticas:ver'
   | 'estadisticas:ver_reservas'
   | 'estadisticas:ver_inventario'
   | 'estadisticas:ver_espacios'
-  | 'estadisticas:exportar'
   // Recomendaciones
   | 'recomendacion:ver'
   | 'recomendacion:solicitar'
   | 'recomendacion:ver_estadisticas'
   | 'recomendacion:gestionar_estado'
+  | 'recomendacion:gestionar_asignaciones'
+  | 'recomendacion:ver_compras'
   // Usuarios
-  | 'usuario:ver'
   | 'usuario:ver_analistas'
-  | 'usuario:crear'
-  | 'usuario:editar'
-  | 'usuario:eliminar'
   | 'usuario:gestionar'
   // Archivos
   | 'archivo:ver'
@@ -112,30 +106,24 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
 
     // Solicitudes de Inventario - Acceso completo
     'solicitud_inventario:ver',
-    'solicitud_inventario:crear',
     'solicitud_inventario:aprobar',
-    'solicitud_inventario:rechazar',
-    'solicitud_inventario:entregar',
 
     // Estadísticas - Acceso completo
     'estadisticas:ver',
     'estadisticas:ver_reservas',
     'estadisticas:ver_inventario',
     'estadisticas:ver_espacios',
-    'estadisticas:exportar',
 
     // Recomendaciones - Acceso completo
     'recomendacion:ver',
     'recomendacion:solicitar',
     'recomendacion:ver_estadisticas',
     'recomendacion:gestionar_estado',
+    'recomendacion:gestionar_asignaciones',
+    'recomendacion:ver_compras',
 
     // Usuarios - Acceso completo
-    'usuario:ver',
     'usuario:ver_analistas',
-    'usuario:crear',
-    'usuario:editar',
-    'usuario:eliminar',
     'usuario:gestionar',
 
     // Archivos - Acceso completo
@@ -194,10 +182,11 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     // Reservas - Solo lectura (para ver ocupación)
     'reserva:ver_todas',
 
-    // Espacios - CRUD (excepto eliminar)
+    // Espacios - CRUD completo
     'espacio:ver',
     'espacio:crear',
     'espacio:editar',
+    'espacio:eliminar',
 
     // Inventario - CRUD completo
     'inventario:ver',
@@ -206,10 +195,11 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     'inventario:eliminar',
     'inventario:asignar',
 
-    // Tipos - CRUD (excepto eliminar)
+    // Tipos - CRUD completo
     'tipo:ver',
     'tipo:crear',
     'tipo:editar',
+    'tipo:eliminar',
 
     // Solicitudes de inventario
     'solicitud_inventario:ver',
@@ -220,8 +210,10 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     'estadisticas:ver_inventario',
     'estadisticas:ver_espacios',
 
-    // Recomendaciones - gestionar estado
+    // Recomendaciones - gestionar estado y asignaciones
     'recomendacion:gestionar_estado',
+    'recomendacion:gestionar_asignaciones',
+    'recomendacion:ver_compras',
 
     // Archivos
     'archivo:ver',
@@ -385,35 +377,14 @@ export const permissionHelpers = {
     if (resource === 'reserva') {
       return hasPermission(role, 'reserva:crear');
     }
-    if (resource === 'solicitud_inventario') {
-      return hasPermission(role, 'solicitud_inventario:crear');
-    }
     if (resource === 'recomendacion') {
       return hasPermission(role, 'recomendacion:solicitar');
-    }
-    return false;
-  },
-  canReject: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'solicitud_inventario') {
-      return hasPermission(role, 'solicitud_inventario:rechazar');
-    }
-    return false;
-  },
-  canDeliver: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'solicitud_inventario') {
-      return hasPermission(role, 'solicitud_inventario:entregar');
     }
     return false;
   },
   canAssign: (role: Role | null, resource: Resource): boolean => {
     if (resource === 'inventario') {
       return hasPermission(role, 'inventario:asignar');
-    }
-    return false;
-  },
-  canExport: (role: Role | null, resource: Resource): boolean => {
-    if (resource === 'estadisticas') {
-      return hasPermission(role, 'estadisticas:exportar');
     }
     return false;
   },
