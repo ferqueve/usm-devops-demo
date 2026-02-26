@@ -3,6 +3,7 @@ package com.utec.backend.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.utec.backend.audit.AuditContext;
 import com.utec.backend.dto.audit.AuditLogResponseDto;
 import com.utec.backend.dto.common.PagedResponseDto;
 import com.utec.backend.model.AuditLog;
@@ -55,13 +56,15 @@ public class AuditService {
             auditLog.setUsuario(usuario);
             auditLog.setDatosNuevos(convertToJson(datosNuevos));
 
-            // Agregar información de request HTTP si está disponible
+            // Agregar información de request HTTP si está disponible (obligatorio ip_address en BD)
             AuditContext.RequestInfo requestInfo = AuditContext.getRequestInfo();
             if (requestInfo != null) {
                 auditLog.setIpAddress(requestInfo.getIpAddress());
                 auditLog.setHttpMethod(requestInfo.getHttpMethod());
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
+            } else {
+                auditLog.setIpAddress("system");
             }
 
             auditLogRepository.save(auditLog);
@@ -89,13 +92,15 @@ public class AuditService {
             auditLog.setDatosPrevios(convertToJson(datosPrevios));
             auditLog.setDatosNuevos(convertToJson(datosNuevos));
 
-            // Agregar información de request HTTP si está disponible
+            // Agregar información de request HTTP si está disponible (obligatorio ip_address en BD)
             AuditContext.RequestInfo requestInfo = AuditContext.getRequestInfo();
             if (requestInfo != null) {
                 auditLog.setIpAddress(requestInfo.getIpAddress());
                 auditLog.setHttpMethod(requestInfo.getHttpMethod());
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
+            } else {
+                auditLog.setIpAddress("system");
             }
 
             auditLogRepository.save(auditLog);
@@ -122,13 +127,15 @@ public class AuditService {
             auditLog.setUsuario(usuario);
             auditLog.setDatosPrevios(convertToJson(datosPrevios));
 
-            // Agregar información de request HTTP si está disponible
+            // Agregar información de request HTTP si está disponible (obligatorio ip_address en BD)
             AuditContext.RequestInfo requestInfo = AuditContext.getRequestInfo();
             if (requestInfo != null) {
                 auditLog.setIpAddress(requestInfo.getIpAddress());
                 auditLog.setHttpMethod(requestInfo.getHttpMethod());
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
+            } else {
+                auditLog.setIpAddress("system");
             }
 
             auditLogRepository.save(auditLog);
@@ -175,7 +182,7 @@ public class AuditService {
 
             auditLog.setDatosNuevos(objectMapper.writeValueAsString(eventData));
 
-            // Agregar información de request HTTP si está disponible
+            // Agregar información de request HTTP si está disponible (obligatorio ip_address en BD)
             com.utec.backend.audit.AuditContext.RequestInfo requestInfo =
                 com.utec.backend.audit.AuditContext.getRequestInfo();
             if (requestInfo != null) {
@@ -183,6 +190,8 @@ public class AuditService {
                 auditLog.setHttpMethod(requestInfo.getHttpMethod());
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
+            } else {
+                auditLog.setIpAddress("system");
             }
 
             auditLogRepository.save(auditLog);

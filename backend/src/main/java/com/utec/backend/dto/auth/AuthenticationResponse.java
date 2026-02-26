@@ -14,4 +14,5 @@ public class AuthenticationResponse {
     private String nombre;
     private String rol;
     private Long expiresIn;
+    private Long userId;
 }

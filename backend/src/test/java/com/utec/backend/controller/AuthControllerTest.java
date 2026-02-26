@@ -55,7 +55,8 @@ class AuthenticationControllerTest {
                 testEmail,
                 "Juan Pérez",
                 "EXTERNO",
-                3600000L
+                3600000L,
+                1L
         );
 
         when(authenticationService.authenticate(ArgumentMatchers.any(AuthenticationRequest.class)))
@@ -157,7 +158,8 @@ class AuthenticationControllerTest {
                 testEmail,
                 "Juan Pérez",
                 "EXTERNO",
-                3600000L
+                3600000L,
+                1L
         );
 
         when(authenticationService.refreshToken(refreshToken))

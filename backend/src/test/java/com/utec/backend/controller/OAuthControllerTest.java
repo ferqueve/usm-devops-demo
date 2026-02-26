@@ -48,7 +48,8 @@ class OAuthControllerTest {
                 "test@utec.edu.uy",
                 "Juan Pérez",
                 "ESTUDIANTE",
-                3600000L
+                3600000L,
+                1L
         );
 
         when(oauth2Service.handleGoogleCallback(anyString())).thenReturn(authResponse);

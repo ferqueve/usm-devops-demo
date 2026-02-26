@@ -116,7 +116,8 @@ public class OAuth2Service {
                 email,
                 nombre,
                 rol,
-                expiresIn
+                expiresIn,
+                usuario.getId()
             );
 
         } catch (AuthenticationException e) {

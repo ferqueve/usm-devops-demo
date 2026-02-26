@@ -51,7 +51,7 @@ class AuditServiceTest {
         auditLogTest = new AuditLog();
         auditLogTest.setId(auditLogId);
         auditLogTest.setEntidad("Espacio");
-        auditLogTest.setEntidadId(1);
+        auditLogTest.setEntidadId(1L);
         auditLogTest.setAccion(AuditLog.AccionAudit.CREATE);
         auditLogTest.setUsuario(usuarioTest);
         auditLogTest.setTimestamp(Instant.now());

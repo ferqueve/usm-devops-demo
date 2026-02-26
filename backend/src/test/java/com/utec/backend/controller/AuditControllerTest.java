@@ -47,7 +47,7 @@ class AuditControllerTest {
         auditLogResponseDto = new AuditLogResponseDto();
         auditLogResponseDto.setId(auditLogId);
         auditLogResponseDto.setEntidad("Espacio");
-        auditLogResponseDto.setEntidadId(1);
+        auditLogResponseDto.setEntidadId(1L);
         auditLogResponseDto.setAccion(AuditLog.AccionAudit.CREATE);
         auditLogResponseDto.setUsuarioId(1L);
         auditLogResponseDto.setUsuarioNombre("Test User");

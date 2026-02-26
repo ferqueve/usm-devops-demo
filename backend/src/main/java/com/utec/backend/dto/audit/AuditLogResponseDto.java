@@ -13,7 +13,7 @@ import java.time.Instant;
 public class AuditLogResponseDto {
     private Long id;
     private String entidad;
-    private Integer entidadId;
+    private Long entidadId;
     private AuditLog.AccionAudit accion;
     private Long usuarioId;
     private String usuarioNombre;

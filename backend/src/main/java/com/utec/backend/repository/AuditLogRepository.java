@@ -25,7 +25,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
      * Buscar logs por entidad e ID
      */
     @Query("SELECT a FROM AuditLog a WHERE a.entidad = :entidad AND a.entidadId = :entidadId ORDER BY a.timestamp DESC")
-    List<AuditLog> findByEntidadAndEntidadId(@Param("entidad") String entidad, @Param("entidadId") Integer entidadId);
+    List<AuditLog> findByEntidadAndEntidadId(@Param("entidad") String entidad, @Param("entidadId") Long entidadId);
     
     /**
      * Buscar logs por acción

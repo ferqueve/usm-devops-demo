@@ -279,7 +279,8 @@ public class AuthService {
                     usuario.getEmail(),
                     usuario.getNombre(),
                     usuario.getRolApp().name(),
-                    jwtService.getExpirationTime()
+                    jwtService.getExpirationTime(),
+                    usuario.getId()
                 );
             } else {
                 log.warn("Intento de refresh con token inválido para usuario: {}", userEmail);
