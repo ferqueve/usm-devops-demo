@@ -23,7 +23,7 @@ export function EspaciosRecomendados({
   onSelectEspacio,
   espacioSeleccionadoId,
   className,
-}: EspaciosRecomendadosProps) {
+}: Readonly<EspaciosRecomendadosProps>) {
   const [recomendaciones, setRecomendaciones] = useState<RecomendacionEspacio[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -107,11 +107,11 @@ export function EspaciosRecomendados({
                 <Badge
                   className={cn(
                     "ml-2",
-                    rec.puntaje >= 0.8
-                      ? "bg-emerald-100 text-emerald-700"
-                      : rec.puntaje >= 0.6
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-amber-100 text-amber-700"
+                    (() => {
+                      if (rec.puntaje >= 0.8) return "bg-emerald-100 text-emerald-700";
+                      if (rec.puntaje >= 0.6) return "bg-blue-100 text-blue-700";
+                      return "bg-amber-100 text-amber-700";
+                    })()
                   )}
                 >
                   {(rec.puntaje * 100).toFixed(0)}%

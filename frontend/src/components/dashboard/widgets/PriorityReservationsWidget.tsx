@@ -18,7 +18,7 @@ export default function PriorityReservationsWidget({
   loading,
   canApprove,
   onViewDetails
-}: PriorityReservationsWidgetProps) {
+}: Readonly<PriorityReservationsWidgetProps>) {
   if (!canApprove || loading || reservasPrioritarias.length === 0) {
     return null;
   }
@@ -64,11 +64,11 @@ export default function PriorityReservationsWidget({
                   onViewDetails(reserva);
                   return;
                 }
-                window.location.href = `/reservations?reservaId=${inferredReservaId}`;
+                globalThis.location.href = `/reservations?reservaId=${inferredReservaId}`;
               } else {
                 // Buscar por texto relevante en la lista de reservas
                 const q = encodeURIComponent(rec.razon || rec.espacioNombre || '');
-                window.location.href = `/reservations?search=${q}`;
+                globalThis.location.href = `/reservations?search=${q}`;
               }
             };
 

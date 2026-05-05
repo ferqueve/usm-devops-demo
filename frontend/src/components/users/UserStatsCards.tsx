@@ -37,8 +37,8 @@ export function UserStatsCards() {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border p-5 animate-pulse">
+        {Array.from({ length: 4 }, (_, i) => `user-stat-skeleton-${i}`).map((skeletonKey) => (
+          <div key={skeletonKey} className="bg-white rounded-lg border p-5 animate-pulse">
             <div className="flex items-center justify-between mb-2">
               <div className="h-3 bg-gray-200 rounded w-16"></div>
               <div className="h-4 w-4 bg-gray-200 rounded"></div>

@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("Tests Extendidos de ReservaController - Roles y Permisos")
-class ReservaControllerTestExtended {
+class ReservaControllerExtendedTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -320,7 +320,7 @@ class ReservaControllerTestExtended {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.estado").value("APROBADO"));
 
-        verify(reservaService).cambiarEstadoReserva(eq(reservaId), eq("APROBADO"), eq("analista@utec.edu.uy"), eq("ANALISTA"), eq("Aprobado"));
+        verify(reservaService).cambiarEstadoReserva(reservaId, "APROBADO", "analista@utec.edu.uy", "ANALISTA", "Aprobado");
     }
 
     @Test
@@ -344,7 +344,7 @@ class ReservaControllerTestExtended {
     void debeRechazarReservaConMensaje() throws Exception {
         // Given
         reservaResponseDto.setEstado(Reserva.EstadoReserva.CANCELADO);
-        when(reservaService.cambiarEstadoReserva(eq(reservaId), eq("CANCELADO"), eq("analista@utec.edu.uy"), eq("ANALISTA"), eq("No cumple requisitos")))
+        when(reservaService.cambiarEstadoReserva(reservaId, "CANCELADO", "analista@utec.edu.uy", "ANALISTA", "No cumple requisitos"))
                 .thenReturn(reservaResponseDto);
 
         // When & Then
@@ -355,7 +355,7 @@ class ReservaControllerTestExtended {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Reserva rechazada exitosamente"));
 
-        verify(reservaService).cambiarEstadoReserva(eq(reservaId), eq("CANCELADO"), eq("analista@utec.edu.uy"), eq("ANALISTA"), eq("No cumple requisitos"));
+        verify(reservaService).cambiarEstadoReserva(reservaId, "CANCELADO", "analista@utec.edu.uy", "ANALISTA", "No cumple requisitos");
     }
 
     // ==================== TESTS PARA ACTUALIZACIÓN ====================

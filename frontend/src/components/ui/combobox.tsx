@@ -35,7 +35,7 @@ export function Combobox({
   emptyMessage = "No se encontraron resultados.",
   onSelect,
   className
-}: ComboboxProps) {
+}: Readonly<ComboboxProps>) {
   const [open, setOpen] = React.useState(false)
 
   const selectedOption = options.find(option => option.value === value)

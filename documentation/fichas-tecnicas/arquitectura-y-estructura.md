@@ -81,7 +81,10 @@ backend/src/main/java/com/utec/backend/
 │   └── WebMvcConfig.java
 ├── controller/                      Controladores REST (capa HTTP)
 ├── dto/                             Data Transfer Objects de entrada/salida
-├── exception/                       Excepciones custom + GlobalExceptionHandler
+├── exception/                       Excepciones custom (UsuarioNotFoundException,
+│                                      AccesoDenegadoException, AuthenticationException,
+│                                      FileStorageException, EmailDeliveryException)
+│                                      + GlobalExceptionHandler
 ├── model/                           Entidades JPA (sin subcarpeta entity/)
 ├── repository/                      Interfaces Spring Data
 ├── security/                        Permisos, JWT, interceptors

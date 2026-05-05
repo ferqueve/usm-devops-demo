@@ -362,7 +362,7 @@ export default function InventoryRequestsManagement() {
     }
 
     const isDialogTarget =
-      manageDialogOpen && selectedRequest && selectedRequest.id === target.id;
+      manageDialogOpen && selectedRequest?.id === target.id;
 
     if (isDialogTarget) {
       setUpdatingRequest(true);
@@ -524,18 +524,25 @@ export default function InventoryRequestsManagement() {
           />
         </div>
         <CardContent className="p-0">
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
-            </div>
-          ) : tableContent.length === 0 ? (
-            <EmptyState
-              icon={ClipboardList}
-              title="Sin solicitudes registradas"
-              description="No se encontraron solicitudes de inventario con los criterios actuales."
-              action={hasFilters ? { label: 'Limpiar filtros', onClick: handleClearFilters } : undefined}
-            />
-          ) : viewMode === 'table' ? (
+          {(() => {
+            if (loading) {
+              return (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+                </div>
+              );
+            }
+            if (tableContent.length === 0) {
+              return (
+                <EmptyState
+                  icon={ClipboardList}
+                  title="Sin solicitudes registradas"
+                  description="No se encontraron solicitudes de inventario con los criterios actuales."
+                  action={hasFilters ? { label: 'Limpiar filtros', onClick: handleClearFilters } : undefined}
+                />
+              );
+            }
+            return viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -623,7 +630,8 @@ export default function InventoryRequestsManagement() {
                 estadoLabel={ESTADO_LABEL}
               />
             </div>
-          )}
+          );
+          })()}
         </CardContent>
 
         {!loading && requestsPage && requestsPage.totalPages > 1 && (
@@ -756,7 +764,7 @@ export default function InventoryRequestsManagement() {
                     )}
                   </div>
                   <Select
-                    value={selectedInventoryId !== null ? selectedInventoryId.toString() : 'none'}
+                    value={selectedInventoryId === null ? 'none' : selectedInventoryId.toString()}
                     onValueChange={(value) => {
                       if (value === 'none') {
                         setSelectedInventoryId(null);
@@ -904,7 +912,7 @@ export default function InventoryRequestsManagement() {
                         <Button
                           size="sm"
                           variant="outline"
-                          title={!canReject ? 'La solicitud ya fue cerrada' : undefined}
+                          title={canReject ? undefined : 'La solicitud ya fue cerrada'}
                           onClick={() => {
                             if (!selectedRequest) {
                               return;
@@ -925,7 +933,7 @@ export default function InventoryRequestsManagement() {
                       <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                         <Button
                           size="sm"
-                          title={!canApprove ? 'Asigna un item antes de aprobar' : undefined}
+                          title={canApprove ? undefined : 'Asigna un item antes de aprobar'}
                           onClick={() => {
                             if (!selectedRequest) {
                               return;

@@ -57,7 +57,7 @@ export default function AuditLogDetailsDialog({
   log,
   open,
   onOpenChange
-}: AuditLogDetailsDialogProps) {
+}: Readonly<AuditLogDetailsDialogProps>) {
   if (!log) return null;
 
   const accionConfig = getAccionConfig(log.accion);

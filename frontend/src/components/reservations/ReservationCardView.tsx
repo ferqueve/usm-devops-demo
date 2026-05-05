@@ -39,7 +39,6 @@ interface TipoEspacio {
 
 interface ReservationCardViewProps {
   reservas: Reserva[];
-  titulo: string;
   espaciosUnicos: Espacio[];
   carrerasUnicas: Carrera[];
   tiposEspacioUnicos: TipoEspacio[];
@@ -113,7 +112,7 @@ export default function ReservationCardView({
   totalElements = 0,
   onPageChange,
   loading = false,
-}: ReservationCardViewProps) {
+}: Readonly<ReservationCardViewProps>) {
 
   const renderPagination = () => {
     if (!onPageChange || totalPages <= 1) return null;
@@ -295,7 +294,7 @@ export default function ReservationCardView({
             )}
           </div>
         </CardHeader>
-        <CardContent className={`pt-0 relative flex-1 flex flex-col min-h-0 ${!isFullScreen ? 'overflow-y-auto' : ''}`}>
+        <CardContent className={`pt-0 relative flex-1 flex flex-col min-h-0 ${isFullScreen ? '' : 'overflow-y-auto'}`}>
           {loading && (
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-md">
               <div className="text-center space-y-2">

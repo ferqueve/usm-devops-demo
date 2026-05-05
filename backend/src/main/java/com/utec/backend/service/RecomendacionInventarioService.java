@@ -67,7 +67,7 @@ public class RecomendacionInventarioService {
             })
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(20)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     /**
@@ -79,7 +79,7 @@ public class RecomendacionInventarioService {
         
         List<InventarioItem> todosItems = inventarioItemRepository.findAll().stream()
             .filter(InventarioItem::getActivo)
-            .collect(Collectors.toList());
+            .toList();
         
         // Agrupar por espacio
         Map<Long, List<InventarioItem>> itemsPorEspacio = todosItems.stream()
@@ -113,7 +113,7 @@ public class RecomendacionInventarioService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(10)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     /**
@@ -127,7 +127,7 @@ public class RecomendacionInventarioService {
         List<InventarioItem> itemsSinAsignar = inventarioItemRepository.findAll().stream()
             .filter(InventarioItem::getActivo)
             .filter(item -> item.getEspacio() == null)
-            .collect(Collectors.toList());
+            .toList();
         
         // Analizar uso de items por espacio
         List<ReservaItemSolicitado> itemsSolicitados = reservaItemSolicitadoRepository.findAll();
@@ -171,7 +171,7 @@ public class RecomendacionInventarioService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(10)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     /**
@@ -225,7 +225,7 @@ public class RecomendacionInventarioService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(10)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     private double calcularUrgenciaMantenimiento(long diasEnMantenimiento) {

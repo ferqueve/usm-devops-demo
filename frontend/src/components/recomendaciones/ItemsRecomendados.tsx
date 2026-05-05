@@ -19,7 +19,7 @@ export function ItemsRecomendados({
   onSelectItem,
   itemsSeleccionados = new Set(),
   className,
-}: ItemsRecomendadosProps) {
+}: Readonly<ItemsRecomendadosProps>) {
   const [items, setItems] = useState<RecomendacionItem[]>([]);
   const [loading, setLoading] = useState(false);
 

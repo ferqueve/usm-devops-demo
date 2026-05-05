@@ -67,7 +67,7 @@ class FileUploadControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
 
         verify(fileStorageService).uploadImage(any(MultipartFile.class), eq(espacioId));
-        verify(espacioService).updateEspacioImagen(eq(espacioId), eq(objectName));
+        verify(espacioService).updateEspacioImagen(espacioId, objectName);
     }
 
     @Test

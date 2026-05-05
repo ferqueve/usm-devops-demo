@@ -126,7 +126,7 @@ export function InventoryRequestFilters({
   onClearFilters,
   viewMode,
   onViewModeChange,
-}: InventoryRequestFiltersProps) {
+}: Readonly<InventoryRequestFiltersProps>) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {hasFilters && (
@@ -235,7 +235,6 @@ export function InventoryRequestFilters({
                 }
                 return false;
               }}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
@@ -284,7 +283,6 @@ export function InventoryRequestFilters({
                 }
                 return false;
               }}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
@@ -364,13 +362,13 @@ export function InventoryRequestFilters({
                   type="button"
                   className={cn(
                     "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
-                    selectedEspacio !== null ? "bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300" : defaultButtonClass
+                    selectedEspacio === null ? defaultButtonClass : "bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
                   )}
                 >
                   <Building2
                     className={cn(
                       "h-3.5 w-3.5",
-                      selectedEspacio !== null ? "text-blue-700" : "text-gray-500"
+                      selectedEspacio === null ? "text-gray-500" : "text-blue-700"
                     )}
                   />
                   {selectedEspacio !== null && (
@@ -383,10 +381,10 @@ export function InventoryRequestFilters({
               </TooltipTrigger>
             </PopoverTrigger>
             <TooltipContent>
-              {selectedEspacio !== null
-                ? espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ??
-                  "Seleccionar espacio"
-                : "Seleccionar espacio"}
+              {selectedEspacio === null
+                ? "Seleccionar espacio"
+                : espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ??
+                  "Seleccionar espacio"}
             </TooltipContent>
           </Tooltip>
           <PopoverContent

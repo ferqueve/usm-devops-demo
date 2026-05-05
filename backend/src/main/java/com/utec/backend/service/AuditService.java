@@ -27,11 +27,18 @@ import java.util.Map;
 @Service
 @Slf4j
 public class AuditService {
-    
+
+    // Constantes de campos y valores reutilizados en logs y serialización
+    private static final String SYSTEM_USER = "system";
+    private static final String SISTEMA_USER = "sistema";
+    private static final String UNKNOWN_VALUE = "UNKNOWN";
+    private static final String FIELD_TIMESTAMP = "timestamp";
+    private static final String FIELD_USUARIO = "usuario";
+
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
-    
-        // Constructor para inicializar ObjectMapper con soporte para Instant
+
+    // Constructor para inicializar ObjectMapper con soporte para Instant
     public AuditService(AuditLogRepository auditLogRepository) {
         this.auditLogRepository = auditLogRepository;
         this.objectMapper = new ObjectMapper();
@@ -64,13 +71,13 @@ public class AuditService {
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
             } else {
-                auditLog.setIpAddress("system");
+                auditLog.setIpAddress(SYSTEM_USER);
             }
 
             auditLogRepository.save(auditLog);
             log.info("Audit log creado: {} {} por usuario {} desde {}",
-                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema",
-                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
+                    entidad, entidadId, usuario != null ? usuario.getEmail() : SISTEMA_USER,
+                    requestInfo != null ? requestInfo.getIpAddress() : UNKNOWN_VALUE);
         } catch (Exception e) {
             log.error("Error al crear audit log para {} {}: {}", entidad, entidadId, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
@@ -100,13 +107,13 @@ public class AuditService {
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
             } else {
-                auditLog.setIpAddress("system");
+                auditLog.setIpAddress(SYSTEM_USER);
             }
 
             auditLogRepository.save(auditLog);
             log.info("Audit log actualizado: {} {} por usuario {} desde {}",
-                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema",
-                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
+                    entidad, entidadId, usuario != null ? usuario.getEmail() : SISTEMA_USER,
+                    requestInfo != null ? requestInfo.getIpAddress() : UNKNOWN_VALUE);
         } catch (Exception e) {
             log.error("Error al crear audit log de actualización para {} {}: {}", entidad, entidadId, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
@@ -135,13 +142,13 @@ public class AuditService {
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
             } else {
-                auditLog.setIpAddress("system");
+                auditLog.setIpAddress(SYSTEM_USER);
             }
 
             auditLogRepository.save(auditLog);
             log.info("Audit log eliminado: {} {} por usuario {} desde {}",
-                    entidad, entidadId, usuario != null ? usuario.getEmail() : "sistema",
-                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
+                    entidad, entidadId, usuario != null ? usuario.getEmail() : SISTEMA_USER,
+                    requestInfo != null ? requestInfo.getIpAddress() : UNKNOWN_VALUE);
         } catch (Exception e) {
             log.error("Error al crear audit log de eliminación para {} {}: {}", entidad, entidadId, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
@@ -175,7 +182,7 @@ public class AuditService {
             eventData.put("eventoTipo", eventoTipo);
             eventData.put("usuarioEmail", usuarioEmail);
             eventData.put("exitoso", exitoso);
-            eventData.put("timestamp", Instant.now().toString());
+            eventData.put(FIELD_TIMESTAMP, Instant.now().toString());
             if (detalles != null && !detalles.isEmpty()) {
                 eventData.put("detalles", detalles);
             }
@@ -191,13 +198,13 @@ public class AuditService {
                 auditLog.setEndpoint(requestInfo.getEndpoint());
                 auditLog.setUserAgent(requestInfo.getUserAgent());
             } else {
-                auditLog.setIpAddress("system");
+                auditLog.setIpAddress(SYSTEM_USER);
             }
 
             auditLogRepository.save(auditLog);
             log.info("Audit log de autenticación: {} para {} - {} desde {}",
                     eventoTipo, usuarioEmail, exitoso ? "EXITOSO" : "FALLIDO",
-                    requestInfo != null ? requestInfo.getIpAddress() : "UNKNOWN");
+                    requestInfo != null ? requestInfo.getIpAddress() : UNKNOWN_VALUE);
         } catch (Exception e) {
             log.error("Error al crear audit log de autenticación para {}: {}", eventoTipo, e.getMessage(), e);
             // No lanzar excepción para no interrumpir el flujo principal
@@ -268,7 +275,7 @@ public class AuditService {
             }
             
             if (usuarioId != null) {
-                predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
+                predicates.add(cb.equal(root.get(FIELD_USUARIO).get("id"), usuarioId));
             }
             
             if (accion != null) {
@@ -276,22 +283,22 @@ public class AuditService {
             }
             
             if (fechaDesde != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("timestamp"), fechaDesde));
+                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_TIMESTAMP), fechaDesde));
             }
             
             if (fechaHasta != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("timestamp"), fechaHasta));
+                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_TIMESTAMP), fechaHasta));
             }
             
             if (search != null && !search.trim().isEmpty()) {
                 String searchTerm = "%" + search.trim().toLowerCase() + "%";
                 Predicate entidadPred = cb.like(cb.lower(root.get("entidad")), searchTerm);
-                Predicate usuarioPred = cb.like(cb.lower(root.get("usuario").get("nombre")), searchTerm);
-                Predicate emailPred = cb.like(cb.lower(root.get("usuario").get("email")), searchTerm);
+                Predicate usuarioPred = cb.like(cb.lower(root.get(FIELD_USUARIO).get("nombre")), searchTerm);
+                Predicate emailPred = cb.like(cb.lower(root.get(FIELD_USUARIO).get("email")), searchTerm);
                 predicates.add(cb.or(entidadPred, usuarioPred, emailPred));
             }
             
-            query.orderBy(cb.desc(root.get("timestamp")));
+            query.orderBy(cb.desc(root.get(FIELD_TIMESTAMP)));
             
             return cb.and(predicates.toArray(new Predicate[0]));
         };

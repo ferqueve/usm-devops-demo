@@ -31,7 +31,7 @@ public class CarreraService {
                 Carrera carrera = carreraExistente.get();
                 // Si no está eliminada, lanzar error
                 if (carrera.getDeletedAt() == null) {
-                    throw new RuntimeException("Ya existe una carrera activa con el código: " + createDto.getCodigo());
+                    throw new IllegalStateException("Ya existe una carrera activa con el código: " + createDto.getCodigo());
                 }
                 // Si está eliminada, reactivarla
                 carrera.setNombre(createDto.getNombre());
@@ -57,7 +57,7 @@ public class CarreraService {
     public List<CarreraResponseDto> getAllCarreras() {
         return carreraRepository.findByActivoTrue().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -69,18 +69,18 @@ public class CarreraService {
     @Transactional(readOnly = true)
     public CarreraResponseDto getCarreraById(Long id) {
         Carrera carrera = carreraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Carrera no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + id));
         return mapToResponseDto(carrera);
     }
-    
+
     public CarreraResponseDto updateCarrera(Long id, CarreraUpdateDto updateDto) {
         Carrera carrera = carreraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Carrera no encontrada con ID: " + id));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + id));
+
         // Verificar si ya existe otra carrera con el mismo código (si se proporciona)
         if (updateDto.getCodigo() != null && !updateDto.getCodigo().trim().isEmpty()) {
             if (carreraRepository.existsByCodigoAndIdNot(updateDto.getCodigo(), id)) {
-                throw new RuntimeException("Ya existe otra carrera con el código: " + updateDto.getCodigo());
+                throw new IllegalStateException("Ya existe otra carrera con el código: " + updateDto.getCodigo());
             }
         }
         
@@ -100,7 +100,7 @@ public class CarreraService {
     
     public void deleteCarrera(Long id) {
         Carrera carrera = carreraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Carrera no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + id));
         
         // Soft delete: marcar como eliminada
         carrera.setDeletedAt(Instant.now());
@@ -113,7 +113,7 @@ public class CarreraService {
     public List<CarreraResponseDto> searchCarrerasByNombre(String nombre) {
         return carreraRepository.findByNombreContainingIgnoreCase(nombre).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)

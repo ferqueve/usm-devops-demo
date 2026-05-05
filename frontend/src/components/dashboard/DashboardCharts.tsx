@@ -14,7 +14,7 @@ const COLORS = {
   CANCELADO: '#ef4444', // red
 };
 
-export default function DashboardCharts({ reservas, loading = false }: DashboardChartsProps) {
+export default function DashboardCharts({ reservas, loading = false }: Readonly<DashboardChartsProps>) {
   // Datos para gráfico de reservas por estado
   const reservasPorEstado = useMemo(() => {
     const estados = reservas.reduce((acc, reserva) => {
@@ -82,7 +82,7 @@ export default function DashboardCharts({ reservas, loading = false }: Dashboard
   }
 
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
+    if (active && payload?.length) {
       return (
         <div className="bg-white border rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-gray-900">
@@ -115,8 +115,8 @@ export default function DashboardCharts({ reservas, loading = false }: Dashboard
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {reservasPorEstado.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {reservasPorEstado.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />

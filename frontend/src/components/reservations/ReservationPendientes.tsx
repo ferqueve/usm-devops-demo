@@ -22,7 +22,7 @@ export default function ReservationPendientes({
   onViewDetails,
   collapsed,
   onCollapsedChange
-}: ReservationPendientesProps) {
+}: Readonly<ReservationPendientesProps>) {
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
   const [reservasPrioritarias, setReservasPrioritarias] = useState<RecomendacionAnalista[]>([]);
 
@@ -68,7 +68,7 @@ export default function ReservationPendientes({
       const reservaIdFromMeta = r.metadata?.reservaId as number;
       return reservaIdFromMeta === reservaId;
     });
-    if (rec && rec.metadata) {
+    if (rec?.metadata) {
       return (rec.metadata.urgencia as number) || 0;
     }
     return 0;
@@ -146,31 +146,41 @@ export default function ReservationPendientes({
           </CardContent>
         ) : (
         <CardContent className="flex-1 flex flex-col space-y-2 sm:space-y-3 px-3 sm:px-4 pb-3 sm:pb-4 overflow-hidden">
-          {loading ? (
-            <div className="text-center py-6 sm:py-8">
-              <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-yellow-600"></div>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-2">Cargando solicitudes...</p>
-            </div>
-          ) : reservasPendientes.length === 0 ? (
-            <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg border border-gray-200 px-2">
-              <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />
-              <p className="text-xs sm:text-sm font-medium text-gray-700">No hay solicitudes pendientes</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Todas las reservas están procesadas</p>
-            </div>
-          ) : (
+          {(() => {
+            if (loading) {
+              return (
+                <div className="text-center py-6 sm:py-8">
+                  <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-yellow-600"></div>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">Cargando solicitudes...</p>
+                </div>
+              );
+            }
+            if (reservasPendientes.length === 0) {
+              return (
+                <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg border border-gray-200 px-2">
+                  <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />
+                  <p className="text-xs sm:text-sm font-medium text-gray-700">No hay solicitudes pendientes</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Todas las reservas están procesadas</p>
+                </div>
+              );
+            }
+            const obtenerRingClass = (isAltaUrgencia: boolean, isPrioritaria: boolean): string => {
+              if (isAltaUrgencia) return 'ring-2 ring-red-200';
+              if (isPrioritaria) return 'ring-1 ring-orange-200';
+              return '';
+            };
+            return (
             <div className="flex-1 space-y-1.5 sm:space-y-2 overflow-y-auto pr-0.5 sm:pr-1">
               {reservasOrdenadas.map((reserva) => {
                 const estadoConfig = getEstadoConfig(reserva.estado);
                 const urgencia = getUrgencia(reserva.id);
                 const isPrioritaria = urgencia > 0;
                 const isAltaUrgencia = urgencia >= 7;
-                
+
                 return (
                   <div
                     key={reserva.id}
-                    className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer ${
-                      isAltaUrgencia ? 'ring-2 ring-red-200' : isPrioritaria ? 'ring-1 ring-orange-200' : ''
-                    }`}
+                    className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer ${obtenerRingClass(isAltaUrgencia, isPrioritaria)}`}
                     onClick={() => onViewDetails(reserva)}
                     >
                     {/* Franja de color recta en el lado izquierdo */}
@@ -251,7 +261,8 @@ export default function ReservationPendientes({
                 );
               })}
             </div>
-          )}
+            );
+          })()}
         </CardContent>
         )}
       </div>

@@ -11,7 +11,7 @@ interface InventoryStatsCardsProps {
   } | null;
 }
 
-export default function InventoryStatsCards({ statistics }: InventoryStatsCardsProps) {
+export default function InventoryStatsCards({ statistics }: Readonly<InventoryStatsCardsProps>) {
   const totalItems = statistics?.totalItems || 0;
   const disponibles = statistics?.disponibles || 0;
   const mantenimiento = statistics?.mantenimiento || 0;

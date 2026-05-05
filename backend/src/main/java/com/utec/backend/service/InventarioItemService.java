@@ -9,7 +9,8 @@ import com.utec.backend.model.TipoElemento;
 import com.utec.backend.repository.EspacioRepository;
 import com.utec.backend.repository.InventarioItemRepository;
 import com.utec.backend.repository.TipoElementoRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,16 +21,26 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class InventarioItemService {
-    
+
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
     private final TipoElementoRepository tipoElementoRepository;
+    private final InventarioItemService self;
+
+    public InventarioItemService(
+            InventarioItemRepository inventarioItemRepository,
+            EspacioRepository espacioRepository,
+            TipoElementoRepository tipoElementoRepository,
+            @Lazy @Autowired InventarioItemService self) {
+        this.inventarioItemRepository = inventarioItemRepository;
+        this.espacioRepository = espacioRepository;
+        this.tipoElementoRepository = tipoElementoRepository;
+        this.self = self;
+    }
     
     public InventarioItemResponseDto createInventarioItem(InventarioItemCreateDto createDto) {
         // Verificar que el espacio existe (si se proporciona)
@@ -59,7 +70,7 @@ public class InventarioItemService {
     public List<InventarioItemResponseDto> getAllInventarioItems() {
         return inventarioItemRepository.findAll().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -180,21 +191,21 @@ public class InventarioItemService {
     public List<InventarioItemResponseDto> getInventarioByEspacio(Long espacioId) {
         return inventarioItemRepository.findByEspacioIdAndActivoTrue(espacioId).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<InventarioItemResponseDto> getInventarioByTipoElemento(Long tipoElementoId) {
         return inventarioItemRepository.findByTipoElementoIdAndActivoTrue(tipoElementoId).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<InventarioItemResponseDto> getInventarioByEstado(String estado) {
         return inventarioItemRepository.findByEstadoAndActivoTrue(estado).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -207,7 +218,7 @@ public class InventarioItemService {
         Map<String, Object> stats = new HashMap<>();
         
         // Total de items
-        Long totalItems = getTotalInventarioItems();
+        Long totalItems = self.getTotalInventarioItems();
         stats.put("totalItems", totalItems);
         
         // Items por estado
@@ -261,37 +272,37 @@ public class InventarioItemService {
                         }
                         return matchesSearch;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (espacioId != null) {
             items = items.stream()
                     .filter(item -> item.getEspacio() != null && item.getEspacio().getId().equals(espacioId))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (tipoElementoId != null) {
             items = items.stream()
                     .filter(item -> item.getTipoElemento().getId().equals(tipoElementoId))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (estado != null) {
             items = items.stream()
                     .filter(item -> item.getEstado().equals(estado))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (Boolean.TRUE.equals(sinAsignar)) {
             // Filtrar items sin espacio asignado (espacio null)
             items = items.stream()
                     .filter(item -> item.getEspacio() == null)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         List<InventarioItemResponseDto> result = items.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
         
         // Aplicar ordenamiento si se especifica
         if (sortBy != null && !sortBy.isEmpty()) {
@@ -343,7 +354,7 @@ public class InventarioItemService {
                     
                     return ascending ? comparison : -comparison;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
     
     private InventarioItemResponseDto mapToResponseDto(InventarioItem inventarioItem) {

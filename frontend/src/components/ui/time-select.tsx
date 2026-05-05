@@ -27,7 +27,7 @@ export function TimeSelect({
   placeholder = "00", 
   className,
   maxLength = 2
-}: TimeSelectProps) {
+}: Readonly<TimeSelectProps>) {
   const [inputValue, setInputValue] = useState(value);
   const [isTyping, setIsTyping] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -54,20 +54,20 @@ export function TimeSelect({
 
     // Si tiene 2 dígitos, validar y actualizar
     if (newValue.length === maxLength) {
-      const numValue = parseInt(newValue);
+      const numValue = Number.parseInt(newValue);
       
       // Buscar opciones en el rango válido
-      const validOptions = options.map(opt => parseInt(opt));
+      const validOptions = options.map(opt => Number.parseInt(opt));
       const minValid = Math.min(...validOptions);
       const maxValid = Math.max(...validOptions);
       
       if (numValue >= minValid && numValue <= maxValid) {
         // Encontrar la opción exacta o la más cercana
-        let matchingOption = options.find(opt => parseInt(opt) === numValue);
+        let matchingOption = options.find(opt => Number.parseInt(opt) === numValue);
         
         // Si no hay coincidencia exacta, buscar la más cercana mayor o igual
         if (!matchingOption) {
-          matchingOption = options.find(opt => parseInt(opt) >= numValue);
+          matchingOption = options.find(opt => Number.parseInt(opt) >= numValue);
         }
         
         if (matchingOption) {
@@ -86,22 +86,22 @@ export function TimeSelect({
     // Si el valor es igual al actual, no hacer nada
     if (inputValue === value) return;
     
-    const numValue = parseInt(inputValue);
+    const numValue = Number.parseInt(inputValue);
     
     // Si el valor no es válido o está vacío, resetear al valor actual
-    if (!inputValue || isNaN(numValue)) {
+    if (!inputValue || Number.isNaN(numValue)) {
       setInputValue(value);
       return;
     }
     
     // Buscar la opción más cercana en el rango válido
-    const validOptions = options.map(opt => parseInt(opt));
+    const validOptions = options.map(opt => Number.parseInt(opt));
     const minValid = Math.min(...validOptions);
     const maxValid = Math.max(...validOptions);
     
     if (numValue >= minValid && numValue <= maxValid) {
       // Encontrar la opción más cercana
-      const matchingOption = options.find(opt => parseInt(opt) >= numValue);
+      const matchingOption = options.find(opt => Number.parseInt(opt) >= numValue);
       
       if (matchingOption) {
         onChange(matchingOption);

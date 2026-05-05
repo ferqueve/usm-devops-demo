@@ -46,7 +46,7 @@ export default function PermissionGuard({
   requireAll = false,
   fallback = null,
   showFallback = false,
-}: PermissionGuardProps) {
+}: Readonly<PermissionGuardProps>) {
   const { hasPermission, hasAnyPermission, hasAllPermissions } = useRolePermissions();
 
   // Verificar permiso único

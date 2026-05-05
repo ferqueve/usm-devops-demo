@@ -19,7 +19,7 @@ export function AnalistaRecomendado({
   onSelectAnalista,
   analistaSeleccionadoId,
   className,
-}: AnalistaRecomendadoProps) {
+}: Readonly<AnalistaRecomendadoProps>) {
   const [analistas, setAnalistas] = useState<RecomendacionAnalista[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -100,13 +100,11 @@ export function AnalistaRecomendado({
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge
-                    className={cn(
-                      analista.puntaje >= 0.8
-                        ? "bg-emerald-100 text-emerald-700"
-                        : analista.puntaje >= 0.6
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-amber-100 text-amber-700"
-                    )}
+                    className={cn((() => {
+                      if (analista.puntaje >= 0.8) return "bg-emerald-100 text-emerald-700";
+                      if (analista.puntaje >= 0.6) return "bg-blue-100 text-blue-700";
+                      return "bg-amber-100 text-amber-700";
+                    })())}
                   >
                     {(analista.puntaje * 100).toFixed(0)}%
                   </Badge>

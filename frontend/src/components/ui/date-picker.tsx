@@ -34,7 +34,7 @@ export function DatePicker({
   maxDate,
   disabledDates,
   className
-}: DatePickerProps) {
+}: Readonly<DatePickerProps>) {
   const [open, setOpen] = React.useState(false)
 
   const isDateDisabled = (date: Date): boolean => {
@@ -75,7 +75,6 @@ export function DatePicker({
             setOpen(false)
           }}
           disabled={isDateDisabled}
-          initialFocus
         />
       </PopoverContent>
     </Popover>

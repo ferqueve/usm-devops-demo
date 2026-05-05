@@ -13,7 +13,7 @@ interface SpaceStatsWidgetProps {
   loading: boolean;
 }
 
-export default function SpaceStatsWidget({ stats, loading }: SpaceStatsWidgetProps) {
+export default function SpaceStatsWidget({ stats, loading }: Readonly<SpaceStatsWidgetProps>) {
   if (loading) {
     return (
       <Card>

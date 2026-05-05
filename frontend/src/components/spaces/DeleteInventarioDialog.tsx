@@ -24,7 +24,7 @@ export function DeleteInventarioDialog({
   open,
   onOpenChange,
   onSuccess
-}: DeleteInventarioDialogProps) {
+}: Readonly<DeleteInventarioDialogProps>) {
   const handleDelete = async () => {
     try {
       await inventarioApi.eliminarInventarioItem(inventarioItem.id);

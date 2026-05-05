@@ -9,6 +9,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
+import com.utec.backend.exception.EmailDeliveryException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +92,7 @@ public class GmailApiService {
         if (clientId == null || clientId.trim().isEmpty() ||
             clientSecret == null || clientSecret.trim().isEmpty() ||
             refreshToken == null || refreshToken.trim().isEmpty()) {
-            throw new RuntimeException("Las credenciales de Gmail API no están configuradas correctamente");
+            throw new EmailDeliveryException("Las credenciales de Gmail API no están configuradas correctamente");
         }
 
         // Crear credencial con refresh token directamente

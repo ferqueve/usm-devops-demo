@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests Extendidos - RecomendacionReservaService - Algoritmos de Scoring")
-class RecomendacionReservaServiceTestExtended {
+class RecomendacionReservaServiceExtendedTest {
 
     @Mock
     private ReservaRepository reservaRepository;

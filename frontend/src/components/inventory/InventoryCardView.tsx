@@ -31,7 +31,7 @@ export default function InventoryCardView({
   onView,
   selectedItems,
   onToggleSelect
-}: InventoryCardViewProps) {
+}: Readonly<InventoryCardViewProps>) {
   const getEstadoBadge = (estado: string) => {
     const configs: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
       'DISPONIBLE': { label: 'Disponible', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
@@ -88,20 +88,22 @@ export default function InventoryCardView({
               <div className="border-t pt-3">
                 <p className="text-sm">
                   <span className="text-muted-foreground">Espacio:</span>{' '}
-                  {item.espacioId && item.espacioNombre ? (
-                    item.espacioColor ? (
-                      <span 
-                        className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
-                        style={{ backgroundColor: item.espacioColor }}
-                      >
-                        {item.espacioNombre}
-                      </span>
-                    ) : (
-                      <span className="font-medium">{item.espacioNombre}</span>
-                    )
-                  ) : (
-                    <span className="font-medium text-muted-foreground">Sin asignar</span>
-                  )}
+                  {(() => {
+                    if (!item.espacioId || !item.espacioNombre) {
+                      return <span className="font-medium text-muted-foreground">Sin asignar</span>;
+                    }
+                    if (item.espacioColor) {
+                      return (
+                        <span
+                          className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
+                          style={{ backgroundColor: item.espacioColor }}
+                        >
+                          {item.espacioNombre}
+                        </span>
+                      );
+                    }
+                    return <span className="font-medium">{item.espacioNombre}</span>;
+                  })()}
                 </p>
               </div>
 

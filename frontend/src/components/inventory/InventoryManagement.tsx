@@ -335,7 +335,7 @@ export default function InventoryManagement() {
 
   const handleExport = async () => {
     try {
-      // Obtener TODO el inventario de la BD sin paginación ni filtros
+      // Obtener todo el inventario de la BD sin paginación ni filtros
       const response = await inventarioApi.obtenerTodoElInventario();
       const allItems = response.data || [];
       
@@ -448,7 +448,7 @@ export default function InventoryManagement() {
       await Promise.all(
         itemsToUnassign.map(async (id) => {
           const item = items.find(i => i.id === id);
-          if (item && item.espacioId) {
+          if (item?.espacioId) {
             await inventarioApi.actualizarInventarioItem(id, {
               espacioId: 0, // Desasignar
               tipoElementoId: item.tipoElementoId,
@@ -626,7 +626,7 @@ export default function InventoryManagement() {
           </PermissionGuard>
           
           <div 
-            onClick={!isRefreshing ? handleRefresh : undefined}
+            onClick={isRefreshing ? undefined : handleRefresh}
             className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-1 sm:flex-none justify-center ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
@@ -688,7 +688,7 @@ export default function InventoryManagement() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{rec.razon}</p>
                     {rec.metadata && (() => {
-                      const meta = rec.metadata as Record<string, unknown>;
+                      const meta = rec.metadata;
                       const itemNombre = meta.itemNombre as string | undefined;
                       const espacioActual = meta.espacioActual as string | undefined;
                       const espacioRecomendado = meta.espacioRecomendado as string | undefined;
@@ -752,7 +752,7 @@ export default function InventoryManagement() {
                     } else {
                       const newFilters = { ...filters };
                       delete newFilters.sinAsignar;
-                      setFilters({ ...newFilters, espacioId: parseInt(value) });
+                      setFilters({ ...newFilters, espacioId: Number.parseInt(value) });
                     }
                   }}
                 />
@@ -775,7 +775,7 @@ export default function InventoryManagement() {
                   placeholder="Seleccionar elemento..."
                   searchPlaceholder="Buscar elemento..."
                   emptyMessage="No se encontraron elementos"
-                  onSelect={(value) => handleFilterChange('tipoElementoId', value === 'all' ? undefined : parseInt(value))}
+                  onSelect={(value) => handleFilterChange('tipoElementoId', value === 'all' ? undefined : Number.parseInt(value))}
                 />
               </div>
 
@@ -843,21 +843,28 @@ export default function InventoryManagement() {
       )}
 
       {/* Tabla o Cards de inventario */}
-      {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : sortedItems.length === 0 ? (
-        <EmptyState
-          icon={Package}
-          title="No se encontraron items"
-          description="No hay items que coincidan con los criterios de búsqueda"
-          action={{
-            label: 'Limpiar filtros',
-            onClick: clearFilters
-          }}
-        />
-      ) : (
+      {(() => {
+        if (loading) {
+          return (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          );
+        }
+        if (sortedItems.length === 0) {
+          return (
+            <EmptyState
+              icon={Package}
+              title="No se encontraron items"
+              description="No hay items que coincidan con los criterios de búsqueda"
+              action={{
+                label: 'Limpiar filtros',
+                onClick: clearFilters
+              }}
+            />
+          );
+        }
+        return (
         <>
           {viewMode === 'table' ? (
           <InventoryTable
@@ -917,7 +924,8 @@ export default function InventoryManagement() {
             </div>
           )}
         </>
-      )}
+        );
+      })()}
 
       {/* Modales */}
       <InventoryFormDialog
@@ -969,7 +977,7 @@ export default function InventoryManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar cambio masivo de estado</AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Estás seguro de que deseas cambiar el estado de {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} a{' '}
+              ¿Estás seguro de que deseas cambiar el estado de {selectedItems.size} item{selectedItems.size === 1 ? '' : 's'} a{' '}
               <strong>{pendingBulkState}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -994,7 +1002,7 @@ export default function InventoryManagement() {
           <DialogHeader>
             <DialogTitle>Asignar Espacio</DialogTitle>
             <DialogDescription>
-              Selecciona el espacio para {selectedItems.size} item{selectedItems.size !== 1 ? 's seleccionado' : 's'}
+              Selecciona el espacio para {selectedItems.size} item{selectedItems.size === 1 ? 's' : 's seleccionado'}
             </DialogDescription>
           </DialogHeader>
           
@@ -1005,7 +1013,7 @@ export default function InventoryManagement() {
                 value={bulkEspacio?.toString() || "seleccionar"}
                 onValueChange={(value) => {
                   if (value !== "seleccionar") {
-                    setBulkEspacio(parseInt(value));
+                    setBulkEspacio(Number.parseInt(value));
                   }
                 }}
               >

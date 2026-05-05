@@ -43,7 +43,7 @@ interface SpaceCardProps {
   onEdit: (espacio: Espacio) => void;
 }
 
-export function SpaceCard({ espacio, canEdit, onEdit }: SpaceCardProps) {
+export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>) {
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
 

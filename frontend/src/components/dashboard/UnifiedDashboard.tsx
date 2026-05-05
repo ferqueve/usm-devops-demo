@@ -286,7 +286,7 @@ export default function UnifiedDashboard() {
           onOpenChange={setDetailsDialog}
           onReservaUpdated={() => {
             // Recargar datos después de actualizar una reserva
-            window.location.reload();
+            globalThis.location.reload();
           }}
         />
       )}

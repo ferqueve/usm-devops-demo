@@ -6,8 +6,7 @@ import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';
 import { carrerasApi } from '@/lib/api/carreras';
-import type { ReservaStats } from '@/lib/types/spaces';
-import type { Espacio, Carrera } from '@/lib/types/spaces';
+import type { ReservaStats, Espacio, Carrera } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import {
   Calendar,
@@ -103,7 +102,7 @@ export default function ReservationStatsAnalista() {
       .map(([dia, cantidad]) => ({
         dia,
         cantidad: cantidad as number,
-        orden: diasOrden.indexOf(dia) !== -1 ? diasOrden.indexOf(dia) : 99
+        orden: diasOrden.indexOf(dia) === -1 ? 99 : diasOrden.indexOf(dia)
       }))
       .sort((a, b) => a.orden - b.orden);
   }, [stats?.reservasPorDiaSemana]);
@@ -112,9 +111,9 @@ export default function ReservationStatsAnalista() {
     if (!stats?.reservasPorEspacio) return [];
     return Object.entries(stats.reservasPorEspacio)
       .map(([espacioId, cantidad]) => {
-        const espacio = espacios.find(e => e.id === parseInt(espacioId));
+        const espacio = espacios.find(e => e.id === Number.parseInt(espacioId));
         return {
-          espacioId: parseInt(espacioId),
+          espacioId: Number.parseInt(espacioId),
           nombre: espacio?.nombre || `Espacio ${espacioId}`,
           cantidad: cantidad as number
         };
@@ -160,31 +159,31 @@ export default function ReservationStatsAnalista() {
       // Crear CSV con datos principales
       const csvRows: string[] = [];
       
-      // Encabezados
-      csvRows.push('Métrica,Valor');
-      csvRows.push(`Total Reservas,${stats.totalReservas}`);
-      csvRows.push(`Aprobadas,${stats.totalAprobadas}`);
-      csvRows.push(`Pendientes,${stats.totalPendientes}`);
-      csvRows.push(`Canceladas,${stats.totalCanceladas}`);
-      csvRows.push(`Futuras,${stats.totalFuturas}`);
-      csvRows.push(`Pasadas,${stats.totalPasadas}`);
-      csvRows.push(`Activas,${stats.totalActivas}`);
-      csvRows.push(`Reservas Este Mes,${stats.reservasEsteMes}`);
-      csvRows.push(`Reservas Próximo Mes,${stats.reservasProximoMes}`);
-      csvRows.push(`Reservas Este Año,${stats.reservasEsteAnio}`);
-      csvRows.push(`Promedio Mensual,${stats.promedioReservasPorMes.toFixed(2)}`);
-      csvRows.push(`Promedio Semanal,${stats.promedioReservasPorSemana.toFixed(2)}`);
-      csvRows.push(`Total Espacios Usados,${stats.totalEspaciosUsados}`);
-      csvRows.push(`Espacio Más Usado,${stats.nombreEspacioMasUsado || 'N/A'}`);
-      csvRows.push(`Duración Total (horas),${stats.duracionTotalHoras.toFixed(2)}`);
-      csvRows.push(`Duración Promedio (horas),${stats.duracionPromedioHoras.toFixed(2)}`);
-      csvRows.push(`Horas Reservadas Este Mes,${stats.horasReservadasEsteMes.toFixed(2)}`);
+      // Encabezados y totales
+      csvRows.push(
+        'Métrica,Valor',
+        `Total Reservas,${stats.totalReservas}`,
+        `Aprobadas,${stats.totalAprobadas}`,
+        `Pendientes,${stats.totalPendientes}`,
+        `Canceladas,${stats.totalCanceladas}`,
+        `Futuras,${stats.totalFuturas}`,
+        `Pasadas,${stats.totalPasadas}`,
+        `Activas,${stats.totalActivas}`,
+        `Reservas Este Mes,${stats.reservasEsteMes}`,
+        `Reservas Próximo Mes,${stats.reservasProximoMes}`,
+        `Reservas Este Año,${stats.reservasEsteAnio}`,
+        `Promedio Mensual,${stats.promedioReservasPorMes.toFixed(2)}`,
+        `Promedio Semanal,${stats.promedioReservasPorSemana.toFixed(2)}`,
+        `Total Espacios Usados,${stats.totalEspaciosUsados}`,
+        `Espacio Más Usado,${stats.nombreEspacioMasUsado || 'N/A'}`,
+        `Duración Total (horas),${stats.duracionTotalHoras.toFixed(2)}`,
+        `Duración Promedio (horas),${stats.duracionPromedioHoras.toFixed(2)}`,
+        `Horas Reservadas Este Mes,${stats.horasReservadasEsteMes.toFixed(2)}`,
+      );
       
       // Reservas por mes
       if (stats.reservasPorMes && Object.keys(stats.reservasPorMes).length > 0) {
-        csvRows.push('');
-        csvRows.push('Reservas por Mes');
-        csvRows.push('Mes,Cantidad');
+        csvRows.push('', 'Reservas por Mes', 'Mes,Cantidad');
         Object.entries(stats.reservasPorMes).forEach(([mes, cantidad]) => {
           csvRows.push(`${mes},${cantidad}`);
         });
@@ -192,24 +191,20 @@ export default function ReservationStatsAnalista() {
       
       // Reservas por día de semana
       if (stats.reservasPorDiaSemana && Object.keys(stats.reservasPorDiaSemana).length > 0) {
-        csvRows.push('');
-        csvRows.push('Reservas por Día de Semana');
-        csvRows.push('Día,Cantidad');
+        csvRows.push('', 'Reservas por Día de Semana', 'Día,Cantidad');
         Object.entries(stats.reservasPorDiaSemana).forEach(([dia, cantidad]) => {
           csvRows.push(`${dia},${cantidad}`);
         });
       }
-      
+
       // Reservas por espacio (top 10)
       if (stats.reservasPorEspacio && Object.keys(stats.reservasPorEspacio).length > 0) {
-        csvRows.push('');
-        csvRows.push('Reservas por Espacio (Top 10)');
-        csvRows.push('Espacio ID,Cantidad');
+        csvRows.push('', 'Reservas por Espacio (Top 10)', 'Espacio ID,Cantidad');
         const sortedEspacios = Object.entries(stats.reservasPorEspacio)
           .sort(([, a], [, b]) => (b as number) - (a as number))
           .slice(0, 10);
         sortedEspacios.forEach(([espacioId, cantidad]) => {
-          const espacio = espacios.find(e => e.id === parseInt(espacioId));
+          const espacio = espacios.find(e => e.id === Number.parseInt(espacioId));
           csvRows.push(`${espacio?.nombre || espacioId},${cantidad}`);
         });
       }
@@ -258,8 +253,8 @@ export default function ReservationStatsAnalista() {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+          {Array.from({ length: 8 }, (_, i) => `skeleton-${i}`).map((skeletonKey) => (
+            <Card key={skeletonKey} className="animate-pulse">
               <CardHeader className="pb-3">
                 <div className="h-4 bg-gray-200 rounded w-24"></div>
               </CardHeader>
@@ -309,7 +304,7 @@ export default function ReservationStatsAnalista() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />

@@ -32,7 +32,6 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 
 interface SpaceTableProps {
   espacios: Espacio[];
-  canEdit: boolean;
   onEdit: (espacio: Espacio) => void;
   onDelete?: (espacio: Espacio) => void;
   sortConfig?: { column: string | null; direction: 'asc' | 'desc' };
@@ -45,9 +44,9 @@ export function SpaceTable({
   onDelete,
   sortConfig, 
   onSort
-}: SpaceTableProps) {
+}: Readonly<SpaceTableProps>) {
   const getSortIcon = (column: string) => {
-    if (!sortConfig || sortConfig.column !== column) {
+    if (sortConfig?.column !== column) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
     }
     return sortConfig.direction === 'asc' 
@@ -194,7 +193,7 @@ export function SpaceTable({
                           size="sm"
                           onClick={() => {
                             // Navegar a detalles del espacio
-                            window.location.href = `/rooms/${espacio.id}`;
+                            globalThis.location.href = `/rooms/${espacio.id}`;
                           }}
                           className="h-8 w-8 p-0"
                         >

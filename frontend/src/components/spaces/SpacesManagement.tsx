@@ -70,13 +70,13 @@ export default function SpacesManagement() {
   const [showFilters, setShowFilters] = useState(false);
   
   // Estados de visualización - desde preferencias
-  const preferenciaViewMode = preferencias?.espaciosViewMode as 'table' | 'cards' | undefined;
+  const preferenciaViewMode = preferencias?.espaciosViewMode;
   const [viewMode, setViewMode] = useState<'table' | 'cards'>(preferenciaViewMode || 'cards');
-  
+
   // Aplicar preferencias cuando se carguen
   useEffect(() => {
     if (preferencias?.espaciosViewMode) {
-      setViewMode(preferencias.espaciosViewMode as 'table' | 'cards');
+      setViewMode(preferencias.espaciosViewMode);
     }
   }, [preferencias]);
   const [sortConfig, setSortConfig] = useState<{ column: string | null; direction: 'asc' | 'desc' }>({ 
@@ -181,7 +181,7 @@ export default function SpacesManagement() {
     setPage(0);
     setFilters(prev => ({ 
       ...prev, 
-      tipoEspacioId: tipoId === 'all' ? undefined : parseInt(tipoId)
+      tipoEspacioId: tipoId === 'all' ? undefined : Number.parseInt(tipoId)
     }));
   };
 
@@ -189,7 +189,7 @@ export default function SpacesManagement() {
     setPage(0);
     setFilters(prev => ({ 
       ...prev, 
-      capacidadMin: value ? parseInt(value) : undefined 
+      capacidadMin: value ? Number.parseInt(value) : undefined 
     }));
   };
 
@@ -197,7 +197,7 @@ export default function SpacesManagement() {
     setPage(0);
     setFilters(prev => ({ 
       ...prev, 
-      capacidadMax: value ? parseInt(value) : undefined 
+      capacidadMax: value ? Number.parseInt(value) : undefined 
     }));
   };
 
@@ -205,7 +205,7 @@ export default function SpacesManagement() {
     setPage(0);
     setFilters(prev => ({ 
       ...prev, 
-      estado: value !== 'all' ? (value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE') : undefined 
+      estado: value === 'all' ? undefined : (value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE')
     }));
   };
 
@@ -213,7 +213,7 @@ export default function SpacesManagement() {
     setPage(0);
     setFilters(prev => ({ 
       ...prev, 
-      edificioId: edificioId === 'all' ? undefined : parseInt(edificioId)
+      edificioId: edificioId === 'all' ? undefined : Number.parseInt(edificioId)
     }));
   };
 
@@ -475,16 +475,16 @@ export default function SpacesManagement() {
     }
     
     // Agregar filtros de inventario
+    const obtenerCantidadText = (min?: number, max?: number): string => {
+      if (min !== undefined && max !== undefined) return `entre ${min}-${max}`;
+      if (min !== undefined) return `mín ${min}`;
+      if (max !== undefined) return `máx ${max}`;
+      return 'cualquier cantidad';
+    };
     filtrosInventario.forEach((filtro, index) => {
       if (filtro.tipoElementoId > 0) {
         const tipoNombre = obtenerNombreTipoElemento(filtro.tipoElementoId);
-        const cantidadText = filtro.cantidadMin !== undefined && filtro.cantidadMax !== undefined
-          ? `entre ${filtro.cantidadMin}-${filtro.cantidadMax}`
-          : filtro.cantidadMin !== undefined
-          ? `mín ${filtro.cantidadMin}`
-          : filtro.cantidadMax !== undefined
-          ? `máx ${filtro.cantidadMax}`
-          : 'cualquier cantidad';
+        const cantidadText = obtenerCantidadText(filtro.cantidadMin, filtro.cantidadMax);
         
         items.push({
           id: `inventario-${index}`,
@@ -562,7 +562,7 @@ export default function SpacesManagement() {
           </PermissionGuard>
           
           <div 
-            onClick={!isRefreshing ? handleRefresh : undefined}
+            onClick={isRefreshing ? undefined : handleRefresh}
             className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-1 sm:flex-none justify-center ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
@@ -737,7 +737,7 @@ export default function SpacesManagement() {
                   {filtrosInventario.length > 0 && (
                     <div className="space-y-3">
                       {filtrosInventario.map((filtro, index) => (
-                        <div key={index} className="border rounded-lg p-3 space-y-2">
+                        <div key={`filtro-${filtro.tipoElementoId}-${index}`} className="border rounded-lg p-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <Badge variant="outline" className="text-xs">
                               Filtro {index + 1}
@@ -758,7 +758,7 @@ export default function SpacesManagement() {
                               <Label className="text-xs block mb-1">Tipo de Elemento</Label>
                               <Select 
                                 value={filtro.tipoElementoId === 0 ? "0" : filtro.tipoElementoId.toString()} 
-                                onValueChange={(value) => actualizarFiltroInventario(index, 'tipoElementoId', parseInt(value))}
+                                onValueChange={(value) => actualizarFiltroInventario(index, 'tipoElementoId', Number.parseInt(value))}
                               >
                                 <SelectTrigger className="h-8">
                                   <SelectValue placeholder="Selecciona tipo" />
@@ -782,7 +782,7 @@ export default function SpacesManagement() {
                                 min="0"
                                 placeholder="Ej: 10"
                                 value={filtro.cantidadMin || ''}
-                                onChange={(e) => actualizarFiltroInventario(index, 'cantidadMin', e.target.value ? parseInt(e.target.value) : undefined)}
+                                onChange={(e) => actualizarFiltroInventario(index, 'cantidadMin', e.target.value ? Number.parseInt(e.target.value) : undefined)}
                                 className="h-8"
                               />
                             </div>
@@ -795,27 +795,28 @@ export default function SpacesManagement() {
                                 min="0"
                                 placeholder="Ej: 50"
                                 value={filtro.cantidadMax || ''}
-                                onChange={(e) => actualizarFiltroInventario(index, 'cantidadMax', e.target.value ? parseInt(e.target.value) : undefined)}
+                                onChange={(e) => actualizarFiltroInventario(index, 'cantidadMax', e.target.value ? Number.parseInt(e.target.value) : undefined)}
                                 className="h-8"
                               />
                             </div>
                           </div>
 
                           {/* Resumen del filtro */}
-                          {filtro.tipoElementoId > 0 && (
-                            <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
-                              <strong>Filtro:</strong> Espacios que tengan{' '}
-                              {filtro.cantidadMin !== undefined && filtro.cantidadMax !== undefined
-                                ? `entre ${filtro.cantidadMin} y ${filtro.cantidadMax}`
-                                : filtro.cantidadMin !== undefined
-                                ? `al menos ${filtro.cantidadMin}`
-                                : filtro.cantidadMax !== undefined
-                                ? `máximo ${filtro.cantidadMax}`
-                                : 'cualquier cantidad de'
-                              }{' '}
-                              <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
-                            </div>
-                          )}
+                          {filtro.tipoElementoId > 0 && (() => {
+                            const describirCantidad = (min?: number, max?: number): string => {
+                              if (min !== undefined && max !== undefined) return `entre ${min} y ${max}`;
+                              if (min !== undefined) return `al menos ${min}`;
+                              if (max !== undefined) return `máximo ${max}`;
+                              return 'cualquier cantidad de';
+                            };
+                            return (
+                              <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                                <strong>Filtro:</strong> Espacios que tengan{' '}
+                                {describirCantidad(filtro.cantidadMin, filtro.cantidadMax)}{' '}
+                                <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
+                              </div>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
@@ -845,33 +846,41 @@ export default function SpacesManagement() {
       )}
 
       {/* Vista de espacios */}
-      {loading ? (
-        viewMode === 'cards' ? (
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: pageSize }).map((_, index) => (
-              <SpaceCardSkeleton key={index} />
-            ))}
-          </div>
-        ) : (
-          <div className="border rounded-lg shadow-card p-8">
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="h-16 bg-gray-100 animate-pulse rounded" />
-              ))}
+      {(() => {
+        if (loading) {
+          if (viewMode === 'cards') {
+            return (
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: pageSize }, (_, index) => `space-skeleton-${index}`).map((skeletonKey) => (
+                  <SpaceCardSkeleton key={skeletonKey} />
+                ))}
+              </div>
+            );
+          }
+          return (
+            <div className="border rounded-lg shadow-card p-8">
+              <div className="space-y-3">
+                {Array.from({ length: 5 }, (_, index) => `row-skeleton-${index}`).map((skeletonKey) => (
+                  <div key={skeletonKey} className="h-16 bg-gray-100 animate-pulse rounded" />
+                ))}
+              </div>
             </div>
-          </div>
-        )
-      ) : sortedEspacios.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title="No se encontraron espacios"
-          description="No hay espacios que coincidan con los criterios de búsqueda"
-          action={{
-            label: 'Limpiar filtros',
-            onClick: clearFilters
-          }}
-        />
-      ) : (
+          );
+        }
+        if (sortedEspacios.length === 0) {
+          return (
+            <EmptyState
+              icon={Building2}
+              title="No se encontraron espacios"
+              description="No hay espacios que coincidan con los criterios de búsqueda"
+              action={{
+                label: 'Limpiar filtros',
+                onClick: clearFilters
+              }}
+            />
+          );
+        }
+        return (
         <>
           {viewMode === 'cards' ? (
             <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -887,7 +896,6 @@ export default function SpacesManagement() {
           ) : (
             <SpaceTable
               espacios={sortedEspacios}
-              canEdit={canEdit}
               onEdit={handleEdit}
               onDelete={canEdit ? handleDelete : undefined}
               sortConfig={sortConfig}
@@ -927,7 +935,8 @@ export default function SpacesManagement() {
             </div>
           </div>
         </>
-      )}
+        );
+      })()}
 
       {/* Modales */}
       <SpaceFormDialog

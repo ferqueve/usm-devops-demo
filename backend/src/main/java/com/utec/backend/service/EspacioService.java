@@ -9,12 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,11 +23,14 @@ public class EspacioService {
 
     private final EspacioRepository espacioRepository;
 
-    @Autowired(required = false)
-    private FileStorageService fileStorageService;
+    @Nullable
+    private final FileStorageService fileStorageService;
 
-    public EspacioService(EspacioRepository espacioRepository) {
+    public EspacioService(
+            EspacioRepository espacioRepository,
+            @Autowired(required = false) @Nullable FileStorageService fileStorageService) {
         this.espacioRepository = espacioRepository;
+        this.fileStorageService = fileStorageService;
     }
     
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
@@ -39,7 +42,7 @@ public class EspacioService {
             Espacio espacio = espacioExistente.get();
             // Si no está eliminado, lanzar error
             if (espacio.getDeletedAt() == null) {
-                throw new RuntimeException("Ya existe un espacio activo con el nombre: " + createDto.getNombre());
+                throw new IllegalStateException("Ya existe un espacio activo con el nombre: " + createDto.getNombre());
             }
             // Si está eliminado, reactivarlo
             espacio.setCapacidad(createDto.getCapacidad());
@@ -71,7 +74,7 @@ public class EspacioService {
     public List<EspacioResponseDto> getAllEspacios() {
         return espacioRepository.findAll().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -84,14 +87,14 @@ public class EspacioService {
     @org.springframework.cache.annotation.Cacheable(value = "espacios", key = "#id")
     public EspacioResponseDto getEspacioById(Long id) {
         Espacio espacio = espacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + id));
         return mapToResponseDto(espacio);
     }
-    
+
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public EspacioResponseDto updateEspacio(Long id, EspacioUpdateDto updateDto) {
         Espacio espacio = espacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + id));
         
         espacio.setNombre(updateDto.getNombre());
         espacio.setCapacidad(updateDto.getCapacidad());
@@ -110,7 +113,7 @@ public class EspacioService {
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public void deleteEspacio(Long id) {
         Espacio espacio = espacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + id));
         
         // Soft delete: marcar como eliminado
         espacio.setDeletedAt(Instant.now());
@@ -123,42 +126,42 @@ public class EspacioService {
     public List<EspacioResponseDto> searchEspaciosByNombre(String nombre) {
         return espacioRepository.findByNombreContainingIgnoreCase(nombre).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> getEspaciosByCapacidadMinima(Integer capacidadMinima) {
         return espacioRepository.findByCapacidadGreaterThanEqual(capacidadMinima).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> getEspaciosByCapacidadMaxima(Integer capacidadMaxima) {
         return espacioRepository.findByCapacidadLessThanEqual(capacidadMaxima).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> getEspaciosByCapacidadRango(Integer capacidadMinima, Integer capacidadMaxima) {
         return espacioRepository.findByCapacidadBetween(capacidadMinima, capacidadMaxima).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> getEspaciosByTipoEspacio(Long tipoEspacioId) {
         return espacioRepository.findByTipoEspacioId(tipoEspacioId).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> getEspaciosByNombre(String nombre) {
         return espacioRepository.findByNombreContainingIgnoreCase(nombre).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -170,37 +173,37 @@ public class EspacioService {
         if (search != null && !search.trim().isEmpty()) {
             espacios = espacios.stream()
                     .filter(e -> e.getNombre().toLowerCase().contains(search.toLowerCase()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (tipoEspacioId != null) {
             espacios = espacios.stream()
                     .filter(e -> e.getTipoEspacioId().equals(tipoEspacioId))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (edificioId != null) {
             espacios = espacios.stream()
                     .filter(e -> e.getEdificioId() != null && e.getEdificioId().equals(edificioId))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (capacidadMin != null) {
             espacios = espacios.stream()
                     .filter(e -> e.getCapacidad() >= capacidadMin)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (capacidadMax != null) {
             espacios = espacios.stream()
                     .filter(e -> e.getCapacidad() <= capacidadMax)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         if (estado != null && !estado.trim().isEmpty()) {
             espacios = espacios.stream()
                     .filter(e -> e.getEstado() != null && e.getEstado().equals(estado))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         // Aplicar filtros de inventario múltiples
@@ -230,20 +233,20 @@ public class EspacioService {
                                         return true;
                                     });
                         })
-                        .collect(Collectors.toList());
+                        .toList();
             }
         }
         
         return espacios.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<EspacioResponseDto> getEspaciosDisponibles(Instant inicio, Instant fin) {
         return espacioRepository.findEspaciosDisponibles(inicio, fin).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -275,7 +278,7 @@ public class EspacioService {
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public void updateEspacioImagen(Long espacioId, String objectName) {
         Espacio espacio = espacioRepository.findById(espacioId)
-                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + espacioId));
+                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + espacioId));
         
         // Si hay una imagen anterior y es diferente, eliminarla
         String oldImageUrl = espacio.getImagenUrl();

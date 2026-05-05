@@ -41,9 +41,7 @@ public class AuditRequestFilter extends OncePerRequestFilter {
             // Continuar con la cadena de filtros
             filterChain.doFilter(request, response);
         } finally {
-            // Limpiar el contexto al finalizar la request
-            // Nota: No limpiamos aquí porque AuditAspect lo hace después de save()
-            // AuditContext.clear();
+            // El contexto se limpia desde AuditAspect después de persistir el log.
         }
     }
 

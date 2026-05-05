@@ -232,7 +232,7 @@ export default function InventoryStats() {
       exportInventoryStatsToPDF(stats, {
         espacioNombre,
         tipoElementoNombre,
-        estado: filterEstado !== 'todos' ? filterEstado : undefined,
+        estado: filterEstado === 'todos' ? undefined : filterEstado,
       });
 
       toast.success('PDF generado exitosamente', {
@@ -342,7 +342,7 @@ export default function InventoryStats() {
               <label className="text-sm font-medium">Espacio</label>
               <Select 
                 value={filterEspacio?.toString() || 'todos'} 
-                onValueChange={(value) => setFilterEspacio(value === 'todos' ? null : parseInt(value))}
+                onValueChange={(value) => setFilterEspacio(value === 'todos' ? null : Number.parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los espacios" />
@@ -362,7 +362,7 @@ export default function InventoryStats() {
               <label className="text-sm font-medium">Tipo de Elemento</label>
               <Select 
                 value={filterTipoElemento?.toString() || 'todos'} 
-                onValueChange={(value) => setFilterTipoElemento(value === 'todos' ? null : parseInt(value))}
+                onValueChange={(value) => setFilterTipoElemento(value === 'todos' ? null : Number.parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los tipos" />
@@ -616,8 +616,12 @@ export default function InventoryStats() {
                 <span className="text-sm">Ratio de Salud</span>
                 <div className="flex items-center gap-2">
                   <div className="w-24 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${stats.ratioSalud > 70 ? 'bg-green-500' : stats.ratioSalud > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                    <div
+                      className={`h-2 rounded-full ${(() => {
+                        if (stats.ratioSalud > 70) return 'bg-green-500';
+                        if (stats.ratioSalud > 40) return 'bg-yellow-500';
+                        return 'bg-red-500';
+                      })()}`}
                       style={{ width: `${stats.ratioSalud}%` }}
                     />
                   </div>

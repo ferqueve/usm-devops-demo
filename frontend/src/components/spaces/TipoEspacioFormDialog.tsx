@@ -29,7 +29,7 @@ export function TipoEspacioFormDialog({
   open, 
   onOpenChange, 
   onSuccess 
-}: TipoEspacioFormDialogProps) {
+}: Readonly<TipoEspacioFormDialogProps>) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',

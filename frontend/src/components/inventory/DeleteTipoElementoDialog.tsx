@@ -26,7 +26,7 @@ export function DeleteTipoElementoDialog({
   open, 
   onOpenChange, 
   onSuccess 
-}: DeleteTipoElementoDialogProps) {
+}: Readonly<DeleteTipoElementoDialogProps>) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {

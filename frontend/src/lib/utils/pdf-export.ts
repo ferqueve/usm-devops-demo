@@ -797,7 +797,7 @@ export function exportReservationStatsToPDF(
         .map(([dia, cantidad]) => ({
           dia,
           cantidad: cantidad as number,
-          orden: diasOrden.indexOf(dia) !== -1 ? diasOrden.indexOf(dia) : 99
+          orden: diasOrden.indexOf(dia) === -1 ? 99 : diasOrden.indexOf(dia)
         }))
         .sort((a, b) => a.orden - b.orden)
         .map(({ dia, cantidad }) => [dia, cantidad.toString()]);

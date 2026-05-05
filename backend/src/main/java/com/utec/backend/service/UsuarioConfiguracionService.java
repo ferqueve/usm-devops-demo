@@ -7,20 +7,30 @@ import com.utec.backend.model.Usuario;
 import com.utec.backend.model.UsuarioConfiguracion;
 import com.utec.backend.repository.UsuarioConfiguracionRepository;
 import com.utec.backend.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class UsuarioConfiguracionService {
 
     private final UsuarioConfiguracionRepository configuracionRepository;
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioConfiguracionService self;
+
+    public UsuarioConfiguracionService(
+            UsuarioConfiguracionRepository configuracionRepository,
+            UsuarioRepository usuarioRepository,
+            @Lazy @Autowired UsuarioConfiguracionService self) {
+        this.configuracionRepository = configuracionRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.self = self;
+    }
 
     /**
      * Obtiene o crea las preferencias del usuario con valores por defecto
@@ -28,7 +38,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasCompletasDto obtenerPreferencias(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -41,7 +51,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasEmailDto obtenerPreferenciasEmail(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -67,7 +77,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasVistaDto obtenerPreferenciasVista(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -87,7 +97,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasEmailDto actualizarPreferenciasEmail(String userEmail, PreferenciasEmailDto dto) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -101,7 +111,7 @@ public class UsuarioConfiguracionService {
         
         log.info("Preferencias de email actualizadas para usuario: {}", userEmail);
         
-        return obtenerPreferenciasEmail(userEmail);
+        return self.obtenerPreferenciasEmail(userEmail);
     }
 
     /**
@@ -110,7 +120,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasVistaDto actualizarPreferenciasVista(String userEmail, PreferenciasVistaDto dto) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -125,7 +135,7 @@ public class UsuarioConfiguracionService {
         
         log.info("Preferencias de vista actualizadas para usuario: {}", userEmail);
         
-        return obtenerPreferenciasVista(userEmail);
+        return self.obtenerPreferenciasVista(userEmail);
     }
 
     /**

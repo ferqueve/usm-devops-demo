@@ -36,9 +36,9 @@ public class CsvExportUtil {
                .append(CSV_SEPARATOR)
                .append(escapeCSVField(usuario.getRolApp().name()))
                .append(CSV_SEPARATOR)
-               .append(escapeCSVField(usuario.getVerificado() ? "Sí" : "No"))
+               .append(escapeCSVField(Boolean.TRUE.equals(usuario.getVerificado()) ? "Sí" : "No"))
                .append(CSV_SEPARATOR)
-               .append(escapeCSVField(usuario.getActivo() ? "Sí" : "No"))
+               .append(escapeCSVField(Boolean.TRUE.equals(usuario.getActivo()) ? "Sí" : "No"))
                .append(CSV_SEPARATOR)
                .append(escapeCSVField(dateFormatter.format(usuario.getCreatedAt())))
                .append("\n");

@@ -44,7 +44,7 @@ const EMAIL_LABELS: Record<string, string> = {
   estadoSolicitudInventario: 'Estado de solicitud de inventario',
 };
 
-export default function PreferencesModal({ open, onOpenChange }: PreferencesModalProps) {
+export default function PreferencesModal({ open, onOpenChange }: Readonly<PreferencesModalProps>) {
   const { user } = useAuth();
   const { hasPermission } = useRolePermissions();
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
       const response = await preferencesApi.obtenerPreferencias();
       const data = (response.data || response) as { preferencias: { email?: PreferenciasEmail; vista?: PreferenciasVista } };
       
-      if (data && data.preferencias) {
+      if (data?.preferencias) {
         if (data.preferencias.email) {
           setEmailPrefs(data.preferencias.email);
         }
@@ -104,7 +104,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
       // La respuesta puede venir en response.data o directamente
       const userData = response.data || response;
       if (userData && typeof userData === 'object' && 'email' in userData) {
-        setUserProfile(userData as User);
+        setUserProfile(userData);
       }
     } catch (error) {
       console.error('Error al cargar perfil:', error);
@@ -321,7 +321,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                       </Label>
                       <Select
                         value={String(vistaPrefs.reservasPageSize || 10)}
-                        onValueChange={(value) => handleVistaChange('reservasPageSize', parseInt(value))}
+                        onValueChange={(value) => handleVistaChange('reservasPageSize', Number.parseInt(value))}
                       >
                         <SelectTrigger id="reservasPageSize">
                           <SelectValue />
@@ -366,7 +366,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                       </Label>
                       <Select
                         value={String(vistaPrefs.espaciosPageSize || 12)}
-                        onValueChange={(value) => handleVistaChange('espaciosPageSize', parseInt(value))}
+                        onValueChange={(value) => handleVistaChange('espaciosPageSize', Number.parseInt(value))}
                       >
                         <SelectTrigger id="espaciosPageSize">
                           <SelectValue />
@@ -410,7 +410,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                       </Label>
                       <Select
                         value={String(vistaPrefs.inventarioPageSize || 25)}
-                        onValueChange={(value) => handleVistaChange('inventarioPageSize', parseInt(value))}
+                        onValueChange={(value) => handleVistaChange('inventarioPageSize', Number.parseInt(value))}
                       >
                         <SelectTrigger id="inventarioPageSize">
                           <SelectValue />
@@ -437,7 +437,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                       </Label>
                       <Select
                         value={String(vistaPrefs.usuariosPageSize || 10)}
-                        onValueChange={(value) => handleVistaChange('usuariosPageSize', parseInt(value))}
+                        onValueChange={(value) => handleVistaChange('usuariosPageSize', Number.parseInt(value))}
                       >
                         <SelectTrigger id="usuariosPageSize">
                           <SelectValue />
@@ -456,7 +456,7 @@ export default function PreferencesModal({ open, onOpenChange }: PreferencesModa
                       </Label>
                       <Select
                         value={String(vistaPrefs.auditoriaPageSize || 20)}
-                        onValueChange={(value) => handleVistaChange('auditoriaPageSize', parseInt(value))}
+                        onValueChange={(value) => handleVistaChange('auditoriaPageSize', Number.parseInt(value))}
                       >
                         <SelectTrigger id="auditoriaPageSize">
                           <SelectValue />

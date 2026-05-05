@@ -29,13 +29,13 @@ interface TooltipPayload {
 }
 
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
-  if (active && payload && payload.length) {
+  if (active && payload?.length) {
     return (
       <div className="bg-white border rounded-lg shadow-lg p-3">
         {payload.map((entry, index: number) => {
           const payloadEntry = entry as TooltipPayload;
           return (
-            <p key={index} className="text-sm" style={{ color: payloadEntry.color }}>
+            <p key={`${payloadEntry.name ?? 'entry'}-${index}`} className="text-sm" style={{ color: payloadEntry.color }}>
               {payloadEntry.name}: {payloadEntry.value}
             </p>
           );
@@ -51,7 +51,7 @@ export default function ReservationCharts({
   reservasPorDiaSemanaData,
   reservasPorEspacioData,
   distribucionPorEstadoData,
-}: ReservationChartsProps) {
+}: Readonly<ReservationChartsProps>) {
   return (
     <div className="space-y-6">
       {/* Primera fila: Distribución por estado y Tendencia mensual */}
@@ -75,8 +75,8 @@ export default function ReservationCharts({
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {distribucionPorEstadoData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {distribucionPorEstadoData.map((entry) => (
+                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />

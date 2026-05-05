@@ -7,7 +7,7 @@ interface InventoryStatsWidgetProps {
   loading: boolean;
 }
 
-export default function InventoryStatsWidget({ stats, loading }: InventoryStatsWidgetProps) {
+export default function InventoryStatsWidget({ stats, loading }: Readonly<InventoryStatsWidgetProps>) {
   if (loading) {
     return (
       <Card>

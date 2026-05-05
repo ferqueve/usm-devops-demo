@@ -76,7 +76,7 @@ public class StatisticsService {
                 .filter(item -> espacioId == null || (item.getEspacio() != null && item.getEspacio().getId().equals(espacioId)))
                 .filter(item -> tipoElementoId == null || item.getTipoElemento().getId().equals(tipoElementoId))
                 .filter(item -> estado == null || estado.equals("todos") || item.getEstado().equals(estado))
-                .collect(Collectors.toList());
+                .toList();
         
         // Obtener todos los espacios y tipos para cálculos adicionales
         List<Espacio> allEspacios = espacioRepository.findAll();
@@ -137,7 +137,7 @@ public class StatisticsService {
         
         List<Map<String, Object>> itemsPorTipo = itemsPorTipoMap.values().stream()
                 .sorted((a, b) -> ((Integer) b.get("items")).compareTo((Integer) a.get("items")))
-                .collect(Collectors.toList());
+                .toList();
         
         stats.put("itemsPorTipo", itemsPorTipo);
         stats.put("tiposUnicos", itemsPorTipo.size());
@@ -162,14 +162,14 @@ public class StatisticsService {
         
         List<Map<String, Object>> itemsPorEspacio = itemsPorEspacioMap.values().stream()
                 .sorted((a, b) -> ((Integer) b.get("items")).compareTo((Integer) a.get("items")))
-                .collect(Collectors.toList());
+                .toList();
         
         stats.put("itemsPorEspacio", itemsPorEspacio);
         stats.put("espaciosConInventario", itemsPorEspacio.size());
         
         // === TOP RANKINGS ===
-        List<Map<String, Object>> topEspacios = itemsPorEspacio.stream().limit(10).collect(Collectors.toList());
-        List<Map<String, Object>> topTipos = itemsPorTipo.stream().limit(10).collect(Collectors.toList());
+        List<Map<String, Object>> topEspacios = itemsPorEspacio.stream().limit(10).toList();
+        List<Map<String, Object>> topTipos = itemsPorTipo.stream().limit(10).toList();
         
         List<Map<String, Object>> espaciosConMasProblemas = itemsPorEspacio.stream()
                 .map(espacio -> {
@@ -184,7 +184,7 @@ public class StatisticsService {
                 .filter(e -> ((Integer) e.get("problemas")) > 0)
                 .sorted((a, b) -> ((Integer) b.get("problemas")).compareTo((Integer) a.get("problemas")))
                 .limit(10)
-                .collect(Collectors.toList());
+                .toList();
         
         List<Map<String, Object>> tiposConMasProblemas = itemsPorTipo.stream()
                 .map(tipo -> {
@@ -199,7 +199,7 @@ public class StatisticsService {
                 .filter(t -> ((Integer) t.get("problemas")) > 0)
                 .sorted((a, b) -> ((Integer) b.get("problemas")).compareTo((Integer) a.get("problemas")))
                 .limit(10)
-                .collect(Collectors.toList());
+                .toList();
         
         stats.put("topEspacios", topEspacios);
         stats.put("topTipos", topTipos);
@@ -207,11 +207,11 @@ public class StatisticsService {
         stats.put("tiposConMasProblemas", tiposConMasProblemas);
         
         // === PROMEDIOS ===
-        double promedioItemsPorEspacio = itemsPorEspacio.size() > 0 ? (double) totalItems / itemsPorEspacio.size() : 0;
+        double promedioItemsPorEspacio = !itemsPorEspacio.isEmpty() ? (double) totalItems / itemsPorEspacio.size() : 0;
         double promedioCantidadPorItem = totalItems > 0 ? (double) totalCantidad / totalItems : 0;
-        double promedioItemsPorTipo = itemsPorTipo.size() > 0 ? (double) totalItems / itemsPorTipo.size() : 0;
-        double promedioCantidadPorEspacio = itemsPorEspacio.size() > 0 ? (double) totalCantidad / itemsPorEspacio.size() : 0;
-        double promedioCantidadPorTipo = itemsPorTipo.size() > 0 ? (double) totalCantidad / itemsPorTipo.size() : 0;
+        double promedioItemsPorTipo = !itemsPorTipo.isEmpty() ? (double) totalItems / itemsPorTipo.size() : 0;
+        double promedioCantidadPorEspacio = !itemsPorEspacio.isEmpty() ? (double) totalCantidad / itemsPorEspacio.size() : 0;
+        double promedioCantidadPorTipo = !itemsPorTipo.isEmpty() ? (double) totalCantidad / itemsPorTipo.size() : 0;
         
         stats.put("promedioItemsPorEspacio", promedioItemsPorEspacio);
         stats.put("promedioCantidadPorItem", promedioCantidadPorItem);

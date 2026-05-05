@@ -27,7 +27,7 @@ export function DeleteTipoEspacioDialog({
   open, 
   onOpenChange, 
   onSuccess 
-}: DeleteTipoEspacioDialogProps) {
+}: Readonly<DeleteTipoEspacioDialogProps>) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {

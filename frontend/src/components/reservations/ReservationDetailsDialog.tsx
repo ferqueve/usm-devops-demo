@@ -62,7 +62,7 @@ export default function ReservationDetailsDialog({
   open,
   onOpenChange,
   onReservaUpdated
-}: ReservationDetailsDialogProps) {
+}: Readonly<ReservationDetailsDialogProps>) {
   const { hasPermission } = useRolePermissions();
   // Usuarios que necesitan aprobación (DOCENTE/EXTERNO) pueden ver el motivo de solicitud
   const puedeVerMotivoSolicitud = !hasPermission('reserva:aprobar');

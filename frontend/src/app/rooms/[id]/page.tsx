@@ -13,7 +13,7 @@ export default function RoomDetailsPage() {
       // Obtener el nombre del espacio para el título
       const fetchEspacioName = async () => {
         try {
-          const response = await espaciosApi.obtenerEspacio(parseInt(id));
+          const response = await espaciosApi.obtenerEspacio(Number.parseInt(id));
           if (response.data) {
             setEspacioName(response.data.nombre);
           }
@@ -38,7 +38,7 @@ export default function RoomDetailsPage() {
 
   return (
     <DashboardLayout title={espacioName ? `Espacios - ${espacioName}` : 'Espacios'}>
-      <SpaceDetails espacioId={parseInt(id)} />
+      <SpaceDetails espacioId={Number.parseInt(id)} />
     </DashboardLayout>
   );
 }

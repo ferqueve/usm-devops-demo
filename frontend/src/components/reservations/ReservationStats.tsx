@@ -31,14 +31,14 @@ export default function ReservationStats({
   collapsed: externalCollapsed,
   onCollapsedChange,
   horizontal = false
-}: ReservationStatsProps) {
+}: Readonly<ReservationStatsProps>) {
   const [stats, setStats] = useState<ReservaStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
   
   // Usar el estado externo si está disponible, sino usar el interno
-  const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+  const collapsed = externalCollapsed === undefined ? internalCollapsed : externalCollapsed;
   const setCollapsed = onCollapsedChange || setInternalCollapsed;
 
   // Detectar cuando el layout está en vertical (menor a lg breakpoint)

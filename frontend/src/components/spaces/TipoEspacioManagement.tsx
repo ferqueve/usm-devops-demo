@@ -26,7 +26,7 @@ export function TipoEspacioManagement({
   open, 
   onOpenChange, 
   onSuccess 
-}: TipoEspacioManagementProps) {
+}: Readonly<TipoEspacioManagementProps>) {
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -96,16 +96,23 @@ export function TipoEspacioManagement({
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto -mx-6 px-6 py-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-muted-foreground">Cargando tipos de espacios...</p>
-              </div>
-            ) : tiposEspacio.length === 0 ? (
-              <div className="text-center py-8">
-                <Palette className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No hay tipos de espacios disponibles</p>
-              </div>
-            ) : (
+            {(() => {
+              if (loading) {
+                return (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-muted-foreground">Cargando tipos de espacios...</p>
+                  </div>
+                );
+              }
+              if (tiposEspacio.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <Palette className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No hay tipos de espacios disponibles</p>
+                  </div>
+                );
+              }
+              return (
               <div className="space-y-3">
                 {tiposEspacio.map((tipo) => (
                   <div
@@ -153,7 +160,8 @@ export function TipoEspacioManagement({
                   </div>
                 ))}
               </div>
-            )}
+              );
+            })()}
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t">

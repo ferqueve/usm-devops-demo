@@ -33,7 +33,7 @@ const CHART_COLORS = [
   '#06b6d4', '#f97316', '#84cc16', '#e11d48', '#6366f1'
 ];
 
-export default function InventoryCharts({ stats, loading = false }: InventoryChartsProps) {
+export default function InventoryCharts({ stats, loading = false }: Readonly<InventoryChartsProps>) {
   // Datos para gráfico de distribución por estado
   const distribucionPorEstado = useMemo(() => {
     return [
@@ -81,11 +81,11 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
   }, [stats.itemsPorTipo]);
 
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
+    if (active && payload?.length) {
       return (
         <div className="bg-white border rounded-lg shadow-lg p-3">
           {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
+            <p key={`${entry.name ?? 'entry'}-${index}`} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {entry.value}
             </p>
           ))}
@@ -135,8 +135,8 @@ export default function InventoryCharts({ stats, loading = false }: InventoryCha
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {distribucionPorEstado.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {distribucionPorEstado.map((entry) => (
+                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />

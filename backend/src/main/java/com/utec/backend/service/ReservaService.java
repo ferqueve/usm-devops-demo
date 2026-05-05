@@ -4,6 +4,7 @@ import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
 import com.utec.backend.dto.reserva.ReservaUpdateDto;
+import com.utec.backend.exception.AccesoDenegadoException;
 import com.utec.backend.exception.UsuarioNotFoundException;
 import com.utec.backend.model.Carrera;
 import com.utec.backend.model.Espacio;
@@ -13,8 +14,9 @@ import com.utec.backend.repository.CarreraRepository;
 import com.utec.backend.repository.EspacioRepository;
 import com.utec.backend.repository.ReservaRepository;
 import com.utec.backend.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,7 +41,6 @@ import jakarta.persistence.criteria.Predicate;
 import static com.utec.backend.security.Constants.*;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ReservaService {
 
@@ -51,9 +52,31 @@ public class ReservaService {
     private final EmailService emailService;
     private final RecomendacionService recomendacionService;
     private final FileStorageService fileStorageService;
+    private final ReservaService self;
 
     @Value("${app.timezone:America/Montevideo}")
     private String appTimezone;
+
+    public ReservaService(
+            ReservaRepository reservaRepository,
+            EspacioRepository espacioRepository,
+            UsuarioRepository usuarioRepository,
+            CarreraRepository carreraRepository,
+            ReservaItemSolicitadoService reservaItemSolicitadoService,
+            EmailService emailService,
+            RecomendacionService recomendacionService,
+            FileStorageService fileStorageService,
+            @Lazy @Autowired ReservaService self) {
+        this.reservaRepository = reservaRepository;
+        this.espacioRepository = espacioRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.carreraRepository = carreraRepository;
+        this.reservaItemSolicitadoService = reservaItemSolicitadoService;
+        this.emailService = emailService;
+        this.recomendacionService = recomendacionService;
+        this.fileStorageService = fileStorageService;
+        this.self = self;
+    }
 
     /**
      * Crear una nueva reserva con manejo robusto de concurrencia
@@ -71,11 +94,11 @@ public class ReservaService {
 
         // 2. Validar y obtener espacio
         Espacio espacio = espacioRepository.findById(createDto.getEspacioId())
-                .orElseThrow(() -> new RuntimeException("Espacio no encontrado con ID: " + createDto.getEspacioId()));
+                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + createDto.getEspacioId()));
 
         // 3. Validar que el espacio está disponible
         if (!"DISPONIBLE".equals(espacio.getEstado())) {
-            throw new RuntimeException("El espacio no está disponible. Estado actual: " + espacio.getEstado());
+            throw new IllegalStateException("El espacio no está disponible. Estado actual: " + espacio.getEstado());
         }
 
         // 3.5. Validar y obtener carrera si se proporciona
@@ -83,43 +106,43 @@ public class ReservaService {
         if (createDto.getCarreraId() != null) {
             carrera = carreraRepository.findById(createDto.getCarreraId())
                     .orElseThrow(
-                            () -> new RuntimeException("Carrera no encontrada con ID: " + createDto.getCarreraId()));
+                            () -> new IllegalArgumentException("Carrera no encontrada con ID: " + createDto.getCarreraId()));
             // Verificar que la carrera no esté eliminada
             if (carrera.getDeletedAt() != null) {
-                throw new RuntimeException("La carrera especificada ha sido eliminada");
+                throw new IllegalStateException("La carrera especificada ha sido eliminada");
             }
         }
 
         // 4. Validar horarios lógicos
         if (!createDto.getInicio().isBefore(createDto.getFin())) {
-            throw new RuntimeException("La fecha de inicio debe ser anterior a la fecha de fin");
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
         }
 
         // 5. Validar que no sea en el pasado
         if (createDto.getInicio().isBefore(Instant.now())) {
-            throw new RuntimeException("No se puede reservar en el pasado");
+            throw new IllegalArgumentException("No se puede reservar en el pasado");
         }
 
         // 6. Validar duración mínima (30 minutos)
         long durationMinutes = java.time.Duration.between(createDto.getInicio(), createDto.getFin()).toMinutes();
         if (durationMinutes < 30) {
-            throw new RuntimeException("La reserva debe tener una duración mínima de 30 minutos");
+            throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
         }
 
         // 6.5. Validar recurrencia si se proporciona
         if (createDto.getTipoRecurrencia() != null) {
             if (createDto.getFechaFinRecurrencia() == null) {
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         "La fecha de fin de recurrencia es requerida cuando se especifica un tipo de recurrencia");
             }
             if (!createDto.getFechaFinRecurrencia().isAfter(createDto.getInicio())) {
-                throw new RuntimeException("La fecha de fin de recurrencia debe ser posterior a la fecha de inicio");
+                throw new IllegalArgumentException("La fecha de fin de recurrencia debe ser posterior a la fecha de inicio");
             }
             // Validar que no se generen demasiadas reservas (límite de seguridad: 1000
             // reservas)
             long maxReservas = calcularMaxReservas(createDto);
             if (maxReservas > 1000) {
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         "La recurrencia generaría más de 1000 reservas. Por favor, reduzca el rango de fechas.");
             }
         }
@@ -132,21 +155,21 @@ public class ReservaService {
 
         if (esDocente) {
             if (createDto.getAnalistaId() == null) {
-                throw new RuntimeException("El docente debe seleccionar un analista para gestionar la solicitud");
+                throw new IllegalArgumentException("El docente debe seleccionar un analista para gestionar la solicitud");
             }
 
             analistaAsignado = usuarioRepository.findById(createDto.getAnalistaId())
                     .orElseThrow(
-                            () -> new RuntimeException("Analista no encontrado con ID: " + createDto.getAnalistaId()));
+                            () -> new IllegalArgumentException("Analista no encontrado con ID: " + createDto.getAnalistaId()));
 
             // Validar que el usuario seleccionado es realmente un analista
             if (analistaAsignado.getRolApp() != Usuario.RolApp.ANALISTA) {
-                throw new RuntimeException("El usuario seleccionado no es un analista");
+                throw new IllegalArgumentException("El usuario seleccionado no es un analista");
             }
 
             // Validar que el analista no esté eliminado
             if (analistaAsignado.getDeletedAt() != null) {
-                throw new RuntimeException("El analista seleccionado ha sido eliminado");
+                throw new IllegalStateException("El analista seleccionado ha sido eliminado");
             }
 
             log.info("Analista {} asignado a solicitud de docente {}", analistaAsignado.getEmail(), userEmail);
@@ -188,7 +211,7 @@ public class ReservaService {
 
             if (!conflictos.isEmpty()) {
                 log.warn("Conflicto de horario detectado. Espacio ocupado en ese rango de tiempo");
-                throw new RuntimeException(
+                throw new IllegalStateException(
                         "El espacio ya está reservado en ese horario. Por favor, seleccione otro horario.");
             }
         }
@@ -340,7 +363,7 @@ public class ReservaService {
                 reservasCreadas.size(), fechasInicio.size() - reservasCreadas.size());
 
         if (reservasCreadas.isEmpty()) {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "No se pudo crear ninguna reserva recurrente. Todas las fechas tienen conflictos o están en el pasado.");
         }
 
@@ -415,7 +438,7 @@ public class ReservaService {
                 // Aproximación: meses entre fechas
                 ZonedDateTime inicioZdt = fechaInicio.atZone(ZoneOffset.UTC);
                 ZonedDateTime finZdt = fechaFin.atZone(ZoneOffset.UTC);
-                long meses = (finZdt.getYear() - inicioZdt.getYear()) * 12
+                long meses = (long) (finZdt.getYear() - inicioZdt.getYear()) * 12
                         + (finZdt.getMonthValue() - inicioZdt.getMonthValue());
                 return meses + 1;
             default:
@@ -429,7 +452,7 @@ public class ReservaService {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public ReservaResponseDto createReserva(ReservaCreateDto createDto, String userEmail) {
-        return createReserva(createDto, userEmail, ROLE_ADMIN); // Por defecto ADMIN para mantener compatibilidad
+        return self.createReserva(createDto, userEmail, ROLE_ADMIN); // Por defecto ADMIN para mantener compatibilidad
     }
 
     /**
@@ -443,7 +466,7 @@ public class ReservaService {
         List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId());
         return reservas.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -670,24 +693,24 @@ public class ReservaService {
         try {
             nuevoEstado = Reserva.EstadoReserva.valueOf(nuevoEstadoStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(
-                    "Estado inválido: " + nuevoEstadoStr + ". Estados válidos: PENDIENTE, APROBADO, CANCELADO");
+            throw new IllegalArgumentException(
+                    "Estado inválido: " + nuevoEstadoStr + ". Estados válidos: PENDIENTE, APROBADO, CANCELADO", e);
         }
 
         // Solo permitir APROBADO o CANCELADO
         if (nuevoEstado != Reserva.EstadoReserva.APROBADO && nuevoEstado != Reserva.EstadoReserva.CANCELADO) {
-            throw new RuntimeException("Solo se puede cambiar el estado a APROBADO o CANCELADO");
+            throw new IllegalArgumentException("Solo se puede cambiar el estado a APROBADO o CANCELADO");
         }
 
         // Obtener la reserva
         Reserva reserva = reservaRepository.findByIdWithRelations(id);
         if (reserva == null) {
-            throw new RuntimeException("Reserva no encontrada con ID: " + id);
+            throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
         }
 
         // Validar que la reserva está en estado PENDIENTE
         if (reserva.getEstado() != Reserva.EstadoReserva.PENDIENTE) {
-            throw new RuntimeException("Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: "
+            throw new IllegalStateException("Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: "
                     + reserva.getEstado());
         }
 
@@ -701,7 +724,7 @@ public class ReservaService {
             // puede gestionarla
             if (reserva.getAnalistaAsignado() != null) {
                 if (!reserva.getAnalistaAsignado().getId().equals(analista.getId())) {
-                    throw new RuntimeException(
+                    throw new AccesoDenegadoException(
                             "No tienes permisos para gestionar esta reserva. Solo puedes gestionar las reservas asignadas a ti.");
                 }
                 log.info("Analista {} aprobando/rechazando reserva asignada a él", userEmail);
@@ -724,11 +747,11 @@ public class ReservaService {
             // Excluir la reserva actual de los conflictos
             conflictos = conflictos.stream()
                     .filter(c -> !c.getId().equals(reserva.getId()))
-                    .collect(Collectors.toList());
+                    .toList();
 
             if (!conflictos.isEmpty()) {
                 log.warn("Conflicto de horario detectado al aprobar reserva. Espacio ocupado en ese rango de tiempo");
-                throw new RuntimeException(
+                throw new IllegalStateException(
                         "No se puede aprobar la reserva: el espacio ya está reservado en ese horario por otra reserva aprobada.");
             }
         }
@@ -828,12 +851,12 @@ public class ReservaService {
 
         Reserva reserva = reservaRepository.findByIdWithRelations(id);
         if (reserva == null) {
-            throw new RuntimeException("Reserva no encontrada con ID: " + id);
+            throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
         }
 
         // Verificar que el usuario es dueño de la reserva
         if (!reserva.getUsuario().getId().equals(usuario.getId())) {
-            throw new RuntimeException("No tienes permisos para ver esta reserva");
+            throw new AccesoDenegadoException("No tienes permisos para ver esta reserva");
         }
 
         return mapToResponseDto(reserva);
@@ -851,22 +874,22 @@ public class ReservaService {
 
         Reserva reserva = reservaRepository.findByIdWithRelations(id);
         if (reserva == null) {
-            throw new RuntimeException("Reserva no encontrada con ID: " + id);
+            throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
         }
 
         // Verificar que el usuario es dueño de la reserva
         if (!reserva.getUsuario().getId().equals(usuario.getId())) {
-            throw new RuntimeException("No tienes permisos para editar esta reserva");
+            throw new AccesoDenegadoException("No tienes permisos para editar esta reserva");
         }
 
         // Si está cancelada, no se puede editar
         if (reserva.getEstado() == Reserva.EstadoReserva.CANCELADO) {
-            throw new RuntimeException("No se puede editar una reserva cancelada");
+            throw new IllegalStateException("No se puede editar una reserva cancelada");
         }
 
         // Si ya pasó, no se puede editar
         if (reserva.getInicio().isBefore(Instant.now())) {
-            throw new RuntimeException("No se puede editar una reserva que ya pasó");
+            throw new IllegalStateException("No se puede editar una reserva que ya pasó");
         }
 
         // Actualizar campos si se proporcionaron
@@ -874,17 +897,17 @@ public class ReservaService {
         if (updateDto.getInicio() != null && updateDto.getFin() != null) {
             // Validar nuevos horarios
             if (!updateDto.getInicio().isBefore(updateDto.getFin())) {
-                throw new RuntimeException("La fecha de inicio debe ser anterior a la fecha de fin");
+                throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
             }
 
             if (updateDto.getInicio().isBefore(Instant.now())) {
-                throw new RuntimeException("No se puede reservar en el pasado");
+                throw new IllegalArgumentException("No se puede reservar en el pasado");
             }
 
             // Validar duración mínima (30 minutos)
             long durationMinutes = java.time.Duration.between(updateDto.getInicio(), updateDto.getFin()).toMinutes();
             if (durationMinutes < 30) {
-                throw new RuntimeException("La reserva debe tener una duración mínima de 30 minutos");
+                throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
             }
 
             // Verificar conflictos con los nuevos horarios
@@ -897,10 +920,10 @@ public class ReservaService {
             // Excluir la reserva actual de los conflictos
             conflictos = conflictos.stream()
                     .filter(r -> !r.getId().equals(id))
-                    .collect(Collectors.toList());
+                    .toList();
 
             if (!conflictos.isEmpty()) {
-                throw new RuntimeException("El espacio ya está reservado en ese horario");
+                throw new IllegalStateException("El espacio ya está reservado en ese horario");
             }
 
             reserva.setInicio(updateDto.getInicio());
@@ -976,21 +999,21 @@ public class ReservaService {
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
 
         Reserva reserva = reservaRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Reserva no encontrada con ID: " + id));
+                () -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
 
         // Verificar que el usuario es dueño de la reserva
         if (!reserva.getUsuario().getId().equals(usuario.getId())) {
-            throw new RuntimeException("No tienes permisos para cancelar esta reserva");
+            throw new AccesoDenegadoException("No tienes permisos para cancelar esta reserva");
         }
 
         // Si ya pasó, no se puede cancelar
         if (reserva.getInicio().isBefore(Instant.now())) {
-            throw new RuntimeException("No se puede cancelar una reserva que ya pasó");
+            throw new IllegalStateException("No se puede cancelar una reserva que ya pasó");
         }
 
         // Si ya está cancelada
         if (reserva.getEstado() == Reserva.EstadoReserva.CANCELADO) {
-            throw new RuntimeException("La reserva ya está cancelada");
+            throw new IllegalStateException("La reserva ya está cancelada");
         }
 
         reserva.setEstado(Reserva.EstadoReserva.CANCELADO);
@@ -1035,7 +1058,7 @@ public class ReservaService {
         List<Reserva> reservas = reservaRepository.findByEspacioId(espacioId);
         return reservas.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -1060,7 +1083,7 @@ public class ReservaService {
         return reservas.stream()
                 .map(this::mapToResponseDto)
                 .sorted((a, b) -> b.getInicio().compareTo(a.getInicio())) // Ordenar por fecha descendente
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

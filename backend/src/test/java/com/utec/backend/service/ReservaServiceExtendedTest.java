@@ -3,7 +3,6 @@ package com.utec.backend.service;
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaUpdateDto;
-import com.utec.backend.exception.UsuarioNotFoundException;
 import com.utec.backend.model.Carrera;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Reserva;
@@ -43,7 +42,7 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests extendidos para ReservaService - Roles, Permisos y Conflictos")
-class ReservaServiceTestExtended {
+class ReservaServiceExtendedTest {
 
     @Mock
     private ReservaRepository reservaRepository;

@@ -25,7 +25,7 @@ interface FiltersPanelProps {
   additionalContent?: ReactNode;
 }
 
-export function FiltersPanel({ showFilters, fields, additionalContent }: FiltersPanelProps) {
+export function FiltersPanel({ showFilters, fields, additionalContent }: Readonly<FiltersPanelProps>) {
   return (
     <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
       showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'

@@ -8,7 +8,7 @@ interface DashboardStatsProps {
   loading?: boolean;
 }
 
-export default function DashboardStats({ stats, loading = false }: DashboardStatsProps) {
+export default function DashboardStats({ stats, loading = false }: Readonly<DashboardStatsProps>) {
   const { hasPermission } = useRolePermissions();
 
   // Permission-based logic
@@ -88,7 +88,7 @@ export default function DashboardStats({ stats, loading = false }: DashboardStat
   ];
 
   // Usar estadísticas específicas para usuarios sin permiso recomendacion:ver (EXTERNO)
-  const cardsToUse = !canViewRecommendations ? statCardsExterno : statCards;
+  const cardsToUse = canViewRecommendations ? statCards : statCardsExterno;
 
   if (loading) {
     const cardCount = 4; // Siempre son 4 cards
@@ -120,11 +120,12 @@ export default function DashboardStats({ stats, loading = false }: DashboardStat
 
   // Ajustar el grid dinámicamente según la cantidad de cards visibles
   const cardCount = visibleCards.length;
-  const gridCols = cardCount === 3 
-    ? 'md:grid-cols-2 lg:grid-cols-3' 
-    : cardCount === 2
-    ? 'md:grid-cols-2'
-    : 'md:grid-cols-2 lg:grid-cols-4';
+  const getGridCols = (count: number): string => {
+    if (count === 3) return 'md:grid-cols-2 lg:grid-cols-3';
+    if (count === 2) return 'md:grid-cols-2';
+    return 'md:grid-cols-2 lg:grid-cols-4';
+  };
+  const gridCols = getGridCols(cardCount);
 
   return (
     <div className={`grid gap-4 lg:gap-6 ${gridCols}`}>

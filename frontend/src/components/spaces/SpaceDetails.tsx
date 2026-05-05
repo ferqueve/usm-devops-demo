@@ -71,7 +71,7 @@ function getEstadoConfig(estado: string) {
 }
 
 
-export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
+export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
   const navigate = useNavigate();
   const [espacio, setEspacio] = useState<Espacio | null>(null);
   const [inventario, setInventario] = useState<InventarioItem[]>([]);
@@ -388,18 +388,33 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {loadingInventario ? (
-            <div className="space-y-2">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-20" />
+          {(() => {
+            if (loadingInventario) {
+              return (
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }, (_, index) => `inv-skeleton-${index}`).map((skeletonKey) => (
+                    <div key={skeletonKey} className="flex items-center space-x-4">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : inventario.length > 0 ? (
+              );
+            }
+            if (inventario.length === 0) {
+              return (
+                <div className="text-center py-8">
+                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Sin inventario</h3>
+                  <p className="text-muted-foreground">
+                    Este espacio no tiene inventario registrado.
+                  </p>
+                </div>
+              );
+            }
+            return (
             <>
               {/* Vista de cards en móvil */}
               <div className="md:hidden space-y-3">
@@ -512,15 +527,8 @@ export function SpaceDetails({ espacioId }: SpaceDetailsProps) {
                 </Table>
               </div>
             </>
-          ) : (
-            <div className="text-center py-8">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Sin inventario</h3>
-              <p className="text-muted-foreground">
-                Este espacio no tiene inventario registrado.
-              </p>
-            </div>
-          )}
+            );
+          })()}
         </CardContent>
       </Card>
 

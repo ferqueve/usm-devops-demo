@@ -27,8 +27,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -103,7 +102,7 @@ public class UsuarioService {
         List<Usuario> usuarios = usuarioRepository.findAll();
         return usuarios.stream()
                 .map(this::convertirADto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -118,7 +117,7 @@ public class UsuarioService {
         return analistas.stream()
                 .map(this::convertirADto)
                 .sorted((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public UsuarioResponseDto obtenerUsuarioPorId(Long id) {
@@ -230,7 +229,7 @@ public class UsuarioService {
         List<UsuarioResponseDto> content = pageResult.getContent()
                 .stream()
                 .map(this::convertirADto)
-                .collect(Collectors.toList());
+                .toList();
         
         return new PagedUsuarioResponseDto(
                 content,
@@ -406,7 +405,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new UsuarioNotFoundException(id));
         
         // Solo reenviar si el usuario no está verificado
-        if (usuario.getVerificado()) {
+        if (Boolean.TRUE.equals(usuario.getVerificado())) {
             log.warn("Intento de reenviar verificación a usuario ya verificado ID {}", id);
             return false;
         }
@@ -494,7 +493,7 @@ public class UsuarioService {
         
         return usuarios.stream()
                 .map(this::convertirADto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public boolean restablecerPasswordPorAdmin(Long id) {
@@ -521,15 +520,16 @@ public class UsuarioService {
         return emailEnviado;
     }
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private String generarPasswordTemporal() {
         String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder password = new StringBuilder();
-        Random random = new Random();
-        
+
         for (int i = 0; i < 8; i++) {
-            password.append(caracteres.charAt(random.nextInt(caracteres.length())));
+            password.append(caracteres.charAt(SECURE_RANDOM.nextInt(caracteres.length())));
         }
-        
+
         return password.toString();
     }
 

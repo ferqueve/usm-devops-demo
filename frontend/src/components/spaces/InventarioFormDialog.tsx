@@ -36,7 +36,7 @@ export function InventarioFormDialog({
   open,
   onOpenChange,
   onSuccess
-}: InventarioFormDialogProps) {
+}: Readonly<InventarioFormDialogProps>) {
   const { tiposElemento } = useTiposElemento();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -138,7 +138,7 @@ export function InventarioFormDialog({
                     if (value !== "seleccionar") {
                       setFormData(prev => ({
                         ...prev,
-                        tipoElementoId: parseInt(value)
+                        tipoElementoId: Number.parseInt(value)
                       }));
                     }
                   }}
@@ -167,7 +167,7 @@ export function InventarioFormDialog({
                   value={formData.cantidad}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    cantidad: parseInt(e.target.value) || 1
+                    cantidad: Number.parseInt(e.target.value) || 1
                   }))}
                   required
                   className="w-full"
@@ -225,7 +225,10 @@ export function InventarioFormDialog({
           </Button>
           <PermissionGuard requiredPermissions={isEditing ? ['inventario:editar'] : ['inventario:crear']}>
             <Button type="button" onClick={handleSubmit} disabled={loading}>
-              {loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Agregar')}
+              {(() => {
+                if (loading) return 'Guardando...';
+                return isEditing ? 'Actualizar' : 'Agregar';
+              })()}
             </Button>
           </PermissionGuard>
         </div>

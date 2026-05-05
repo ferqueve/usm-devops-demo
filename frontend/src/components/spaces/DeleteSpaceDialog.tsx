@@ -26,7 +26,7 @@ export function DeleteSpaceDialog({
   open, 
   onOpenChange, 
   onSuccess 
-}: DeleteSpaceDialogProps) {
+}: Readonly<DeleteSpaceDialogProps>) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {

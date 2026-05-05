@@ -26,6 +26,13 @@ import java.util.Optional;
 @Slf4j
 public class AuthService {
 
+    // Constantes de eventos de auditoría y mensajes
+    private static final String EVENT_LOGIN = "LOGIN";
+    private static final String EVENT_REGISTRO = "REGISTRO";
+    private static final String FIELD_MOTIVO = "motivo";
+    private static final String MSG_USUARIO_NO_ENCONTRADO = "Usuario no encontrado";
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
@@ -59,11 +66,11 @@ public class AuthService {
         } catch (Exception e) {
             // Registrar intento de login fallido en auditoría
             java.util.Map<String, Object> detalles = new java.util.HashMap<>();
-            detalles.put("motivo", "credenciales_invalidas");
+            detalles.put(FIELD_MOTIVO, "credenciales_invalidas");
             if (usuarioOpt.isPresent() && usuarioOpt.get().getOauthProv() != null) {
                 detalles.put("tipoUsuario", "oauth");
             }
-            auditService.logAuthenticationEvent("LOGIN", request.getEmail(), false, detalles);
+            auditService.logAuthenticationEvent(EVENT_LOGIN, request.getEmail(), false, detalles);
 
             // Si falla la autenticación, verificar si es usuario OAuth con contraseña establecida
             if (usuarioOpt.isPresent() && usuarioOpt.get().getOauthProv() != null) {
@@ -86,8 +93,8 @@ public class AuthService {
             log.warn("Intento de login con email no verificado: {}", request.getEmail());
             // Registrar en auditoría
             java.util.Map<String, Object> detalles = new java.util.HashMap<>();
-            detalles.put("motivo", "email_no_verificado");
-            auditService.logAuthenticationEvent("LOGIN", request.getEmail(), false, detalles);
+            detalles.put(FIELD_MOTIVO, "email_no_verificado");
+            auditService.logAuthenticationEvent(EVENT_LOGIN, request.getEmail(), false, detalles);
             throw new AuthenticationException("Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo código de verificación.");
         }
 
@@ -96,8 +103,8 @@ public class AuthService {
             log.warn("Intento de login con usuario inactivo: {}", request.getEmail());
             // Registrar en auditoría
             java.util.Map<String, Object> detalles = new java.util.HashMap<>();
-            detalles.put("motivo", "cuenta_inactiva");
-            auditService.logAuthenticationEvent("LOGIN", request.getEmail(), false, detalles);
+            detalles.put(FIELD_MOTIVO, "cuenta_inactiva");
+            auditService.logAuthenticationEvent(EVENT_LOGIN, request.getEmail(), false, detalles);
             throw new AuthenticationException("Tu cuenta ha sido desactivada. Por favor, contacta al administrador para más información.");
         }
 
@@ -112,7 +119,7 @@ public class AuthService {
         java.util.Map<String, Object> detalles = new java.util.HashMap<>();
         detalles.put("rol", usuario.getRolApp().name());
         detalles.put("userId", usuario.getId());
-        auditService.logAuthenticationEvent("LOGIN", usuario.getEmail(), true, detalles);
+        auditService.logAuthenticationEvent(EVENT_LOGIN, usuario.getEmail(), true, detalles);
 
         return new AuthenticationResponse(
             token,
@@ -147,13 +154,13 @@ public class AuthService {
 
             // Registrar intento fallido en auditoría
             java.util.Map<String, Object> detalles = new java.util.HashMap<>();
-            detalles.put("motivo", "email_duplicado");
+            detalles.put(FIELD_MOTIVO, "email_duplicado");
 
             // Caso: Email existe por OAuth
             if (usuario.getOauthProv() != null) {
                 log.warn("Intento de registro con email que ya existe por OAuth: {}", request.getEmail());
                 detalles.put("tipoExistente", "oauth");
-                auditService.logAuthenticationEvent("REGISTRO", request.getEmail(), false, detalles);
+                auditService.logAuthenticationEvent(EVENT_REGISTRO, request.getEmail(), false, detalles);
                 throw new AuthenticationException(
                     "Ya existe una cuenta registrada con este email usando Google. Por favor, inicia sesión con Google o establece una contraseña desde las preferencias de tu perfil después de autenticarte con Google."
                 );
@@ -161,7 +168,7 @@ public class AuthService {
 
             // Caso: Email existe por registro manual
             detalles.put("tipoExistente", "manual");
-            auditService.logAuthenticationEvent("REGISTRO", request.getEmail(), false, detalles);
+            auditService.logAuthenticationEvent(EVENT_REGISTRO, request.getEmail(), false, detalles);
             throw new AuthenticationException(
                 "Ya existe una cuenta registrada con este email. Si ya tienes una cuenta, intenta iniciar sesión o usa el enlace '¿Olvidaste tu contraseña?'"
             );
@@ -186,7 +193,7 @@ public class AuthService {
         java.util.Map<String, Object> detalles = new java.util.HashMap<>();
         detalles.put("rol", usuarioGuardado.getRolApp().name());
         detalles.put("userId", usuarioGuardado.getId());
-        auditService.logAuthenticationEvent("REGISTRO", usuarioGuardado.getEmail(), true, detalles);
+        auditService.logAuthenticationEvent(EVENT_REGISTRO, usuarioGuardado.getEmail(), true, detalles);
 
         // Generar y enviar email de verificación
         try {
@@ -210,8 +217,8 @@ public class AuthService {
     }
 
     public void logout(String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring("Bearer ".length());
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            String token = authHeader.substring(BEARER_PREFIX.length());
             // Agregar token a blacklist
             tokenBlacklistService.blacklistToken(token);
 
@@ -231,8 +238,8 @@ public class AuthService {
 
     public boolean verifyToken(String authHeader) {
         try {
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring("Bearer ".length());
+            if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+                String token = authHeader.substring(BEARER_PREFIX.length());
                 
                 // Verificar si está en blacklist
                 if (tokenBlacklistService.isTokenBlacklisted(token)) {
@@ -263,7 +270,7 @@ public class AuthService {
                 
                 // Buscar usuario para obtener información adicional
                 Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+                    .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO));
                 
                 // Verificar si el usuario está activo (no eliminado)
                 if (usuario.getDeletedAt() != null) {
@@ -300,7 +307,7 @@ public class AuthService {
             String email = jwtService.extractUsernameFromVerificationToken(token);
             if (email != null) {
                 Usuario usuario = usuarioRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+                    .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO));
                 
                 usuario.setVerificado(true);
                 usuarioRepository.save(usuario);
@@ -317,7 +324,7 @@ public class AuthService {
     public boolean resendVerificationEmail(String email) {
         try {
             Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO));
             
             if (usuario.getVerificado()) {
                 log.warn("Usuario {} ya está verificado", email);
@@ -404,7 +411,7 @@ public class AuthService {
             
             // Buscar usuario
             Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO));
             
             // Validar que el usuario no sea OAuth sin contraseña (aunque esto no debería pasar si forgotPassword validó correctamente)
             if (usuario.getOauthProv() != null && (usuario.getPassword() == null || usuario.getPassword().isEmpty())) {

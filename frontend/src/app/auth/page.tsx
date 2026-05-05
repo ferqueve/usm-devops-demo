@@ -13,7 +13,7 @@ export default function AuthPage() {
   // Función para leer error de la URL - leer ANTES de que React Router lo procese
   const readErrorFromURL = () => {
     // Leer del href completo para capturar parámetros incluso si React Router los perdió
-    const fullUrl = window.location.href;
+    const fullUrl = globalThis.location.href;
     const urlObj = new URL(fullUrl);
     const errorParam = urlObj.searchParams.get('error');
     if (errorParam) {
@@ -23,8 +23,8 @@ export default function AuthPage() {
         return errorParam;
       }
     }
-    // También intentar leer de window.location.search directamente
-    const urlParams = new URLSearchParams(window.location.search);
+    // También intentar leer de globalThis.location.search directamente
+    const urlParams = new URLSearchParams(globalThis.location.search);
     const errorParam2 = urlParams.get('error');
     if (errorParam2) {
       try {
@@ -43,7 +43,7 @@ export default function AuthPage() {
   // Inicializar con el error de la URL si existe - leer INMEDIATAMENTE
   const [urlError, setUrlError] = useState<string | null>(() => {
     // Leer directamente del href completo al inicializar
-    const fullUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const fullUrl = typeof globalThis === 'undefined' ? '' : globalThis.location.href;
     if (fullUrl) {
       try {
         const urlObj = new URL(fullUrl);
@@ -63,7 +63,7 @@ export default function AuthPage() {
   // Leer error de la URL cuando cambia (para errores de OAuth)
   useEffect(() => {
     // Leer del href completo primero
-    const fullUrl = window.location.href;
+    const fullUrl = globalThis.location.href;
     let errorParam: string | null = null;
     
     try {
@@ -71,7 +71,7 @@ export default function AuthPage() {
       errorParam = urlObj.searchParams.get('error');
     } catch {
       // Fallback: leer de search
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams = new URLSearchParams(globalThis.location.search);
       errorParam = urlParams.get('error');
     }
     
@@ -83,13 +83,13 @@ export default function AuthPage() {
         setCurrentView('login');
         // Limpiar el parámetro de la URL después de leerlo (con un pequeño delay para asegurar que se muestre)
         setTimeout(() => {
-          const urlParams = new URLSearchParams(window.location.search);
+          const urlParams = new URLSearchParams(globalThis.location.search);
           urlParams.delete('error');
           const newSearch = urlParams.toString();
           const newUrl = newSearch 
-            ? `${window.location.pathname}?${newSearch}`
-            : window.location.pathname;
-          window.history.replaceState({}, '', newUrl);
+            ? `${globalThis.location.pathname}?${newSearch}`
+            : globalThis.location.pathname;
+          globalThis.history.replaceState({}, '', newUrl);
         }, 500);
       } catch {
         setUrlError(errorParam);
@@ -112,7 +112,7 @@ export default function AuthPage() {
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
-    window.location.href = `${apiUrl.replace('/api/v1', '')}/api/v1/oauth2/google/authorize`;
+    globalThis.location.href = `${apiUrl.replace('/api/v1', '')}/api/v1/oauth2/google/authorize`;
   };
 
   // Redirigir si ya está autenticado

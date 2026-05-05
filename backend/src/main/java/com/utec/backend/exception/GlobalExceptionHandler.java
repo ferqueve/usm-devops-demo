@@ -81,6 +81,27 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<String>> handleIllegalStateException(IllegalStateException ex) {
+        log.error("Estado inválido: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ApiResponse<String>> handleFileStorageException(FileStorageException ex) {
+        log.error("Error de almacenamiento de archivos: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al procesar el archivo: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(EmailDeliveryException.class)
+    public ResponseEntity<ApiResponse<String>> handleEmailDeliveryException(EmailDeliveryException ex) {
+        log.error("Error en el servicio de email: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al procesar el email: " + ex.getMessage()));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex) {
         log.error("Error de runtime: {}", ex.getMessage());

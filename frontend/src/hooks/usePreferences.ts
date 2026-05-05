@@ -22,7 +22,7 @@ export function usePreferences(): UsePreferencesReturn {
         const response = await preferencesApi.obtenerPreferencias();
         const data = (response.data || response) as { preferencias: { vista?: PreferenciasVista } };
         
-        if (data && data.preferencias && data.preferencias.vista) {
+        if (data?.preferencias?.vista) {
           setPreferencias(data.preferencias.vista);
         } else {
           // Si no hay preferencias, usar valores por defecto

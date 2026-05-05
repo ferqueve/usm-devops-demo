@@ -25,7 +25,7 @@ export function TipoElementoManagement({
   open,
   onOpenChange,
   onSuccess
-}: TipoElementoManagementProps) {
+}: Readonly<TipoElementoManagementProps>) {
   const { tiposElemento, loading, refresh: refreshTiposElemento } = useTiposElemento();
 
   // Estados para modales
@@ -74,16 +74,23 @@ export function TipoElementoManagement({
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto -mx-6 px-6 py-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-muted-foreground">Cargando tipos de inventario...</p>
-              </div>
-            ) : tiposElemento.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No hay tipos de inventario disponibles</p>
-              </div>
-            ) : (
+            {(() => {
+              if (loading) {
+                return (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-muted-foreground">Cargando tipos de inventario...</p>
+                  </div>
+                );
+              }
+              if (tiposElemento.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No hay tipos de inventario disponibles</p>
+                  </div>
+                );
+              }
+              return (
               <div className="space-y-3">
                 {tiposElemento.map((tipo) => (
                   <div
@@ -128,7 +135,8 @@ export function TipoElementoManagement({
                   </div>
                 ))}
               </div>
-            )}
+              );
+            })()}
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t">

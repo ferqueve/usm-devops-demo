@@ -23,7 +23,7 @@ public class EdificioService {
     public List<EdificioResponseDto> getAllEdificios() {
         return edificioRepository.findByActivoTrue().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)

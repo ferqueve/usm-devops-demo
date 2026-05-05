@@ -105,7 +105,7 @@ export default function ReservationCalendarView({
   onToggleFullScreen: onToggleFullScreenProp,
   loading = false,
   readOnly = false,
-}: ReservationCalendarViewProps) {
+}: Readonly<ReservationCalendarViewProps>) {
   const { hasPermission } = useRolePermissions();
   const { preferencias } = usePreferences();
 
@@ -196,7 +196,7 @@ export default function ReservationCalendarView({
   };
 
   // Usar props si están disponibles, sino usar estado interno
-  const isFullScreen = isFullScreenProp !== undefined ? isFullScreenProp : isFullScreenInternal;
+  const isFullScreen = isFullScreenProp === undefined ? isFullScreenInternal : isFullScreenProp;
   const handleToggleFullScreen = onToggleFullScreenProp || (() => setIsFullScreenInternal(!isFullScreenInternal));
 
   // Prevenir scroll del body y html cuando está en pantalla completa
@@ -360,7 +360,7 @@ export default function ReservationCalendarView({
           grupoFusionado.push(reservaActual);
           
           // Eliminar grupos antiguos (en orden inverso para no afectar índices)
-          gruposSuperpuestos.reverse().forEach(idx => grupos.splice(idx, 1));
+          gruposSuperpuestos.slice().reverse().forEach(idx => grupos.splice(idx, 1));
           
           // Agregar grupo fusionado
           grupos.push(grupoFusionado);
@@ -429,28 +429,26 @@ export default function ReservationCalendarView({
                    const topPx = (mostrarColapsadoAntes ? 48 : 0) + (porcentajeTop * alturaAreaVisible / 100);
                    const alturaIntervalo = alturaAreaVisible / intervalos.length;
                    
+                   const getBorderClass = () => {
+                     if (esHoraCompleta) return 'border-t border-gray-400';
+                     if (esMediaHora) return 'border-t border-gray-300';
+                     return 'border-t border-gray-200';
+                   };
+                   const getTextSizeClass = () => {
+                     if (esHoraCompleta) return 'text-base';
+                     if (esMediaHora) return 'text-sm';
+                     return 'text-xs opacity-75';
+                   };
                    return (
                      <div
                        key={`${intervalo.hora}-${intervalo.minutos}`}
-                       className={`absolute flex items-center justify-end pr-3 w-full ${
-                         esHoraCompleta 
-                           ? 'border-t border-gray-400' 
-                           : esMediaHora
-                           ? 'border-t border-gray-300'
-                           : 'border-t border-gray-200'
-                       }`}
-                       style={{ 
+                       className={`absolute flex items-center justify-end pr-3 w-full ${getBorderClass()}`}
+                       style={{
                          top: `${topPx}px`,
                          height: `${alturaIntervalo}px`
                        }}
                      >
-                       <span className={`font-medium text-muted-foreground ${
-                         esHoraCompleta 
-                           ? 'text-base' 
-                           : esMediaHora
-                           ? 'text-sm'
-                           : 'text-xs opacity-75'
-                       }`}>
+                       <span className={`font-medium text-muted-foreground ${getTextSizeClass()}`}>
                          {intervalo.hora.toString().padStart(2, '0')}:{intervalo.minutos.toString().padStart(2, '0')}
                        </span>
                      </div>
@@ -487,16 +485,15 @@ export default function ReservationCalendarView({
                       const esHoraCompleta = intervalo.minutos === 0;
                       const esMediaHora = intervalo.minutos === 30;
                       
+                      const getLineBorderClass = () => {
+                        if (esHoraCompleta) return 'border-t border-gray-400';
+                        if (esMediaHora) return 'border-t border-gray-300';
+                        return 'border-t border-gray-200';
+                      };
                       return (
                         <div
                           key={`line-${intervalo.hora}-${intervalo.minutos}`}
-                          className={`absolute w-full ${
-                            esHoraCompleta 
-                              ? 'border-t border-gray-400' 
-                              : esMediaHora
-                              ? 'border-t border-gray-300'
-                              : 'border-t border-gray-200'
-                          }`}
+                          className={`absolute w-full ${getLineBorderClass()}`}
                           style={{ top: `${porcentajeTop}%` }}
                         />
                       );
@@ -658,7 +655,7 @@ export default function ReservationCalendarView({
         {/* Resumen de reservas del día */}
         {reservasOrdenadas.length > 0 && (
           <div className="text-xs text-muted-foreground">
-            {reservasOrdenadas.length} reserva{reservasOrdenadas.length !== 1 ? 's' : ''} programada{reservasOrdenadas.length !== 1 ? 's' : ''} para este día
+            {reservasOrdenadas.length} reserva{reservasOrdenadas.length === 1 ? '' : 's'} programada{reservasOrdenadas.length === 1 ? '' : 's'} para este día
           </div>
         )}
       </div>
@@ -1004,7 +1001,7 @@ export default function ReservationCalendarView({
           const totalReservas = days.reduce((total, day) => total + getReservasForDate(day).length, 0);
           return totalReservas > 0 ? (
             <div className="text-xs text-muted-foreground">
-              {totalReservas} reserva{totalReservas !== 1 ? 's' : ''} programada{totalReservas !== 1 ? 's' : ''} para esta semana
+              {totalReservas} reserva{totalReservas === 1 ? '' : 's'} programada{totalReservas === 1 ? '' : 's'} para esta semana
             </div>
           ) : null;
         })()}
@@ -1061,12 +1058,20 @@ export default function ReservationCalendarView({
             const pendientes = reservasDia.filter(r => r.estado === 'PENDIENTE').length;
             const tieneReservas = reservasDia.length > 0;
 
+            const getDayBgClass = () => {
+              if (esHoy) return 'bg-blue-50 border-blue-200';
+              if (esDelMes) return 'bg-white border-gray-200';
+              return 'bg-gray-50 border-gray-100';
+            };
+            const getDayTextClass = () => {
+              if (esHoy) return 'text-blue-700';
+              if (esDelMes) return '';
+              return 'text-muted-foreground';
+            };
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[100px] border rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md ${
-                  esHoy ? 'bg-blue-50 border-blue-200' : esDelMes ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100'
-                }`}
+                className={`min-h-[100px] border rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md ${getDayBgClass()}`}
                 onClick={() => {
                   if (tieneReservas) {
                     setCurrentDate(day);
@@ -1074,7 +1079,7 @@ export default function ReservationCalendarView({
                   }
                 }}
               >
-                <div className={`text-xs font-medium mb-2 ${esHoy ? 'text-blue-700' : esDelMes ? '' : 'text-muted-foreground'}`}>
+                <div className={`text-xs font-medium mb-2 ${getDayTextClass()}`}>
                   {format(day, 'd')}
                 </div>
                 

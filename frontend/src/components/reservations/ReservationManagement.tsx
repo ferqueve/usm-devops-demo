@@ -6,9 +6,7 @@ import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useCarreras } from '@/hooks/useCarreras';
-// import { usuariosApi } from '@/lib/api/users'; // Se usará cuando se agregue el filtro de usuario
 import type { Reserva, TipoEspacio } from '@/lib/types/spaces';
-// import type { User } from '@/lib/types/users'; // Se usará cuando se agregue el filtro de usuario
 import ReservationDetailsDialog from './ReservationDetailsDialog.tsx';
 import ReservationStats from './ReservationStats.tsx';
 import ReservationPendientes from './ReservationPendientes.tsx';
@@ -149,7 +147,7 @@ export default function ReservationManagement() {
       
       if (response.data) {
         // Ordenar por fecha descendente
-        const sorted = response.data.sort((a, b) =>
+        const sorted = response.data.slice().sort((a, b) =>
           new Date(b.inicio).getTime() - new Date(a.inicio).getTime()
         );
         setReservas(sorted);
@@ -189,7 +187,7 @@ export default function ReservationManagement() {
         );
 
         // Ordenar por fecha de creación descendente (más recientes primero)
-        const sorted = pendientesFiltradas.sort((a, b) =>
+        const sorted = pendientesFiltradas.slice().sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setReservasPendientes(sorted);
@@ -209,9 +207,12 @@ export default function ReservationManagement() {
       if (showPendienteFilter) {
         // DOCENTE/EXTERNO: solo sus reservas
         // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
-        const estadoParaFiltrar = estadoFilter === 'PENDIENTE' 
-          ? 'PENDIENTE' 
-          : (estadoFilter === 'todas' ? undefined : estadoFilter);
+        const obtenerEstadoParaFiltrar = (): string | undefined => {
+          if (estadoFilter === 'PENDIENTE') return 'PENDIENTE';
+          if (estadoFilter === 'todas') return undefined;
+          return estadoFilter;
+        };
+        const estadoParaFiltrar = obtenerEstadoParaFiltrar();
         response = await reservationsApi.obtenerMisReservasPaged(
           page,
           pageSize,
@@ -397,7 +398,6 @@ export default function ReservationManagement() {
 
   // Estados para tipos de espacio (aún no hay hook dedicado)
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
-  // const [usuarios, setUsuarios] = useState<User[]>([]); // Solo para ANALISTA - se usará cuando se agregue el filtro de usuario
 
   // Cargar tipos de espacio para los filtros
   useEffect(() => {
@@ -501,26 +501,11 @@ export default function ReservationManagement() {
     : reservas; // Para table y cards, las reservas ya vienen filtradas del servidor
 
 
-  // Obtener título dinámico según filtros y permisos
-  const getTituloReservas = () => {
-    if (canViewRecommendations && !canApprove) {
-      // DOCENTE: usa "Solicitudes"
-      if (tiempoFilter === 'futuras') return 'Mis Solicitudes Futuras';
-      if (tiempoFilter === 'pasadas') return 'Mis Solicitudes Pasadas';
-      return 'Mis Solicitudes';
-    } else {
-      if (tiempoFilter === 'futuras') return 'Reservas Futuras';
-      if (tiempoFilter === 'pasadas') return 'Reservas Pasadas';
-      return 'Todas las Reservas';
-    }
-  };
-
   // Renderizar vista de cards
-  const renderCardView = (reservasLista: Reserva[], titulo: string) => {
+  const renderCardView = (reservasLista: Reserva[]) => {
     return (
       <ReservationCardView
         reservas={reservasLista}
-        titulo={titulo}
         espaciosUnicos={espaciosUnicos}
         carrerasUnicas={carrerasUnicas}
         tiposEspacioUnicos={tiposEspacioUnicos}
@@ -567,11 +552,10 @@ export default function ReservationManagement() {
   };
 
   // Renderizar vista de tabla
-  const renderTableView = (reservasLista: Reserva[], titulo: string) => {
+  const renderTableView = (reservasLista: Reserva[]) => {
     return (
       <ReservationTableView
         reservas={reservasLista}
-        titulo={titulo}
         espaciosUnicos={espaciosUnicos}
         carrerasUnicas={carrerasUnicas}
         tiposEspacioUnicos={tiposEspacioUnicos}
@@ -697,16 +681,16 @@ export default function ReservationManagement() {
       {/* Layout principal: Calendario/Gestión + Pendientes */}
       <div className="flex gap-4 sm:gap-6 flex-col lg:flex-row lg:items-stretch flex-1 min-h-0 mt-4 sm:mt-6">
         {/* Gestión de reservas (calendario/cards/table) */}
-        <div className={`flex-1 flex flex-col min-h-0 ${viewMode !== 'calendar' ? '' : ''}`}>
+        <div className={`flex-1 flex flex-col min-h-0 ${viewMode === 'calendar' ? '' : ''}`}>
           {/* Lista unificada de reservas */}
           {viewMode === 'cards' && (
             <div className="flex-1 flex flex-col min-h-0">
-              {renderCardView(reservasFiltradas, getTituloReservas())}
+              {renderCardView(reservasFiltradas)}
             </div>
           )}
           {viewMode === 'table' && (
             <div className="flex-1 flex flex-col min-h-0">
-              {renderTableView(reservasFiltradas, getTituloReservas())}
+              {renderTableView(reservasFiltradas)}
             </div>
           )}
           {viewMode === 'calendar' && (

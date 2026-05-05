@@ -36,13 +36,13 @@ public class RecomendacionScheduledService {
         
         try {
             // Obtener usuarios activos (con reservas en últimos 30 días)
-            Instant fechaLimite = Instant.now().minusSeconds(30 * 24 * 3600);
+            Instant fechaLimite = Instant.now().minusSeconds(30L * 24 * 3600);
             List<Reserva> reservasRecientes = reservaRepository.findAll();
             List<Long> usuariosActivos = reservasRecientes.stream()
                 .filter(r -> r.getInicio().isAfter(fechaLimite))
                 .map(r -> r.getUsuario().getId())
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
             
             log.info("Encontrados {} usuarios activos para actualizar recomendaciones", usuariosActivos.size());
             
@@ -53,7 +53,7 @@ public class RecomendacionScheduledService {
                 try {
                     // Calcular recomendaciones para el usuario
                     Instant ahora = Instant.now();
-                    Instant finSemana = ahora.plusSeconds(7 * 24 * 3600);
+                    Instant finSemana = ahora.plusSeconds(7L * 24 * 3600);
                     List<RecomendacionEspacioDto> recomendaciones = recomendacionService
                         .obtenerRecomendacionesEspacios(usuarioId, ahora, finSemana, null);
                     

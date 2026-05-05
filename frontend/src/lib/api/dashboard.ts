@@ -184,7 +184,7 @@ export const dashboardApi = {
 
       // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
       const promedioReservasPorEspacio = espacios.length > 0
-        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
+        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -261,7 +261,7 @@ export const dashboardApi = {
 
       // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
       const promedioReservasPorEspacio = espacios.length > 0
-        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
+        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -389,7 +389,7 @@ export const dashboardApi = {
 
       // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
       const promedioReservasPorEspacio = espacios.length > 0
-        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
+        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -457,7 +457,7 @@ export const dashboardApi = {
 
       // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
       const promedioReservasPorEspacio = espacios.length > 0
-        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
+        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const stats: DashboardStats = {
@@ -535,7 +535,7 @@ export const dashboardApi = {
 
       // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
       const promedioReservasPorEspacio = espacios.length > 0
-        ? parseFloat((reservasAprobadas / espacios.length).toFixed(1))
+        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
         : 0;
 
       const misReservasPendientes = misReservas.filter((r: Reserva) => r.estado === 'PENDIENTE').length;

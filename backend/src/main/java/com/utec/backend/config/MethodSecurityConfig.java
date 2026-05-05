@@ -1,7 +1,6 @@
 package com.utec.backend.config;
 
 import com.utec.backend.security.CustomPermissionEvaluator;
-import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;

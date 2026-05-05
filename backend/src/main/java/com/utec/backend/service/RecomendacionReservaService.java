@@ -52,7 +52,7 @@ public class RecomendacionReservaService {
         List<Reserva> historialAprobado = historial.stream()
                 .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO)
                 .filter(r -> r.getInicio().isAfter(hace6Meses)) // Últimos 6 meses
-                .collect(Collectors.toList());
+                .toList();
 
         // 2. Obtener espacios disponibles
         List<Espacio> espaciosDisponibles = espacioRepository.findEspaciosDisponibles(inicio, fin);
@@ -60,7 +60,7 @@ public class RecomendacionReservaService {
                 .filter(e -> e.getDeletedAt() == null)
                 .filter(e -> "DISPONIBLE".equals(e.getEstado()))
                 .filter(e -> capacidadRequerida == null || e.getCapacidad() >= capacidadRequerida)
-                .collect(Collectors.toList());
+                .toList();
 
         // 3. Calcular puntajes
         Map<Long, Double> puntajes = new HashMap<>();
@@ -131,7 +131,7 @@ public class RecomendacionReservaService {
                 })
                 .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
                 .limit(20)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -151,7 +151,7 @@ public class RecomendacionReservaService {
         List<Reserva> historialAprobado = historial.stream()
                 .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO)
                 .filter(r -> r.getEspacio().getId().equals(espacioId))
-                .collect(Collectors.toList());
+                .toList();
 
         // 2. Analizar patrones de horarios
         ZonedDateTime fechaZdt = fecha.atZone(ZoneOffset.UTC);
@@ -167,7 +167,7 @@ public class RecomendacionReservaService {
                 espacioId, inicioDia.toInstant(), Reserva.EstadoReserva.APROBADO);
         reservasExistentes = reservasExistentes.stream()
                 .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).toLocalDate().equals(fechaZdt.toLocalDate()))
-                .collect(Collectors.toList());
+                .toList();
 
         // 4. Generar horarios recomendados
         List<HorarioRecomendadoDto> horarios = new ArrayList<>();
@@ -213,7 +213,7 @@ public class RecomendacionReservaService {
         return horarios.stream()
                 .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
                 .limit(10)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -231,7 +231,7 @@ public class RecomendacionReservaService {
                 .filter(e -> !e.getId().equals(espacioId))
                 .filter(e -> e.getDeletedAt() == null)
                 .filter(e -> "DISPONIBLE".equals(e.getEstado()))
-                .collect(Collectors.toList());
+                .toList();
 
         return espaciosSimilares.stream()
                 .map(espacio -> {
@@ -266,7 +266,7 @@ public class RecomendacionReservaService {
                 })
                 .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
                 .limit(10)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Métodos auxiliares privados

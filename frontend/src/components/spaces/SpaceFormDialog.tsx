@@ -34,7 +34,7 @@ export function SpaceFormDialog({
   open,
   onOpenChange,
   onSuccess
-}: SpaceFormDialogProps) {
+}: Readonly<SpaceFormDialogProps>) {
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
@@ -252,7 +252,7 @@ export function SpaceFormDialog({
                 value={formData.tipoEspacioId === 0 ? "seleccionar" : formData.tipoEspacioId?.toString() || "seleccionar"}
                 onValueChange={(value) => {
                   if (value !== "seleccionar") {
-                    setFormData(prev => ({ ...prev, tipoEspacioId: parseInt(value) }));
+                    setFormData(prev => ({ ...prev, tipoEspacioId: Number.parseInt(value) }));
                   }
                 }}
                 disabled={loading}
@@ -278,7 +278,7 @@ export function SpaceFormDialog({
                 type="number"
                 min="1"
                 value={formData.capacidad}
-                onChange={(e) => setFormData(prev => ({ ...prev, capacidad: parseInt(e.target.value) || 1 }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, capacidad: Number.parseInt(e.target.value) || 1 }))}
                 placeholder="Ej: 30"
                 disabled={loading}
                 required
@@ -410,7 +410,10 @@ export function SpaceFormDialog({
             ) : (
               <Save className="h-4 w-4 mr-1" />
             )}
-            {uploadingImage ? 'Subiendo...' : isEditing ? 'Actualizar' : 'Crear'}
+            {(() => {
+              if (uploadingImage) return 'Subiendo...';
+              return isEditing ? 'Actualizar' : 'Crear';
+            })()}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -83,7 +83,7 @@ public class ReservaItemSolicitadoController {
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .map(s -> ReservaItemSolicitado.EstadoSolicitud.valueOf(s.toUpperCase(Locale.ROOT)))
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Estado de solicitud inválido. Valores permitidos: " +
                     Arrays.toString(ReservaItemSolicitado.EstadoSolicitud.values()));

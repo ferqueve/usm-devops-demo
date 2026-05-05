@@ -103,7 +103,7 @@ public class RecomendacionAnalistaService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(5)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     /**
@@ -119,7 +119,7 @@ public class RecomendacionAnalistaService {
             .filter(r -> r.getAnalistaAsignado() != null)
             .filter(r -> r.getAnalistaAsignado().getId().equals(analistaId))
             .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
-            .collect(Collectors.toList());
+            .toList();
         
         Instant ahora = Instant.now();
         
@@ -153,7 +153,7 @@ public class RecomendacionAnalistaService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(10)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     private int calcularUrgencia(long diasPendiente, long diasHastaInicio) {

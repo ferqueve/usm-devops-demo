@@ -29,8 +29,8 @@ public class TipoEspacioService {
         if (tipoExistente.isPresent()) {
             TipoEspacio tipo = tipoExistente.get();
             // Si está activo, lanzar error
-            if (tipo.getActivo()) {
-                throw new RuntimeException("Ya existe un tipo de espacio activo con el nombre: " + createDto.getNombre());
+            if (Boolean.TRUE.equals(tipo.getActivo())) {
+                throw new IllegalStateException("Ya existe un tipo de espacio activo con el nombre: " + createDto.getNombre());
             }
             // Si está desactivado, reactivarlo
             tipo.setActivo(true);
@@ -59,7 +59,7 @@ public class TipoEspacioService {
     public List<TipoEspacioResponseDto> getAllTiposEspacio() {
         return tipoEspacioRepository.findByActivoTrue().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -71,17 +71,17 @@ public class TipoEspacioService {
     @Transactional(readOnly = true)
     public TipoEspacioResponseDto getTipoEspacioById(Long id) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
         return mapToResponseDto(tipoEspacio);
     }
-    
+
     public TipoEspacioResponseDto updateTipoEspacio(Long id, TipoEspacioUpdateDto updateDto) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de espacio no encontrado con ID: " + id));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
+
         // Verificar si ya existe otro tipo con el mismo nombre
         if (tipoEspacioRepository.existsByNombreIgnoreCaseAndIdNot(updateDto.getNombre(), id)) {
-            throw new RuntimeException("Ya existe otro tipo de espacio con el nombre: " + updateDto.getNombre());
+            throw new IllegalStateException("Ya existe otro tipo de espacio con el nombre: " + updateDto.getNombre());
         }
         
         tipoEspacio.setNombre(updateDto.getNombre());
@@ -100,7 +100,7 @@ public class TipoEspacioService {
     
     public void deleteTipoEspacio(Long id) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
         
         // Soft delete: marcar como inactivo
         tipoEspacio.setActivo(false);
@@ -112,7 +112,7 @@ public class TipoEspacioService {
     
     public TipoEspacioResponseDto toggleActivo(Long id) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
         
         tipoEspacio.setActivo(!tipoEspacio.getActivo());
         tipoEspacio.setUpdatedAt(Instant.now());
@@ -125,14 +125,14 @@ public class TipoEspacioService {
     public List<TipoEspacioResponseDto> searchTiposEspacioByNombre(String nombre) {
         return tipoEspacioRepository.findByNombreContainingIgnoreCaseAndActivoTrue(nombre).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<TipoEspacioResponseDto> getTiposMasUtilizados() {
         return tipoEspacioRepository.findTiposMasUtilizados().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)

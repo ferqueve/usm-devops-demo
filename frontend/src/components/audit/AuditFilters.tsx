@@ -53,7 +53,7 @@ export default function AuditFilters({
   onClearFilters,
   showFilters,
   onToggleFilters
-}: AuditFiltersProps) {
+}: Readonly<AuditFiltersProps>) {
   const hasActiveFilters = Boolean(
     filters.entidad ||
     filters.usuarioId ||
@@ -174,7 +174,7 @@ export default function AuditFilters({
                 type="number"
                 placeholder="Filtrar por ID de usuario"
                 value={filters.usuarioId || ''}
-                onChange={(e) => handleFilterChange('usuarioId', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) => handleFilterChange('usuarioId', e.target.value ? Number.parseInt(e.target.value) : undefined)}
                 className="mt-1"
               />
             </div>
@@ -204,7 +204,6 @@ export default function AuditFilters({
                     mode="single"
                     selected={filters.fechaDesde ? new Date(filters.fechaDesde) : undefined}
                     onSelect={(date) => handleFilterChange('fechaDesde', date ? date.toISOString() : undefined)}
-                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
@@ -235,7 +234,6 @@ export default function AuditFilters({
                     mode="single"
                     selected={filters.fechaHasta ? new Date(filters.fechaHasta) : undefined}
                     onSelect={(date) => handleFilterChange('fechaHasta', date ? date.toISOString() : undefined)}
-                    initialFocus
                   />
                 </PopoverContent>
               </Popover>

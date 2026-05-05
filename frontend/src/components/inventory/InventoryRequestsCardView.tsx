@@ -27,7 +27,7 @@ export default function InventoryRequestsCardView({
   formatDateTime,
   estadoOptions,
   estadoLabel,
-}: InventoryRequestsCardViewProps) {
+}: Readonly<InventoryRequestsCardViewProps>) {
   const getEstadoBadgeClass = (estado: ReservaItemSolicitadoEstado) =>
     estadoOptions.find((option) => option.value === estado)?.badgeClass ??
     'bg-gray-100 text-gray-700 border-gray-200';
@@ -70,9 +70,9 @@ export default function InventoryRequestsCardView({
       };
     }
 
-    const r = parseInt(parsed.slice(0, 2), 16);
-    const g = parseInt(parsed.slice(2, 4), 16);
-    const b = parseInt(parsed.slice(4, 6), 16);
+    const r = Number.parseInt(parsed.slice(0, 2), 16);
+    const g = Number.parseInt(parsed.slice(2, 4), 16);
+    const b = Number.parseInt(parsed.slice(4, 6), 16);
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 
     return {

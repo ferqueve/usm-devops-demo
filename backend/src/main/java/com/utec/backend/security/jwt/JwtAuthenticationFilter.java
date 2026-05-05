@@ -66,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 var usuarioOpt = usuarioRepository.findByEmail(userEmail);
                 if (usuarioOpt.isPresent() && usuarioOpt.get().getDeletedAt() != null) {
                     log.warn("Intento de acceso con token JWT para usuario inactivo: {}", userEmail);
-                    throw new RuntimeException("Usuario inactivo");
+                    throw new IllegalStateException("Usuario inactivo");
                 }
                 
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
@@ -88,7 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Token JWT expirado\",\"message\":\"Tu token ha expirado\"}");
             return;
-        } catch (RuntimeException e) {
+        } catch (IllegalStateException e) {
             if ("Usuario inactivo".equals(e.getMessage())) {
                 log.warn("Intento de acceso con token JWT para usuario inactivo");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -51,7 +51,7 @@ export default function ReservationFormDialog({
   open,
   onOpenChange,
   onSuccess
-}: ReservationFormDialogProps) {
+}: Readonly<ReservationFormDialogProps>) {
   const { hasPermission } = useRolePermissions();
   const { user } = useAuth();
 
@@ -166,11 +166,11 @@ export default function ReservationFormDialog({
   const getHorasInicioDisponibles = () => {
     const horasOcupadas = getHorasOcupadas();
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
 
     return horas.filter(hora => {
-      const horaNum = parseInt(hora);
+      const horaNum = Number.parseInt(hora);
       
       // Excluir horas ocupadas
       if (horasOcupadas.has(horaNum)) {
@@ -191,12 +191,12 @@ export default function ReservationFormDialog({
 
       // Si hay hora de fin seleccionada, solo mostrar horas anteriores
       if (formData.horaFinHora) {
-        const horaFinNum = parseInt(formData.horaFinHora);
+        const horaFinNum = Number.parseInt(formData.horaFinHora);
         // Si la hora de inicio es igual a la de fin, verificar minutos
         if (horaNum === horaFinNum) {
           // Si los minutos de inicio son mayores o iguales a los de fin, no es válido
-          const minInicio = parseInt(formData.horaInicioMinuto || '0');
-          const minFin = parseInt(formData.horaFinMinuto || '0');
+          const minInicio = Number.parseInt(formData.horaInicioMinuto || '0');
+          const minFin = Number.parseInt(formData.horaFinMinuto || '0');
           return minInicio < minFin;
         }
         return horaNum < horaFinNum;
@@ -210,11 +210,11 @@ export default function ReservationFormDialog({
   const getHorasFinDisponibles = () => {
     const horasOcupadas = getHorasOcupadas();
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
 
     return horas.filter(hora => {
-      const horaNum = parseInt(hora);
+      const horaNum = Number.parseInt(hora);
       
       // Excluir horas ocupadas
       if (horasOcupadas.has(horaNum)) {
@@ -228,7 +228,7 @@ export default function ReservationFormDialog({
 
       // Si hay hora de inicio seleccionada, solo mostrar horas posteriores
       if (formData.horaInicioHora) {
-        const horaInicioNum = parseInt(formData.horaInicioHora);
+        const horaInicioNum = Number.parseInt(formData.horaInicioHora);
         
         // Si la hora de fin es igual a la de inicio, verificar minutos
         if (horaNum === horaInicioNum) {
@@ -253,20 +253,20 @@ export default function ReservationFormDialog({
     }
 
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const horaInicioNum = parseInt(formData.horaInicioHora);
+    const horaInicioNum = Number.parseInt(formData.horaInicioHora);
 
     // Si es hoy y es la hora actual, excluir minutos pasados
     if (esHoy && horaInicioNum === horaActual) {
-      return minutos.filter(min => parseInt(min) > minutoActual);
+      return minutos.filter(min => Number.parseInt(min) > minutoActual);
     }
 
     // Si hay hora de fin seleccionada y es la misma hora, filtrar minutos
     if (formData.horaFinHora && formData.horaInicioHora === formData.horaFinHora) {
-      const minFin = parseInt(formData.horaFinMinuto || '0');
-      return minutos.filter(min => parseInt(min) < minFin);
+      const minFin = Number.parseInt(formData.horaFinMinuto || '0');
+      return minutos.filter(min => Number.parseInt(min) < minFin);
     }
 
     return minutos;
@@ -279,21 +279,21 @@ export default function ReservationFormDialog({
     }
 
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const horaFinNum = parseInt(formData.horaFinHora);
+    const horaFinNum = Number.parseInt(formData.horaFinHora);
 
     // Si es hoy y es la hora actual, excluir minutos pasados
     if (esHoy && horaFinNum === horaActual) {
-      return minutos.filter(min => parseInt(min) > minutoActual);
+      return minutos.filter(min => Number.parseInt(min) > minutoActual);
     }
 
     // Si hay hora de inicio seleccionada y es la misma hora, asegurar diferencia mínima de 30 minutos
     if (formData.horaInicioHora && formData.horaInicioHora === formData.horaFinHora) {
-      const minInicio = parseInt(formData.horaInicioMinuto || '0');
+      const minInicio = Number.parseInt(formData.horaInicioMinuto || '0');
       return minutos.filter(min => {
-        const minNum = parseInt(min);
+        const minNum = Number.parseInt(min);
         const diferenciaMinutos = minNum - minInicio;
         return diferenciaMinutos >= 30;
       });
@@ -462,7 +462,7 @@ export default function ReservationFormDialog({
     }
 
     try {
-      const response = await reservationsApi.obtenerReservasPorEspacio(parseInt(espacioId));
+      const response = await reservationsApi.obtenerReservasPorEspacio(Number.parseInt(espacioId));
       if (response.data) {
         const reservasAprobadas = response.data.filter(r => r.estado === 'APROBADO');
         setReservasEspacio(reservasAprobadas);
@@ -624,7 +624,7 @@ export default function ReservationFormDialog({
     const inicio = new Date(`${fechaStr}T${horaInicio}`);
     const fin = new Date(`${fechaStr}T${horaFin}`);
 
-    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
       toast.error('Las horas ingresadas no son válidas');
       return;
     }
@@ -680,20 +680,22 @@ export default function ReservationFormDialog({
         : undefined;
 
       await reservationsApi.crearReserva({
-        espacioId: parseInt(formData.espacioId),
-        carreraId: formData.carreraId ? parseInt(formData.carreraId) : undefined,
+        espacioId: Number.parseInt(formData.espacioId),
+        carreraId: formData.carreraId ? Number.parseInt(formData.carreraId) : undefined,
         titulo: formData.titulo.trim(),
         motivoSolicitud: formData.motivoSolicitud?.trim() || undefined,
         inicio: inicioISO,
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: canApprove
-          ? user?.id // ADMIN/ANALISTA se asigna a sí mismo
-          : needsAnalystAssignment && formData.analistaId
-            ? parseInt(formData.analistaId) // DOCENTE/EXTERNO selecciona analista
-            : undefined,
-        esPublica: !canViewRecommendations ? true : undefined, // Externos (sin permiso recomendacion:ver) siempre crean reservas públicas
+        analistaId: (() => {
+          if (canApprove) return user?.id; // ADMIN/ANALISTA se asigna a sí mismo
+          if (needsAnalystAssignment && formData.analistaId) {
+            return Number.parseInt(formData.analistaId); // DOCENTE/EXTERNO selecciona analista
+          }
+          return undefined;
+        })(),
+        esPublica: canViewRecommendations ? undefined : true, // Externos (sin permiso recomendacion:ver) siempre crean reservas públicas
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -706,15 +708,17 @@ export default function ReservationFormDialog({
         ? calcularCantidadReservas(fecha, formData.fechaFinRecurrencia, formData.tipoRecurrencia)
         : 1;
       
-      toast.success(
-        needsAnalystAssignment
-          ? canViewRecommendations
-            ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.` // DOCENTE
-            : `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} creada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.` // EXTERNO
-          : cantidadReservas > 1
-            ? `${cantidadReservas} reservas creadas exitosamente` // ANALISTA/ADMIN
-            : 'Reserva creada exitosamente'
-      );
+      const esPlural = cantidadReservas > 1;
+      const sufijoSolicitud = esPlural ? `es de ${cantidadReservas} reservas` : ' de reserva';
+      const sufijoS = esPlural ? 's' : '';
+      const obtenerMensajeExito = (): string => {
+        if (needsAnalystAssignment) {
+          const verbo = canViewRecommendations ? 'enviada' : 'creada';
+          return `Solicitud${sufijoSolicitud} ${verbo}${sufijoS} exitosamente. Esperando aprobación.`;
+        }
+        return esPlural ? `${cantidadReservas} reservas creadas exitosamente` : 'Reserva creada exitosamente';
+      };
+      toast.success(obtenerMensajeExito());
       onSuccess();
     } catch (error: unknown) {
       console.error('Error al crear reserva:', error);
@@ -961,7 +965,7 @@ export default function ReservationFormDialog({
                         : observacionLimpia || 'Sin observaciones';
 
                     return (
-                      <div key={index} className="bg-white rounded-md border border-gray-200 p-3 flex items-center gap-3">
+                      <div key={item.tipoElementoId} className="bg-white rounded-md border border-gray-200 p-3 flex items-center gap-3">
                         <div className="flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                           <span className="text-sm font-semibold text-gray-800">
                             {tipo?.nombre ?? 'Tipo sin definir'}
@@ -992,7 +996,7 @@ export default function ReservationFormDialog({
                               </Label>
                               <Select
                                 value={item.tipoElementoId.toString()}
-                                onValueChange={(value) => actualizarItemSolicitado(index, 'tipoElementoId', parseInt(value))}
+                                onValueChange={(value) => actualizarItemSolicitado(index, 'tipoElementoId', Number.parseInt(value))}
                               >
                                 <SelectTrigger className="h-9 text-sm">
                                   <SelectValue placeholder="Seleccionar tipo" />
@@ -1015,7 +1019,7 @@ export default function ReservationFormDialog({
                                 min="1"
                                 value={item.cantidadSolicitada}
                                 onChange={(e) =>
-                                  actualizarItemSolicitado(index, 'cantidadSolicitada', parseInt(e.target.value) || 1)
+                                  actualizarItemSolicitado(index, 'cantidadSolicitada', Number.parseInt(e.target.value) || 1)
                                 }
                                 className="h-9 text-sm"
                               />
@@ -1087,7 +1091,7 @@ export default function ReservationFormDialog({
                       onChange={(value) => {
                         setFormData(prev => ({ ...prev, horaInicioHora: value }));
                         // Si la hora de fin seleccionada es menor o igual a la nueva hora de inicio, limpiarla
-                        if (formData.horaFinHora && parseInt(value) >= parseInt(formData.horaFinHora)) {
+                        if (formData.horaFinHora && Number.parseInt(value) >= Number.parseInt(formData.horaFinHora)) {
                           setFormData(prev => ({ ...prev, horaFinHora: '' }));
                         }
                       }}
@@ -1104,10 +1108,10 @@ export default function ReservationFormDialog({
                         setFormData(prev => ({ ...prev, horaInicioMinuto: value }));
                         // Si hay hora de fin, verificar que siga siendo válida
                         if (formData.horaInicioHora && formData.horaFinHora) {
-                          const horaInicioNum = parseInt(formData.horaInicioHora);
-                          const horaFinNum = parseInt(formData.horaFinHora);
-                          const minInicio = parseInt(value);
-                          const minFin = parseInt(formData.horaFinMinuto || '0');
+                          const horaInicioNum = Number.parseInt(formData.horaInicioHora);
+                          const horaFinNum = Number.parseInt(formData.horaFinHora);
+                          const minInicio = Number.parseInt(value);
+                          const minFin = Number.parseInt(formData.horaFinMinuto || '0');
                           
                           if (horaInicioNum === horaFinNum && minInicio >= minFin) {
                             setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
@@ -1136,8 +1140,8 @@ export default function ReservationFormDialog({
                         setFormData(prev => ({ ...prev, horaFinHora: value }));
                         // Si la nueva hora de fin es igual a la de inicio y los minutos no son válidos, limpiar minutos de fin
                         if (formData.horaInicioHora && value === formData.horaInicioHora) {
-                          const minInicio = parseInt(formData.horaInicioMinuto || '0');
-                          const minFin = parseInt(formData.horaFinMinuto || '0');
+                          const minInicio = Number.parseInt(formData.horaInicioMinuto || '0');
+                          const minFin = Number.parseInt(formData.horaFinMinuto || '0');
                           if (minFin <= minInicio) {
                             // Buscar el próximo minuto válido (al menos 30 minutos después)
                             const minValido = minInicio + 30;
@@ -1265,29 +1269,29 @@ export default function ReservationFormDialog({
                         if (!fecha || !formData.horaInicioHora) return '';
                         return createLocalDateTimeUTC(
                           fecha,
-                          parseInt(formData.horaInicioHora),
-                          parseInt(formData.horaInicioMinuto || '0')
+                          Number.parseInt(formData.horaInicioHora),
+                          Number.parseInt(formData.horaInicioMinuto || '0')
                         );
                       })()}
                       fin={(() => {
                         if (!fecha || !formData.horaFinHora) return '';
                         return createLocalDateTimeUTC(
                           fecha,
-                          parseInt(formData.horaFinHora),
-                          parseInt(formData.horaFinMinuto || '0')
+                          Number.parseInt(formData.horaFinHora),
+                          Number.parseInt(formData.horaFinMinuto || '0')
                         );
                       })()}
                       onSelectEspacio={(espacioId) => {
                         setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
                       }}
-                      espacioSeleccionadoId={formData.espacioId ? parseInt(formData.espacioId) : undefined}
+                      espacioSeleccionadoId={formData.espacioId ? Number.parseInt(formData.espacioId) : undefined}
                     />
                   )}
 
                   {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
                   {formData.espacioId && fecha && (
                     <HorariosRecomendados
-                      espacioId={parseInt(formData.espacioId)}
+                      espacioId={Number.parseInt(formData.espacioId)}
                       fecha={fecha}
                       onSelectHorario={(inicio, fin) => {
                         // Si vienen cadenas vacías significa que se debe deseleccionar
@@ -1307,7 +1311,7 @@ export default function ReservationFormDialog({
                           const finDate = new Date(fin);
                           
                           // Verificar que las fechas sean válidas
-                          if (isNaN(inicioDate.getTime()) || isNaN(finDate.getTime())) {
+                          if (Number.isNaN(inicioDate.getTime()) || Number.isNaN(finDate.getTime())) {
                             toast.error('Error al seleccionar el horario. Por favor, inténtalo de nuevo.');
                             return;
                           }
@@ -1356,7 +1360,7 @@ export default function ReservationFormDialog({
                   {/* Items recomendados - mostrar si hay espacio seleccionado */}
                   {formData.espacioId && (
                     <ItemsRecomendados
-                      espacioId={parseInt(formData.espacioId)}
+                      espacioId={Number.parseInt(formData.espacioId)}
                       onSelectItem={(tipoElementoId, cantidad) => {
                         // Verificar si el item ya está en la lista
                         const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
@@ -1375,77 +1379,84 @@ export default function ReservationFormDialog({
                   {/* Recomendaciones generales cuando no hay datos seleccionados */}
                   {!formData.espacioId && !formData.horaInicioHora && !formData.horaFinHora && (
                     <>
-                      {loadingRecomendacionesGenerales ? (
-                        <div className="text-center py-8">
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
-                        </div>
-                      ) : recomendacionesGenerales && recomendacionesGenerales.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0 ? (
-                        <div className="space-y-2.5">
-                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                            <Sparkles className="h-3.5 w-3.5 text-primary" />
-                            <span>Espacios Recomendados</span>
-                          </div>
-                          <div className="grid grid-cols-1 gap-2">
-                            {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
-                              <Card
-                                key={rec.espacioId}
-                                className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
-                                onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
-                                style={{
-                                  borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
-                                }}
-                              >
-                                <CardContent className="px-3 py-1.5">
-                                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        {rec.tipoEspacioNombre && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-[10px] px-1.5 py-0.5 h-5"
-                                            style={{
-                                              borderColor: rec.tipoEspacioColor,
-                                              color: rec.tipoEspacioColor,
-                                            }}
-                                          >
-                                            {rec.tipoEspacioNombre}
-                                          </Badge>
-                                        )}
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                          <Users className="h-3 w-3" />
-                                          <span>{rec.capacidad}</span>
+                      {(() => {
+                        const getPuntajeClass = (puntaje: number): string => {
+                          if (puntaje >= 0.8) return "bg-emerald-100 text-emerald-700";
+                          if (puntaje >= 0.6) return "bg-blue-100 text-blue-700";
+                          return "bg-amber-100 text-amber-700";
+                        };
+                        if (loadingRecomendacionesGenerales) {
+                          return (
+                            <div className="text-center py-8">
+                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+                            </div>
+                          );
+                        }
+                        if (recomendacionesGenerales?.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0) {
+                          return (
+                            <div className="space-y-2.5">
+                              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                <span>Espacios Recomendados</span>
+                              </div>
+                              <div className="grid grid-cols-1 gap-2">
+                                {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
+                                  <Card
+                                    key={rec.espacioId}
+                                    className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
+                                    onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
+                                    style={{
+                                      borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
+                                    }}
+                                  >
+                                    <CardContent className="px-3 py-1.5">
+                                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            {rec.tipoEspacioNombre && (
+                                              <Badge
+                                                variant="outline"
+                                                className="text-[10px] px-1.5 py-0.5 h-5"
+                                                style={{
+                                                  borderColor: rec.tipoEspacioColor,
+                                                  color: rec.tipoEspacioColor,
+                                                }}
+                                              >
+                                                {rec.tipoEspacioNombre}
+                                              </Badge>
+                                            )}
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                              <Users className="h-3 w-3" />
+                                              <span>{rec.capacidad}</span>
+                                            </div>
+                                            {rec.disponible && (
+                                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                                                Disponible
+                                              </Badge>
+                                            )}
+                                          </div>
                                         </div>
-                                        {rec.disponible && (
-                                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
-                                            Disponible
-                                          </Badge>
-                                        )}
+                                        <Badge
+                                          className={`text-xs px-2 py-0.5 h-5 shrink-0 ${getPuntajeClass(rec.puntaje)}`}
+                                        >
+                                          {(rec.puntaje * 100).toFixed(0)}%
+                                        </Badge>
                                       </div>
-                                    </div>
-                                    <Badge
-                                      className={`text-xs px-2 py-0.5 h-5 shrink-0 ${
-                                        rec.puntaje >= 0.8
-                                          ? "bg-emerald-100 text-emerald-700"
-                                          : rec.puntaje >= 0.6
-                                          ? "bg-blue-100 text-blue-700"
-                                          : "bg-amber-100 text-amber-700"
-                                      }`}
-                                    >
-                                      {(rec.puntaje * 100).toFixed(0)}%
-                                    </Badge>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="text-center py-8 text-sm text-gray-500">
+                            <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            <p>Completa el formulario para ver recomendaciones</p>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-sm text-gray-500">
-                          <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                          <p>Completa el formulario para ver recomendaciones</p>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </>
                   )}
                 </div>
@@ -1491,14 +1502,14 @@ export default function ReservationFormDialog({
                       onSelectEspacio={(espacioId) => {
                         setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }));
                       }}
-                      espacioSeleccionadoId={formData.espacioId ? parseInt(formData.espacioId) : undefined}
+                      espacioSeleccionadoId={formData.espacioId ? Number.parseInt(formData.espacioId) : undefined}
                     />
                   )}
 
                   {/* Horarios recomendados - mostrar si hay espacio y fecha seleccionados */}
                   {formData.espacioId && fecha && (
                     <HorariosRecomendados
-                      espacioId={parseInt(formData.espacioId)}
+                      espacioId={Number.parseInt(formData.espacioId)}
                       fecha={fecha}
                       onSelectHorario={(inicio, fin) => {
                         // Soporta deselección mediante cadenas vacías
@@ -1518,7 +1529,7 @@ export default function ReservationFormDialog({
                           const finDate = new Date(fin);
                           
                           // Verificar que las fechas sean válidas
-                          if (isNaN(inicioDate.getTime()) || isNaN(finDate.getTime())) {
+                          if (Number.isNaN(inicioDate.getTime()) || Number.isNaN(finDate.getTime())) {
                             toast.error('Error al seleccionar el horario. Por favor, inténtalo de nuevo.');
                             return;
                           }
@@ -1569,7 +1580,7 @@ export default function ReservationFormDialog({
                   {/* Items recomendados - mostrar si hay espacio seleccionado */}
                   {formData.espacioId && (
                     <ItemsRecomendados
-                      espacioId={parseInt(formData.espacioId)}
+                      espacioId={Number.parseInt(formData.espacioId)}
                       onSelectItem={(tipoElementoId, cantidad) => {
                         // Verificar si el item ya está en la lista
                         const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
@@ -1588,77 +1599,84 @@ export default function ReservationFormDialog({
                   {/* Recomendaciones generales cuando no hay datos seleccionados */}
                   {!formData.espacioId && !formData.horaInicioHora && !formData.horaFinHora && (
                     <>
-                      {loadingRecomendacionesGenerales ? (
-                        <div className="text-center py-8">
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
-                        </div>
-                      ) : recomendacionesGenerales && recomendacionesGenerales.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0 ? (
-                        <div className="space-y-2.5">
-                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                            <Sparkles className="h-3.5 w-3.5 text-primary" />
-                            <span>Espacios Recomendados</span>
-                          </div>
-                          <div className="grid grid-cols-1 gap-2">
-                            {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
-                              <Card
-                                key={rec.espacioId}
-                                className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
-                                onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
-                                style={{
-                                  borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
-                                }}
-                              >
-                                <CardContent className="px-3 py-1.5">
-                                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        {rec.tipoEspacioNombre && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-[10px] px-1.5 py-0.5 h-5"
-                                            style={{
-                                              borderColor: rec.tipoEspacioColor,
-                                              color: rec.tipoEspacioColor,
-                                            }}
-                                          >
-                                            {rec.tipoEspacioNombre}
-                                          </Badge>
-                                        )}
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                          <Users className="h-3 w-3" />
-                                          <span>{rec.capacidad}</span>
+                      {(() => {
+                        const getPuntajeClass = (puntaje: number): string => {
+                          if (puntaje >= 0.8) return "bg-emerald-100 text-emerald-700";
+                          if (puntaje >= 0.6) return "bg-blue-100 text-blue-700";
+                          return "bg-amber-100 text-amber-700";
+                        };
+                        if (loadingRecomendacionesGenerales) {
+                          return (
+                            <div className="text-center py-8">
+                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+                            </div>
+                          );
+                        }
+                        if (recomendacionesGenerales?.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0) {
+                          return (
+                            <div className="space-y-2.5">
+                              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                <span>Espacios Recomendados</span>
+                              </div>
+                              <div className="grid grid-cols-1 gap-2">
+                                {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
+                                  <Card
+                                    key={rec.espacioId}
+                                    className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
+                                    onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
+                                    style={{
+                                      borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
+                                    }}
+                                  >
+                                    <CardContent className="px-3 py-1.5">
+                                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            {rec.tipoEspacioNombre && (
+                                              <Badge
+                                                variant="outline"
+                                                className="text-[10px] px-1.5 py-0.5 h-5"
+                                                style={{
+                                                  borderColor: rec.tipoEspacioColor,
+                                                  color: rec.tipoEspacioColor,
+                                                }}
+                                              >
+                                                {rec.tipoEspacioNombre}
+                                              </Badge>
+                                            )}
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                              <Users className="h-3 w-3" />
+                                              <span>{rec.capacidad}</span>
+                                            </div>
+                                            {rec.disponible && (
+                                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                                                Disponible
+                                              </Badge>
+                                            )}
+                                          </div>
                                         </div>
-                                        {rec.disponible && (
-                                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
-                                            Disponible
-                                          </Badge>
-                                        )}
+                                        <Badge
+                                          className={`text-xs px-2 py-0.5 h-5 shrink-0 ${getPuntajeClass(rec.puntaje)}`}
+                                        >
+                                          {(rec.puntaje * 100).toFixed(0)}%
+                                        </Badge>
                                       </div>
-                                    </div>
-                                    <Badge
-                                      className={`text-xs px-2 py-0.5 h-5 shrink-0 ${
-                                        rec.puntaje >= 0.8
-                                          ? "bg-emerald-100 text-emerald-700"
-                                          : rec.puntaje >= 0.6
-                                          ? "bg-blue-100 text-blue-700"
-                                          : "bg-amber-100 text-amber-700"
-                                      }`}
-                                    >
-                                      {(rec.puntaje * 100).toFixed(0)}%
-                                    </Badge>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="text-center py-8 text-sm text-gray-500">
+                            <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            <p>Completa el formulario para ver recomendaciones</p>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-sm text-gray-500">
-                          <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                          <p>Completa el formulario para ver recomendaciones</p>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </>
                   )}
                 </div>
@@ -1690,7 +1708,10 @@ export default function ReservationFormDialog({
               <PermissionGuard requiredPermissions={['reserva:crear']}>
                 <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {needsAnalystAssignment ? (canViewRecommendations ? 'Enviar Solicitud' : 'Crear Solicitud') : 'Crear Reserva'}
+                  {(() => {
+                    if (!needsAnalystAssignment) return 'Crear Reserva';
+                    return canViewRecommendations ? 'Enviar Solicitud' : 'Crear Solicitud';
+                  })()}
                 </Button>
               </PermissionGuard>
             </DialogFooter>

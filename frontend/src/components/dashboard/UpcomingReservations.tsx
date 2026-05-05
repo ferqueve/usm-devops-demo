@@ -21,7 +21,7 @@ export default function UpcomingReservations({
   onViewDetails,
   showMyReservationsOnly = false,
   onToggleFilter
-}: UpcomingReservationsProps) {
+}: Readonly<UpcomingReservationsProps>) {
   const navigate = useNavigate();
 
   const handleViewDetails = (reserva: Reserva) => {

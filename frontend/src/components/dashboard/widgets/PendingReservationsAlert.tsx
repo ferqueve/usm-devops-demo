@@ -14,15 +14,17 @@ export default function PendingReservationsAlert({
   reservasPendientes,
   loading,
   canApprove
-}: PendingReservationsAlertProps) {
+}: Readonly<PendingReservationsAlertProps>) {
   if (loading || reservasPendientes.length === 0) {
     return null;
   }
 
   const count = reservasPendientes.length;
+  const sufijoS = count > 1 ? 's' : '';
+  const sufijoEs = count > 1 ? 'es' : '';
   const message = canApprove
-    ? `Tienes ${count} reserva${count > 1 ? 's' : ''} pendiente${count > 1 ? 's' : ''} de aprobación`
-    : `Tienes ${count} solicitud${count > 1 ? 'es' : ''} pendiente${count > 1 ? 's' : ''} de aprobación`;
+    ? `Tienes ${count} reserva${sufijoS} pendiente${sufijoS} de aprobación`
+    : `Tienes ${count} solicitud${sufijoEs} pendiente${sufijoS} de aprobación`;
 
   const description = canApprove
     ? 'Revisa y aprueba las solicitudes de reserva'

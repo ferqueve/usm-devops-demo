@@ -25,7 +25,7 @@ export default function ImportCSVDialog({
   open, 
   onOpenChange, 
   onSuccess: _onSuccess
-}: ImportCSVDialogProps) {
+}: Readonly<ImportCSVDialogProps>) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string[][] | null>(null);
   const [errors] = useState<string[]>([]);
@@ -60,8 +60,7 @@ export default function ImportCSVDialog({
       return;
     }
 
-    // TODO: Implementar importación CSV
-    // Por ahora solo mostramos un mensaje
+    // La importación CSV todavía está en desarrollo (ver backlog).
     toast.info('Importación CSV en desarrollo', {
       description: 'Esta funcionalidad estará disponible próximamente'
     });
@@ -109,7 +108,7 @@ export default function ImportCSVDialog({
                   <thead className="bg-gray-50">
                     <tr>
                       {preview[0]?.map((header, i) => (
-                        <th key={i} className="px-3 py-2 text-left font-medium text-gray-700">
+                        <th key={`header-${header.trim()}-${i}`} className="px-3 py-2 text-left font-medium text-gray-700">
                           {header.trim()}
                         </th>
                       ))}
@@ -117,9 +116,9 @@ export default function ImportCSVDialog({
                   </thead>
                   <tbody className="divide-y">
                     {preview.slice(1).map((row, i) => (
-                      <tr key={i}>
+                      <tr key={`row-${i}-${row.join('|')}`}>
                         {row.map((cell, j) => (
-                          <td key={j} className="px-3 py-2 text-gray-600">
+                          <td key={`cell-${preview[0]?.[j]?.trim() ?? j}-${cell}`} className="px-3 py-2 text-gray-600">
                             {cell.trim()}
                           </td>
                         ))}
@@ -141,7 +140,7 @@ export default function ImportCSVDialog({
               <div className="border border-destructive rounded-lg p-3 bg-destructive/10">
                 <ul className="list-disc list-inside text-sm space-y-1">
                   {errors.map((error, i) => (
-                    <li key={i} className="text-destructive">{error}</li>
+                    <li key={`error-${i}-${error}`} className="text-destructive">{error}</li>
                   ))}
                 </ul>
               </div>

@@ -37,7 +37,7 @@ export default function InventoryFormDialog({
   open,
   onOpenChange,
   onSuccess
-}: InventoryFormDialogProps) {
+}: Readonly<InventoryFormDialogProps>) {
   const [loading, setLoading] = useState(false);
   const { espacios } = useEspacios();
   const { tiposElemento } = useTiposElemento();
@@ -142,12 +142,16 @@ export default function InventoryFormDialog({
             <div className="space-y-2">
               <Label htmlFor="espacio">{item ? 'Espacio' : 'Espacio *'}</Label>
               <Select
-                value={formData.espacioId === null ? "sin-asignar" : (formData.espacioId === 0 ? "seleccionar" : formData.espacioId.toString())}
+                value={(() => {
+                  if (formData.espacioId === null) return "sin-asignar";
+                  if (formData.espacioId === 0) return "seleccionar";
+                  return formData.espacioId.toString();
+                })()}
                 onValueChange={(value) => {
                   if (value === "sin-asignar") {
                     setFormData({ ...formData, espacioId: null });
                   } else if (value !== "seleccionar") {
-                    setFormData({ ...formData, espacioId: parseInt(value) });
+                    setFormData({ ...formData, espacioId: Number.parseInt(value) });
                   }
                 }}
               >
@@ -175,7 +179,7 @@ export default function InventoryFormDialog({
                 value={formData.tipoElementoId === 0 ? "seleccionar" : formData.tipoElementoId.toString()}
                 onValueChange={(value) => {
                   if (value !== "seleccionar") {
-                    setFormData({ ...formData, tipoElementoId: parseInt(value) });
+                    setFormData({ ...formData, tipoElementoId: Number.parseInt(value) });
                   }
                 }}
               >
@@ -201,7 +205,7 @@ export default function InventoryFormDialog({
                 type="number"
                 min="1"
                 value={formData.cantidad}
-                onChange={(e) => setFormData({ ...formData, cantidad: parseInt(e.target.value) || 1 })}
+                onChange={(e) => setFormData({ ...formData, cantidad: Number.parseInt(e.target.value) || 1 })}
                 required
                 className="w-full"
               />
@@ -252,7 +256,10 @@ export default function InventoryFormDialog({
           </Button>
           <PermissionGuard requiredPermissions={item ? ['inventario:editar'] : ['inventario:crear']}>
             <Button type="submit" onClick={handleSubmit} disabled={loading}>
-              {loading ? 'Guardando...' : (item ? 'Actualizar' : 'Crear')}
+              {(() => {
+                if (loading) return 'Guardando...';
+                return item ? 'Actualizar' : 'Crear';
+              })()}
             </Button>
           </PermissionGuard>
         </DialogFooter>

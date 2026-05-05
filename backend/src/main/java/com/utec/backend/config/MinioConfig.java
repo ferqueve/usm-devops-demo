@@ -1,5 +1,6 @@
 package com.utec.backend.config;
 
+import com.utec.backend.exception.FileStorageException;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -101,7 +102,7 @@ public class MinioConfig {
             }
         } catch (Exception e) {
             log.error("Error al inicializar bucket '{}'", bucketName, e);
-            throw new RuntimeException("No se pudo inicializar el bucket de MinIO", e);
+            throw new FileStorageException("No se pudo inicializar el bucket de MinIO", e);
         }
     }
 }

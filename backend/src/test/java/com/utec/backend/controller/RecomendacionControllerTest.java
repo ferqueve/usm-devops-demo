@@ -111,7 +111,7 @@ class RecomendacionControllerTest {
         dto.setEspacioNombre("Aula 102");
 
         when(usuarioRepository.findByEmail(userEmail)).thenReturn(Optional.of(usuarioTest));
-        when(recomendacionService.obtenerEspaciosSimilares(eq(espacioId), eq(usuarioId)))
+        when(recomendacionService.obtenerEspaciosSimilares(espacioId, usuarioId))
                 .thenReturn(Arrays.asList(dto));
 
         // When & Then
@@ -121,7 +121,7 @@ class RecomendacionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(recomendacionService).obtenerEspaciosSimilares(eq(espacioId), eq(usuarioId));
+        verify(recomendacionService).obtenerEspaciosSimilares(espacioId, usuarioId);
     }
 
     @Test
@@ -164,7 +164,7 @@ class RecomendacionControllerTest {
     void debeObtenerItemsParaReserva() throws Exception {
         // Given
         when(usuarioRepository.findByEmail(userEmail)).thenReturn(Optional.of(usuarioTest));
-        when(recomendacionService.obtenerItemsRecomendadosParaReserva(eq(espacioId), eq(usuarioId)))
+        when(recomendacionService.obtenerItemsRecomendadosParaReserva(espacioId, usuarioId))
                 .thenReturn(Collections.emptyList());
 
         // When & Then
@@ -174,7 +174,7 @@ class RecomendacionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(recomendacionService).obtenerItemsRecomendadosParaReserva(eq(espacioId), eq(usuarioId));
+        verify(recomendacionService).obtenerItemsRecomendadosParaReserva(espacioId, usuarioId);
     }
 
     @Test
@@ -223,7 +223,7 @@ class RecomendacionControllerTest {
         dto.setTotalRecomendaciones(0);
 
         when(usuarioRepository.findByEmail(userEmail)).thenReturn(Optional.of(usuarioTest));
-        when(recomendacionService.obtenerRecomendacionesDashboard(eq(usuarioId), eq(Usuario.RolApp.DOCENTE)))
+        when(recomendacionService.obtenerRecomendacionesDashboard(usuarioId, Usuario.RolApp.DOCENTE))
                 .thenReturn(dto);
 
         // When & Then
@@ -232,7 +232,7 @@ class RecomendacionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(recomendacionService).obtenerRecomendacionesDashboard(eq(usuarioId), eq(Usuario.RolApp.DOCENTE));
+        verify(recomendacionService).obtenerRecomendacionesDashboard(usuarioId, Usuario.RolApp.DOCENTE);
     }
 }
 

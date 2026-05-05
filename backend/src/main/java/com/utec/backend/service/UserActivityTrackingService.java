@@ -131,9 +131,9 @@ public class UserActivityTrackingService {
                         }
                         return null;
                     })
-                    .filter(user -> user != null)
+                    .filter(java.util.Objects::nonNull)
                     .sorted((a, b) -> b.getLastActivity().compareTo(a.getLastActivity()))
-                    .collect(Collectors.toList());
+                    .toList();
             
             return ActiveUsersStatsDTO.builder()
                     .totalActiveUsers(activeUsers.size())

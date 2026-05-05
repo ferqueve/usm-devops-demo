@@ -20,7 +20,7 @@ interface InventoryDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function InventoryDetailsDialog({ item, open, onOpenChange }: InventoryDetailsDialogProps) {
+export default function InventoryDetailsDialog({ item, open, onOpenChange }: Readonly<InventoryDetailsDialogProps>) {
   if (!item) return null;
 
   const getEstadoBadge = (estado: string) => {

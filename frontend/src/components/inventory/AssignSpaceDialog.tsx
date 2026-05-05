@@ -36,7 +36,7 @@ export default function AssignSpaceDialog({
   open,
   onOpenChange,
   onSuccess
-}: AssignSpaceDialogProps) {
+}: Readonly<AssignSpaceDialogProps>) {
   const [loading, setLoading] = useState(false);
   const { espacios } = useEspacios();
   const { hasPermission } = useRolePermissions();
@@ -215,21 +215,29 @@ export default function AssignSpaceDialog({
           <DialogTitle>{item?.espacioId ? 'Reasignar Espacio' : 'Asignar Espacio'}</DialogTitle>
           <DialogDescription>
             Selecciona el espacio para el item <strong>{item?.tipoElementoNombre}</strong>
-            {currentEspacio ? (
-              <>
-                <br />
-                <span className="text-sm text-muted-foreground">
-                  Actualmente asignado a: <strong>{currentEspacio.nombre}</strong>
-                </span>
-              </>
-            ) : item?.espacioId === null ? (
-              <>
-                <br />
-                <span className="text-sm text-muted-foreground">
-                  Actualmente: <strong>Sin asignar</strong>
-                </span>
-              </>
-            ) : null}
+            {(() => {
+              if (currentEspacio) {
+                return (
+                  <>
+                    <br />
+                    <span className="text-sm text-muted-foreground">
+                      Actualmente asignado a: <strong>{currentEspacio.nombre}</strong>
+                    </span>
+                  </>
+                );
+              }
+              if (item?.espacioId === null) {
+                return (
+                  <>
+                    <br />
+                    <span className="text-sm text-muted-foreground">
+                      Actualmente: <strong>Sin asignar</strong>
+                    </span>
+                  </>
+                );
+              }
+              return null;
+            })()}
           </DialogDescription>
         </DialogHeader>
         
@@ -240,7 +248,7 @@ export default function AssignSpaceDialog({
               value={selectedEspacioId === 0 ? "seleccionar" : selectedEspacioId.toString()}
               onValueChange={(value) => {
                 if (value !== "seleccionar") {
-                  setSelectedEspacioId(parseInt(value));
+                  setSelectedEspacioId(Number.parseInt(value));
                 }
               }}
             >
@@ -267,7 +275,7 @@ export default function AssignSpaceDialog({
               max={item?.cantidad}
               value={cantidad}
               onChange={(e) => {
-                const value = parseInt(e.target.value) || 0;
+                const value = Number.parseInt(e.target.value) || 0;
                 setCantidad(Math.min(value, item?.cantidad || 1));
               }}
               placeholder="Cantidad a asignar"
@@ -305,8 +313,10 @@ export default function AssignSpaceDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? (item?.espacioId ? 'Reasignando...' : 'Asignando...') : 
-                (item?.espacioId ? `Reasignar (${cantidad})` : `Asignar (${cantidad})`)}
+              {(() => {
+                if (loading) return item?.espacioId ? 'Reasignando...' : 'Asignando...';
+                return item?.espacioId ? `Reasignar (${cantidad})` : `Asignar (${cantidad})`;
+              })()}
             </Button>
           </DialogFooter>
         </form>

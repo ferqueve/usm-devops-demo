@@ -5,6 +5,7 @@ import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,8 +25,12 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    @Autowired(required = false)
-    private MinioClient minioClient;
+    @Nullable
+    private final MinioClient minioClient;
+
+    public FileStorageService(@Autowired(required = false) @Nullable MinioClient minioClient) {
+        this.minioClient = minioClient;
+    }
 
     @Value("${minio.bucket-name}")
     private String bucketName;

@@ -42,7 +42,7 @@ export default function InventoryTable({
   onToggleSelect,
   sortConfig,
   onSort
-}: InventoryTableProps) {
+}: Readonly<InventoryTableProps>) {
   const getEstadoBadge = (estado: string) => {
     const configs: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
       'DISPONIBLE': { label: 'Disponible', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
@@ -62,7 +62,7 @@ export default function InventoryTable({
   };
 
   const getSortIcon = (column: string) => {
-    if (!sortConfig || sortConfig.column !== column) {
+    if (sortConfig?.column !== column) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
     }
     return sortConfig.direction === 'asc' 
@@ -141,20 +141,22 @@ export default function InventoryTable({
               <TableCell>{item.tipoElementoNombre}</TableCell>
               <TableCell>{item.cantidad}</TableCell>
               <TableCell>
-                {item.espacioId && item.espacioNombre ? (
-                  item.espacioColor ? (
-                    <span 
-                      className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
-                      style={{ backgroundColor: item.espacioColor }}
-                    >
-                      {item.espacioNombre}
-                    </span>
-                  ) : (
-                    <span className="text-sm">{item.espacioNombre}</span>
-                  )
-                ) : (
-                  <span className="text-muted-foreground">Sin asignar</span>
-                )}
+                {(() => {
+                  if (!item.espacioId || !item.espacioNombre) {
+                    return <span className="text-muted-foreground">Sin asignar</span>;
+                  }
+                  if (item.espacioColor) {
+                    return (
+                      <span
+                        className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
+                        style={{ backgroundColor: item.espacioColor }}
+                      >
+                        {item.espacioNombre}
+                      </span>
+                    );
+                  }
+                  return <span className="text-sm">{item.espacioNombre}</span>;
+                })()}
               </TableCell>
               <TableCell>{getEstadoBadge(item.estado)}</TableCell>
               <TableCell>

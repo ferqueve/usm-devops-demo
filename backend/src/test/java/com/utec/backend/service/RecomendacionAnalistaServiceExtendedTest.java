@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests Extendidos - RecomendacionAnalistaService - Algoritmos de Asignación")
-class RecomendacionAnalistaServiceTestExtended {
+class RecomendacionAnalistaServiceExtendedTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;

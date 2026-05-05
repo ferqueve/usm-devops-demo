@@ -7,7 +7,7 @@ interface PendingInventoryRequestsAlertProps {
   count: number;
 }
 
-export default function PendingInventoryRequestsAlert({ count }: PendingInventoryRequestsAlertProps) {
+export default function PendingInventoryRequestsAlert({ count }: Readonly<PendingInventoryRequestsAlertProps>) {
   if (count === 0) {
     return null;
   }

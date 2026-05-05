@@ -76,7 +76,7 @@ export default function ReservationFilters({
   onFechaInicioChange,
   onFechaFinChange,
   onClearFilters,
-}: ReservationFiltersProps) {
+}: Readonly<ReservationFiltersProps>) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* Filtro por rango de fechas */}
@@ -106,12 +106,12 @@ export default function ReservationFilters({
                 <button
                   type="button"
                   className={`flex items-center gap-1.5 px-1.5 py-1 rounded transition-colors ${
-                    fechaInicio !== undefined
-                      ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                      : 'text-gray-500 hover:text-gray-700'
+                    fechaInicio === undefined
+                      ? 'text-gray-500 hover:text-gray-700'
+                      : 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
                   }`}
                 >
-                  <CalendarArrowDown className={`h-3.5 w-3.5 shrink-0 ${fechaInicio !== undefined ? 'text-blue-600' : 'text-gray-500'}`} />
+                  <CalendarArrowDown className={`h-3.5 w-3.5 shrink-0 ${fechaInicio === undefined ? 'text-gray-500' : 'text-blue-600'}`} />
                   {fechaInicio && (
                     <span className="text-xs whitespace-nowrap">
                       {format(fechaInicio, "d MMM", { locale: es })}
@@ -141,7 +141,6 @@ export default function ReservationFilters({
                 }
                 return false;
               }}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
@@ -153,12 +152,12 @@ export default function ReservationFilters({
                 <button
                   type="button"
                   className={`flex items-center gap-1.5 px-1.5 py-1 rounded transition-colors ${
-                    fechaFin !== undefined
-                      ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                      : 'text-gray-500 hover:text-gray-700'
+                    fechaFin === undefined
+                      ? 'text-gray-500 hover:text-gray-700'
+                      : 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
                   }`}
                 >
-                  <CalendarArrowUp className={`h-3.5 w-3.5 shrink-0 ${fechaFin !== undefined ? 'text-blue-600' : 'text-gray-500'}`} />
+                  <CalendarArrowUp className={`h-3.5 w-3.5 shrink-0 ${fechaFin === undefined ? 'text-gray-500' : 'text-blue-600'}`} />
                   {fechaFin && (
                     <span className="text-xs whitespace-nowrap">
                       {format(fechaFin, "d MMM", { locale: es })}
@@ -188,7 +187,6 @@ export default function ReservationFilters({
                 }
                 return false;
               }}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
@@ -322,19 +320,19 @@ export default function ReservationFilters({
             <PopoverTrigger asChild>
               <TooltipTrigger asChild>
                 <button
-                  className={`p-1.5 rounded transition-colors ${espacioFilter !== null
-                      ? 'bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300'
-                      : 'text-gray-500 hover:text-gray-700'
+                  className={`p-1.5 rounded transition-colors ${espacioFilter === null
+                      ? 'text-gray-500 hover:text-gray-700'
+                      : 'bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300'
                     }`}
                 >
-                  <Building2 className={`h-3.5 w-3.5 ${espacioFilter !== null ? 'text-blue-700' : 'text-gray-500'}`} />
+                  <Building2 className={`h-3.5 w-3.5 ${espacioFilter === null ? 'text-gray-500' : 'text-blue-700'}`} />
                 </button>
               </TooltipTrigger>
             </PopoverTrigger>
             <TooltipContent>
-              {espacioFilter !== null
-                ? espaciosUnicos.find(e => e.id === espacioFilter)?.nombre || 'Seleccionar espacio'
-                : 'Seleccionar espacio'}
+              {espacioFilter === null
+                ? 'Seleccionar espacio'
+                : espaciosUnicos.find(e => e.id === espacioFilter)?.nombre || 'Seleccionar espacio'}
             </TooltipContent>
           </Tooltip>
           <PopoverContent className="w-64 p-2 max-h-[300px] overflow-y-auto" align="start">
@@ -376,19 +374,19 @@ export default function ReservationFilters({
             <PopoverTrigger asChild>
               <TooltipTrigger asChild>
                 <button
-                  className={`p-1.5 rounded transition-colors ${tipoEspacioFilter !== null
-                      ? 'bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300'
-                      : 'text-gray-500 hover:text-gray-700'
+                  className={`p-1.5 rounded transition-colors ${tipoEspacioFilter === null
+                      ? 'text-gray-500 hover:text-gray-700'
+                      : 'bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300'
                     }`}
                 >
-                  <Tag className={`h-3.5 w-3.5 ${tipoEspacioFilter !== null ? 'text-purple-700' : 'text-gray-500'}`} />
+                  <Tag className={`h-3.5 w-3.5 ${tipoEspacioFilter === null ? 'text-gray-500' : 'text-purple-700'}`} />
                 </button>
               </TooltipTrigger>
             </PopoverTrigger>
             <TooltipContent>
-              {tipoEspacioFilter !== null
-                ? tiposEspacioUnicos.find(t => t.id === tipoEspacioFilter)?.nombre || 'Seleccionar tipo'
-                : 'Seleccionar tipo de espacio'}
+              {tipoEspacioFilter === null
+                ? 'Seleccionar tipo de espacio'
+                : tiposEspacioUnicos.find(t => t.id === tipoEspacioFilter)?.nombre || 'Seleccionar tipo'}
             </TooltipContent>
           </Tooltip>
           <PopoverContent className="w-64 p-2 max-h-[300px] overflow-y-auto" align="start">
@@ -437,19 +435,19 @@ export default function ReservationFilters({
             <PopoverTrigger asChild>
               <TooltipTrigger asChild>
                 <button
-                  className={`p-1.5 rounded transition-colors ${carreraFilter !== null
-                      ? 'bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300'
-                      : 'text-gray-500 hover:text-gray-700'
+                  className={`p-1.5 rounded transition-colors ${carreraFilter === null
+                      ? 'text-gray-500 hover:text-gray-700'
+                      : 'bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300'
                     }`}
                 >
-                  <GraduationCap className={`h-3.5 w-3.5 ${carreraFilter !== null ? 'text-indigo-700' : 'text-gray-500'}`} />
+                  <GraduationCap className={`h-3.5 w-3.5 ${carreraFilter === null ? 'text-gray-500' : 'text-indigo-700'}`} />
                 </button>
               </TooltipTrigger>
             </PopoverTrigger>
             <TooltipContent>
-              {carreraFilter !== null
-                ? carrerasUnicas.find(c => c.id === carreraFilter)?.nombre || 'Seleccionar carrera'
-                : 'Seleccionar carrera'}
+              {carreraFilter === null
+                ? 'Seleccionar carrera'
+                : carrerasUnicas.find(c => c.id === carreraFilter)?.nombre || 'Seleccionar carrera'}
             </TooltipContent>
           </Tooltip>
           <PopoverContent className="w-64 p-2 max-h-[300px] overflow-y-auto" align="start">

@@ -6,6 +6,7 @@ import com.utec.backend.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -20,8 +21,8 @@ import java.util.Optional;
 @Slf4j
 public class EmailService {
 
-    @Autowired(required = false)
-    private GmailApiService gmailApiService;
+    @Nullable
+    private final GmailApiService gmailApiService;
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioConfiguracionService configuracionService;
@@ -30,9 +31,11 @@ public class EmailService {
     public EmailService(
             UsuarioRepository usuarioRepository,
             UsuarioConfiguracionService configuracionService,
-            EmailTemplateService emailTemplateService) {
+            EmailTemplateService emailTemplateService,
+            @Autowired(required = false) @Nullable GmailApiService gmailApiService) {
         this.usuarioRepository = usuarioRepository;
         this.configuracionService = configuracionService;
+        this.gmailApiService = gmailApiService;
         this.emailTemplateService = emailTemplateService;
     }
 

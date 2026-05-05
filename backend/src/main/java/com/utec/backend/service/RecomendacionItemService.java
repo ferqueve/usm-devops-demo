@@ -49,7 +49,7 @@ public class RecomendacionItemService {
         List<InventarioItem> itemsDisponibles = inventarioItemRepository.findByEspacioIdAndActivoTrue(espacioId);
         itemsDisponibles = itemsDisponibles.stream()
             .filter(item -> "DISPONIBLE".equals(item.getEstado()))
-            .collect(Collectors.toList());
+            .toList();
         
         // 3. Calcular recomendaciones
         List<RecomendacionItemDto> recomendaciones = new ArrayList<>();
@@ -88,7 +88,7 @@ public class RecomendacionItemService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(10)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     /**
@@ -104,7 +104,7 @@ public class RecomendacionItemService {
             .filter(ris -> ris.getReserva() != null && ris.getReserva().getEspacio() != null)
             .filter(ris -> ris.getReserva().getEspacio().getId().equals(espacioId))
             .filter(ris -> ris.getTipoElemento() != null)
-            .collect(Collectors.toList());
+            .toList();
         
         // Agrupar por reserva para encontrar combinaciones
         Map<Long, List<Long>> itemsPorReserva = new HashMap<>();
@@ -145,7 +145,7 @@ public class RecomendacionItemService {
         return recomendaciones.stream()
             .sorted((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()))
             .limit(5)
-            .collect(Collectors.toList());
+            .toList();
     }
 }
 

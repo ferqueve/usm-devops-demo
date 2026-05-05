@@ -89,7 +89,7 @@ public class RecomendacionService {
                     }
                     return rec;
                 })
-                .collect(Collectors.toList());
+                .toList();
             
             recomendacionRepository.saveAll(paraGuardar);
             log.debug("Guardadas {} recomendaciones top en BD para usuario {}", 
@@ -158,7 +158,7 @@ public class RecomendacionService {
             case DOCENTE:
                 // Para docentes: espacios recomendados e items
                 Instant ahora = Instant.now();
-                Instant finSemana = ahora.plusSeconds(7 * 24 * 3600);
+                Instant finSemana = ahora.plusSeconds(7L * 24 * 3600);
                 dto.setEspaciosRecomendados(
                     obtenerRecomendacionesEspacios(usuarioId, ahora, finSemana, null)
                 );
@@ -181,7 +181,7 @@ public class RecomendacionService {
                             esp.setRazon(inv.getRazon());
                             return esp;
                         })
-                        .collect(Collectors.toList())
+                        .toList()
                 );
                 break;
             case ADMIN:
@@ -198,7 +198,7 @@ public class RecomendacionService {
                             esp.setRazon(inv.getRazon());
                             return esp;
                         })
-                        .collect(Collectors.toList())
+                        .toList()
                 );
                 break;
             case ESTUDIANTE:

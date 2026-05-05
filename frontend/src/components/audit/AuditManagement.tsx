@@ -197,7 +197,7 @@ export default function AuditManagement() {
           </Button>
           
           <div 
-            onClick={!isRefreshing ? handleRefresh : undefined}
+            onClick={isRefreshing ? undefined : handleRefresh}
             className={`flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10 transition-all ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />

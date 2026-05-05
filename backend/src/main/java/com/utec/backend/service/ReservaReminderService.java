@@ -55,7 +55,7 @@ public class ReservaReminderService {
         
         try {
             Instant ahora = Instant.now();
-            Instant inicioDesde = ahora.plusSeconds(horasAntesRecordatorio * 3600);
+            Instant inicioDesde = ahora.plusSeconds((long) horasAntesRecordatorio * 3600);
             Instant inicioHasta = inicioDesde.plusSeconds(3600); // Ventana de 1 hora
             
             log.info("Buscando reservas para recordatorio entre {} y {}", inicioDesde, inicioHasta);
@@ -132,7 +132,7 @@ public class ReservaReminderService {
     @Transactional(readOnly = true)
     public int enviarRecordatoriosManual(int horasAntes) {
         Instant ahora = Instant.now();
-        Instant inicioDesde = ahora.plusSeconds(horasAntes * 3600);
+        Instant inicioDesde = ahora.plusSeconds((long) horasAntes * 3600);
         Instant inicioHasta = inicioDesde.plusSeconds(3600);
         
         List<Reserva> reservas = reservaRepository.findReservasAprobadasEnRango(

@@ -106,7 +106,7 @@ export function TermsAndPrivacyDialog({
   onAccept,
   showAcceptButton = false,
   defaultTab = "terms",
-}: TermsAndPrivacyDialogProps) {
+}: Readonly<TermsAndPrivacyDialogProps>) {
   const [activeTab, setActiveTab] = useState<"terms" | "privacy">(defaultTab);
   
   // Actualizar tab cuando cambia defaultTab o se abre el diálogo

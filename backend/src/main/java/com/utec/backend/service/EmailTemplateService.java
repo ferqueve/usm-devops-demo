@@ -1,5 +1,6 @@
 package com.utec.backend.service;
 
+import com.utec.backend.exception.EmailDeliveryException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class EmailTemplateService {
             
             if (!resource.exists()) {
                 log.error("Template no encontrado: {}", templateName);
-                throw new RuntimeException("Template de email no encontrado: " + templateName);
+                throw new EmailDeliveryException("Template de email no encontrado: " + templateName);
             }
 
             String template = StreamUtils.copyToString(
@@ -55,7 +56,7 @@ public class EmailTemplateService {
 
         } catch (IOException e) {
             log.error("Error al cargar template {}: {}", templateName, e.getMessage());
-            throw new RuntimeException("Error al cargar template de email: " + templateName, e);
+            throw new EmailDeliveryException("Error al cargar template de email: " + templateName, e);
         }
     }
 

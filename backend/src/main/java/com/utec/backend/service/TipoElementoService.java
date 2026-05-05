@@ -29,8 +29,8 @@ public class TipoElementoService {
         if (tipoExistente.isPresent()) {
             TipoElemento tipo = tipoExistente.get();
             // Si está activo, lanzar error
-            if (tipo.getActivo()) {
-                throw new RuntimeException("Ya existe un tipo de elemento activo con el nombre: " + createDto.getNombre());
+            if (Boolean.TRUE.equals(tipo.getActivo())) {
+                throw new IllegalStateException("Ya existe un tipo de elemento activo con el nombre: " + createDto.getNombre());
             }
             // Si está desactivado, reactivarlo
             tipo.setActivo(true);
@@ -55,7 +55,7 @@ public class TipoElementoService {
     public List<TipoElementoResponseDto> getAllTiposElemento() {
         return tipoElementoRepository.findByActivoTrue().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
@@ -67,17 +67,17 @@ public class TipoElementoService {
     @Transactional(readOnly = true)
     public TipoElementoResponseDto getTipoElementoById(Long id) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
         return mapToResponseDto(tipoElemento);
     }
-    
+
     public TipoElementoResponseDto updateTipoElemento(Long id, TipoElementoUpdateDto updateDto) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + id));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
+
         // Verificar si ya existe otro tipo con el mismo nombre
         if (tipoElementoRepository.existsByNombreIgnoreCaseAndIdNot(updateDto.getNombre(), id)) {
-            throw new RuntimeException("Ya existe otro tipo de elemento con el nombre: " + updateDto.getNombre());
+            throw new IllegalStateException("Ya existe otro tipo de elemento con el nombre: " + updateDto.getNombre());
         }
         
         tipoElemento.setNombre(updateDto.getNombre());
@@ -90,7 +90,7 @@ public class TipoElementoService {
     
     public void deleteTipoElemento(Long id) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
         
         // Soft delete: marcar como inactivo
         tipoElemento.setActivo(false);
@@ -102,7 +102,7 @@ public class TipoElementoService {
     
     public TipoElementoResponseDto toggleActivo(Long id) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
         
         tipoElemento.setActivo(!tipoElemento.getActivo());
         tipoElemento.setUpdatedAt(Instant.now());
@@ -115,14 +115,14 @@ public class TipoElementoService {
     public List<TipoElementoResponseDto> searchTiposElementoByNombre(String nombre) {
         return tipoElementoRepository.findByNombreContainingIgnoreCaseAndActivoTrue(nombre).stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)
     public List<TipoElementoResponseDto> getTiposMasUtilizados() {
         return tipoElementoRepository.findTiposMasUtilizados().stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     @Transactional(readOnly = true)

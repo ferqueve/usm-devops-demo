@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, Plus, X } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -12,7 +12,6 @@ import {
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimeSelect } from '@/components/ui/time-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Pencil, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import { usuariosApi } from '@/lib/api/users';
@@ -39,7 +38,7 @@ interface ReservationFormProps {
 export default function ReservationForm({
   onSuccess,
   onCancel
-}: ReservationFormProps) {
+}: Readonly<ReservationFormProps>) {
   const { hasPermission } = useRolePermissions();
   const { user } = useAuth();
 
@@ -125,11 +124,11 @@ export default function ReservationForm({
   const getHorasInicioDisponibles = () => {
     const horasOcupadas = getHorasOcupadas();
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
 
     return horas.filter(hora => {
-      const horaNum = parseInt(hora);
+      const horaNum = Number.parseInt(hora);
       
       // Excluir horas ocupadas
       if (horasOcupadas.has(horaNum)) {
@@ -150,12 +149,12 @@ export default function ReservationForm({
 
       // Si hay hora de fin seleccionada, solo mostrar horas anteriores
       if (formData.horaFinHora) {
-        const horaFinNum = parseInt(formData.horaFinHora);
+        const horaFinNum = Number.parseInt(formData.horaFinHora);
         // Si la hora de inicio es igual a la de fin, verificar minutos
         if (horaNum === horaFinNum) {
           // Si los minutos de inicio son mayores o iguales a los de fin, no es válido
-          const minInicio = parseInt(formData.horaInicioMinuto || '0');
-          const minFin = parseInt(formData.horaFinMinuto || '0');
+          const minInicio = Number.parseInt(formData.horaInicioMinuto || '0');
+          const minFin = Number.parseInt(formData.horaFinMinuto || '0');
           return minInicio < minFin;
         }
         return horaNum < horaFinNum;
@@ -169,11 +168,11 @@ export default function ReservationForm({
   const getHorasFinDisponibles = () => {
     const horasOcupadas = getHorasOcupadas();
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
 
     return horas.filter(hora => {
-      const horaNum = parseInt(hora);
+      const horaNum = Number.parseInt(hora);
       
       // Excluir horas ocupadas
       if (horasOcupadas.has(horaNum)) {
@@ -187,7 +186,7 @@ export default function ReservationForm({
 
       // Si hay hora de inicio seleccionada, solo mostrar horas posteriores
       if (formData.horaInicioHora) {
-        const horaInicioNum = parseInt(formData.horaInicioHora);
+        const horaInicioNum = Number.parseInt(formData.horaInicioHora);
         
         // Si la hora de fin es igual a la de inicio, verificar minutos
         if (horaNum === horaInicioNum) {
@@ -212,20 +211,20 @@ export default function ReservationForm({
     }
 
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const horaInicioNum = parseInt(formData.horaInicioHora);
+    const horaInicioNum = Number.parseInt(formData.horaInicioHora);
 
     // Si es hoy y es la hora actual, excluir minutos pasados
     if (esHoy && horaInicioNum === horaActual) {
-      return minutos.filter(min => parseInt(min) > minutoActual);
+      return minutos.filter(min => Number.parseInt(min) > minutoActual);
     }
 
     // Si hay hora de fin seleccionada y es la misma hora, filtrar minutos
     if (formData.horaFinHora && formData.horaInicioHora === formData.horaFinHora) {
-      const minFin = parseInt(formData.horaFinMinuto || '0');
-      return minutos.filter(min => parseInt(min) < minFin);
+      const minFin = Number.parseInt(formData.horaFinMinuto || '0');
+      return minutos.filter(min => Number.parseInt(min) < minFin);
     }
 
     return minutos;
@@ -238,21 +237,21 @@ export default function ReservationForm({
     }
 
     const ahora = new Date();
-    const esHoy = fecha && fecha.toDateString() === ahora.toDateString();
+    const esHoy = fecha?.toDateString() === ahora.toDateString();
     const horaActual = ahora.getHours();
     const minutoActual = ahora.getMinutes();
-    const horaFinNum = parseInt(formData.horaFinHora);
+    const horaFinNum = Number.parseInt(formData.horaFinHora);
 
     // Si es hoy y es la hora actual, excluir minutos pasados
     if (esHoy && horaFinNum === horaActual) {
-      return minutos.filter(min => parseInt(min) > minutoActual);
+      return minutos.filter(min => Number.parseInt(min) > minutoActual);
     }
 
     // Si hay hora de inicio seleccionada y es la misma hora, asegurar diferencia mínima de 30 minutos
     if (formData.horaInicioHora && formData.horaInicioHora === formData.horaFinHora) {
-      const minInicio = parseInt(formData.horaInicioMinuto || '0');
+      const minInicio = Number.parseInt(formData.horaInicioMinuto || '0');
       return minutos.filter(min => {
-        const minNum = parseInt(min);
+        const minNum = Number.parseInt(min);
         const diferenciaMinutos = minNum - minInicio;
         return diferenciaMinutos >= 30;
       });
@@ -320,7 +319,7 @@ export default function ReservationForm({
     }
 
     try {
-      const response = await reservationsApi.obtenerReservasPorEspacio(parseInt(espacioId));
+      const response = await reservationsApi.obtenerReservasPorEspacio(Number.parseInt(espacioId));
       if (response.data) {
         const reservasAprobadas = response.data.filter(r => r.estado === 'APROBADO');
         setReservasEspacio(reservasAprobadas);
@@ -475,7 +474,7 @@ export default function ReservationForm({
     const inicio = new Date(`${fechaStr}T${horaInicio}`);
     const fin = new Date(`${fechaStr}T${horaFin}`);
 
-    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
       toast.error('Las horas ingresadas no son válidas');
       return;
     }
@@ -531,19 +530,21 @@ export default function ReservationForm({
         : undefined;
 
       await reservationsApi.crearReserva({
-        espacioId: parseInt(formData.espacioId),
-        carreraId: formData.carreraId ? parseInt(formData.carreraId) : undefined,
+        espacioId: Number.parseInt(formData.espacioId),
+        carreraId: formData.carreraId ? Number.parseInt(formData.carreraId) : undefined,
         titulo: formData.titulo.trim(),
         motivoSolicitud: formData.motivoSolicitud?.trim() || undefined,
         inicio: inicioISO,
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: canApprove
-          ? user?.id // ADMIN/ANALISTA se asigna a sí mismo
-          : needsAnalystAssignment && formData.analistaId
-            ? parseInt(formData.analistaId) // DOCENTE/EXTERNO selecciona analista
-            : undefined,
+        analistaId: (() => {
+          if (canApprove) return user?.id; // ADMIN/ANALISTA se asigna a sí mismo
+          if (needsAnalystAssignment && formData.analistaId) {
+            return Number.parseInt(formData.analistaId); // DOCENTE/EXTERNO selecciona analista
+          }
+          return undefined;
+        })(),
         itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
           tipoElementoId: item.tipoElementoId,
           inventarioItemId: item.inventarioItemId,
@@ -556,13 +557,16 @@ export default function ReservationForm({
         ? calcularCantidadReservas(fecha, formData.fechaFinRecurrencia, formData.tipoRecurrencia)
         : 1;
 
-      toast.success(
-        needsAnalystAssignment 
-          ? `Solicitud${cantidadReservas > 1 ? `es de ${cantidadReservas} reservas` : ' de reserva'} enviada${cantidadReservas > 1 ? 's' : ''} exitosamente. Esperando aprobación.`
-          : cantidadReservas > 1
-            ? `${cantidadReservas} reservas creadas exitosamente`
-            : 'Reserva creada exitosamente'
-      );
+      const esPlural = cantidadReservas > 1;
+      const obtenerMensajeExito = (): string => {
+        if (needsAnalystAssignment) {
+          const sufijoSolicitud = esPlural ? `es de ${cantidadReservas} reservas` : ' de reserva';
+          const sufijoS = esPlural ? 's' : '';
+          return `Solicitud${sufijoSolicitud} enviada${sufijoS} exitosamente. Esperando aprobación.`;
+        }
+        return esPlural ? `${cantidadReservas} reservas creadas exitosamente` : 'Reserva creada exitosamente';
+      };
+      toast.success(obtenerMensajeExito());
       onSuccess();
     } catch (error: unknown) {
       console.error('Error al crear reserva:', error);
@@ -661,16 +665,16 @@ export default function ReservationForm({
                     if (!fecha || !formData.horaInicioHora) return '';
                     return createLocalDateTimeUTC(
                       fecha,
-                      parseInt(formData.horaInicioHora),
-                      parseInt(formData.horaInicioMinuto || '0')
+                      Number.parseInt(formData.horaInicioHora),
+                      Number.parseInt(formData.horaInicioMinuto || '0')
                     );
                   })()}
                   fin={(() => {
                     if (!fecha || !formData.horaFinHora) return '';
                     return createLocalDateTimeUTC(
                       fecha,
-                      parseInt(formData.horaFinHora),
-                      parseInt(formData.horaFinMinuto || '0')
+                      Number.parseInt(formData.horaFinHora),
+                      Number.parseInt(formData.horaFinMinuto || '0')
                     );
                   })()}
                   onSelectEspacio={(espacioId) => {
@@ -801,7 +805,7 @@ export default function ReservationForm({
             {formData.espacioId && canViewRecommendations && (
               <div className="mb-4">
                 <ItemsRecomendados
-                  espacioId={parseInt(formData.espacioId)}
+                  espacioId={Number.parseInt(formData.espacioId)}
                   onSelectItem={(tipoElementoId, cantidad) => {
                     // Verificar si el item ya está en la lista
                     const existe = itemsSolicitados.some(item => item.tipoElementoId === tipoElementoId);
@@ -845,7 +849,7 @@ export default function ReservationForm({
                         : observacionLimpia || 'Sin observaciones';
 
                     return (
-                      <div key={index} className="bg-white rounded-md border border-gray-200 p-3 flex items-center gap-3">
+                      <div key={item.tipoElementoId} className="bg-white rounded-md border border-gray-200 p-3 flex items-center gap-3">
                         <div className="flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                           <span className="text-sm font-semibold text-gray-800">
                             {tipo?.nombre ?? 'Tipo sin definir'}
@@ -876,7 +880,7 @@ export default function ReservationForm({
                               </Label>
                               <Select
                                 value={item.tipoElementoId.toString()}
-                                onValueChange={(value) => actualizarItemSolicitado(index, 'tipoElementoId', parseInt(value))}
+                                onValueChange={(value) => actualizarItemSolicitado(index, 'tipoElementoId', Number.parseInt(value))}
                               >
                                 <SelectTrigger className="h-9 text-sm">
                                   <SelectValue placeholder="Seleccionar tipo" />
@@ -899,7 +903,7 @@ export default function ReservationForm({
                                 min="1"
                                 value={item.cantidadSolicitada}
                                 onChange={(e) =>
-                                  actualizarItemSolicitado(index, 'cantidadSolicitada', parseInt(e.target.value) || 1)
+                                  actualizarItemSolicitado(index, 'cantidadSolicitada', Number.parseInt(e.target.value) || 1)
                                 }
                                 className="h-9 text-sm"
                               />
@@ -970,7 +974,7 @@ export default function ReservationForm({
                       onChange={(value) => {
                         setFormData(prev => ({ ...prev, horaInicioHora: value }));
                         // Si la hora de fin seleccionada es menor o igual a la nueva hora de inicio, limpiarla
-                        if (formData.horaFinHora && parseInt(value) >= parseInt(formData.horaFinHora)) {
+                        if (formData.horaFinHora && Number.parseInt(value) >= Number.parseInt(formData.horaFinHora)) {
                           setFormData(prev => ({ ...prev, horaFinHora: '' }));
                         }
                       }}
@@ -986,10 +990,10 @@ export default function ReservationForm({
                         setFormData(prev => ({ ...prev, horaInicioMinuto: value }));
                         // Si hay hora de fin, verificar que siga siendo válida
                         if (formData.horaInicioHora && formData.horaFinHora) {
-                          const horaInicioNum = parseInt(formData.horaInicioHora);
-                          const horaFinNum = parseInt(formData.horaFinHora);
-                          const minInicio = parseInt(value);
-                          const minFin = parseInt(formData.horaFinMinuto || '0');
+                          const horaInicioNum = Number.parseInt(formData.horaInicioHora);
+                          const horaFinNum = Number.parseInt(formData.horaFinHora);
+                          const minInicio = Number.parseInt(value);
+                          const minFin = Number.parseInt(formData.horaFinMinuto || '0');
                           
                           if (horaInicioNum === horaFinNum && minInicio >= minFin) {
                             setFormData(prev => ({ ...prev, horaFinHora: '', horaFinMinuto: '00' }));
@@ -1017,8 +1021,8 @@ export default function ReservationForm({
                         setFormData(prev => ({ ...prev, horaFinHora: value }));
                         // Si la nueva hora de fin es igual a la de inicio y los minutos no son válidos, limpiar minutos de fin
                         if (formData.horaInicioHora && value === formData.horaInicioHora) {
-                          const minInicio = parseInt(formData.horaInicioMinuto || '0');
-                          const minFin = parseInt(formData.horaFinMinuto || '0');
+                          const minInicio = Number.parseInt(formData.horaInicioMinuto || '0');
+                          const minFin = Number.parseInt(formData.horaFinMinuto || '0');
                           if (minFin <= minInicio) {
                             // Buscar el próximo minuto válido (al menos 30 minutos después)
                             const minValido = minInicio + 30;
@@ -1054,7 +1058,7 @@ export default function ReservationForm({
             {formData.espacioId && fecha && canViewRecommendations && (
               <div className="mt-4">
                 <HorariosRecomendados
-                  espacioId={parseInt(formData.espacioId)}
+                  espacioId={Number.parseInt(formData.espacioId)}
                   fecha={fecha}
                   onSelectHorario={(inicio, fin) => {
                     const inicioDate = new Date(inicio);

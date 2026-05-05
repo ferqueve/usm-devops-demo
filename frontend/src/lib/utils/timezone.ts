@@ -12,7 +12,7 @@
  * @returns String en formato ISO-8601 UTC (ej: "2025-01-15T17:00:00Z")
  */
 export function toUTC(date: Date): string {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+  if (!date || !(date instanceof Date) || Number.isNaN(date.getTime())) {
     throw new Error('Fecha inválida');
   }
   return date.toISOString();
@@ -29,7 +29,7 @@ export function fromUTC(utcDateString: string): Date {
     throw new Error('String de fecha UTC requerido');
   }
   const date = new Date(utcDateString);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     throw new Error(`Fecha UTC inválida: ${utcDateString}`);
   }
   return date;
@@ -75,7 +75,7 @@ export function createLocalDateTimeUTC(
   hour: number,
   minute: number
 ): string {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+  if (!date || !(date instanceof Date) || Number.isNaN(date.getTime())) {
     throw new Error('Fecha inválida');
   }
   

@@ -12,7 +12,7 @@ interface MantenimientoRecomendacionesProps {
   className?: string;
 }
 
-export function MantenimientoRecomendaciones({ className }: MantenimientoRecomendacionesProps) {
+export function MantenimientoRecomendaciones({ className }: Readonly<MantenimientoRecomendacionesProps>) {
   const navigate = useNavigate();
   const [itemsUrgentes, setItemsUrgentes] = useState<RecomendacionInventario[]>([]);
   const [espaciosAtencion, setEspaciosAtencion] = useState<RecomendacionInventario[]>([]);

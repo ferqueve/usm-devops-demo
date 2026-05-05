@@ -1,6 +1,5 @@
 package com.utec.backend.service;
 
-import com.utec.backend.dto.inventario.InventarioItemCreateDto;
 import com.utec.backend.dto.inventario.InventarioItemResponseDto;
 import com.utec.backend.dto.inventario.InventarioItemUpdateDto;
 import com.utec.backend.model.Espacio;
@@ -13,14 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.*;
@@ -32,7 +26,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests extendidos para InventarioItemService - Lógica de negocio completa")
-class InventarioItemServiceTestExtended {
+class InventarioItemServiceExtendedTest {
 
     @Mock
     private InventarioItemRepository inventarioItemRepository;
@@ -53,11 +47,8 @@ class InventarioItemServiceTestExtended {
     private TipoElemento tipoPizarra;
     private TipoElemento tipoComputadora;
 
-    private ArgumentCaptor<InventarioItem> itemCaptor;
-
     @BeforeEach
     void setUp() {
-        itemCaptor = ArgumentCaptor.forClass(InventarioItem.class);
 
         // Espacios
         espacioAula101 = new Espacio();
@@ -112,7 +103,7 @@ class InventarioItemServiceTestExtended {
         updateToMantenimiento.setEstado("MANTENIMIENTO");
         updateToMantenimiento.setTipoElementoId(1L);
 
-        InventarioItemResponseDto resultado1 = inventarioItemService.updateInventarioItem(1L, updateToMantenimiento);
+        inventarioItemService.updateInventarioItem(1L, updateToMantenimiento);
         assertEquals("MANTENIMIENTO", item.getEstado(), "Estado debe cambiar a MANTENIMIENTO");
 
         // PASO 3: Volver a DISPONIBLE
@@ -120,7 +111,7 @@ class InventarioItemServiceTestExtended {
         updateToDisponible.setEstado("DISPONIBLE");
         updateToDisponible.setTipoElementoId(1L);
 
-        InventarioItemResponseDto resultado2 = inventarioItemService.updateInventarioItem(1L, updateToDisponible);
+        inventarioItemService.updateInventarioItem(1L, updateToDisponible);
         assertEquals("DISPONIBLE", item.getEstado(), "Estado debe volver a DISPONIBLE");
 
         verify(inventarioItemRepository, times(2)).save(item);
@@ -138,7 +129,7 @@ class InventarioItemServiceTestExtended {
         updateDto.setEstado("DANADO");
         updateDto.setTipoElementoId(1L);
 
-        InventarioItemResponseDto resultado = inventarioItemService.updateInventarioItem(1L, updateDto);
+        inventarioItemService.updateInventarioItem(1L, updateDto);
 
         assertEquals("DANADO", item.getEstado(), "Estado debe ser DANADO");
         assertNotNull(item.getUpdatedAt(), "updatedAt debe actualizarse");
@@ -263,7 +254,6 @@ class InventarioItemServiceTestExtended {
     @DisplayName("getInventarioByEspacio debe retornar solo items de ese espacio")
     void getInventarioByEspacioDebeFiltrarCorrectamente() {
         InventarioItem item1 = crearItem(1L, espacioAula101, tipoProyector, 1, "DISPONIBLE");
-        InventarioItem item2 = crearItem(2L, espacioAula102, tipoProyector, 1, "DISPONIBLE");
         InventarioItem item3 = crearItem(3L, espacioAula101, tipoPizarra, 1, "DISPONIBLE");
 
         List<InventarioItem> itemsAula101 = Arrays.asList(item1, item3);
@@ -283,7 +273,6 @@ class InventarioItemServiceTestExtended {
     void getInventarioByTipoElementoDebeFiltrarCorrectamente() {
         InventarioItem item1 = crearItem(1L, espacioAula101, tipoProyector, 1, "DISPONIBLE");
         InventarioItem item2 = crearItem(2L, espacioAula102, tipoProyector, 1, "DISPONIBLE");
-        InventarioItem item3 = crearItem(3L, espacioAula101, tipoPizarra, 1, "DISPONIBLE");
 
         List<InventarioItem> proyectores = Arrays.asList(item1, item2);
 
@@ -301,7 +290,6 @@ class InventarioItemServiceTestExtended {
     @DisplayName("getInventarioByEstado debe retornar solo items en ese estado")
     void getInventarioByEstadoDebeFiltrarCorrectamente() {
         InventarioItem item1 = crearItem(1L, espacioAula101, tipoProyector, 1, "DISPONIBLE");
-        InventarioItem item2 = crearItem(2L, espacioAula102, tipoProyector, 1, "MANTENIMIENTO");
         InventarioItem item3 = crearItem(3L, espacioAula101, tipoPizarra, 1, "DISPONIBLE");
 
         List<InventarioItem> disponibles = Arrays.asList(item1, item3);

@@ -185,7 +185,7 @@ export const reservationsApi = {
   // Rechazar una reserva pendiente
   async rechazarReserva(id: number, mensajeAnalista?: string): Promise<ApiResponse<Reserva>> {
     const body: { estado: string; mensajeAnalista?: string } = { estado: 'CANCELADO' };
-    if (mensajeAnalista && mensajeAnalista.trim()) {
+    if (mensajeAnalista?.trim()) {
       body.mensajeAnalista = mensajeAnalista.trim();
     }
     return apiRequest<Reserva>(`/reservas/${id}/estado`, {
@@ -201,7 +201,7 @@ export const reservationsApi = {
     mensajeAnalista?: string
   ): Promise<ApiResponse<Reserva>> {
     const body: { estado: string; mensajeAnalista?: string } = { estado };
-    if (mensajeAnalista && mensajeAnalista.trim()) {
+    if (mensajeAnalista?.trim()) {
       body.mensajeAnalista = mensajeAnalista.trim();
     }
     return apiRequest<Reserva>(`/reservas/${id}/estado`, {

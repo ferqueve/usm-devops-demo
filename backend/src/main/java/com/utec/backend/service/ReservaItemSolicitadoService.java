@@ -51,18 +51,18 @@ public class ReservaItemSolicitadoService {
     public List<ReservaItemSolicitadoResponseDto> crearSolicitudes(Long reservaId, List<ReservaItemSolicitadoCreateDto> createDtos) {
         // Validar que la reserva existe
         Reserva reserva = reservaRepository.findById(reservaId)
-                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + reservaId));
+                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + reservaId));
         
         List<ReservaItemSolicitado> itemsSolicitados = createDtos.stream()
                 .map(dto -> crearItemSolicitado(reserva, dto))
-                .collect(Collectors.toList());
+                .toList();
         
         List<ReservaItemSolicitado> savedItems = reservaItemSolicitadoRepository.saveAll(itemsSolicitados);
         log.info("Se crearon {} items solicitados para la reserva {}", savedItems.size(), reservaId);
         
         return savedItems.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     /**
@@ -71,29 +71,29 @@ public class ReservaItemSolicitadoService {
     private ReservaItemSolicitado crearItemSolicitado(Reserva reserva, ReservaItemSolicitadoCreateDto dto) {
         // Validar que el tipo de elemento existe y está activo
         TipoElemento tipoElemento = tipoElementoRepository.findById(dto.getTipoElementoId())
-                .orElseThrow(() -> new RuntimeException("Tipo de elemento no encontrado con ID: " + dto.getTipoElementoId()));
-        
-        if (!tipoElemento.getActivo()) {
-            throw new RuntimeException("El tipo de elemento con ID " + dto.getTipoElementoId() + " no está activo");
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + dto.getTipoElementoId()));
+
+        if (!Boolean.TRUE.equals(tipoElemento.getActivo())) {
+            throw new IllegalStateException("El tipo de elemento con ID " + dto.getTipoElementoId() + " no está activo");
         }
-        
+
         InventarioItem inventarioItem = null;
         if (dto.getInventarioItemId() != null) {
             // Validar que el inventario item existe y está disponible
             inventarioItem = inventarioItemRepository.findById(dto.getInventarioItemId())
-                    .orElseThrow(() -> new RuntimeException("Item de inventario no encontrado con ID: " + dto.getInventarioItemId()));
-            
-            if (!inventarioItem.getActivo()) {
-                throw new RuntimeException("El item de inventario con ID " + dto.getInventarioItemId() + " no está activo");
+                    .orElseThrow(() -> new IllegalArgumentException("Item de inventario no encontrado con ID: " + dto.getInventarioItemId()));
+
+            if (!Boolean.TRUE.equals(inventarioItem.getActivo())) {
+                throw new IllegalStateException("El item de inventario con ID " + dto.getInventarioItemId() + " no está activo");
             }
-            
+
             if (!"DISPONIBLE".equals(inventarioItem.getEstado())) {
-                throw new RuntimeException("El item de inventario con ID " + dto.getInventarioItemId() + " no está disponible (estado: " + inventarioItem.getEstado() + ")");
+                throw new IllegalStateException("El item de inventario con ID " + dto.getInventarioItemId() + " no está disponible (estado: " + inventarioItem.getEstado() + ")");
             }
-            
+
             // Validar que el inventario item pertenece al tipo de elemento especificado
             if (!inventarioItem.getTipoElemento().getId().equals(tipoElemento.getId())) {
-                throw new RuntimeException("El item de inventario especificado no pertenece al tipo de elemento seleccionado");
+                throw new IllegalArgumentException("El item de inventario especificado no pertenece al tipo de elemento seleccionado");
             }
         }
         
@@ -116,7 +116,7 @@ public class ReservaItemSolicitadoService {
         List<ReservaItemSolicitado> items = reservaItemSolicitadoRepository.findByReservaIdWithRelations(reservaId);
         return items.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     /**
@@ -127,7 +127,7 @@ public class ReservaItemSolicitadoService {
         List<ReservaItemSolicitado> items = reservaItemSolicitadoRepository.findByEstado(estado);
         return items.stream()
                 .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -238,10 +238,10 @@ public class ReservaItemSolicitadoService {
         }
 
         ReservaItemSolicitado item = reservaItemSolicitadoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Solicitud de inventario no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Solicitud de inventario no encontrada con ID: " + id));
 
         if (item.getDeletedAt() != null) {
-            throw new RuntimeException("La solicitud de inventario fue eliminada y no puede modificarse");
+            throw new IllegalStateException("La solicitud de inventario fue eliminada y no puede modificarse");
         }
 
         boolean cambios = false;

@@ -10,7 +10,7 @@ interface RecomendacionCardProps {
   className?: string;
 }
 
-export function RecomendacionCard({ recomendacion, onSelect, className }: RecomendacionCardProps) {
+export function RecomendacionCard({ recomendacion, onSelect, className }: Readonly<RecomendacionCardProps>) {
   const getPuntajeColor = (puntaje: number) => {
     if (puntaje >= 0.8) return "bg-emerald-50 text-emerald-700 border-emerald-200";
     if (puntaje >= 0.6) return "bg-blue-50 text-blue-700 border-blue-200";

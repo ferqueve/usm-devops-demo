@@ -26,7 +26,7 @@ export default function DeleteInventoryDialog({
   open, 
   onOpenChange, 
   onSuccess 
-}: DeleteInventoryDialogProps) {
+}: Readonly<DeleteInventoryDialogProps>) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
