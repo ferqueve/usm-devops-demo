@@ -5,7 +5,7 @@ import { mockRooms } from "@/data/mock-data";
 import type { Room } from "@/lib/types";
 
 // Componente para mostrar el tipo de espacio
-function RoomTypeBadge({ type }: { type: Room['type'] }) {
+function RoomTypeBadge({ type }: Readonly<{ type: Room['type'] }>) {
   const getTypeConfig = (type: Room['type']) => {
     switch (type) {
       case 'classroom':
@@ -31,7 +31,7 @@ function RoomTypeBadge({ type }: { type: Room['type'] }) {
 }
 
 // Componente para mostrar el estado de disponibilidad
-function AvailabilityStatus({ isAvailable }: { isAvailable: boolean }) {
+function AvailabilityStatus({ isAvailable }: Readonly<{ isAvailable: boolean }>) {
   return (
     <div className={`flex items-center gap-2 ${isAvailable ? 'text-green-600' : 'text-red-600'}`}>
       <div className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -99,8 +99,8 @@ export default function Rooms() {
               <div>
                 <span className="text-sm font-medium">Equipamiento:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {room.equipment.slice(0, 3).map((item, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                  {room.equipment.slice(0, 3).map((item) => (
+                    <Badge key={item} variant="outline" className="text-xs">
                       {item}
                     </Badge>
                   ))}

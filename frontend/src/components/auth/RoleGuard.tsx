@@ -15,7 +15,7 @@ export default function RoleGuard({
   requiredRole, 
   requiredRoles, 
   fallbackPath = '/dashboard' 
-}: RoleGuardProps) {
+}: Readonly<RoleGuardProps>) {
   const { user, isAuthenticated, isLoading } = useAuth();
 
   // Mostrar loading mientras se verifica la autenticación

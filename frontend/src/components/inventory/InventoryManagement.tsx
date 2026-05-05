@@ -335,7 +335,7 @@ export default function InventoryManagement() {
 
   const handleExport = async () => {
     try {
-      // Obtener todo el inventario de la BD sin paginación ni filtros
+      // Obtener el inventario completo de la BD sin paginación ni filtros
       const response = await inventarioApi.obtenerTodoElInventario();
       const allItems = response.data || [];
       

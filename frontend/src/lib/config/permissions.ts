@@ -68,7 +68,7 @@ export type Permission =
  */
 export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
   [ROLES.ADMIN]: [
-    // ADMIN tiene acceso completo a todo (wildcard "*" en backend)
+    // ADMIN tiene acceso completo (wildcard "*" en backend)
     // Listamos todos los permisos explícitamente para el frontend
 
     // Reservas - Acceso completo

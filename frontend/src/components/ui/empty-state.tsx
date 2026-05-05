@@ -16,7 +16,7 @@ interface EmptyStateProps {
 /**
  * EmptyState component para mostrar estados vacíos con estilo
  */
-export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, title, description, action, className }: Readonly<EmptyStateProps>) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-12 px-4 text-center', className)}>
       {Icon && (

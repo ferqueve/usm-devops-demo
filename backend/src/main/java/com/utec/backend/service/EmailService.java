@@ -21,6 +21,26 @@ import java.util.Optional;
 @Slf4j
 public class EmailService {
 
+    // Claves de variables usadas en los templates HTML
+    private static final String VAR_FRONTEND_URL = "frontendUrl";
+    private static final String VAR_ESPACIO_NOMBRE = "espacioNombre";
+    private static final String VAR_USUARIO_NOMBRE = "usuarioNombre";
+    private static final String VAR_USUARIO_EMAIL = "usuarioEmail";
+    private static final String VAR_FECHA_INICIO = "fechaInicio";
+    private static final String VAR_FECHA_FIN = "fechaFin";
+    private static final String VAR_NOMBRE_USUARIO = "nombreUsuario";
+
+    // Valor por defecto cuando un campo de usuario es null
+    private static final String DEFAULT_USUARIO = "Usuario";
+
+    // Patrón de fecha para emails
+    private static final String DATE_PATTERN = "dd/MM/yyyy HH:mm";
+
+    // Colores HTML reutilizados en los emails de estado/notificación
+    private static final String COLOR_ROJO_FONDO = "#f8d7da";
+    private static final String COLOR_VERDE_FONDO = "#d1f2eb";
+    private static final String COLOR_VERDE_BORDE = "#10b981";
+
     @Nullable
     private final GmailApiService gmailApiService;
 
@@ -178,7 +198,7 @@ public class EmailService {
         
         Map<String, String> variables = new HashMap<>();
         variables.put("nuevaPassword", nuevaPassword);
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("restablecimiento-password.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -200,17 +220,17 @@ public class EmailService {
         }
         String subject = "Nueva solicitud de reserva - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
-        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
-        variables.put("usuarioEmail", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
-        variables.put("fechaInicio", fechaInicio);
-        variables.put("fechaFin", fechaFin);
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_USUARIO_NOMBRE, reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
+        variables.put(VAR_USUARIO_EMAIL, reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
+        variables.put(VAR_FECHA_INICIO, fechaInicio);
+        variables.put(VAR_FECHA_FIN, fechaFin);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("nueva-solicitud-reserva.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -232,16 +252,16 @@ public class EmailService {
         }
         String subject = "Tu reserva ha sido aprobada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario");
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
-        variables.put("fechaInicio", fechaInicio);
-        variables.put("fechaFin", fechaFin);
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_USUARIO_NOMBRE, reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : DEFAULT_USUARIO);
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_FECHA_INICIO, fechaInicio);
+        variables.put(VAR_FECHA_FIN, fechaFin);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("reserva-aprobada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -263,16 +283,16 @@ public class EmailService {
         }
         String subject = "Tu solicitud de reserva ha sido rechazada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario");
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
-        variables.put("fechaInicio", fechaInicio);
-        variables.put("fechaFin", fechaFin);
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_USUARIO_NOMBRE, reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : DEFAULT_USUARIO);
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_FECHA_INICIO, fechaInicio);
+        variables.put(VAR_FECHA_FIN, fechaFin);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("reserva-rechazada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -294,17 +314,17 @@ public class EmailService {
         }
         String subject = "Reserva cancelada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
-        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
-        variables.put("usuarioEmail", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
-        variables.put("fechaInicio", fechaInicio);
-        variables.put("fechaFin", fechaFin);
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_USUARIO_NOMBRE, reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
+        variables.put(VAR_USUARIO_EMAIL, reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
+        variables.put(VAR_FECHA_INICIO, fechaInicio);
+        variables.put(VAR_FECHA_FIN, fechaFin);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("reserva-cancelada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -327,17 +347,17 @@ public class EmailService {
         }
         String subject = "Recordatorio: Tienes una reserva en " + horasAntes + " horas - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario");
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
-        variables.put("fechaInicio", fechaInicio);
-        variables.put("fechaFin", fechaFin);
+        variables.put(VAR_USUARIO_NOMBRE, reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : DEFAULT_USUARIO);
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_FECHA_INICIO, fechaInicio);
+        variables.put(VAR_FECHA_FIN, fechaFin);
         variables.put("horasAntes", String.valueOf(horasAntes));
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("recordatorio-reserva.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -362,10 +382,10 @@ public class EmailService {
         String subject = "Tu rol ha sido actualizado - UTEC Space Manager";
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+        variables.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
         variables.put("rolAnterior", rolAnterior != null ? rolAnterior : "N/A");
         variables.put("rolNuevo", rolNuevo != null ? rolNuevo : "N/A");
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("cambio-rol.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -397,15 +417,15 @@ public class EmailService {
         
         Map<String, String> variables = new HashMap<>();
         variables.put("tituloEstado", subject);
-        variables.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+        variables.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
         variables.put("mensaje", mensaje);
         variables.put("accion", accion);
         variables.put("mensajeAdicional", activado 
             ? "Si tienes alguna pregunta, por favor contacta al administrador del sistema."
             : "Si tienes alguna pregunta o crees que esto es un error, por favor contacta al administrador del sistema inmediatamente.");
-        variables.put("frontendUrl", frontendUrl);
-        variables.put("colorFondo", activado ? "#d1f2eb" : "#f8d7da");
-        variables.put("colorBorde", activado ? "#10b981" : "#dc3545");
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
+        variables.put("colorFondo", activado ? COLOR_VERDE_FONDO : COLOR_ROJO_FONDO);
+        variables.put("colorBorde", activado ? COLOR_VERDE_BORDE : "#dc3545");
         variables.put("colorMensajeFondo", activado ? "#dbeafe" : "#fff3cd");
         variables.put("colorMensajeBorde", activado ? "#3b82f6" : "#ffc107");
         variables.put("colorMensajeTexto", activado ? "#1e40af" : "#856404");
@@ -439,10 +459,10 @@ public class EmailService {
         boolean enviadoViejo = true;
         if (enviarViejo) {
             Map<String, String> variablesViejo = new HashMap<>();
-            variablesViejo.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+            variablesViejo.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
             variablesViejo.put("emailViejo", toEmailViejo != null ? toEmailViejo : "N/A");
             variablesViejo.put("emailNuevo", toEmailNuevo != null ? toEmailNuevo : "N/A");
-            variablesViejo.put("frontendUrl", frontendUrl);
+            variablesViejo.put(VAR_FRONTEND_URL, frontendUrl);
             
             String htmlContentViejo = emailTemplateService.loadTemplate("cambio-email.html", variablesViejo);
             String htmlBodyViejo = emailTemplateService.wrapInBaseTemplate(htmlContentViejo, subject, frontendUrl);
@@ -454,10 +474,10 @@ public class EmailService {
         boolean enviadoNuevo = true;
         if (enviarNuevo) {
             Map<String, String> variablesNuevo = new HashMap<>();
-            variablesNuevo.put("nombreUsuario", nombreUsuario != null ? nombreUsuario : "Usuario");
+            variablesNuevo.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
             variablesNuevo.put("emailViejo", toEmailViejo != null ? toEmailViejo : "N/A");
             variablesNuevo.put("emailNuevo", toEmailNuevo != null ? toEmailNuevo : "N/A");
-            variablesNuevo.put("frontendUrl", frontendUrl);
+            variablesNuevo.put(VAR_FRONTEND_URL, frontendUrl);
             
             String htmlContentNuevo = emailTemplateService.loadTemplate("cambio-email.html", variablesNuevo);
             String htmlBodyNuevo = emailTemplateService.wrapInBaseTemplate(htmlContentNuevo, subject, frontendUrl);
@@ -484,11 +504,11 @@ public class EmailService {
         }
         String subject = "Reserva actualizada - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicioNueva = formatter.format(reserva.getInicio());
         String fechaFinNueva = formatter.format(reserva.getFin());
         
-        String destinatario = esAnalista ? "Hola," : "Hola " + (reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "Usuario") + ",";
+        String destinatario = esAnalista ? "Hola," : "Hola " + (reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : DEFAULT_USUARIO) + ",";
         String mensaje = esAnalista 
             ? "Se ha actualizado una reserva que está asignada a ti."
             : "Tu reserva ha sido actualizada.";
@@ -496,7 +516,7 @@ public class EmailService {
         Map<String, String> variables = new HashMap<>();
         variables.put("destinatario", destinatario);
         variables.put("mensaje", mensaje);
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
         variables.put("horarioAnterior", horarioAnterior != null ? horarioAnterior : "N/A");
         variables.put("fechaInicioNueva", fechaInicioNueva);
         variables.put("fechaFinNueva", fechaFinNueva);
@@ -504,7 +524,7 @@ public class EmailService {
         variables.put("mensajeAdicional", esAnalista 
             ? "Por favor, revisa los cambios y contacta al usuario si es necesario."
             : "Por favor, ten en cuenta el nuevo horario de tu reserva.");
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("reserva-actualizada.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -527,19 +547,19 @@ public class EmailService {
         }
         String subject = "Nueva solicitud de inventario - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaInicio = formatter.format(reserva.getInicio());
         String fechaFin = formatter.format(reserva.getFin());
         
         Map<String, String> variables = new HashMap<>();
         variables.put("reservaId", reserva.getId() != null ? reserva.getId().toString() : "N/A");
-        variables.put("espacioNombre", reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
-        variables.put("usuarioNombre", reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
-        variables.put("usuarioEmail", reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
-        variables.put("fechaInicio", fechaInicio);
-        variables.put("fechaFin", fechaFin);
+        variables.put(VAR_ESPACIO_NOMBRE, reserva.getEspacioNombre() != null ? reserva.getEspacioNombre() : "N/A");
+        variables.put(VAR_USUARIO_NOMBRE, reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : "N/A");
+        variables.put(VAR_USUARIO_EMAIL, reserva.getUsuarioEmail() != null ? reserva.getUsuarioEmail() : "N/A");
+        variables.put(VAR_FECHA_INICIO, fechaInicio);
+        variables.put(VAR_FECHA_FIN, fechaFin);
         variables.put("cantidadItems", String.valueOf(cantidadItems));
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("nueva-solicitud-inventario.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);
@@ -568,7 +588,7 @@ public class EmailService {
         
         String subject = "Estado de tu solicitud de inventario actualizado - UTEC Space Manager";
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of(appTimezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.of(appTimezone));
         String fechaReserva = itemSolicitado.getReservaInicio() != null 
             ? formatter.format(itemSolicitado.getReservaInicio()) 
             : "N/A";
@@ -582,23 +602,23 @@ public class EmailService {
         switch (estadoNuevo) {
             case "APROBADO":
                 mensajeEstado = "Tu solicitud de inventario ha sido aprobada. El item será preparado para la fecha de tu reserva.";
-                colorFondo = "#d1f2eb";
-                colorBorde = "#10b981";
-                colorEstadoFondo = "#d1f2eb";
+                colorFondo = COLOR_VERDE_FONDO;
+                colorBorde = COLOR_VERDE_BORDE;
+                colorEstadoFondo = COLOR_VERDE_FONDO;
                 colorEstadoTexto = "#065f46";
                 break;
             case "RECHAZADO":
                 mensajeEstado = "Lamentamos informarte que tu solicitud de inventario ha sido rechazada.";
-                colorFondo = "#f8d7da";
+                colorFondo = COLOR_ROJO_FONDO;
                 colorBorde = "#dc3545";
-                colorEstadoFondo = "#f8d7da";
+                colorEstadoFondo = COLOR_ROJO_FONDO;
                 colorEstadoTexto = "#721c24";
                 break;
             case "ENTREGADO":
                 mensajeEstado = "¡Excelente! El item de inventario ha sido entregado y está disponible para tu reserva.";
-                colorFondo = "#d1f2eb";
-                colorBorde = "#10b981";
-                colorEstadoFondo = "#d1f2eb";
+                colorFondo = COLOR_VERDE_FONDO;
+                colorBorde = COLOR_VERDE_BORDE;
+                colorEstadoFondo = COLOR_VERDE_FONDO;
                 colorEstadoTexto = "#065f46";
                 break;
             default:
@@ -615,11 +635,11 @@ public class EmailService {
         }
         
         Map<String, String> variables = new HashMap<>();
-        variables.put("nombreUsuario", itemSolicitado.getSolicitanteNombre() != null ? itemSolicitado.getSolicitanteNombre() : "Usuario");
+        variables.put(VAR_NOMBRE_USUARIO, itemSolicitado.getSolicitanteNombre() != null ? itemSolicitado.getSolicitanteNombre() : DEFAULT_USUARIO);
         variables.put("mensajeEstado", mensajeEstado);
         variables.put("tipoElementoNombre", itemSolicitado.getTipoElementoNombre() != null ? itemSolicitado.getTipoElementoNombre() : "N/A");
         variables.put("cantidadSolicitada", itemSolicitado.getCantidadSolicitada() != null ? itemSolicitado.getCantidadSolicitada().toString() : "N/A");
-        variables.put("espacioNombre", itemSolicitado.getEspacioNombre() != null ? itemSolicitado.getEspacioNombre() : "N/A");
+        variables.put(VAR_ESPACIO_NOMBRE, itemSolicitado.getEspacioNombre() != null ? itemSolicitado.getEspacioNombre() : "N/A");
         variables.put("fechaReserva", fechaReserva);
         variables.put("estadoAnterior", estadoAnterior != null ? estadoAnterior : "N/A");
         variables.put("estadoNuevo", estadoNuevo != null ? estadoNuevo : "N/A");
@@ -628,7 +648,7 @@ public class EmailService {
         variables.put("colorBorde", colorBorde);
         variables.put("colorEstadoFondo", colorEstadoFondo);
         variables.put("colorEstadoTexto", colorEstadoTexto);
-        variables.put("frontendUrl", frontendUrl);
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
         
         String htmlContent = emailTemplateService.loadTemplate("estado-solicitud-inventario.html", variables);
         String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, backendUrl);

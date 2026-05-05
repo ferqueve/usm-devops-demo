@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 }
 
 // Layout para las páginas de autenticación (login y register)
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout({ children }: Readonly<AuthLayoutProps>) {
   const { isLoading } = useAuth();
 
   return (

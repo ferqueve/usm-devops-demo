@@ -156,9 +156,9 @@ public class TipoEspacioService {
         int b = 100 + ((hash / 10000) % 100);
         
         // Normalizar para asegurar que los valores sean válidos
-        r = Math.min(255, Math.max(100, r));
-        g = Math.min(255, Math.max(100, g));
-        b = Math.min(255, Math.max(100, b));
+        r = Math.clamp(r, 100, 255);
+        g = Math.clamp(g, 100, 255);
+        b = Math.clamp(b, 100, 255);
         
         return String.format("#%02X%02X%02X", r, g, b);
     }

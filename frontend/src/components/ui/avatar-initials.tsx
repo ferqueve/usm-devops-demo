@@ -11,7 +11,7 @@ interface AvatarInitialsProps {
  * Avatar component que muestra las iniciales del usuario
  * con colores basados en el hash del nombre para consistencia
  */
-export function AvatarInitials({ name, email, size = 'md', className }: AvatarInitialsProps) {
+export function AvatarInitials({ name, email, size = 'md', className }: Readonly<AvatarInitialsProps>) {
   // Obtener iniciales (primera letra de nombre y apellido)
   const getInitials = (fullName: string): string => {
     const parts = fullName.trim().split(' ').filter(Boolean);

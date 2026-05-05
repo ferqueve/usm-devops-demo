@@ -19,6 +19,36 @@ import java.util.*;
 @Slf4j
 public class UsuarioConfiguracionService {
 
+    private static final String MSG_USUARIO_NO_ENCONTRADO = "Usuario no encontrado: ";
+
+    // Claves del mapa de preferencias (categorías)
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_VISTA = "vista";
+
+    // Tipos de email
+    private static final String EMAIL_VERIFICACION = "verificacion";
+    private static final String EMAIL_RESTABLECIMIENTO_PASSWORD = "restablecimientoPassword";
+    private static final String EMAIL_CAMBIO_EMAIL = "cambioEmail";
+    private static final String EMAIL_CAMBIO_ROL = "cambioRol";
+    private static final String EMAIL_CAMBIO_ESTADO = "cambioEstado";
+    private static final String EMAIL_RESERVA_APROBADA = "reservaAprobada";
+    private static final String EMAIL_RESERVA_RECHAZADA = "reservaRechazada";
+    private static final String EMAIL_RESERVA_CANCELADA = "reservaCancelada";
+    private static final String EMAIL_RESERVA_ACTUALIZADA = "reservaActualizada";
+    private static final String EMAIL_NUEVA_SOLICITUD_RESERVA = "nuevaSolicitudReserva";
+    private static final String EMAIL_RECORDATORIO_RESERVA = "recordatorioReserva";
+    private static final String EMAIL_NUEVA_SOLICITUD_INVENTARIO = "nuevaSolicitudInventario";
+    private static final String EMAIL_ESTADO_SOLICITUD_INVENTARIO = "estadoSolicitudInventario";
+
+    // Claves de preferencias de vista
+    private static final String VISTA_RESERVAS_VIEW_MODE = "reservasViewMode";
+    private static final String VISTA_RESERVAS_CALENDAR_VIEW_MODE = "reservasCalendarViewMode";
+    private static final String VISTA_RESERVAS_PAGE_SIZE = "reservasPageSize";
+    private static final String VISTA_ESPACIOS_VIEW_MODE = "espaciosViewMode";
+    private static final String VISTA_ESPACIOS_PAGE_SIZE = "espaciosPageSize";
+    private static final String VISTA_INVENTARIO_VIEW_MODE = "inventarioViewMode";
+    private static final String VISTA_INVENTARIO_PAGE_SIZE = "inventarioPageSize";
+
     private final UsuarioConfiguracionRepository configuracionRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioConfiguracionService self;
@@ -38,7 +68,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasCompletasDto obtenerPreferencias(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -51,14 +81,14 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasEmailDto obtenerPreferenciasEmail(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
         Map<String, Object> preferencias = config.getPreferencias();
         @SuppressWarnings("unchecked")
-        Map<String, Boolean> emailPrefs = (Map<String, Boolean>) preferencias.getOrDefault("email", new HashMap<>());
-        
+        Map<String, Boolean> emailPrefs = (Map<String, Boolean>) preferencias.getOrDefault(KEY_EMAIL, new HashMap<>());
+
         // Obtener lista de emails permitidos para este rol
         Set<String> emailsPermitidos = obtenerEmailsPermitidosPorRol(usuario.getRolApp());
         
@@ -77,13 +107,13 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasVistaDto obtenerPreferenciasVista(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
         Map<String, Object> preferencias = config.getPreferencias();
         @SuppressWarnings("unchecked")
-        Map<String, Object> vistaPrefs = (Map<String, Object>) preferencias.getOrDefault("vista", new HashMap<>());
+        Map<String, Object> vistaPrefs = (Map<String, Object>) preferencias.getOrDefault(KEY_VISTA, new HashMap<>());
         
         // Filtrar según el rol del usuario
         Map<String, Object> vistaPrefsFiltradas = filtrarPreferenciasVistaPorRol(vistaPrefs, usuario.getRolApp());
@@ -97,14 +127,14 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasEmailDto actualizarPreferenciasEmail(String userEmail, PreferenciasEmailDto dto) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
         Map<String, Boolean> emailPrefs = dto.getEmail();
         
         Map<String, Object> preferencias = config.getPreferencias();
-        preferencias.put("email", emailPrefs);
+        preferencias.put(KEY_EMAIL, emailPrefs);
         
         config.setPreferencias(preferencias);
         configuracionRepository.save(config);
@@ -120,7 +150,7 @@ public class UsuarioConfiguracionService {
     @Transactional
     public PreferenciasVistaDto actualizarPreferenciasVista(String userEmail, PreferenciasVistaDto dto) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new com.utec.backend.exception.UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
@@ -128,7 +158,7 @@ public class UsuarioConfiguracionService {
         Map<String, Object> vistaPrefsFiltradas = filtrarPreferenciasVistaPorRol(dto.getVista(), usuario.getRolApp());
         
         Map<String, Object> preferencias = config.getPreferencias();
-        preferencias.put("vista", vistaPrefsFiltradas);
+        preferencias.put(KEY_VISTA, vistaPrefsFiltradas);
         
         config.setPreferencias(preferencias);
         configuracionRepository.save(config);
@@ -167,8 +197,8 @@ public class UsuarioConfiguracionService {
             
             Map<String, Object> preferencias = config.getPreferencias();
             @SuppressWarnings("unchecked")
-            Map<String, Boolean> emailPrefs = (Map<String, Boolean>) preferencias.getOrDefault("email", new HashMap<>());
-            
+            Map<String, Boolean> emailPrefs = (Map<String, Boolean>) preferencias.getOrDefault(KEY_EMAIL, new HashMap<>());
+
             // Verificar si el tipo de email está permitido para este rol
             if (!esTipoEmailPermitidoParaRol(tipoEmail, usuario.getRolApp())) {
                 return false;
@@ -199,29 +229,29 @@ public class UsuarioConfiguracionService {
         
         // Preferencias de email por defecto (solo configurables)
         Map<String, Boolean> emailPrefs = new HashMap<>();
-        emailPrefs.put("reservaAprobada", true);
-        emailPrefs.put("reservaRechazada", true);
-        emailPrefs.put("reservaCancelada", true);
-        emailPrefs.put("reservaActualizada", true);
-        emailPrefs.put("nuevaSolicitudReserva", true);
-        emailPrefs.put("recordatorioReserva", true);
-        emailPrefs.put("nuevaSolicitudInventario", true);
-        emailPrefs.put("estadoSolicitudInventario", true);
-        
+        emailPrefs.put(EMAIL_RESERVA_APROBADA, true);
+        emailPrefs.put(EMAIL_RESERVA_RECHAZADA, true);
+        emailPrefs.put(EMAIL_RESERVA_CANCELADA, true);
+        emailPrefs.put(EMAIL_RESERVA_ACTUALIZADA, true);
+        emailPrefs.put(EMAIL_NUEVA_SOLICITUD_RESERVA, true);
+        emailPrefs.put(EMAIL_RECORDATORIO_RESERVA, true);
+        emailPrefs.put(EMAIL_NUEVA_SOLICITUD_INVENTARIO, true);
+        emailPrefs.put(EMAIL_ESTADO_SOLICITUD_INVENTARIO, true);
+
         // Preferencias de vista por defecto
         Map<String, Object> vistaPrefs = new HashMap<>();
-        vistaPrefs.put("reservasViewMode", "calendar");
-        vistaPrefs.put("reservasCalendarViewMode", "week");
-        vistaPrefs.put("reservasPageSize", 10);
-        vistaPrefs.put("espaciosViewMode", "cards");
-        vistaPrefs.put("espaciosPageSize", 12);
-        vistaPrefs.put("inventarioViewMode", "table");
-        vistaPrefs.put("inventarioPageSize", 25);
+        vistaPrefs.put(VISTA_RESERVAS_VIEW_MODE, "calendar");
+        vistaPrefs.put(VISTA_RESERVAS_CALENDAR_VIEW_MODE, "week");
+        vistaPrefs.put(VISTA_RESERVAS_PAGE_SIZE, 10);
+        vistaPrefs.put(VISTA_ESPACIOS_VIEW_MODE, "cards");
+        vistaPrefs.put(VISTA_ESPACIOS_PAGE_SIZE, 12);
+        vistaPrefs.put(VISTA_INVENTARIO_VIEW_MODE, "table");
+        vistaPrefs.put(VISTA_INVENTARIO_PAGE_SIZE, 25);
         vistaPrefs.put("usuariosPageSize", 10);
         vistaPrefs.put("auditoriaPageSize", 20);
-        
-        preferencias.put("email", emailPrefs);
-        preferencias.put("vista", vistaPrefs);
+
+        preferencias.put(KEY_EMAIL, emailPrefs);
+        preferencias.put(KEY_VISTA, vistaPrefs);
         
         UsuarioConfiguracion config = new UsuarioConfiguracion();
         config.setUsuario(usuario);
@@ -235,8 +265,8 @@ public class UsuarioConfiguracionService {
      */
     public Set<String> getEmailsObligatorios() {
         return Set.of(
-            "verificacion", "restablecimientoPassword", "recuperacionPassword", 
-            "cambioRol", "cambioEstado", "cambioEmail"
+            EMAIL_VERIFICACION, EMAIL_RESTABLECIMIENTO_PASSWORD, "recuperacionPassword",
+            EMAIL_CAMBIO_ROL, EMAIL_CAMBIO_ESTADO, EMAIL_CAMBIO_EMAIL
         );
     }
 
@@ -248,29 +278,29 @@ public class UsuarioConfiguracionService {
         
         // Todos los roles pueden recibir estos
         Set<String> todosLosRoles = Set.of(
-            "verificacion", "restablecimientoPassword", "cambioRol", 
-            "cambioEstado", "cambioEmail"
+            EMAIL_VERIFICACION, EMAIL_RESTABLECIMIENTO_PASSWORD, EMAIL_CAMBIO_ROL,
+            EMAIL_CAMBIO_ESTADO, EMAIL_CAMBIO_EMAIL
         );
         emailsPermitidos.addAll(todosLosRoles);
-        
+
         // Solo DOCENTE
         if (rol == Usuario.RolApp.DOCENTE || rol == Usuario.RolApp.ADMIN) {
             emailsPermitidos.addAll(Set.of(
-                "reservaAprobada", "reservaRechazada", "reservaActualizada", 
-                "recordatorioReserva", "estadoSolicitudInventario"
+                EMAIL_RESERVA_APROBADA, EMAIL_RESERVA_RECHAZADA, EMAIL_RESERVA_ACTUALIZADA,
+                EMAIL_RECORDATORIO_RESERVA, EMAIL_ESTADO_SOLICITUD_INVENTARIO
             ));
         }
-        
+
         // Solo ANALISTA
         if (rol == Usuario.RolApp.ANALISTA || rol == Usuario.RolApp.ADMIN) {
             emailsPermitidos.addAll(Set.of(
-                "nuevaSolicitudReserva", "reservaCancelada", "reservaActualizada"
+                EMAIL_NUEVA_SOLICITUD_RESERVA, EMAIL_RESERVA_CANCELADA, EMAIL_RESERVA_ACTUALIZADA
             ));
         }
-        
+
         // Solo MANTENIMIENTO
         if (rol == Usuario.RolApp.MANTENIMIENTO || rol == Usuario.RolApp.ADMIN) {
-            emailsPermitidos.add("nuevaSolicitudInventario");
+            emailsPermitidos.add(EMAIL_NUEVA_SOLICITUD_INVENTARIO);
         }
         
         return emailsPermitidos;
@@ -282,20 +312,20 @@ public class UsuarioConfiguracionService {
      */
     private boolean esTipoEmailPermitidoParaRol(String tipoEmail, Usuario.RolApp rol) {
         Set<String> todosLosRoles = Set.of(
-            "verificacion", "restablecimientoPassword", "cambioRol", 
-            "cambioEstado", "cambioEmail"
+            EMAIL_VERIFICACION, EMAIL_RESTABLECIMIENTO_PASSWORD, EMAIL_CAMBIO_ROL,
+            EMAIL_CAMBIO_ESTADO, EMAIL_CAMBIO_EMAIL
         );
-        
+
         Set<String> soloDocente = Set.of(
-            "reservaAprobada", "reservaRechazada", "reservaActualizada", 
-            "recordatorioReserva", "estadoSolicitudInventario"
+            EMAIL_RESERVA_APROBADA, EMAIL_RESERVA_RECHAZADA, EMAIL_RESERVA_ACTUALIZADA,
+            EMAIL_RECORDATORIO_RESERVA, EMAIL_ESTADO_SOLICITUD_INVENTARIO
         );
-        
+
         Set<String> soloAnalista = Set.of(
-            "nuevaSolicitudReserva", "reservaCancelada", "reservaActualizada"
+            EMAIL_NUEVA_SOLICITUD_RESERVA, EMAIL_RESERVA_CANCELADA, EMAIL_RESERVA_ACTUALIZADA
         );
-        
-        Set<String> soloMantenimiento = Set.of("nuevaSolicitudInventario");
+
+        Set<String> soloMantenimiento = Set.of(EMAIL_NUEVA_SOLICITUD_INVENTARIO);
         
         if (todosLosRoles.contains(tipoEmail)) {
             return true;
@@ -329,30 +359,30 @@ public class UsuarioConfiguracionService {
         
         // ANALISTA: reservas, espacios, inventario, estadísticas (NO usuarios, NO auditoria)
         if (rol == Usuario.RolApp.ANALISTA) {
-            if (vistaPrefs.containsKey("reservasViewMode")) filtradas.put("reservasViewMode", vistaPrefs.get("reservasViewMode"));
-            if (vistaPrefs.containsKey("reservasCalendarViewMode")) filtradas.put("reservasCalendarViewMode", vistaPrefs.get("reservasCalendarViewMode"));
-            if (vistaPrefs.containsKey("reservasPageSize")) filtradas.put("reservasPageSize", vistaPrefs.get("reservasPageSize"));
-            if (vistaPrefs.containsKey("espaciosViewMode")) filtradas.put("espaciosViewMode", vistaPrefs.get("espaciosViewMode"));
-            if (vistaPrefs.containsKey("espaciosPageSize")) filtradas.put("espaciosPageSize", vistaPrefs.get("espaciosPageSize"));
-            if (vistaPrefs.containsKey("inventarioViewMode")) filtradas.put("inventarioViewMode", vistaPrefs.get("inventarioViewMode"));
-            if (vistaPrefs.containsKey("inventarioPageSize")) filtradas.put("inventarioPageSize", vistaPrefs.get("inventarioPageSize"));
+            if (vistaPrefs.containsKey(VISTA_RESERVAS_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_RESERVAS_CALENDAR_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_CALENDAR_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_CALENDAR_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_RESERVAS_PAGE_SIZE)) filtradas.put(VISTA_RESERVAS_PAGE_SIZE, vistaPrefs.get(VISTA_RESERVAS_PAGE_SIZE));
+            if (vistaPrefs.containsKey(VISTA_ESPACIOS_VIEW_MODE)) filtradas.put(VISTA_ESPACIOS_VIEW_MODE, vistaPrefs.get(VISTA_ESPACIOS_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_ESPACIOS_PAGE_SIZE)) filtradas.put(VISTA_ESPACIOS_PAGE_SIZE, vistaPrefs.get(VISTA_ESPACIOS_PAGE_SIZE));
+            if (vistaPrefs.containsKey(VISTA_INVENTARIO_VIEW_MODE)) filtradas.put(VISTA_INVENTARIO_VIEW_MODE, vistaPrefs.get(VISTA_INVENTARIO_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_INVENTARIO_PAGE_SIZE)) filtradas.put(VISTA_INVENTARIO_PAGE_SIZE, vistaPrefs.get(VISTA_INVENTARIO_PAGE_SIZE));
             return filtradas;
         }
-        
+
         // DOCENTE: solo reservas
         if (rol == Usuario.RolApp.DOCENTE) {
-            if (vistaPrefs.containsKey("reservasViewMode")) filtradas.put("reservasViewMode", vistaPrefs.get("reservasViewMode"));
-            if (vistaPrefs.containsKey("reservasCalendarViewMode")) filtradas.put("reservasCalendarViewMode", vistaPrefs.get("reservasCalendarViewMode"));
-            if (vistaPrefs.containsKey("reservasPageSize")) filtradas.put("reservasPageSize", vistaPrefs.get("reservasPageSize"));
+            if (vistaPrefs.containsKey(VISTA_RESERVAS_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_RESERVAS_CALENDAR_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_CALENDAR_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_CALENDAR_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_RESERVAS_PAGE_SIZE)) filtradas.put(VISTA_RESERVAS_PAGE_SIZE, vistaPrefs.get(VISTA_RESERVAS_PAGE_SIZE));
             return filtradas;
         }
-        
+
         // MANTENIMIENTO: espacios, inventario, estadísticas (NO reservas, NO usuarios, NO auditoria)
         if (rol == Usuario.RolApp.MANTENIMIENTO) {
-            if (vistaPrefs.containsKey("espaciosViewMode")) filtradas.put("espaciosViewMode", vistaPrefs.get("espaciosViewMode"));
-            if (vistaPrefs.containsKey("espaciosPageSize")) filtradas.put("espaciosPageSize", vistaPrefs.get("espaciosPageSize"));
-            if (vistaPrefs.containsKey("inventarioViewMode")) filtradas.put("inventarioViewMode", vistaPrefs.get("inventarioViewMode"));
-            if (vistaPrefs.containsKey("inventarioPageSize")) filtradas.put("inventarioPageSize", vistaPrefs.get("inventarioPageSize"));
+            if (vistaPrefs.containsKey(VISTA_ESPACIOS_VIEW_MODE)) filtradas.put(VISTA_ESPACIOS_VIEW_MODE, vistaPrefs.get(VISTA_ESPACIOS_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_ESPACIOS_PAGE_SIZE)) filtradas.put(VISTA_ESPACIOS_PAGE_SIZE, vistaPrefs.get(VISTA_ESPACIOS_PAGE_SIZE));
+            if (vistaPrefs.containsKey(VISTA_INVENTARIO_VIEW_MODE)) filtradas.put(VISTA_INVENTARIO_VIEW_MODE, vistaPrefs.get(VISTA_INVENTARIO_VIEW_MODE));
+            if (vistaPrefs.containsKey(VISTA_INVENTARIO_PAGE_SIZE)) filtradas.put(VISTA_INVENTARIO_PAGE_SIZE, vistaPrefs.get(VISTA_INVENTARIO_PAGE_SIZE));
             return filtradas;
         }
         

@@ -17,7 +17,7 @@ export function RecomendacionList<T extends RecomendacionBase>({
   onSelect,
   emptyMessage = "No hay recomendaciones disponibles",
   maxItems,
-}: RecomendacionListProps<T>) {
+}: Readonly<RecomendacionListProps<T>>) {
   const displayedItems = maxItems 
     ? recomendaciones.slice(0, maxItems)
     : recomendaciones;

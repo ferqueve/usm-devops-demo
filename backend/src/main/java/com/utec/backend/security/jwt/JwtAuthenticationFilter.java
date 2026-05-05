@@ -87,7 +87,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Token JWT expirado\",\"message\":\"Tu token ha expirado\"}");
-            return;
         } catch (IllegalStateException e) {
             if ("Usuario inactivo".equals(e.getMessage())) {
                 log.warn("Intento de acceso con token JWT para usuario inactivo");
@@ -102,7 +101,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Token JWT inválido\",\"message\":\"Token inválido\"}");
-            return;
         }
     }
 }

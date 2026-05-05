@@ -44,6 +44,27 @@ import static com.utec.backend.security.Constants.*;
 @Slf4j
 public class ReservaService {
 
+    private static final String MSG_USUARIO_NO_ENCONTRADO = "Usuario no encontrado: ";
+    private static final String LOG_ERROR_INVALIDAR_CACHE_RECOMENDACIONES =
+            "Error invalidando caché de recomendaciones: {}";
+    private static final String LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO =
+            "No se pudo enviar email de notificación al analista: {}";
+    private static final String LOG_ERROR_EMAIL_ANALISTA =
+            "Error al enviar email de notificación al analista: {}";
+    private static final String LOG_WARN_EMAIL_USUARIO_NO_ENVIADO =
+            "No se pudo enviar email de notificación al usuario: {}";
+
+    // Claves de campos JPA usadas en Specifications y filtros
+    private static final String FIELD_INICIO = "inicio";
+    private static final String FIELD_ESPACIO = "espacio";
+    private static final String FIELD_ESTADO = "estado";
+    private static final String FIELD_CARRERA = "carrera";
+    private static final String FIELD_TIPO_ESPACIO_ID = "tipoEspacioId";
+    private static final String FIELD_ANALISTA_ASIGNADO = "analistaAsignado";
+
+    // Valor especial del filtro de estado que significa "sin filtrar"
+    private static final String ESTADO_FILTRO_TODAS = "todas";
+
     private final ReservaRepository reservaRepository;
     private final EspacioRepository espacioRepository;
     private final UsuarioRepository usuarioRepository;
@@ -90,7 +111,7 @@ public class ReservaService {
 
         // 1. Validar y obtener usuario autenticado
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         // 2. Validar y obtener espacio
         Espacio espacio = espacioRepository.findById(createDto.getEspacioId())
@@ -268,7 +289,7 @@ public class ReservaService {
         try {
             recomendacionService.invalidarCacheRecomendaciones(usuario.getId());
         } catch (Exception e) {
-            log.warn("Error invalidando caché de recomendaciones: {}", e.getMessage());
+            log.warn(LOG_ERROR_INVALIDAR_CACHE_RECOMENDACIONES, e.getMessage());
         }
 
         // Enviar notificación al analista si es una solicitud pendiente
@@ -280,11 +301,11 @@ public class ReservaService {
                     log.info("Email de notificación de nueva solicitud enviado al analista: {}",
                             analistaAsignado.getEmail());
                 } else {
-                    log.warn("No se pudo enviar email de notificación al analista: {}",
+                    log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO,
                             analistaAsignado.getEmail());
                 }
             } catch (Exception e) {
-                log.error("Error al enviar email de notificación al analista: {}", e.getMessage());
+                log.error(LOG_ERROR_EMAIL_ANALISTA, e.getMessage());
                 // No lanzar excepción para no interrumpir el flujo de creación de reserva
             }
         }
@@ -380,11 +401,11 @@ public class ReservaService {
                     log.info("Email de notificación de nueva solicitud recurrente enviado al analista: {}",
                             analistaAsignado.getEmail());
                 } else {
-                    log.warn("No se pudo enviar email de notificación al analista: {}",
+                    log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO,
                             analistaAsignado.getEmail());
                 }
             } catch (Exception e) {
-                log.error("Error al enviar email de notificación al analista: {}", e.getMessage());
+                log.error(LOG_ERROR_EMAIL_ANALISTA, e.getMessage());
                 // No lanzar excepción para no interrumpir el flujo de creación de reserva
             }
         }
@@ -461,7 +482,7 @@ public class ReservaService {
     @Transactional(readOnly = true)
     public List<ReservaResponseDto> getReservasByUsuario(String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId());
         return reservas.stream()
@@ -484,7 +505,7 @@ public class ReservaService {
             Instant fechaFin,
             String tiempo) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         Specification<Reserva> spec = buildSpecification(usuario.getId(), estado, espacioId, carreraId, tipoEspacioId,
                 fechaInicio, fechaFin, tiempo);
@@ -512,10 +533,10 @@ public class ReservaService {
             predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
 
             // Filtro por estado
-            if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
+            if (estado != null && !estado.isEmpty() && !estado.equals(ESTADO_FILTRO_TODAS)) {
                 try {
                     Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
-                    predicates.add(cb.equal(root.get("estado"), estadoEnum));
+                    predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
                 } catch (IllegalArgumentException e) {
                     // Ignorar si el estado no es válido
                 }
@@ -523,39 +544,39 @@ public class ReservaService {
 
             // Filtro por espacio
             if (espacioId != null) {
-                predicates.add(cb.equal(root.get("espacio").get("id"), espacioId));
+                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId));
             }
 
             // Filtro por tipo de espacio
             if (tipoEspacioId != null) {
-                predicates.add(cb.equal(root.get("espacio").get("tipoEspacioId"), tipoEspacioId));
+                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID), tipoEspacioId));
             }
 
             // Filtro por carrera
             if (carreraId != null) {
-                predicates.add(cb.equal(root.get("carrera").get("id"), carreraId));
+                predicates.add(cb.equal(root.get(FIELD_CARRERA).get("id"), carreraId));
             }
 
             // Filtro por fecha inicio
             if (fechaInicio != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("inicio"), fechaInicio));
+                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
             }
 
             // Filtro por fecha fin
             if (fechaFin != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), fechaFin));
+                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
             }
 
             // Filtro por tiempo (pasadas/futuras)
             Instant ahora = Instant.now();
             if ("futuras".equals(tiempo)) {
-                predicates.add(cb.greaterThan(root.get("inicio"), ahora));
+                predicates.add(cb.greaterThan(root.get(FIELD_INICIO), ahora));
             } else if ("pasadas".equals(tiempo)) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), ahora));
+                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), ahora));
             }
 
             // Ordenar por fecha descendente
-            query.orderBy(cb.desc(root.get("inicio")));
+            query.orderBy(cb.desc(root.get(FIELD_INICIO)));
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -613,8 +634,8 @@ public class ReservaService {
                         .orElse(null);
                 if (analista != null) {
                     // Mostrar reservas asignadas a este analista O sin analista asignado (null)
-                    Predicate asignadasAMi = cb.equal(root.get("analistaAsignado").get("id"), analista.getId());
-                    Predicate sinAnalista = cb.isNull(root.get("analistaAsignado"));
+                    Predicate asignadasAMi = cb.equal(root.get(FIELD_ANALISTA_ASIGNADO).get("id"), analista.getId());
+                    Predicate sinAnalista = cb.isNull(root.get(FIELD_ANALISTA_ASIGNADO));
                     predicates.add(cb.or(asignadasAMi, sinAnalista));
                     log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail,
                             analista.getId());
@@ -627,10 +648,10 @@ public class ReservaService {
             }
 
             // Filtro por estado
-            if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
+            if (estado != null && !estado.isEmpty() && !estado.equals(ESTADO_FILTRO_TODAS)) {
                 try {
                     Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
-                    predicates.add(cb.equal(root.get("estado"), estadoEnum));
+                    predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
                 } catch (IllegalArgumentException e) {
                     // Ignorar si el estado no es válido
                 }
@@ -638,39 +659,39 @@ public class ReservaService {
 
             // Filtro por espacio
             if (espacioId != null) {
-                predicates.add(cb.equal(root.get("espacio").get("id"), espacioId));
+                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId));
             }
 
             // Filtro por tipo de espacio
             if (tipoEspacioId != null) {
-                predicates.add(cb.equal(root.get("espacio").get("tipoEspacioId"), tipoEspacioId));
+                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID), tipoEspacioId));
             }
 
             // Filtro por carrera
             if (carreraId != null) {
-                predicates.add(cb.equal(root.get("carrera").get("id"), carreraId));
+                predicates.add(cb.equal(root.get(FIELD_CARRERA).get("id"), carreraId));
             }
 
             // Filtro por fecha inicio
             if (fechaInicio != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("inicio"), fechaInicio));
+                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
             }
 
             // Filtro por fecha fin
             if (fechaFin != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), fechaFin));
+                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
             }
 
             // Filtro por tiempo (pasadas/futuras)
             Instant ahora = Instant.now();
             if ("futuras".equals(tiempo)) {
-                predicates.add(cb.greaterThan(root.get("inicio"), ahora));
+                predicates.add(cb.greaterThan(root.get(FIELD_INICIO), ahora));
             } else if ("pasadas".equals(tiempo)) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), ahora));
+                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), ahora));
             }
 
             // Ordenar por fecha descendente
-            query.orderBy(cb.desc(root.get("inicio")));
+            query.orderBy(cb.desc(root.get(FIELD_INICIO)));
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -717,7 +738,7 @@ public class ReservaService {
         // Si el usuario es ANALISTA, validar permisos
         if (ROLE_ANALISTA.equals(userRole)) {
             Usuario analista = usuarioRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                    .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
             // Si la reserva tiene analista asignado, solo ese analista puede gestionarla
             // Si no tiene analista asignado (reservas de externos), cualquier analista
@@ -775,7 +796,7 @@ public class ReservaService {
         try {
             recomendacionService.invalidarCacheRecomendaciones(reserva.getUsuario().getId());
         } catch (Exception e) {
-            log.warn("Error invalidando caché de recomendaciones: {}", e.getMessage());
+            log.warn(LOG_ERROR_INVALIDAR_CACHE_RECOMENDACIONES, e.getMessage());
         }
 
         ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
@@ -789,7 +810,7 @@ public class ReservaService {
                     log.info("Email de notificación de reserva aprobada enviado al usuario: {}",
                             reserva.getUsuario().getEmail());
                 } else {
-                    log.warn("No se pudo enviar email de notificación al usuario: {}",
+                    log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO,
                             reserva.getUsuario().getEmail());
                 }
 
@@ -829,7 +850,7 @@ public class ReservaService {
                     log.info("Email de notificación de reserva rechazada enviado al usuario: {}",
                             reserva.getUsuario().getEmail());
                 } else {
-                    log.warn("No se pudo enviar email de notificación al usuario: {}",
+                    log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO,
                             reserva.getUsuario().getEmail());
                 }
             }
@@ -847,7 +868,7 @@ public class ReservaService {
     @Transactional(readOnly = true)
     public ReservaResponseDto getReservaById(Long id, String userEmail) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         Reserva reserva = reservaRepository.findByIdWithRelations(id);
         if (reserva == null) {
@@ -870,7 +891,7 @@ public class ReservaService {
         log.info("Actualizando reserva ID: {} para usuario: {}", id, userEmail);
 
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         Reserva reserva = reservaRepository.findByIdWithRelations(id);
         if (reserva == null) {
@@ -959,7 +980,7 @@ public class ReservaService {
                     log.info("Email de notificación de actualización de reserva enviado al usuario: {}",
                             reserva.getUsuario().getEmail());
                 } else {
-                    log.warn("No se pudo enviar email de notificación al usuario: {}",
+                    log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO,
                             reserva.getUsuario().getEmail());
                 }
 
@@ -975,7 +996,7 @@ public class ReservaService {
                         log.info("Email de notificación de actualización de reserva enviado al analista: {}",
                                 reserva.getAnalistaAsignado().getEmail());
                     } else {
-                        log.warn("No se pudo enviar email de notificación al analista: {}",
+                        log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO,
                                 reserva.getAnalistaAsignado().getEmail());
                     }
                 }
@@ -996,7 +1017,7 @@ public class ReservaService {
         log.info("Cancelando reserva ID: {} para usuario: {}", id, userEmail);
 
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         Reserva reserva = reservaRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
@@ -1025,7 +1046,7 @@ public class ReservaService {
         try {
             recomendacionService.invalidarCacheRecomendaciones(usuario.getId());
         } catch (Exception e) {
-            log.warn("Error invalidando caché de recomendaciones: {}", e.getMessage());
+            log.warn(LOG_ERROR_INVALIDAR_CACHE_RECOMENDACIONES, e.getMessage());
         }
 
         // Enviar notificación al analista si estaba asignado
@@ -1038,11 +1059,11 @@ public class ReservaService {
                     log.info("Email de notificación de reserva cancelada enviado al analista: {}",
                             reserva.getAnalistaAsignado().getEmail());
                 } else {
-                    log.warn("No se pudo enviar email de notificación al analista: {}",
+                    log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO,
                             reserva.getAnalistaAsignado().getEmail());
                 }
             } catch (Exception e) {
-                log.error("Error al enviar email de notificación al analista: {}", e.getMessage());
+                log.error(LOG_ERROR_EMAIL_ANALISTA, e.getMessage());
                 // No lanzar excepción para no interrumpir el flujo de cancelación
             }
         }
@@ -1116,8 +1137,8 @@ public class ReservaService {
                         .orElse(null);
                 if (analista != null) {
                     // Mostrar reservas asignadas a este analista O sin analista asignado (null)
-                    Predicate asignadasAMi = cb.equal(root.get("analistaAsignado").get("id"), analista.getId());
-                    Predicate sinAnalista = cb.isNull(root.get("analistaAsignado"));
+                    Predicate asignadasAMi = cb.equal(root.get(FIELD_ANALISTA_ASIGNADO).get("id"), analista.getId());
+                    Predicate sinAnalista = cb.isNull(root.get(FIELD_ANALISTA_ASIGNADO));
                     predicates.add(cb.or(asignadasAMi, sinAnalista));
                     log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail,
                             analista.getId());
@@ -1128,10 +1149,10 @@ public class ReservaService {
             // roles internos)
 
             // Filtro por estado
-            if (estado != null && !estado.isEmpty() && !estado.equals("todas")) {
+            if (estado != null && !estado.isEmpty() && !estado.equals(ESTADO_FILTRO_TODAS)) {
                 try {
                     Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
-                    predicates.add(cb.equal(root.get("estado"), estadoEnum));
+                    predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
                 } catch (IllegalArgumentException e) {
                     // Ignorar si el estado no es válido
                 }
@@ -1139,7 +1160,7 @@ public class ReservaService {
 
             // Filtro por espacio
             if (espacioId != null) {
-                predicates.add(cb.equal(root.get("espacio").get("id"), espacioId));
+                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId));
             }
 
             // Filtro por tipo de espacio (tipoEspacioId es un campo directo en Espacio, no
@@ -1147,27 +1168,27 @@ public class ReservaService {
             if (tipoEspacioId != null) {
                 // Acceder al campo tipoEspacioId directamente del espacio
                 predicates.add(cb.equal(
-                        root.get("espacio").get("tipoEspacioId"),
+                        root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID),
                         tipoEspacioId));
             }
 
             // Filtro por carrera
             if (carreraId != null) {
-                predicates.add(cb.equal(root.get("carrera").get("id"), carreraId));
+                predicates.add(cb.equal(root.get(FIELD_CARRERA).get("id"), carreraId));
             }
 
             // Filtro por fecha inicio
             if (fechaInicio != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("inicio"), fechaInicio));
+                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
             }
 
             // Filtro por fecha fin
             if (fechaFin != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("inicio"), fechaFin));
+                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
             }
 
             // Ordenar por fecha descendente
-            query.orderBy(cb.desc(root.get("inicio")));
+            query.orderBy(cb.desc(root.get(FIELD_INICIO)));
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -1182,7 +1203,7 @@ public class ReservaService {
 
         // Obtener usuario
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
         // Obtener todas las reservas del usuario
         List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId());

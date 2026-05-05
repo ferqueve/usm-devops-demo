@@ -103,7 +103,7 @@ export default function AssignSpaceDialog({
         toast.success(`${cantidad} ${item.tipoElementoNombre}(s) desasignado(s) exitosamente`);
         onSuccess();
       } else {
-        // Si es la cantidad total, desasignar todo
+        // Si es la cantidad total, desasignar la totalidad del item
         await inventarioApi.actualizarInventarioItem(item.id, {
           espacioId: 0, // 0 significa desasignar en el backend
           tipoElementoId: item.tipoElementoId,

@@ -21,7 +21,7 @@ export function ProgressRing({
   backgroundColor = '#e5e7eb',
   showLabel = true,
   className,
-}: ProgressRingProps) {
+}: Readonly<ProgressRingProps>) {
   const normalizedProgress = Math.min(Math.max(progress, 0), 100);
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;

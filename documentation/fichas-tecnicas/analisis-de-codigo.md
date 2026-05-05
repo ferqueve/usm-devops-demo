@@ -56,90 +56,90 @@ El equipo monitorea los siguientes indicadores en cada análisis:
 
 Los indicadores se presentan separados por componente (backend / frontend), reflejando los dos proyectos SonarQube.
 
-### 3.1 Backend (snapshot del 4 de mayo de 2026)
+### 3.1 Backend (snapshot del 5 de mayo de 2026)
 
 #### Estado del Quality Gate
 
-El proyecto utiliza el Quality Gate personalizado `USM Strict`, que evalúa el estado total del código contra el estándar máximo. El indicador refleja honestamente cuánto falta para alcanzar ese máximo y se actualiza con cada análisis. Estado actual: **3 de 10 condiciones cumplidas**.
+El proyecto utiliza el Quality Gate personalizado `USM Strict`, que evalúa el estado total del código contra el estándar máximo. El indicador refleja honestamente cuánto falta para alcanzar ese máximo y se actualiza con cada análisis. Estado actual: **5 de 10 condiciones cumplidas** (el día anterior eran 3 de 10).
 
 | Condición | Umbral | Valor actual | Estado |
 |---|:-:|:-:|:-:|
-| Issues nuevas en código nuevo | 0 | 0 | ✅ |
-| Densidad de duplicación en código nuevo | < 3 % | 0 % | ✅ |
+| Hotspots de seguridad revisados | 100 % | 100 % | ✅ |
 | Calificación de mantenibilidad | A | A | ✅ |
-| Issues de confiabilidad | 0 | 10 | ❌ |
-| Calificación de confiabilidad | A | D | ❌ |
+| Issues de confiabilidad | 0 | 0 | ✅ |
+| Calificación de confiabilidad | A | A | ✅ |
+| Densidad de duplicación en código nuevo | < 3 % | 2,4 % | ✅ |
+| Cobertura | ≥ 80 % | 50,3 % | ❌ |
 | Issues de seguridad | 0 | 1 | ❌ |
 | Calificación de seguridad | A | E | ❌ |
-| Cobertura | ≥ 80 % | 46,4 % | ❌ |
 | Densidad de duplicación | ≤ 3 % | 3,8 % | ❌ |
-| Hotspots de seguridad revisados | 100 % | 0 % | ❌ |
+| Issues nuevas en código nuevo | 0 | 5 | ❌ |
 
 #### Tamaño y complejidad
 
 | Indicador | Valor |
 |---|---|
-| Líneas de código (sin comentarios) | 12.180 |
-| Líneas totales | 16.653 |
-| Archivos | 151 |
-| Complejidad ciclomática | 1.743 |
+| Líneas de código (sin comentarios) | 12.318 |
+| Líneas totales | 16.837 |
+| Archivos | 153 |
+| Complejidad ciclomática | 1.753 |
 | Complejidad cognitiva | 1.464 |
 
 #### Cobertura de pruebas
 
 | Indicador | Valor |
 |---|---|
-| Cobertura global | 46,4 % |
-| Cobertura de líneas | 51,5 % |
-| Cobertura de ramas | 32,4 % |
-| Cantidad de pruebas unitarias | 377 |
-| Tasa de éxito | 94,4 % |
+| Cobertura global | 50,3 % |
+| Cobertura de líneas | 55,2 % |
+| Cobertura de ramas | 36,8 % |
+| Cantidad de pruebas unitarias | 459 |
+| Tasa de éxito | 95,9 % |
 
 #### Calidad y mantenibilidad
 
 | Indicador | Valor |
 |---|---|
-| Issues de confiabilidad | 10 |
+| Issues de confiabilidad | 0 |
 | Issues de seguridad | 1 |
-| Issues de mantenibilidad | 388 |
-| Hotspots de seguridad pendientes de revisión | 2 |
+| Issues de mantenibilidad | 181 |
+| Hotspots de seguridad pendientes de revisión | 0 |
 | Densidad de líneas duplicadas | 3,8 % |
-| Deuda técnica estimada | 4.078 minutos (~68 horas) |
+| Deuda técnica estimada | 2.329 minutos (~39 horas) |
 
 #### Calificaciones
 
 | Dimensión | Calificación |
 |---|:-:|
 | Mantenibilidad | A |
-| Confiabilidad | D |
+| Confiabilidad | A |
 | Seguridad | E |
 
-### 3.2 Frontend (snapshot del 4 de mayo de 2026)
+### 3.2 Frontend (snapshot del 5 de mayo de 2026)
 
 #### Estado del Quality Gate
 
-El proyecto frontend utiliza el mismo Quality Gate `USM Strict` que el backend, con la salvedad de que la cobertura no se mide hasta que se incorporen pruebas automatizadas. Estado actual: **3 de 8 condiciones cumplidas**.
+El proyecto frontend utiliza el mismo Quality Gate `USM Strict` que el backend, con la salvedad de que la cobertura no se mide hasta que se incorporen pruebas automatizadas. Estado actual: **4 de 8 condiciones cumplidas** (el día anterior eran 3 de 8).
 
 | Condición | Umbral | Valor actual | Estado |
 |---|:-:|:-:|:-:|
+| Hotspots de seguridad revisados | 100 % | 100 % | ✅ |
 | Calificación de mantenibilidad | A | A | ✅ |
 | Issues de seguridad | 0 | 0 | ✅ |
 | Calificación de seguridad | A | A | ✅ |
-| Issues de confiabilidad | 0 | 174 | ❌ |
+| Issues de confiabilidad | 0 | 41 | ❌ |
 | Calificación de confiabilidad | A | D | ❌ |
 | Cobertura | ≥ 80 % | 0 % | ❌ |
 | Densidad de duplicación | ≤ 3 % | 10,3 % | ❌ |
-| Hotspots de seguridad revisados | 100 % | 0 % | ❌ |
 
 #### Tamaño y complejidad
 
 | Indicador | Valor |
 |---|---|
-| Líneas de código (sin comentarios) | 38.045 |
-| Líneas totales | 42.994 |
+| Líneas de código (sin comentarios) | 38.141 |
+| Líneas totales | 43.083 |
 | Archivos | 234 |
-| Complejidad ciclomática | 5.418 |
-| Complejidad cognitiva | 3.182 |
+| Complejidad ciclomática | 5.430 |
+| Complejidad cognitiva | 3.114 |
 
 #### Cobertura de pruebas
 
@@ -149,12 +149,12 @@ El frontend aún no cuenta con pruebas automatizadas, por lo que la cobertura fi
 
 | Indicador | Valor |
 |---|---|
-| Issues de confiabilidad | 174 |
+| Issues de confiabilidad | 41 |
 | Issues de seguridad | 0 |
-| Issues de mantenibilidad | 567 |
-| Hotspots de seguridad pendientes de revisión | 6 |
+| Issues de mantenibilidad | 171 |
+| Hotspots de seguridad pendientes de revisión | 0 |
 | Densidad de líneas duplicadas | 10,3 % |
-| Deuda técnica estimada | 2.844 minutos (~47 horas) |
+| Deuda técnica estimada | 1.405 minutos (~23 horas) |
 
 #### Calificaciones
 
@@ -171,19 +171,19 @@ El frontend aún no cuenta con pruebas automatizadas, por lo que la cobertura fi
 #### Fortalezas observadas
 
 - **Mantenibilidad alta**: la calificación A refleja que la deuda técnica relativa al tamaño del proyecto es baja, lo que facilita la incorporación de nuevas funcionalidades.
-- **Suite de pruebas significativa**: el proyecto cuenta con 377 pruebas unitarias activas, lo que demuestra una práctica establecida de testing automatizado.
-- **Duplicación bajo control**: la densidad de líneas duplicadas se mantiene en un 3,8 %, muy cerca del umbral exigido por el Quality Gate.
+- **Confiabilidad consolidada**: la calificación de Confiabilidad pasó a A tras el trabajo de refactor del 5 de mayo, sin issues de confiabilidad pendientes según el catálogo de SonarQube.
+- **Suite de pruebas en crecimiento**: el proyecto cuenta con 459 pruebas unitarias activas y la cobertura global escaló de 46,4 % a 50,3 %.
+- **Hotspots al día**: el 100 % de los hotspots de seguridad fueron revisados y resueltos.
 - **Estándar elevado autoimpuesto**: el equipo eligió un Quality Gate estricto que evalúa el estado total del código (no solo el nuevo), utilizándolo como vara de progreso hacia la calidad máxima.
 
 #### Áreas en proceso de mejora
 
 El análisis identifica áreas en las que el equipo está trabajando activamente como parte del proceso de calidad continua:
 
-- **Cobertura de ramas**: el 32,4 % de cobertura de ramas refleja que existen caminos lógicos sin verificación automatizada, especialmente en condicionales complejos. La estrategia del equipo apunta a incrementar progresivamente este indicador como parte del trabajo de testing por feature.
+- **Cobertura de ramas**: el 36,8 % de cobertura de ramas refleja que existen caminos lógicos sin verificación automatizada, especialmente en condicionales complejos. La estrategia del equipo apunta a incrementar progresivamente este indicador como parte del trabajo de testing por feature.
 - **Estabilidad de la suite**: una porción de las pruebas presenta fallos o errores de ejecución, lo que requiere estabilización antes de seguir ampliando la cobertura.
-- **Confiabilidad**: la calificación D refleja la presencia de issues de confiabilidad identificadas por SonarQube que están bajo análisis del equipo.
-- **Seguridad**: la calificación E está condicionada por dos hotspots de seguridad pendientes de revisión humana y una issue de seguridad identificada. El equipo realiza una revisión específica que se documenta en la ficha de Análisis de Seguridad.
-- **Patrones de mejora estructural**: el análisis detecta patrones recurrentes de oportunidad de refactor, principalmente la extracción de literales repetidos a constantes y la migración de inyección por campo a inyección por constructor en algunos servicios. Forman parte del backlog técnico planificado.
+- **Seguridad**: la calificación E está condicionada por una vulnerabilidad pendiente de revisión y resolución; su atención está prevista para la próxima iteración del proceso de calidad.
+- **Duplicación**: la densidad del 3,8 % está apenas por encima del umbral del Quality Gate y se atenderá mediante la extracción de helpers compartidos en los servicios más afectados.
 
 ### 4.2 Frontend
 
@@ -195,16 +195,15 @@ El análisis identifica áreas en las que el equipo está trabajando activamente
 
 #### Áreas en proceso de mejora
 
-- **Confiabilidad**: la calificación D y las 174 issues de confiabilidad concentran el principal foco de atención. Una primera revisión permite identificar patrones recurrentes (manejo de promesas, valores potencialmente indefinidos, uso de hooks de React) que se atenderán en iteraciones de refactor planificado.
+- **Confiabilidad**: las 41 issues de confiabilidad pendientes (frente a las 174 del snapshot anterior) concentran el foco de atención. Los patrones recurrentes restantes (manejo de promesas, valores potencialmente indefinidos, uso de hooks de React) se atenderán en iteraciones de refactor planificado.
 - **Duplicación**: la densidad del 10,3 % está sensiblemente por encima del umbral del Quality Gate. Refleja oportunidades de extracción de componentes compartidos y de utilidades, que se prevé atender de forma incremental.
 - **Cobertura de pruebas**: actualmente en 0 %. La incorporación de un test runner (planificada para una iteración posterior) habilitará el seguimiento de la cobertura como parte del proceso de mejora continua.
-- **Hotspots de seguridad**: se detectaron 6 hotspots pendientes de revisión. Aún no implican vulnerabilidades; cada uno será evaluado y marcado según corresponda en la ficha de Análisis de Seguridad.
 
 ### 4.3 Sobre las calificaciones
 
 Es importante interpretar correctamente las calificaciones de SonarQube. Una calificación E en seguridad **no implica que existan vulnerabilidades activas explotables**, sino que existen hotspots o issues que requieren revisión humana para confirmarse como seguros. Una vez que los hotspots son revisados y marcados según corresponda, la calificación se ajusta automáticamente.
 
-De la misma forma, las issues de mantenibilidad (388 en backend, 567 en frontend) son sugerencias de mejora de calidad estructural, no defectos funcionales. Son atendidas según prioridad en el plan de refactor del equipo.
+De la misma forma, las issues de mantenibilidad (181 en backend, 171 en frontend) son sugerencias de mejora de calidad estructural, no defectos funcionales. Son atendidas según prioridad en el plan de refactor del equipo.
 
 ## 5. Evolución del proyecto
 
@@ -215,14 +214,14 @@ Esta sección registra los sucesivos snapshots de análisis para visualizar la e
 | Fecha | Cobertura | Issues confiabilidad | Issues seguridad | Hotspots revisados | Mantenibilidad | Confiabilidad | Seguridad | Deuda (h) |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | 2026-05-04 | 46,4 % | 10 | 1 | 0 % | A | D | E | 68 |
-| 2026-05-05 | (pendiente reanálisis tras intervención) | (esperado: ↓) | 0 | 100 % | A | (esperado: ↑) | (esperado: ↑) | (esperado: ↓) |
+| 2026-05-05 | 50,3 % | 0 | 1 | 100 % | A | A | E | 39 |
 
 ### 5.2 Frontend (`USM-frontend`)
 
 | Fecha | LOC | Issues confiabilidad | Issues seguridad | Hotspots revisados | Duplicación | Mantenibilidad | Confiabilidad | Seguridad | Deuda (h) |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | 2026-05-04 | 38.045 | 174 | 0 | 0 % | 10,3 % | A | D | A | 47 |
-| 2026-05-05 | 38.045 | (esperado: ↓) | 0 | 100 % | 10,3 % | A | (esperado: ↑) | A | (esperado: ↓) |
+| 2026-05-05 | 38.141 | 41 | 0 | 100 % | 10,3 % | A | D | A | 23 |
 
 ### 5.3 Intervención de mejora del 5 de mayo de 2026
 
@@ -272,14 +271,60 @@ Como parte del refactor se incorporaron además dos excepciones de dominio nueva
 | `typescript:S5852` (hotspot) | Revisión de expresiones regulares (riesgo de backtracking) | 5 hotspots resueltos |
 | `typescript:S2245` (hotspot) | Revisión del uso de `Math.random` | 1 hotspot resuelto |
 
-#### Resultado esperado en el próximo análisis
+#### Resultado obtenido en el reanálisis posterior al push
 
-Con los cambios aplicados, el próximo escaneo automático del pipeline de Integración Continua debería reflejar:
+El pipeline de Integración Continua ejecutó un nuevo análisis con los cambios aplicados. Los valores reales recuperados desde SonarQube son los que figuran en la fila del 5 de mayo de 2026 de las tablas 5.1 y 5.2. En síntesis:
 
-- **Backend**: descenso significativo del total de incidencias, `Security Hotspots Reviewed = 100 %`, vulnerabilidad resuelta y mejora de las calificaciones de Confiabilidad y Seguridad.
-- **Frontend**: descenso de incidencias por la modernización de patrones, `Security Hotspots Reviewed = 100 %` y mejora de la calificación de Confiabilidad.
+**Backend (`USM-backend`)**
 
-Las celdas marcadas como "esperado" en las tablas 5.1 y 5.2 se completarán con los valores reales una vez que el pipeline publique el nuevo análisis a SonarQube.
+- Total de incidencias: **182** (frente a las 396 del snapshot anterior; reducción del orden del 54 %).
+- Issues de confiabilidad: **0** (frente a 10).
+- Hotspots de seguridad pendientes de revisión: **0** (frente a 2).
+- Cobertura global: **50,3 %** (frente a 46,4 %), con **459 pruebas** registradas (frente a 377).
+- Deuda técnica estimada: **~39 horas** (frente a ~68 horas).
+- Calificación de Confiabilidad: pasa de **D a A**.
+- Calificación de Seguridad: se mantiene en **E** condicionada por la única vulnerabilidad pendiente, cuyo tratamiento está previsto para la próxima iteración (su resolución llevará la calificación a A).
+
+**Frontend (`USM-frontend`)**
+
+- Total de incidencias: **197** (frente a 593; reducción del orden del 67 %).
+- Issues de confiabilidad: **41** (frente a 174).
+- Issues de mantenibilidad: **171** (frente a 567).
+- Hotspots de seguridad pendientes de revisión: **0** (frente a 6).
+- Deuda técnica estimada: **~23 horas** (frente a ~47 horas).
+- Calificaciones: Mantenibilidad **A**, Seguridad **A**, Confiabilidad **D** (sigue D porque aún hay incidencias de confiabilidad por resolver, aunque el progreso es sustantivo).
+
+El Quality Gate del proyecto sigue marcando `ERROR` en ambos componentes. Esto es esperado dado que se utiliza un Quality Gate intencionalmente exigente, calibrado contra el estándar máximo del equipo: el indicador permanecerá en `ERROR` hasta cumplir con todas sus condiciones (cobertura ≥ 80 %, vulnerabilidad resuelta, duplicación ≤ 3 %), funcionando así como vara de progreso continuo.
+
+#### Segundo barrido del 5 de mayo de 2026
+
+Tras el primer reanálisis se realizó un **segundo barrido** dentro de la misma jornada para atacar reglas de menor frecuencia y completar trabajos pendientes.
+
+**Backend**
+
+| Regla SonarQube | Tema | Aprox. issues atendidas |
+|---|---|:-:|
+| `java:S6437` | Vulnerabilidad de severidad BLOCKER por contraseña hardcoded en seed de desarrollo (movida a variable de entorno `DEV_SEED_PASSWORD`) | 1 vulnerability resuelta |
+| `java:S1192` | Segunda tanda de extracción de constantes en `DevDataInitializer`, `EmailService` y `ReservaService` | ~50 |
+| `java:S1128` | Imports `java.util.stream.Collectors` y `org.mockito.ArgumentMatchers` no utilizados | 4 |
+| `java:S1612` | Lambda `r -> r.getEsPublica()` reemplazada por `Reserva::getEsPublica` | 2 |
+| `java:S6201` | Uso del nuevo patrón `instanceof Type var` (Java 16+) en lugar de check + cast | 2 |
+| `java:S6885` | Uso de `Math.clamp` (Java 21) en lugar de `Math.min(Math.max(...))` | 3 |
+| `java:S3626` | Eliminación de `return;` redundantes al final de bloques `catch` | 2 |
+| `java:S1155` | `Collectors` import limpiado en `StatisticsService` tras refactor | 1 |
+
+**Frontend**
+
+| Regla SonarQube | Tema | Aprox. issues atendidas |
+|---|---|:-:|
+| `typescript:S6759` | Segunda tanda de props envueltas en `Readonly<T>` | 35 |
+| `typescript:S6479` | Llaves únicas en listas JSX (más casos) | 5 |
+| `typescript:S7764` | Adopción de `globalThis` (más casos) | 3 |
+| `typescript:S4325` | Aserciones de tipo redundantes (`as Tipo`, `!`) | 10 |
+| `typescript:S1135` | Resolución y reformulación de comentarios `TODO` obsoletos | 5 |
+| `typescript:S3358` | Refactor de ternarios anidados a helpers o IIFEs | 5 |
+
+Tras este segundo barrido se ejecutará un nuevo análisis de SonarQube cuyos números se sumarán a la tabla de evolución del proyecto en cuanto el pipeline publique los resultados.
 
 ### 5.4 Hitos del proceso de calidad
 

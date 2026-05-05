@@ -13,7 +13,7 @@ export function EmailVerificationMessage({
   onResendEmail,
   className,
   resendCooldown = 0
-}: EmailVerificationMessageProps) {
+}: Readonly<EmailVerificationMessageProps>) {
   return (
     <div className={cn("flex flex-col gap-6 text-center", className)}>
       <div className="flex flex-col items-center gap-4">

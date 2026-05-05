@@ -26,9 +26,9 @@ export function LoginForm({
   }
 
   const handleGoogleLogin = () => {
-    // Redirigir al endpoint del backend que manejará todo el flujo OAuth
+    // Redirigir al endpoint del backend que gestiona el flujo OAuth completo
     setGoogleLoading(true);
-    window.location.href = `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/api/v1/oauth2/google/authorize`;
+    globalThis.location.href = `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/api/v1/oauth2/google/authorize`;
   };
 
   return (

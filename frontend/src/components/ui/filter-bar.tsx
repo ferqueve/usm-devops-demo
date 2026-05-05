@@ -19,7 +19,7 @@ interface FilterBarProps {
 /**
  * FilterBar component - Barra compacta para mostrar filtros activos
  */
-export function FilterBar({ filters, onClearAll, className }: FilterBarProps) {
+export function FilterBar({ filters, onClearAll, className }: Readonly<FilterBarProps>) {
   if (filters.length === 0) return null;
 
   return (

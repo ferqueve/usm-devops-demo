@@ -28,6 +28,18 @@ export const MetricsCards = memo(function MetricsCards({
   const cpuUsage = cpuMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
   const uptimeSeconds = uptimeMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
 
+  const memoryVariant: 'error' | 'warning' | 'success' = (() => {
+    if (memoryUsagePercent > 90) return 'error';
+    if (memoryUsagePercent > 70) return 'warning';
+    return 'success';
+  })();
+
+  const cpuVariant: 'error' | 'warning' | 'info' = (() => {
+    if (cpuUsage > 0.9) return 'error';
+    if (cpuUsage > 0.7) return 'warning';
+    return 'info';
+  })();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
       <MetricCard
@@ -44,11 +56,7 @@ export const MetricsCards = memo(function MetricsCards({
         icon={HardDrive}
         description={`${memoryUsagePercent.toFixed(1)}% de ${formatBytes(memoryMax)}`}
         progress={memoryUsagePercent}
-        variant={
-          memoryUsagePercent > 90 ? 'error' : 
-          memoryUsagePercent > 70 ? 'warning' : 
-          'success'
-        }
+        variant={memoryVariant}
       />
 
       <MetricCard
@@ -57,11 +65,7 @@ export const MetricsCards = memo(function MetricsCards({
         icon={Cpu}
         description="Procesamiento del sistema"
         progress={cpuUsage * 100}
-        variant={
-          cpuUsage > 0.9 ? 'error' : 
-          cpuUsage > 0.7 ? 'warning' : 
-          'info'
-        }
+        variant={cpuVariant}
       />
 
       <MetricCard

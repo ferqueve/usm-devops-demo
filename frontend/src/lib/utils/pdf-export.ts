@@ -735,7 +735,7 @@ export function exportReservationStatsToPDF(
       yPos += 5;
 
       const sortedEspacios = Object.entries(stats.reservasPorEspacio)
-        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 10);
 
       const topEspaciosData = sortedEspacios.map(([espacioId, cantidad], index) => [
@@ -796,7 +796,7 @@ export function exportReservationStatsToPDF(
       const reservasPorDiaData = Object.entries(stats.reservasPorDiaSemana)
         .map(([dia, cantidad]) => ({
           dia,
-          cantidad: cantidad as number,
+          cantidad,
           orden: diasOrden.indexOf(dia) === -1 ? 99 : diasOrden.indexOf(dia)
         }))
         .sort((a, b) => a.orden - b.orden)

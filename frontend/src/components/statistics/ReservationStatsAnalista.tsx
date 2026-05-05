@@ -89,7 +89,7 @@ export default function ReservationStatsAnalista() {
     return Object.entries(stats.reservasPorMes)
       .map(([mes, cantidad]) => ({
         mes: mes.length > 7 ? mes.substring(0, 7) : mes,
-        cantidad: cantidad as number,
+        cantidad,
         mesCompleto: mes
       }))
       .sort((a, b) => a.mesCompleto.localeCompare(b.mesCompleto));
@@ -101,7 +101,7 @@ export default function ReservationStatsAnalista() {
     return Object.entries(stats.reservasPorDiaSemana)
       .map(([dia, cantidad]) => ({
         dia,
-        cantidad: cantidad as number,
+        cantidad,
         orden: diasOrden.indexOf(dia) === -1 ? 99 : diasOrden.indexOf(dia)
       }))
       .sort((a, b) => a.orden - b.orden);
@@ -115,7 +115,7 @@ export default function ReservationStatsAnalista() {
         return {
           espacioId: Number.parseInt(espacioId),
           nombre: espacio?.nombre || `Espacio ${espacioId}`,
-          cantidad: cantidad as number
+          cantidad
         };
       })
       .sort((a, b) => b.cantidad - a.cantidad)
@@ -201,7 +201,7 @@ export default function ReservationStatsAnalista() {
       if (stats.reservasPorEspacio && Object.keys(stats.reservasPorEspacio).length > 0) {
         csvRows.push('', 'Reservas por Espacio (Top 10)', 'Espacio ID,Cantidad');
         const sortedEspacios = Object.entries(stats.reservasPorEspacio)
-          .sort(([, a], [, b]) => (b as number) - (a as number))
+          .sort(([, a], [, b]) => b - a)
           .slice(0, 10);
         sortedEspacios.forEach(([espacioId, cantidad]) => {
           const espacio = espacios.find(e => e.id === Number.parseInt(espacioId));

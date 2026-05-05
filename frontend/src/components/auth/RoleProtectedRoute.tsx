@@ -11,7 +11,7 @@ interface RoleProtectedRouteProps {
 export default function RoleProtectedRoute({ 
   children, 
   fallbackPath = '/dashboard' 
-}: RoleProtectedRouteProps) {
+}: Readonly<RoleProtectedRouteProps>) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 

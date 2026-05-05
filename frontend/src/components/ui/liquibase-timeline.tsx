@@ -20,7 +20,7 @@ interface LiquibaseTimelineProps {
   health: any;
 }
 
-export function LiquibaseTimeline({ data, health }: LiquibaseTimelineProps) {
+export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelineProps>) {
   // Extraer changesets del formato de actuator
   // Spring Boot puede retornar en diferentes formatos
   let changeSets: ChangeSet[] = [];

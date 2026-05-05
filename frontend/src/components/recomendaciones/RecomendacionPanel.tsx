@@ -21,7 +21,7 @@ export function RecomendacionPanel<T extends RecomendacionBase>({
   emptyMessage,
   maxItems = 5,
   icon,
-}: RecomendacionPanelProps<T>) {
+}: Readonly<RecomendacionPanelProps<T>>) {
   return (
     <Card>
       <CardHeader>

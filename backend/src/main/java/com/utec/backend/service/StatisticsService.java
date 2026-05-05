@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Servicio para calcular estadísticas del sistema
@@ -29,7 +28,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class StatisticsService {
-    
+
+    private static final String ESTADO_DISPONIBLE = "DISPONIBLE";
+    private static final String ESTADO_MANTENIMIENTO = "MANTENIMIENTO";
+    private static final String ESTADO_DANADO = "DANADO";
+
+    private static final String KEY_DISPONIBLES = "disponibles";
+    private static final String KEY_MANTENIMIENTO = "mantenimiento";
+    private static final String KEY_DANADOS = "danados";
+    private static final String KEY_CANTIDAD = "cantidad";
+    private static final String KEY_ITEMS = "items";
+    private static final String KEY_PROBLEMAS = "problemas";
+
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
     private final TipoElementoRepository tipoElementoRepository;
@@ -87,18 +97,18 @@ public class StatisticsService {
         // === TOTALES Y BÁSICAS ===
         int totalItems = allItems.size();
         int totalCantidad = allItems.stream().mapToInt(InventarioItem::getCantidad).sum();
-        int disponibles = (int) allItems.stream().filter(i -> "DISPONIBLE".equals(i.getEstado())).count();
-        int mantenimiento = (int) allItems.stream().filter(i -> "MANTENIMIENTO".equals(i.getEstado())).count();
-        int danados = (int) allItems.stream().filter(i -> "DANADO".equals(i.getEstado())).count();
+        int disponibles = (int) allItems.stream().filter(i -> ESTADO_DISPONIBLE.equals(i.getEstado())).count();
+        int mantenimiento = (int) allItems.stream().filter(i -> ESTADO_MANTENIMIENTO.equals(i.getEstado())).count();
+        int danados = (int) allItems.stream().filter(i -> ESTADO_DANADO.equals(i.getEstado())).count();
         int sinAsignar = (int) allItems.stream().filter(i -> i.getEspacio() == null).count();
         int asignados = totalItems - sinAsignar;
         int itemsInactivos = (int) inventarioItemRepository.findAll().stream().filter(item -> !item.getActivo()).count();
         
         stats.put("totalItems", totalItems);
         stats.put("totalCantidad", totalCantidad);
-        stats.put("disponibles", disponibles);
-        stats.put("mantenimiento", mantenimiento);
-        stats.put("danados", danados);
+        stats.put(KEY_DISPONIBLES, disponibles);
+        stats.put(KEY_MANTENIMIENTO, mantenimiento);
+        stats.put(KEY_DANADOS, danados);
         stats.put("sinAsignar", sinAsignar);
         stats.put("asignados", asignados);
         stats.put("itemsInactivos", itemsInactivos);
@@ -128,15 +138,15 @@ public class StatisticsService {
             Map<String, Object> tipoData = itemsPorTipoMap.get(tipoId);
             tipoData.put("tipoId", tipoId);
             tipoData.put("tipoNombre", tipoNombre);
-            tipoData.put("cantidad", ((Integer) tipoData.getOrDefault("cantidad", 0)) + item.getCantidad());
-            tipoData.put("items", ((Integer) tipoData.getOrDefault("items", 0)) + 1);
-            tipoData.put("disponibles", ((Integer) tipoData.getOrDefault("disponibles", 0)) + ("DISPONIBLE".equals(item.getEstado()) ? 1 : 0));
-            tipoData.put("mantenimiento", ((Integer) tipoData.getOrDefault("mantenimiento", 0)) + ("MANTENIMIENTO".equals(item.getEstado()) ? 1 : 0));
-            tipoData.put("danados", ((Integer) tipoData.getOrDefault("danados", 0)) + ("DANADO".equals(item.getEstado()) ? 1 : 0));
+            tipoData.put(KEY_CANTIDAD, ((Integer) tipoData.getOrDefault(KEY_CANTIDAD, 0)) + item.getCantidad());
+            tipoData.put(KEY_ITEMS, ((Integer) tipoData.getOrDefault(KEY_ITEMS, 0)) + 1);
+            tipoData.put(KEY_DISPONIBLES, ((Integer) tipoData.getOrDefault(KEY_DISPONIBLES, 0)) + (ESTADO_DISPONIBLE.equals(item.getEstado()) ? 1 : 0));
+            tipoData.put(KEY_MANTENIMIENTO, ((Integer) tipoData.getOrDefault(KEY_MANTENIMIENTO, 0)) + (ESTADO_MANTENIMIENTO.equals(item.getEstado()) ? 1 : 0));
+            tipoData.put(KEY_DANADOS, ((Integer) tipoData.getOrDefault(KEY_DANADOS, 0)) + (ESTADO_DANADO.equals(item.getEstado()) ? 1 : 0));
         });
         
         List<Map<String, Object>> itemsPorTipo = itemsPorTipoMap.values().stream()
-                .sorted((a, b) -> ((Integer) b.get("items")).compareTo((Integer) a.get("items")))
+                .sorted((a, b) -> ((Integer) b.get(KEY_ITEMS)).compareTo((Integer) a.get(KEY_ITEMS)))
                 .toList();
         
         stats.put("itemsPorTipo", itemsPorTipo);
@@ -153,15 +163,15 @@ public class StatisticsService {
                     Map<String, Object> espacioData = itemsPorEspacioMap.get(espacioIdItem);
                     espacioData.put("espacioId", espacioIdItem);
                     espacioData.put("espacioNombre", espacioNombre);
-                    espacioData.put("cantidad", ((Integer) espacioData.getOrDefault("cantidad", 0)) + item.getCantidad());
-                    espacioData.put("items", ((Integer) espacioData.getOrDefault("items", 0)) + 1);
-                    espacioData.put("disponibles", ((Integer) espacioData.getOrDefault("disponibles", 0)) + ("DISPONIBLE".equals(item.getEstado()) ? 1 : 0));
-                    espacioData.put("mantenimiento", ((Integer) espacioData.getOrDefault("mantenimiento", 0)) + ("MANTENIMIENTO".equals(item.getEstado()) ? 1 : 0));
-                    espacioData.put("danados", ((Integer) espacioData.getOrDefault("danados", 0)) + ("DANADO".equals(item.getEstado()) ? 1 : 0));
+                    espacioData.put(KEY_CANTIDAD, ((Integer) espacioData.getOrDefault(KEY_CANTIDAD, 0)) + item.getCantidad());
+                    espacioData.put(KEY_ITEMS, ((Integer) espacioData.getOrDefault(KEY_ITEMS, 0)) + 1);
+                    espacioData.put(KEY_DISPONIBLES, ((Integer) espacioData.getOrDefault(KEY_DISPONIBLES, 0)) + (ESTADO_DISPONIBLE.equals(item.getEstado()) ? 1 : 0));
+                    espacioData.put(KEY_MANTENIMIENTO, ((Integer) espacioData.getOrDefault(KEY_MANTENIMIENTO, 0)) + (ESTADO_MANTENIMIENTO.equals(item.getEstado()) ? 1 : 0));
+                    espacioData.put(KEY_DANADOS, ((Integer) espacioData.getOrDefault(KEY_DANADOS, 0)) + (ESTADO_DANADO.equals(item.getEstado()) ? 1 : 0));
                 });
         
         List<Map<String, Object>> itemsPorEspacio = itemsPorEspacioMap.values().stream()
-                .sorted((a, b) -> ((Integer) b.get("items")).compareTo((Integer) a.get("items")))
+                .sorted((a, b) -> ((Integer) b.get(KEY_ITEMS)).compareTo((Integer) a.get(KEY_ITEMS)))
                 .toList();
         
         stats.put("itemsPorEspacio", itemsPorEspacio);
@@ -173,31 +183,31 @@ public class StatisticsService {
         
         List<Map<String, Object>> espaciosConMasProblemas = itemsPorEspacio.stream()
                 .map(espacio -> {
-                    int problemas = ((Integer) espacio.getOrDefault("mantenimiento", 0)) + ((Integer) espacio.getOrDefault("danados", 0));
-                    int itemsEspacio = (Integer) espacio.get("items");
+                    int problemas = ((Integer) espacio.getOrDefault(KEY_MANTENIMIENTO, 0)) + ((Integer) espacio.getOrDefault(KEY_DANADOS, 0));
+                    int itemsEspacio = (Integer) espacio.get(KEY_ITEMS);
                     double porcentaje = itemsEspacio > 0 ? (problemas * 100.0 / itemsEspacio) : 0;
                     Map<String, Object> result = new HashMap<>(espacio);
-                    result.put("problemas", problemas);
+                    result.put(KEY_PROBLEMAS, problemas);
                     result.put("porcentaje", porcentaje);
                     return result;
                 })
-                .filter(e -> ((Integer) e.get("problemas")) > 0)
-                .sorted((a, b) -> ((Integer) b.get("problemas")).compareTo((Integer) a.get("problemas")))
+                .filter(e -> ((Integer) e.get(KEY_PROBLEMAS)) > 0)
+                .sorted((a, b) -> ((Integer) b.get(KEY_PROBLEMAS)).compareTo((Integer) a.get(KEY_PROBLEMAS)))
                 .limit(10)
                 .toList();
         
         List<Map<String, Object>> tiposConMasProblemas = itemsPorTipo.stream()
                 .map(tipo -> {
-                    int problemas = ((Integer) tipo.getOrDefault("mantenimiento", 0)) + ((Integer) tipo.getOrDefault("danados", 0));
-                    int itemsTipo = (Integer) tipo.get("items");
+                    int problemas = ((Integer) tipo.getOrDefault(KEY_MANTENIMIENTO, 0)) + ((Integer) tipo.getOrDefault(KEY_DANADOS, 0));
+                    int itemsTipo = (Integer) tipo.get(KEY_ITEMS);
                     double porcentaje = itemsTipo > 0 ? (problemas * 100.0 / itemsTipo) : 0;
                     Map<String, Object> result = new HashMap<>(tipo);
-                    result.put("problemas", problemas);
+                    result.put(KEY_PROBLEMAS, problemas);
                     result.put("porcentaje", porcentaje);
                     return result;
                 })
-                .filter(t -> ((Integer) t.get("problemas")) > 0)
-                .sorted((a, b) -> ((Integer) b.get("problemas")).compareTo((Integer) a.get("problemas")))
+                .filter(t -> ((Integer) t.get(KEY_PROBLEMAS)) > 0)
+                .sorted((a, b) -> ((Integer) b.get(KEY_PROBLEMAS)).compareTo((Integer) a.get(KEY_PROBLEMAS)))
                 .limit(10)
                 .toList();
         
@@ -301,7 +311,7 @@ public class StatisticsService {
         
         // === ITEMS CRÍTICOS ===
         int itemsSinAsignarConProblemas = (int) allItems.stream()
-                .filter(item -> item.getEspacio() == null && ("MANTENIMIENTO".equals(item.getEstado()) || "DANADO".equals(item.getEstado())))
+                .filter(item -> item.getEspacio() == null && (ESTADO_MANTENIMIENTO.equals(item.getEstado()) || ESTADO_DANADO.equals(item.getEstado())))
                 .count();
         
         int itemsCriticos = itemsSinAsignarConProblemas + danados;
@@ -321,55 +331,55 @@ public class StatisticsService {
         
         // === ANÁLISIS DE DISTRIBUCIÓN ===
         int espaciosConSoloDisponibles = (int) itemsPorEspacio.stream()
-                .filter(espacio -> ((Integer) espacio.getOrDefault("disponibles", 0)) > 0 
-                        && ((Integer) espacio.getOrDefault("mantenimiento", 0)) == 0 
-                        && ((Integer) espacio.getOrDefault("danados", 0)) == 0)
+                .filter(espacio -> ((Integer) espacio.getOrDefault(KEY_DISPONIBLES, 0)) > 0 
+                        && ((Integer) espacio.getOrDefault(KEY_MANTENIMIENTO, 0)) == 0 
+                        && ((Integer) espacio.getOrDefault(KEY_DANADOS, 0)) == 0)
                 .count();
         
         int espaciosConSoloMantenimiento = (int) itemsPorEspacio.stream()
-                .filter(espacio -> ((Integer) espacio.getOrDefault("mantenimiento", 0)) > 0 
-                        && ((Integer) espacio.getOrDefault("disponibles", 0)) == 0 
-                        && ((Integer) espacio.getOrDefault("danados", 0)) == 0)
+                .filter(espacio -> ((Integer) espacio.getOrDefault(KEY_MANTENIMIENTO, 0)) > 0 
+                        && ((Integer) espacio.getOrDefault(KEY_DISPONIBLES, 0)) == 0 
+                        && ((Integer) espacio.getOrDefault(KEY_DANADOS, 0)) == 0)
                 .count();
         
         int espaciosConSoloDanados = (int) itemsPorEspacio.stream()
-                .filter(espacio -> ((Integer) espacio.getOrDefault("danados", 0)) > 0 
-                        && ((Integer) espacio.getOrDefault("disponibles", 0)) == 0 
-                        && ((Integer) espacio.getOrDefault("mantenimiento", 0)) == 0)
+                .filter(espacio -> ((Integer) espacio.getOrDefault(KEY_DANADOS, 0)) > 0 
+                        && ((Integer) espacio.getOrDefault(KEY_DISPONIBLES, 0)) == 0 
+                        && ((Integer) espacio.getOrDefault(KEY_MANTENIMIENTO, 0)) == 0)
                 .count();
         
         int espaciosConMezclaEstados = (int) itemsPorEspacio.stream()
                 .filter(espacio -> {
-                    int tieneDisponibles = ((Integer) espacio.getOrDefault("disponibles", 0)) > 0 ? 1 : 0;
-                    int tieneMantenimiento = ((Integer) espacio.getOrDefault("mantenimiento", 0)) > 0 ? 1 : 0;
-                    int tieneDanados = ((Integer) espacio.getOrDefault("danados", 0)) > 0 ? 1 : 0;
+                    int tieneDisponibles = ((Integer) espacio.getOrDefault(KEY_DISPONIBLES, 0)) > 0 ? 1 : 0;
+                    int tieneMantenimiento = ((Integer) espacio.getOrDefault(KEY_MANTENIMIENTO, 0)) > 0 ? 1 : 0;
+                    int tieneDanados = ((Integer) espacio.getOrDefault(KEY_DANADOS, 0)) > 0 ? 1 : 0;
                     return tieneDisponibles + tieneMantenimiento + tieneDanados > 1;
                 })
                 .count();
         
         int tiposConSoloDisponibles = (int) itemsPorTipo.stream()
-                .filter(tipo -> ((Integer) tipo.getOrDefault("disponibles", 0)) > 0 
-                        && ((Integer) tipo.getOrDefault("mantenimiento", 0)) == 0 
-                        && ((Integer) tipo.getOrDefault("danados", 0)) == 0)
+                .filter(tipo -> ((Integer) tipo.getOrDefault(KEY_DISPONIBLES, 0)) > 0 
+                        && ((Integer) tipo.getOrDefault(KEY_MANTENIMIENTO, 0)) == 0 
+                        && ((Integer) tipo.getOrDefault(KEY_DANADOS, 0)) == 0)
                 .count();
         
         int tiposConSoloMantenimiento = (int) itemsPorTipo.stream()
-                .filter(tipo -> ((Integer) tipo.getOrDefault("mantenimiento", 0)) > 0 
-                        && ((Integer) tipo.getOrDefault("disponibles", 0)) == 0 
-                        && ((Integer) tipo.getOrDefault("danados", 0)) == 0)
+                .filter(tipo -> ((Integer) tipo.getOrDefault(KEY_MANTENIMIENTO, 0)) > 0 
+                        && ((Integer) tipo.getOrDefault(KEY_DISPONIBLES, 0)) == 0 
+                        && ((Integer) tipo.getOrDefault(KEY_DANADOS, 0)) == 0)
                 .count();
         
         int tiposConSoloDanados = (int) itemsPorTipo.stream()
-                .filter(tipo -> ((Integer) tipo.getOrDefault("danados", 0)) > 0 
-                        && ((Integer) tipo.getOrDefault("disponibles", 0)) == 0 
-                        && ((Integer) tipo.getOrDefault("mantenimiento", 0)) == 0)
+                .filter(tipo -> ((Integer) tipo.getOrDefault(KEY_DANADOS, 0)) > 0 
+                        && ((Integer) tipo.getOrDefault(KEY_DISPONIBLES, 0)) == 0 
+                        && ((Integer) tipo.getOrDefault(KEY_MANTENIMIENTO, 0)) == 0)
                 .count();
         
         int tiposConMezclaEstados = (int) itemsPorTipo.stream()
                 .filter(tipo -> {
-                    int tieneDisponibles = ((Integer) tipo.getOrDefault("disponibles", 0)) > 0 ? 1 : 0;
-                    int tieneMantenimiento = ((Integer) tipo.getOrDefault("mantenimiento", 0)) > 0 ? 1 : 0;
-                    int tieneDanados = ((Integer) tipo.getOrDefault("danados", 0)) > 0 ? 1 : 0;
+                    int tieneDisponibles = ((Integer) tipo.getOrDefault(KEY_DISPONIBLES, 0)) > 0 ? 1 : 0;
+                    int tieneMantenimiento = ((Integer) tipo.getOrDefault(KEY_MANTENIMIENTO, 0)) > 0 ? 1 : 0;
+                    int tieneDanados = ((Integer) tipo.getOrDefault(KEY_DANADOS, 0)) > 0 ? 1 : 0;
                     return tieneDisponibles + tieneMantenimiento + tieneDanados > 1;
                 })
                 .count();
@@ -437,7 +447,7 @@ public class StatisticsService {
         double densidadInventario = promedioItemsPorEspacio;
         int top5EspaciosCantidad = topEspacios.stream()
                 .limit(5)
-                .mapToInt(espacio -> ((Integer) espacio.get("cantidad")))
+                .mapToInt(espacio -> ((Integer) espacio.get(KEY_CANTIDAD)))
                 .sum();
         double concentracionInventario = totalCantidad > 0 ? (top5EspaciosCantidad * 100.0 / totalCantidad) : 0;
         

@@ -211,7 +211,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
               <TableBody>
                 {filteredTraces.length > 0 ? (
                   filteredTraces.map((trace, index) => (
-                    <TableRow key={index} className="hover:bg-muted/60">
+                    <TableRow key={`${trace.timestamp}-${trace.request.uri}-${index}`} className="hover:bg-muted/60">
                       <TableCell className="font-mono text-xs">
                         {new Date(trace.timestamp).toLocaleTimeString()}
                       </TableCell>

@@ -184,7 +184,7 @@ class ReservaServiceFlowTest {
         lenient().when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
             // Simular filtro: solo públicas para EXTERNO
             return reservasDB.values().stream()
-                    .filter(r -> r.getEsPublica())
+                    .filter(Reserva::getEsPublica)
                     .toList();
         });
 
@@ -256,7 +256,7 @@ class ReservaServiceFlowTest {
         lenient().when(usuarioRepository.findByEmail("maria@yahoo.com")).thenReturn(Optional.of(externoMaria));
         when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
             return reservasDB.values().stream()
-                    .filter(r -> r.getEsPublica())
+                    .filter(Reserva::getEsPublica)
                     .toList();
         });
 

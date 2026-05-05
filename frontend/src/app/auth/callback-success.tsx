@@ -34,7 +34,7 @@ export function AuthCallbackSuccess() {
         localStorage.setItem('user', JSON.stringify(userData));
 
         // Limpiar la URL de parámetros sensibles
-        window.history.replaceState({}, document.title, window.location.pathname);
+        globalThis.history.replaceState({}, document.title, globalThis.location.pathname);
 
         // Redirigir al dashboard
         navigate('/dashboard');

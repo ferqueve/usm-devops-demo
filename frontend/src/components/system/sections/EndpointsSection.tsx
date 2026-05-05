@@ -185,8 +185,8 @@ export const EndpointsSection = memo(function EndpointsSection({ mappings }: End
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allEndpoints.map((endpoint, idx) => (
-                  <TableRow key={idx}>
+                {allEndpoints.map((endpoint) => (
+                  <TableRow key={`${endpoint.method}-${endpoint.path}`}>
                     <TableCell className="py-2">
                       <Badge className={`text-xs font-semibold border ${getMethodColor(endpoint.method)}`}>
                         {endpoint.method}

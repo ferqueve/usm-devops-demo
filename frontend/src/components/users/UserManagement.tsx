@@ -557,6 +557,10 @@ export default function UserManagement() {
 
             {/* Panel de filtros expandible */}
             {(() => {
+              const boolFilterValue = (v: boolean | undefined): string => {
+                if (v === undefined) return 'all';
+                return v ? 'true' : 'false';
+              };
               const filterFields: FilterField[] = [
                 {
                   id: 'role-filter',
@@ -576,11 +580,7 @@ export default function UserManagement() {
                   id: 'verified-filter',
                   label: 'Verificación',
                   type: 'select',
-                  value: filters.verificado === undefined 
-                    ? 'all' 
-                    : filters.verificado 
-                    ? 'true' 
-                    : 'false',
+                  value: boolFilterValue(filters.verificado),
                   options: [
                     { value: 'all', label: 'Todos' },
                     { value: 'true', label: 'Verificados' },
@@ -592,11 +592,7 @@ export default function UserManagement() {
                   id: 'active-filter',
                   label: 'Estado',
                   type: 'select',
-                  value: filters.activo === undefined 
-                    ? 'all' 
-                    : filters.activo 
-                    ? 'true' 
-                    : 'false',
+                  value: boolFilterValue(filters.activo),
                   options: [
                     { value: 'all', label: 'Todos' },
                     { value: 'true', label: 'Activos' },

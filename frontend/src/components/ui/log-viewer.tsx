@@ -33,7 +33,7 @@ type LogLevel = 'ERROR' | 'WARN' | 'INFO' | 'DEBUG' | 'TRACE' | 'ALL';
 
 const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'OFF'];
 
-export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }: LogViewerProps) {
+export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }: Readonly<LogViewerProps>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<LogLevel>('ALL');
   const [autoScroll, setAutoScroll] = useState(false);
@@ -88,9 +88,9 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
   const highlightText = (text: string, search: string) => {
     if (!search) return text;
     const parts = text.split(new RegExp(`(${search})`, 'gi'));
-    return parts.map((part, i) => 
+    return parts.map((part, i) =>
       part.toLowerCase() === search.toLowerCase() ? (
-        <mark key={i} className="bg-yellow-200 text-gray-900">{part}</mark>
+        <mark key={`${part}-${i}`} className="bg-yellow-200 text-gray-900">{part}</mark>
       ) : part
     );
   };
@@ -358,7 +358,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
             <div className="p-4">
               {filteredLines.map((line, index) => (
                 <div
-                  key={index}
+                  key={`${index}-${line.slice(0, 32)}`}
                   className={`log-line py-0.5 px-2 rounded ${getLineClass(line)}`}
                 >
                   <span className="text-gray-500 select-none inline-block w-12 text-right mr-3">

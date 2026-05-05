@@ -28,7 +28,7 @@ export function EditUserDialog({
   open, 
   onOpenChange, 
   onSuccess 
-}: EditUserDialogProps) {
+}: Readonly<EditUserDialogProps>) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<UpdateUserData>({
     email: '',

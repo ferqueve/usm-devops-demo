@@ -48,10 +48,10 @@ public class AuditEntityListener {
             Field idField = entity.getClass().getDeclaredField("id");
             idField.setAccessible(true);
             Object id = idField.get(entity);
-            if (id instanceof Long) {
-                return (Long) id;
-            } else if (id instanceof Integer) {
-                return ((Integer) id).longValue();
+            if (id instanceof Long longId) {
+                return longId;
+            } else if (id instanceof Integer integerId) {
+                return integerId.longValue();
             }
         } catch (Exception e) {
             log.warn("No se pudo obtener ID de la entidad: {}", e.getMessage());

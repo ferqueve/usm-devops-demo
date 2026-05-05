@@ -178,7 +178,7 @@ export default function ReservationCalendarView({
            className={`h-full border-2 rounded-sm ${colorConfig.bg} ${colorConfig.border} ${colorConfig.hoverBg} ${colorConfig.hoverBorder} transition-colors relative`}
            style={{ minHeight: '2px' }}
          />
-                  {/* Tooltip que sigue el cursor - renderizado en portal para estar sobre todo */}
+                  {/* Tooltip que sigue el cursor - renderizado en portal para quedar por encima del resto */}
           {showTooltip && mousePosition && typeof document !== 'undefined' && createPortal(
             <div
               className="fixed pointer-events-none z-[99999] bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95"

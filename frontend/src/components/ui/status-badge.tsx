@@ -15,7 +15,7 @@ interface StatusBadgeProps {
 /**
  * StatusBadge component con iconos y estilos visuales mejorados
  */
-export function StatusBadge({ status, label, icon = true, pulse = false, className }: StatusBadgeProps) {
+export function StatusBadge({ status, label, icon = true, pulse = false, className }: Readonly<StatusBadgeProps>) {
   const statusConfig = {
     success: {
       variant: 'default' as const,
