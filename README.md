@@ -29,11 +29,16 @@ Sistema web completo para la gestión de reservas de espacios en la Universidad 
 - **Maven**
 
 ### Frontend
-- **React** 18 + **TypeScript**
+- **React** 19 + **TypeScript**
 - **Vite**
 - **Tailwind CSS**
 - **shadcn/ui**
 - **React Router**
+
+### Infraestructura (Docker Compose)
+- **PostgreSQL** 15
+- **Redis** 7 (caché de aplicación)
+- **MinIO** (almacenamiento de objetos / imágenes de espacios; configurable con `MINIO_ENABLED`)
 
 ### DevOps
 - **Docker** + **Docker Compose**
@@ -43,7 +48,8 @@ Sistema web completo para la gestión de reservas de espacios en la Universidad 
 - **Java** 21 o superior
 - **Node.js** 20 o superior
 - **PostgreSQL** 15 o superior (opcional si usas Docker)
-- **Docker** y **Docker Compose** (opcional, recomendado)
+- **Redis** 7 o superior (requerido por el backend para caché; incluido en `docker compose`)
+- **Docker** y **Docker Compose** (opcional, recomendado para levantar DB + Redis + MinIO + apps)
 
 ## 🚀 Instalación Rápida
 
@@ -67,6 +73,7 @@ docker compose logs -f
 **¡Listo!** Accede a:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8080/api/v1
+- MinIO consola (si usas el stack completo): http://localhost:9001
 
 ### Sin Docker (Instalación Manual)
 
@@ -84,6 +91,7 @@ GRANT ALL PRIVILEGES ON DATABASE utec_db TO ut_user;
 
 # 3. Configurar variables de entorno
 # Crear backend/.env y frontend/.env (ver configuración)
+# Tener Redis en localhost:6379 (o ajustar REDIS_HOST/REDIS_PORT en backend)
 
 # 4. Instalar dependencias del backend
 cd backend
@@ -142,7 +150,7 @@ POSTGRES_PASSWORD=tu_password
 GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
 
-> **Nota:** Para configuración avanzada (Google OAuth, Gmail API, etc.) consulta el [Manual de Instalación](MANUAL_DE_INSTALACION.md).
+> **Nota:** Para configuración avanzada (Google OAuth, Gmail API, etc.) consulta el [Manual de Instalación](documentation/MANUAL_DE_INSTALACION.md).
 
 ## 📚 Uso
 
@@ -151,7 +159,7 @@ GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 3. **Verificar email**: Verifica tu cuenta con el código enviado por email
 4. **Explorar**: Navega por espacios, crea reservas, gestiona inventario
 
-Para más detalles, consulta el [Manual de Usuario](MANUAL_DE_USUARIO.md).
+Para más detalles, consulta el [Manual de Usuario](documentation/MANUAL_DE_USUARIO.md).
 
 ## 🏗️ Estructura del Proyecto
 
@@ -163,6 +171,7 @@ USM_UTEC/
 ├── frontend/             # Aplicación React
 │   ├── src/
 │   └── package.json
+├── documentation/        # Manuales y documentación técnica
 ├── docker-compose.yml    # Orquestación Docker
 └── README.md
 ```
@@ -183,9 +192,9 @@ npm run lint
 
 ## 📖 Documentación
 
-- **[Manual de Usuario](MANUAL_DE_USUARIO.md)** - Guía completa para usuarios finales
-- **[Manual de Instalación](MANUAL_DE_INSTALACION.md)** - Guía técnica detallada
-- **[Estructura del Proyecto](PROJECT_STRUCTURE.md)** - Documentación de la arquitectura
+- **[Manual de Usuario](documentation/MANUAL_DE_USUARIO.md)** - Guía completa para usuarios finales
+- **[Manual de Instalación](documentation/MANUAL_DE_INSTALACION.md)** - Guía técnica detallada
+- **[Estructura del Proyecto](documentation/PROJECT_STRUCTURE.md)** - Documentación de la arquitectura
 
 ## 🔧 Comandos Útiles
 
@@ -251,4 +260,4 @@ Proyecto Final
 
 ---
 
-**Última actualización:** Octubre 2025
+**Última actualización:** Mayo 2026

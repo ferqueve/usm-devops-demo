@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
- * Servicio que mapea roles a permisos según el documento ROLES_AND_PERMISSIONS.md
+ * Servicio que mapea roles a permisos según documentation/ROLES_AND_PERMISSIONS.md
  */
 @Service
 @RequiredArgsConstructor

@@ -4,9 +4,9 @@
 
 ---
 
-**Versión del Manual:** 1.0.0  
+**Versión del Manual:** 1.0.1  
 **Versión del Sistema:** 1.0.0  
-**Fecha de Publicación:** Noviembre 2025  
+**Fecha de Publicación:** Mayo 2026  
 **Para:** Personal Técnico de UTEC  
 **Estándar:** ISO/IEC/IEEE 15289:2019
 
@@ -134,10 +134,10 @@ Este manual está dirigido a **personal técnico** de UTEC que necesita:
 | Documento | Ubicación | Descripción |
 |-----------|-----------|-------------|
 | **README.md** | Raíz del proyecto | Documentación general y inicio rápido |
-| **PROJECT_STRUCTURE.md** | Raíz del proyecto | Estructura completa del proyecto |
-| **MANUAL_DE_USUARIO.md** | Raíz del proyecto | Manual de usuario completo |
-| **ROLES_AND_PERMISSIONS.md** | Raíz del proyecto | Documentación de roles y permisos |
-| **DESIGN_SYSTEM.md** | Raíz del proyecto | Sistema de diseño UI/UX |
+| **PROJECT_STRUCTURE.md** | `documentation/` | Estructura completa del proyecto |
+| **MANUAL_DE_USUARIO.md** | `documentation/` | Manual de usuario completo |
+| **ROLES_AND_PERMISSIONS.md** | `documentation/` | Documentación de roles y permisos |
+| **DESIGN_SYSTEM.md** | `documentation/` | Sistema de diseño UI/UX |
 | **backend/README.md** | `backend/README.md` | Documentación específica del backend |
 | **frontend/README.md** | `frontend/README.md` | Documentación específica del frontend |
 
@@ -511,11 +511,15 @@ UTEC-Space-Manager/
 ├── .gitleaksignore           # Configuración GitLeaks
 │
 ├── README.md                  # Documentación general
-├── PROJECT_STRUCTURE.md       # Estructura del proyecto
-├── ROLES_AND_PERMISSIONS.md   # Roles y permisos
-├── DESIGN_SYSTEM.md           # Sistema de diseño
-├── MANUAL_DE_USUARIO.md       # Manual de usuario
-└── MANUAL_DE_INSTALACION.md   # Este manual
+│
+└── documentation/             # Manuales y documentación técnica
+    ├── PROJECT_STRUCTURE.md   # Estructura del proyecto
+    ├── ROLES_AND_PERMISSIONS.md
+    ├── DESIGN_SYSTEM.md
+    ├── MANUAL_DE_USUARIO.md
+    ├── MANUAL_DE_INSTALACION.md  # Este manual
+    ├── MANUAL_RECOMENDACIONES.md
+    └── SISTEMA_RECOMENDACIONES.md
 ```
 
 ## 4.2 Versiones y Checksums
@@ -806,6 +810,19 @@ docker compose exec backend sh
 docker compose exec db psql -U ut_user -d utec_db
 ```
 
+### Variante: Instalación Rápida con Imágenes Pre-construidas (`docker-compose.hub.yml`)
+
+El proyecto incluye un compose alternativo, `docker-compose.hub.yml`, que en lugar de construir las imágenes localmente las descarga desde Docker Hub. Está pensado para entornos donde no se quiere compilar el código (por ejemplo, una demo, una validación rápida o un despliegue en un servidor que solo necesita correr la aplicación).
+
+```bash
+# Desde la raíz del proyecto
+docker compose -f docker-compose.hub.yml up -d
+```
+
+Las imágenes que descarga son las publicadas oficialmente por el equipo en Docker Hub (`mathiaspena/utec-backend:latest`, `mathiaspena/utec-frontend:latest`). El resto de los servicios (PostgreSQL, Redis, MinIO) se descarga desde imágenes públicas oficiales.
+
+> **Cuándo usarlo**: para levantar el sistema sin clonar el código fuente o sin compilarlo. **Cuándo no usarlo**: cuando se está desarrollando o se quieren probar cambios locales — para eso usar `docker-compose.yml` (build local).
+
 ## 5.4 Instalación Manual Local
 
 Esta instalación es recomendada para desarrollo y permite mayor control.
@@ -828,15 +845,14 @@ En la consola de PostgreSQL:
 -- Crear usuario
 CREATE USER ut_user WITH PASSWORD 'TU_PASSWORD_SEGURO';
 
--- Crear base de datos
+-- Crear base de datos (con OWNER ut_user, ya tiene todos los privilegios sobre la base)
 CREATE DATABASE utec_db OWNER ut_user;
-
--- Otorgar privilegios
-GRANT ALL PRIVILEGES ON DATABASE utec_db TO ut_user;
 
 -- Salir
 \q
 ```
+
+> **Nota PostgreSQL 15+**: a partir de PG15, otorgar privilegios solo a nivel de base de datos (`GRANT ... ON DATABASE`) no es suficiente para crear tablas: hace falta también `GRANT ALL ON SCHEMA public TO ut_user`. Al crear la base con `OWNER ut_user`, este caso ya queda resuelto y no se requieren grants adicionales.
 
 #### 1.2 Verificar Conexión
 
@@ -867,12 +883,20 @@ Agregar variables del frontend (ver sección [6.1.2](#612-frontendenv)).
 
 #### 2.3 Configurar IPs (si necesita acceso desde red)
 
+El proyecto incluye scripts de ayuda para detectar la IP de la red local y dejarla escrita en los archivos `.env` automáticamente.
+
 ```bash
-# Desde la raíz del proyecto
-npm run auto-set-ip
+# Linux / macOS
+bash scripts/SetIP-Linux.sh
+
+# Windows (PowerShell)
+powershell -File scripts/SetIP-Windows.ps1
+
+# Windows (alternativa con batch)
+scripts\RUN-SetIP-Windows.bat
 ```
 
-O manualmente editar los archivos `.env`.
+Si prefiere hacerlo manualmente, basta con editar las URLs en los archivos `.env` (`VITE_API_URL`, `VITE_FRONTEND_URL`, `BACKEND_URL`, `CORS_ALLOWED_ORIGINS`).
 
 ### Paso 3: Instalar Backend
 
@@ -1029,10 +1053,14 @@ Verificar que todos los servicios están corriendo:
    ```bash
    psql -U ut_user -d utec_db -h localhost -c "SELECT version();"
    ```
+4. **Redis** (requerido por el backend para caché): `redis-cli -h localhost ping` → `PONG` (o el contenedor `ut_redis` en Docker)
+5. **MinIO** (si `MINIO_ENABLED=true` o usas el `docker compose` completo): consola `http://localhost:9001`, API `http://localhost:9000`
 
 ## 5.5 Instalación Híbrida (Base de Datos Docker, Aplicaciones Nativas)
 
 Esta opción usa Docker solo para la base de datos y ejecuta backend/frontend nativamente.
+
+> **Importante:** El backend usa `spring.cache.type=redis` por defecto. Debes tener **Redis accesible** en `REDIS_HOST`/`REDIS_PORT` (típicamente `localhost:6379`). MinIO es opcional (`MINIO_ENABLED=false` por defecto en `application.properties`).
 
 ### Paso 1: Levantar Solo Base de Datos con Docker
 
@@ -1228,8 +1256,9 @@ JWT_SECRET=TU_SECRETO_SUPER_SEGURO_256_BITS_MINIMO_32_CARACTERES
 JWT_EXPIRATION=3600000
 
 # Expiración del refresh token (milisegundos)
-# Por defecto: 24 horas (86400000 ms)
-JWT_REFRESH_EXPIRATION=86400000
+# Valor recomendado por el proyecto: 30 días (2592000000 ms)
+# El default interno de la aplicación si no se define la variable es 24 horas (86400000 ms)
+JWT_REFRESH_EXPIRATION=2592000000
 ```
 
 **Generar secreto JWT seguro:**
@@ -1295,8 +1324,79 @@ FRONTEND_URL=http://localhost:5173
 RESERVAS_REMINDER_HOURS_BEFORE=24
 
 # Habilitar/deshabilitar recordatorios automáticos
+# Para que efectivamente se envíen emails, también debe estar GMAIL_API_ENABLED=true
 RESERVAS_REMINDER_ENABLED=true
 ```
+
+#### Variables de Almacenamiento de Archivos (MinIO)
+
+MinIO se usa como almacenamiento S3-compatible para archivos subidos al sistema. Es **opcional**: si no se habilita, las funcionalidades de subida de archivos quedan deshabilitadas pero el resto del sistema funciona.
+
+```env
+# Habilitar el módulo MinIO (default: false)
+MINIO_ENABLED=true
+
+# Endpoint interno donde el backend conecta con MinIO
+MINIO_ENDPOINT=http://localhost:9000
+
+# URL pública por la cual los clientes acceden a los archivos servidos desde MinIO
+MINIO_PUBLIC_URL=http://localhost:9000
+
+# Credenciales del bucket
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+
+# Bucket donde se guardan los archivos del sistema
+MINIO_BUCKET_NAME=utec-files
+
+# Región (puede dejarse en us-east-1 para entornos locales)
+MINIO_REGION=us-east-1
+
+# Tamaño máximo de archivo en bytes (ejemplo: 10 MB)
+MINIO_MAX_FILE_SIZE=10485760
+
+# Tipos MIME permitidos, separados por coma
+MINIO_ALLOWED_MIME_TYPES=image/png,image/jpeg,application/pdf
+```
+
+#### Variables de Email (Gmail API)
+
+```env
+# Habilita el envío de emails desde el sistema (default: false)
+# Si está en false, el sistema no envía notificaciones aunque otros flags lo pidan.
+GMAIL_API_ENABLED=true
+```
+
+#### Variables de Zona Horaria
+
+```env
+# Zona horaria de la aplicación (por defecto: America/Montevideo)
+APP_TIMEZONE=America/Montevideo
+```
+
+#### Variables de CORS (perfil dev)
+
+```env
+# Orígenes permitidos por CORS (separados por coma)
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://192.168.1.10:5173
+
+# Métodos HTTP permitidos (default razonable: GET,POST,PUT,DELETE,PATCH,OPTIONS)
+CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,PATCH,OPTIONS
+```
+
+#### Variables de Caché (Redis)
+
+El sistema cachea ciertas estadísticas en Redis para no recalcularlas en cada petición. Estos TTL se pueden ajustar mediante variables de entorno (todos los valores se expresan en segundos).
+
+```env
+# Estadísticas agregadas de usuarios
+CACHE_USUARIO_STATS_TTL=300
+
+# Estadísticas agregadas de inventario
+CACHE_INVENTARIO_STATS_TTL=300
+```
+
+> **Nota sobre carga de variables (`dotenv`)**: el `pom.xml` está configurado con `-Ddotenv.file=../.env`, por lo que cuando se ejecuta `./mvnw spring-boot:run` desde la carpeta `backend/`, el archivo `.env` que se lee es **el de la raíz del proyecto**, no el de `backend/`. Si las variables se ponen exclusivamente en `backend/.env` puede que no las tome la aplicación cuando se levanta sin Docker. La forma más robusta es mantener los `.env` de cada componente sincronizados o consolidar las variables en el `.env` de la raíz.
 
 #### Ejemplo Completo: `backend/.env`
 
@@ -1314,7 +1414,7 @@ BACKEND_URL=http://localhost:8080
 # ===== JWT =====
 JWT_SECRET=tu-secreto-super-seguro-256-bits-minimo-32-caracteres
 JWT_EXPIRATION=3600000
-JWT_REFRESH_EXPIRATION=86400000
+JWT_REFRESH_EXPIRATION=2592000000
 
 # ===== GOOGLE OAUTH 2.0 =====
 GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
@@ -1368,17 +1468,17 @@ VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 
 **Configuración automática de IPs:**
 
-El proyecto incluye scripts para configurar automáticamente las IPs:
+El proyecto incluye scripts para detectar la IP de red local y actualizar los archivos `.env`:
 
 ```bash
-# Desde la raíz del proyecto
-npm run auto-set-ip
+# Linux / macOS
+bash scripts/SetIP-Linux.sh
 
-# Configurar solo WiFi
-npm run set-wifi-ip
+# Windows (PowerShell)
+powershell -File scripts/SetIP-Windows.ps1
 
-# Configurar solo Ethernet
-npm run set-ethernet-ip
+# Windows (lanzador batch)
+scripts\RUN-SetIP-Windows.bat
 ```
 
 ### 6.1.3 `.env` (Raíz - Docker Compose)
@@ -1411,8 +1511,8 @@ Google OAuth 2.0 permite a los usuarios iniciar sesión con su cuenta de Google.
 
 1. Ir a **"APIs & Services" > "Library"**
 2. Habilitar las siguientes APIs:
-   - **Google+ API** (para OAuth)
-   - **Gmail API** (si se usa para envío de emails)
+   - **Google People API** (necesaria para obtener perfil del usuario en OAuth; reemplaza a la antigua *Google+ API*, deprecada en 2019).
+   - **Gmail API** (solo si se va a usar Gmail para envío de notificaciones desde el sistema).
 
 ### Paso 3: Crear Credenciales OAuth 2.0
 
@@ -1700,8 +1800,11 @@ Si necesita acceso desde otros dispositivos en la red local:
 **Opción 1: Automática (recomendado)**
 
 ```bash
-# Desde la raíz del proyecto
-npm run auto-set-ip
+# Linux / macOS
+bash scripts/SetIP-Linux.sh
+
+# Windows
+powershell -File scripts/SetIP-Windows.ps1
 ```
 
 **Opción 2: Manual**
@@ -2729,14 +2832,24 @@ Si los problemas persisten después de seguir las soluciones de este capítulo:
 | Versión | Fecha | Descripción |
 |---------|-------|-------------|
 | **1.0.0** | Noviembre 2025 | Versión inicial del sistema |
+| **1.0.1** | Mayo 2026 | Documentación alineada al stack (Docker Compose con Redis/MinIO, React 19 en frontend) |
 
 ## 10.2 Historial de Versiones del Manual
 
 | Versión del Manual | Fecha | Descripción | Autor |
 |-------------------|-------|-------------|-------|
 | **1.0.0** | Noviembre 2025 | Versión inicial del manual de instalación | Equipo Técnico UTEC |
+| **1.0.1** | Mayo 2026 | Alineación con `docker-compose`, Redis, MinIO y requisitos de caché | Equipo Técnico UTEC |
 
 ## 10.3 Descripción de Modificaciones
+
+### Versión 1.0.1 (Mayo 2026)
+
+**Cambios principales:**
+- Alineación con `docker-compose.yml` actual (PostgreSQL, Redis, MinIO, backend, frontend)
+- Requisito de Redis para caché; MinIO documentado como opcional
+- Eliminación de referencias a `HELP.md` (archivo no versionado)
+- Tabla de puertos y verificación post-instalación actualizadas
 
 ### Versión 1.0.0 (Noviembre 2025)
 
@@ -2782,6 +2895,12 @@ cd backend && ./mvnw clean install
 
 # Tests
 ./mvnw test
+
+# Tests + reporte de cobertura JaCoCo (HTML en backend/target/site/jacoco/)
+./mvnw test jacoco:report
+
+# Análisis estático con SonarQube (requiere instancia configurada)
+./mvnw sonar:sonar
 ```
 
 ### Frontend (npm)
@@ -2817,6 +2936,9 @@ psql -U ut_user -d utec_db -h localhost
 | **5173** | Frontend | Interfaz web (desarrollo) |
 | **8080** | Backend | API REST |
 | **5432** | PostgreSQL | Base de datos |
+| **6379** | Redis | Caché de aplicación |
+| **9000** | MinIO | API compatible S3 |
+| **9001** | MinIO | Consola web MinIO |
 
 ## 11.3 Estructura de Directorios de Configuración
 
@@ -2840,6 +2962,8 @@ Proyecto/
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/utec_db
 SPRING_DATASOURCE_USERNAME=ut_user
 SPRING_DATASOURCE_PASSWORD=***
+REDIS_HOST=localhost
+REDIS_PORT=6379
 JWT_SECRET=***
 GOOGLE_CLIENT_ID=***
 GOOGLE_CLIENT_SECRET=***
@@ -2863,6 +2987,7 @@ Use este checklist para verificar que todos los pasos de instalación se complet
 - [ ] Java 21 instalado y configurado
 - [ ] Node.js 20+ instalado
 - [ ] PostgreSQL 15 instalado y corriendo
+- [ ] Redis 7+ disponible (local o vía Docker) — requerido por el backend
 - [ ] Docker instalado (si usa Docker)
 - [ ] Código fuente obtenido
 
@@ -2885,6 +3010,8 @@ Use este checklist para verificar que todos los pasos de instalación se complet
 - [ ] Backend responde en `/actuator/health`
 - [ ] Frontend carga en navegador
 - [ ] Base de datos conecta correctamente
+- [ ] Redis responde (`PONG`) si el backend usa caché Redis
+- [ ] MinIO accesible solo si habilitaste almacenamiento (`MINIO_ENABLED=true`)
 - [ ] Registro de usuario funciona
 - [ ] Login funciona
 - [ ] No hay errores en logs
@@ -2895,9 +3022,9 @@ Use este checklist para verificar que todos los pasos de instalación se complet
 
 ---
 
-**Documento generado:** Noviembre 2025  
-**Última actualización:** Noviembre 2025  
-**Versión:** 1.0.0
+**Documento generado:** Mayo 2026  
+**Última actualización:** Mayo 2026  
+**Versión:** 1.0.1
 
 ---
 

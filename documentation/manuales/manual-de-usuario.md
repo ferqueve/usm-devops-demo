@@ -5,7 +5,7 @@
 ---
 
 **Versión del Manual:** 1.0.0  
-**Fecha de Publicación:** Noviembre 2025  
+**Fecha de Publicación:** Mayo 2026  
 **Para:** Universidad Tecnológica del Uruguay (UTEC)  
 **Sistema:** UTEC Space Manager v1.0.0
 
@@ -119,21 +119,29 @@
     - [15.1 Notificaciones por Email](#151-notificaciones-por-email)
     - [15.2 Preferencias de Vista](#152-preferencias-de-vista)
     - [15.3 Guardar Preferencias](#153-guardar-preferencias)
-16. [Carreras](#16-carreras)
-    - [16.1 Ver Carreras](#161-ver-carreras)
-    - [16.2 Gestionar Carreras](#162-gestionar-carreras)
-17. [Guías Prácticas por Rol](#17-guias-prácticas-por-rol)
-    - [17.1 Flujo para ADMIN](#171-flujo-para-admin)
-    - [17.2 Flujo para ANALISTA](#172-flujo-para-analista)
-    - [17.3 Flujo para MANTENIMIENTO](#173-flujo-para-mantenimiento)
-    - [17.4 Flujo para DOCENTE](#174-flujo-para-docente)
-    - [17.5 Flujo para ESTUDIANTE](#175-flujo-para-estudiante)
-    - [17.6 Flujo para EXTERNO](#176-flujo-para-externo)
-18. [Casos de Uso Comunes](#18-casos-de-uso-comunes)
-19. [Solución de Problemas](#19-solución-de-problemas)
-20. [Preguntas Frecuentes (FAQ)](#20-preguntas-frecuentes-faq)
-21. [Glosario](#21-glosario)
-22. [Anexos](#22-anexos)
+16. [Recomendaciones Inteligentes](#16-recomendaciones-inteligentes)
+    - [16.1 Qué son y para qué sirven](#161-qué-son-y-para-qué-sirven)
+    - [16.2 Recomendaciones al crear una reserva](#162-recomendaciones-al-crear-una-reserva)
+    - [16.3 Recomendaciones en el dashboard](#163-recomendaciones-en-el-dashboard)
+    - [16.4 Recomendaciones para personal de mantenimiento](#164-recomendaciones-para-personal-de-mantenimiento)
+    - [16.5 Recomendaciones para administradores y analistas](#165-recomendaciones-para-administradores-y-analistas)
+    - [16.6 Cómo entender los puntajes](#166-cómo-entender-los-puntajes)
+    - [16.7 Preguntas frecuentes sobre recomendaciones](#167-preguntas-frecuentes-sobre-recomendaciones)
+17. [Carreras](#17-carreras)
+    - [17.1 Ver Carreras](#171-ver-carreras)
+    - [17.2 Gestionar Carreras](#172-gestionar-carreras)
+18. [Guías Prácticas por Rol](#18-guias-prácticas-por-rol)
+    - [18.1 Flujo para ADMIN](#181-flujo-para-admin)
+    - [18.2 Flujo para ANALISTA](#182-flujo-para-analista)
+    - [18.3 Flujo para MANTENIMIENTO](#183-flujo-para-mantenimiento)
+    - [18.4 Flujo para DOCENTE](#184-flujo-para-docente)
+    - [18.5 Flujo para ESTUDIANTE](#185-flujo-para-estudiante)
+    - [18.6 Flujo para EXTERNO](#186-flujo-para-externo)
+19. [Casos de Uso Comunes](#19-casos-de-uso-comunes)
+20. [Solución de Problemas](#20-solución-de-problemas)
+21. [Preguntas Frecuentes (FAQ)](#21-preguntas-frecuentes-faq)
+22. [Glosario](#22-glosario)
+23. [Anexos](#23-anexos)
 
 ---
 
@@ -746,7 +754,7 @@ Cada rol tiene permisos granulares específicos. A continuación, se detallan lo
 
 ## 4.3 Tabla Comparativa de Permisos
 
-Para una comparación rápida, consulte la tabla completa en [ROLES_AND_PERMISSIONS.md](ROLES_AND_PERMISSIONS.md) del proyecto.
+Para una comparación rápida, consulte la ficha técnica completa en [`fichas-tecnicas/roles-y-permisos.md`](../fichas-tecnicas/roles-y-permisos.md).
 
 ## 4.4 Áreas Accesibles por Rol
 
@@ -855,7 +863,7 @@ El área central donde se muestra el contenido de cada sección:
 
 ### Menú Principal
 
-El menú principal se encuentra en el sidebar y está organizado por funcionalidades:
+El menú principal se encuentra en la barra lateral y está organizado por funcionalidades. Contiene **ocho ítems**:
 
 1. **Inicio** (`/dashboard`)
    - Dashboard principal con métricas y resúmenes
@@ -867,7 +875,7 @@ El menú principal se encuentra en el sidebar y está organizado por funcionalid
    - Gestión completa de reservas
 
 4. **Espacios** (`/rooms`)
-   - Gestión de espacios físicos
+   - Gestión de espacios físicos. Desde acá también se accede al inventario asociado a cada espacio.
 
 5. **Estadísticas** (`/statistics`)
    - Estadísticas y reportes
@@ -881,8 +889,7 @@ El menú principal se encuentra en el sidebar y está organizado por funcionalid
 8. **Auditoría** (`/audit`) - Solo ADMIN
    - Registros de auditoría
 
-9. **Inventario** (`/inventory`) - ADMIN, ANALISTA, MANTENIMIENTO
-   - Gestión de inventario
+> El módulo de **Inventario** (`/inventory`) está disponible para ADMIN, ANALISTA y MANTENIMIENTO, pero no aparece como ítem propio en la barra lateral. Se accede desde el módulo de Espacios o navegando directamente a la URL.
 
 ### Navegación por Breadcrumbs
 
@@ -977,7 +984,7 @@ El menú de usuario se encuentra en el header, en la esquina superior derecha:
 
 ## 5.5 Preferencias de Usuario
 
-Las preferencias se acceden desde el menú de usuario (ver sección [15](#15-preferencias-de-usuario)):
+Las preferencias se acceden desde el ícono de configuración ubicado en la barra lateral, junto al menú de navegación. El panel se abre como ventana modal (ver sección [15](#15-preferencias-de-usuario)):
 
 ### Tipos de Preferencias
 
@@ -1248,8 +1255,8 @@ Para crear una nueva reserva (ADMIN y ANALISTA pueden crear directamente con est
 ### Pasos para Crear Reserva
 
 1. **Acceder al formulario**
-   - Hacer clic en **"Nueva Reserva"** en la página de reservas
-   - O usar la acción rápida del dashboard
+   - Hacer clic en **"Nueva Reserva"** (cuando el usuario tiene permiso para reservar directamente) o **"Nueva Solicitud de Reserva"** (cuando el usuario solo puede solicitar y la reserva queda pendiente de aprobación). La etiqueta cambia automáticamente según el rol.
+   - O usar la acción rápida del dashboard.
 
 2. **Seleccionar el espacio**
    - Elegir el espacio que desea reservar del selector
@@ -1358,8 +1365,8 @@ Para DOCENTE y EXTERNO, las reservas se crean como solicitudes (estado PENDIENTE
 1. **Acceder al formulario** (mismo que crear reserva)
 2. **Completar los datos** (igual que sección [7.2](#72-crear-nueva-reserva))
 3. **Enviar solicitud**
-   - Hacer clic en **"Solicitar Reserva"**
-   - La reserva se creará con estado **PENDIENTE**
+   - Hacer clic en **"Enviar Solicitud"** o **"Crear Solicitud"** (la etiqueta puede variar levemente según desde dónde se abrió el formulario, por ejemplo desde el calendario aparece como **"Solicitar Reserva"**).
+   - La reserva se creará con estado **PENDIENTE**.
 
 ### Seguimiento de Solicitud
 
@@ -1844,6 +1851,9 @@ La página de espacios incluye filtros:
    - Capacidad mínima
    - Capacidad máxima
    - Rango de capacidad
+
+5. **Filtro por edificio**
+   - Permite restringir la lista de espacios a un edificio específico cuando se trabaja en un campus con varios edificios.
 
 ### Aplicar Filtros
 
@@ -2909,12 +2919,12 @@ El panel muestra métricas en tiempo real:
    - Tiempo de actividad del sistema
    - Último reinicio
 
-### Métricas Secundarias
+### Información complementaria
 
-- **Disco**: Uso de espacio en disco
-- **Red**: Tráfico de red
-- **Base de datos**: Conexiones activas
-- **Cache**: Uso de caché
+- **Base de datos**: estado de la conexión, cantidad de conexiones activas y tablas relevantes.
+- **Endpoints**: lista de endpoints disponibles del sistema con su estado.
+- **Información de la aplicación**: versión, entorno, perfil activo y datos generales.
+- **Usuarios activos**: usuarios conectados en la sesión actual.
 
 ### Auto-Refresh
 
@@ -3105,9 +3115,8 @@ Puede configurar qué notificaciones por email desea recibir.
 
 ### Acceso a Preferencias
 
-1. Hacer clic en el **menú de usuario** (avatar en header)
-2. Seleccionar **"Preferencias"**
-3. O acceder desde `/preferences` si está disponible
+1. Abrir el panel de **Preferencias** desde el ícono de configuración ubicado en la barra lateral, junto al menú de navegación principal.
+2. El panel se abre como ventana modal sobre la pantalla actual; no es necesario navegar a otra página.
 
 ### Tipos de Notificaciones
 
@@ -3230,66 +3239,142 @@ Puede personalizar cómo se muestran los datos según el módulo:
 
 ---
 
-# 16. CARRERAS
+# 16. RECOMENDACIONES INTELIGENTES
 
-## 16.1 Ver Carreras
+## 16.1 Qué son y para qué sirven
 
-Las carreras pueden asociarse a las reservas para organización.
+UTEC Space Manager ofrece **sugerencias automáticas** que aparecen en distintas partes del sistema para ayudar a tomar mejores decisiones. Estas sugerencias se basan en el historial de uso, los patrones de actividad y la disponibilidad actual.
 
-### Acceso a Carreras
+Las recomendaciones **nunca son obligatorias**: son opciones que se proponen para ahorrar tiempo o destacar lo más relevante. Siempre se puede ignorar la sugerencia y seleccionar manualmente.
 
-1. Las carreras se muestran en el selector al crear/editar reservas
-2. Solo ADMIN puede gestionar carreras directamente
+Cada recomendación viene acompañada de un **porcentaje de relevancia**: cuanto más alto, más útil debería resultar para esa persona en ese momento.
 
-### Información de Carreras
+## 16.2 Recomendaciones al crear una reserva
 
-Cada carrera muestra:
-- **Nombre**: Nombre de la carrera
-- **Código**: Código único de la carrera (opcional)
-- **Fecha de creación**: Cuándo se agregó al sistema
+Al crear una nueva reserva (o solicitarla, según el rol), el sistema muestra tres tipos de sugerencias:
 
-## 16.2 Gestionar Carreras
+### Espacios recomendados
 
-> ⚠️ **Nota**: Solo ADMIN puede gestionar carreras (crear, editar, eliminar).
+- Aparecen después de seleccionar fecha y horario.
+- Muestran los espacios que la persona usa con más frecuencia, considerando la capacidad necesaria y la disponibilidad real para ese horario.
+- Cómo usarlas: hacer clic en un espacio recomendado lo selecciona automáticamente en el formulario.
 
-### Crear Carrera
+### Horarios recomendados
 
-1. Acceder a la gestión de carreras (si hay interfaz dedicada)
-2. Hacer clic en **"Crear Carrera"**
-3. Completar:
-   - **Nombre**: Nombre completo de la carrera
-   - **Código**: Código único (opcional)
-4. Guardar
+- Aparecen después de seleccionar un espacio y una fecha.
+- Muestran los horarios que la persona suele usar, descartando los que ya están ocupados.
+- Cómo usarlas: hacer clic en un horario lo aplica automáticamente al formulario.
 
-### Editar Carrera
+### Items recomendados
 
-1. Encontrar la carrera en la lista
-2. Hacer clic en **"Editar"**
-3. Modificar nombre o código
-4. Guardar cambios
+- Aparecen después de seleccionar un espacio.
+- Muestran los items que se solicitan con frecuencia para ese espacio (proyectores, cables, accesorios) y su disponibilidad actual.
+- Cómo usarlas: el botón "Agregar" suma el item a la solicitud de la reserva.
 
-### Eliminar Carrera
+## 16.3 Recomendaciones en el dashboard
 
-1. Hacer clic en **"Eliminar"** de la carrera
-2. ⚠️ Solo se puede eliminar si no hay reservas asociadas
-3. Confirmar eliminación
+Cada usuario tiene un dashboard personalizado según su rol:
 
-### Usar Carrera en Reservas
+- **Docentes**: ven los espacios recomendados para reservar en los próximos días.
+- **Analistas**: ven las reservas que requieren atención prioritaria, ordenadas por urgencia (con una escala del 1 al 10 según los días pendientes y los días hasta la fecha de inicio).
+- **Personal de mantenimiento**: ve los items y espacios que requieren intervención.
+- **Administradores**: ven el panorama global con todas las recomendaciones del sistema.
+- Estudiantes y usuarios externos no reciben recomendaciones en el dashboard.
 
-Al crear o editar una reserva:
+## 16.4 Recomendaciones para personal de mantenimiento
 
-1. Seleccionar carrera del selector (opcional)
-2. La carrera se asociará a la reserva
-3. Permite filtrar reservas por carrera
-4. Facilita la organización de reservas académicas
+### Items que requieren mantenimiento
+
+El sistema identifica los items que están en estado de mantenimiento y los ordena por urgencia según el tiempo que llevan en ese estado:
+
+- Más de 7 días → urgencia baja.
+- Más de 15 días → urgencia media.
+- Más de 30 días → urgencia alta.
+
+Los items dañados aparecen en la sección "Espacios que requieren atención", no en esta lista.
+
+### Espacios que requieren atención
+
+Lista los espacios con un porcentaje alto de items dañados o en mantenimiento, sugiriendo una revisión general.
+
+## 16.5 Recomendaciones para administradores y analistas
+
+### Reasignación de items
+
+El sistema sugiere mover items entre espacios cuando detecta que un item se solicita frecuentemente en un espacio distinto al que está asignado actualmente.
+
+### Compras necesarias
+
+Identifica items con alta demanda y bajo stock, sugiriendo qué conviene reponer.
+
+### Asignación de analistas
+
+Cuando un administrador asigna un analista a un docente, el sistema sugiere qué analista combinaría mejor para esa relación, considerando tres criterios:
+
+- Si el analista ya trabajó antes con ese docente.
+- La carga de trabajo actual del analista.
+- La proporción de reservas aprobadas del analista.
+
+## 16.6 Cómo entender los puntajes
+
+Cada recomendación viene con un porcentaje de relevancia. Es una guía visual:
+
+- **Más alto** = la sugerencia coincide más con el historial o las necesidades de la persona.
+- **Más bajo** = sigue siendo una opción válida, simplemente menos prioritaria.
+
+Las recomendaciones se mantienen actualizadas automáticamente: el sistema las recalcula cuando expira su tiempo de vida en caché (típicamente cada 30 minutos), las invalida cuando se crea o se cancela una reserva, y vuelve a procesarlas en un trabajo nocturno.
+
+## 16.7 Preguntas frecuentes sobre recomendaciones
+
+**¿Por qué no veo recomendaciones?**
+
+- Las recomendaciones aparecen una vez que se completan ciertos campos (fecha, horario, espacio).
+- Se necesita un mínimo de historial de uso para que el sistema pueda generar sugerencias personalizadas.
+- Los roles "Estudiante" y "Externo" no reciben recomendaciones en el dashboard.
+
+**¿Las recomendaciones son obligatorias?**
+
+No. Son sugerencias para ahorrar tiempo. Siempre se puede ignorar la lista y seleccionar manualmente cualquier opción disponible.
+
+**¿Puedo desactivarlas?**
+
+No existe una opción para ocultarlas, pero se pueden ignorar sin que afecte el funcionamiento del formulario.
+
+> Para detalles técnicos del subsistema de recomendaciones (algoritmos, pesos, jobs, caché), ver la ficha técnica `documentation/fichas-tecnicas/sistema-de-recomendaciones.md`.
 
 ---
 
-# 17. GUÍAS PRÁCTICAS POR ROL
+# 17. CARRERAS
+
+Las carreras se utilizan para asociar reservas a programas académicos y permiten organizar y filtrar la información a nivel institucional.
+
+## 17.1 Ver Carreras
+
+Las carreras aparecen en los selectores de los formularios y filtros donde tiene sentido vincular una reserva o una estadística con una carrera específica:
+
+- Al crear o editar una **reserva**: el formulario incluye un selector opcional de carrera.
+- En el **calendario**: filtro por carrera para ver únicamente las reservas asociadas a un programa.
+- En **estadísticas**: filtro y desglose por carrera.
+
+Cada carrera registrada en el sistema tiene:
+
+- **Nombre**: nombre completo de la carrera.
+- **Código**: identificador corto único.
+- **Fecha de creación**: cuándo fue dada de alta en el sistema.
+
+## 17.2 Gestionar Carreras
+
+> **Importante**: en la versión actual del sistema **no existe una pantalla de administración dedicada** para crear, editar o eliminar carreras desde la interfaz. La gestión se realiza por la API del sistema. Está previsto incorporar una pantalla de gestión en próximas versiones.
+
+Mientras tanto, los administradores que necesiten dar de alta, modificar o dar de baja carreras deben coordinar con el equipo técnico para hacerlo a través de la API.
+
+---
+
+# 18. GUÍAS PRÁCTICAS POR ROL
 
 Esta sección proporciona guías paso a paso específicas para cada rol del sistema.
 
-## 17.1 Flujo para ADMIN
+## 18.1 Flujo para ADMIN
 
 ### Tareas Diarias Típicas de un ADMIN
 
@@ -3351,7 +3436,7 @@ Esta sección proporciona guías paso a paso específicas para cada rol del sist
    - Ver espacio en calendario
    - Verificar que aparezca correctamente
 
-## 17.2 Flujo para ANALISTA
+## 18.2 Flujo para ANALISTA
 
 ### Tareas Diarias Típicas de un ANALISTA
 
@@ -3403,7 +3488,7 @@ Esta sección proporciona guías paso a paso específicas para cada rol del sist
    - Verificar que se creó correctamente
    - Verificar solicitudes de inventario
 
-## 17.3 Flujo para MANTENIMIENTO
+## 18.3 Flujo para MANTENIMIENTO
 
 ### Tareas Diarias Típicas de un MANTENIMIENTO
 
@@ -3458,7 +3543,7 @@ Esta sección proporciona guías paso a paso específicas para cada rol del sist
    - Marcar como "Entregado"
    - Verificar que el estado se actualizó
 
-## 17.4 Flujo para DOCENTE
+## 18.4 Flujo para DOCENTE
 
 ### Tareas Típicas de un DOCENTE
 
@@ -3515,7 +3600,7 @@ Esta sección proporciona guías paso a paso específicas para cada rol del sist
    - Recibir notificación cuando sea aprobada
    - Verificar en el calendario
 
-## 17.5 Flujo para ESTUDIANTE
+## 18.5 Flujo para ESTUDIANTE
 
 ### Tareas Típicas de un ESTUDIANTE
 
@@ -3552,7 +3637,7 @@ Esta sección proporciona guías paso a paso específicas para cada rol del sist
    - En el calendario, ver horarios libres
    - Identificar cuándo está disponible
 
-## 17.6 Flujo para EXTERNO
+## 18.6 Flujo para EXTERNO
 
 ### Tareas Típicas de un EXTERNO
 
@@ -3600,7 +3685,7 @@ Esta sección proporciona guías paso a paso específicas para cada rol del sist
 
 ---
 
-# 18. CASOS DE USO COMUNES
+# 19. CASOS DE USO COMUNES
 
 Esta sección describe casos de uso frecuentes en el sistema.
 
@@ -3697,7 +3782,7 @@ Esta sección describe casos de uso frecuentes en el sistema.
 
 ---
 
-# 19. SOLUCIÓN DE PROBLEMAS
+# 20. SOLUCIÓN DE PROBLEMAS
 
 Esta sección ayuda a resolver problemas comunes en el sistema.
 
@@ -3848,7 +3933,7 @@ Si no puede resolver el problema:
 
 ---
 
-# 20. PREGUNTAS FRECUENTES (FAQ)
+# 21. PREGUNTAS FRECUENTES (FAQ)
 
 ## Preguntas Generales
 
@@ -3955,7 +4040,7 @@ Puede configurar qué notificaciones desea recibir en sus preferencias. Ver secc
 
 ---
 
-# 21. GLOSARIO
+# 22. GLOSARIO
 
 ## Términos Técnicos
 
@@ -4029,7 +4114,7 @@ Puede configurar qué notificaciones desea recibir en sus preferencias. Ver secc
 
 ---
 
-# 22. ANEXOS
+# 23. ANEXOS
 
 ## Anexo A: Estados del Sistema
 
@@ -4129,6 +4214,40 @@ Esta sección es para desarrolladores que necesiten interactuar con la API direc
 - `GET /api/v1/stats/reservas` - Estadísticas de reservas
 - `GET /api/v1/stats/espacios` - Estadísticas de espacios
 
+### Recomendaciones
+
+- `GET /api/v1/recomendaciones/dashboard` - Recomendaciones personalizadas según rol
+- `GET /api/v1/recomendaciones/reservas/espacios` - Espacios recomendados al crear reserva
+- `GET /api/v1/recomendaciones/reservas/horarios` - Horarios recomendados
+- `GET /api/v1/recomendaciones/reservas/espacios-similares` - Espacios similares a uno dado
+- `GET /api/v1/recomendaciones/items/para-reserva` - Items recomendados para una reserva
+- `GET /api/v1/recomendaciones/items/combinaciones` - Combinaciones frecuentes de items
+- `GET /api/v1/recomendaciones/inventario/mantenimiento` - Items que requieren mantenimiento
+- `GET /api/v1/recomendaciones/inventario/espacios-atencion` - Espacios que requieren atención
+- `GET /api/v1/recomendaciones/inventario/reasignaciones` - Reasignaciones recomendadas
+- `GET /api/v1/recomendaciones/inventario/compras` - Compras necesarias
+- `GET /api/v1/recomendaciones/analistas/asignacion` - Sugerencia de analista para un docente
+- `GET /api/v1/recomendaciones/analistas/prioritarias` - Reservas prioritarias para analistas
+
+### Carreras
+
+- `GET /api/v1/carreras` - Listar carreras
+- `POST /api/v1/carreras` - Crear carrera
+- `PUT /api/v1/carreras/{id}` - Actualizar carrera
+- `DELETE /api/v1/carreras/{id}` - Eliminar carrera
+
+### Edificios
+
+- `GET /api/v1/edificios` - Listar edificios
+- `POST /api/v1/edificios` - Crear edificio
+- `PUT /api/v1/edificios/{id}` - Actualizar edificio
+- `DELETE /api/v1/edificios/{id}` - Eliminar edificio
+
+### Auditoría
+
+- `GET /api/v1/audit` - Listar registros de auditoría (solo ADMIN)
+- `GET /api/v1/audit/{id}` - Detalle de un registro
+
 > **Nota**: Para documentación completa de la API, consulte la documentación Swagger disponible en `/swagger-ui.html` (solo ADMIN).
 
 ## Anexo D: Formatos de Archivo
@@ -4177,11 +4296,11 @@ Pizarra,1,DISPONIBLE,Aula 101,Pizarra blanca
 
 **Información del Manual**:
 - **Versión**: 1.0.0
-- **Fecha de Publicación**: Noviembre 2025
+- **Fecha de Publicación**: Mayo 2026  
 - **Para**: Universidad Tecnológica del Uruguay (UTEC)
 - **Sistema**: UTEC Space Manager v1.0.0
 
 **Nota Final**: Este manual está diseñado para ser una guía completa del sistema UTEC Space Manager. Si tiene preguntas o necesita ayuda adicional, contacte al administrador del sistema.
 
-**Última Actualización**: Noviembre 2025
+**Última Actualización**: Mayo 2026  
 

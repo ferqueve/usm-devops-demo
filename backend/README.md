@@ -423,7 +423,7 @@ Ver documentación completa en: [src/test/README.md](src/test/README.md)
 ## 📚 Documentación Adicional
 
 - **Tests**: [src/test/README.md](src/test/README.md)
-- **Estructura del Proyecto**: [../PROJECT_STRUCTURE.md](../PROJECT_STRUCTURE.md)
+- **Estructura del Proyecto**: [../documentation/PROJECT_STRUCTURE.md](../documentation/PROJECT_STRUCTURE.md)
 - **Configuración de Seguridad**: Ver `.gitguardian.yaml` y `.gitleaksignore`
 
 ## 📞 Contacto
@@ -432,8 +432,8 @@ Ver documentación completa en: [src/test/README.md](src/test/README.md)
 - **Proyecto**: UTEC Space Manager
 - **Institución**: Universidad Tecnológica del Uruguay (UTEC)
 - **Versión**: 1.0.0
-- **Fecha**: Octubre 2025
+- **Fecha**: Mayo 2026
 
 ---
 
-**Última actualización:** Octubre 2025
+**Última actualización:** Mayo 2026

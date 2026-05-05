@@ -6,7 +6,7 @@ Frontend del sistema de gestión de espacios para UTEC construido con React + Ty
 
 ## 🏗️ Stack Tecnológico
 
-- **React** 18 + **TypeScript**
+- **React** 19 + **TypeScript**
 - **Vite** - Build tool
 - **React Router** v6 - Routing
 - **Tailwind CSS** - Estilos
@@ -194,7 +194,7 @@ docker run -p 5173:5173 utec-frontend
 
 ## 📚 Recursos
 
-- [Documentación completa](../PROJECT_STRUCTURE.md)
+- [Documentación completa](../documentation/PROJECT_STRUCTURE.md)
 - [Backend API](../backend/README.md)
 - [React Docs](https://react.dev)
 - [Vite Docs](https://vitejs.dev)
@@ -205,5 +205,5 @@ docker run -p 5173:5173 utec-frontend
 
 **Desarrollador:** Mathias Pena  
 **Versión:** 1.0.0  
-**Fecha:** Octubre 2025
+**Fecha:** Mayo 2026
 
