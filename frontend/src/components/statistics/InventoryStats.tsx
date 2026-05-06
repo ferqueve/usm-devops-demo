@@ -91,7 +91,7 @@ export default function InventoryStats() {
         );
         
         if (response.data) {
-          setStats(response.data as InventoryStatsData);
+          setStats(response.data);
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las estadísticas';
@@ -157,7 +157,7 @@ export default function InventoryStats() {
       );
       
       if (response.data) {
-        setStats(response.data as InventoryStatsData);
+        setStats(response.data);
         toast.success('Datos actualizados');
       }
     } catch {

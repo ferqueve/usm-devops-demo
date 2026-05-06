@@ -89,7 +89,7 @@ public class AuthService {
             .orElseThrow(() -> new UsuarioNotFoundException("No encontramos una cuenta con ese email"));
 
         // Verificar si el usuario ha verificado su email
-        if (!usuario.getVerificado()) {
+        if (!Boolean.TRUE.equals(usuario.getVerificado())) {
             log.warn("Intento de login con email no verificado: {}", request.getEmail());
             // Registrar en auditoría
             java.util.Map<String, Object> detalles = new java.util.HashMap<>();
@@ -326,7 +326,7 @@ public class AuthService {
             Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO));
             
-            if (usuario.getVerificado()) {
+            if (Boolean.TRUE.equals(usuario.getVerificado())) {
                 log.warn("Usuario {} ya está verificado", email);
                 return false;
             }
@@ -368,7 +368,7 @@ public class AuthService {
             }
             
             // Validar que el usuario tenga email verificado
-            if (!usuario.getVerificado()) {
+            if (!Boolean.TRUE.equals(usuario.getVerificado())) {
                 log.warn("Intento de recuperación de contraseña para usuario no verificado: {}", email);
                 throw new AuthenticationException(
                     "Debes verificar tu email antes de poder recuperar tu contraseña. Por favor, verifica tu email primero."

@@ -60,8 +60,8 @@ function settledValue<T>(result: PromiseSettledResult<T> | undefined): T | null 
 }
 
 function dataOrFallback<T>(result: PromiseSettledResult<ApiResponse<T>> | undefined, fallback: T): T {
-  const value = settledValue(result);
-  return (value && value.data !== undefined && value.data !== null ? value.data : fallback);
+  const data = settledValue(result)?.data;
+  return data !== undefined && data !== null ? data : fallback;
 }
 
 function extractReservas(result: PromiseSettledResult<ApiResponse<Reserva[]>> | undefined): Reserva[] {
@@ -263,13 +263,13 @@ export const dashboardApi = {
 
       const [todasLasReservas, reservasHoy, espaciosRes, espaciosStatsRes, userStatsRes, reservaStatsRes, activeUsersRes] = results;
 
-      const reservas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const reservasHoyData = extractReservas(reservasHoy as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const userStats = extractUserStats(userStatsRes as PromiseSettledResult<UserStats | null>);
-      const reservaStats = extractReservaStats(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
-      const activeUsers = extractActiveUsers(activeUsersRes as PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null>);
+      const reservas = extractReservas(todasLasReservas);
+      const reservasHoyData = extractReservas(reservasHoy);
+      const espacios = extractEspacios(espaciosRes);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes);
+      const userStats = extractUserStats(userStatsRes);
+      const reservaStats = extractReservaStats(reservaStatsRes);
+      const activeUsers = extractActiveUsers(activeUsersRes);
 
       const stats = buildDashboardStats({
         reservas,
@@ -310,11 +310,11 @@ export const dashboardApi = {
 
       const [todasLasReservas, reservasHoy, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
 
-      const reservas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const reservasHoyData = extractReservas(reservasHoy as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const reservaStats = extractReservaStats(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
+      const reservas = extractReservas(todasLasReservas);
+      const reservasHoyData = extractReservas(reservasHoy);
+      const espacios = extractEspacios(espaciosRes);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes);
+      const reservaStats = extractReservaStats(reservaStatsRes);
 
       const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
 
@@ -343,9 +343,9 @@ export const dashboardApi = {
 
       const [espaciosRes, espaciosStatsRes, , reservasRes] = results;
 
-      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const reservas = extractReservas(reservasRes as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const espacios = extractEspacios(espaciosRes);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes);
+      const reservas = extractReservas(reservasRes);
 
       const stats = buildDashboardStats({
         reservas,
@@ -380,11 +380,11 @@ export const dashboardApi = {
 
       const [misReservas, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
 
-      const reservas = extractReservas(misReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservas = extractReservas(misReservas);
       const reservasHoyData = filtrarReservasHoy(reservas);
-      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const reservaStats = extractReservaStats(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
+      const espacios = extractEspacios(espaciosRes);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes);
+      const reservaStats = extractReservaStats(reservaStatsRes);
 
       const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
 
@@ -412,10 +412,10 @@ export const dashboardApi = {
 
       const [todasLasReservas, espaciosRes, espaciosStatsRes] = results;
 
-      const reservas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservas = extractReservas(todasLasReservas);
       const reservasHoyData = filtrarReservasHoy(reservas);
-      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const espacios = extractEspacios(espaciosRes);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes);
 
       const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
 
@@ -444,11 +444,11 @@ export const dashboardApi = {
 
       const [todasLasReservas, misReservasRes, espaciosRes, espaciosStatsRes] = results;
 
-      const reservasPublicas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const misReservas = extractReservas(misReservasRes as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservasPublicas = extractReservas(todasLasReservas);
+      const misReservas = extractReservas(misReservasRes);
       const reservasHoyData = filtrarReservasHoy(reservasPublicas);
-      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const espacios = extractEspacios(espaciosRes);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes);
 
       const misReservasPendientes = misReservas.filter((r) => r.estado === 'PENDIENTE').length;
 

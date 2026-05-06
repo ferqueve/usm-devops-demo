@@ -286,7 +286,7 @@ function filtrarMinutosFin(formData: ReservaFormDataShape, fecha: Date | undefin
   return MINUTOS_OPCIONES;
 }
 
-// Hook que encapsula todo el estado y lógica del formulario de reservas
+// Hook que encapsula el estado completo y la lógica del formulario de reservas
 // (compartido entre ReservationForm y ReservationFormDialog).
 export function useReservationFormState(
   options: UseReservationFormStateOptions,

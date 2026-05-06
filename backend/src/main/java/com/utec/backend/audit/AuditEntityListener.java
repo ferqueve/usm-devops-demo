@@ -9,7 +9,7 @@ import jakarta.persistence.PreUpdate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapperImpl;
 
-import java.util.function.BiConsumer;
+import java.util.function.ObjLongConsumer;
 
 /**
  * Listener JPA para registrar automáticamente cambios en entidades.
@@ -93,7 +93,7 @@ public class AuditEntityListener {
      *                      recibe el nombre de la entidad y su ID resuelto
      */
     private static void dispatchAuditEvent(Object entity, String eventName,
-                                           BiConsumer<String, Long> auditAction) {
+                                           ObjLongConsumer<String> auditAction) {
         AuditService auditService = getAuditService();
         if (auditService == null) {
             log.debug(MSG_AUDIT_SERVICE_NO_DISPONIBLE);

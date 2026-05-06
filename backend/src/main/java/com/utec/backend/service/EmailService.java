@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
 
 /**
  * Servicio para el envío de emails usando Gmail API
@@ -162,12 +162,12 @@ public class EmailService {
      * @param sendAction  acción que realmente arma y envía el email cuando el envío está permitido
      * @return true si el email se envió, false si las preferencias lo bloquearon o falló el envío
      */
-    private boolean sendIfAllowed(String to, String preferenceKey, Supplier<Boolean> sendAction) {
+    private boolean sendIfAllowed(String to, String preferenceKey, BooleanSupplier sendAction) {
         if (!configuracionService.debeEnviarEmail(to, preferenceKey)) {
             log.debug("Email '{}' no enviado a {} por preferencias del usuario", preferenceKey, to);
             return false;
         }
-        return sendAction.get();
+        return sendAction.getAsBoolean();
     }
 
     /**
@@ -333,31 +333,47 @@ public class EmailService {
      */
     public boolean enviarEmailNotificacionCambioEstado(String to, String nombreUsuario, boolean activado) {
         return sendIfAllowed(to, "cambioEstado", () -> {
-            String subject = activado
-                ? "Tu cuenta ha sido activada - UTEC Space Manager"
-                : "Tu cuenta ha sido desactivada - UTEC Space Manager";
-
-            String accion = activado ? "activada" : "desactivada";
-            String mensaje = activado
-                ? "Tu cuenta ha sido activada y ahora puedes acceder al sistema normalmente."
-                : "Tu cuenta ha sido desactivada. Ya no podrás acceder al sistema. Si crees que esto es un error, por favor contacta al administrador.";
-
-            Map<String, String> variables = baseVariables();
-            variables.put("tituloEstado", subject);
-            variables.put(VAR_NOMBRE_USUARIO, orDefault(nombreUsuario, DEFAULT_USUARIO));
-            variables.put("mensaje", mensaje);
-            variables.put("accion", accion);
-            variables.put("mensajeAdicional", activado
-                ? "Si tienes alguna pregunta, por favor contacta al administrador del sistema."
-                : "Si tienes alguna pregunta o crees que esto es un error, por favor contacta al administrador del sistema inmediatamente.");
-            variables.put("colorFondo", activado ? COLOR_VERDE_FONDO : COLOR_ROJO_FONDO);
-            variables.put("colorBorde", activado ? COLOR_VERDE_BORDE : COLOR_ROJO_BORDE);
-            variables.put("colorMensajeFondo", activado ? "#dbeafe" : "#fff3cd");
-            variables.put("colorMensajeBorde", activado ? "#3b82f6" : "#ffc107");
-            variables.put("colorMensajeTexto", activado ? "#1e40af" : "#856404");
-
+            String subject = subjectCambioEstado(activado);
+            Map<String, String> variables = buildCambioEstadoVariables(nombreUsuario, activado, subject);
             return renderAndSend(to, subject, "cambio-estado.html", variables);
         });
+    }
+
+    private String subjectCambioEstado(boolean activado) {
+        return activado
+            ? "Tu cuenta ha sido activada - UTEC Space Manager"
+            : "Tu cuenta ha sido desactivada - UTEC Space Manager";
+    }
+
+    private Map<String, String> buildCambioEstadoVariables(String nombreUsuario, boolean activado, String subject) {
+        Map<String, String> variables = baseVariables();
+        variables.put("tituloEstado", subject);
+        variables.put(VAR_NOMBRE_USUARIO, orDefault(nombreUsuario, DEFAULT_USUARIO));
+        variables.put("mensaje", mensajeCambioEstado(activado));
+        variables.put("accion", activado ? "activada" : "desactivada");
+        variables.put("mensajeAdicional", mensajeAdicionalCambioEstado(activado));
+        putColoresCambioEstado(variables, activado);
+        return variables;
+    }
+
+    private String mensajeCambioEstado(boolean activado) {
+        return activado
+            ? "Tu cuenta ha sido activada y ahora puedes acceder al sistema normalmente."
+            : "Tu cuenta ha sido desactivada. Ya no podrás acceder al sistema. Si crees que esto es un error, por favor contacta al administrador.";
+    }
+
+    private String mensajeAdicionalCambioEstado(boolean activado) {
+        return activado
+            ? "Si tienes alguna pregunta, por favor contacta al administrador del sistema."
+            : "Si tienes alguna pregunta o crees que esto es un error, por favor contacta al administrador del sistema inmediatamente.";
+    }
+
+    private void putColoresCambioEstado(Map<String, String> variables, boolean activado) {
+        variables.put("colorFondo", activado ? COLOR_VERDE_FONDO : COLOR_ROJO_FONDO);
+        variables.put("colorBorde", activado ? COLOR_VERDE_BORDE : COLOR_ROJO_BORDE);
+        variables.put("colorMensajeFondo", activado ? "#dbeafe" : "#fff3cd");
+        variables.put("colorMensajeBorde", activado ? "#3b82f6" : "#ffc107");
+        variables.put("colorMensajeTexto", activado ? "#1e40af" : "#856404");
     }
 
     /**

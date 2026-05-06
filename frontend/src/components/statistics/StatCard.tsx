@@ -26,7 +26,7 @@ export function StatCard({
   icon: Icon,
   accentClass,
   iconOnly = false,
-}: StatCardProps) {
+}: Readonly<StatCardProps>) {
   const valueClass = iconOnly ? 'text-2xl font-bold' : `text-2xl font-bold ${accentClass ?? ''}`;
   const iconClass = `h-4 w-4 ${accentClass ?? 'text-muted-foreground'}`;
   return (
