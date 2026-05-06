@@ -23,6 +23,61 @@ interface MetricsChartProps {
   isPaused?: boolean; // Nueva prop para pausar animaciones
 }
 
+// Subcomponente: encabezado de la card (título + selectores).
+// Extraído para evitar duplicar el header en los modos "paused" y "live".
+interface MetricsChartHeaderProps {
+  title: string;
+  Icon?: LucideIcon;
+  color: string;
+  timeRange: number;
+  yAxisMode: 'auto' | 'fixed';
+  onTimeRangeChange: (val: number) => void;
+  onYAxisModeChange: (val: 'auto' | 'fixed') => void;
+}
+
+function MetricsChartHeader({
+  title,
+  Icon,
+  color,
+  timeRange,
+  yAxisMode,
+  onTimeRangeChange,
+  onYAxisModeChange,
+}: MetricsChartHeaderProps) {
+  return (
+    <CardHeader>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base flex-shrink-0">
+          {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color }} />}
+          <span className="truncate">{title}</span>
+        </CardTitle>
+        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
+          <Select value={timeRange.toString()} onValueChange={(val) => onTimeRangeChange(Number(val))}>
+            <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10 pts</SelectItem>
+              <SelectItem value="20">20 pts</SelectItem>
+              <SelectItem value="30">30 pts</SelectItem>
+              <SelectItem value="50">50 pts</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => onYAxisModeChange(val)}>
+            <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Auto Y</SelectItem>
+              <SelectItem value="fixed">Fijo Y</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </CardHeader>
+  );
+}
+
 export const MetricsChart = memo(function MetricsChart({
   title,
   data,
@@ -84,40 +139,23 @@ export const MetricsChart = memo(function MetricsChart({
     return null;
   }, [unit]);
 
+  const header = (
+    <MetricsChartHeader
+      title={title}
+      Icon={Icon}
+      color={color}
+      timeRange={timeRange}
+      yAxisMode={yAxisMode}
+      onTimeRangeChange={setTimeRange}
+      onYAxisModeChange={setYAxisMode}
+    />
+  );
+
   // Si está pausado, mostrar versión estática optimizada
   if (isPaused) {
     return (
       <Card className="shadow-card">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base flex-shrink-0">
-              {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color }} />}
-              <span className="truncate">{title}</span>
-            </CardTitle>
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
-              <Select value={timeRange.toString()} onValueChange={(val) => setTimeRange(Number(val))}>
-                <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10 pts</SelectItem>
-                  <SelectItem value="20">20 pts</SelectItem>
-                  <SelectItem value="30">30 pts</SelectItem>
-                  <SelectItem value="50">50 pts</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => setYAxisMode(val)}>
-                <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Auto Y</SelectItem>
-                  <SelectItem value="fixed">Fijo Y</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
+        {header}
         <CardContent>
           <div className="flex items-center justify-center h-[250px] text-muted-foreground">
             <div className="text-center">
@@ -132,36 +170,7 @@ export const MetricsChart = memo(function MetricsChart({
 
   return (
     <Card className="shadow-card hover-lift">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-          <CardTitle className="flex items-center gap-2 text-sm sm:text-base flex-shrink-0">
-            {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color }} />}
-            <span className="truncate">{title}</span>
-          </CardTitle>
-          <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
-            <Select value={timeRange.toString()} onValueChange={(val) => setTimeRange(Number(val))}>
-              <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10 pts</SelectItem>
-                <SelectItem value="20">20 pts</SelectItem>
-                <SelectItem value="30">30 pts</SelectItem>
-                <SelectItem value="50">50 pts</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => setYAxisMode(val)}>
-              <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="auto">Auto Y</SelectItem>
-                <SelectItem value="fixed">Fijo Y</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardHeader>
+      {header}
       <CardContent>
         <ResponsiveContainer width="100%" height={height}>
           {type === 'area' ? (
@@ -173,12 +182,12 @@ export const MetricsChart = memo(function MetricsChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="time" 
+              <XAxis
+                dataKey="time"
                 stroke="#9ca3af"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#9ca3af"
                 style={{ fontSize: '12px' }}
                 tickFormatter={(value) => `${value.toFixed(0)}${unit}`}
@@ -198,12 +207,12 @@ export const MetricsChart = memo(function MetricsChart({
           ) : (
             <LineChart data={displayData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="time" 
+              <XAxis
+                dataKey="time"
                 stroke="#9ca3af"
                 style={{ fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#9ca3af"
                 style={{ fontSize: '12px' }}
                 tickFormatter={(value) => `${value.toFixed(0)}${unit}`}
@@ -226,4 +235,3 @@ export const MetricsChart = memo(function MetricsChart({
     </Card>
   );
 });
-

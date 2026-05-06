@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Table,
   TableBody,
@@ -7,10 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, Trash2, Package, Eye, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle, Wrench, AlertCircle } from "lucide-react";
+import { Edit, Trash2, Package, Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +17,8 @@ import {
 } from "@/components/ui/tooltip";
 import type { InventarioItem } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { EstadoBadge } from './_shared/inventoryEstado';
+import { EspacioCell } from './_shared/EspacioCell';
 
 interface InventoryTableProps {
   items: InventarioItem[];
@@ -43,24 +43,6 @@ export default function InventoryTable({
   sortConfig,
   onSort
 }: Readonly<InventoryTableProps>) {
-  const getEstadoBadge = (estado: string) => {
-    const configs: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-      'DISPONIBLE': { label: 'Disponible', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
-      'MANTENIMIENTO': { label: 'Mantenimiento', color: 'bg-amber-50 text-amber-700 border-amber-200', icon: Wrench },
-      'DANADO': { label: 'Dañado', color: 'bg-red-50 text-red-700 border-red-200', icon: AlertCircle }
-    };
-    
-    const config = configs[estado] || { label: estado, color: 'bg-gray-50 text-gray-700 border-gray-200', icon: AlertCircle };
-    const Icon = config.icon;
-    
-    return (
-      <Badge className={`${config.color} border font-medium`}>
-        <Icon className="h-3.5 w-3.5 mr-1.5" />
-        {config.label}
-      </Badge>
-    );
-  };
-
   const getSortIcon = (column: string) => {
     if (sortConfig?.column !== column) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
@@ -140,24 +122,9 @@ export default function InventoryTable({
               <TableCell>{item.tipoElementoNombre}</TableCell>
               <TableCell>{item.cantidad}</TableCell>
               <TableCell>
-                {(() => {
-                  if (!item.espacioId || !item.espacioNombre) {
-                    return <span className="text-muted-foreground">Sin asignar</span>;
-                  }
-                  if (item.espacioColor) {
-                    return (
-                      <span
-                        className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
-                        style={{ backgroundColor: item.espacioColor }}
-                      >
-                        {item.espacioNombre}
-                      </span>
-                    );
-                  }
-                  return <span className="text-sm">{item.espacioNombre}</span>;
-                })()}
+                <EspacioCell item={item} variant="table" />
               </TableCell>
-              <TableCell>{getEstadoBadge(item.estado)}</TableCell>
+              <TableCell><EstadoBadge estado={item.estado} /></TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
                   <TooltipProvider>

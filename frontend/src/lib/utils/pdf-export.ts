@@ -1,94 +1,32 @@
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-// Extender el tipo de jsPDF para incluir lastAutoTable
-interface ExtendedJsPDF extends jsPDF {
-  lastAutoTable?: {
-    finalY: number;
-  };
-}
-
-interface InventoryStats {
-  totalItems: number;
-  totalCantidad: number;
-  disponibles: number;
-  mantenimiento: number;
-  danados: number;
-  sinAsignar: number;
-  asignados: number;
-  itemsInactivos: number;
-  porcentajeDisponibles: number;
-  porcentajeMantenimiento: number;
-  porcentajeDanados: number;
-  porcentajeSinAsignar: number;
-  porcentajeAsignados: number;
-  porcentajeInactivos: number;
-  itemsPorTipo: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
-  tiposUnicos: number;
-  itemsPorEspacio: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
-  espaciosConInventario: number;
-  topEspacios: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number }>;
-  topTipos: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number }>;
-  espaciosConMasProblemas: Array<{ espacioNombre: string; espacioId: number; problemas: number; porcentaje: number }>;
-  tiposConMasProblemas: Array<{ tipoNombre: string; tipoId: number; problemas: number; porcentaje: number }>;
-  promedioItemsPorEspacio: number;
-  promedioCantidadPorItem: number;
-  promedioItemsPorTipo: number;
-  promedioCantidadPorEspacio: number;
-  promedioCantidadPorTipo: number;
-  itemsCreadosEsteMes: number;
-  itemsCreadosEsteAnio: number;
-  itemsCreadosUltimos6Meses: number;
-  itemsCreadosUltimos12Meses: number;
-  itemsActualizadosEsteMes: number;
-  itemsActualizadosUltimos7Dias: number;
-  itemsRecientes: number;
-  itemsJovenes: number;
-  itemsViejos: number;
-  promedioAntiguedadDias: number;
-  promedioTiempoSinActualizarDias: number;
-  itemsSinActualizarMasDe6Meses: number;
-  ratioSalud: number;
-  ratioProblemas: number;
-  ratioAsignacion: number;
-  indiceCobertura: number;
-  itemsCriticos: number;
-  itemsSinAsignarConProblemas: number;
-  espaciosSinInventario: number;
-  tiposSinItems: number;
-  espaciosConSoloDisponibles: number;
-  espaciosConSoloMantenimiento: number;
-  espaciosConSoloDanados: number;
-  espaciosConMezclaEstados: number;
-  tiposConSoloDisponibles: number;
-  tiposConSoloMantenimiento: number;
-  tiposConSoloDanados: number;
-  tiposConMezclaEstados: number;
-  itemsConCantidad1: number;
-  itemsConCantidadAlta: number;
-  itemsConCantidadMedia: number;
-  cantidadMaxima: number;
-  cantidadMinima: number;
-  cantidadTotalPromedio: number;
-  itemsConObservaciones: number;
-  itemsSinObservaciones: number;
-  porcentajeConObservaciones: number;
-  diferenciaMesAnterior: number;
-  porcentajeCambioMesAnterior: number;
-  diferenciaAnioAnterior: number;
-  porcentajeCambioAnioAnterior: number;
-  eficienciaAsignacion: number;
-  densidadInventario: number;
-  concentracionInventario: number;
-}
+import type { InventoryStats, ReservaStats } from '@/lib/types/spaces';
+import {
+  drawFiltersBox,
+  type ExtendedJsPDF,
+  formatReportTimestamp,
+  type RGB,
+  renderAutoTable,
+} from './export-helpers';
 
 interface ExportFilters {
   espacioNombre?: string;
   tipoElementoNombre?: string;
   estado?: string;
 }
+
+// Colores compartidos para reportes PDF
+const PDF_COLORS = {
+  primary: [33, 150, 243] as RGB,
+  success: [76, 175, 80] as RGB,
+  warning: [255, 152, 0] as RGB,
+  danger: [244, 67, 54] as RGB,
+  gray: [158, 158, 158] as RGB,
+  teal: [0, 150, 136] as RGB,
+  purple: [156, 39, 176] as RGB,
+  deepPurple: [103, 58, 183] as RGB,
+};
 
 // Función auxiliar para formatear diferencia del mes anterior
 function formatMesAnterior(diferencia: number, porcentaje: number): string {
@@ -120,7 +58,7 @@ function drawSectionTitleBlock(
   pageWidth: number,
   margin: number,
   title: string,
-  color: [number, number, number],
+  color: RGB,
 ): number {
   doc.setFillColor(color[0], color[1], color[2]);
   doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
@@ -133,7 +71,7 @@ function drawSectionTitleBlock(
 }
 
 // Función auxiliar para agregar pie de página
-function addFooter(doc: ExtendedJsPDF, pageWidth: number, pageHeight: number, grayColor: [number, number, number]): void {
+function addFooter(doc: ExtendedJsPDF, pageWidth: number, pageHeight: number, grayColor: RGB): void {
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -157,6 +95,302 @@ function addFooter(doc: ExtendedJsPDF, pageWidth: number, pageHeight: number, gr
 }
 
 /**
+ * Contexto compartido para los renderizadores de un PDF.
+ * Centraliza los argumentos repetidos (`doc`, `pageWidth`, `pageHeight`, `margin`, `yPos`)
+ * para evitar que cada función los reciba uno por uno.
+ */
+interface PdfCtx<TStats> {
+  doc: ExtendedJsPDF;
+  pageWidth: number;
+  pageHeight: number;
+  margin: number;
+  yPos: number;
+  stats: TStats;
+}
+
+function checkPageBreak<T>(ctx: PdfCtx<T>, requiredHeight: number): void {
+  ctx.yPos = pageBreakIfNeeded(ctx.doc, ctx.yPos, ctx.pageHeight, ctx.margin, requiredHeight);
+}
+
+function addSectionTitle<T>(ctx: PdfCtx<T>, title: string, color: RGB): void {
+  checkPageBreak(ctx, 10);
+  ctx.yPos = drawSectionTitleBlock(ctx.doc, ctx.yPos, ctx.pageWidth, ctx.margin, title, color);
+}
+
+function renderTable<T>(
+  ctx: PdfCtx<T>,
+  head: string[][],
+  body: (string | number)[][],
+  color: RGB,
+  options?: Parameters<typeof renderAutoTable>[6],
+): void {
+  ctx.yPos = renderAutoTable(ctx.doc, ctx.yPos, head, body, color, ctx.margin, options);
+}
+
+/**
+ * Crea el contexto base de un PDF nuevo y dibuja la portada genérica.
+ * Devuelve el contexto con yPos posicionada después de la portada y los filtros.
+ */
+function createPdfWithCover<T>(
+  stats: T,
+  title: string,
+  filterText: string,
+): PdfCtx<T> {
+  const doc = new jsPDF('p', 'mm', 'a4') as ExtendedJsPDF;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+
+  const [r, g, b] = PDF_COLORS.primary;
+  doc.setFillColor(r, g, b);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text(title, pageWidth / 2, 20, { align: 'center' });
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generado el ${formatReportTimestamp()}`, pageWidth / 2, 32, { align: 'center' });
+
+  doc.setTextColor(0, 0, 0);
+  let yPos = 50;
+  yPos = drawFiltersBox(doc, yPos, pageWidth, margin, filterText);
+
+  return { doc, pageWidth, pageHeight, margin, yPos, stats };
+}
+
+// ============================================================================
+// INVENTARIO
+// ============================================================================
+
+function buildInventoryFilterText(filters?: ExportFilters): string {
+  if (!filters) return '';
+  const parts: string[] = [];
+  if (filters.espacioNombre) parts.push(`Espacio: ${filters.espacioNombre}`);
+  if (filters.tipoElementoNombre) parts.push(`Tipo: ${filters.tipoElementoNombre}`);
+  if (filters.estado && filters.estado !== 'todos') parts.push(`Estado: ${filters.estado}`);
+  return parts.join(' | ');
+}
+
+function renderInventoryResumen(ctx: PdfCtx<InventoryStats>): void {
+  const { stats } = ctx;
+  addSectionTitle(ctx, 'RESUMEN EJECUTIVO', PDF_COLORS.primary);
+  checkPageBreak(ctx, 30);
+  const summaryData = [
+    ['Total Items', stats.totalItems.toString(), `${stats.totalCantidad} unidades`],
+    ['Disponibles', stats.disponibles.toString(), `${stats.porcentajeDisponibles.toFixed(1)}%`],
+    ['En Mantenimiento', stats.mantenimiento.toString(), `${stats.porcentajeMantenimiento.toFixed(1)}%`],
+    ['Dañados', stats.danados.toString(), `${stats.porcentajeDanados.toFixed(1)}%`],
+    ['Asignados', stats.asignados.toString(), `${stats.porcentajeAsignados.toFixed(1)}%`],
+    ['Sin Asignar', stats.sinAsignar.toString(), `${stats.porcentajeSinAsignar.toFixed(1)}%`],
+  ];
+  renderTable(ctx, [['Métrica', 'Cantidad', 'Porcentaje']], summaryData, PDF_COLORS.primary);
+
+  // Métricas de salud
+  const { doc, margin, pageWidth } = ctx;
+  checkPageBreak(ctx, 15);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(margin, ctx.yPos, pageWidth - 2 * margin, 10, 'F');
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Indicadores de Salud:', margin + 2, ctx.yPos + 4);
+  doc.setFont('helvetica', 'normal');
+  doc.text(
+    `Ratio de Salud: ${stats.ratioSalud.toFixed(1)}% | Ratio de Problemas: ${stats.ratioProblemas.toFixed(1)}% | Cobertura: ${stats.indiceCobertura.toFixed(1)}%`,
+    margin + 2,
+    ctx.yPos + 8,
+  );
+  ctx.yPos += 15;
+}
+
+function renderInventoryTemporal(ctx: PdfCtx<InventoryStats>): void {
+  const { stats } = ctx;
+  addSectionTitle(ctx, 'ANALISIS TEMPORAL', PDF_COLORS.success);
+  checkPageBreak(ctx, 25);
+  const temporalData = [
+    ['Creados Este Mes', stats.itemsCreadosEsteMes.toString(), formatMesAnterior(stats.diferenciaMesAnterior, stats.porcentajeCambioMesAnterior)],
+    ['Creados Este Año', stats.itemsCreadosEsteAnio.toString(), `Últimos 6 meses: ${stats.itemsCreadosUltimos6Meses}`],
+    ['Actualizados Este Mes', stats.itemsActualizadosEsteMes.toString(), `Últimos 7 días: ${stats.itemsActualizadosUltimos7Dias}`],
+    ['Antigüedad Promedio', `${Math.round(stats.promedioAntiguedadDias)} días`, `${Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar`],
+  ];
+  renderTable(ctx, [['Período', 'Cantidad', 'Detalles']], temporalData, PDF_COLORS.success);
+}
+
+function renderInventoryRankings(ctx: PdfCtx<InventoryStats>): void {
+  const { stats, doc, margin } = ctx;
+  addSectionTitle(ctx, 'TOP RANKINGS', PDF_COLORS.warning);
+
+  // Top 10 Espacios
+  checkPageBreak(ctx, 30);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Top 10 Espacios con Más Inventario', margin, ctx.yPos);
+  ctx.yPos += 5;
+
+  const topEspaciosData = stats.topEspacios.map((espacio, index) => [
+    `#${index + 1}`,
+    espacio.espacioNombre,
+    espacio.items.toString(),
+    `${espacio.cantidad} unidades`,
+  ]);
+  renderTable(ctx, [['Rank', 'Espacio', 'Items', 'Cantidad Total']], topEspaciosData, PDF_COLORS.warning);
+
+  // Top 10 Tipos
+  checkPageBreak(ctx, 30);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Top 10 Tipos de Elemento', margin, ctx.yPos);
+  ctx.yPos += 5;
+
+  const topTiposData = stats.topTipos.map((tipo, index) => [
+    `#${index + 1}`,
+    tipo.tipoNombre,
+    tipo.items.toString(),
+    `${tipo.cantidad} unidades`,
+  ]);
+  renderTable(ctx, [['Rank', 'Tipo de Elemento', 'Items', 'Cantidad Total']], topTiposData, PDF_COLORS.warning);
+}
+
+function renderInventoryCriticos(ctx: PdfCtx<InventoryStats>): void {
+  const { stats, doc, margin } = ctx;
+  if (stats.itemsCriticos <= 0 && stats.espaciosSinInventario <= 0) return;
+
+  addSectionTitle(ctx, 'ITEMS CRITICOS Y ALERTAS', PDF_COLORS.danger);
+
+  checkPageBreak(ctx, 20);
+  const criticalData = [
+    ['Items Críticos Totales', stats.itemsCriticos.toString()],
+    ['Sin Asignar + Problemas', stats.itemsSinAsignarConProblemas.toString()],
+    ['Espacios Sin Inventario', stats.espaciosSinInventario.toString()],
+    ['Tipos Sin Items', stats.tiposSinItems.toString()],
+  ];
+  renderTable(ctx, [['Alerta', 'Cantidad']], criticalData, PDF_COLORS.danger);
+
+  if (stats.espaciosConMasProblemas.length > 0) {
+    checkPageBreak(ctx, 25);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Espacios con Más Problemas', margin, ctx.yPos);
+    ctx.yPos += 5;
+
+    const problemasEspaciosData = stats.espaciosConMasProblemas.map((espacio) => [
+      espacio.espacioNombre,
+      espacio.problemas.toString(),
+      `${espacio.porcentaje.toFixed(1)}%`,
+    ]);
+    renderTable(ctx, [['Espacio', 'Problemas', '% del Inventario']], problemasEspaciosData, PDF_COLORS.danger);
+  }
+}
+
+function renderInventoryDistribucion(ctx: PdfCtx<InventoryStats>): void {
+  const { stats, doc, margin } = ctx;
+  addSectionTitle(ctx, 'ANALISIS DE DISTRIBUCION', PDF_COLORS.purple);
+
+  checkPageBreak(ctx, 40);
+  const distribucionData = [
+    ['Items por Espacio (Promedio)', stats.promedioItemsPorEspacio.toFixed(1)],
+    ['Cantidad por Item (Promedio)', stats.promedioCantidadPorItem.toFixed(1)],
+    ['Items por Tipo (Promedio)', stats.promedioItemsPorTipo.toFixed(1)],
+    ['Cantidad por Espacio (Promedio)', stats.promedioCantidadPorEspacio.toFixed(1)],
+    ['Cantidad por Tipo (Promedio)', stats.promedioCantidadPorTipo.toFixed(1)],
+    ['Densidad de Inventario', `${stats.densidadInventario.toFixed(1)} items/espacio`],
+    ['Eficiencia de Asignación', `${stats.eficienciaAsignacion.toFixed(1)}%`],
+    ['Concentración de Inventario', `${stats.concentracionInventario.toFixed(1)}%`],
+  ];
+  renderTable(ctx, [['Métrica', 'Valor']], distribucionData, PDF_COLORS.purple);
+
+  // Distribución por cantidad
+  checkPageBreak(ctx, 20);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Distribución por Cantidad', margin, ctx.yPos);
+  ctx.yPos += 5;
+
+  const cantidadData = [
+    ['Cantidad 1', stats.itemsConCantidad1.toString()],
+    ['Cantidad Media (2-10)', stats.itemsConCantidadMedia.toString()],
+    ['Cantidad Alta (>10)', stats.itemsConCantidadAlta.toString()],
+    ['Rango', `${stats.cantidadMinima} - ${stats.cantidadMaxima}`],
+  ];
+  renderTable(ctx, [['Rango', 'Items']], cantidadData, PDF_COLORS.purple);
+}
+
+function renderInventoryPorTipo(ctx: PdfCtx<InventoryStats>): void {
+  const { stats } = ctx;
+  if (stats.itemsPorTipo.length === 0) return;
+  addSectionTitle(ctx, 'INVENTARIO COMPLETO POR TIPO', PDF_COLORS.teal);
+
+  checkPageBreak(ctx, 50);
+  const tipoCompletoData = stats.itemsPorTipo.map((tipo) => {
+    const porcentaje = stats.totalItems > 0 ? (tipo.items / stats.totalItems) * 100 : 0;
+    return [
+      tipo.tipoNombre,
+      tipo.items.toString(),
+      tipo.cantidad.toString(),
+      tipo.disponibles.toString(),
+      tipo.mantenimiento.toString(),
+      tipo.danados.toString(),
+      `${porcentaje.toFixed(1)}%`,
+    ];
+  });
+
+  renderTable(
+    ctx,
+    [['Tipo', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados', '% del Total']],
+    tipoCompletoData,
+    PDF_COLORS.teal,
+    {
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 20 },
+        6: { cellWidth: 20 },
+      },
+    },
+  );
+}
+
+function renderInventoryPorEspacio(ctx: PdfCtx<InventoryStats>): void {
+  const { stats } = ctx;
+  if (stats.itemsPorEspacio.length === 0) return;
+  addSectionTitle(ctx, 'INVENTARIO COMPLETO POR ESPACIO', PDF_COLORS.deepPurple);
+
+  checkPageBreak(ctx, 50);
+  const espacioCompletoData = stats.itemsPorEspacio.map((espacio) => [
+    espacio.espacioNombre,
+    espacio.items.toString(),
+    espacio.cantidad.toString(),
+    espacio.disponibles.toString(),
+    espacio.mantenimiento.toString(),
+    espacio.danados.toString(),
+  ]);
+
+  renderTable(
+    ctx,
+    [['Espacio', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados']],
+    espacioCompletoData,
+    PDF_COLORS.deepPurple,
+    {
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 30 },
+        5: { cellWidth: 20 },
+      },
+    },
+  );
+}
+
+/**
  * Exporta las estadísticas de inventario a PDF con un diseño profesional
  */
 export function exportInventoryStatsToPDF(
@@ -164,408 +398,37 @@ export function exportInventoryStatsToPDF(
   filters?: ExportFilters
 ): void {
   try {
-    const doc = new jsPDF('p', 'mm', 'a4') as ExtendedJsPDF;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 15;
-    let yPos = margin;
+    const ctx = createPdfWithCover(stats, 'Reporte de Estadísticas de Inventario', buildInventoryFilterText(filters));
 
-    // Colores personalizados
-    const primaryColor: [number, number, number] = [33, 150, 243]; // Azul
-    const dangerColor: [number, number, number] = [244, 67, 54]; // Rojo
-    const grayColor: [number, number, number] = [158, 158, 158]; // Gris
+    renderInventoryResumen(ctx);
+    renderInventoryTemporal(ctx);
+    renderInventoryRankings(ctx);
+    renderInventoryCriticos(ctx);
+    renderInventoryDistribucion(ctx);
+    renderInventoryPorTipo(ctx);
+    renderInventoryPorEspacio(ctx);
 
-    const checkPageBreak = (requiredHeight: number) => {
-      yPos = pageBreakIfNeeded(doc, yPos, pageHeight, margin, requiredHeight);
-    };
+    addFooter(ctx.doc, ctx.pageWidth, ctx.pageHeight, PDF_COLORS.gray);
 
-    const addSectionTitle = (title: string, color: [number, number, number] = primaryColor) => {
-      checkPageBreak(10);
-      yPos = drawSectionTitleBlock(doc, yPos, pageWidth, margin, title, color);
-    };
-
-
-    // Portada
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, pageWidth, 40, 'F');
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Reporte de Estadísticas de Inventario', pageWidth / 2, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    const fechaGeneracion = format(new Date(), 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es });
-    doc.text(`Generado el ${fechaGeneracion}`, pageWidth / 2, 32, { align: 'center' });
-    
-    doc.setTextColor(0, 0, 0);
-    yPos = 50;
-
-    // Información de filtros aplicados
-    if (filters && (filters.espacioNombre || filters.tipoElementoNombre || filters.estado !== 'todos')) {
-      checkPageBreak(15);
-      doc.setFillColor(245, 245, 245);
-      doc.rect(margin, yPos, pageWidth - 2 * margin, 12, 'F');
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Filtros Aplicados:', margin + 2, yPos + 5);
-      doc.setFont('helvetica', 'normal');
-      let filterText = '';
-      if (filters.espacioNombre) filterText += `Espacio: ${filters.espacioNombre} | `;
-      if (filters.tipoElementoNombre) filterText += `Tipo: ${filters.tipoElementoNombre} | `;
-      if (filters.estado && filters.estado !== 'todos') filterText += `Estado: ${filters.estado}`;
-      doc.text(filterText.replace(/\s*\|\s*$/, ''), margin + 2, yPos + 10);
-      yPos += 18;
-    }
-
-    // === RESUMEN EJECUTIVO ===
-    addSectionTitle('RESUMEN EJECUTIVO', primaryColor);
-    
-    checkPageBreak(30);
-    const summaryData = [
-      ['Total Items', stats.totalItems.toString(), stats.totalCantidad.toString() + ' unidades'],
-      ['Disponibles', stats.disponibles.toString(), stats.porcentajeDisponibles.toFixed(1) + '%'],
-      ['En Mantenimiento', stats.mantenimiento.toString(), stats.porcentajeMantenimiento.toFixed(1) + '%'],
-      ['Dañados', stats.danados.toString(), stats.porcentajeDanados.toFixed(1) + '%'],
-      ['Asignados', stats.asignados.toString(), stats.porcentajeAsignados.toFixed(1) + '%'],
-      ['Sin Asignar', stats.sinAsignar.toString(), stats.porcentajeSinAsignar.toFixed(1) + '%'],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Métrica', 'Cantidad', 'Porcentaje']],
-      body: summaryData,
-      theme: 'striped',
-      headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-    // Métricas de salud
-    checkPageBreak(15);
-    doc.setFillColor(245, 245, 245);
-    doc.rect(margin, yPos, pageWidth - 2 * margin, 10, 'F');
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Indicadores de Salud:', margin + 2, yPos + 4);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Ratio de Salud: ${stats.ratioSalud.toFixed(1)}% | Ratio de Problemas: ${stats.ratioProblemas.toFixed(1)}% | Cobertura: ${stats.indiceCobertura.toFixed(1)}%`, margin + 2, yPos + 8);
-    yPos += 15;
-
-    // === ESTADÍSTICAS TEMPORALES ===
-    const temporalColor: [number, number, number] = [76, 175, 80];
-    addSectionTitle('ANALISIS TEMPORAL', temporalColor);
-
-    checkPageBreak(25);
-    const temporalData = [
-      ['Creados Este Mes', stats.itemsCreadosEsteMes.toString(), formatMesAnterior(stats.diferenciaMesAnterior, stats.porcentajeCambioMesAnterior)],
-      ['Creados Este Año', stats.itemsCreadosEsteAnio.toString(), `Últimos 6 meses: ${stats.itemsCreadosUltimos6Meses}`],
-      ['Actualizados Este Mes', stats.itemsActualizadosEsteMes.toString(), `Últimos 7 días: ${stats.itemsActualizadosUltimos7Dias}`],
-      ['Antigüedad Promedio', Math.round(stats.promedioAntiguedadDias).toString() + ' días', `${Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar`],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Período', 'Cantidad', 'Detalles']],
-      body: temporalData,
-      theme: 'striped',
-      headStyles: { fillColor: temporalColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-    // === TOP RANKINGS ===
-    const topRankingsColor: [number, number, number] = [255, 152, 0];
-    addSectionTitle('TOP RANKINGS', topRankingsColor);
-
-    // Top 10 Espacios
-    checkPageBreak(30);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Top 10 Espacios con Más Inventario', margin, yPos);
-    yPos += 5;
-
-    const topEspaciosData = stats.topEspacios.map((espacio, index) => [
-      `#${index + 1}`,
-      espacio.espacioNombre,
-      espacio.items.toString(),
-      espacio.cantidad.toString() + ' unidades'
-    ]);
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Rank', 'Espacio', 'Items', 'Cantidad Total']],
-      body: topEspaciosData,
-      theme: 'striped',
-      headStyles: { fillColor: topRankingsColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-    // Top 10 Tipos
-    checkPageBreak(30);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Top 10 Tipos de Elemento', margin, yPos);
-    yPos += 5;
-
-    const topTiposData = stats.topTipos.map((tipo, index) => [
-      `#${index + 1}`,
-      tipo.tipoNombre,
-      tipo.items.toString(),
-      tipo.cantidad.toString() + ' unidades'
-    ]);
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Rank', 'Tipo de Elemento', 'Items', 'Cantidad Total']],
-      body: topTiposData,
-      theme: 'striped',
-      headStyles: { fillColor: topRankingsColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-    // === ITEMS CRÍTICOS ===
-    if (stats.itemsCriticos > 0 || stats.espaciosSinInventario > 0) {
-      addSectionTitle('ITEMS CRITICOS Y ALERTAS', dangerColor);
-
-      checkPageBreak(20);
-      const criticalData = [
-        ['Items Críticos Totales', stats.itemsCriticos.toString()],
-        ['Sin Asignar + Problemas', stats.itemsSinAsignarConProblemas.toString()],
-        ['Espacios Sin Inventario', stats.espaciosSinInventario.toString()],
-        ['Tipos Sin Items', stats.tiposSinItems.toString()],
-      ];
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Alerta', 'Cantidad']],
-        body: criticalData,
-        theme: 'striped',
-        headStyles: { fillColor: dangerColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-        styles: { fontSize: 9, cellPadding: 3 },
-        margin: { left: margin, right: margin },
-      });
-      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-      // Espacios con más problemas
-      if (stats.espaciosConMasProblemas.length > 0) {
-        checkPageBreak(25);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Espacios con Más Problemas', margin, yPos);
-        yPos += 5;
-
-        const problemasEspaciosData = stats.espaciosConMasProblemas.map((espacio) => [
-          espacio.espacioNombre,
-          espacio.problemas.toString(),
-          espacio.porcentaje.toFixed(1) + '%'
-        ]);
-
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Espacio', 'Problemas', '% del Inventario']],
-          body: problemasEspaciosData,
-          theme: 'striped',
-          headStyles: { fillColor: dangerColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-          styles: { fontSize: 9, cellPadding: 3 },
-          margin: { left: margin, right: margin },
-        });
-        yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-      }
-    }
-
-    // === ANÁLISIS DE DISTRIBUCIÓN ===
-    const distribucionColor: [number, number, number] = [156, 39, 176];
-    addSectionTitle('ANALISIS DE DISTRIBUCION', distribucionColor);
-
-    checkPageBreak(40);
-    const distribucionData = [
-      ['Items por Espacio (Promedio)', stats.promedioItemsPorEspacio.toFixed(1)],
-      ['Cantidad por Item (Promedio)', stats.promedioCantidadPorItem.toFixed(1)],
-      ['Items por Tipo (Promedio)', stats.promedioItemsPorTipo.toFixed(1)],
-      ['Cantidad por Espacio (Promedio)', stats.promedioCantidadPorEspacio.toFixed(1)],
-      ['Cantidad por Tipo (Promedio)', stats.promedioCantidadPorTipo.toFixed(1)],
-      ['Densidad de Inventario', stats.densidadInventario.toFixed(1) + ' items/espacio'],
-      ['Eficiencia de Asignación', stats.eficienciaAsignacion.toFixed(1) + '%'],
-      ['Concentración de Inventario', stats.concentracionInventario.toFixed(1) + '%'],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Métrica', 'Valor']],
-      body: distribucionData,
-      theme: 'striped',
-      headStyles: { fillColor: distribucionColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-    // Distribución por cantidad
-    checkPageBreak(20);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Distribución por Cantidad', margin, yPos);
-    yPos += 5;
-
-    const cantidadData = [
-      ['Cantidad 1', stats.itemsConCantidad1.toString()],
-      ['Cantidad Media (2-10)', stats.itemsConCantidadMedia.toString()],
-      ['Cantidad Alta (>10)', stats.itemsConCantidadAlta.toString()],
-      ['Rango', `${stats.cantidadMinima} - ${stats.cantidadMaxima}`],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Rango', 'Items']],
-      body: cantidadData,
-      theme: 'striped',
-      headStyles: { fillColor: distribucionColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-
-    // === INVENTARIO COMPLETO POR TIPO ===
-    if (stats.itemsPorTipo.length > 0) {
-      const tipoColor: [number, number, number] = [0, 150, 136];
-      addSectionTitle('INVENTARIO COMPLETO POR TIPO', tipoColor);
-
-      checkPageBreak(50);
-      const tipoCompletoData = stats.itemsPorTipo.map((tipo) => {
-        const porcentaje = stats.totalItems > 0 ? (tipo.items / stats.totalItems) * 100 : 0;
-        return [
-          tipo.tipoNombre,
-          tipo.items.toString(),
-          tipo.cantidad.toString(),
-          tipo.disponibles.toString(),
-          tipo.mantenimiento.toString(),
-          tipo.danados.toString(),
-          porcentaje.toFixed(1) + '%'
-        ];
-      });
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Tipo', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados', '% del Total']],
-        body: tipoCompletoData,
-        theme: 'striped',
-        headStyles: { fillColor: tipoColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-        styles: { fontSize: 8, cellPadding: 2 },
-        margin: { left: margin, right: margin },
-        columnStyles: {
-          0: { cellWidth: 50 },
-          1: { cellWidth: 20 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 20 },
-          4: { cellWidth: 25 },
-          5: { cellWidth: 20 },
-          6: { cellWidth: 20 },
-        },
-      });
-      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-    }
-
-    // === INVENTARIO COMPLETO POR ESPACIO ===
-    if (stats.itemsPorEspacio.length > 0) {
-      const espacioColor: [number, number, number] = [103, 58, 183];
-      addSectionTitle('INVENTARIO COMPLETO POR ESPACIO', espacioColor);
-
-      checkPageBreak(50);
-      const espacioCompletoData = stats.itemsPorEspacio.map((espacio) => [
-        espacio.espacioNombre,
-        espacio.items.toString(),
-        espacio.cantidad.toString(),
-        espacio.disponibles.toString(),
-        espacio.mantenimiento.toString(),
-        espacio.danados.toString(),
-      ]);
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Espacio', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados']],
-        body: espacioCompletoData,
-        theme: 'striped',
-        headStyles: { fillColor: espacioColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-        styles: { fontSize: 8, cellPadding: 2 },
-        margin: { left: margin, right: margin },
-        columnStyles: {
-          0: { cellWidth: 50 },
-          1: { cellWidth: 20 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 25 },
-          4: { cellWidth: 30 },
-          5: { cellWidth: 20 },
-        },
-      });
-      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 8;
-    }
-
-    // Pie de página en todas las páginas
-    addFooter(doc, pageWidth, pageHeight, grayColor);
-
-    // Generar nombre de archivo
     const fecha = format(new Date(), 'yyyy-MM-dd');
-    const nombreArchivo = `estadisticas_inventario_${fecha}.pdf`;
-
-    // Descargar PDF
-    doc.save(nombreArchivo);
+    ctx.doc.save(`estadisticas_inventario_${fecha}.pdf`);
   } catch (error) {
     console.error('Error al generar PDF:', error);
     throw new Error('Error al generar el PDF. Intenta nuevamente.');
   }
 }
 
-interface ReservaStats {
-  totalReservas: number;
-  totalAprobadas: number;
-  totalPendientes: number;
-  totalCanceladas: number;
-  totalFuturas: number;
-  totalPasadas: number;
-  totalActivas: number;
-  reservasPorEstado: Record<string, number>;
-  reservasEsteMes: number;
-  reservasProximoMes: number;
-  reservasEsteAnio: number;
-  reservasPorMes: Record<string, number>;
-  reservasPorDiaSemana: Record<string, number>;
-  mesConMasReservas?: string | null;
-  promedioReservasPorMes: number;
-  totalEspaciosUsados: number;
-  espacioMasUsado?: number | null;
-  nombreEspacioMasUsado?: string | null;
-  reservasPorEspacio: Record<string, number>;
-  distribucionPorEspacio: Record<string, number>;
-  duracionTotalHoras: number;
-  duracionPromedioHoras: number;
-  reservaMasLargaHoras: number;
-  reservaMasCortaHoras: number;
-  horasReservadasEsteMes: number;
-  promedioReservasPorSemana: number;
-  diasDesdeUltimaReserva?: number | null;
-  diasHastaProximaReserva?: number | null;
-  fechaUltimaReserva?: string | null;
-  fechaProximaReserva?: string | null;
-  reservasMesActual: number;
-  reservasMesAnterior: number;
-  diferenciaMesAnterior: number;
-  porcentajeCambioMesAnterior: number;
-}
+// ============================================================================
+// RESERVAS
+// ============================================================================
 
 interface ReservationExportFilters {
   espacioNombre?: string;
   carreraNombre?: string;
 }
 
-function buildReservationFilterText(filters: ReservationExportFilters): string {
+function buildReservationFilterText(filters?: ReservationExportFilters): string {
+  if (!filters) return '';
   const parts: string[] = [];
   if (filters.espacioNombre) parts.push(`Espacio: ${filters.espacioNombre}`);
   if (filters.carreraNombre) parts.push(`Carrera: ${filters.carreraNombre}`);
@@ -590,84 +453,7 @@ function formatChangeLabel(diferencia: number, porcentaje: number): string {
   return `Cambio: ${signoDif}${diferencia} (${signoPct}${porcentaje.toFixed(1)}%)`;
 }
 
-// Colores y contexto compartido para las secciones del PDF
-const PDF_COLORS = {
-  primary: [33, 150, 243] as [number, number, number],
-  success: [76, 175, 80] as [number, number, number],
-  warning: [255, 152, 0] as [number, number, number],
-  gray: [158, 158, 158] as [number, number, number],
-};
-
-interface ReservationPdfCtx {
-  doc: ExtendedJsPDF;
-  pageWidth: number;
-  pageHeight: number;
-  margin: number;
-  yPos: number;
-  stats: ReservaStats;
-}
-
-function checkPageBreak(ctx: ReservationPdfCtx, requiredHeight: number): void {
-  ctx.yPos = pageBreakIfNeeded(ctx.doc, ctx.yPos, ctx.pageHeight, ctx.margin, requiredHeight);
-}
-
-function addSectionTitle(ctx: ReservationPdfCtx, title: string, color: [number, number, number]): void {
-  checkPageBreak(ctx, 10);
-  ctx.yPos = drawSectionTitleBlock(ctx.doc, ctx.yPos, ctx.pageWidth, ctx.margin, title, color);
-}
-
-function renderTable(
-  ctx: ReservationPdfCtx,
-  head: string[][],
-  body: (string | number)[][],
-  color: [number, number, number]
-): void {
-  autoTable(ctx.doc, {
-    startY: ctx.yPos,
-    head,
-    body,
-    theme: 'striped',
-    headStyles: { fillColor: color, textColor: [255, 255, 255], fontStyle: 'bold' },
-    styles: { fontSize: 9, cellPadding: 3 },
-    margin: { left: ctx.margin, right: ctx.margin },
-  });
-  ctx.yPos = (ctx.doc.lastAutoTable?.finalY ?? ctx.yPos) + 8;
-}
-
-function renderPortada(ctx: ReservationPdfCtx, filters?: ReservationExportFilters): void {
-  const { doc, pageWidth, margin } = ctx;
-  const [r, g, b] = PDF_COLORS.primary;
-  doc.setFillColor(r, g, b);
-  doc.rect(0, 0, pageWidth, 40, 'F');
-
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Reporte de Estadísticas de Reservas', pageWidth / 2, 20, { align: 'center' });
-
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  const fechaGeneracion = format(new Date(), 'dd \'de\' MMMM \'de\' yyyy, HH:mm', { locale: es });
-  doc.text(`Generado el ${fechaGeneracion}`, pageWidth / 2, 32, { align: 'center' });
-
-  doc.setTextColor(0, 0, 0);
-  ctx.yPos = 50;
-
-  const filterText = filters ? buildReservationFilterText(filters) : '';
-  if (filterText) {
-    checkPageBreak(ctx, 15);
-    doc.setFillColor(245, 245, 245);
-    doc.rect(margin, ctx.yPos, pageWidth - 2 * margin, 12, 'F');
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Filtros Aplicados:', margin + 2, ctx.yPos + 5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(filterText, margin + 2, ctx.yPos + 10);
-    ctx.yPos += 18;
-  }
-}
-
-function renderResumenEjecutivo(ctx: ReservationPdfCtx): void {
+function renderResumenEjecutivo(ctx: PdfCtx<ReservaStats>): void {
   addSectionTitle(ctx, 'RESUMEN EJECUTIVO', PDF_COLORS.primary);
   checkPageBreak(ctx, 40);
   const { stats } = ctx;
@@ -686,7 +472,7 @@ function renderResumenEjecutivo(ctx: ReservationPdfCtx): void {
   renderTable(ctx, [['Métrica', 'Valor']], summaryData, PDF_COLORS.primary);
 }
 
-function renderAnalisisTemporal(ctx: ReservationPdfCtx): void {
+function renderAnalisisTemporal(ctx: PdfCtx<ReservaStats>): void {
   addSectionTitle(ctx, 'ANALISIS TEMPORAL', PDF_COLORS.success);
   checkPageBreak(ctx, 30);
   const { stats } = ctx;
@@ -700,7 +486,7 @@ function renderAnalisisTemporal(ctx: ReservationPdfCtx): void {
   renderTable(ctx, [['Período', 'Cantidad', 'Detalles']], temporalData, PDF_COLORS.success);
 }
 
-function renderAnalisisDuracion(ctx: ReservationPdfCtx): void {
+function renderAnalisisDuracion(ctx: PdfCtx<ReservaStats>): void {
   addSectionTitle(ctx, 'ANALISIS DE DURACION', PDF_COLORS.warning);
   checkPageBreak(ctx, 25);
   const { stats } = ctx;
@@ -714,7 +500,7 @@ function renderAnalisisDuracion(ctx: ReservationPdfCtx): void {
   renderTable(ctx, [['Métrica', 'Valor']], duracionData, PDF_COLORS.warning);
 }
 
-function renderAnalisisEspacios(ctx: ReservationPdfCtx): void {
+function renderAnalisisEspacios(ctx: PdfCtx<ReservaStats>): void {
   addSectionTitle(ctx, 'ANALISIS DE ESPACIOS', PDF_COLORS.primary);
   checkPageBreak(ctx, 20);
   const { stats } = ctx;
@@ -742,7 +528,7 @@ function renderAnalisisEspacios(ctx: ReservationPdfCtx): void {
   }
 }
 
-function renderReservasPorMes(ctx: ReservationPdfCtx): void {
+function renderReservasPorMes(ctx: PdfCtx<ReservaStats>): void {
   const { stats } = ctx;
   if (!stats.reservasPorMes || Object.keys(stats.reservasPorMes).length === 0) return;
   addSectionTitle(ctx, 'RESERVAS POR MES', PDF_COLORS.success);
@@ -757,7 +543,7 @@ function renderReservasPorMes(ctx: ReservationPdfCtx): void {
   renderTable(ctx, [['Mes', 'Cantidad']], reservasPorMesData, PDF_COLORS.success);
 }
 
-function renderReservasPorDiaSemana(ctx: ReservationPdfCtx): void {
+function renderReservasPorDiaSemana(ctx: PdfCtx<ReservaStats>): void {
   const { stats } = ctx;
   if (!stats.reservasPorDiaSemana || Object.keys(stats.reservasPorDiaSemana).length === 0) return;
   addSectionTitle(ctx, 'RESERVAS POR DIA DE SEMANA', PDF_COLORS.warning);
@@ -783,21 +569,21 @@ function buildInfoAdicionalData(stats: ReservaStats): string[][] {
   if (stats.fechaUltimaReserva) {
     const fechaUltima = format(new Date(stats.fechaUltimaReserva), 'dd MMM yyyy, HH:mm', { locale: es });
     infoData.push(['Última Reserva', fechaUltima]);
-    if (stats.diasDesdeUltimaReserva !== null) {
+    if (stats.diasDesdeUltimaReserva !== null && stats.diasDesdeUltimaReserva !== undefined) {
       infoData.push(['Días desde Última', `${stats.diasDesdeUltimaReserva} días`]);
     }
   }
   if (stats.fechaProximaReserva) {
     const fechaProxima = format(new Date(stats.fechaProximaReserva), 'dd MMM yyyy, HH:mm', { locale: es });
     infoData.push(['Próxima Reserva', fechaProxima]);
-    if (stats.diasHastaProximaReserva !== null) {
+    if (stats.diasHastaProximaReserva !== null && stats.diasHastaProximaReserva !== undefined) {
       infoData.push(['Días hasta Próxima', `${stats.diasHastaProximaReserva} días`]);
     }
   }
   return infoData;
 }
 
-function renderInformacionAdicional(ctx: ReservationPdfCtx): void {
+function renderInformacionAdicional(ctx: PdfCtx<ReservaStats>): void {
   const { stats } = ctx;
   if (!stats.fechaUltimaReserva && !stats.fechaProximaReserva) return;
   addSectionTitle(ctx, 'INFORMACION ADICIONAL', PDF_COLORS.gray);
@@ -816,17 +602,8 @@ export function exportReservationStatsToPDF(
   filters?: ReservationExportFilters
 ): void {
   try {
-    const doc = new jsPDF('p', 'mm', 'a4') as ExtendedJsPDF;
-    const ctx: ReservationPdfCtx = {
-      doc,
-      pageWidth: doc.internal.pageSize.getWidth(),
-      pageHeight: doc.internal.pageSize.getHeight(),
-      margin: 15,
-      yPos: 15,
-      stats,
-    };
+    const ctx = createPdfWithCover(stats, 'Reporte de Estadísticas de Reservas', buildReservationFilterText(filters));
 
-    renderPortada(ctx, filters);
     renderResumenEjecutivo(ctx);
     renderAnalisisTemporal(ctx);
     renderAnalisisDuracion(ctx);
@@ -838,11 +615,9 @@ export function exportReservationStatsToPDF(
     addFooter(ctx.doc, ctx.pageWidth, ctx.pageHeight, PDF_COLORS.gray);
 
     const fecha = format(new Date(), 'yyyy-MM-dd');
-    const nombreArchivo = `estadisticas_reservas_${fecha}.pdf`;
-    doc.save(nombreArchivo);
+    ctx.doc.save(`estadisticas_reservas_${fecha}.pdf`);
   } catch (error) {
     console.error('Error al generar PDF:', error);
     throw new Error('Error al generar el PDF. Intenta nuevamente.');
   }
 }
-

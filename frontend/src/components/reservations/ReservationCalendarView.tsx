@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
-import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, Maximize2, Minimize2, CheckCircle2, XCircle, Hourglass, Loader2, LayoutGrid, Table as TableIcon, CalendarDays } from 'lucide-react';
+import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, CheckCircle2, XCircle, Hourglass, Loader2 } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import { getEstadoConfig, formatTime } from './reservationUtils';
 import ReservationFilters from './ReservationFilters';
+import { FullScreenToggle, ViewModeToggle } from './_shared/ReservationListChrome';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, isToday, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -1131,78 +1132,11 @@ export default function ReservationCalendarView({
                 onClearFilters={onClearFilters}
               />
             </div>
-            {/* Botón de cambio de vista - a la izquierda del botón de pantalla completa */}
             {!readOnly && (
-              <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 flex-shrink-0 self-start">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => onViewModeChange('cards')}
-                      className={`p-1.5 rounded transition-colors ${viewMode === 'cards'
-                          ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                          : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                      <LayoutGrid className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Vista de tarjetas</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => onViewModeChange('table')}
-                      className={`p-1.5 rounded transition-colors ${viewMode === 'table'
-                          ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                          : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                      <TableIcon className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Vista de tabla</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => onViewModeChange('calendar')}
-                      className={`p-1.5 rounded transition-colors ${viewMode === 'calendar'
-                          ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                          : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                      <CalendarDays className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Vista de calendario</TooltipContent>
-                </Tooltip>
-              </div>
+              <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
             )}
-            {/* Botón de pantalla completa - siempre a la derecha */}
             {handleToggleFullScreen && (
-              <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 flex-shrink-0 self-start">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={handleToggleFullScreen}
-                      className={`p-1.5 rounded transition-colors ${
-                        isFullScreen
-                          ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      {isFullScreen ? (
-                        <Minimize2 className={`h-3.5 w-3.5 ${isFullScreen ? 'text-blue-600' : 'text-gray-500'}`} />
-                      ) : (
-                        <Maximize2 className="h-3.5 w-3.5" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+              <FullScreenToggle isFullScreen={isFullScreen} onToggle={handleToggleFullScreen} />
             )}
           </div>
         </CardHeader>

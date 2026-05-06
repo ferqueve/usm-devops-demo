@@ -1,8 +1,18 @@
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { AuditLog, AuditLogFilters } from '../types/audit';
+import {
+  buildAndDownloadCsv,
+  csvEscape,
+  type ExtendedJsPDF,
+  type RGB,
+  renderAutoTable,
+  todayIsoDate,
+} from './export-helpers';
+
+const PRIMARY_COLOR: RGB = [82, 89, 97]; // #525961
+const SUCCESS_COLOR: RGB = [34, 197, 94]; // #22c55e
 
 /**
  * Exporta logs de auditoría a CSV
@@ -18,46 +28,27 @@ export function exportAuditLogsToCSV(logs: AuditLog[]): void {
       'Email',
       'Fecha/Hora',
       'Datos Previos',
-      'Datos Nuevos'
+      'Datos Nuevos',
     ];
-    
-    const csvContent = [
-      headers.join(','),
-      ...logs.map(log => [
-        log.id,
-        `"${log.entidad.replaceAll('"', '""')}"`,
-        log.entidadId,
-        log.accion,
-        log.usuarioNombre ? `"${log.usuarioNombre.replaceAll('"', '""')}"` : 'N/A',
-        log.usuarioEmail ? `"${log.usuarioEmail.replaceAll('"', '""')}"` : 'N/A',
-        format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss'),
-        log.datosPrevios ? `"${log.datosPrevios.replaceAll('"', '""')}"` : '',
-        log.datosNuevos ? `"${log.datosNuevos.replaceAll('"', '""')}"` : ''
-      ].join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = globalThis.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const today = new Date().toISOString().split('T')[0];
-    link.download = `auditoria_${today}.csv`;
-    
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    globalThis.URL.revokeObjectURL(url);
+
+    const rows = logs.map((log) => [
+      log.id,
+      csvEscape(log.entidad),
+      log.entidadId,
+      log.accion,
+      log.usuarioNombre ? csvEscape(log.usuarioNombre) : 'N/A',
+      log.usuarioEmail ? csvEscape(log.usuarioEmail) : 'N/A',
+      format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss'),
+      log.datosPrevios ? csvEscape(log.datosPrevios) : '',
+      log.datosNuevos ? csvEscape(log.datosNuevos) : '',
+    ]);
+
+    buildAndDownloadCsv(headers, rows, `auditoria_${todayIsoDate()}.csv`);
   } catch (error) {
     console.error('Error al exportar auditoría a CSV:', error);
     throw new Error('Error al exportar auditoría. Intenta nuevamente.');
   }
 }
-
-type PdfWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
-
-const PRIMARY_COLOR: [number, number, number] = [82, 89, 97]; // #525961
-const SUCCESS_COLOR: [number, number, number] = [34, 197, 94]; // #22c55e
 
 function buildAuditFilterRows(filters: AuditLogFilters): string[][] {
   const rows: string[][] = [];
@@ -70,7 +61,7 @@ function buildAuditFilterRows(filters: AuditLogFilters): string[][] {
   return rows;
 }
 
-function renderAuditCover(doc: PdfWithAutoTable, margin: number): number {
+function renderAuditCover(doc: ExtendedJsPDF, margin: number): number {
   doc.setFillColor(PRIMARY_COLOR[0], PRIMARY_COLOR[1], PRIMARY_COLOR[2]);
   doc.rect(0, 0, 210, 50, 'F');
 
@@ -95,12 +86,11 @@ export function exportAuditLogsToPDF(
   filters?: AuditLogFilters
 ): void {
   try {
-    const doc = new jsPDF('p', 'mm', 'a4') as PdfWithAutoTable;
+    const doc = new jsPDF('p', 'mm', 'a4') as ExtendedJsPDF;
     const margin = 15;
     let yPos = 20;
 
-    // Función auxiliar para agregar título de sección
-    const addSectionTitle = (title: string, color: [number, number, number]) => {
+    const addSectionTitle = (title: string, color: RGB) => {
       if (yPos > 250) {
         doc.addPage();
         yPos = 20;
@@ -115,52 +105,33 @@ export function exportAuditLogsToPDF(
 
     yPos = renderAuditCover(doc, margin);
 
-    // Filtros aplicados
     const filterRows = filters ? buildAuditFilterRows(filters) : [];
     if (filterRows.length > 0) {
       addSectionTitle('FILTROS APLICADOS', PRIMARY_COLOR);
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Filtro', 'Valor']],
-        body: filterRows,
-        theme: 'striped',
-        headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-        styles: { fontSize: 9, cellPadding: 3 },
-        margin: { left: margin, right: margin },
-      });
-      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 10;
+      yPos = renderAutoTable(doc, yPos, [['Filtro', 'Valor']], filterRows, PRIMARY_COLOR, margin);
+      yPos += 2;
     }
-    
-    // Resumen ejecutivo
+
     addSectionTitle('RESUMEN EJECUTIVO', SUCCESS_COLOR);
-    
+
     const totalLogs = logs.length;
-    const createCount = logs.filter(l => l.accion === 'CREATE').length;
-    const updateCount = logs.filter(l => l.accion === 'UPDATE').length;
-    const deleteCount = logs.filter(l => l.accion === 'DELETE').length;
-    
+    const createCount = logs.filter((l) => l.accion === 'CREATE').length;
+    const updateCount = logs.filter((l) => l.accion === 'UPDATE').length;
+    const deleteCount = logs.filter((l) => l.accion === 'DELETE').length;
+
     const summaryData = [
       ['Total de Registros', totalLogs.toString()],
       ['Creaciones', createCount.toString()],
       ['Actualizaciones', updateCount.toString()],
       ['Eliminaciones', deleteCount.toString()],
     ];
-    
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Métrica', 'Valor']],
-      body: summaryData,
-      theme: 'striped',
-          headStyles: { fillColor: SUCCESS_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-    yPos = (doc.lastAutoTable?.finalY ?? yPos) + 10;
-    
-    // Tabla de logs
+
+    yPos = renderAutoTable(doc, yPos, [['Métrica', 'Valor']], summaryData, SUCCESS_COLOR, margin);
+    yPos += 2;
+
     addSectionTitle('REGISTROS DE AUDITORÍA', PRIMARY_COLOR);
-    
-    const tableData = logs.map(log => [
+
+    const tableData = logs.map((log) => [
       log.id.toString(),
       log.entidad,
       log.entidadId.toString(),
@@ -169,36 +140,35 @@ export function exportAuditLogsToPDF(
       log.usuarioEmail || 'N/A',
       format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm', { locale: es }),
       log.datosPrevios ? 'Sí' : 'No',
-      log.datosNuevos ? 'Sí' : 'No'
+      log.datosNuevos ? 'Sí' : 'No',
     ]);
-    
-    autoTable(doc, {
-      startY: yPos,
-      head: [['ID', 'Entidad', 'ID Ent.', 'Acción', 'Usuario', 'Email', 'Fecha/Hora', 'Previos', 'Nuevos']],
-      body: tableData,
-      theme: 'striped',
-          headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 7, cellPadding: 2 },
-      margin: { left: margin, right: margin },
-      columnStyles: {
-        0: { cellWidth: 15 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 20 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 35 },
-        5: { cellWidth: 40 },
-        6: { cellWidth: 30 },
-        7: { cellWidth: 15 },
-        8: { cellWidth: 15 }
-      }
-    });
-    
-    // Guardar PDF
-    const today = new Date().toISOString().split('T')[0];
-    doc.save(`auditoria_${today}.pdf`);
+
+    renderAutoTable(
+      doc,
+      yPos,
+      [['ID', 'Entidad', 'ID Ent.', 'Acción', 'Usuario', 'Email', 'Fecha/Hora', 'Previos', 'Nuevos']],
+      tableData,
+      PRIMARY_COLOR,
+      margin,
+      {
+        styles: { fontSize: 7, cellPadding: 2 },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 40 },
+          6: { cellWidth: 30 },
+          7: { cellWidth: 15 },
+          8: { cellWidth: 15 },
+        },
+      },
+    );
+
+    doc.save(`auditoria_${todayIsoDate()}.pdf`);
   } catch (error) {
     console.error('Error al exportar auditoría a PDF:', error);
     throw new Error('Error al exportar auditoría a PDF. Intenta nuevamente.');
   }
 }
-

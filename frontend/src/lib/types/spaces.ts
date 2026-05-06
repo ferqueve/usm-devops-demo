@@ -72,21 +72,17 @@ export interface EspacioFilters {
 }
 
 // Tipos para paginación
-export interface PagedEspacios {
-  content: Espacio[];
+// Forma estándar de las respuestas paginadas del backend (Spring Pageable).
+export interface PagedResponse<T> {
+  content: T[];
   totalPages: number;
   totalElements: number;
   size: number;
   number: number;
 }
 
-export interface PagedInventario {
-  content: InventarioItem[];
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
-}
+export type PagedEspacios = PagedResponse<Espacio>;
+export type PagedInventario = PagedResponse<InventarioItem>;
 
 export interface InventarioFilters {
   search?: string;
@@ -231,6 +227,43 @@ export interface EspacioStats {
   [key: string]: unknown;
 }
 
+// Identificadores para grupos del inventario
+interface TipoElementoRef {
+  tipoId: number;
+  tipoNombre: string;
+}
+
+interface EspacioRef {
+  espacioId: number;
+  espacioNombre: string;
+}
+
+// Métricas resumen de un grupo (top, ranking)
+interface InventoryGroupSummary {
+  cantidad: number;
+  items: number;
+}
+
+// Métricas por estado dentro de un grupo
+interface InventoryStatusBreakdown extends InventoryGroupSummary {
+  disponibles: number;
+  mantenimiento: number;
+  danados: number;
+}
+
+// Indicador de problemas de un grupo (espacios o tipos)
+interface InventoryProblemSummary {
+  problemas: number;
+  porcentaje: number;
+}
+
+export type InventoryByTipo = TipoElementoRef & InventoryStatusBreakdown;
+export type InventoryByEspacio = EspacioRef & InventoryStatusBreakdown;
+export type InventoryTopTipo = TipoElementoRef & InventoryGroupSummary;
+export type InventoryTopEspacio = EspacioRef & InventoryGroupSummary;
+export type InventoryProblemTipo = TipoElementoRef & InventoryProblemSummary;
+export type InventoryProblemEspacio = EspacioRef & InventoryProblemSummary;
+
 export interface InventoryStats {
   // === TOTALES Y BÁSICAS ===
   totalItems: number;
@@ -241,7 +274,7 @@ export interface InventoryStats {
   sinAsignar: number;
   asignados: number;
   itemsInactivos: number;
-  
+
   // === PORCENTAJES ===
   porcentajeDisponibles: number;
   porcentajeMantenimiento: number;
@@ -249,20 +282,20 @@ export interface InventoryStats {
   porcentajeSinAsignar: number;
   porcentajeAsignados: number;
   porcentajeInactivos: number;
-  
+
   // === POR TIPO DE ELEMENTO ===
-  itemsPorTipo: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
+  itemsPorTipo: InventoryByTipo[];
   tiposUnicos: number;
-  
+
   // === POR ESPACIO ===
-  itemsPorEspacio: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
+  itemsPorEspacio: InventoryByEspacio[];
   espaciosConInventario: number;
-  
+
   // === TOP RANKINGS ===
-  topEspacios: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number }>;
-  topTipos: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number }>;
-  espaciosConMasProblemas: Array<{ espacioNombre: string; espacioId: number; problemas: number; porcentaje: number }>;
-  tiposConMasProblemas: Array<{ tipoNombre: string; tipoId: number; problemas: number; porcentaje: number }>;
+  topEspacios: InventoryTopEspacio[];
+  topTipos: InventoryTopTipo[];
+  espaciosConMasProblemas: InventoryProblemEspacio[];
+  tiposConMasProblemas: InventoryProblemTipo[];
   
   // === PROMEDIOS ===
   promedioItemsPorEspacio: number;

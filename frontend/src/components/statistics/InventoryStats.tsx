@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { inventarioApi } from '@/lib/api/inventory';
-import type { TipoElemento, Espacio } from '@/lib/types/spaces';
+import type { TipoElemento, Espacio, InventoryStats as InventoryStatsData } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import {
   Package,
@@ -42,113 +42,14 @@ import {
 } from "@/components/ui/select";
 import { exportInventoryStatsToPDF } from '@/lib/utils/pdf-export';
 import InventoryCharts from './InventoryCharts';
+import { StatCard } from './StatCard';
 
-interface InventoryStats {
-  // === TOTALES Y BÁSICAS ===
-  totalItems: number;
-  totalCantidad: number;
-  disponibles: number;
-  mantenimiento: number;
-  danados: number;
-  sinAsignar: number;
-  asignados: number;
-  itemsInactivos: number;
-  
-  // === PORCENTAJES ===
-  porcentajeDisponibles: number;
-  porcentajeMantenimiento: number;
-  porcentajeDanados: number;
-  porcentajeSinAsignar: number;
-  porcentajeAsignados: number;
-  porcentajeInactivos: number;
-  
-  // === POR TIPO DE ELEMENTO ===
-  itemsPorTipo: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
-  tiposUnicos: number;
-  
-  // === POR ESPACIO ===
-  itemsPorEspacio: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number; disponibles: number; mantenimiento: number; danados: number }>;
-  espaciosConInventario: number;
-  
-  // === TOP RANKINGS ===
-  topEspacios: Array<{ espacioNombre: string; espacioId: number; cantidad: number; items: number }>;
-  topTipos: Array<{ tipoNombre: string; tipoId: number; cantidad: number; items: number }>;
-  espaciosConMasProblemas: Array<{ espacioNombre: string; espacioId: number; problemas: number; porcentaje: number }>;
-  tiposConMasProblemas: Array<{ tipoNombre: string; tipoId: number; problemas: number; porcentaje: number }>;
-  
-  // === PROMEDIOS ===
-  promedioItemsPorEspacio: number;
-  promedioCantidadPorItem: number;
-  promedioItemsPorTipo: number;
-  promedioCantidadPorEspacio: number;
-  promedioCantidadPorTipo: number;
-  
-  // === ANÁLISIS TEMPORAL ===
-  itemsCreadosEsteMes: number;
-  itemsCreadosEsteAnio: number;
-  itemsCreadosUltimos6Meses: number;
-  itemsCreadosUltimos12Meses: number;
-  itemsActualizadosEsteMes: number;
-  itemsActualizadosUltimos7Dias: number;
-  
-  // === ANÁLISIS DE EDAD ===
-  itemsRecientes: number;
-  itemsJovenes: number;
-  itemsViejos: number;
-  promedioAntiguedadDias: number;
-  promedioTiempoSinActualizarDias: number;
-  itemsSinActualizarMasDe6Meses: number;
-  
-  // === SALUD DEL INVENTARIO ===
-  ratioSalud: number;
-  ratioProblemas: number;
-  ratioAsignacion: number;
-  indiceCobertura: number;
-  
-  // === ITEMS CRÍTICOS ===
-  itemsCriticos: number;
-  itemsSinAsignarConProblemas: number;
-  espaciosSinInventario: number;
-  tiposSinItems: number;
-  
-  // === ANÁLISIS DE DISTRIBUCIÓN ===
-  espaciosConSoloDisponibles: number;
-  espaciosConSoloMantenimiento: number;
-  espaciosConSoloDanados: number;
-  espaciosConMezclaEstados: number;
-  tiposConSoloDisponibles: number;
-  tiposConSoloMantenimiento: number;
-  tiposConSoloDanados: number;
-  tiposConMezclaEstados: number;
-  
-  // === ANÁLISIS DE CANTIDAD ===
-  itemsConCantidad1: number;
-  itemsConCantidadAlta: number;
-  itemsConCantidadMedia: number;
-  cantidadMaxima: number;
-  cantidadMinima: number;
-  cantidadTotalPromedio: number;
-  
-  // === ESTADÍSTICAS DE OBSERVACIONES ===
-  itemsConObservaciones: number;
-  itemsSinObservaciones: number;
-  porcentajeConObservaciones: number;
-  
-  // === COMPARATIVAS ===
-  diferenciaMesAnterior: number;
-  porcentajeCambioMesAnterior: number;
-  diferenciaAnioAnterior: number;
-  porcentajeCambioAnioAnterior: number;
-  
-  // === EFICIENCIA ===
-  eficienciaAsignacion: number;
-  densidadInventario: number;
-  concentracionInventario: number;
-}
+// Tipos: la forma completa de InventoryStats vive en `@/lib/types/spaces`.
+// Acá la importamos como `InventoryStatsData` para no chocar con el nombre del componente.
 
 export default function InventoryStats() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<InventoryStats | null>(null);
+  const [stats, setStats] = useState<InventoryStatsData | null>(null);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
   const [tiposElemento, setTiposElemento] = useState<TipoElemento[]>([]);
   
@@ -190,7 +91,7 @@ export default function InventoryStats() {
         );
         
         if (response.data) {
-          setStats(response.data as InventoryStats);
+          setStats(response.data as InventoryStatsData);
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las estadísticas';
@@ -256,7 +157,7 @@ export default function InventoryStats() {
       );
       
       if (response.data) {
-        setStats(response.data as InventoryStats);
+        setStats(response.data as InventoryStatsData);
         toast.success('Datos actualizados');
       }
     } catch {
@@ -398,109 +299,64 @@ export default function InventoryStats() {
 
       {/* Estadísticas principales - 8 cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalItems}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalCantidad} unidades totales
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disponibles</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.disponibles}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.porcentajeDisponibles.toFixed(1)}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Mantenimiento</CardTitle>
-            <Wrench className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.mantenimiento}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.porcentajeMantenimiento.toFixed(1)}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dañados</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.danados}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.porcentajeDanados.toFixed(1)}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Asignados</CardTitle>
-            <MapPin className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.asignados}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.espaciosConInventario} espacios
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sin Asignar</CardTitle>
-            <Boxes className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.sinAsignar}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.porcentajeSinAsignar.toFixed(1)}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Salud del Inventario</CardTitle>
-            <Shield className="h-4 w-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">{stats.ratioSalud.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.ratioProblemas.toFixed(1)}% con problemas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cobertura</CardTitle>
-            <Target className="h-4 w-4 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.indiceCobertura.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.espaciosConInventario}/{espacios.length} espacios
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Items"
+          value={stats.totalItems}
+          subtitle={`${stats.totalCantidad} unidades totales`}
+          icon={Package}
+        />
+        <StatCard
+          title="Disponibles"
+          value={stats.disponibles}
+          subtitle={`${stats.porcentajeDisponibles.toFixed(1)}% del total`}
+          icon={CheckCircle2}
+          accentClass="text-green-600"
+        />
+        <StatCard
+          title="En Mantenimiento"
+          value={stats.mantenimiento}
+          subtitle={`${stats.porcentajeMantenimiento.toFixed(1)}% del total`}
+          icon={Wrench}
+          accentClass="text-yellow-600"
+        />
+        <StatCard
+          title="Dañados"
+          value={stats.danados}
+          subtitle={`${stats.porcentajeDanados.toFixed(1)}% del total`}
+          icon={AlertCircle}
+          accentClass="text-red-600"
+        />
+        <StatCard
+          title="Asignados"
+          value={stats.asignados}
+          subtitle={`${stats.espaciosConInventario} espacios`}
+          icon={MapPin}
+          accentClass="text-blue-600"
+          iconOnly
+        />
+        <StatCard
+          title="Sin Asignar"
+          value={stats.sinAsignar}
+          subtitle={`${stats.porcentajeSinAsignar.toFixed(1)}% del total`}
+          icon={Boxes}
+          accentClass="text-gray-600"
+          iconOnly
+        />
+        <StatCard
+          title="Salud del Inventario"
+          value={`${stats.ratioSalud.toFixed(1)}%`}
+          subtitle={`${stats.ratioProblemas.toFixed(1)}% con problemas`}
+          icon={Shield}
+          accentClass="text-emerald-600"
+        />
+        <StatCard
+          title="Cobertura"
+          value={`${stats.indiceCobertura.toFixed(1)}%`}
+          subtitle={`${stats.espaciosConInventario}/${espacios.length} espacios`}
+          icon={Target}
+          accentClass="text-indigo-600"
+          iconOnly
+        />
       </div>
 
       {/* Estadísticas temporales y de crecimiento */}
@@ -532,44 +388,30 @@ export default function InventoryStats() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Creados Este Año</CardTitle>
-            <Activity className="h-4 w-4 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.itemsCreadosEsteAnio}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.itemsCreadosUltimos6Meses} últimos 6 meses
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actualizados Este Mes</CardTitle>
-            <RefreshCw className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.itemsActualizadosEsteMes}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.itemsActualizadosUltimos7Dias} últimos 7 días
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Antigüedad Promedio</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{Math.round(stats.promedioAntiguedadDias)}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Creados Este Año"
+          value={stats.itemsCreadosEsteAnio}
+          subtitle={`${stats.itemsCreadosUltimos6Meses} últimos 6 meses`}
+          icon={Activity}
+          accentClass="text-indigo-600"
+          iconOnly
+        />
+        <StatCard
+          title="Actualizados Este Mes"
+          value={stats.itemsActualizadosEsteMes}
+          subtitle={`${stats.itemsActualizadosUltimos7Dias} últimos 7 días`}
+          icon={RefreshCw}
+          accentClass="text-blue-600"
+          iconOnly
+        />
+        <StatCard
+          title="Antigüedad Promedio"
+          value={Math.round(stats.promedioAntiguedadDias)}
+          subtitle={`${Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar`}
+          icon={Clock}
+          accentClass="text-orange-600"
+          iconOnly
+        />
       </div>
 
       {/* Análisis de salud y problemas */}

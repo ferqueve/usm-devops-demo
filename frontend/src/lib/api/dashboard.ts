@@ -15,19 +15,19 @@ export interface DashboardStats {
   reservasPendientes: number;
   reservasAprobadas: number;
   reservasCanceladas: number;
-  
+
   // Espacios
   totalEspacios: number;
   espaciosDisponibles: number;
   espaciosOcupados: number;
   espaciosEnMantenimiento: number;
   capacidadPromedio: number;
-  
+
   // Usuarios
   totalUsuarios: number;
   usuariosActivos: number;
   usuariosNuevosHoy: number;
-  
+
   // Promedio de reservas por espacio (ratio, no porcentaje)
   promedioReservasPorEspacio: number;
 }
@@ -48,45 +48,75 @@ export interface DashboardData {
   userStats?: UserStats;
 }
 
-// Funciones auxiliares para reducir complejidad
-function extractReservasFromPromise(result: PromiseSettledResult<ApiResponse<Reserva[]>>): Reserva[] {
-  return result.status === 'fulfilled' && result.value.data ? result.value.data : [];
+// =====================================================================
+// Helpers genéricos para extraer payloads de Promise.allSettled.
+// Centralizados para no repetir el patrón
+//   `r.status === 'fulfilled' && r.value.data ? r.value.data : <fallback>`
+// en cada uno de los seis dashboards por rol.
+// =====================================================================
+
+function settledValue<T>(result: PromiseSettledResult<T> | undefined): T | null {
+  return result?.status === 'fulfilled' ? result.value : null;
 }
 
-function extractEspaciosFromPromise(result: PromiseSettledResult<ApiResponse<Espacio[]>>): Espacio[] {
-  return result.status === 'fulfilled' && result.value.data ? result.value.data : [];
+function dataOrFallback<T>(result: PromiseSettledResult<ApiResponse<T>> | undefined, fallback: T): T {
+  const value = settledValue(result);
+  return (value && value.data !== undefined && value.data !== null ? value.data : fallback);
 }
 
-function extractEspacioStatsFromPromise(result: PromiseSettledResult<ApiResponse<EspacioStats>>): EspacioStats {
-  return result.status === 'fulfilled' && result.value.data 
-    ? result.value.data 
-    : { totalEspacios: 0, capacidadPromedio: 0 };
+function extractReservas(result: PromiseSettledResult<ApiResponse<Reserva[]>> | undefined): Reserva[] {
+  return dataOrFallback(result, [] as Reserva[]);
 }
 
-function extractUserStatsFromPromise(result: PromiseSettledResult<UserStats | null>): UserStats | null {
-  return result.status === 'fulfilled' && result.value ? result.value : null;
+function extractEspacios(result: PromiseSettledResult<ApiResponse<Espacio[]>> | undefined): Espacio[] {
+  return dataOrFallback(result, [] as Espacio[]);
 }
 
-function extractReservaStatsFromPromise(result: PromiseSettledResult<ApiResponse<ReservaStats> | null>): ReservaStats | null {
-  return result.status === 'fulfilled' && result.value?.data ? result.value.data : null;
+function extractEspacioStats(result: PromiseSettledResult<ApiResponse<EspacioStats>> | undefined): EspacioStats {
+  return dataOrFallback(result, { totalEspacios: 0, capacidadPromedio: 0 });
 }
 
-function extractActiveUsersFromPromise(result: PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null>): { totalActiveUsers: number } | null {
-  return result?.status === 'fulfilled' ? result.value?.data ?? null : null;
+function extractUserStats(result: PromiseSettledResult<UserStats | null> | undefined): UserStats | null {
+  return settledValue(result);
 }
 
-function calcularEstadisticasReservas(reservas: Reserva[], reservasHoyData: Reserva[]) {
-  const reservasHoyCount = reservasHoyData.length;
-  const reservasPendientes = reservas.filter(r => r.estado === 'PENDIENTE').length;
-  const reservasAprobadas = reservas.filter(r => r.estado === 'APROBADO').length;
-  const reservasCanceladas = reservas.filter(r => r.estado === 'CANCELADO').length;
-  
-  return { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas };
+function extractReservaStats(
+  result: PromiseSettledResult<ApiResponse<ReservaStats> | null> | undefined,
+): ReservaStats | null {
+  const value = settledValue(result);
+  return value?.data ?? null;
+}
+
+function extractActiveUsers(
+  result: PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null> | undefined,
+): { totalActiveUsers: number } | null {
+  const value = settledValue(result);
+  return value?.data ?? null;
+}
+
+// =====================================================================
+// Cálculos derivados de las listas crudas.
+// =====================================================================
+
+interface ReservasCounts {
+  reservasHoyCount: number;
+  reservasPendientes: number;
+  reservasAprobadas: number;
+  reservasCanceladas: number;
+}
+
+function calcularEstadisticasReservas(reservas: Reserva[], reservasHoyData: Reserva[]): ReservasCounts {
+  return {
+    reservasHoyCount: reservasHoyData.length,
+    reservasPendientes: reservas.filter((r) => r.estado === 'PENDIENTE').length,
+    reservasAprobadas: reservas.filter((r) => r.estado === 'APROBADO').length,
+    reservasCanceladas: reservas.filter((r) => r.estado === 'CANCELADO').length,
+  };
 }
 
 function obtenerProximasReservas(reservas: Reserva[], ahora: Date): Reserva[] {
   return reservas
-    .filter(r => {
+    .filter((r) => {
       const inicio = new Date(r.inicio);
       return inicio > ahora && r.estado === 'APROBADO';
     })
@@ -94,26 +124,105 @@ function obtenerProximasReservas(reservas: Reserva[], ahora: Date): Reserva[] {
     .slice(0, 10);
 }
 
-function calcularEstadisticasEspacios(espacios: Espacio[]) {
-  const espaciosDisponibles = espacios.filter(e => e.activo && e.estado === 'DISPONIBLE').length;
-  const espaciosOcupados = espacios.filter(e => !e.activo || e.estado !== 'DISPONIBLE').length;
-  const espaciosEnMantenimiento = espacios.filter(e => e.estado === 'MANTENIMIENTO').length;
-  
-  return { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento };
+interface EspaciosCounts {
+  espaciosDisponibles: number;
+  espaciosOcupados: number;
+  espaciosEnMantenimiento: number;
 }
 
-// Función auxiliar para filtrar reservas de hoy
+function calcularEstadisticasEspacios(espacios: Espacio[]): EspaciosCounts {
+  return {
+    espaciosDisponibles: espacios.filter((e) => e.activo && e.estado === 'DISPONIBLE').length,
+    espaciosOcupados: espacios.filter((e) => !e.activo || e.estado !== 'DISPONIBLE').length,
+    espaciosEnMantenimiento: espacios.filter((e) => e.estado === 'MANTENIMIENTO').length,
+  };
+}
+
 function filtrarReservasHoy(reservas: Reserva[]): Reserva[] {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const finHoy = new Date();
-  finHoy.setHours(23, 59, 59, 999);
-  
-  return reservas.filter(r => {
+  const { hoy, finHoy } = rangoHoy();
+  return reservas.filter((r) => {
     const inicio = new Date(r.inicio);
     return inicio >= hoy && inicio <= finHoy;
   });
 }
+
+function rangoHoy(): { hoy: Date; finHoy: Date } {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const finHoy = new Date();
+  finHoy.setHours(23, 59, 59, 999);
+  return { hoy, finHoy };
+}
+
+function calcularPromedioReservasPorEspacio(reservasAprobadas: number, totalEspacios: number): number {
+  return totalEspacios > 0 ? Number.parseFloat((reservasAprobadas / totalEspacios).toFixed(1)) : 0;
+}
+
+// =====================================================================
+// Builder común de DashboardStats. Cada dashboard de rol prepara los
+// inputs y llama a este builder, en lugar de armar manualmente el objeto.
+// =====================================================================
+
+interface BuildStatsInput {
+  reservas: Reserva[];
+  reservasHoyData: Reserva[];
+  espacios: Espacio[];
+  espaciosStats: EspacioStats;
+  userStats?: UserStats | null;
+  activeUsers?: { totalActiveUsers: number } | null;
+  /** Override de reservasPendientes (para el caso EXTERNO que cuenta sus propias solicitudes). */
+  overridePendientes?: number;
+  /** Si se pasa true, los counters de reservas se ponen en cero (caso MANTENIMIENTO). */
+  reservasZeroed?: boolean;
+}
+
+function buildDashboardStats(input: BuildStatsInput): DashboardStats {
+  const { reservas, reservasHoyData, espacios, espaciosStats, userStats, activeUsers, overridePendientes, reservasZeroed } = input;
+
+  if (reservasZeroed) {
+    const espaciosCounts = calcularEstadisticasEspacios(espacios);
+    return {
+      totalReservas: reservas.length,
+      reservasHoy: 0,
+      reservasPendientes: 0,
+      reservasAprobadas: 0,
+      reservasCanceladas: 0,
+      totalEspacios: espaciosStats.totalEspacios || espacios.length,
+      ...espaciosCounts,
+      capacidadPromedio: espaciosStats.capacidadPromedio || 0,
+      totalUsuarios: 0,
+      usuariosActivos: 0,
+      usuariosNuevosHoy: 0,
+      promedioReservasPorEspacio: 0,
+    };
+  }
+
+  const reservasCounts = calcularEstadisticasReservas(reservas, reservasHoyData);
+  const espaciosCounts = calcularEstadisticasEspacios(espacios);
+  const promedioReservasPorEspacio = calcularPromedioReservasPorEspacio(
+    reservasCounts.reservasAprobadas,
+    espacios.length,
+  );
+
+  return {
+    totalReservas: reservas.length,
+    reservasHoy: reservasCounts.reservasHoyCount,
+    reservasPendientes: overridePendientes ?? reservasCounts.reservasPendientes,
+    reservasAprobadas: reservasCounts.reservasAprobadas,
+    reservasCanceladas: reservasCounts.reservasCanceladas,
+    totalEspacios: espaciosStats.totalEspacios || espacios.length,
+    ...espaciosCounts,
+    capacidadPromedio: espaciosStats.capacidadPromedio || 0,
+    totalUsuarios: userStats?.totalUsuarios || 0,
+    usuariosActivos: activeUsers?.totalActiveUsers || 0,
+    usuariosNuevosHoy: 0,
+    promedioReservasPorEspacio,
+  };
+}
+
+// =====================================================================
+// Implementaciones de dashboard por rol.
+// =====================================================================
 
 export const dashboardApi = {
   // Función principal que redirige según rol (mantener para compatibilidad)
@@ -132,7 +241,6 @@ export const dashboardApi = {
       case ROLES.EXTERNO:
         return this.obtenerDatosDashboardExterno();
       default:
-        // Por defecto, usar dashboard básico
         return this.obtenerDatosDashboardEstudiante();
     }
   },
@@ -140,12 +248,9 @@ export const dashboardApi = {
   // Dashboard ADMIN - Acceso completo
   async obtenerDatosDashboardAdmin(): Promise<DashboardData> {
     try {
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      const finHoy = new Date();
-      finHoy.setHours(23, 59, 59, 999);
+      const { hoy, finHoy } = rangoHoy();
 
-      const promises = [
+      const results = await Promise.allSettled([
         reservationsApi.obtenerTodasLasReservas(),
         reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, hoy, finHoy),
         espaciosApi.obtenerEspacios(),
@@ -154,63 +259,34 @@ export const dashboardApi = {
         reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
         statsApi.getActiveUsers().catch(() => null),
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
-      ];
+      ]);
 
-      const results = await Promise.allSettled(promises);
-      const [
-        todasLasReservas,
-        reservasHoy,
-        espaciosRes,
-        espaciosStatsRes,
-        userStatsRes,
-        reservaStatsRes,
-        activeUsersRes
-      ] = results;
+      const [todasLasReservas, reservasHoy, espaciosRes, espaciosStatsRes, userStatsRes, reservaStatsRes, activeUsersRes] = results;
 
-      const reservas = extractReservasFromPromise(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const reservasHoyData = extractReservasFromPromise(reservasHoy as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const userStats = extractUserStatsFromPromise(userStatsRes as PromiseSettledResult<UserStats | null>);
-      const reservaStats = extractReservaStatsFromPromise(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
-      const activeUsers = extractActiveUsersFromPromise(activeUsersRes as PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null>);
+      const reservas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservasHoyData = extractReservas(reservasHoy as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const userStats = extractUserStats(userStatsRes as PromiseSettledResult<UserStats | null>);
+      const reservaStats = extractReservaStats(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
+      const activeUsers = extractActiveUsers(activeUsersRes as PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null>);
 
-      const ahora = new Date();
-      const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
-        calcularEstadisticasReservas(reservas, reservasHoyData);
-      const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
-        calcularEstadisticasEspacios(espacios);
-
-      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
-      const promedioReservasPorEspacio = espacios.length > 0
-        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
-        : 0;
-
-      const stats: DashboardStats = {
-        totalReservas: reservas.length,
-        reservasHoy: reservasHoyCount,
-        reservasPendientes,
-        reservasAprobadas,
-        reservasCanceladas,
-        totalEspacios: espaciosStats.totalEspacios || espacios.length,
-        espaciosDisponibles,
-        espaciosOcupados,
-        espaciosEnMantenimiento,
-        capacidadPromedio: espaciosStats.capacidadPromedio || 0,
-        totalUsuarios: userStats?.totalUsuarios || 0,
-        usuariosActivos: activeUsers?.totalActiveUsers || 0,
-        usuariosNuevosHoy: 0,
-        promedioReservasPorEspacio
-      };
+      const stats = buildDashboardStats({
+        reservas,
+        reservasHoyData,
+        espacios,
+        espaciosStats,
+        userStats,
+        activeUsers,
+      });
 
       return {
         stats,
-        proximasReservas,
+        proximasReservas: obtenerProximasReservas(reservas, new Date()),
         reservasHoy: reservasHoyData,
         espacios,
         reservaStats: reservaStats || undefined,
-        userStats: userStats || undefined
+        userStats: userStats || undefined,
       };
     } catch (error) {
       console.error('Error al obtener datos del dashboard ADMIN:', error);
@@ -221,72 +297,33 @@ export const dashboardApi = {
   // Dashboard ANALISTA - Enfocado en reservas
   async obtenerDatosDashboardAnalista(): Promise<DashboardData> {
     try {
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      const finHoy = new Date();
-      finHoy.setHours(23, 59, 59, 999);
+      const { hoy, finHoy } = rangoHoy();
 
-      const promises = [
+      const results = await Promise.allSettled([
         reservationsApi.obtenerTodasLasReservas(),
         reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, hoy, finHoy),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
         reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
-      ];
+      ]);
 
-      const results = await Promise.allSettled(promises);
-      const [
-        todasLasReservas,
-        reservasHoy,
-        espaciosRes,
-        espaciosStatsRes,
-        reservaStatsRes
-      ] = results;
+      const [todasLasReservas, reservasHoy, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
 
-      const reservas = extractReservasFromPromise(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const reservasHoyData = extractReservasFromPromise(reservasHoy as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const reservaStats = extractReservaStatsFromPromise(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
-      
-      // inventarioStatsRes no se usa en este dashboard, se omite
+      const reservas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservasHoyData = extractReservas(reservasHoy as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const reservaStats = extractReservaStats(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
 
-      const ahora = new Date();
-      const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
-        calcularEstadisticasReservas(reservas, reservasHoyData);
-      const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
-        calcularEstadisticasEspacios(espacios);
-
-      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
-      const promedioReservasPorEspacio = espacios.length > 0
-        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
-        : 0;
-
-      const stats: DashboardStats = {
-        totalReservas: reservas.length,
-        reservasHoy: reservasHoyCount,
-        reservasPendientes,
-        reservasAprobadas,
-        reservasCanceladas,
-        totalEspacios: espaciosStats.totalEspacios || espacios.length,
-        espaciosDisponibles,
-        espaciosOcupados,
-        espaciosEnMantenimiento,
-        capacidadPromedio: espaciosStats.capacidadPromedio || 0,
-        totalUsuarios: 0,
-        usuariosActivos: 0,
-        usuariosNuevosHoy: 0,
-        promedioReservasPorEspacio
-      };
+      const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
 
       return {
         stats,
-        proximasReservas,
+        proximasReservas: obtenerProximasReservas(reservas, new Date()),
         reservasHoy: reservasHoyData,
         espacios,
-        reservaStats: reservaStats || undefined
+        reservaStats: reservaStats || undefined,
       };
     } catch (error) {
       console.error('Error al obtener datos del dashboard ANALISTA:', error);
@@ -297,52 +334,32 @@ export const dashboardApi = {
   // Dashboard MANTENIMIENTO - Enfocado en espacios e inventario
   async obtenerDatosDashboardMantenimiento(): Promise<DashboardData> {
     try {
-      const promises = [
+      const results = await Promise.allSettled([
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
-        reservationsApi.obtenerTodasLasReservas().catch(() => null), // Solo lectura para ver ocupación
-      ];
+        reservationsApi.obtenerTodasLasReservas().catch(() => null),
+      ]);
 
-      const results = await Promise.allSettled(promises);
-      const [
-        espaciosRes,
-        espaciosStatsRes,
-        , // inventarioStatsRes - no se usa en este dashboard
-        reservasRes
-      ] = results;
+      const [espaciosRes, espaciosStatsRes, , reservasRes] = results;
 
-      const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const reservas: Reserva[] = reservasRes?.status === 'fulfilled' && reservasRes.value && 'data' in reservasRes.value && Array.isArray(reservasRes.value.data)
-        ? (reservasRes.value.data as Reserva[])
-        : [];
+      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const reservas = extractReservas(reservasRes as PromiseSettledResult<ApiResponse<Reserva[]>>);
 
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } = 
-        calcularEstadisticasEspacios(espacios);
-
-      const stats: DashboardStats = {
-        totalReservas: reservas.length,
-        reservasHoy: 0,
-        reservasPendientes: 0,
-        reservasAprobadas: 0,
-        reservasCanceladas: 0,
-        totalEspacios: espaciosStats.totalEspacios || espacios.length,
-        espaciosDisponibles,
-        espaciosOcupados,
-        espaciosEnMantenimiento,
-        capacidadPromedio: espaciosStats.capacidadPromedio || 0,
-        totalUsuarios: 0,
-        usuariosActivos: 0,
-        usuariosNuevosHoy: 0,
-        promedioReservasPorEspacio: 0
-      };
+      const stats = buildDashboardStats({
+        reservas,
+        reservasHoyData: [],
+        espacios,
+        espaciosStats,
+        reservasZeroed: true,
+      });
 
       return {
         stats,
         proximasReservas: [],
         reservasHoy: [],
-        espacios
+        espacios,
       };
     } catch (error) {
       console.error('Error al obtener datos del dashboard MANTENIMIENTO:', error);
@@ -353,68 +370,30 @@ export const dashboardApi = {
   // Dashboard DOCENTE - Sus reservas personales
   async obtenerDatosDashboardDocente(): Promise<DashboardData> {
     try {
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      const finHoy = new Date();
-      finHoy.setHours(23, 59, 59, 999);
-
-      const promises = [
+      const results = await Promise.allSettled([
         reservationsApi.obtenerMisReservas(),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
         reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
-        reservationsApi.obtenerTodasLasReservas().catch(() => null), // Para ver todas las reservas (lectura)
-      ];
+        reservationsApi.obtenerTodasLasReservas().catch(() => null),
+      ]);
 
-      const results = await Promise.allSettled(promises);
-      const [
-        misReservas,
-        espaciosRes,
-        espaciosStatsRes,
-        reservaStatsRes
-      ] = results;
+      const [misReservas, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
 
-      const reservas = extractReservasFromPromise(misReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservas = extractReservas(misReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
       const reservasHoyData = filtrarReservasHoy(reservas);
-      const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
-      const reservaStats = extractReservaStatsFromPromise(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
+      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const reservaStats = extractReservaStats(reservaStatsRes as PromiseSettledResult<ApiResponse<ReservaStats> | null>);
 
-      const ahora = new Date();
-      const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
-        calcularEstadisticasReservas(reservas, reservasHoyData);
-      const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
-        calcularEstadisticasEspacios(espacios);
-
-      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
-      const promedioReservasPorEspacio = espacios.length > 0
-        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
-        : 0;
-
-      const stats: DashboardStats = {
-        totalReservas: reservas.length,
-        reservasHoy: reservasHoyCount,
-        reservasPendientes,
-        reservasAprobadas,
-        reservasCanceladas,
-        totalEspacios: espaciosStats.totalEspacios || espacios.length,
-        espaciosDisponibles,
-        espaciosOcupados,
-        espaciosEnMantenimiento,
-        capacidadPromedio: espaciosStats.capacidadPromedio || 0,
-        totalUsuarios: 0,
-        usuariosActivos: 0,
-        usuariosNuevosHoy: 0,
-        promedioReservasPorEspacio
-      };
+      const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
 
       return {
         stats,
-        proximasReservas,
+        proximasReservas: obtenerProximasReservas(reservas, new Date()),
         reservasHoy: reservasHoyData,
         espacios,
-        reservaStats: reservaStats || undefined
+        reservaStats: reservaStats || undefined,
       };
     } catch (error) {
       console.error('Error al obtener datos del dashboard DOCENTE:', error);
@@ -425,63 +404,26 @@ export const dashboardApi = {
   // Dashboard ESTUDIANTE - Solo lectura
   async obtenerDatosDashboardEstudiante(): Promise<DashboardData> {
     try {
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      const finHoy = new Date();
-      finHoy.setHours(23, 59, 59, 999);
-
-      const promises = [
+      const results = await Promise.allSettled([
         reservationsApi.obtenerTodasLasReservas(),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
-      ];
+      ]);
 
-      const results = await Promise.allSettled(promises);
-      const [
-        todasLasReservas,
-        espaciosRes,
-        espaciosStatsRes
-      ] = results;
+      const [todasLasReservas, espaciosRes, espaciosStatsRes] = results;
 
-      const reservas = extractReservasFromPromise(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const reservas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
       const reservasHoyData = filtrarReservasHoy(reservas);
-      const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
 
-      const ahora = new Date();
-      const { reservasHoyCount, reservasPendientes, reservasAprobadas, reservasCanceladas } = 
-        calcularEstadisticasReservas(reservas, reservasHoyData);
-      const proximasReservas = obtenerProximasReservas(reservas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
-        calcularEstadisticasEspacios(espacios);
-
-      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
-      const promedioReservasPorEspacio = espacios.length > 0
-        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
-        : 0;
-
-      const stats: DashboardStats = {
-        totalReservas: reservas.length,
-        reservasHoy: reservasHoyCount,
-        reservasPendientes,
-        reservasAprobadas,
-        reservasCanceladas,
-        totalEspacios: espaciosStats.totalEspacios || espacios.length,
-        espaciosDisponibles,
-        espaciosOcupados,
-        espaciosEnMantenimiento,
-        capacidadPromedio: espaciosStats.capacidadPromedio || 0,
-        totalUsuarios: 0,
-        usuariosActivos: 0,
-        usuariosNuevosHoy: 0,
-        promedioReservasPorEspacio
-      };
+      const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
 
       return {
         stats,
-        proximasReservas,
+        proximasReservas: obtenerProximasReservas(reservas, new Date()),
         reservasHoy: reservasHoyData,
-        espacios
+        espacios,
       };
     } catch (error) {
       console.error('Error al obtener datos del dashboard ESTUDIANTE:', error);
@@ -493,81 +435,40 @@ export const dashboardApi = {
   // Nota: obtenerTodasLasReservas() ya filtra automáticamente por reservas públicas para usuarios externos en el backend
   async obtenerDatosDashboardExterno(): Promise<DashboardData> {
     try {
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      const finHoy = new Date();
-      finHoy.setHours(23, 59, 59, 999);
-
-      const promises = [
-        reservationsApi.obtenerTodasLasReservas(), // Ya filtra por reservas públicas para externos
-        reservationsApi.obtenerMisReservas().catch(() => null), // Sus propias solicitudes
+      const results = await Promise.allSettled([
+        reservationsApi.obtenerTodasLasReservas(),
+        reservationsApi.obtenerMisReservas().catch(() => null),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
-      ];
+      ]);
 
-      const results = await Promise.allSettled(promises);
-      const [
-        todasLasReservas,
-        misReservasRes,
-        espaciosRes,
-        espaciosStatsRes
-      ] = results;
+      const [todasLasReservas, misReservasRes, espaciosRes, espaciosStatsRes] = results;
 
-      // Reservas públicas (ya filtradas por el backend para usuarios externos)
-      const reservasPublicas = extractReservasFromPromise(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
-      // Sus propias reservas (solicitudes)
-      const misReservas: Reserva[] = misReservasRes?.status === 'fulfilled' && misReservasRes.value && 'data' in misReservasRes.value && Array.isArray(misReservasRes.value.data)
-        ? (misReservasRes.value.data as Reserva[])
-        : [];
-      
+      const reservasPublicas = extractReservas(todasLasReservas as PromiseSettledResult<ApiResponse<Reserva[]>>);
+      const misReservas = extractReservas(misReservasRes as PromiseSettledResult<ApiResponse<Reserva[]>>);
       const reservasHoyData = filtrarReservasHoy(reservasPublicas);
-      const espacios = extractEspaciosFromPromise(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
-      const espaciosStats = extractEspacioStatsFromPromise(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
+      const espacios = extractEspacios(espaciosRes as PromiseSettledResult<ApiResponse<Espacio[]>>);
+      const espaciosStats = extractEspacioStats(espaciosStatsRes as PromiseSettledResult<ApiResponse<EspacioStats>>);
 
-      const ahora = new Date();
-      // Estadísticas solo de reservas públicas
-      const { reservasHoyCount, reservasAprobadas, reservasCanceladas } = 
-        calcularEstadisticasReservas(reservasPublicas, reservasHoyData);
-      // Próximas reservas públicas
-      const proximasReservas = obtenerProximasReservas(reservasPublicas, ahora);
-      const { espaciosDisponibles, espaciosOcupados, espaciosEnMantenimiento } =
-        calcularEstadisticasEspacios(espacios);
+      const misReservasPendientes = misReservas.filter((r) => r.estado === 'PENDIENTE').length;
 
-      // Calcular promedio de reservas aprobadas por espacio (como ratio, no porcentaje)
-      const promedioReservasPorEspacio = espacios.length > 0
-        ? Number.parseFloat((reservasAprobadas / espacios.length).toFixed(1))
-        : 0;
-
-      const misReservasPendientes = misReservas.filter((r: Reserva) => r.estado === 'PENDIENTE').length;
-
-      // Estadísticas solo de reservas públicas
-      const stats: DashboardStats = {
-        totalReservas: reservasPublicas.length, // Total de reservas públicas
-        reservasHoy: reservasHoyCount, // Reservas públicas de hoy
-        reservasPendientes: misReservasPendientes, // Sus propias solicitudes pendientes
-        reservasAprobadas, // Reservas públicas aprobadas
-        reservasCanceladas, // Reservas públicas canceladas
-        totalEspacios: espaciosStats.totalEspacios || espacios.length,
-        espaciosDisponibles,
-        espaciosOcupados,
-        espaciosEnMantenimiento,
-        capacidadPromedio: espaciosStats.capacidadPromedio || 0,
-        totalUsuarios: 0,
-        usuariosActivos: 0,
-        usuariosNuevosHoy: 0,
-        promedioReservasPorEspacio
-      };
+      const stats = buildDashboardStats({
+        reservas: reservasPublicas,
+        reservasHoyData,
+        espacios,
+        espaciosStats,
+        overridePendientes: misReservasPendientes,
+      });
 
       return {
         stats,
-        proximasReservas, // Próximas reservas públicas
-        reservasHoy: reservasHoyData, // Reservas públicas de hoy
-        espacios
+        proximasReservas: obtenerProximasReservas(reservasPublicas, new Date()),
+        reservasHoy: reservasHoyData,
+        espacios,
       };
     } catch (error) {
       console.error('Error al obtener datos del dashboard EXTERNO:', error);
       throw error;
     }
-  }
+  },
 };
-

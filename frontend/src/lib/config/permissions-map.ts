@@ -10,6 +10,67 @@ import type { Permission } from './permissions';
  *
  * IMPORTANTE: Sincronizado con backend/src/main/java/com/utec/backend/security/RolePermissions.java
  */
+
+// ===== GRUPOS DE PERMISOS REUTILIZABLES =====
+//
+// Cada grupo agrupa los permisos que típicamente comparte un set de componentes
+// del mismo subsistema. Los componentes individuales se construyen combinando
+// estos grupos para evitar repetir las mismas listas en cada entrada.
+
+const INVENTORY_VIEW_EDIT_PERMS: Permission[] = [
+  'inventario:ver',
+  'inventario:editar',
+  'inventario:eliminar',
+  'inventario:asignar',
+];
+
+const INVENTORY_FULL_PERMS: Permission[] = [
+  'inventario:ver',
+  'inventario:crear',
+  'inventario:editar',
+  'inventario:eliminar',
+  'inventario:asignar',
+];
+
+const INVENTORY_FORM_PERMS: Permission[] = ['inventario:crear', 'inventario:editar'];
+
+const INVENTORY_REQUEST_PERMS: Permission[] = [
+  'solicitud_inventario:ver',
+  'solicitud_inventario:aprobar',
+];
+
+const SPACE_VIEW_EDIT_PERMS: Permission[] = [
+  'espacio:ver',
+  'espacio:editar',
+  'espacio:eliminar',
+];
+
+const SPACE_FULL_PERMS: Permission[] = [
+  'espacio:ver',
+  'espacio:crear',
+  'espacio:editar',
+  'espacio:eliminar',
+];
+
+const SPACE_FORM_PERMS: Permission[] = ['espacio:crear', 'espacio:editar'];
+
+const TIPO_CRUD_PERMS: Permission[] = ['tipo:crear', 'tipo:editar', 'tipo:eliminar'];
+const TIPO_FORM_PERMS: Permission[] = ['tipo:crear', 'tipo:editar'];
+
+// Permisos típicos de listados de reservas (cards, tablas, gestión)
+const RESERVATION_LIST_PERMS: Permission[] = [
+  'reserva:ver_propias',
+  'reserva:ver_todas',
+  'reserva:editar',
+  'reserva:aprobar',
+  'reserva:cancelar',
+];
+
+const RESERVATION_FORM_PERMS: Permission[] = ['reserva:crear', 'reserva:editar'];
+
+// Componentes de estadística que comparten "ver_<area> + ver" para exportar
+const buildStatsPerms = (specific: Permission): Permission[] => [specific, 'estadisticas:ver'];
+
 export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
   // ===== PÁGINAS =====
   '/dashboard': [],
@@ -25,163 +86,62 @@ export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
   '/audit': ['auditoria:ver'],
 
   // ===== COMPONENTES DE INVENTARIO =====
-  'InventoryManagement': [
-    'inventario:ver', // Ver inventario
-    'inventario:crear', // Botón crear
-    'inventario:editar', // Botones editar
-    'inventario:eliminar', // Botones eliminar
-    'inventario:asignar', // Botones asignar/reasignar
-  ],
-  'InventoryTable': [
-    'inventario:ver', // Ver tabla
-    'inventario:editar', // Botón editar
-    'inventario:eliminar', // Botón eliminar
-    'inventario:asignar', // Botón asignar
-  ],
-  'InventoryCardView': [
-    'inventario:ver', // Ver cards
-    'inventario:editar', // Botón editar
-    'inventario:eliminar', // Botón eliminar
-    'inventario:asignar', // Botón asignar
-  ],
-  'InventoryFormDialog': [
-    'inventario:crear', // Crear nuevo
-    'inventario:editar', // Editar existente
-  ],
+  InventoryManagement: INVENTORY_FULL_PERMS,
+  InventoryTable: INVENTORY_VIEW_EDIT_PERMS,
+  InventoryCardView: INVENTORY_VIEW_EDIT_PERMS,
+  InventoryFormDialog: INVENTORY_FORM_PERMS,
 
   // ===== COMPONENTES DE SOLICITUDES DE INVENTARIO =====
-  'InventoryRequestsManagement': [
-    'solicitud_inventario:ver', // Ver solicitudes
-    'solicitud_inventario:aprobar', // Aprobar/rechazar/entregar solicitudes
-  ],
-  'InventoryRequestsCardView': [
-    'solicitud_inventario:ver', // Ver cards
-    'solicitud_inventario:aprobar', // Aprobar/rechazar/entregar solicitudes
-  ],
+  InventoryRequestsManagement: INVENTORY_REQUEST_PERMS,
+  InventoryRequestsCardView: INVENTORY_REQUEST_PERMS,
 
   // ===== COMPONENTES DE ESPACIOS =====
-  'SpacesManagement': [
-    'espacio:ver', // Ver espacios
-    'espacio:crear', // Botón crear
-    'espacio:editar', // Botones editar
-    'espacio:eliminar', // Botones eliminar
-  ],
-  'SpaceCard': [
-    'espacio:ver', // Ver card
-    'espacio:editar', // Botón editar
-    'espacio:eliminar', // Botón eliminar
-  ],
-  'SpaceTable': [
-    'espacio:ver', // Ver tabla
-    'espacio:editar', // Botón editar
-    'espacio:eliminar', // Botón eliminar
-  ],
-  'SpaceFormDialog': [
-    'espacio:crear', // Crear nuevo
-    'espacio:editar', // Editar existente
-  ],
-  'TipoEspacioManagement': [
-    'tipo:crear', // Crear tipo
-    'tipo:editar', // Editar tipo
-    'tipo:eliminar', // Eliminar tipo
-  ],
+  SpacesManagement: SPACE_FULL_PERMS,
+  SpaceCard: SPACE_VIEW_EDIT_PERMS,
+  SpaceTable: SPACE_VIEW_EDIT_PERMS,
+  SpaceFormDialog: SPACE_FORM_PERMS,
+  TipoEspacioManagement: TIPO_CRUD_PERMS,
 
   // ===== COMPONENTES DE RESERVAS =====
-  'ReservationManagement': [
-    'reserva:ver_propias', // Ver mis reservas
-    'reserva:ver_todas', // Ver todas las reservas
-    'reserva:crear', // Botón crear
-    'reserva:editar', // Botones editar
-    'reserva:aprobar', // Botón aprobar
-    'reserva:cancelar', // Botón cancelar
-  ],
-  'ReservationCardView': [
-    'reserva:ver_propias', // Ver cards propias
-    'reserva:ver_todas', // Ver todas
-    'reserva:editar', // Botón editar
-    'reserva:aprobar', // Botón aprobar
-    'reserva:cancelar', // Botón cancelar
-  ],
-  'ReservationTableView': [
-    'reserva:ver_propias', // Ver tabla propias
-    'reserva:ver_todas', // Ver todas
-    'reserva:editar', // Botón editar
-    'reserva:aprobar', // Botón aprobar
-    'reserva:cancelar', // Botón cancelar
-  ],
-  'ReservationFormDialog': [
-    'reserva:crear', // Crear nueva
-    'reserva:editar', // Editar existente
-  ],
+  ReservationManagement: ['reserva:crear', ...RESERVATION_LIST_PERMS],
+  ReservationCardView: RESERVATION_LIST_PERMS,
+  ReservationTableView: RESERVATION_LIST_PERMS,
+  ReservationFormDialog: RESERVATION_FORM_PERMS,
 
   // ===== COMPONENTES DE USUARIOS =====
-  'UserManagement': [
-    'usuario:gestionar', // Ver usuarios
-    'usuario:gestionar', // Todas las acciones (crear, editar, eliminar, cambiar rol)
-  ],
+  UserManagement: ['usuario:gestionar', 'usuario:gestionar'],
 
   // ===== COMPONENTES DE ESTADÍSTICAS =====
-  'StatisticsPage': [
-    'estadisticas:ver', // Ver estadísticas
-    'estadisticas:ver', // Exportar reportes
-  ],
-  'InventoryStats': [
-    'estadisticas:ver_inventario', // Ver estadísticas de inventario
-    'estadisticas:ver', // Exportar reportes
-  ],
-  'ReservationStats': [
-    'estadisticas:ver_reservas', // Ver estadísticas de reservas
-    'estadisticas:ver', // Exportar reportes
-  ],
-  'SpaceStats': [
-    'estadisticas:ver_espacios', // Ver estadísticas de espacios
-    'estadisticas:ver', // Exportar reportes
-  ],
+  StatisticsPage: ['estadisticas:ver', 'estadisticas:ver'],
+  InventoryStats: buildStatsPerms('estadisticas:ver_inventario'),
+  ReservationStats: buildStatsPerms('estadisticas:ver_reservas'),
+  SpaceStats: buildStatsPerms('estadisticas:ver_espacios'),
 
   // ===== COMPONENTES DE RECOMENDACIONES =====
-  'RecommendationCard': [
-    'recomendacion:ver', // Ver recomendaciones
-    'recomendacion:solicitar', // Solicitar recomendaciones
-  ],
-  'RecommendationStats': [
-    'recomendacion:ver_estadisticas', // Ver estadísticas de recomendaciones
-  ],
+  RecommendationCard: ['recomendacion:ver', 'recomendacion:solicitar'],
+  RecommendationStats: ['recomendacion:ver_estadisticas'],
 
   // ===== COMPONENTES DE TIPOS =====
-  'TipoElementoFormDialog': [
-    'tipo:crear', // Crear tipo elemento
-    'tipo:editar', // Editar tipo elemento
-  ],
-  'TipoEspacioFormDialog': [
-    'tipo:crear', // Crear tipo espacio
-    'tipo:editar', // Editar tipo espacio
-  ],
+  TipoElementoFormDialog: TIPO_FORM_PERMS,
+  TipoEspacioFormDialog: TIPO_FORM_PERMS,
 
   // ===== COMPONENTES DE CARRERAS =====
-  'CarreraManagement': [
-    'carrera:ver', // Ver carreras
-    'carrera:crear', // Crear carrera
-    'carrera:editar', // Editar carrera
-    'carrera:eliminar', // Eliminar carrera
+  CarreraManagement: [
+    'carrera:ver',
+    'carrera:crear',
+    'carrera:editar',
+    'carrera:eliminar',
   ],
 
   // ===== COMPONENTES DE SISTEMA =====
-  'SystemPage': [
-    'sistema:acceder', // Acceso a la página
-  ],
+  SystemPage: ['sistema:acceder'],
 
   // ===== COMPONENTES DE AUDITORÍA =====
-  'AuditPage': [
-    'auditoria:ver', // Ver logs de auditoría
-  ],
+  AuditPage: ['auditoria:ver'],
 
   // ===== COMPONENTES DE ARCHIVOS =====
-  'FileUpload': [
-    'archivo:subir', // Subir archivos
-  ],
-  'FileViewer': [
-    'archivo:ver', // Ver archivos
-  ],
+  FileUpload: ['archivo:subir'],
+  FileViewer: ['archivo:ver'],
 };
 
 /**

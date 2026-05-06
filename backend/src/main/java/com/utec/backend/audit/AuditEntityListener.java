@@ -9,6 +9,8 @@ import jakarta.persistence.PreUpdate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapperImpl;
 
+import java.util.function.BiConsumer;
+
 /**
  * Listener JPA para registrar automáticamente cambios en entidades.
  *
@@ -59,6 +61,10 @@ public class AuditEntityListener {
         return entity.getClass().getSimpleName();
     }
 
+    private static String safeEntityName(Object entity) {
+        return entity != null ? entity.getClass().getSimpleName() : "null";
+    }
+
     /**
      * Obtener usuario del AuditContext (ThreadLocal)
      * NO hace consultas a BD - el usuario ya fue establecido por AuditAspect
@@ -73,8 +79,21 @@ public class AuditEntityListener {
         return usuario;
     }
 
-    @PostPersist
-    public void postPersist(Object entity) {
+    /**
+     * Estructura común a los handlers {@code postPersist}, {@code postUpdate} y
+     * {@code preRemove}: validar que el {@link AuditService} esté disponible,
+     * resolver el ID de la entidad, capturar el nombre de la entidad y el
+     * usuario, e invocar la operación de auditoría correspondiente. Si algo
+     * falla, se loguea el error pero no se propaga la excepción para no
+     * romper el flujo principal de persistencia.
+     *
+     * @param entity        entidad sobre la que se disparó el evento JPA
+     * @param eventName     nombre del evento (usado solo en logs de error)
+     * @param auditAction   acción de auditoría a ejecutar contra el {@link AuditService},
+     *                      recibe el nombre de la entidad y su ID resuelto
+     */
+    private static void dispatchAuditEvent(Object entity, String eventName,
+                                           BiConsumer<String, Long> auditAction) {
         AuditService auditService = getAuditService();
         if (auditService == null) {
             log.debug(MSG_AUDIT_SERVICE_NO_DISPONIBLE);
@@ -84,18 +103,24 @@ public class AuditEntityListener {
         try {
             Long id = getIdFromEntity(entity);
             if (id == null) {
-                log.warn("No se pudo obtener ID de entidad {} en postPersist, saltando auditoría",
-                        entity != null ? entity.getClass().getSimpleName() : "null");
+                log.warn("No se pudo obtener ID de entidad {} en {}, saltando auditoría",
+                        safeEntityName(entity), eventName);
                 return;
             }
 
             String entidad = getEntityName(entity);
-            Usuario usuario = getCurrentUser();
-            auditService.logCreate(entidad, id, usuario, entity);
+            auditAction.accept(entidad, id);
         } catch (Exception e) {
-            log.error("Error en postPersist audit para {}: {}",
-                    entity != null ? entity.getClass().getSimpleName() : "null", e.getMessage(), e);
+            log.error("Error en {} audit para {}: {}", eventName, safeEntityName(entity), e.getMessage(), e);
         }
+    }
+
+    @PostPersist
+    public void postPersist(Object entity) {
+        dispatchAuditEvent(entity, "postPersist", (entidad, id) -> {
+            Usuario usuario = getCurrentUser();
+            getAuditService().logCreate(entidad, id, usuario, entity);
+        });
     }
 
     @PreUpdate
@@ -119,54 +144,19 @@ public class AuditEntityListener {
 
     @PostUpdate
     public void postUpdate(Object entity) {
-        AuditService auditService = getAuditService();
-        if (auditService == null) {
-            log.debug(MSG_AUDIT_SERVICE_NO_DISPONIBLE);
-            return;
-        }
-
-        try {
-            Long id = getIdFromEntity(entity);
-            if (id == null) {
-                log.warn("No se pudo obtener ID de entidad {} en postUpdate, saltando auditoría",
-                        entity != null ? entity.getClass().getSimpleName() : "null");
-                return;
-            }
-
-            String entidad = getEntityName(entity);
+        dispatchAuditEvent(entity, "postUpdate", (entidad, id) -> {
             Usuario usuario = getCurrentUser();
             Object previousState = AuditContext.getPreviousState(entity);
-
-            auditService.logUpdate(entidad, id, usuario, previousState, entity);
+            getAuditService().logUpdate(entidad, id, usuario, previousState, entity);
             AuditContext.clearPreviousState(entity);
-        } catch (Exception e) {
-            log.error("Error en postUpdate audit para {}: {}",
-                    entity != null ? entity.getClass().getSimpleName() : "null", e.getMessage(), e);
-        }
+        });
     }
 
     @PreRemove
     public void preRemove(Object entity) {
-        AuditService auditService = getAuditService();
-        if (auditService == null) {
-            log.debug(MSG_AUDIT_SERVICE_NO_DISPONIBLE);
-            return;
-        }
-
-        try {
-            Long id = getIdFromEntity(entity);
-            if (id == null) {
-                log.warn("No se pudo obtener ID de entidad {} en preRemove, saltando auditoría",
-                        entity != null ? entity.getClass().getSimpleName() : "null");
-                return;
-            }
-
-            String entidad = getEntityName(entity);
+        dispatchAuditEvent(entity, "preRemove", (entidad, id) -> {
             Usuario usuario = getCurrentUser();
-            auditService.logDelete(entidad, id, usuario, entity);
-        } catch (Exception e) {
-            log.error("Error en preRemove audit para {}: {}",
-                    entity != null ? entity.getClass().getSimpleName() : "null", e.getMessage(), e);
-        }
+            getAuditService().logDelete(entidad, id, usuario, entity);
+        });
     }
 }

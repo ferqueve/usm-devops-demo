@@ -1,9 +1,7 @@
-import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, Trash2, Package, Eye, MoreHorizontal, CheckCircle, Wrench, AlertCircle } from "lucide-react";
+import { Edit, Trash2, Package, Eye, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { InventarioItem } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { EstadoBadge } from './_shared/inventoryEstado';
+import { EspacioCell } from './_shared/EspacioCell';
 
 interface InventoryCardViewProps {
   items: InventarioItem[];
@@ -23,33 +23,15 @@ interface InventoryCardViewProps {
   onToggleSelect?: (id: number) => void;
 }
 
-export default function InventoryCardView({ 
-  items, 
-  onEdit, 
-  onDelete, 
+export default function InventoryCardView({
+  items,
+  onEdit,
+  onDelete,
   onAssign,
   onView,
   selectedItems,
-  onToggleSelect
+  onToggleSelect,
 }: Readonly<InventoryCardViewProps>) {
-  const getEstadoBadge = (estado: string) => {
-    const configs: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-      'DISPONIBLE': { label: 'Disponible', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle },
-      'MANTENIMIENTO': { label: 'Mantenimiento', color: 'bg-amber-50 text-amber-700 border-amber-200', icon: Wrench },
-      'DANADO': { label: 'Dañado', color: 'bg-red-50 text-red-700 border-red-200', icon: AlertCircle }
-    };
-    
-    const config = configs[estado] || { label: estado, color: 'bg-gray-50 text-gray-700 border-gray-200', icon: AlertCircle };
-    const Icon = config.icon;
-    
-    return (
-      <Badge className={`${config.color} border font-medium`}>
-        <Icon className="h-3.5 w-3.5 mr-1.5" />
-        {config.label}
-      </Badge>
-    );
-  };
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((item) => (
@@ -62,7 +44,7 @@ export default function InventoryCardView({
               />
             </div>
           )}
-          
+
           <CardContent className="p-4 pb-0">
             <div className="space-y-3">
               {/* Header */}
@@ -73,7 +55,7 @@ export default function InventoryCardView({
                     <span className="text-muted-foreground text-sm font-normal">#{item.id}</span>
                   </h3>
                 </div>
-                {getEstadoBadge(item.estado)}
+                <EstadoBadge estado={item.estado} />
               </div>
 
               {/* Información principal */}
@@ -88,22 +70,7 @@ export default function InventoryCardView({
               <div className="border-t pt-3">
                 <p className="text-sm">
                   <span className="text-muted-foreground">Espacio:</span>{' '}
-                  {(() => {
-                    if (!item.espacioId || !item.espacioNombre) {
-                      return <span className="font-medium text-muted-foreground">Sin asignar</span>;
-                    }
-                    if (item.espacioColor) {
-                      return (
-                        <span
-                          className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
-                          style={{ backgroundColor: item.espacioColor }}
-                        >
-                          {item.espacioNombre}
-                        </span>
-                      );
-                    }
-                    return <span className="font-medium">{item.espacioNombre}</span>;
-                  })()}
+                  <EspacioCell item={item} variant="card" />
                 </p>
               </div>
 
@@ -120,7 +87,7 @@ export default function InventoryCardView({
                     {item.espacioId ? 'Reasignar' : 'Asignar'}
                   </Button>
                 </PermissionGuard>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="px-2">
@@ -141,7 +108,7 @@ export default function InventoryCardView({
                       </DropdownMenuItem>
                     </PermissionGuard>
                     <PermissionGuard requiredPermission="inventario:eliminar">
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => onDelete(item)}
                         className="text-destructive"
                       >
@@ -159,4 +126,3 @@ export default function InventoryCardView({
     </div>
   );
 }
-

@@ -488,105 +488,61 @@ export default function ReservationManagement() {
     : reservas;
 
 
+  // Construye el prop-bag compartido por las vistas paginadas (cards/table).
+  // Ambas reciben el mismo set de filtros, callbacks de filtros que también resetean
+  // la paginación y la metadata de paginación.
+  const buildPagedListProps = () => ({
+    espaciosUnicos,
+    carrerasUnicas,
+    tiposEspacioUnicos,
+    tiempoFilter,
+    estadoFilter,
+    espacioFilter,
+    carreraFilter,
+    tipoEspacioFilter,
+    fechaInicio,
+    fechaFin,
+    viewMode,
+    hayFiltrosActivos,
+    showPendienteFilter,
+    onTiempoFilterChange: (filter: string) => { setTiempoFilter(filter); setPage(0); },
+    onEstadoFilterChange: (filter: string) => {
+      // Permitir filtrar por PENDIENTE solo para docentes/externos
+      if (filter === 'PENDIENTE' && !showPendienteFilter) {
+        setEstadoFilter('todas');
+      } else {
+        setEstadoFilter(filter);
+      }
+      setPage(0);
+    },
+    onEspacioFilterChange: (filter: number | null) => { setEspacioFilter(filter); setPage(0); },
+    onCarreraFilterChange: (filter: number | null) => { setCarreraFilter(filter); setPage(0); },
+    onTipoEspacioFilterChange: (filter: number | null) => { setTipoEspacioFilter(filter); setPage(0); },
+    onFechaInicioChange: (date: Date | undefined) => { setFechaInicio(date); setPage(0); },
+    onFechaFinChange: (date: Date | undefined) => { setFechaFin(date); setPage(0); },
+    onViewModeChange: setViewMode,
+    onClearFilters: handleClearFilters,
+    onCreateReserva: () => setIsFormDialogOpen(true),
+    onViewDetails: handleViewDetails,
+    onCancelReserva: handleCancelReserva,
+    isFullScreen,
+    onToggleFullScreen: handleToggleFullScreen,
+    page,
+    totalPages,
+    totalElements,
+    onPageChange: handlePageChange,
+    loading: contentLoading,
+  });
+
   // Renderizar vista de cards
-  const renderCardView = (reservasLista: Reserva[]) => {
-    return (
-      <ReservationCardView
-        reservas={reservasLista}
-        espaciosUnicos={espaciosUnicos}
-        carrerasUnicas={carrerasUnicas}
-        tiposEspacioUnicos={tiposEspacioUnicos}
-        tiempoFilter={tiempoFilter}
-        estadoFilter={estadoFilter}
-        espacioFilter={espacioFilter}
-        carreraFilter={carreraFilter}
-        tipoEspacioFilter={tipoEspacioFilter}
-        fechaInicio={fechaInicio}
-        fechaFin={fechaFin}
-        viewMode={viewMode}
-        hayFiltrosActivos={hayFiltrosActivos}
-        showPendienteFilter={showPendienteFilter}
-        onTiempoFilterChange={(filter) => { setTiempoFilter(filter); setPage(0); }}
-        onEstadoFilterChange={(filter) => { 
-          // Permitir filtrar por PENDIENTE solo para docentes/externos
-          if (filter === 'PENDIENTE' && !showPendienteFilter) {
-            setEstadoFilter('todas');
-          } else {
-            setEstadoFilter(filter);
-          }
-          setPage(0);
-        }}
-        onEspacioFilterChange={(filter) => { setEspacioFilter(filter); setPage(0); }}
-        onCarreraFilterChange={(filter) => { setCarreraFilter(filter); setPage(0); }}
-        onTipoEspacioFilterChange={(filter) => { setTipoEspacioFilter(filter); setPage(0); }}
-        onFechaInicioChange={(date) => { setFechaInicio(date); setPage(0); }}
-        onFechaFinChange={(date) => { setFechaFin(date); setPage(0); }}
-        onViewModeChange={setViewMode}
-        onClearFilters={handleClearFilters}
-        onCreateReserva={() => setIsFormDialogOpen(true)}
-        onViewDetails={handleViewDetails}
-        onCancelReserva={handleCancelReserva}
-        isFullScreen={isFullScreen}
-        onToggleFullScreen={handleToggleFullScreen}
-        // Props de paginación
-        page={page}
-        totalPages={totalPages}
-        totalElements={totalElements}
-        onPageChange={handlePageChange}
-        loading={contentLoading}
-      />
-    );
-  };
+  const renderCardView = (reservasLista: Reserva[]) => (
+    <ReservationCardView reservas={reservasLista} {...buildPagedListProps()} />
+  );
 
   // Renderizar vista de tabla
-  const renderTableView = (reservasLista: Reserva[]) => {
-    return (
-      <ReservationTableView
-        reservas={reservasLista}
-        espaciosUnicos={espaciosUnicos}
-        carrerasUnicas={carrerasUnicas}
-        tiposEspacioUnicos={tiposEspacioUnicos}
-        tiempoFilter={tiempoFilter}
-        estadoFilter={estadoFilter}
-        espacioFilter={espacioFilter}
-        carreraFilter={carreraFilter}
-        tipoEspacioFilter={tipoEspacioFilter}
-        fechaInicio={fechaInicio}
-        fechaFin={fechaFin}
-        viewMode={viewMode}
-        hayFiltrosActivos={hayFiltrosActivos}
-        showPendienteFilter={showPendienteFilter}
-        onTiempoFilterChange={(filter) => { setTiempoFilter(filter); setPage(0); }}
-        onEstadoFilterChange={(filter) => { 
-          // Permitir filtrar por PENDIENTE solo para docentes/externos
-          if (filter === 'PENDIENTE' && !showPendienteFilter) {
-            setEstadoFilter('todas');
-          } else {
-            setEstadoFilter(filter);
-          }
-          setPage(0);
-        }}
-        onEspacioFilterChange={(filter) => { setEspacioFilter(filter); setPage(0); }}
-        onCarreraFilterChange={(filter) => { setCarreraFilter(filter); setPage(0); }}
-        onTipoEspacioFilterChange={(filter) => { setTipoEspacioFilter(filter); setPage(0); }}
-        onFechaInicioChange={(date) => { setFechaInicio(date); setPage(0); }}
-        onFechaFinChange={(date) => { setFechaFin(date); setPage(0); }}
-        onViewModeChange={setViewMode}
-        onClearFilters={handleClearFilters}
-        onCreateReserva={() => setIsFormDialogOpen(true)}
-        onViewDetails={handleViewDetails}
-        onCancelReserva={handleCancelReserva}
-        isFullScreen={isFullScreen}
-        onToggleFullScreen={handleToggleFullScreen}
-        // Props de paginación
-        page={page}
-        totalPages={totalPages}
-        totalElements={totalElements}
-        onPageChange={handlePageChange}
-        loading={contentLoading}
-      />
-    );
-  };
+  const renderTableView = (reservasLista: Reserva[]) => (
+    <ReservationTableView reservas={reservasLista} {...buildPagedListProps()} />
+  );
 
   // Renderizar vista de calendario
   const renderCalendarView = (reservasLista: Reserva[]) => {

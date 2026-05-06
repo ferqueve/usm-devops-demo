@@ -18,11 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
-import { inventarioApi } from '@/lib/api/inventory';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import type { InventarioItem } from '@/lib/types/spaces';
 import { toast } from 'sonner';
+import { moveInventoryQuantity } from './_shared/inventoryAssignment';
 
 interface AssignSpaceDialogProps {
   item: InventarioItem | null;
@@ -35,7 +35,7 @@ export default function AssignSpaceDialog({
   item,
   open,
   onOpenChange,
-  onSuccess
+  onSuccess,
 }: Readonly<AssignSpaceDialogProps>) {
   const [loading, setLoading] = useState(false);
   const { espacios } = useEspacios();
@@ -55,158 +55,88 @@ export default function AssignSpaceDialog({
     }
   }, [open, item]);
 
-  const handleDesasignar = async () => {
-    if (!item) return;
-
-    // Validar cantidad
+  const validateCantidad = (currentItem: InventarioItem): boolean => {
     if (cantidad <= 0) {
       toast.error('La cantidad debe ser mayor a 0');
-      return;
+      return false;
     }
+    if (cantidad > currentItem.cantidad) {
+      toast.error(`La cantidad no puede ser mayor a ${currentItem.cantidad}`);
+      return false;
+    }
+    return true;
+  };
 
-    if (cantidad > item.cantidad) {
-      toast.error(`La cantidad no puede ser mayor a ${item.cantidad}`);
-      return;
-    }
-    
+  const performMove = async (
+    targetEspacioId: number,
+    successMessage: () => string,
+    errorTitle: string,
+    errorFallback: string,
+  ) => {
+    if (!item) return;
+    if (!validateCantidad(item)) return;
+
     try {
       setLoading(true);
-
-      // Si la cantidad es menor que el total, dividir el inventario
-      if (cantidad < item.cantidad) {
-        // Validar permiso para crear nuevo item (split)
-        if (!hasPermission('inventario:crear')) {
+      const completed = await moveInventoryQuantity({
+        item,
+        targetEspacioId,
+        cantidad,
+        canSplit: () => hasPermission('inventario:crear'),
+        onSplitDenied: () => {
           toast.error('Permiso denegado', {
-            description: 'No tienes permiso para dividir inventario (requiere inventario:crear)'
+            description:
+              'No tienes permiso para dividir inventario (requiere inventario:crear)',
           });
-          return;
-        }
+        },
+      });
 
-        // Actualizar el item actual reduciendo la cantidad
-        await inventarioApi.actualizarInventarioItem(item.id, {
-          espacioId: item.espacioId,
-          tipoElementoId: item.tipoElementoId,
-          cantidad: item.cantidad - cantidad,
-          estado: item.estado,
-          observaciones: item.observaciones
-        });
-
-        // Crear un nuevo item sin asignar con la cantidad desasignada
-        await inventarioApi.crearInventarioItem({
-          espacioId: 0, // Sin asignar
-          tipoElementoId: item.tipoElementoId,
-          cantidad: cantidad,
-          estado: item.estado,
-          observaciones: item.observaciones
-        });
-
-        toast.success(`${cantidad} ${item.tipoElementoNombre}(s) desasignado(s) exitosamente`);
+      if (completed) {
+        toast.success(successMessage());
         onSuccess();
-      } else {
-        // Si es la cantidad total, desasignar la totalidad del item
-        await inventarioApi.actualizarInventarioItem(item.id, {
-          espacioId: 0, // 0 significa desasignar en el backend
-          tipoElementoId: item.tipoElementoId,
-          cantidad: item.cantidad,
-          estado: item.estado,
-          observaciones: item.observaciones
-        });
-        
-        toast.success('Espacio desasignado exitosamente');
-        onSuccess();
+        onOpenChange(false);
       }
-
-      onOpenChange(false);
     } catch (error: unknown) {
-      console.error('Error al desasignar espacio:', error);
-      toast.error('Error al desasignar espacio', {
-        description: error instanceof Error ? error.message : 'No se pudo desasignar el espacio'
+      console.error(`${errorTitle}:`, error);
+      toast.error(errorTitle, {
+        description: error instanceof Error ? error.message : errorFallback,
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDesasignar = () =>
+    performMove(
+      0,
+      () =>
+        cantidad < (item?.cantidad ?? 0)
+          ? `${cantidad} ${item?.tipoElementoNombre}(s) desasignado(s) exitosamente`
+          : 'Espacio desasignado exitosamente',
+      'Error al desasignar espacio',
+      'No se pudo desasignar el espacio',
+    );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!item) return;
-    
     if (selectedEspacioId === 0) {
       toast.error('Por favor selecciona un espacio');
       return;
     }
-
-    // Validar cantidad
-    if (cantidad <= 0) {
-      toast.error('La cantidad debe ser mayor a 0');
-      return;
-    }
-
-    if (cantidad > item.cantidad) {
-      toast.error(`La cantidad no puede ser mayor a ${item.cantidad}`);
-      return;
-    }
-    
-    try {
-      setLoading(true);
-
-      // Si la cantidad es menor que el total, dividir el inventario
-      if (cantidad < item.cantidad) {
-        // Validar permiso para crear nuevo item (split)
-        if (!hasPermission('inventario:crear')) {
-          toast.error('Permiso denegado', {
-            description: 'No tienes permiso para dividir inventario (requiere inventario:crear)'
-          });
-          return;
-        }
-
-        // Actualizar el item actual con la cantidad restante
-        await inventarioApi.actualizarInventarioItem(item.id, {
-          espacioId: item.espacioId,
-          tipoElementoId: item.tipoElementoId,
-          cantidad: item.cantidad - cantidad,
-          estado: item.estado,
-          observaciones: item.observaciones
-        });
-
-        // Crear un nuevo item con la cantidad asignada al nuevo espacio
-        await inventarioApi.crearInventarioItem({
-          espacioId: selectedEspacioId,
-          tipoElementoId: item.tipoElementoId,
-          cantidad: cantidad,
-          estado: item.estado,
-          observaciones: item.observaciones
-        });
-
-        toast.success(`${cantidad} ${item.tipoElementoNombre}(s) asignado(s) exitosamente`);
-        onSuccess();
-      } else {
-        // Si es la cantidad total, solo actualizar el espacio
-        await inventarioApi.actualizarInventarioItem(item.id, {
-          espacioId: selectedEspacioId,
-          tipoElementoId: item.tipoElementoId,
-          cantidad: item.cantidad,
-          estado: item.estado,
-          observaciones: item.observaciones
-        });
-        
-        toast.success('Espacio asignado exitosamente');
-        onSuccess();
-      }
-      
-      onOpenChange(false);
-    } catch (error: unknown) {
-      console.error('Error al asignar espacio:', error);
-      toast.error('Error al asignar espacio', {
-        description: error instanceof Error ? error.message : 'No se pudo asignar el espacio'
-      });
-    } finally {
-      setLoading(false);
-    }
+    await performMove(
+      selectedEspacioId,
+      () =>
+        cantidad < (item?.cantidad ?? 0)
+          ? `${cantidad} ${item?.tipoElementoNombre}(s) asignado(s) exitosamente`
+          : 'Espacio asignado exitosamente',
+      'Error al asignar espacio',
+      'No se pudo asignar el espacio',
+    );
   };
 
-  const currentEspacio = item?.espacioId ? espacios.find(e => e.id === item.espacioId) : null;
+  const currentEspacio = item?.espacioId
+    ? espacios.find((e) => e.id === item.espacioId)
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -240,7 +170,7 @@ export default function AssignSpaceDialog({
             })()}
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="espacio">{item?.espacioId ? 'Nuevo Espacio *' : 'Espacio *'}</Label>
@@ -304,9 +234,9 @@ export default function AssignSpaceDialog({
           )}
 
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >

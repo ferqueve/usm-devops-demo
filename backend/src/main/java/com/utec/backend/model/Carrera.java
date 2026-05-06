@@ -1,47 +1,32 @@
 package com.utec.backend.model;
 
-import com.utec.backend.audit.AuditEntityListener;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
 import java.util.List;
 
 @Entity
 @Table(name = "carrera")
-@EntityListeners(AuditEntityListener.class)
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Carrera {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+public class Carrera extends BaseAuditableEntity {
+
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
-    
+
     @Column(name = "codigo", length = 20, unique = true)
     private String codigo;
-    
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-    
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-    
-    @Column(name = "deleted_at", nullable = true)
-    private Instant deletedAt;
-    
-    // Relaciones
+
     @OneToMany(mappedBy = "carrera", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reserva> reservas;
 }
-
