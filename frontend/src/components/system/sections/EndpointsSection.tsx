@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/Button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Settings, ArrowUpDown, ArrowUp, ArrowDown, BookOpen, FileJson } from 'lucide-react';
+import type { MappingContext, DispatcherMapping, MappingsInfo } from '@/lib/types/actuator';
 
 interface EndpointsSectionProps {
-  mappings: any;
+  mappings: MappingsInfo | null | undefined;
 }
 
 export const EndpointsSection = memo(function EndpointsSection({ mappings }: EndpointsSectionProps) {
@@ -77,9 +78,9 @@ export const EndpointsSection = memo(function EndpointsSection({ mappings }: End
   const allEndpoints: Array<{ method: string; path: string; description: string }> = [];
   
   if (mappings?.contexts) {
-    Object.values(mappings.contexts).forEach((context: any) => {
+    Object.values(mappings.contexts).forEach((context: MappingContext) => {
       const dispatcherMappings = context.mappings?.dispatcherServlets?.dispatcherServlet || [];
-      dispatcherMappings.forEach((mapping: any) => {
+      dispatcherMappings.forEach((mapping: DispatcherMapping) => {
         const predicate = mapping.predicate || '';
         
         // Extraer método y path correctamente

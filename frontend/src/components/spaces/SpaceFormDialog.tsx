@@ -29,6 +29,43 @@ interface SpaceFormDialogProps {
   onSuccess: (espacio: Espacio) => void;
 }
 
+interface SpaceFormData {
+  nombre: string;
+  capacidad: number;
+  tipoEspacioId: number;
+  imagenUrl: string;
+  estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
+}
+
+// Devuelve mensaje de error si los datos del espacio no son válidos, null si todo bien
+function validateSpaceForm(formData: SpaceFormData): string | null {
+  if (!formData.nombre?.trim()) return 'El nombre del espacio es requerido';
+  if (formData.capacidad < 1) return 'La capacidad debe ser mayor a 0';
+  if (formData.tipoEspacioId === 0) return 'Debe seleccionar un tipo de espacio';
+  return null;
+}
+
+// Sube la imagen y actualiza el espacio retornado con la URL de la imagen subida
+async function uploadSpaceImage(espacioId: number, file: File): Promise<string | null> {
+  try {
+    const uploadResponse = await espaciosApi.subirImagenEspacio(espacioId, file);
+    if (uploadResponse.data) {
+      toast.success('Imagen subida exitosamente');
+      return uploadResponse.data.imageUrl;
+    }
+    return null;
+  } catch (uploadError: unknown) {
+    console.error('Error al subir imagen:', uploadError);
+    const errorMessage = uploadError instanceof Error
+      ? uploadError.message
+      : 'Intente subir la imagen nuevamente';
+    toast.error('Espacio guardado, pero hubo un error al subir la imagen', {
+      description: errorMessage,
+    });
+    return null;
+  }
+}
+
 export function SpaceFormDialog({
   espacio,
   open,
@@ -130,67 +167,39 @@ export function SpaceFormDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validaciones básicas
-    if (!formData.nombre?.trim()) {
-      toast.error('El nombre del espacio es requerido');
-      return;
-    }
-
-    if (formData.capacidad < 1) {
-      toast.error('La capacidad debe ser mayor a 0');
-      return;
-    }
-
-    if (formData.tipoEspacioId === 0) {
-      toast.error('Debe seleccionar un tipo de espacio');
+    const validationError = validateSpaceForm(formData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
     try {
       setLoading(true);
-
       const data = {
         nombre: formData.nombre.trim(),
         capacidad: formData.capacidad,
         tipoEspacioId: formData.tipoEspacioId,
         imagenUrl: formData.imagenUrl.trim() || undefined,
-        estado: formData.estado
+        estado: formData.estado,
       };
 
-      let response;
-      if (isEditing && espacio) {
-        response = await espaciosApi.actualizarEspacio(espacio.id, data);
-      } else {
-        response = await espaciosApi.crearEspacio(data);
-      }
+      const response = isEditing && espacio
+        ? await espaciosApi.actualizarEspacio(espacio.id, data)
+        : await espaciosApi.crearEspacio(data);
 
-      // Si hay un archivo seleccionado, subirlo después de crear/actualizar el espacio
       if (selectedFile && response.data) {
-        try {
-          setUploadingImage(true);
-          const uploadResponse = await espaciosApi.subirImagenEspacio(response.data.id, selectedFile);
-          if (uploadResponse.data) {
-            // Actualizar el espacio con la nueva imagen
-            response.data.imagenUrl = uploadResponse.data.imageUrl;
-            toast.success('Imagen subida exitosamente');
-          }
-        } catch (uploadError: unknown) {
-          console.error('Error al subir imagen:', uploadError);
-          const errorMessage = uploadError instanceof Error ? uploadError.message : 'Intente subir la imagen nuevamente';
-          toast.error('Espacio guardado, pero hubo un error al subir la imagen', {
-            description: errorMessage
-          });
-        } finally {
-          setUploadingImage(false);
+        setUploadingImage(true);
+        const newImageUrl = await uploadSpaceImage(response.data.id, selectedFile);
+        if (newImageUrl) {
+          response.data.imagenUrl = newImageUrl;
         }
+        setUploadingImage(false);
       }
 
-      toast.success(
-        isEditing ? 'Espacio actualizado' : 'Espacio creado',
-        {
-          description: `${formData.nombre} ha sido ${isEditing ? 'actualizado' : 'creado'} exitosamente`
-        }
-      );
+      const accionParticipio = isEditing ? 'actualizado' : 'creado';
+      toast.success(isEditing ? 'Espacio actualizado' : 'Espacio creado', {
+        description: `${formData.nombre} ha sido ${accionParticipio} exitosamente`,
+      });
 
       if (response.data) {
         onSuccess(response.data);
@@ -199,12 +208,9 @@ export function SpaceFormDialog({
     } catch (error: unknown) {
       console.error('Error al guardar espacio:', error);
       const errorMessage = error instanceof Error ? error.message : 'No se pudo guardar el espacio';
-      toast.error(
-        isEditing ? 'Error al actualizar espacio' : 'Error al crear espacio',
-        {
-          description: errorMessage
-        }
-      );
+      toast.error(isEditing ? 'Error al actualizar espacio' : 'Error al crear espacio', {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -351,7 +357,7 @@ export function SpaceFormDialog({
                     className="w-full"
                   >
                     <ImageIcon className="h-4 w-4 mr-2" />
-                    {selectedFile ? 'Cambiar Imagen' : 'Cambiar Imagen'}
+                    Cambiar Imagen
                   </Button>
                   <input
                     id="imagen"

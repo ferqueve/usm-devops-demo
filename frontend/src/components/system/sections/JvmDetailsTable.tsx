@@ -11,15 +11,16 @@ import {
 } from "@/components/ui/table";
 import { Cpu, Activity, MemoryStick, Trash2, Clock, Network } from 'lucide-react';
 import { formatBytes, formatUptime } from '@/lib/utils/formatters';
+import type { MetricInfo, MetricMeasurement } from '@/lib/types/actuator';
 
 interface JvmDetailsTableProps {
-  memoryMetrics: any;
-  memoryMaxMetrics: any;
-  cpuMetrics: any;
-  threadsMetrics: any;
-  gcMetrics: any;
-  uptimeMetrics: any;
-  httpMetrics: any;
+  memoryMetrics: MetricInfo | null | undefined;
+  memoryMaxMetrics: MetricInfo | null | undefined;
+  cpuMetrics: MetricInfo | null | undefined;
+  threadsMetrics: MetricInfo | null | undefined;
+  gcMetrics: MetricInfo | null | undefined;
+  uptimeMetrics: MetricInfo | null | undefined;
+  httpMetrics: MetricInfo | null | undefined;
 }
 
 export const JvmDetailsTable = memo(function JvmDetailsTable({
@@ -31,15 +32,18 @@ export const JvmDetailsTable = memo(function JvmDetailsTable({
   uptimeMetrics,
   httpMetrics
 }: JvmDetailsTableProps) {
-  const memoryUsed = memoryMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-  const memoryMax = memoryMaxMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 2147483648;
+  const findStatistic = (metric: MetricInfo | null | undefined, stat: string): number =>
+    metric?.measurements?.find((m: MetricMeasurement) => m.statistic === stat)?.value ?? 0;
+
+  const memoryUsed = findStatistic(memoryMetrics, 'VALUE');
+  const memoryMax = memoryMaxMetrics?.measurements?.find((m: MetricMeasurement) => m.statistic === 'VALUE')?.value ?? 2147483648;
   const memoryUsagePercent = memoryMax > 0 ? (memoryUsed / memoryMax) * 100 : 0;
-  const cpuUsage = cpuMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-  const threadsCount = threadsMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-  const gcCount = gcMetrics?.measurements?.find((m: any) => m.statistic === 'COUNT')?.value || 0;
-  const gcTotalTime = gcMetrics?.measurements?.find((m: any) => m.statistic === 'TOTAL_TIME')?.value || 0;
-  const uptimeSeconds = uptimeMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-  const httpCount = httpMetrics?.measurements?.find((m: any) => m.statistic === 'COUNT')?.value || 0;
+  const cpuUsage = findStatistic(cpuMetrics, 'VALUE');
+  const threadsCount = findStatistic(threadsMetrics, 'VALUE');
+  const gcCount = findStatistic(gcMetrics, 'COUNT');
+  const gcTotalTime = findStatistic(gcMetrics, 'TOTAL_TIME');
+  const uptimeSeconds = findStatistic(uptimeMetrics, 'VALUE');
+  const httpCount = findStatistic(httpMetrics, 'COUNT');
 
   return (
     <Card className="shadow-card">

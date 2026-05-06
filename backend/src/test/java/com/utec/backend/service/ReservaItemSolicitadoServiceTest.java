@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -140,9 +141,10 @@ class ReservaItemSolicitadoServiceTest {
         when(reservaRepository.findById(reservaId)).thenReturn(Optional.empty());
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            reservaItemSolicitadoService.crearSolicitudes(reservaId, Arrays.asList(createDto));
-        });
+        var dtos = Arrays.asList(createDto);
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            reservaItemSolicitadoService.crearSolicitudes(reservaId, dtos)
+        );
 
         assertTrue(exception.getMessage().contains("Reserva no encontrada"));
         verify(reservaItemSolicitadoRepository, never()).saveAll(anyList());
@@ -182,13 +184,12 @@ class ReservaItemSolicitadoServiceTest {
 
     @Test
     @DisplayName("Debe buscar solicitudes con paginación")
-    @SuppressWarnings("unchecked")
     void debeBuscarSolicitudes() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<ReservaItemSolicitado> page = new PageImpl<>(Arrays.asList(itemSolicitadoTest), pageable, 1);
 
-        when(reservaItemSolicitadoRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(reservaItemSolicitadoRepository.findAll(ArgumentMatchers.<Specification<ReservaItemSolicitado>>any(), eq(pageable))).thenReturn(page);
 
         // When
         PagedResponseDto<ReservaItemSolicitadoResponseDto> resultado = reservaItemSolicitadoService.buscarSolicitudes(
@@ -197,7 +198,7 @@ class ReservaItemSolicitadoServiceTest {
         // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.getContent().size());
-        verify(reservaItemSolicitadoRepository).findAll(any(Specification.class), eq(pageable));
+        verify(reservaItemSolicitadoRepository).findAll(ArgumentMatchers.<Specification<ReservaItemSolicitado>>any(), eq(pageable));
     }
 
     @Test

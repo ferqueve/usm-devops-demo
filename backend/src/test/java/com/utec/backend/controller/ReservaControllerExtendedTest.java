@@ -171,7 +171,7 @@ class ReservaControllerExtendedTest {
     void adminDebeVerTodasLasReservas() throws Exception {
         // Given
         List<ReservaResponseDto> reservas = Arrays.asList(reservaResponseDto);
-        when(reservaService.getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("admin@utec.edu.uy"), eq("ADMIN")))
+        when(reservaService.getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("admin@utec.edu.uy"), eq("ADMIN")))
                 .thenReturn(reservas);
 
         // When & Then
@@ -181,7 +181,7 @@ class ReservaControllerExtendedTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", org.hamcrest.Matchers.hasSize(1)));
 
-        verify(reservaService).getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("admin@utec.edu.uy"), eq("ADMIN"));
+        verify(reservaService).getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("admin@utec.edu.uy"), eq("ADMIN"));
     }
 
     @Test
@@ -190,7 +190,7 @@ class ReservaControllerExtendedTest {
     void analistaDebeVerSoloReservasAsignadas() throws Exception {
         // Given - El servicio ya filtra por analista
         List<ReservaResponseDto> reservasAsignadas = Arrays.asList(reservaResponseDto);
-        when(reservaService.getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("analista@utec.edu.uy"), eq("ANALISTA")))
+        when(reservaService.getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("analista@utec.edu.uy"), eq("ANALISTA")))
                 .thenReturn(reservasAsignadas);
 
         // When & Then
@@ -200,7 +200,7 @@ class ReservaControllerExtendedTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", org.hamcrest.Matchers.hasSize(1)));
 
-        verify(reservaService).getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("analista@utec.edu.uy"), eq("ANALISTA"));
+        verify(reservaService).getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("analista@utec.edu.uy"), eq("ANALISTA"));
     }
 
     @Test
@@ -210,7 +210,7 @@ class ReservaControllerExtendedTest {
         // Given - El servicio ya filtra para externos
         reservaResponseDto.setEsPublica(true);
         List<ReservaResponseDto> reservasPublicas = Arrays.asList(reservaResponseDto);
-        when(reservaService.getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("externo@gmail.com"), eq("EXTERNO")))
+        when(reservaService.getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("externo@gmail.com"), eq("EXTERNO")))
                 .thenReturn(reservasPublicas);
 
         // When & Then
@@ -220,7 +220,7 @@ class ReservaControllerExtendedTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].esPublica").value(true));
 
-        verify(reservaService).getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("externo@gmail.com"), eq("EXTERNO"));
+        verify(reservaService).getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("externo@gmail.com"), eq("EXTERNO"));
     }
 
     @Test
@@ -230,12 +230,7 @@ class ReservaControllerExtendedTest {
         // Given
         List<ReservaResponseDto> reservas = Arrays.asList(reservaResponseDto);
         when(reservaService.getTodasLasReservas(
-                eq("APROBADO"),
-                eq(1L),
-                eq(2L),
-                eq(3L),
-                any(Instant.class),
-                any(Instant.class),
+                any(com.utec.backend.dto.reserva.ReservaFilters.class),
                 eq("admin@utec.edu.uy"),
                 eq("ADMIN")))
                 .thenReturn(reservas);
@@ -253,12 +248,7 @@ class ReservaControllerExtendedTest {
                 .andExpect(jsonPath("$.success").value(true));
 
         verify(reservaService).getTodasLasReservas(
-                eq("APROBADO"),
-                eq(1L),
-                eq(2L),
-                eq(3L),
-                any(Instant.class),
-                any(Instant.class),
+                any(com.utec.backend.dto.reserva.ReservaFilters.class),
                 eq("admin@utec.edu.uy"),
                 eq("ADMIN"));
     }
@@ -446,7 +436,7 @@ class ReservaControllerExtendedTest {
         Page<ReservaResponseDto> page = new PageImpl<>(Arrays.asList(reservaResponseDto), PageRequest.of(0, 10), 1);
         when(reservaService.getAllReservasPaged(
                 any(org.springframework.data.domain.Pageable.class),
-                any(), any(), any(), any(), any(), any(), any(), any(),
+                any(com.utec.backend.dto.reserva.ReservaFilters.class),
                 eq("analista@utec.edu.uy"),
                 eq("ANALISTA")))
                 .thenReturn(page);
@@ -462,7 +452,7 @@ class ReservaControllerExtendedTest {
 
         verify(reservaService).getAllReservasPaged(
                 any(org.springframework.data.domain.Pageable.class),
-                any(), any(), any(), any(), any(), any(), any(), any(),
+                any(com.utec.backend.dto.reserva.ReservaFilters.class),
                 eq("analista@utec.edu.uy"),
                 eq("ANALISTA"));
     }
@@ -475,14 +465,7 @@ class ReservaControllerExtendedTest {
         Page<ReservaResponseDto> page = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 10), 0);
         when(reservaService.getAllReservasPaged(
                 any(org.springframework.data.domain.Pageable.class),
-                eq("PENDIENTE"),
-                eq(1L),
-                eq(2L),
-                eq(3L),
-                eq(4L),
-                any(Instant.class),
-                any(Instant.class),
-                eq("futuro"),
+                any(com.utec.backend.dto.reserva.ReservaFilters.class),
                 eq("admin@utec.edu.uy"),
                 eq("ADMIN")))
                 .thenReturn(page);
@@ -505,14 +488,7 @@ class ReservaControllerExtendedTest {
 
         verify(reservaService).getAllReservasPaged(
                 any(org.springframework.data.domain.Pageable.class),
-                eq("PENDIENTE"),
-                eq(1L),
-                eq(2L),
-                eq(3L),
-                eq(4L),
-                any(Instant.class),
-                any(Instant.class),
-                eq("futuro"),
+                any(com.utec.backend.dto.reserva.ReservaFilters.class),
                 eq("admin@utec.edu.uy"),
                 eq("ADMIN"));
     }

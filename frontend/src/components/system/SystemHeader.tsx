@@ -56,13 +56,15 @@ export const SystemHeader = memo(function SystemHeader({
           </Label>
         </div>
         
-        <div 
-          onClick={!isRefreshing ? handleRefresh : undefined}
+        <button
+          type="button"
+          onClick={isRefreshing ? undefined : handleRefresh}
+          disabled={isRefreshing}
           className={`flex items-center justify-center gap-1.5 px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-shrink-0 ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
         >
           <RefreshCw className={`h-4 w-4 flex-shrink-0 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
           <span className="font-medium text-sm">Actualizar</span>
-        </div>
+        </button>
       </div>
     </div>
   );

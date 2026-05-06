@@ -6,8 +6,8 @@ on:
       - dev
 
 jobs:
-  backend:
-    name: Backend - Build and analyze
+  analyze:
+    name: Build and analyze (USM)
     runs-on: ubuntu-latest
 
     steps:
@@ -22,33 +22,6 @@ jobs:
           distribution: zulu
           cache: maven
 
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar-backend
-          restore-keys: ${{ runner.os }}-sonar-backend
-
-      - name: Build and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -f backend/pom.xml \
-            -Dmaven.test.failure.ignore=true \
-            -Dsonar.projectKey=USM-backend \
-            -Dsonar.projectName=USM-backend
-
-  frontend:
-    name: Frontend - Analyze
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -56,7 +29,17 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Build backend (Maven verify + JaCoCo)
+        run: mvn -B verify -f backend/pom.xml -Dmaven.test.failure.ignore=true
+
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
@@ -65,5 +48,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: frontend

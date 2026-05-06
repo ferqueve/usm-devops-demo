@@ -120,7 +120,7 @@ class ReservaControllerTest {
     void debeObtenerMisReservasPaginadas() throws Exception {
         // Given
         Page<ReservaResponseDto> page = new PageImpl<>(Arrays.asList(reservaResponseDto), PageRequest.of(0, 10), 1);
-        when(reservaService.getReservasByUsuarioPaged(eq(userEmail), any(org.springframework.data.domain.Pageable.class), any(), any(), any(), any(), any(), any(), any()))
+        when(reservaService.getReservasByUsuarioPaged(eq(userEmail), any(org.springframework.data.domain.Pageable.class), any(com.utec.backend.dto.reserva.ReservaFilters.class)))
                 .thenReturn(page);
 
         // When & Then
@@ -131,7 +131,7 @@ class ReservaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(reservaService).getReservasByUsuarioPaged(eq(userEmail), any(org.springframework.data.domain.Pageable.class), any(), any(), any(), any(), any(), any(), any());
+        verify(reservaService).getReservasByUsuarioPaged(eq(userEmail), any(org.springframework.data.domain.Pageable.class), any(com.utec.backend.dto.reserva.ReservaFilters.class));
     }
 
     @Test
@@ -214,7 +214,7 @@ class ReservaControllerTest {
     void debeObtenerTodasLasReservasSinPaginacion() throws Exception {
         // Given
         List<ReservaResponseDto> reservas = Arrays.asList(reservaResponseDto);
-        when(reservaService.getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("admin@utec.edu.uy"), eq("ADMIN")))
+        when(reservaService.getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("admin@utec.edu.uy"), eq("ADMIN")))
                 .thenReturn(reservas);
 
         // When & Then
@@ -224,7 +224,7 @@ class ReservaControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", org.hamcrest.Matchers.hasSize(1)));
 
-        verify(reservaService).getTodasLasReservas(any(), any(), any(), any(), any(), any(), eq("admin@utec.edu.uy"), eq("ADMIN"));
+        verify(reservaService).getTodasLasReservas(any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("admin@utec.edu.uy"), eq("ADMIN"));
     }
 
     @Test
@@ -233,7 +233,7 @@ class ReservaControllerTest {
     void debeObtenerTodasLasReservasPaginadas() throws Exception {
         // Given
         Page<ReservaResponseDto> page = new PageImpl<>(Arrays.asList(reservaResponseDto), PageRequest.of(0, 10), 1);
-        when(reservaService.getAllReservasPaged(any(org.springframework.data.domain.Pageable.class), any(), any(), any(), any(), any(), any(), any(), any(), eq("admin@utec.edu.uy"), eq("ADMIN")))
+        when(reservaService.getAllReservasPaged(any(org.springframework.data.domain.Pageable.class), any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("admin@utec.edu.uy"), eq("ADMIN")))
                 .thenReturn(page);
 
         // When & Then
@@ -244,7 +244,7 @@ class ReservaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(reservaService).getAllReservasPaged(any(org.springframework.data.domain.Pageable.class), any(), any(), any(), any(), any(), any(), any(), any(), eq("admin@utec.edu.uy"), eq("ADMIN"));
+        verify(reservaService).getAllReservasPaged(any(org.springframework.data.domain.Pageable.class), any(com.utec.backend.dto.reserva.ReservaFilters.class), eq("admin@utec.edu.uy"), eq("ADMIN"));
     }
 
     @Test

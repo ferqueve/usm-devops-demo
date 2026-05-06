@@ -32,6 +32,46 @@ interface PreferencesModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface PasswordChangeInputs {
+  currentPassword: string;
+  password: string;
+  confirmPassword: string;
+  hasPassword: boolean;
+}
+
+// Valida los datos de cambio de contraseña; devuelve un mensaje de error o null si todo es válido
+function validatePasswordChange({
+  currentPassword,
+  password,
+  confirmPassword,
+  hasPassword,
+}: PasswordChangeInputs): string | null {
+  const noChange = !password && !confirmPassword && !currentPassword;
+  if (noChange) return null;
+  if (hasPassword && currentPassword.trim().length === 0) {
+    return 'Debes ingresar tu contraseña actual para cambiarla';
+  }
+  if (!password || password.length < 6) {
+    return 'La contraseña debe tener al menos 6 caracteres';
+  }
+  if (password !== confirmPassword) {
+    return 'Las contraseñas no coinciden';
+  }
+  return null;
+}
+
+// Extrae el mensaje de error legible de una excepción (axios o Error nativo)
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as { response?: { data?: { error?: string } }; message?: string };
+    return axiosError.response?.data?.error || axiosError.message || fallback;
+  }
+  if (error instanceof Error) {
+    return error.message || fallback;
+  }
+  return fallback;
+}
+
 // Mapeo de tipos de email a etiquetas (solo configurables, sin emails obligatorios del admin)
 const EMAIL_LABELS: Record<string, string> = {
   reservaAprobada: 'Reserva aprobada',
@@ -121,79 +161,53 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
   };
 
   const handleSave = async () => {
+    const validationError = validatePasswordChange({
+      currentPassword,
+      password,
+      confirmPassword,
+      hasPassword,
+    });
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    const isPasswordChange = Boolean(password && password === confirmPassword);
+
     try {
       setSaving(true);
-      
-      // Validar contraseña si se proporcionó
-      if (password || confirmPassword || currentPassword) {
-        // Si el usuario tiene contraseña, debe ingresar la actual
-        if (hasPassword && (!currentPassword || currentPassword.trim().length === 0)) {
-          toast.error('Debes ingresar tu contraseña actual para cambiarla');
-          setSaving(false);
-          return;
-        }
-        
-        if (!password || password.length < 6) {
-          toast.error('La contraseña debe tener al menos 6 caracteres');
-          setSaving(false);
-          return;
-        }
-        
-        if (password !== confirmPassword) {
-          toast.error('Las contraseñas no coinciden');
-          setSaving(false);
-          return;
-        }
-      }
-
-      // Guardar preferencias y perfil en paralelo
       const promises: Promise<unknown>[] = [
         preferencesApi.actualizarPreferenciasEmail({ email: emailPrefs }),
         preferencesApi.actualizarPreferenciasVista({ vista: vistaPrefs }),
       ];
 
-      // Si hay contraseña, actualizar perfil
-      if (password && password === confirmPassword) {
-        const updateData: UpdateProfileData = { 
+      if (isPasswordChange) {
+        const updateData: UpdateProfileData = {
           password,
-          ...(hasPassword && currentPassword ? { currentPassword } : {})
+          ...(hasPassword && currentPassword ? { currentPassword } : {}),
         };
         promises.push(usuariosApi.actualizarPerfilPropio(updateData));
       }
 
       await Promise.all(promises);
-      
-      // Si se actualizó la contraseña, actualizar el estado local y recargar el perfil
-      if (password && password === confirmPassword) {
-        // Actualizar estado local inmediatamente para reflejar que ahora tiene contraseña
+
+      if (isPasswordChange) {
         if (userProfile) {
-          setUserProfile({
-            ...userProfile,
-            hasPassword: true
-          });
+          setUserProfile({ ...userProfile, hasPassword: true });
         }
-        // También recargar desde el servidor para asegurar consistencia
         await loadUserProfile();
       }
-      
-      // Limpiar campos de contraseña
+
       setCurrentPassword('');
       setPassword('');
       setConfirmPassword('');
       setSecurityExpanded(false);
-      
+
       toast.success('Preferencias guardadas correctamente');
       onOpenChange(false);
     } catch (error: unknown) {
       console.error('Error al guardar preferencias:', error);
-      let errorMessage = 'Error al guardar preferencias';
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { error?: string } }; message?: string };
-        errorMessage = axiosError.response?.data?.error || axiosError.message || errorMessage;
-      } else if (error instanceof Error) {
-        errorMessage = error.message || errorMessage;
-      }
-      toast.error(errorMessage);
+      toast.error(extractErrorMessage(error, 'Error al guardar preferencias'));
     } finally {
       setSaving(false);
     }

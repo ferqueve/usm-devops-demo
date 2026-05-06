@@ -19,7 +19,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class TipoEspacioService {
-    
+
+    private static final String TIPO_ESPACIO_NO_ENCONTRADO_MSG = "Tipo de espacio no encontrado con ID: ";
+
     private final TipoEspacioRepository tipoEspacioRepository;
     
     public TipoEspacioResponseDto createTipoEspacio(TipoEspacioCreateDto createDto) {
@@ -71,13 +73,13 @@ public class TipoEspacioService {
     @Transactional(readOnly = true)
     public TipoEspacioResponseDto getTipoEspacioById(Long id) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ESPACIO_NO_ENCONTRADO_MSG + id));
         return mapToResponseDto(tipoEspacio);
     }
 
     public TipoEspacioResponseDto updateTipoEspacio(Long id, TipoEspacioUpdateDto updateDto) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ESPACIO_NO_ENCONTRADO_MSG + id));
 
         // Verificar si ya existe otro tipo con el mismo nombre
         if (tipoEspacioRepository.existsByNombreIgnoreCaseAndIdNot(updateDto.getNombre(), id)) {
@@ -100,7 +102,7 @@ public class TipoEspacioService {
     
     public void deleteTipoEspacio(Long id) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ESPACIO_NO_ENCONTRADO_MSG + id));
         
         // Soft delete: marcar como inactivo
         tipoEspacio.setActivo(false);
@@ -112,7 +114,7 @@ public class TipoEspacioService {
     
     public TipoEspacioResponseDto toggleActivo(Long id) {
         TipoEspacio tipoEspacio = tipoEspacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ESPACIO_NO_ENCONTRADO_MSG + id));
         
         tipoEspacio.setActivo(!tipoEspacio.getActivo());
         tipoEspacio.setUpdatedAt(Instant.now());

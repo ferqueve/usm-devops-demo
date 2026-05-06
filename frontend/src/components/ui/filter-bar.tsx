@@ -6,7 +6,7 @@ import { Button } from './Button';
 export interface FilterItem {
   id: string;
   label: string;
-  value: any;
+  value: unknown;
   onRemove: () => void;
 }
 

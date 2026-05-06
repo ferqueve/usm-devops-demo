@@ -47,6 +47,14 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { usePreferences } from '@/hooks/usePreferences';
 
+// Describe el rango de cantidad para el resumen de un filtro de inventario
+function describirCantidadFiltro(min?: number, max?: number): string {
+  if (min !== undefined && max !== undefined) return `entre ${min} y ${max}`;
+  if (min !== undefined) return `al menos ${min}`;
+  if (max !== undefined) return `máximo ${max}`;
+  return 'cualquier cantidad de';
+}
+
 export default function SpacesManagement() {
   const navigate = useNavigate();
   const { preferencias } = usePreferences();
@@ -373,10 +381,6 @@ export default function SpacesManagement() {
           aValue = a.id;
           bValue = b.id;
           break;
-        case 'nombre':
-          aValue = a.nombre.toLowerCase();
-          bValue = b.nombre.toLowerCase();
-          break;
         case 'tipo':
           aValue = (a.tipoEspacioNombre || '').toLowerCase();
           bValue = (b.tipoEspacioNombre || '').toLowerCase();
@@ -389,6 +393,7 @@ export default function SpacesManagement() {
           aValue = a.activo;
           bValue = b.activo;
           break;
+        case 'nombre':
         default:
           // Por defecto, ordenar por nombre
           aValue = a.nombre.toLowerCase();
@@ -561,13 +566,15 @@ export default function SpacesManagement() {
             </Button>
           </PermissionGuard>
           
-          <div 
+          <button
+            type="button"
             onClick={isRefreshing ? undefined : handleRefresh}
+            disabled={isRefreshing}
             className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-1 sm:flex-none justify-center ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
             <span className="text-sm font-medium hidden sm:inline">Actualizar</span>
-          </div>
+          </button>
 
           {/* Botones de switch de vista */}
           <div className="flex items-center border rounded-lg shadow-sm bg-white h-10 p-1 flex-shrink-0">
@@ -802,21 +809,13 @@ export default function SpacesManagement() {
                           </div>
 
                           {/* Resumen del filtro */}
-                          {filtro.tipoElementoId > 0 && (() => {
-                            const describirCantidad = (min?: number, max?: number): string => {
-                              if (min !== undefined && max !== undefined) return `entre ${min} y ${max}`;
-                              if (min !== undefined) return `al menos ${min}`;
-                              if (max !== undefined) return `máximo ${max}`;
-                              return 'cualquier cantidad de';
-                            };
-                            return (
-                              <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
-                                <strong>Filtro:</strong> Espacios que tengan{' '}
-                                {describirCantidad(filtro.cantidadMin, filtro.cantidadMax)}{' '}
-                                <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
-                              </div>
-                            );
-                          })()}
+                          {filtro.tipoElementoId > 0 && (
+                            <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                              <strong>Filtro:</strong> Espacios que tengan{' '}
+                              {describirCantidadFiltro(filtro.cantidadMin, filtro.cantidadMax)}{' '}
+                              <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

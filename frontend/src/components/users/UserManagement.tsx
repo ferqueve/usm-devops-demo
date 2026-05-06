@@ -80,13 +80,74 @@ const ProviderIcon = ({ provider }: { provider?: string }) => {
       </div>
     );
   }
-  
+
   return (
     <div className="flex items-center justify-center text-muted-foreground" title="Local">
       <Monitor className="h-5 w-5" />
     </div>
   );
 };
+
+// Construye los chips de filtro activos a partir del estado de filtros
+function buildActiveUserFilters(
+  filters: UserFilters,
+  setSearchInput: (value: string) => void,
+  setFilters: React.Dispatch<React.SetStateAction<UserFilters>>
+): FilterItem[] {
+  const items: FilterItem[] = [];
+  if (filters.search) {
+    items.push({
+      id: 'search',
+      label: `Búsqueda: ${filters.search}`,
+      value: filters.search,
+      onRemove: () => {
+        setSearchInput('');
+        setFilters(prev => ({ ...prev, search: undefined }));
+      },
+    });
+  }
+  if (filters.rol) {
+    items.push({
+      id: 'rol',
+      label: `Rol: ${ROLE_LABELS[filters.rol]}`,
+      value: filters.rol,
+      onRemove: () => setFilters(prev => ({ ...prev, rol: undefined })),
+    });
+  }
+  if (filters.verificado !== undefined) {
+    items.push({
+      id: 'verificado',
+      label: `Verificado: ${filters.verificado ? 'Sí' : 'No'}`,
+      value: filters.verificado,
+      onRemove: () => setFilters(prev => ({ ...prev, verificado: undefined })),
+    });
+  }
+  if (filters.activo !== undefined) {
+    items.push({
+      id: 'activo',
+      label: `Estado: ${filters.activo ? 'Activo' : 'Inactivo'}`,
+      value: filters.activo,
+      onRemove: () => setFilters(prev => ({ ...prev, activo: undefined })),
+    });
+  }
+  if (filters.fechaDesde) {
+    items.push({
+      id: 'fechaDesde',
+      label: `Desde: ${filters.fechaDesde}`,
+      value: filters.fechaDesde,
+      onRemove: () => setFilters(prev => ({ ...prev, fechaDesde: undefined })),
+    });
+  }
+  if (filters.fechaHasta) {
+    items.push({
+      id: 'fechaHasta',
+      label: `Hasta: ${filters.fechaHasta}`,
+      value: filters.fechaHasta,
+      onRemove: () => setFilters(prev => ({ ...prev, fechaHasta: undefined })),
+    });
+  }
+  return items;
+}
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -393,68 +454,10 @@ export default function UserManagement() {
   };
 
   // Crear array de filtros activos para FilterBar
-  const activeFilters: FilterItem[] = useMemo(() => {
-    const items: FilterItem[] = [];
-    
-    if (filters.search) {
-      items.push({
-        id: 'search',
-        label: `Búsqueda: ${filters.search}`,
-        value: filters.search,
-        onRemove: () => {
-          setSearchInput('');
-          setFilters(prev => ({ ...prev, search: undefined }));
-        }
-      });
-    }
-    
-    if (filters.rol) {
-      items.push({
-        id: 'rol',
-        label: `Rol: ${ROLE_LABELS[filters.rol]}`,
-        value: filters.rol,
-        onRemove: () => setFilters(prev => ({ ...prev, rol: undefined }))
-      });
-    }
-    
-    if (filters.verificado !== undefined) {
-      items.push({
-        id: 'verificado',
-        label: `Verificado: ${filters.verificado ? 'Sí' : 'No'}`,
-        value: filters.verificado,
-        onRemove: () => setFilters(prev => ({ ...prev, verificado: undefined }))
-      });
-    }
-    
-    if (filters.activo !== undefined) {
-      items.push({
-        id: 'activo',
-        label: `Estado: ${filters.activo ? 'Activo' : 'Inactivo'}`,
-        value: filters.activo,
-        onRemove: () => setFilters(prev => ({ ...prev, activo: undefined }))
-      });
-    }
-    
-    if (filters.fechaDesde) {
-      items.push({
-        id: 'fechaDesde',
-        label: `Desde: ${filters.fechaDesde}`,
-        value: filters.fechaDesde,
-        onRemove: () => setFilters(prev => ({ ...prev, fechaDesde: undefined }))
-      });
-    }
-    
-    if (filters.fechaHasta) {
-      items.push({
-        id: 'fechaHasta',
-        label: `Hasta: ${filters.fechaHasta}`,
-        value: filters.fechaHasta,
-        onRemove: () => setFilters(prev => ({ ...prev, fechaHasta: undefined }))
-      });
-    }
-    
-    return items;
-  }, [filters]);
+  const activeFilters: FilterItem[] = useMemo(
+    () => buildActiveUserFilters(filters, setSearchInput, setFilters),
+    [filters]
+  );
 
   if (loading && users.length === 0) {
     return (
@@ -496,13 +499,15 @@ export default function UserManagement() {
             </Button>
           </PermissionGuard>
           
-          <div 
-            onClick={!isRefreshing ? handleRefresh : undefined}
+          <button
+            type="button"
+            onClick={isRefreshing ? undefined : handleRefresh}
+            disabled={isRefreshing}
             className={`flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10 transition-all ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
             <span className="text-sm font-medium whitespace-nowrap">Actualizar</span>
-          </div>
+          </button>
         </div>
       </div>
 

@@ -36,6 +36,296 @@ interface TipoEspacio {
   color?: string;
 }
 
+function getIntervalBorderClass(esHoraCompleta: boolean, esMediaHora: boolean): string {
+  if (esHoraCompleta) return 'border-t border-gray-400';
+  if (esMediaHora) return 'border-t border-gray-300';
+  return 'border-t border-gray-200';
+}
+
+interface PosicionVertical {
+  topPercent: number;
+  alturaPercent: number;
+  minutosInicio: number;
+  minutosFin: number;
+}
+
+interface RangoVisibleConfig {
+  minutosInicioVisible: number;
+  minutosFinVisible: number;
+  minutosTotalesVisibles: number;
+}
+
+// Calcula posición vertical de una reserva en un timeline visible
+function calcularPosicionVerticalReserva(reserva: Reserva, cfg: RangoVisibleConfig): PosicionVertical | null {
+  const inicio = new Date(reserva.inicio);
+  const fin = new Date(reserva.fin);
+  const minutosInicio = inicio.getHours() * 60 + inicio.getMinutes();
+  const minutosFin = fin.getHours() * 60 + fin.getMinutes();
+  const minutosFinAjustados = minutosFin === 0 ? 24 * 60 : minutosFin;
+
+  if (minutosFinAjustados <= cfg.minutosInicioVisible || minutosInicio >= cfg.minutosFinVisible) {
+    return null;
+  }
+
+  const minutosInicioAjustados = Math.max(minutosInicio, cfg.minutosInicioVisible);
+  const minutosFinAjustadosVisibles = Math.min(minutosFinAjustados, cfg.minutosFinVisible);
+  const minutosDesdeInicioVisible = minutosInicioAjustados - cfg.minutosInicioVisible;
+  const topPercent = (minutosDesdeInicioVisible / cfg.minutosTotalesVisibles) * 100;
+  const alturaPercent =
+    ((minutosFinAjustadosVisibles - minutosInicioAjustados) / cfg.minutosTotalesVisibles) * 100;
+  return {
+    topPercent,
+    alturaPercent,
+    minutosInicio: minutosInicioAjustados,
+    minutosFin: minutosFinAjustadosVisibles,
+  };
+}
+
+interface RangoMinutos { minutosInicio: number; minutosFin: number }
+
+// Verifica si dos rangos de minutos se superponen
+function haySuperposicion(a: RangoMinutos, b: RangoMinutos): boolean {
+  return (
+    (a.minutosInicio >= b.minutosInicio && a.minutosInicio < b.minutosFin) ||
+    (a.minutosFin > b.minutosInicio && a.minutosFin <= b.minutosFin) ||
+    (a.minutosInicio <= b.minutosInicio && a.minutosFin >= b.minutosFin) ||
+    (b.minutosInicio <= a.minutosInicio && b.minutosFin >= a.minutosFin)
+  );
+}
+
+// Encuentra los índices de los grupos que se superponen con la reserva dada
+function encontrarGruposSuperpuestos<T extends RangoMinutos>(
+  grupos: T[][],
+  reserva: T
+): number[] {
+  const resultado: number[] = [];
+  for (let i = 0; i < grupos.length; i++) {
+    if (grupos[i].some(g => haySuperposicion(reserva, g))) {
+      resultado.push(i);
+    }
+  }
+  return resultado;
+}
+
+// Inserta una reserva en el conjunto de grupos, fusionando si hay superposiciones
+function insertarReservaEnGrupos<T extends RangoMinutos>(grupos: T[][], reserva: T): void {
+  const superpuestos = encontrarGruposSuperpuestos(grupos, reserva);
+  if (superpuestos.length === 0) {
+    grupos.push([reserva]);
+    return;
+  }
+  const grupoFusionado = superpuestos.flatMap(idx => grupos[idx]);
+  grupoFusionado.push(reserva);
+  superpuestos.slice().reverse().forEach(idx => grupos.splice(idx, 1));
+  grupos.push(grupoFusionado);
+}
+
+interface GrupoReservasPorRango {
+  reservas: Reserva[];
+  inicio: Date;
+  fin: Date;
+  minutosInicio: number;
+  minutosFin: number;
+  estado: string;
+}
+
+// Agrupa reservas con el mismo rango horario y mismo estado
+function agruparReservasPorRangoYEstado(reservas: Reserva[]): GrupoReservasPorRango[] {
+  const grupos: GrupoReservasPorRango[] = [];
+  reservas.forEach(reserva => {
+    const inicioReserva = new Date(reserva.inicio);
+    const finReserva = new Date(reserva.fin);
+    const minutosInicio = inicioReserva.getHours() * 60 + inicioReserva.getMinutes();
+    const minutosFin = finReserva.getHours() * 60 + finReserva.getMinutes();
+    const grupoExistente = grupos.find(g =>
+      g.minutosInicio === minutosInicio &&
+      g.minutosFin === minutosFin &&
+      g.estado === reserva.estado
+    );
+    if (grupoExistente) {
+      grupoExistente.reservas.push(reserva);
+    } else {
+      grupos.push({
+        reservas: [reserva],
+        inicio: inicioReserva,
+        fin: finReserva,
+        minutosInicio,
+        minutosFin,
+        estado: reserva.estado,
+      });
+    }
+  });
+  return grupos;
+}
+
+// Encuentra la primera columna sin solapamiento; retorna -1 si todas solapan
+function encontrarColumnaDisponible(
+  columnas: GrupoReservasPorRango[][],
+  grupo: GrupoReservasPorRango
+): number {
+  for (let i = 0; i < columnas.length; i++) {
+    const haySolapamiento = columnas[i].some(g =>
+      grupo.minutosInicio < g.minutosFin && grupo.minutosFin > g.minutosInicio
+    );
+    if (!haySolapamiento) return i;
+  }
+  return -1;
+}
+
+// Distribuye los grupos en columnas según solapamientos
+function distribuirGruposEnColumnas(grupos: GrupoReservasPorRango[]): GrupoReservasPorRango[][] {
+  const columnas: GrupoReservasPorRango[][] = [];
+  grupos.forEach(grupo => {
+    const columnaEncontrada = encontrarColumnaDisponible(columnas, grupo);
+    if (columnaEncontrada === -1) {
+      columnas.push([grupo]);
+    } else {
+      columnas[columnaEncontrada].push(grupo);
+    }
+  });
+  return columnas;
+}
+
+// Encuentra el índice de la columna donde está un grupo
+function indiceColumnaDeGrupo(
+  columnas: GrupoReservasPorRango[][],
+  grupo: GrupoReservasPorRango
+): number {
+  for (let i = 0; i < columnas.length; i++) {
+    const presente = columnas[i].some(g =>
+      g.minutosInicio === grupo.minutosInicio &&
+      g.minutosFin === grupo.minutosFin &&
+      g.estado === grupo.estado
+    );
+    if (presente) return i;
+  }
+  return 0;
+}
+
+interface GrupoReservasConPosicion extends GrupoReservasPorRango {
+  columna: number;
+  totalColumnas: number;
+}
+
+// Calcula la distribución horizontal de grupos de reservas para un día
+function calcularPosicionesReservasPorDia(reservasDia: Reserva[]): GrupoReservasConPosicion[] {
+  if (reservasDia.length === 0) return [];
+  const reservasOrdenadas = [...reservasDia].sort((a, b) =>
+    new Date(a.inicio).getTime() - new Date(b.inicio).getTime()
+  );
+  const grupos = agruparReservasPorRangoYEstado(reservasOrdenadas);
+  const columnas = distribuirGruposEnColumnas(grupos);
+  const totalColumnas = columnas.length;
+  return grupos.map(grupo => ({
+    ...grupo,
+    columna: indiceColumnaDeGrupo(columnas, grupo),
+    totalColumnas,
+  }));
+}
+
+interface ColorConfig { bg: string; border: string; hoverBg: string; hoverBorder: string }
+
+const PALETAS_RESERVA: Record<string, ColorConfig[]> = {
+  CANCELADO: [
+    { bg: 'bg-red-600', border: 'border-red-700', hoverBg: 'hover:bg-red-700', hoverBorder: 'hover:border-red-800' },
+    { bg: 'bg-red-500', border: 'border-red-600', hoverBg: 'hover:bg-red-600', hoverBorder: 'hover:border-red-700' },
+    { bg: 'bg-red-400', border: 'border-red-500', hoverBg: 'hover:bg-red-500', hoverBorder: 'hover:border-red-600' },
+    { bg: 'bg-red-300', border: 'border-red-400', hoverBg: 'hover:bg-red-400', hoverBorder: 'hover:border-red-500' },
+  ],
+  PENDIENTE: [
+    { bg: 'bg-amber-500', border: 'border-amber-600', hoverBg: 'hover:bg-amber-600', hoverBorder: 'hover:border-amber-700' },
+    { bg: 'bg-amber-400', border: 'border-amber-500', hoverBg: 'hover:bg-amber-500', hoverBorder: 'hover:border-amber-600' },
+    { bg: 'bg-orange-400', border: 'border-orange-500', hoverBg: 'hover:bg-orange-500', hoverBorder: 'hover:border-orange-600' },
+    { bg: 'bg-orange-300', border: 'border-orange-400', hoverBg: 'hover:bg-orange-400', hoverBorder: 'hover:border-orange-500' },
+  ],
+  APROBADO: [
+    { bg: 'bg-blue-600', border: 'border-blue-700', hoverBg: 'hover:bg-blue-700', hoverBorder: 'hover:border-blue-800' },
+    { bg: 'bg-blue-500', border: 'border-blue-600', hoverBg: 'hover:bg-blue-600', hoverBorder: 'hover:border-blue-700' },
+    { bg: 'bg-blue-400', border: 'border-blue-500', hoverBg: 'hover:bg-blue-500', hoverBorder: 'hover:border-blue-600' },
+    { bg: 'bg-blue-300', border: 'border-blue-400', hoverBg: 'hover:bg-blue-400', hoverBorder: 'hover:border-blue-500' },
+  ],
+};
+
+function getColorConfigByEstado(estado: string, columnaIndex: number): ColorConfig {
+  const paleta = PALETAS_RESERVA[estado.toUpperCase()] ?? PALETAS_RESERVA.APROBADO;
+  return paleta[columnaIndex % paleta.length];
+}
+
+interface ReservationBarProps {
+  top: number;
+  left: number;
+  anchoFijo: number;
+  altura: number;
+  colorConfig: { bg: string; border: string; hoverBg: string; hoverBorder: string };
+  tituloTooltip: string;
+  zIndex: number;
+  onViewDetails: () => void;
+}
+
+function ReservationBar({
+  top,
+  left,
+  anchoFijo,
+  altura,
+  colorConfig,
+  tituloTooltip,
+  zIndex,
+  onViewDetails,
+}: Readonly<ReservationBarProps>) {
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div
+      className="absolute cursor-pointer group"
+      style={{
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `${anchoFijo}px`,
+        height: `${altura}px`,
+        zIndex: zIndex,
+      }}
+      onClick={onViewDetails}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onViewDetails();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={tituloTooltip}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => {
+        setShowTooltip(false);
+        setMousePosition(null);
+      }}
+      onMouseMove={(e) => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+      }}
+    >
+      {/* Barra fina con borde - solo color */}
+      <div
+        className={`h-full border-2 rounded-sm ${colorConfig.bg} ${colorConfig.border} ${colorConfig.hoverBg} ${colorConfig.hoverBorder} transition-colors relative`}
+        style={{ minHeight: '2px' }}
+      />
+      {/* Tooltip que sigue el cursor - renderizado en portal para quedar por encima del resto */}
+      {showTooltip && mousePosition && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed pointer-events-none z-[99999] bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95"
+          style={{
+            left: `${mousePosition.x + 10}px`,
+            top: `${mousePosition.y + 10}px`,
+          }}
+        >
+          {tituloTooltip}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
 interface ReservationCalendarViewProps {
   reservas: Reserva[];
   espaciosUnicos: Espacio[];
@@ -115,7 +405,7 @@ export default function ReservationCalendarView({
   // Vista desde preferencias o por defecto: Semana para usuarios que pueden aprobar o ver recomendaciones, Mes para otros
   const defaultCalendarViewMode: CalendarViewMode = (canApprove || canViewRecommendations) ? 'week' : 'month';
   const preferenciaCalendarViewMode = preferencias?.reservasCalendarViewMode as CalendarViewMode | undefined;
-  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(preferenciaCalendarViewMode || defaultCalendarViewMode);
+  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(preferenciaCalendarViewMode ?? defaultCalendarViewMode);
   
   // Aplicar preferencias cuando se carguen
   useEffect(() => {
@@ -127,73 +417,7 @@ export default function ReservationCalendarView({
   const [isFullScreenInternal, setIsFullScreenInternal] = useState(false);
   const [hideNightHours, setHideNightHours] = useState(true);
   
-  // Componente para barra de reserva con tooltip que sigue el cursor
-  const ReservationBar = ({ 
-    top, 
-    left, 
-    anchoFijo, 
-    altura, 
-    colorConfig, 
-    tituloTooltip, 
-    zIndex,
-    onViewDetails 
-  }: {
-    top: number;
-    left: number;
-    anchoFijo: number;
-    altura: number;
-    colorConfig: { bg: string; border: string; hoverBg: string; hoverBorder: string };
-    tituloTooltip: string;
-    zIndex: number;
-    onViewDetails: () => void;
-  }) => {
-    const [mousePosition, setMousePosition] = useState<{x: number, y: number} | null>(null);
-    const [showTooltip, setShowTooltip] = useState(false);
-
-    return (
-      <div
-        className="absolute cursor-pointer group"
-        style={{
-          top: `${top}px`,
-          left: `${left}px`,
-          width: `${anchoFijo}px`,
-          height: `${altura}px`,
-          zIndex: zIndex
-        }}
-        onClick={onViewDetails}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => {
-          setShowTooltip(false);
-          setMousePosition(null);
-        }}
-        onMouseMove={(e) => {
-          setMousePosition({
-            x: e.clientX,
-            y: e.clientY
-          });
-        }}
-      >
-                 {/* Barra fina con borde - solo color */}
-         <div 
-           className={`h-full border-2 rounded-sm ${colorConfig.bg} ${colorConfig.border} ${colorConfig.hoverBg} ${colorConfig.hoverBorder} transition-colors relative`}
-           style={{ minHeight: '2px' }}
-         />
-                  {/* Tooltip que sigue el cursor - renderizado en portal para quedar por encima del resto */}
-          {showTooltip && mousePosition && typeof document !== 'undefined' && createPortal(
-            <div
-              className="fixed pointer-events-none z-[99999] bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95"
-              style={{
-                left: `${mousePosition.x + 10}px`,
-                top: `${mousePosition.y + 10}px`,
-              }}
-            >
-              {tituloTooltip}
-            </div>,
-            document.body
-          )}
-      </div>
-    );
-  };
+  // ReservationBar definido a nivel de módulo
 
   // Usar props si están disponibles, sino usar estado interno
   const isFullScreen = isFullScreenProp === undefined ? isFullScreenInternal : isFullScreenProp;
@@ -277,94 +501,22 @@ export default function ReservationCalendarView({
     const alturaAreaVisible = (minutosTotalesVisibles / 60) * alturaPorHora;
     const alturaMinima = alturaAreaVisible + (mostrarColapsadoAntes ? 48 : 0) + (mostrarColapsadoDespues ? 48 : 0);
 
-    // Calcular posición y altura de cada reserva en el timeline
-    const calcularPosicionReserva = (reserva: Reserva) => {
-      const inicio = new Date(reserva.inicio);
-      const fin = new Date(reserva.fin);
-      
-      // Convertir a minutos desde medianoche
-      const minutosInicio = inicio.getHours() * 60 + inicio.getMinutes();
-      const minutosFin = fin.getHours() * 60 + fin.getMinutes();
-      const minutosFinAjustados = minutosFin === 0 ? 24 * 60 : minutosFin;
-      
-      // Si la reserva está fuera del rango visible, no mostrarla
-      if (minutosFinAjustados <= minutosInicioVisible || minutosInicio >= minutosFinVisible) {
-        return null; // Reserva fuera del rango visible
-      }
-      
-      // Ajustar minutos de inicio y fin al rango visible
-      const minutosInicioAjustados = Math.max(minutosInicio, minutosInicioVisible);
-      const minutosFinAjustadosVisibles = Math.min(minutosFinAjustados, minutosFinVisible);
-      
-      // Calcular posición top relativa al rango visible (0% = horaInicioVisible)
-      const minutosDesdeInicioVisible = minutosInicioAjustados - minutosInicioVisible;
-      const topPercent = (minutosDesdeInicioVisible / minutosTotalesVisibles) * 100;
-      
-      // Calcular altura (en porcentaje del rango visible)
-      const alturaPercent = ((minutosFinAjustadosVisibles - minutosInicioAjustados) / minutosTotalesVisibles) * 100;
-      
-      return { 
-        topPercent, 
-        alturaPercent, 
-        minutosInicio: minutosInicioAjustados, 
-        minutosFin: minutosFinAjustadosVisibles 
-      };
+    const rangoCfg: RangoVisibleConfig = {
+      minutosInicioVisible,
+      minutosFinVisible,
+      minutosTotalesVisibles,
     };
 
     // Detectar reservas superpuestas y calcular posiciones horizontales
     const calcularPosicionesConSuperposicion = () => {
-      // Calcular posiciones verticales para todas las reservas
       const reservasConPosicion = reservasOrdenadas.map(reserva => {
-        const posicion = calcularPosicionReserva(reserva);
-        if (!posicion) return null;
-        return {
-          reserva,
-          ...posicion,
-          minutosInicio: posicion.minutosInicio,
-          minutosFin: posicion.minutosFin
-        };
+        const posicion = calcularPosicionVerticalReserva(reserva, rangoCfg);
+        return posicion ? { reserva, ...posicion } : null;
       }).filter((item): item is NonNullable<typeof item> => item !== null);
 
-      // Detectar superposiciones y agrupar reservas
       const grupos: Array<Array<typeof reservasConPosicion[0]>> = [];
-      
       reservasConPosicion.forEach(reservaActual => {
-        // Buscar grupos que se superponen con esta reserva
-        const gruposSuperpuestos: number[] = [];
-        
-        grupos.forEach((grupo, grupoIndex) => {
-          const haySuperposicion = grupo.some(reservaGrupo => {
-            // Dos reservas se superponen si:
-            // - El inicio de una está dentro del rango de la otra, o
-            // - El fin de una está dentro del rango de la otra, o
-            // - Una contiene completamente a la otra
-            return (
-              (reservaActual.minutosInicio >= reservaGrupo.minutosInicio && reservaActual.minutosInicio < reservaGrupo.minutosFin) ||
-              (reservaActual.minutosFin > reservaGrupo.minutosInicio && reservaActual.minutosFin <= reservaGrupo.minutosFin) ||
-              (reservaActual.minutosInicio <= reservaGrupo.minutosInicio && reservaActual.minutosFin >= reservaGrupo.minutosFin) ||
-              (reservaGrupo.minutosInicio <= reservaActual.minutosInicio && reservaGrupo.minutosFin >= reservaActual.minutosFin)
-            );
-          });
-          
-          if (haySuperposicion) {
-            gruposSuperpuestos.push(grupoIndex);
-          }
-        });
-
-        if (gruposSuperpuestos.length === 0) {
-          // Crear un nuevo grupo
-          grupos.push([reservaActual]);
-        } else {
-          // Fusionar grupos superpuestos y agregar la reserva actual
-          const grupoFusionado = gruposSuperpuestos.flatMap(idx => grupos[idx]);
-          grupoFusionado.push(reservaActual);
-          
-          // Eliminar grupos antiguos (en orden inverso para no afectar índices)
-          gruposSuperpuestos.slice().reverse().forEach(idx => grupos.splice(idx, 1));
-          
-          // Agregar grupo fusionado
-          grupos.push(grupoFusionado);
-        }
+        insertarReservaEnGrupos(grupos, reservaActual);
       });
 
       // Calcular posiciones horizontales para cada reserva
@@ -429,11 +581,7 @@ export default function ReservationCalendarView({
                    const topPx = (mostrarColapsadoAntes ? 48 : 0) + (porcentajeTop * alturaAreaVisible / 100);
                    const alturaIntervalo = alturaAreaVisible / intervalos.length;
                    
-                   const getBorderClass = () => {
-                     if (esHoraCompleta) return 'border-t border-gray-400';
-                     if (esMediaHora) return 'border-t border-gray-300';
-                     return 'border-t border-gray-200';
-                   };
+                   const getBorderClass = () => getIntervalBorderClass(esHoraCompleta, esMediaHora);
                    const getTextSizeClass = () => {
                      if (esHoraCompleta) return 'text-base';
                      if (esMediaHora) return 'text-sm';
@@ -485,11 +633,7 @@ export default function ReservationCalendarView({
                       const esHoraCompleta = intervalo.minutos === 0;
                       const esMediaHora = intervalo.minutos === 30;
                       
-                      const getLineBorderClass = () => {
-                        if (esHoraCompleta) return 'border-t border-gray-400';
-                        if (esMediaHora) return 'border-t border-gray-300';
-                        return 'border-t border-gray-200';
-                      };
+                      const getLineBorderClass = () => getIntervalBorderClass(esHoraCompleta, esMediaHora);
                       return (
                         <div
                           key={`line-${intervalo.hora}-${intervalo.minutos}`}
@@ -532,6 +676,15 @@ export default function ReservationCalendarView({
                             zIndex: 10 + index,
                           }}
                           onClick={() => onViewDetails(reserva)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              onViewDetails(reserva);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Ver detalles de ${reserva.titulo || reserva.espacioNombre}`}
                         >
                           <div
                             className={`h-full rounded-md p-1.5 border flex flex-col relative ${
@@ -763,141 +916,7 @@ export default function ReservationCalendarView({
                 const reservasDia = getReservasForDate(day);
                 const esHoy = isToday(day);
 
-                                 // Función para calcular posiciones de reservas solapadas (distribución horizontal)
-                 const calcularPosicionesReservas = () => {
-                   if (reservasDia.length === 0) return [];
-
-                   // Ordenar reservas por hora de inicio
-                   const reservasOrdenadas = [...reservasDia].sort((a, b) =>
-                     new Date(a.inicio).getTime() - new Date(b.inicio).getTime()
-                   );
-
-                   // Primero, agrupar reservas con el MISMO rango Y MISMO estado (mismo inicio, fin y estado)
-                   const reservasAgrupadasPorRango: Array<{
-                     reservas: typeof reservasOrdenadas;
-                     inicio: Date;
-                     fin: Date;
-                     minutosInicio: number;
-                     minutosFin: number;
-                     estado: string;
-                   }> = [];
-
-                   reservasOrdenadas.forEach(reserva => {
-                     const inicioReserva = new Date(reserva.inicio);
-                     const finReserva = new Date(reserva.fin);
-                     const minutosInicio = inicioReserva.getHours() * 60 + inicioReserva.getMinutes();
-                     const minutosFin = finReserva.getHours() * 60 + finReserva.getMinutes();
-
-                     // Buscar si ya existe un grupo con exactamente el mismo rango Y mismo estado
-                     const grupoExistente = reservasAgrupadasPorRango.find(grupo =>
-                       grupo.minutosInicio === minutosInicio && 
-                       grupo.minutosFin === minutosFin &&
-                       grupo.estado === reserva.estado
-                     );
-
-                     if (grupoExistente) {
-                       // Agregar a grupo existente con mismo rango y estado
-                       grupoExistente.reservas.push(reserva);
-                     } else {
-                       // Crear nuevo grupo
-                       reservasAgrupadasPorRango.push({
-                         reservas: [reserva],
-                         inicio: inicioReserva,
-                         fin: finReserva,
-                         minutosInicio,
-                         minutosFin,
-                         estado: reserva.estado
-                       });
-                     }
-                   });
-
-                   // Algoritmo inteligente de posicionamiento: distribuir reservas en columnas
-                   // Las reservas que NO se solapan pueden compartir la misma columna
-                   // Las reservas que SÍ se solapan van en columnas diferentes
-                   const columnas: Array<Array<typeof reservasAgrupadasPorRango[0]>> = [];
-
-                   reservasAgrupadasPorRango.forEach(grupoRango => {
-                     // Buscar la primera columna donde esta reserva NO se solapa con ninguna existente
-                     let columnaEncontrada = -1;
-                     
-                     for (let i = 0; i < columnas.length; i++) {
-                       const columna = columnas[i];
-                       // Verificar si esta reserva se solapa con alguna reserva en esta columna
-                       const haySolapamiento = columna.some(grupoEnColumna => {
-                         return (
-                           grupoRango.minutosInicio < grupoEnColumna.minutosFin && 
-                           grupoRango.minutosFin > grupoEnColumna.minutosInicio
-                         );
-                       });
-                       
-                       // Si no hay solapamiento, esta columna es válida
-                       if (!haySolapamiento) {
-                         columnaEncontrada = i;
-                         break;
-                       }
-                     }
-                     
-                     // Si no se encontró una columna existente, crear una nueva
-                     if (columnaEncontrada === -1) {
-                       columnas.push([grupoRango]);
-                       columnaEncontrada = columnas.length - 1;
-                     } else {
-                       // Agregar a la columna encontrada
-                       columnas[columnaEncontrada].push(grupoRango);
-                     }
-                   });
-
-                   // Crear el resultado con las posiciones calculadas
-                   const resultado: Array<{
-                     reservas: typeof reservasOrdenadas;
-                     inicio: Date;
-                     fin: Date;
-                     minutosInicio: number;
-                     minutosFin: number;
-                     estado: string;
-                     columna: number;
-                     totalColumnas: number;
-                   }> = [];
-
-                   // Calcular el número total de columnas necesarias
-                   const totalColumnas = columnas.length;
-
-                   // Asignar posición a cada grupo
-                   reservasAgrupadasPorRango.forEach(grupoRango => {
-                     // Encontrar en qué columna está este grupo
-                     let columnaIndex = -1;
-                     for (let i = 0; i < columnas.length; i++) {
-                       if (columnas[i].some(g => 
-                         g.minutosInicio === grupoRango.minutosInicio && 
-                         g.minutosFin === grupoRango.minutosFin &&
-                         g.estado === grupoRango.estado
-                       )) {
-                         columnaIndex = i;
-                         break;
-                       }
-                     }
-
-                     if (columnaIndex === -1) {
-                       // No debería pasar, pero por seguridad
-                       columnaIndex = 0;
-                     }
-
-                     resultado.push({
-                       reservas: grupoRango.reservas,
-                       inicio: grupoRango.inicio,
-                       fin: grupoRango.fin,
-                       minutosInicio: grupoRango.minutosInicio,
-                       minutosFin: grupoRango.minutosFin,
-                       estado: grupoRango.estado,
-                       columna: columnaIndex,
-                       totalColumnas: totalColumnas
-                     });
-                   });
-
-                   return resultado;
-                 };
-
-                const reservasConPosiciones = calcularPosicionesReservas();
+                const reservasConPosiciones = calcularPosicionesReservasPorDia(reservasDia);
 
                 return (
                   <div
@@ -940,35 +959,6 @@ export default function ReservationCalendarView({
                           // Usar el estado del grupo (ya está normalizado)
                           const estadoNormalizado = estado?.toUpperCase() || 'APROBADO';
                           const reservaPrincipal = reservas[0];
-                          
-                          // Colores según el estado con diferentes tonalidades según la columna
-                          const getColorConfigByEstado = (estado: string, columnaIndex: number) => {
-                            // Paletas de colores por estado (diferentes tonalidades)
-                            const paletasPorEstado: Record<string, Array<{ bg: string; border: string; hoverBg: string; hoverBorder: string }>> = {
-                              'CANCELADO': [
-                                { bg: 'bg-red-600', border: 'border-red-700', hoverBg: 'hover:bg-red-700', hoverBorder: 'hover:border-red-800' }, // Rojo oscuro
-                                { bg: 'bg-red-500', border: 'border-red-600', hoverBg: 'hover:bg-red-600', hoverBorder: 'hover:border-red-700' }, // Rojo medio
-                                { bg: 'bg-red-400', border: 'border-red-500', hoverBg: 'hover:bg-red-500', hoverBorder: 'hover:border-red-600' }, // Rojo claro
-                                { bg: 'bg-red-300', border: 'border-red-400', hoverBg: 'hover:bg-red-400', hoverBorder: 'hover:border-red-500' }, // Rojo muy claro
-                              ],
-                              'PENDIENTE': [
-                                { bg: 'bg-amber-500', border: 'border-amber-600', hoverBg: 'hover:bg-amber-600', hoverBorder: 'hover:border-amber-700' }, // Ámbar medio
-                                { bg: 'bg-amber-400', border: 'border-amber-500', hoverBg: 'hover:bg-amber-500', hoverBorder: 'hover:border-amber-600' }, // Ámbar claro
-                                { bg: 'bg-orange-400', border: 'border-orange-500', hoverBg: 'hover:bg-orange-500', hoverBorder: 'hover:border-orange-600' }, // Naranja claro
-                                { bg: 'bg-orange-300', border: 'border-orange-400', hoverBg: 'hover:bg-orange-400', hoverBorder: 'hover:border-orange-500' }, // Naranja muy claro
-                              ],
-                              'APROBADO': [
-                                { bg: 'bg-blue-600', border: 'border-blue-700', hoverBg: 'hover:bg-blue-700', hoverBorder: 'hover:border-blue-800' }, // Azul oscuro
-                                { bg: 'bg-blue-500', border: 'border-blue-600', hoverBg: 'hover:bg-blue-600', hoverBorder: 'hover:border-blue-700' }, // Azul medio
-                                { bg: 'bg-blue-400', border: 'border-blue-500', hoverBg: 'hover:bg-blue-500', hoverBorder: 'hover:border-blue-600' }, // Azul claro
-                                { bg: 'bg-blue-300', border: 'border-blue-400', hoverBg: 'hover:bg-blue-400', hoverBorder: 'hover:border-blue-500' }, // Azul muy claro
-                              ],
-                            };
-                            
-                            const estadoUpper = estado.toUpperCase();
-                            const paleta = paletasPorEstado[estadoUpper] || paletasPorEstado['APROBADO'];
-                            return paleta[columnaIndex % paleta.length];
-                          };
                           
                           const colorConfig = getColorConfigByEstado(estadoNormalizado, columna);
                           const tituloTooltip = cantidadReservas > 1 
@@ -1078,6 +1068,16 @@ export default function ReservationCalendarView({
                     setCalendarViewMode('day');
                   }
                 }}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && tieneReservas) {
+                    e.preventDefault();
+                    setCurrentDate(day);
+                    setCalendarViewMode('day');
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Día ${format(day, 'd')}`}
               >
                 <div className={`text-xs font-medium mb-2 ${getDayTextClass()}`}>
                   {format(day, 'd')}

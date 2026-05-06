@@ -24,6 +24,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FileUploadController {
 
+    private static final String KEY_OBJECT_NAME = "objectName";
+    private static final String KEY_IMAGE_URL = "imageUrl";
+
     private final FileStorageService fileStorageService;
     private final EspacioService espacioService;
 
@@ -53,8 +56,8 @@ public class FileUploadController {
             String imageUrl = fileStorageService.getImageUrl(objectName);
 
             Map<String, String> response = new HashMap<>();
-            response.put("objectName", objectName);
-            response.put("imageUrl", imageUrl);
+            response.put(KEY_OBJECT_NAME, objectName);
+            response.put(KEY_IMAGE_URL, imageUrl);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(response, "Imagen subida exitosamente"));
@@ -124,11 +127,11 @@ public class FileUploadController {
             if (imageUrl != null && !imageUrl.trim().isEmpty()) {
                 // Si es una ruta de MinIO, convertir a URL pública
                 String publicUrl = fileStorageService.getImageUrl(imageUrl);
-                response.put("imageUrl", publicUrl);
-                response.put("objectName", imageUrl);
+                response.put(KEY_IMAGE_URL, publicUrl);
+                response.put(KEY_OBJECT_NAME, imageUrl);
             } else {
-                response.put("imageUrl", null);
-                response.put("objectName", null);
+                response.put(KEY_IMAGE_URL, null);
+                response.put(KEY_OBJECT_NAME, null);
             }
 
             return ResponseEntity.ok(ApiResponse.success(response, "URL de imagen obtenida exitosamente"));

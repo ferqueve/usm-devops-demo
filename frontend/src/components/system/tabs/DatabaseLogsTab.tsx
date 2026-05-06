@@ -2,11 +2,12 @@ import { memo, Suspense } from 'react';
 import { Loader2, Database, FileText } from 'lucide-react';
 import { DatabaseSection } from '../sections/DatabaseSection';
 import { LogsSection } from '../sections/LogsSection';
+import type { HealthInfo, LiquibaseInfo, LoggersInfo } from '@/lib/types/actuator';
 
 interface DatabaseLogsTabProps {
-  health: any;
-  liquibase: any;
-  loggers: any;
+  health: HealthInfo | null | undefined;
+  liquibase: LiquibaseInfo | null | undefined;
+  loggers: LoggersInfo | null | undefined;
   logFile: string;
   onLoggerUpdate: (name: string, level: string) => Promise<void>;
 }

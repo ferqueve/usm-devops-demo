@@ -102,7 +102,7 @@ export default function ReservationStatsAnalista() {
       .map(([dia, cantidad]) => ({
         dia,
         cantidad,
-        orden: diasOrden.indexOf(dia) === -1 ? 99 : diasOrden.indexOf(dia)
+        orden: diasOrden.includes(dia) ? diasOrden.indexOf(dia) : 99
       }))
       .sort((a, b) => a.orden - b.orden);
   }, [stats?.reservasPorDiaSemana]);
@@ -218,7 +218,7 @@ export default function ReservationStatsAnalista() {
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
       
       toast.success('CSV exportado exitosamente');
     } catch (error) {

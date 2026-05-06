@@ -81,37 +81,16 @@ public class ReservaReminderService {
                 // Verificar si ya se envió recordatorio para esta reserva en Redis
                 String reminderKey = REMINDER_SENT_KEY_PREFIX + reserva.getId();
                 Boolean alreadySent = redisTemplate.hasKey(reminderKey);
-                
+
                 if (Boolean.TRUE.equals(alreadySent)) {
                     log.debug("Recordatorio ya enviado para reserva ID: {}", reserva.getId());
                     continue;
                 }
-                
-                try {
-                    // Convertir a DTO para el email (las relaciones ya están cargadas por JOIN FETCH)
-                    ReservaResponseDto reservaDto = reservaService.mapToResponseDto(reserva);
-                    
-                    // Enviar email de recordatorio
-                    boolean emailEnviado = emailService.enviarEmailRecordatorioReserva(
-                        reserva.getUsuario().getEmail(),
-                        reservaDto,
-                        horasAntesRecordatorio
-                    );
-                    
-                    if (emailEnviado) {
-                        // Guardar en Redis con TTL de 48 horas
-                        redisTemplate.opsForValue().set(reminderKey, "1", REMINDER_TTL);
-                        enviados++;
-                        log.info("Recordatorio enviado para reserva ID: {} al usuario: {}", 
-                                reserva.getId(), reserva.getUsuario().getEmail());
-                    } else {
-                        errores++;
-                        log.warn("No se pudo enviar recordatorio para reserva ID: {}", reserva.getId());
-                    }
-                } catch (Exception e) {
+
+                if (intentarEnviarRecordatorio(reserva, reminderKey)) {
+                    enviados++;
+                } else {
                     errores++;
-                    log.error("Error al enviar recordatorio para reserva ID {}: {}", 
-                            reserva.getId(), e.getMessage());
                 }
             }
             
@@ -122,7 +101,35 @@ public class ReservaReminderService {
             log.error("Error en tarea programada de recordatorios: {}", e.getMessage(), e);
         }
     }
-    
+
+    private boolean intentarEnviarRecordatorio(Reserva reserva, String reminderKey) {
+        try {
+            // Convertir a DTO para el email (las relaciones ya están cargadas por JOIN FETCH)
+            ReservaResponseDto reservaDto = reservaService.mapToResponseDto(reserva);
+
+            // Enviar email de recordatorio
+            boolean emailEnviado = emailService.enviarEmailRecordatorioReserva(
+                reserva.getUsuario().getEmail(),
+                reservaDto,
+                horasAntesRecordatorio
+            );
+
+            if (emailEnviado) {
+                // Guardar en Redis con TTL de 48 horas
+                redisTemplate.opsForValue().set(reminderKey, "1", REMINDER_TTL);
+                log.info("Recordatorio enviado para reserva ID: {} al usuario: {}",
+                        reserva.getId(), reserva.getUsuario().getEmail());
+                return true;
+            }
+            log.warn("No se pudo enviar recordatorio para reserva ID: {}", reserva.getId());
+            return false;
+        } catch (Exception e) {
+            log.error("Error al enviar recordatorio para reserva ID {}: {}",
+                    reserva.getId(), e.getMessage());
+            return false;
+        }
+    }
+
     /**
      * Método manual para enviar recordatorios (útil para testing o ejecución manual)
      * 

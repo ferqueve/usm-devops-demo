@@ -1,11 +1,49 @@
 import { apiRequest, type ApiResponse } from './client';
-import type { 
-  Espacio, 
-  TipoEspacio, 
+import type {
+  Espacio,
+  TipoEspacio,
   EspacioFilters,
   PagedEspacios,
-  Edificio
+  Edificio,
+  EspacioStats
 } from '../types/spaces';
+
+// Helpers para reducir complejidad cognitiva en los filtros de Espacios
+
+function appendIfDefined(
+  params: URLSearchParams,
+  key: string,
+  value: string | number | undefined | null
+): void {
+  if (value !== undefined && value !== null && value !== '') {
+    params.append(key, value.toString());
+  }
+}
+
+function appendInventoryFilters(
+  params: URLSearchParams,
+  filtros?: EspacioFilters['filtrosInventario']
+): void {
+  if (!filtros?.length) return;
+  for (const filtro of filtros) {
+    params.append('tipoElementoIds', filtro.tipoElementoId.toString());
+    appendIfDefined(params, 'cantidadMins', filtro.cantidadMin);
+    appendIfDefined(params, 'cantidadMaxs', filtro.cantidadMax);
+  }
+}
+
+function buildEspacioFilterParams(filters?: EspacioFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  if (!filters) return params;
+  appendIfDefined(params, 'search', filters.search);
+  appendIfDefined(params, 'tipoEspacioId', filters.tipoEspacioId);
+  appendIfDefined(params, 'edificioId', filters.edificioId);
+  appendIfDefined(params, 'capacidadMin', filters.capacidadMin);
+  appendIfDefined(params, 'capacidadMax', filters.capacidadMax);
+  appendIfDefined(params, 'estado', filters.estado);
+  appendInventoryFilters(params, filters.filtrosInventario);
+  return params;
+}
 
 export const espaciosApi = {
   // Espacios con paginación
@@ -14,58 +52,15 @@ export const espaciosApi = {
     size: number = 12,
     filters?: EspacioFilters
   ): Promise<ApiResponse<PagedEspacios>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-    });
-    
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.tipoEspacioId) params.append('tipoEspacioId', filters.tipoEspacioId.toString());
-    if (filters?.edificioId) params.append('edificioId', filters.edificioId.toString());
-    if (filters?.capacidadMin) params.append('capacidadMin', filters.capacidadMin.toString());
-    if (filters?.capacidadMax) params.append('capacidadMax', filters.capacidadMax.toString());
-    if (filters?.estado) params.append('estado', filters.estado);
-    
-    // Filtros de inventario múltiples
-    if (filters?.filtrosInventario && filters.filtrosInventario.length > 0) {
-      for (const filtro of filters.filtrosInventario) {
-        params.append('tipoElementoIds', filtro.tipoElementoId.toString());
-        if (filtro.cantidadMin !== undefined) {
-          params.append('cantidadMins', filtro.cantidadMin.toString());
-        }
-        if (filtro.cantidadMax !== undefined) {
-          params.append('cantidadMaxs', filtro.cantidadMax.toString());
-        }
-      }
-    }
-    
+    const params = buildEspacioFilterParams(filters);
+    params.set('page', page.toString());
+    params.set('size', size.toString());
     return apiRequest<PagedEspacios>(`/espacios/paged?${params.toString()}`, { method: 'GET' });
   },
-  
+
   // Filtros sin paginación (para usar cuando hay filtros activos)
   async filtrarEspacios(filters?: EspacioFilters): Promise<ApiResponse<Espacio[]>> {
-    const params = new URLSearchParams();
-    
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.tipoEspacioId) params.append('tipoEspacioId', filters.tipoEspacioId.toString());
-    if (filters?.edificioId) params.append('edificioId', filters.edificioId.toString());
-    if (filters?.capacidadMin) params.append('capacidadMin', filters.capacidadMin.toString());
-    if (filters?.capacidadMax) params.append('capacidadMax', filters.capacidadMax.toString());
-    if (filters?.estado) params.append('estado', filters.estado);
-    
-    // Filtros de inventario múltiples
-    if (filters?.filtrosInventario && filters.filtrosInventario.length > 0) {
-      for (const filtro of filters.filtrosInventario) {
-        params.append('tipoElementoIds', filtro.tipoElementoId.toString());
-        if (filtro.cantidadMin !== undefined) {
-          params.append('cantidadMins', filtro.cantidadMin.toString());
-        }
-        if (filtro.cantidadMax !== undefined) {
-          params.append('cantidadMaxs', filtro.cantidadMax.toString());
-        }
-      }
-    }
-    
+    const params = buildEspacioFilterParams(filters);
     return apiRequest<Espacio[]>(`/espacios/filter?${params.toString()}`, { method: 'GET' });
   },
   
@@ -184,7 +179,7 @@ export const espaciosApi = {
     return apiRequest<{ imageUrl: string | null; objectName: string | null }>(`/espacios/${espacioId}/imagen`, { method: 'GET' });
   },
 
-  async obtenerEstadisticasEspacios(): Promise<ApiResponse<any>> {
-    return apiRequest<any>('/espacios/stats', { method: 'GET' });
+  async obtenerEstadisticasEspacios(): Promise<ApiResponse<EspacioStats>> {
+    return apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' });
   },
 };

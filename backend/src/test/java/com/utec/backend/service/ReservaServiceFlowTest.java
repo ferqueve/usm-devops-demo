@@ -189,7 +189,8 @@ class ReservaServiceFlowTest {
         });
 
         List<ReservaResponseDto> reservasExterno = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null, "carlos@gmail.com", ROLE_EXTERNO
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                "carlos@gmail.com", ROLE_EXTERNO
         );
 
         // Verificar que NO está en la lista (porque es privada)
@@ -207,7 +208,8 @@ class ReservaServiceFlowTest {
         });
 
         List<ReservaResponseDto> reservasAnalista = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null, "ana@utec.edu.uy", ROLE_ANALISTA
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                "ana@utec.edu.uy", ROLE_ANALISTA
         );
 
         // Verificar que SÍ está en su lista
@@ -225,7 +227,8 @@ class ReservaServiceFlowTest {
         });
 
         List<ReservaResponseDto> reservasLuis = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null, "luis@utec.edu.uy", ROLE_ANALISTA
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                "luis@utec.edu.uy", ROLE_ANALISTA
         );
 
         // Verificar que NO está (porque está asignada a Ana)
@@ -261,7 +264,8 @@ class ReservaServiceFlowTest {
         });
 
         List<ReservaResponseDto> reservasMaria = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null, "maria@yahoo.com", ROLE_EXTERNO
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                "maria@yahoo.com", ROLE_EXTERNO
         );
 
         assertTrue(reservasMaria.stream().anyMatch(r -> r.getId().equals(reservaId)),
@@ -272,7 +276,8 @@ class ReservaServiceFlowTest {
         when(reservaRepository.findAll(any(Specification.class))).thenReturn(new ArrayList<>(reservasDB.values()));
 
         List<ReservaResponseDto> reservasJuan = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null, "juan@utec.edu.uy", ROLE_DOCENTE
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                "juan@utec.edu.uy", ROLE_DOCENTE
         );
 
         assertTrue(reservasJuan.stream().anyMatch(r -> r.getId().equals(reservaId)),
@@ -282,7 +287,8 @@ class ReservaServiceFlowTest {
         lenient().when(usuarioRepository.findByEmail("rosa@utec.edu.uy")).thenReturn(Optional.of(adminRosa));
 
         List<ReservaResponseDto> reservasAdmin = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null, "rosa@utec.edu.uy", ROLE_ADMIN
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                "rosa@utec.edu.uy", ROLE_ADMIN
         );
 
         assertTrue(reservasAdmin.stream().anyMatch(r -> r.getId().equals(reservaId)),

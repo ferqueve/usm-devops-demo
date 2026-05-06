@@ -14,7 +14,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class PermissionService {
 
-    private static final Map<Usuario.RolApp, Set<Permission>> ROLE_PERMISSIONS = new HashMap<>();
+    private static final Map<Usuario.RolApp, Set<Permission>> ROLE_PERMISSIONS = new EnumMap<>(Usuario.RolApp.class);
 
     static {
         // ADMIN: Todos los permisos

@@ -15,6 +15,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { FileText, Search, Download, Copy, ArrowDown, Settings, Save, AlertCircle, Filter } from 'lucide-react';
 import { toast } from 'sonner';
+import type { LoggersInfo, LoggerLevel } from '@/lib/types/actuator';
 
 interface Logger {
   name: string;
@@ -25,7 +26,7 @@ interface Logger {
 interface LogViewerProps {
   content: string;
   maxLines?: number;
-  loggers?: any;
+  loggers?: LoggersInfo | null;
   onLoggerUpdate?: (name: string, level: string) => Promise<void>;
 }
 
@@ -117,7 +118,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
     a.download = `system-log-${new Date().toISOString()}.log`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
     toast.success('Log descargado');
   };
@@ -133,10 +134,10 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
   // Extraer loggers del formato de actuator
   const loggersArray: Logger[] = useMemo(() => {
     if (!loggers?.loggers) return [];
-    return Object.entries(loggers.loggers).map(([name, config]: [string, any]) => ({
+    return Object.entries(loggers.loggers).map(([name, config]: [string, LoggerLevel]) => ({
       name,
-      configuredLevel: config.configuredLevel,
-      effectiveLevel: config.effectiveLevel
+      configuredLevel: config.configuredLevel ?? null,
+      effectiveLevel: config.effectiveLevel ?? ''
     })).sort((a, b) => a.name.localeCompare(b.name));
   }, [loggers]);
 
@@ -150,7 +151,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
         packages.add(`${parts[0]}.${parts[1]}`);
       }
     });
-    return Array.from(packages).sort();
+    return Array.from(packages).sort((a, b) => a.localeCompare(b));
   }, [loggersArray]);
 
   // Filtrar loggers con todos los filtros
@@ -239,6 +240,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
       setChanges({});
       setShowConfigDialog(false);
     } catch (error) {
+      console.error('Error al aplicar cambios:', error);
       toast.error('Error al aplicar cambios');
     } finally {
       setSaving(false);
@@ -464,9 +466,9 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Filtro por nivel */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Nivel de Log</label>
+                    <label htmlFor="log-level-filter" className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Nivel de Log</label>
                     <Select value={loggerLevelFilter} onValueChange={setLoggerLevelFilter}>
-                      <SelectTrigger className="w-full h-9 text-sm bg-white">
+                      <SelectTrigger id="log-level-filter" className="w-full h-9 text-sm bg-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -480,9 +482,9 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
 
                   {/* Filtro por paquete */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Paquete</label>
+                    <label htmlFor="log-package-filter" className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Paquete</label>
                     <Select value={loggerPackageFilter} onValueChange={setLoggerPackageFilter}>
-                      <SelectTrigger className="w-full h-9 text-sm bg-white">
+                      <SelectTrigger id="log-package-filter" className="w-full h-9 text-sm bg-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -498,7 +500,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
 
                   {/* Solo modificados */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Vista</label>
+                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Vista</span>
                     <label className="flex items-center gap-2.5 cursor-pointer h-9 px-3 border rounded-md bg-white hover:bg-gray-50 transition-colors">
                       <input
                         type="checkbox"

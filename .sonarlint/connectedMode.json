@@ -1,0 +1,5 @@
+{
+  "sonarQubeUri": "https://usm-sonarqube.up.railway.app",
+  "projectKey": "USM",
+  "connectionId": "usm"
+}

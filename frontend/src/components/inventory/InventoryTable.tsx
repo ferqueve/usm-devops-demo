@@ -87,9 +87,8 @@ export default function InventoryTable({
                   checked={selectedItems?.size === items.length}
                   onCheckedChange={(checked) => {
                     items.forEach(item => {
-                      if (checked && !selectedItems?.has(item.id)) {
-                        onToggleSelect(item.id);
-                      } else if (!checked && selectedItems?.has(item.id)) {
+                      const isSelected = selectedItems?.has(item.id);
+                      if ((checked && !isSelected) || (!checked && isSelected)) {
                         onToggleSelect(item.id);
                       }
                     });

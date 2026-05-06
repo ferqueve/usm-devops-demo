@@ -34,6 +34,11 @@ import java.security.SecureRandom;
 @Slf4j
 public class UsuarioService {
 
+    private static final String FIELD_CREATED_AT = "createdAt";
+    private static final String FIELD_ROL_APP = "rolApp";
+    private static final String FIELD_VERIFICADO = "verificado";
+    private static final String FIELD_DELETED_AT = "deletedAt";
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
@@ -59,34 +64,48 @@ public class UsuarioService {
     public UsuarioResponseDto actualizarPerfil(String email, UsuarioUpdateDto updateDto) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario con email " + email + " no encontrado"));
-        
-        boolean cambioNombre = false;
-        boolean cambioPassword = false;
-        
-        if (updateDto.getNombre() != null && !updateDto.getNombre().trim().isEmpty()) {
-            usuario.setNombre(updateDto.getNombre());
-            cambioNombre = true;
-        }
-        
-        if (updateDto.getPassword() != null && !updateDto.getPassword().trim().isEmpty()) {
-            // Si el usuario ya tiene contraseña, validar la contraseña actual
-            if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
-                if (updateDto.getCurrentPassword() == null || updateDto.getCurrentPassword().trim().isEmpty()) {
-                    throw new AuthenticationException("Debes ingresar tu contraseña actual para cambiarla");
-                }
-                // Verificar que la contraseña actual sea correcta
-                if (!passwordEncoder.matches(updateDto.getCurrentPassword(), usuario.getPassword())) {
-                    throw new AuthenticationException("La contraseña actual es incorrecta");
-                }
-            }
-            // Si el usuario no tiene contraseña (OAuth), no requiere validación de contraseña actual
-            usuario.setPassword(passwordEncoder.encode(updateDto.getPassword()));
-            cambioPassword = true;
-        }
-        
+
+        boolean cambioNombre = aplicarCambioNombre(usuario, updateDto.getNombre());
+        boolean cambioPassword = aplicarCambioPassword(usuario, updateDto);
+
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
-        
-        // Log de cambios
+
+        logCambiosPerfil(email, cambioNombre, cambioPassword);
+
+        return convertirADto(usuarioActualizado);
+    }
+
+    private boolean aplicarCambioNombre(Usuario usuario, String nuevoNombre) {
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+            return false;
+        }
+        usuario.setNombre(nuevoNombre);
+        return true;
+    }
+
+    private boolean aplicarCambioPassword(Usuario usuario, UsuarioUpdateDto updateDto) {
+        String nuevaPassword = updateDto.getPassword();
+        if (nuevaPassword == null || nuevaPassword.trim().isEmpty()) {
+            return false;
+        }
+        validarPasswordActualSiCorresponde(usuario, updateDto.getCurrentPassword());
+        usuario.setPassword(passwordEncoder.encode(nuevaPassword));
+        return true;
+    }
+
+    private void validarPasswordActualSiCorresponde(Usuario usuario, String currentPassword) {
+        if (usuario.getPassword() == null || usuario.getPassword().isEmpty()) {
+            return; // OAuth: sin password previo
+        }
+        if (currentPassword == null || currentPassword.trim().isEmpty()) {
+            throw new AuthenticationException("Debes ingresar tu contraseña actual para cambiarla");
+        }
+        if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
+            throw new AuthenticationException("La contraseña actual es incorrecta");
+        }
+    }
+
+    private void logCambiosPerfil(String email, boolean cambioNombre, boolean cambioPassword) {
         if (cambioNombre && cambioPassword) {
             log.info("Usuario {} actualizó su perfil (nombre y contraseña)", email);
         } else if (cambioNombre) {
@@ -94,8 +113,6 @@ public class UsuarioService {
         } else if (cambioPassword) {
             log.info("Usuario {} actualizó su contraseña", email);
         }
-        
-        return convertirADto(usuarioActualizado);
     }
 
     public List<UsuarioResponseDto> listarTodosLosUsuarios() {
@@ -158,79 +175,26 @@ public class UsuarioService {
     }
 
     public PagedUsuarioResponseDto listarUsuariosPaginados(
-            int page, 
-            int size, 
-            String search, 
+            int page,
+            int size,
+            String search,
             String rol,
             Boolean verificado,
             Boolean activo,
             LocalDate fechaDesde,
             LocalDate fechaHasta
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        
-        Specification<Usuario> spec = null;
-        
-        // Filtro de búsqueda (email o nombre)
-        if (search != null && !search.trim().isEmpty()) {
-            String searchLower = search.toLowerCase();
-            Specification<Usuario> searchSpec = (root, query, cb) ->
-                cb.or(
-                    cb.like(cb.lower(root.get("email")), "%" + searchLower + "%"),
-                    cb.like(cb.lower(root.get("nombre")), "%" + searchLower + "%")
-                );
-            spec = spec == null ? searchSpec : spec.and(searchSpec);
-        }
-        
-        // Filtro por rol
-        if (rol != null && !rol.trim().isEmpty()) {
-            try {
-                Usuario.RolApp rolApp = Usuario.RolApp.valueOf(rol.toUpperCase());
-                Specification<Usuario> rolSpec = (root, query, cb) -> 
-                    cb.equal(root.get("rolApp"), rolApp);
-                spec = spec == null ? rolSpec : spec.and(rolSpec);
-            } catch (IllegalArgumentException e) {
-                // Ignorar si el rol no es válido
-            }
-        }
-        
-        // Filtro por verificado
-        if (verificado != null) {
-            Specification<Usuario> verificadoSpec = (root, query, cb) -> 
-                cb.equal(root.get("verificado"), verificado);
-            spec = spec == null ? verificadoSpec : spec.and(verificadoSpec);
-        }
-        
-        // Filtro por activo (deletedAt null o no null)
-        if (activo != null) {
-            Specification<Usuario> activoSpec = (root, query, cb) -> 
-                activo ? cb.isNull(root.get("deletedAt")) : cb.isNotNull(root.get("deletedAt"));
-            spec = spec == null ? activoSpec : spec.and(activoSpec);
-        }
-        
-        // Filtro por fecha desde (convertir LocalDate a Instant en UTC)
-        if (fechaDesde != null) {
-            Instant fechaDesdeInstant = fechaDesde.atStartOfDay(ZoneOffset.UTC).toInstant();
-            Specification<Usuario> fechaDesdeSpec = (root, query, cb) -> 
-                cb.greaterThanOrEqualTo(root.get("createdAt"), fechaDesdeInstant);
-            spec = spec == null ? fechaDesdeSpec : spec.and(fechaDesdeSpec);
-        }
-        
-        // Filtro por fecha hasta (convertir LocalDate a Instant en UTC)
-        if (fechaHasta != null) {
-            Instant fechaHastaInstant = fechaHasta.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant();
-            Specification<Usuario> fechaHastaSpec = (root, query, cb) -> 
-                cb.lessThanOrEqualTo(root.get("createdAt"), fechaHastaInstant);
-            spec = spec == null ? fechaHastaSpec : spec.and(fechaHastaSpec);
-        }
-        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(FIELD_CREATED_AT).descending());
+
+        Specification<Usuario> spec = construirUsuarioSpec(search, rol, verificado, activo, fechaDesde, fechaHasta);
+
         Page<Usuario> pageResult = usuarioRepository.findAll(spec, pageable);
-        
+
         List<UsuarioResponseDto> content = pageResult.getContent()
                 .stream()
                 .map(this::convertirADto)
                 .toList();
-        
+
         return new PagedUsuarioResponseDto(
                 content,
                 pageResult.getNumber(),
@@ -240,6 +204,91 @@ public class UsuarioService {
                 pageResult.isFirst(),
                 pageResult.isLast()
         );
+    }
+
+    /**
+     * Construye una Specification compuesta a partir de los filtros opcionales
+     * de búsqueda, rol, verificación, actividad y rango de fechas. Devuelve
+     * {@code null} si no se aplica ningún filtro.
+     */
+    private Specification<Usuario> construirUsuarioSpec(
+            String search,
+            String rol,
+            Boolean verificado,
+            Boolean activo,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta) {
+        Specification<Usuario> spec = null;
+        spec = combinarSpec(spec, buildSearchSpec(search));
+        spec = combinarSpec(spec, buildRolSpec(rol));
+        spec = combinarSpec(spec, buildVerificadoSpec(verificado));
+        spec = combinarSpec(spec, buildActivoSpec(activo));
+        spec = combinarSpec(spec, buildFechaDesdeSpec(fechaDesde));
+        spec = combinarSpec(spec, buildFechaHastaSpec(fechaHasta));
+        return spec;
+    }
+
+    private Specification<Usuario> combinarSpec(Specification<Usuario> base, Specification<Usuario> extra) {
+        if (extra == null) {
+            return base;
+        }
+        return base == null ? extra : base.and(extra);
+    }
+
+    private Specification<Usuario> buildSearchSpec(String search) {
+        if (search == null || search.trim().isEmpty()) {
+            return null;
+        }
+        String searchLower = search.toLowerCase();
+        return (root, query, cb) ->
+                cb.or(
+                        cb.like(cb.lower(root.get("email")), "%" + searchLower + "%"),
+                        cb.like(cb.lower(root.get("nombre")), "%" + searchLower + "%")
+                );
+    }
+
+    private Specification<Usuario> buildRolSpec(String rol) {
+        if (rol == null || rol.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Usuario.RolApp rolApp = Usuario.RolApp.valueOf(rol.toUpperCase());
+            return (root, query, cb) -> cb.equal(root.get(FIELD_ROL_APP), rolApp);
+        } catch (IllegalArgumentException e) {
+            return null; // Rol inválido: no aplicar filtro
+        }
+    }
+
+    private Specification<Usuario> buildVerificadoSpec(Boolean verificado) {
+        if (verificado == null) {
+            return null;
+        }
+        return (root, query, cb) -> cb.equal(root.get(FIELD_VERIFICADO), verificado);
+    }
+
+    private Specification<Usuario> buildActivoSpec(Boolean activo) {
+        if (activo == null) {
+            return null;
+        }
+        return (root, query, cb) ->
+                Boolean.TRUE.equals(activo) ? cb.isNull(root.get(FIELD_DELETED_AT))
+                                            : cb.isNotNull(root.get(FIELD_DELETED_AT));
+    }
+
+    private Specification<Usuario> buildFechaDesdeSpec(LocalDate fechaDesde) {
+        if (fechaDesde == null) {
+            return null;
+        }
+        Instant fechaDesdeInstant = fechaDesde.atStartOfDay(ZoneOffset.UTC).toInstant();
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get(FIELD_CREATED_AT), fechaDesdeInstant);
+    }
+
+    private Specification<Usuario> buildFechaHastaSpec(LocalDate fechaHasta) {
+        if (fechaHasta == null) {
+            return null;
+        }
+        Instant fechaHastaInstant = fechaHasta.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant();
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get(FIELD_CREATED_AT), fechaHastaInstant);
     }
 
     public UsuarioResponseDto toggleUsuarioActivo(Long id) {
@@ -286,45 +335,16 @@ public class UsuarioService {
     @Cacheable(value = "usuarioStats", key = "'stats'")
     public UsuarioStatsDto obtenerEstadisticas() {
         log.info("Generando estadísticas de usuarios");
-        
-        // Total usuarios
+
         Long totalUsuarios = usuarioRepository.count();
-        
-        // Usuarios activos e inactivos
-        Specification<Usuario> activoSpec = (root, query, cb) -> cb.isNull(root.get("deletedAt"));
-        Specification<Usuario> inactivoSpec = (root, query, cb) -> cb.isNotNull(root.get("deletedAt"));
-        
-        Long totalActivos = usuarioRepository.count(activoSpec);
-        Long totalInactivos = usuarioRepository.count(inactivoSpec);
-        
-        // Usuarios verificados y no verificados
-        Specification<Usuario> verificadoSpec = (root, query, cb) -> cb.equal(root.get("verificado"), true);
-        Specification<Usuario> noVerificadoSpec = (root, query, cb) -> cb.equal(root.get("verificado"), false);
-        
-        Long totalVerificados = usuarioRepository.count(verificadoSpec);
-        Long totalNoVerificados = usuarioRepository.count(noVerificadoSpec);
-        
-        // Usuarios por rol
-        Map<String, Long> usuariosPorRol = new HashMap<>();
-        for (Usuario.RolApp rol : Usuario.RolApp.values()) {
-            Specification<Usuario> rolSpec = (root, query, cb) -> cb.equal(root.get("rolApp"), rol);
-            Long count = usuarioRepository.count(rolSpec);
-            usuariosPorRol.put(rol.name(), count);
-        }
-        
-        // Usuarios por proveedor
-        Map<String, Long> usuariosPorProveedor = new HashMap<>();
-        
-        // Local (password no nulo)
-        Specification<Usuario> localSpec = (root, query, cb) -> cb.isNotNull(root.get("password"));
-        Long localCount = usuarioRepository.count(localSpec);
-        usuariosPorProveedor.put("LOCAL", localCount);
-        
-        // Google OAuth
-        Specification<Usuario> googleSpec = (root, query, cb) -> cb.equal(root.get("oauthProv"), "GOOGLE");
-        Long googleCount = usuarioRepository.count(googleSpec);
-        usuariosPorProveedor.put("GOOGLE", googleCount);
-        
+        Long totalActivos = contarPor((root, query, cb) -> cb.isNull(root.get(FIELD_DELETED_AT)));
+        Long totalInactivos = contarPor((root, query, cb) -> cb.isNotNull(root.get(FIELD_DELETED_AT)));
+        Long totalVerificados = contarPor((root, query, cb) -> cb.equal(root.get(FIELD_VERIFICADO), true));
+        Long totalNoVerificados = contarPor((root, query, cb) -> cb.equal(root.get(FIELD_VERIFICADO), false));
+
+        Map<String, Long> usuariosPorRol = contarUsuariosPorRol();
+        Map<String, Long> usuariosPorProveedor = contarUsuariosPorProveedor();
+
         return new UsuarioStatsDto(
                 totalUsuarios,
                 totalActivos,
@@ -335,40 +355,69 @@ public class UsuarioService {
                 usuariosPorProveedor
         );
     }
+
+    private Long contarPor(Specification<Usuario> spec) {
+        return usuarioRepository.count(spec);
+    }
+
+    private Map<String, Long> contarUsuariosPorRol() {
+        Map<String, Long> usuariosPorRol = new HashMap<>();
+        for (Usuario.RolApp rol : Usuario.RolApp.values()) {
+            Specification<Usuario> rolSpec = (root, query, cb) -> cb.equal(root.get(FIELD_ROL_APP), rol);
+            usuariosPorRol.put(rol.name(), usuarioRepository.count(rolSpec));
+        }
+        return usuariosPorRol;
+    }
+
+    private Map<String, Long> contarUsuariosPorProveedor() {
+        Map<String, Long> usuariosPorProveedor = new HashMap<>();
+        usuariosPorProveedor.put("LOCAL",
+                contarPor((root, query, cb) -> cb.isNotNull(root.get("password"))));
+        usuariosPorProveedor.put("GOOGLE",
+                contarPor((root, query, cb) -> cb.equal(root.get("oauthProv"), "GOOGLE")));
+        return usuariosPorProveedor;
+    }
     
     public UsuarioResponseDto actualizarUsuarioPorAdmin(Long id, UsuarioAdminUpdateDto dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException(id));
-        
-        boolean cambioEmail = false;
-        boolean cambioNombre = false;
-        
-        // Guardar email anterior antes de cambiarlo
+
         String emailAnterior = usuario.getEmail();
-        
-        // Validar email si se está cambiando
-        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
-            if (!usuario.getEmail().equals(dto.getEmail())) {
-                // Verificar que el nuevo email no esté en uso
-                if (usuarioRepository.existsByEmail(dto.getEmail())) {
-                    throw new AuthenticationException("El email ya está registrado por otro usuario");
-                }
-                usuario.setEmail(dto.getEmail());
-                cambioEmail = true;
-            }
-        }
-        
-        // Actualizar nombre si se proporciona
-        if (dto.getNombre() != null && !dto.getNombre().trim().isEmpty()) {
-            if (!usuario.getNombre().equals(dto.getNombre())) {
-                usuario.setNombre(dto.getNombre());
-                cambioNombre = true;
-            }
-        }
-        
+
+        boolean cambioEmail = aplicarCambioEmailAdmin(usuario, dto.getEmail());
+        boolean cambioNombre = aplicarCambioNombreAdmin(usuario, dto.getNombre());
+
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
-        
-        // Log de cambios
+
+        logCambiosAdmin(id, cambioEmail, cambioNombre);
+
+        if (cambioEmail) {
+            notificarCambioEmail(emailAnterior, dto.getEmail(), usuarioActualizado.getNombre());
+        }
+
+        return convertirADto(usuarioActualizado);
+    }
+
+    private boolean aplicarCambioEmailAdmin(Usuario usuario, String nuevoEmail) {
+        if (nuevoEmail == null || nuevoEmail.trim().isEmpty() || usuario.getEmail().equals(nuevoEmail)) {
+            return false;
+        }
+        if (usuarioRepository.existsByEmail(nuevoEmail)) {
+            throw new AuthenticationException("El email ya está registrado por otro usuario");
+        }
+        usuario.setEmail(nuevoEmail);
+        return true;
+    }
+
+    private boolean aplicarCambioNombreAdmin(Usuario usuario, String nuevoNombre) {
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty() || usuario.getNombre().equals(nuevoNombre)) {
+            return false;
+        }
+        usuario.setNombre(nuevoNombre);
+        return true;
+    }
+
+    private void logCambiosAdmin(Long id, boolean cambioEmail, boolean cambioNombre) {
         if (cambioEmail && cambioNombre) {
             log.info("Admin actualizó usuario ID {} (email y nombre)", id);
         } else if (cambioEmail) {
@@ -376,28 +425,23 @@ public class UsuarioService {
         } else if (cambioNombre) {
             log.info("Admin actualizó nombre del usuario ID {}", id);
         }
-        
-        // Enviar notificación si se cambió el email
-        if (cambioEmail) {
-            try {
-                String emailNuevo = dto.getEmail();
-                boolean emailEnviado = emailService.enviarEmailNotificacionCambioEmail(
+    }
+
+    private void notificarCambioEmail(String emailAnterior, String emailNuevo, String nombreActualizado) {
+        try {
+            boolean emailEnviado = emailService.enviarEmailNotificacionCambioEmail(
                     emailAnterior,
                     emailNuevo,
-                    usuarioActualizado.getNombre() != null ? usuarioActualizado.getNombre() : "Usuario"
-                );
-                if (emailEnviado) {
-                    log.info("Email de notificación de cambio de email enviado al usuario (viejo y nuevo email)");
-                } else {
-                    log.warn("No se pudo enviar email de notificación de cambio de email");
-                }
-            } catch (Exception e) {
-                log.error("Error al enviar email de notificación de cambio de email: {}", e.getMessage());
-                // No lanzar excepción para no interrumpir el flujo
+                    nombreActualizado != null ? nombreActualizado : "Usuario"
+            );
+            if (emailEnviado) {
+                log.info("Email de notificación de cambio de email enviado al usuario (viejo y nuevo email)");
+            } else {
+                log.warn("No se pudo enviar email de notificación de cambio de email");
             }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación de cambio de email: {}", e.getMessage());
         }
-        
-        return convertirADto(usuarioActualizado);
     }
     
     public boolean reenviarVerificacionPorAdmin(Long id) {
@@ -423,74 +467,23 @@ public class UsuarioService {
     }
     
     public List<UsuarioResponseDto> obtenerUsuariosParaExport(
-            String search, 
+            String search,
             String rol,
             Boolean verificado,
             Boolean activo,
             LocalDate fechaDesde,
             LocalDate fechaHasta
     ) {
-        // Usar mismo método de filtrado pero sin paginación
-        Specification<Usuario> spec = null;
-        
-        // Aplicar mismos filtros que en listarUsuariosPaginados
-        if (search != null && !search.trim().isEmpty()) {
-            String searchLower = search.toLowerCase();
-            Specification<Usuario> searchSpec = (root, query, cb) ->
-                cb.or(
-                    cb.like(cb.lower(root.get("email")), "%" + searchLower + "%"),
-                    cb.like(cb.lower(root.get("nombre")), "%" + searchLower + "%")
-                );
-            spec = searchSpec;
-        }
-        
-        if (rol != null && !rol.trim().isEmpty()) {
-            try {
-                Usuario.RolApp rolApp = Usuario.RolApp.valueOf(rol.toUpperCase());
-                Specification<Usuario> rolSpec = (root, query, cb) -> 
-                    cb.equal(root.get("rolApp"), rolApp);
-                spec = spec == null ? rolSpec : spec.and(rolSpec);
-            } catch (IllegalArgumentException e) {
-                // Ignorar si el rol no es válido
-            }
-        }
-        
-        if (verificado != null) {
-            Specification<Usuario> verificadoSpec = (root, query, cb) -> 
-                cb.equal(root.get("verificado"), verificado);
-            spec = spec == null ? verificadoSpec : spec.and(verificadoSpec);
-        }
-        
-        if (activo != null) {
-            Specification<Usuario> activoSpec = (root, query, cb) -> 
-                activo ? cb.isNull(root.get("deletedAt")) : cb.isNotNull(root.get("deletedAt"));
-            spec = spec == null ? activoSpec : spec.and(activoSpec);
-        }
-        
-        // Filtro por fecha desde (convertir LocalDate a Instant en UTC)
-        if (fechaDesde != null) {
-            Instant fechaDesdeInstant = fechaDesde.atStartOfDay(ZoneOffset.UTC).toInstant();
-            Specification<Usuario> fechaDesdeSpec = (root, query, cb) -> 
-                cb.greaterThanOrEqualTo(root.get("createdAt"), fechaDesdeInstant);
-            spec = spec == null ? fechaDesdeSpec : spec.and(fechaDesdeSpec);
-        }
-        
-        // Filtro por fecha hasta (convertir LocalDate a Instant en UTC)
-        if (fechaHasta != null) {
-            Instant fechaHastaInstant = fechaHasta.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant();
-            Specification<Usuario> fechaHastaSpec = (root, query, cb) -> 
-                cb.lessThanOrEqualTo(root.get("createdAt"), fechaHastaInstant);
-            spec = spec == null ? fechaHastaSpec : spec.and(fechaHastaSpec);
-        }
-        
+        Specification<Usuario> spec = construirUsuarioSpec(search, rol, verificado, activo, fechaDesde, fechaHasta);
+
         List<Usuario> usuarios = spec != null ? usuarioRepository.findAll(spec) : usuarioRepository.findAll();
-        
+
         // Limitar a 10,000 registros para evitar problemas de memoria
         if (usuarios.size() > 10000) {
             usuarios = usuarios.subList(0, 10000);
             log.warn("Export limitado a 10,000 registros de {} totales", usuarios.size());
         }
-        
+
         return usuarios.stream()
                 .map(this::convertirADto)
                 .toList();

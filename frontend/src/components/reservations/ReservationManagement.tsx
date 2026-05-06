@@ -32,6 +32,101 @@ import {
 
 type ViewMode = 'cards' | 'table' | 'calendar';
 
+interface CalendarFilterContext {
+  estadoFilter: string;
+  showPendienteFilter: boolean;
+  tiempoFilter: string;
+  espacioFilter: number | null;
+  tipoEspacioFilter: number | null;
+  carreraFilter: number | null;
+  fechaInicio?: Date;
+  fechaFin?: Date;
+  ahora: Date;
+}
+
+// Determina si una reserva pasa el filtro por estado, considerando reglas para PENDIENTE
+function passesEstadoFilter(reserva: Reserva, ctx: CalendarFilterContext): boolean {
+  if (ctx.estadoFilter !== 'todas' && reserva.estado !== ctx.estadoFilter) return false;
+  if (reserva.estado === 'PENDIENTE' && !ctx.showPendienteFilter) return false;
+  return true;
+}
+
+// Verifica el filtro temporal (futuras / pasadas / todas)
+function passesTiempoFilter(reserva: Reserva, ctx: CalendarFilterContext): boolean {
+  const fechaReserva = new Date(reserva.inicio);
+  if (ctx.tiempoFilter === 'futuras') return fechaReserva > ctx.ahora;
+  if (ctx.tiempoFilter === 'pasadas') return fechaReserva <= ctx.ahora;
+  return true;
+}
+
+// Verifica los filtros simples por foreign key (espacio, tipo de espacio, carrera)
+function passesEntidadFilter(reserva: Reserva, ctx: CalendarFilterContext): boolean {
+  if (ctx.espacioFilter !== null && reserva.espacioId !== ctx.espacioFilter) return false;
+  if (ctx.tipoEspacioFilter !== null && reserva.tipoEspacioId !== ctx.tipoEspacioFilter) return false;
+  if (ctx.carreraFilter !== null && reserva.carreraId !== ctx.carreraFilter) return false;
+  return true;
+}
+
+// Verifica el filtro por rango de fechas
+function passesRangoFechas(reserva: Reserva, ctx: CalendarFilterContext): boolean {
+  if (!ctx.fechaInicio && !ctx.fechaFin) return true;
+  const fechaReserva = new Date(reserva.inicio);
+  fechaReserva.setHours(0, 0, 0, 0);
+  if (ctx.fechaInicio) {
+    const inicioDate = new Date(ctx.fechaInicio);
+    inicioDate.setHours(0, 0, 0, 0);
+    if (fechaReserva < inicioDate) return false;
+  }
+  if (ctx.fechaFin) {
+    const finDate = new Date(ctx.fechaFin);
+    finDate.setHours(23, 59, 59, 999);
+    if (fechaReserva > finDate) return false;
+  }
+  return true;
+}
+
+// Combina todos los filtros para la vista de calendario
+function reservaPasaFiltrosCalendario(reserva: Reserva, ctx: CalendarFilterContext): boolean {
+  return (
+    passesEstadoFilter(reserva, ctx) &&
+    passesTiempoFilter(reserva, ctx) &&
+    passesEntidadFilter(reserva, ctx) &&
+    passesRangoFechas(reserva, ctx)
+  );
+}
+
+// Para DOCENTE/EXTERNO: filtra el array según el estado pedido
+function aplicarFiltroEstadoDocente<T extends { estado: string }>(
+  items: T[],
+  estadoFilter: string
+): T[] {
+  if (estadoFilter === 'PENDIENTE') return items.filter(r => r.estado === 'PENDIENTE');
+  if (estadoFilter !== 'todas') return items.filter(r => r.estado === estadoFilter);
+  return items;
+}
+
+// Para ANALISTA/ADMIN: filtra reservas propias o asignadas, excluyendo pendientes
+function filtrarReservasParaAnalista(reservas: Reserva[], userId: number): Reserva[] {
+  return reservas.filter(reserva => {
+    const esPropia = reserva.usuarioId === userId;
+    const esAsignada = reserva.analistaId === userId;
+    const noEsPendiente = reserva.estado !== 'PENDIENTE';
+    return (esPropia || esAsignada) && noEsPendiente;
+  });
+}
+
+// Para ANALISTA/ADMIN: convierte el filtro de estado al parámetro de la API (excluye 'todas' y PENDIENTE)
+function estadoParaApiAnalista(estadoFilter: string): string | undefined {
+  return estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE' ? estadoFilter : undefined;
+}
+
+// Para DOCENTE/EXTERNO: convierte el filtro de estado al parámetro de la API
+function estadoParaApiDocente(estadoFilter: string): string | undefined {
+  if (estadoFilter === 'PENDIENTE') return 'PENDIENTE';
+  if (estadoFilter === 'todas') return undefined;
+  return estadoFilter;
+}
+
 export default function ReservationManagement() {
   const { hasPermission } = useRolePermissions();
   const { user } = useAuth();
@@ -100,63 +195,34 @@ export default function ReservationManagement() {
   }, [shouldOpenForm, setSearchParams]);
 
   const fetchReservas = useCallback(async () => {
-    setCalendarLoading(true); // Solo afecta al contenido de calendar
+    setCalendarLoading(true);
     try {
-      let response;
+      let reservasResultado: Reserva[] = [];
+
       if (showPendienteFilter) {
-        // DOCENTE/EXTERNO: solo sus reservas
-        response = await reservationsApi.obtenerMisReservas();
-        
-        if (response.data) {
-          // Si el filtro es PENDIENTE, mostrar solo pendientes
-          if (estadoFilter === 'PENDIENTE') {
-            response.data = response.data.filter((r: Reserva) => r.estado === 'PENDIENTE');
-          } else if (estadoFilter !== 'todas') {
-            // Si el filtro es un estado específico, mostrar solo ese estado
-            response.data = response.data.filter((r: Reserva) => r.estado === estadoFilter);
-          }
-          // Si el filtro es 'todas', no filtrar por estado (mostrar todas incluyendo pendientes)
-        }
+        const response = await reservationsApi.obtenerMisReservas();
+        reservasResultado = aplicarFiltroEstadoDocente(response.data ?? [], estadoFilter);
       } else {
-        // ANALISTA/ADMIN: solo sus reservas + las asignadas a ellos
-        const estadoParaFiltrar = estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE'
-          ? estadoFilter
-          : undefined;
-        response = await reservationsApi.obtenerTodasLasReservas(
-          estadoParaFiltrar,
+        const response = await reservationsApi.obtenerTodasLasReservas(
+          estadoParaApiAnalista(estadoFilter),
           espacioFilter ?? undefined,
           carreraFilter ?? undefined,
           tipoEspacioFilter ?? undefined,
           fechaInicio ?? undefined,
           fechaFin ?? undefined
         );
-
-        if (response.data && user?.id) {
-          // Filtrar para mostrar solo:
-          // 1. Reservas creadas por el usuario (usuarioId === user.id)
-          // 2. Reservas asignadas al analista (analistaId === user.id)
-          response.data = response.data.filter((reserva: Reserva) => {
-            const esPropia = reserva.usuarioId === user.id;
-            const esAsignada = reserva.analistaId === user.id;
-            const noEsPendiente = reserva.estado !== 'PENDIENTE'; // Excluir pendientes (se muestran en sidebar)
-
-            return (esPropia || esAsignada) && noEsPendiente;
-          });
-        }
+        reservasResultado = response.data && user?.id
+          ? filtrarReservasParaAnalista(response.data, user.id)
+          : (response.data ?? []);
       }
-      
-      if (response.data) {
-        // Ordenar por fecha descendente
-        const sorted = response.data.slice().sort((a, b) =>
-          new Date(b.inicio).getTime() - new Date(a.inicio).getTime()
-        );
-        setReservas(sorted);
-      }
+
+      const sorted = reservasResultado.slice().sort((a, b) =>
+        new Date(b.inicio).getTime() - new Date(a.inicio).getTime()
+      );
+      setReservas(sorted);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las reservas';
-      toast.error('Error al cargar reservas', {
-        description: errorMessage
-      });
+      toast.error('Error al cargar reservas', { description: errorMessage });
     } finally {
       setCalendarLoading(false);
     }
@@ -182,7 +248,7 @@ export default function ReservationManagement() {
 
       if (response.data && user?.id) {
         // Filtrar solo las reservas pendientes asignadas a este analista
-        let pendientesFiltradas = response.data.filter((reserva: Reserva) =>
+        const pendientesFiltradas = response.data.filter((reserva: Reserva) =>
           reserva.analistaId === user.id
         );
 
@@ -201,82 +267,48 @@ export default function ReservationManagement() {
   }, [canApprove, user?.id, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   const fetchReservasPaged = useCallback(async () => {
-    setContentLoading(true); // Solo afecta al contenido
+    setContentLoading(true);
     try {
-      let response;
-      if (showPendienteFilter) {
-        // DOCENTE/EXTERNO: solo sus reservas
-        // Si el filtro es PENDIENTE, mostrar pendientes; si no, excluirlas
-        const obtenerEstadoParaFiltrar = (): string | undefined => {
-          if (estadoFilter === 'PENDIENTE') return 'PENDIENTE';
-          if (estadoFilter === 'todas') return undefined;
-          return estadoFilter;
-        };
-        const estadoParaFiltrar = obtenerEstadoParaFiltrar();
-        response = await reservationsApi.obtenerMisReservasPaged(
-          page,
-          pageSize,
-          estadoParaFiltrar,
-          espacioFilter,
-          carreraFilter,
-          tipoEspacioFilter,
-          fechaInicio,
-          fechaFin,
-          tiempoFilter
-        );
-        
-        if (response.data) {
-          // Si el filtro es PENDIENTE, mostrar solo pendientes
-          if (estadoFilter === 'PENDIENTE') {
-            response.data.content = response.data.content.filter((r: Reserva) => r.estado === 'PENDIENTE');
-          } else if (estadoFilter !== 'todas') {
-            // Si el filtro es un estado específico, mostrar solo ese estado
-            response.data.content = response.data.content.filter((r: Reserva) => r.estado === estadoFilter);
-          }
-          // Si el filtro es 'todas', no filtrar por estado (mostrar todas incluyendo pendientes)
-        }
-      } else {
-        // ANALISTA/ADMIN: solo sus reservas + las asignadas a ellos
-        const estadoParaFiltrar = estadoFilter !== 'todas' && estadoFilter !== 'PENDIENTE'
-          ? estadoFilter
-          : undefined;
-        response = await reservationsApi.obtenerTodasReservasPaged(
-          page,
-          pageSize,
-          estadoParaFiltrar,
-          espacioFilter,
-          carreraFilter,
-          tipoEspacioFilter,
-          usuarioFilter,
-          fechaInicio,
-          fechaFin,
-          tiempoFilter
-        );
-
-        if (response.data && user?.id) {
-          // Filtrar para mostrar solo:
-          // 1. Reservas creadas por el usuario (usuarioId === user.id)
-          // 2. Reservas asignadas al analista (analistaId === user.id)
-          response.data.content = response.data.content.filter((reserva: Reserva) => {
-            const esPropia = reserva.usuarioId === user.id;
-            const esAsignada = reserva.analistaId === user.id;
-            const noEsPendiente = reserva.estado !== 'PENDIENTE'; // Excluir pendientes (se muestran en sidebar)
-
-            return (esPropia || esAsignada) && noEsPendiente;
+      const response = showPendienteFilter
+        ? await reservationsApi.obtenerMisReservasPaged({
+            page,
+            size: pageSize,
+            estado: estadoParaApiDocente(estadoFilter),
+            espacioId: espacioFilter,
+            carreraId: carreraFilter,
+            tipoEspacioId: tipoEspacioFilter,
+            fechaInicio,
+            fechaFin,
+            tiempo: tiempoFilter,
+          })
+        : await reservationsApi.obtenerTodasReservasPaged({
+            page,
+            size: pageSize,
+            estado: estadoParaApiAnalista(estadoFilter),
+            espacioId: espacioFilter,
+            carreraId: carreraFilter,
+            tipoEspacioId: tipoEspacioFilter,
+            usuarioId: usuarioFilter,
+            fechaInicio,
+            fechaFin,
+            tiempo: tiempoFilter,
           });
-        }
+
+      if (!response.data) return;
+
+      let content = response.data.content;
+      if (showPendienteFilter) {
+        content = aplicarFiltroEstadoDocente(content, estadoFilter);
+      } else if (user?.id) {
+        content = filtrarReservasParaAnalista(content, user.id);
       }
-      
-      if (response.data) {
-        setReservas(response.data.content);
-        setTotalPages(response.data.totalPages);
-        setTotalElements(response.data.totalElements);
-      }
+
+      setReservas(content);
+      setTotalPages(response.data.totalPages);
+      setTotalElements(response.data.totalElements);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar las reservas';
-      toast.error('Error al cargar reservas', {
-        description: errorMessage
-      });
+      toast.error('Error al cargar reservas', { description: errorMessage });
     } finally {
       setContentLoading(false);
     }
@@ -440,65 +472,20 @@ export default function ReservationManagement() {
   // Para calendar, filtrar en el cliente (porque carga todas las reservas)
   // Para table y cards, usar reservas paginadas del hook
   const ahora = new Date();
-  const reservasFiltradas = viewMode === 'calendar' 
-    ? reservas.filter((reserva: Reserva) => {
-        // Filtro por estado
-        if (estadoFilter !== 'todas' && reserva.estado !== estadoFilter) {
-          return false;
-        }
-        
-        // Para analistas/admin, excluir PENDIENTE siempre (se muestran en sidebar)
-        // Para docentes/externos, permitir PENDIENTE cuando el filtro es 'PENDIENTE' o 'todas'
-        if (reserva.estado === 'PENDIENTE') {
-          if (!showPendienteFilter) {
-            // Analistas/admin: nunca mostrar pendientes en el calendario
-            return false;
-          }
-          // Docentes/externos: mostrar pendientes cuando el filtro es 'PENDIENTE' o 'todas'
-          // (ya se filtró por estado arriba, así que si llegamos aquí y showPendienteFilter es true, se muestra)
-        }
-        // Filtro por tiempo
-        if (tiempoFilter === 'futuras') {
-          return new Date(reserva.inicio) > ahora;
-        } else if (tiempoFilter === 'pasadas') {
-          return new Date(reserva.inicio) <= ahora;
-        }
-        // Filtro por espacio
-        if (espacioFilter !== null && reserva.espacioId !== espacioFilter) {
-          return false;
-        }
-        // Filtro por tipo de espacio
-        if (tipoEspacioFilter !== null && reserva.tipoEspacioId !== tipoEspacioFilter) {
-          return false;
-        }
-        // Filtro por carrera
-        if (carreraFilter !== null && reserva.carreraId !== carreraFilter) {
-          return false;
-        }
-        // Filtro por rango de fechas
-        if (fechaInicio || fechaFin) {
-          const fechaReserva = new Date(reserva.inicio);
-          const inicioDate = fechaInicio ? new Date(fechaInicio) : null;
-          const finDate = fechaFin ? new Date(fechaFin) : null;
-          
-          if (inicioDate) {
-            inicioDate.setHours(0, 0, 0, 0);
-          }
-          if (finDate) {
-            finDate.setHours(23, 59, 59, 999);
-          }
-          fechaReserva.setHours(0, 0, 0, 0);
-          
-          if (inicioDate && fechaReserva < inicioDate) {
-            return false;
-          }
-          if (finDate && fechaReserva > finDate) {
-            return false;
-          }
-        }
-        return true;
-      })
-    : reservas; // Para table y cards, las reservas ya vienen filtradas del servidor
+  const calendarFilterCtx: CalendarFilterContext = {
+    estadoFilter,
+    showPendienteFilter,
+    tiempoFilter,
+    espacioFilter,
+    tipoEspacioFilter,
+    carreraFilter,
+    fechaInicio,
+    fechaFin,
+    ahora,
+  };
+  const reservasFiltradas = viewMode === 'calendar'
+    ? reservas.filter(reserva => reservaPasaFiltrosCalendario(reserva, calendarFilterCtx))
+    : reservas;
 
 
   // Renderizar vista de cards
@@ -681,7 +668,7 @@ export default function ReservationManagement() {
       {/* Layout principal: Calendario/Gestión + Pendientes */}
       <div className="flex gap-4 sm:gap-6 flex-col lg:flex-row lg:items-stretch flex-1 min-h-0 mt-4 sm:mt-6">
         {/* Gestión de reservas (calendario/cards/table) */}
-        <div className={`flex-1 flex flex-col min-h-0 ${viewMode === 'calendar' ? '' : ''}`}>
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Lista unificada de reservas */}
           {viewMode === 'cards' && (
             <div className="flex-1 flex flex-col min-h-0">

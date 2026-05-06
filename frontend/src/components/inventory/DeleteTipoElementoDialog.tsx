@@ -42,10 +42,10 @@ export function DeleteTipoElementoDialog({
       
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al eliminar tipo de elemento:', error);
       toast.error('Error al desactivar tipo de elemento', {
-        description: error.message || 'No se pudo desactivar el tipo de elemento'
+        description: error instanceof Error ? error.message : 'No se pudo desactivar el tipo de elemento'
       });
     } finally {
       setLoading(false);

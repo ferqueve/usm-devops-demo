@@ -337,7 +337,7 @@ export default function ReservationDetailsDialog({
                     }`} />
                   <p className={`text-xs font-semibold ${reserva.estado === 'CANCELADO' ? 'text-red-800' : 'text-green-800'
                     }`}>
-                    {reserva.estado === 'CANCELADO' ? 'Mensaje del analista' : 'Mensaje del analista'}
+                    Mensaje del analista
                   </p>
                 </div>
                 <p className={`text-xs whitespace-pre-wrap ${reserva.estado === 'CANCELADO' ? 'text-red-700' : 'text-green-700'

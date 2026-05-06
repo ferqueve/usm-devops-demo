@@ -57,10 +57,6 @@ public class AuditAspect {
             // Ejecutar el método save() original
             // El listener JPA se ejecutará después y leerá el usuario del ThreadLocal
             return joinPoint.proceed();
-            
-        } catch (Throwable e) {
-            // Re-lanzar la excepción para no afectar el flujo normal
-            throw e;
         } finally {
             // IMPORTANTE: Limpiar el ThreadLocal siempre, incluso si hay error
             // Esto previene memory leaks

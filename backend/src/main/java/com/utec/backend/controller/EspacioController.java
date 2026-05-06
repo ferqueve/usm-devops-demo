@@ -25,6 +25,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EspacioController {
 
+    private static final String MSG_ESPACIOS_OBTENIDOS = "Espacios obtenidos exitosamente";
+    private static final String MSG_ERROR_OBTENER_ESPACIOS = "Error al obtener espacios: ";
+
     private final EspacioService espacioService;
 
     @PostMapping
@@ -46,10 +49,10 @@ public class EspacioController {
     public ResponseEntity<ApiResponse<List<EspacioResponseDto>>> getAllEspacios() {
         try {
             List<EspacioResponseDto> espacios = espacioService.getAllEspacios();
-            return ResponseEntity.ok(ApiResponse.success(espacios, "Espacios obtenidos exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(espacios, MSG_ESPACIOS_OBTENIDOS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_ESPACIOS + e.getMessage()));
         }
     }
 
@@ -59,10 +62,10 @@ public class EspacioController {
         try {
             Page<EspacioResponseDto> espacios = espacioService.getAllEspaciosPaged(pageable);
             PagedResponseDto<EspacioResponseDto> pagedResponse = PagedResponseDto.of(espacios);
-            return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Espacios obtenidos exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(pagedResponse, MSG_ESPACIOS_OBTENIDOS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_ESPACIOS + e.getMessage()));
         }
     }
 
@@ -155,10 +158,10 @@ public class EspacioController {
             @PathVariable Integer capacidadMinima) {
         try {
             List<EspacioResponseDto> espacios = espacioService.getEspaciosByCapacidadMinima(capacidadMinima);
-            return ResponseEntity.ok(ApiResponse.success(espacios, "Espacios obtenidos exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(espacios, MSG_ESPACIOS_OBTENIDOS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener espacios: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_ESPACIOS + e.getMessage()));
         }
     }
 

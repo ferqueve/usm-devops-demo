@@ -36,14 +36,7 @@ public class AuditController {
             @PageableDefault(size = 20, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         try {
-            AuditLog.AccionAudit accionEnum = null;
-            if (accion != null && !accion.trim().isEmpty()) {
-                try {
-                    accionEnum = AuditLog.AccionAudit.valueOf(accion.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Acción inválida: " + accion);
-                }
-            }
+            AuditLog.AccionAudit accionEnum = parseAccion(accion);
 
             PagedResponseDto<AuditLogResponseDto> resultado = auditService.buscarLogs(
                     entidad, usuarioId, accionEnum, fechaDesde, fechaHasta, search, pageable
@@ -55,6 +48,17 @@ public class AuditController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener logs de auditoría: " + e.getMessage()));
+        }
+    }
+
+    private AuditLog.AccionAudit parseAccion(String accion) {
+        if (accion == null || accion.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return AuditLog.AccionAudit.valueOf(accion.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Acción inválida: " + accion);
         }
     }
 

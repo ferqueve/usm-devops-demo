@@ -5,6 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 
+function extractBackendError(error: unknown): string | null {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: unknown }).response;
+    if (typeof response === 'object' && response !== null && 'data' in response) {
+      const data = (response as { data?: unknown }).data;
+      if (typeof data === 'object' && data !== null && 'error' in data) {
+        const errMsg = (data as { error?: unknown }).error;
+        if (typeof errMsg === 'string') return errMsg;
+      }
+    }
+  }
+  return null;
+}
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,13 +43,11 @@ export default function ForgotPasswordPage() {
           text: response.error || 'Error al enviar el email de recuperación'
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Manejar errores específicos del backend
-      if (error?.response?.data?.error) {
-        setMessage({
-          type: 'error',
-          text: error.response.data.error
-        });
+      const backendError = extractBackendError(error);
+      if (backendError) {
+        setMessage({ type: 'error', text: backendError });
       } else {
         setMessage({
           type: 'error',

@@ -219,6 +219,18 @@ export interface ReservaStats {
   porcentajeCambioMesAnterior: number;
 }
 
+export interface EspacioStats {
+  totalEspacios?: number;
+  espaciosDisponibles?: number;
+  espaciosMantenimiento?: number;
+  espaciosNoDisponibles?: number;
+  espaciosPorTipo?: Record<string, number>;
+  espaciosPorEdificio?: Record<string, number>;
+  capacidadTotal?: number;
+  capacidadPromedio?: number;
+  [key: string]: unknown;
+}
+
 export interface InventoryStats {
   // === TOTALES Y BÁSICAS ===
   totalItems: number;

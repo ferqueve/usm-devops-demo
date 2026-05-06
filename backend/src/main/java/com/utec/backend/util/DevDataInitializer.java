@@ -340,7 +340,7 @@ public class DevDataInitializer implements CommandLineRunner {
         espacios.put(ESPACIO_AULA_8, createEspacio(ESPACIO_AULA_8, 30, tiposEspacio.get("aula"), edificioE));
         espacios.put(ESPACIO_AULA_9, createEspacio(ESPACIO_AULA_9, 30, tiposEspacio.get("aula"), edificioE));
         espacios.put(ESPACIO_AULA_11, createEspacio(ESPACIO_AULA_11, 30, tiposEspacio.get("aula"), edificioE));
-        espacios.put("Aula 13", createEspacio("Aula 13", 30, tiposEspacio.get("aula"), edificioE));
+        espacios.put(ESPACIO_AULA_13, createEspacio(ESPACIO_AULA_13, 30, tiposEspacio.get("aula"), edificioE));
 
         return espacios;
     }
@@ -452,10 +452,10 @@ public class DevDataInitializer implements CommandLineRunner {
         createInventarioItem(espacios.get(ESPACIO_AULA_11), tiposElemento.get(TIPO_PIZARRA), 1, ESTADO_DISPONIBLE);
         createInventarioItem(espacios.get(ESPACIO_AULA_11), tiposElemento.get(TIPO_PROYECTOR), 1, ESTADO_DISPONIBLE);
 
-        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get(TIPO_SILLA), 30, ESTADO_DISPONIBLE);
-        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get("mesa"), 15, ESTADO_DISPONIBLE);
-        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get(TIPO_PIZARRA), 1, ESTADO_DISPONIBLE);
-        createInventarioItem(espacios.get("Aula 13"), tiposElemento.get(TIPO_PROYECTOR), 1, ESTADO_DISPONIBLE);
+        createInventarioItem(espacios.get(ESPACIO_AULA_13), tiposElemento.get(TIPO_SILLA), 30, ESTADO_DISPONIBLE);
+        createInventarioItem(espacios.get(ESPACIO_AULA_13), tiposElemento.get("mesa"), 15, ESTADO_DISPONIBLE);
+        createInventarioItem(espacios.get(ESPACIO_AULA_13), tiposElemento.get(TIPO_PIZARRA), 1, ESTADO_DISPONIBLE);
+        createInventarioItem(espacios.get(ESPACIO_AULA_13), tiposElemento.get(TIPO_PROYECTOR), 1, ESTADO_DISPONIBLE);
     }
 
     private InventarioItem createInventarioItem(Espacio espacio, TipoElemento tipoElemento, Integer cantidad, String estado) {

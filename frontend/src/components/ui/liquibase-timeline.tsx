@@ -4,56 +4,52 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Database, CheckCircle2 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/status-badge';
-
-interface ChangeSet {
-  id: string;
-  author: string;
-  changeLog: string;
-  dateExecuted?: string;
-  description?: string;
-  tag?: string;
-  orderExecuted?: number;
-}
+import type {
+  HealthInfo,
+  LiquibaseBean,
+  LiquibaseChangeSet,
+  LiquibaseContext,
+  LiquibaseInfo,
+} from '@/lib/types/actuator';
 
 interface LiquibaseTimelineProps {
-  data: any;
-  health: any;
+  data: LiquibaseInfo | null | undefined;
+  health: HealthInfo | null | undefined;
+}
+
+function extractChangeSetsFromBeans(liquibaseBeans: Record<string, LiquibaseBean>): LiquibaseChangeSet[] {
+  for (const beanKey of Object.keys(liquibaseBeans)) {
+    const bean = liquibaseBeans[beanKey];
+    if (bean?.changeSets && Array.isArray(bean.changeSets)) {
+      return bean.changeSets;
+    }
+  }
+  return [];
+}
+
+function extractChangeSetsFromContexts(contexts: Record<string, LiquibaseContext>): LiquibaseChangeSet[] {
+  for (const contextKey of Object.keys(contexts)) {
+    const context = contexts[contextKey];
+    if (!context?.liquibaseBeans) continue;
+    const found = extractChangeSetsFromBeans(context.liquibaseBeans);
+    if (found.length > 0) return found;
+  }
+  return [];
+}
+
+function extractChangeSets(data: LiquibaseInfo | null | undefined): LiquibaseChangeSet[] {
+  if (!data) return [];
+  if (data.changeSets && Array.isArray(data.changeSets)) {
+    return data.changeSets;
+  }
+  if (data.contexts) {
+    return extractChangeSetsFromContexts(data.contexts);
+  }
+  return [];
 }
 
 export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelineProps>) {
-  // Extraer changesets del formato de actuator
-  // Spring Boot puede retornar en diferentes formatos
-  let changeSets: ChangeSet[] = [];
-  
-  if (data) {
-    // Intentar diferentes estructuras posibles de Spring Boot Actuator
-    if (data.changeSets && Array.isArray(data.changeSets)) {
-      changeSets = data.changeSets;
-    } else if (data.contexts) {
-      // Para Spring Boot 2.x/3.x con contexts
-      // Buscar en todos los contextos disponibles
-      const contextKeys = Object.keys(data.contexts);
-      
-      for (const contextKey of contextKeys) {
-        const context = data.contexts[contextKey];
-        
-        if (context?.liquibaseBeans) {
-          // Buscar el primer bean de liquibase con changeSets
-          const beanKeys = Object.keys(context.liquibaseBeans);
-          
-          for (const beanKey of beanKeys) {
-            if (context.liquibaseBeans[beanKey]?.changeSets && Array.isArray(context.liquibaseBeans[beanKey].changeSets)) {
-              changeSets = context.liquibaseBeans[beanKey].changeSets;
-              break;
-            }
-          }
-          
-          if (changeSets.length > 0) break;
-        }
-      }
-    }
-  }
-
+  const changeSets = extractChangeSets(data);
   const dbStatus = health?.components?.db?.status || 'UNKNOWN';
   const dbDetails = health?.components?.db?.details;
 
@@ -77,10 +73,10 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
           {dbDetails && (
             <div className="mb-4 pb-3 border-b">
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                {Object.entries(dbDetails).map(([key, value]: [string, any]) => (
+                {Object.entries(dbDetails).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-2">
                     <span className="text-muted-foreground">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}:
+                      {key.replaceAll(/([A-Z])/g, ' $1').trim()}:
                     </span>
                     <span className="font-medium">
                       {String(value)}
@@ -126,10 +122,10 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
         {dbDetails && (
           <div className="mb-4 pb-3 border-b">
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-              {Object.entries(dbDetails).map(([key, value]: [string, any]) => (
+              {Object.entries(dbDetails).map(([key, value]) => (
                 <div key={key} className="flex items-center gap-2">
                   <span className="text-muted-foreground">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                    {key.replaceAll(/([A-Z])/g, ' $1').trim()}:
                   </span>
                   <span className="font-medium">
                     {String(value)}

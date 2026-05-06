@@ -17,7 +17,11 @@ import java.util.Map;
  * Evita hacer consultas a BD dentro de listeners JPA que pueden causar problemas de flush.
  */
 @Slf4j
-public class AuditContext {
+public final class AuditContext {
+
+    private AuditContext() {
+        // Utility class - prevent instantiation
+    }
 
     private static final ThreadLocal<Usuario> currentUser = new ThreadLocal<>();
     private static final ThreadLocal<Map<Object, Object>> previousStates = new ThreadLocal<>();

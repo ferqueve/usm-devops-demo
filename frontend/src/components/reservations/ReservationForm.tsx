@@ -35,6 +35,70 @@ interface ReservationFormProps {
   onCancel: () => void;
 }
 
+interface ReservaFormValidation {
+  titulo?: string;
+  espacioId?: string;
+  fecha?: Date;
+  horaInicioHora?: string;
+  horaFinHora?: string;
+  inicio: Date;
+  fin: Date;
+  needsAnalystAssignment: boolean;
+  analistaId?: string;
+  tipoRecurrencia?: string;
+  fechaFinRecurrencia?: Date;
+}
+
+// Valida los datos del formulario de reserva. Devuelve mensaje de error o null
+function validateReservationFormData(input: ReservaFormValidation): string | null {
+  if (!input.titulo || input.titulo.trim() === '') return 'Por favor ingresa un título para la reserva';
+  if (!input.espacioId) return 'Por favor selecciona un espacio';
+  if (!input.fecha) return 'Por favor selecciona una fecha';
+  if (!input.horaInicioHora) return 'Por favor selecciona la hora de inicio';
+  if (!input.horaFinHora) return 'Por favor selecciona la hora de fin';
+  if (Number.isNaN(input.inicio.getTime()) || Number.isNaN(input.fin.getTime())) {
+    return 'Las horas ingresadas no son válidas';
+  }
+  if (input.fin <= input.inicio) return 'La hora de fin debe ser posterior a la hora de inicio';
+  if (input.inicio < new Date()) return 'No se puede reservar en el pasado';
+  if ((input.fin.getTime() - input.inicio.getTime()) / 60000 < 30) {
+    return 'La reserva debe tener una duración mínima de 30 minutos';
+  }
+  if (input.needsAnalystAssignment && !input.analistaId) {
+    return 'Por favor selecciona un analista para gestionar tu solicitud';
+  }
+  if (input.tipoRecurrencia) {
+    if (!input.fechaFinRecurrencia) return 'Por favor selecciona la fecha de fin de recurrencia';
+    if (input.fecha && input.fechaFinRecurrencia <= input.fecha) {
+      return 'La fecha de fin de recurrencia debe ser posterior a la fecha de inicio';
+    }
+  }
+  return null;
+}
+
+// Convierte la fecha de fin de recurrencia a ISO UTC con final de día
+function toFinDeDiaISOForm(fechaFin: Date): string {
+  const fecha = new Date(fechaFin);
+  fecha.setHours(23, 59, 59, 999);
+  return toUTC(fecha);
+}
+
+// Construye el mensaje de éxito tras crear (o solicitar) una o más reservas
+function buildMensajeExitoReserva(args: {
+  cantidadReservas: number;
+  needsAnalystAssignment: boolean;
+}): string {
+  const esPlural = args.cantidadReservas > 1;
+  if (args.needsAnalystAssignment) {
+    const sufijoSolicitud = esPlural ? `es de ${args.cantidadReservas} reservas` : ' de reserva';
+    const sufijoS = esPlural ? 's' : '';
+    return `Solicitud${sufijoSolicitud} enviada${sufijoS} exitosamente. Esperando aprobación.`;
+  }
+  return esPlural
+    ? `${args.cantidadReservas} reservas creadas exitosamente`
+    : 'Reserva creada exitosamente';
+}
+
 export default function ReservationForm({
   onSuccess,
   onCancel
@@ -433,100 +497,53 @@ export default function ReservationForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ===== VALIDACIONES =====
-
-    // 1. Validar Título (obligatorio)
-    if (!formData.titulo || formData.titulo.trim() === '') {
-      toast.error('Por favor ingresa un título para la reserva');
-      return;
-    }
-
-    // 2. Validar Espacio (obligatorio)
-    if (!formData.espacioId) {
-      toast.error('Por favor selecciona un espacio');
-      return;
-    }
-
-    // 3. Validar Fecha (obligatorio)
-    if (!fecha) {
-      toast.error('Por favor selecciona una fecha');
-      return;
-    }
-
-    // 4. Validar Hora de Inicio (obligatorio)
-    if (!formData.horaInicioHora) {
-      toast.error('Por favor selecciona la hora de inicio');
-      return;
-    }
-
-    // 5. Validar Hora de Fin (obligatorio)
-    if (!formData.horaFinHora) {
-      toast.error('Por favor selecciona la hora de fin');
-      return;
-    }
-
-    // Construir las horas completas
     const horaInicio = `${formData.horaInicioHora}:${formData.horaInicioMinuto}`;
     const horaFin = `${formData.horaFinHora}:${formData.horaFinMinuto}`;
-
-    // 5. Validar formato de horas
-    const fechaStr = fecha.toISOString().split('T')[0];
+    const fechaStr = fecha?.toISOString().split('T')[0] ?? '';
     const inicio = new Date(`${fechaStr}T${horaInicio}`);
     const fin = new Date(`${fechaStr}T${horaFin}`);
 
-    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
-      toast.error('Las horas ingresadas no son válidas');
+    const validationError = validateReservationFormData({
+      titulo: formData.titulo,
+      espacioId: formData.espacioId,
+      fecha,
+      horaInicioHora: formData.horaInicioHora,
+      horaFinHora: formData.horaFinHora,
+      inicio,
+      fin,
+      needsAnalystAssignment,
+      analistaId: formData.analistaId,
+      tipoRecurrencia: formData.tipoRecurrencia,
+      fechaFinRecurrencia: formData.fechaFinRecurrencia,
+    });
+    if (validationError) {
+      toast.error(validationError);
       return;
-    }
-
-    // 6. Validar que fin > inicio
-    if (fin <= inicio) {
-      toast.error('La hora de fin debe ser posterior a la hora de inicio');
-      return;
-    }
-
-    // 7. Validar que no sea en el pasado
-    if (inicio < new Date()) {
-      toast.error('No se puede reservar en el pasado');
-      return;
-    }
-
-    // 8. Validar duración mínima (30 minutos)
-    const diferenciaMinutos = (fin.getTime() - inicio.getTime()) / (1000 * 60);
-    if (diferenciaMinutos < 30) {
-      toast.error('La reserva debe tener una duración mínima de 30 minutos');
-      return;
-    }
-
-    // 9. Validar analista si no puede auto-aprobar
-    if (needsAnalystAssignment && !formData.analistaId) {
-      toast.error('Por favor selecciona un analista para gestionar tu solicitud');
-      return;
-    }
-
-    // 10. Validar recurrencia si se especificó
-    if (formData.tipoRecurrencia) {
-      if (!formData.fechaFinRecurrencia) {
-        toast.error('Por favor selecciona la fecha de fin de recurrencia');
-        return;
-      }
-      if (formData.fechaFinRecurrencia <= fecha) {
-        toast.error('La fecha de fin de recurrencia debe ser posterior a la fecha de inicio');
-        return;
-      }
     }
 
     setLoading(true);
     try {
-      // Convertir fechas locales a UTC ISO-8601 para enviar al backend
       const inicioISO = toUTC(inicio);
       const finISO = toUTC(fin);
       const fechaFinRecurrenciaISO = formData.fechaFinRecurrencia
-        ? (() => {
-            const fechaFin = new Date(formData.fechaFinRecurrencia);
-            fechaFin.setHours(23, 59, 59, 999);
-            return toUTC(fechaFin);
-          })()
+        ? toFinDeDiaISOForm(formData.fechaFinRecurrencia)
+        : undefined;
+
+      const analistaIdResuelto = (() => {
+        if (canApprove) return user?.id;
+        if (needsAnalystAssignment && formData.analistaId) {
+          return Number.parseInt(formData.analistaId);
+        }
+        return undefined;
+      })();
+
+      const itemsParaEnviar = itemsSolicitados.length > 0
+        ? itemsSolicitados.map(item => ({
+            tipoElementoId: item.tipoElementoId,
+            inventarioItemId: item.inventarioItemId,
+            cantidadSolicitada: item.cantidadSolicitada,
+            observaciones: item.observaciones || undefined,
+          }))
         : undefined;
 
       await reservationsApi.crearReserva({
@@ -538,51 +555,26 @@ export default function ReservationForm({
         fin: finISO,
         tipoRecurrencia: formData.tipoRecurrencia || undefined,
         fechaFinRecurrencia: fechaFinRecurrenciaISO,
-        analistaId: (() => {
-          if (canApprove) return user?.id; // ADMIN/ANALISTA se asigna a sí mismo
-          if (needsAnalystAssignment && formData.analistaId) {
-            return Number.parseInt(formData.analistaId); // DOCENTE/EXTERNO selecciona analista
-          }
-          return undefined;
-        })(),
-        itemsSolicitados: itemsSolicitados.length > 0 ? itemsSolicitados.map(item => ({
-          tipoElementoId: item.tipoElementoId,
-          inventarioItemId: item.inventarioItemId,
-          cantidadSolicitada: item.cantidadSolicitada,
-          observaciones: item.observaciones || undefined
-        })) : undefined
+        analistaId: analistaIdResuelto,
+        itemsSolicitados: itemsParaEnviar,
       });
 
-      const cantidadReservas = formData.tipoRecurrencia && formData.fechaFinRecurrencia
+      const cantidadReservas = formData.tipoRecurrencia && formData.fechaFinRecurrencia && fecha
         ? calcularCantidadReservas(fecha, formData.fechaFinRecurrencia, formData.tipoRecurrencia)
         : 1;
-
-      const esPlural = cantidadReservas > 1;
-      const obtenerMensajeExito = (): string => {
-        if (needsAnalystAssignment) {
-          const sufijoSolicitud = esPlural ? `es de ${cantidadReservas} reservas` : ' de reserva';
-          const sufijoS = esPlural ? 's' : '';
-          return `Solicitud${sufijoSolicitud} enviada${sufijoS} exitosamente. Esperando aprobación.`;
-        }
-        return esPlural ? `${cantidadReservas} reservas creadas exitosamente` : 'Reserva creada exitosamente';
-      };
-      toast.success(obtenerMensajeExito());
+      toast.success(buildMensajeExitoReserva({ cantidadReservas, needsAnalystAssignment }));
       onSuccess();
     } catch (error: unknown) {
       console.error('Error al crear reserva:', error);
       const mensaje = error instanceof Error ? error.message : 'No se pudo crear la reserva';
-      
-      // Mensajes de error más específicos
       if (mensaje.includes('ocupado') || mensaje.includes('conflicto')) {
         toast.error('El espacio ya está reservado en ese horario', {
-          description: 'Por favor selecciona otro horario'
+          description: 'Por favor selecciona otro horario',
         });
       } else if (mensaje.includes('pasado')) {
         toast.error('No se puede reservar en el pasado');
       } else {
-        toast.error('Error al crear reserva', {
-          description: mensaje
-        });
+        toast.error('Error al crear reserva', { description: mensaje });
       }
     } finally {
       setLoading(false);

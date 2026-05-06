@@ -35,6 +35,7 @@ import java.util.Properties;
 public class GmailApiService {
 
     private static final String APPLICATION_NAME = "UTEC Space Manager";
+    private static final String UTF_8 = "UTF-8";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     @Value("${gmail.api.client-id:}")
@@ -88,7 +89,7 @@ public class GmailApiService {
     /**
      * Obtiene las credenciales para Gmail API usando refresh token
      */
-    private Credential getCredentials() throws IOException {
+    private Credential getCredentials() {
         if (clientId == null || clientId.trim().isEmpty() ||
             clientSecret == null || clientSecret.trim().isEmpty() ||
             refreshToken == null || refreshToken.trim().isEmpty()) {
@@ -162,7 +163,7 @@ public class GmailApiService {
         try {
             // Configurar sesión con charset UTF-8 como se sugiere
             Properties props = new Properties();
-            props.put("mail.mime.charset", "UTF-8");
+            props.put("mail.mime.charset", UTF_8);
             Session session = Session.getInstance(props);
             
             // Crear MimeMessage
@@ -171,7 +172,7 @@ public class GmailApiService {
             email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
             
             // Usar setSubject y setContent con UTF-8 explícito como se sugiere
-            email.setSubject(subject, "UTF-8");
+            email.setSubject(subject, UTF_8);
             email.setContent(htmlBody, "text/html; charset=UTF-8");
             
             // Codificar y envolver el mensaje MIME en un mensaje de Gmail
@@ -207,7 +208,7 @@ public class GmailApiService {
         try {
             // Configurar sesión con charset UTF-8 como se sugiere
             Properties props = new Properties();
-            props.put("mail.mime.charset", "UTF-8");
+            props.put("mail.mime.charset", UTF_8);
             Session session = Session.getInstance(props);
             
             MimeMessage email = new MimeMessage(session);
@@ -215,8 +216,8 @@ public class GmailApiService {
             email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
             
             // Usar setSubject y setText con UTF-8 explícito como se sugiere
-            email.setSubject(subject, "UTF-8");
-            email.setText(bodyText, "UTF-8");
+            email.setSubject(subject, UTF_8);
+            email.setText(bodyText, UTF_8);
             
             // Convertir MimeMessage a bytes
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();

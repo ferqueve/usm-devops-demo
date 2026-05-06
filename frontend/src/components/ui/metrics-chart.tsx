@@ -1,12 +1,19 @@
 import { useState, useMemo, memo, useCallback } from 'react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import type { TooltipProps } from 'recharts';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { LucideIcon } from 'lucide-react';
 
+export type MetricsChartDataPoint = Record<string, number | string | undefined> & {
+  timestamp?: number | string;
+  time?: string;
+};
+
 interface MetricsChartProps {
   title: string;
-  data: any[];
+  data: MetricsChartDataPoint[];
   dataKey: string;
   icon?: LucideIcon;
   color?: string;
@@ -47,7 +54,7 @@ export const MetricsChart = memo(function MetricsChart({
       return ['auto', 'auto'];
     }
     // Para modo fijo, calcular min/max con margen
-    const values = displayData.map((d: any) => d[dataKey] || 0);
+    const values = displayData.map((d) => Number(d[dataKey] ?? 0));
     const max = Math.max(...values);
     const min = Math.min(...values);
     const margin = (max - min) * 0.1 || 10;
@@ -55,16 +62,20 @@ export const MetricsChart = memo(function MetricsChart({
   }, [displayData, dataKey, yAxisMode]);
 
   // Tooltip personalizado - memoizado para evitar re-renders
-  const CustomTooltip = useCallback(({ active, payload }: any) => {
-    if (active && payload && payload.length) {
+  const CustomTooltip = useCallback(({ active, payload }: TooltipProps<ValueType, NameType>) => {
+    if (active && payload?.length) {
+      const first = payload[0];
+      const numericValue = typeof first.value === 'number' ? first.value : Number(first.value ?? 0);
+      const payloadObj = first.payload as MetricsChartDataPoint | undefined;
+      const ts = payloadObj?.timestamp;
       return (
         <div className="bg-white border rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-gray-900">
-            {payload[0].value.toFixed(2)}{unit}
+            {numericValue.toFixed(2)}{unit}
           </p>
-          {payload[0].payload.timestamp && (
+          {ts !== undefined && (
             <p className="text-xs text-muted-foreground">
-              {new Date(payload[0].payload.timestamp).toLocaleTimeString()}
+              {new Date(ts).toLocaleTimeString()}
             </p>
           )}
         </div>

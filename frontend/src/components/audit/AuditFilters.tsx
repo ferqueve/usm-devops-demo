@@ -65,7 +65,7 @@ export default function AuditFilters({
 
   const handleFilterChange = (
     key: keyof AuditLogFilters, 
-    value: string | number | AuditLogAccion | Date | undefined
+    value: string | number | Date | undefined
   ) => {
     onFiltersChange({
       ...filters,

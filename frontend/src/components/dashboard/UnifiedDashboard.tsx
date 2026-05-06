@@ -28,6 +28,82 @@ interface EspaciosStats {
   ocupados: number;
 }
 
+interface DashboardPermissions {
+  canApproveReservations: boolean;
+  canViewRecommendations: boolean;
+  canManageInventory: boolean;
+  canCreateReservations: boolean;
+  canViewReservationStats: boolean;
+}
+
+// Selecciona el endpoint de dashboard según los permisos del usuario actual
+async function loadDashboardForRole(perms: DashboardPermissions): Promise<DashboardData | null> {
+  if (perms.canApproveReservations) {
+    return dashboardApi.obtenerDatosDashboardAnalista();
+  }
+  if (perms.canViewRecommendations) {
+    return dashboardApi.obtenerDatosDashboardDocente();
+  }
+  if (perms.canManageInventory) {
+    return dashboardApi.obtenerDatosDashboardMantenimiento();
+  }
+  if (perms.canCreateReservations) {
+    return dashboardApi.obtenerDatosDashboardExterno();
+  }
+  return dashboardApi.obtenerDatosDashboardEstudiante();
+}
+
+// Carga reservas según el alcance permitido por los permisos del usuario
+async function loadReservasForRole(canApprove: boolean): Promise<Reserva[]> {
+  try {
+    const response = canApprove
+      ? await reservationsApi.obtenerTodasLasReservas()
+      : await reservationsApi.obtenerMisReservas();
+    return response.data ?? [];
+  } catch (error) {
+    console.warn('No se pudieron cargar todas las reservas para gráficos:', error);
+    return [];
+  }
+}
+
+interface MaintenanceStats {
+  inventario: InventoryStatsType | null;
+  espacios: EspaciosStats | null;
+  pendingRequests: number;
+}
+
+// Agrupa la carga de datos específicos del rol Mantenimiento
+async function loadMaintenanceStats(): Promise<MaintenanceStats> {
+  try {
+    const [inventarioRes, espaciosRes, pendingReqs] = await Promise.all([
+      inventarioApi.obtenerEstadisticasInventario(),
+      espaciosApi.obtenerEstadisticasEspacios(),
+      inventarioApi.obtenerSolicitudesPendientes(),
+    ]);
+    return {
+      inventario: inventarioRes.data ?? null,
+      espacios: (espaciosRes.data ?? null) as EspaciosStats | null,
+      pendingRequests: pendingReqs.data?.length ?? 0,
+    };
+  } catch (error) {
+    console.warn('No se pudieron cargar estadísticas de mantenimiento:', error);
+    return { inventario: null, espacios: null, pendingRequests: 0 };
+  }
+}
+
+async function loadReservasPrioritarias(): Promise<RecomendacionAnalista[]> {
+  try {
+    const prioritarias = await recomendacionesApi.obtenerReservasPrioritarias();
+    if (prioritarias.success && prioritarias.data) {
+      return prioritarias.data;
+    }
+    return [];
+  } catch (error) {
+    console.warn('No se pudieron cargar reservas prioritarias:', error);
+    return [];
+  }
+}
+
 export default function UnifiedDashboard() {
   const { hasPermission } = useRolePermissions();
 
@@ -56,100 +132,47 @@ export default function UnifiedDashboard() {
   const [pendingInventoryRequests, setPendingInventoryRequests] = useState(0);
 
   useEffect(() => {
+    const perms: DashboardPermissions = {
+      canApproveReservations,
+      canViewRecommendations,
+      canManageInventory,
+      canCreateReservations,
+      canViewReservationStats,
+    };
+
+    const shouldLoadReservas =
+      canViewReservationStats || canCreateReservations || canViewRecommendations;
+    const isMaintenanceOnly = canManageInventory && !canApproveReservations;
+
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Cargar datos del dashboard según permisos
-        let dashboardData: DashboardData | null = null;
-
-        if (canApproveReservations) {
-          // ANALISTA o ADMIN
-          dashboardData = await dashboardApi.obtenerDatosDashboardAnalista();
-        } else if (canViewRecommendations && !canApproveReservations) {
-          // DOCENTE
-          dashboardData = await dashboardApi.obtenerDatosDashboardDocente();
-        } else if (canManageInventory && !canApproveReservations) {
-          // MANTENIMIENTO
-          dashboardData = await dashboardApi.obtenerDatosDashboardMantenimiento();
-        } else if (!canViewRecommendations && canCreateReservations) {
-          // EXTERNO
-          dashboardData = await dashboardApi.obtenerDatosDashboardExterno();
-        } else {
-          // ESTUDIANTE (default)
-          dashboardData = await dashboardApi.obtenerDatosDashboardEstudiante();
-        }
-
+        const dashboardData = await loadDashboardForRole(perms);
         setData(dashboardData);
 
-        // Cargar reservas para gráficos (si puede ver estadísticas o crear reservas)
-        if (canViewReservationStats || canCreateReservations || canViewRecommendations) {
-          try {
-            let reservasResponse;
-            if (canApproveReservations) {
-              // ANALISTA/ADMIN: todas las reservas
-              reservasResponse = await reservationsApi.obtenerTodasLasReservas();
-            } else {
-              // DOCENTE/EXTERNO/ALUMNO: solo sus reservas
-              reservasResponse = await reservationsApi.obtenerMisReservas();
-            }
-
-            if (reservasResponse.data) {
-              setAllReservas(reservasResponse.data);
-              // Filtrar reservas pendientes
-              const pendientes = reservasResponse.data.filter(r => r.estado === 'PENDIENTE');
-              setReservasPendientes(pendientes);
-            }
-          } catch (error) {
-            console.warn('No se pudieron cargar todas las reservas para gráficos:', error);
-          }
+        if (shouldLoadReservas) {
+          const reservas = await loadReservasForRole(canApproveReservations);
+          setAllReservas(reservas);
+          setReservasPendientes(reservas.filter(r => r.estado === 'PENDIENTE'));
         }
 
-        // Cargar reservas prioritarias (solo para ANALISTA)
         if (canApproveReservations) {
-          try {
-            setLoadingPrioritarias(true);
-            const prioritarias = await recomendacionesApi.obtenerReservasPrioritarias();
-            if (prioritarias.success && prioritarias.data) {
-              setReservasPrioritarias(prioritarias.data);
-            }
-          } catch (error) {
-            console.warn('No se pudieron cargar reservas prioritarias:', error);
-          } finally {
-            setLoadingPrioritarias(false);
-          }
+          setLoadingPrioritarias(true);
+          const prioritarias = await loadReservasPrioritarias();
+          setReservasPrioritarias(prioritarias);
+          setLoadingPrioritarias(false);
         }
 
-        // Cargar estadísticas de inventario y espacios (solo para MANTENIMIENTO)
-        if (canManageInventory && !canApproveReservations) {
-          try {
-            const [inventarioRes, espaciosRes] = await Promise.all([
-              inventarioApi.obtenerEstadisticasInventario(),
-              espaciosApi.obtenerEstadisticasEspacios()
-            ]);
-
-            if (inventarioRes.data) {
-              setInventarioStats(inventarioRes.data);
-            }
-            if (espaciosRes.data) {
-              setEspaciosStats(espaciosRes.data as EspaciosStats);
-            }
-
-            // Cargar solicitudes de inventario pendientes
-            const pendingReqs = await inventarioApi.obtenerSolicitudesPendientes();
-            if (pendingReqs.data) {
-              setPendingInventoryRequests(pendingReqs.data.length);
-            }
-          } catch (error) {
-            console.warn('No se pudieron cargar estadísticas de mantenimiento:', error);
-          }
+        if (isMaintenanceOnly) {
+          const stats = await loadMaintenanceStats();
+          setInventarioStats(stats.inventario);
+          setEspaciosStats(stats.espacios);
+          setPendingInventoryRequests(stats.pendingRequests);
         }
-
       } catch (error: unknown) {
         console.error('Error al cargar datos del dashboard:', error);
         const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar los datos';
-        toast.error('Error al cargar el dashboard', {
-          description: errorMessage
-        });
+        toast.error('Error al cargar el dashboard', { description: errorMessage });
       } finally {
         setLoading(false);
       }

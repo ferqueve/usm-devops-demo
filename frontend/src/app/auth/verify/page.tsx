@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi } from '@/lib/api/auth';
 import { VerifyEmailForm } from '@/components/public/auth/VerifyEmailForm';
@@ -11,20 +11,7 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState('');
   const [resendMessage, setResendMessage] = useState('');
 
-  useEffect(() => {
-    const token = searchParams.get('token');
-    
-    if (!token) {
-      setStatus('error');
-      setMessage('Token de verificación no encontrado');
-      return;
-    }
-
-    // Verificar el token
-    verifyEmailToken(token);
-  }, [searchParams]);
-
-  const verifyEmailToken = async (token: string) => {
+  const verifyEmailToken = useCallback(async (token: string) => {
     try {
       const response = await authApi.verifyEmail(token);
       
@@ -56,6 +43,7 @@ export default function VerifyEmailPage() {
         }
       }
     } catch (error) {
+      console.error('Error al verificar email:', error);
       // Si falla, intentar extraer email del token para reenvío
       const extractedEmail = extractEmailFromToken(token);
       if (extractedEmail) {
@@ -68,7 +56,20 @@ export default function VerifyEmailPage() {
         setEmail(''); // No mostrar email para reenvío
       }
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+
+    if (!token) {
+      setStatus('error');
+      setMessage('Token de verificación no encontrado');
+      return;
+    }
+
+    // Verificar el token
+    verifyEmailToken(token);
+  }, [searchParams, verifyEmailToken]);
 
   // Función para extraer email del token (incluso si está expirado)
   const extractEmailFromToken = (token: string): string | null => {
@@ -78,7 +79,7 @@ export default function VerifyEmailPage() {
       if (parts.length !== 3) return null;
       
       const payload = parts[1];
-      const decodedPayload = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      const decodedPayload = JSON.parse(atob(payload.replaceAll('-', '+').replaceAll('_', '/')));
       
       // Verificar que sea un token de verificación y extraer el email
       if (decodedPayload.type === 'verification' && decodedPayload.sub) {
@@ -111,6 +112,7 @@ export default function VerifyEmailPage() {
         setResendMessage(response.error || 'Error al reenviar email');
       }
     } catch (error) {
+      console.error('Error al reenviar email:', error);
       setResendMessage('Error al reenviar email de verificación');
     }
   };

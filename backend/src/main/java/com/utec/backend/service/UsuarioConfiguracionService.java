@@ -85,9 +85,7 @@ public class UsuarioConfiguracionService {
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
-        Map<String, Object> preferencias = config.getPreferencias();
-        @SuppressWarnings("unchecked")
-        Map<String, Boolean> emailPrefs = (Map<String, Boolean>) preferencias.getOrDefault(KEY_EMAIL, new HashMap<>());
+        Map<String, Boolean> emailPrefs = readBooleanMap(config.getPreferencias(), KEY_EMAIL);
 
         // Obtener lista de emails permitidos para este rol
         Set<String> emailsPermitidos = obtenerEmailsPermitidosPorRol(usuario.getRolApp());
@@ -111,10 +109,8 @@ public class UsuarioConfiguracionService {
         
         UsuarioConfiguracion config = obtenerOcrearConfiguracion(usuario);
         
-        Map<String, Object> preferencias = config.getPreferencias();
-        @SuppressWarnings("unchecked")
-        Map<String, Object> vistaPrefs = (Map<String, Object>) preferencias.getOrDefault(KEY_VISTA, new HashMap<>());
-        
+        Map<String, Object> vistaPrefs = readObjectMap(config.getPreferencias(), KEY_VISTA);
+
         // Filtrar según el rol del usuario
         Map<String, Object> vistaPrefsFiltradas = filtrarPreferenciasVistaPorRol(vistaPrefs, usuario.getRolApp());
         
@@ -195,9 +191,7 @@ public class UsuarioConfiguracionService {
                 return true; // Si no hay config, enviar por defecto
             }
             
-            Map<String, Object> preferencias = config.getPreferencias();
-            @SuppressWarnings("unchecked")
-            Map<String, Boolean> emailPrefs = (Map<String, Boolean>) preferencias.getOrDefault(KEY_EMAIL, new HashMap<>());
+            Map<String, Boolean> emailPrefs = readBooleanMap(config.getPreferencias(), KEY_EMAIL);
 
             // Verificar si el tipo de email está permitido para este rol
             if (!esTipoEmailPermitidoParaRol(tipoEmail, usuario.getRolApp())) {
@@ -349,45 +343,83 @@ public class UsuarioConfiguracionService {
     /**
      * Filtra las preferencias de vista según el rol del usuario
      */
+    private static final List<String> CLAVES_RESERVAS = List.of(
+            VISTA_RESERVAS_VIEW_MODE,
+            VISTA_RESERVAS_CALENDAR_VIEW_MODE,
+            VISTA_RESERVAS_PAGE_SIZE);
+
+    private static final List<String> CLAVES_ESPACIOS = List.of(
+            VISTA_ESPACIOS_VIEW_MODE,
+            VISTA_ESPACIOS_PAGE_SIZE);
+
+    private static final List<String> CLAVES_INVENTARIO = List.of(
+            VISTA_INVENTARIO_VIEW_MODE,
+            VISTA_INVENTARIO_PAGE_SIZE);
+
+    private static final Map<Usuario.RolApp, List<String>> CLAVES_PERMITIDAS_POR_ROL = Map.of(
+            Usuario.RolApp.ANALISTA, concatenar(CLAVES_RESERVAS, CLAVES_ESPACIOS, CLAVES_INVENTARIO),
+            Usuario.RolApp.DOCENTE, CLAVES_RESERVAS,
+            Usuario.RolApp.MANTENIMIENTO, concatenar(CLAVES_ESPACIOS, CLAVES_INVENTARIO));
+
+    @SafeVarargs
+    private static List<String> concatenar(List<String>... listas) {
+        List<String> all = new ArrayList<>();
+        for (List<String> l : listas) {
+            all.addAll(l);
+        }
+        return List.copyOf(all);
+    }
+
     private Map<String, Object> filtrarPreferenciasVistaPorRol(Map<String, Object> vistaPrefs, Usuario.RolApp rol) {
-        Map<String, Object> filtradas = new HashMap<>();
-        
-        // ADMIN: todas las preferencias
         if (rol == Usuario.RolApp.ADMIN) {
             return vistaPrefs;
         }
-        
-        // ANALISTA: reservas, espacios, inventario, estadísticas (NO usuarios, NO auditoria)
-        if (rol == Usuario.RolApp.ANALISTA) {
-            if (vistaPrefs.containsKey(VISTA_RESERVAS_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_RESERVAS_CALENDAR_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_CALENDAR_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_CALENDAR_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_RESERVAS_PAGE_SIZE)) filtradas.put(VISTA_RESERVAS_PAGE_SIZE, vistaPrefs.get(VISTA_RESERVAS_PAGE_SIZE));
-            if (vistaPrefs.containsKey(VISTA_ESPACIOS_VIEW_MODE)) filtradas.put(VISTA_ESPACIOS_VIEW_MODE, vistaPrefs.get(VISTA_ESPACIOS_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_ESPACIOS_PAGE_SIZE)) filtradas.put(VISTA_ESPACIOS_PAGE_SIZE, vistaPrefs.get(VISTA_ESPACIOS_PAGE_SIZE));
-            if (vistaPrefs.containsKey(VISTA_INVENTARIO_VIEW_MODE)) filtradas.put(VISTA_INVENTARIO_VIEW_MODE, vistaPrefs.get(VISTA_INVENTARIO_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_INVENTARIO_PAGE_SIZE)) filtradas.put(VISTA_INVENTARIO_PAGE_SIZE, vistaPrefs.get(VISTA_INVENTARIO_PAGE_SIZE));
-            return filtradas;
-        }
+        List<String> clavesPermitidas = CLAVES_PERMITIDAS_POR_ROL.getOrDefault(rol, List.of());
+        return copiarClavesPermitidas(vistaPrefs, clavesPermitidas);
+    }
 
-        // DOCENTE: solo reservas
-        if (rol == Usuario.RolApp.DOCENTE) {
-            if (vistaPrefs.containsKey(VISTA_RESERVAS_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_RESERVAS_CALENDAR_VIEW_MODE)) filtradas.put(VISTA_RESERVAS_CALENDAR_VIEW_MODE, vistaPrefs.get(VISTA_RESERVAS_CALENDAR_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_RESERVAS_PAGE_SIZE)) filtradas.put(VISTA_RESERVAS_PAGE_SIZE, vistaPrefs.get(VISTA_RESERVAS_PAGE_SIZE));
-            return filtradas;
+    private Map<String, Object> copiarClavesPermitidas(Map<String, Object> origen, List<String> claves) {
+        Map<String, Object> filtradas = new HashMap<>();
+        for (String clave : claves) {
+            if (origen.containsKey(clave)) {
+                filtradas.put(clave, origen.get(clave));
+            }
         }
-
-        // MANTENIMIENTO: espacios, inventario, estadísticas (NO reservas, NO usuarios, NO auditoria)
-        if (rol == Usuario.RolApp.MANTENIMIENTO) {
-            if (vistaPrefs.containsKey(VISTA_ESPACIOS_VIEW_MODE)) filtradas.put(VISTA_ESPACIOS_VIEW_MODE, vistaPrefs.get(VISTA_ESPACIOS_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_ESPACIOS_PAGE_SIZE)) filtradas.put(VISTA_ESPACIOS_PAGE_SIZE, vistaPrefs.get(VISTA_ESPACIOS_PAGE_SIZE));
-            if (vistaPrefs.containsKey(VISTA_INVENTARIO_VIEW_MODE)) filtradas.put(VISTA_INVENTARIO_VIEW_MODE, vistaPrefs.get(VISTA_INVENTARIO_VIEW_MODE));
-            if (vistaPrefs.containsKey(VISTA_INVENTARIO_PAGE_SIZE)) filtradas.put(VISTA_INVENTARIO_PAGE_SIZE, vistaPrefs.get(VISTA_INVENTARIO_PAGE_SIZE));
-            return filtradas;
-        }
-        
-        // ESTUDIANTE y EXTERNO: ninguna preferencia de vista relevante
         return filtradas;
+    }
+
+    /**
+     * Extrae el sub-mapa {@code String → Boolean} bajo la clave indicada, validando
+     * tipos en runtime. Permite trabajar con el JSON deserializado sin casts unchecked.
+     */
+    private static Map<String, Boolean> readBooleanMap(Map<String, Object> source, String key) {
+        Object raw = source.get(key);
+        Map<String, Boolean> result = new HashMap<>();
+        if (raw instanceof Map<?, ?> map) {
+            map.forEach((k, v) -> {
+                if (k instanceof String sk && v instanceof Boolean bv) {
+                    result.put(sk, bv);
+                }
+            });
+        }
+        return result;
+    }
+
+    /**
+     * Extrae el sub-mapa {@code String → Object} bajo la clave indicada, validando
+     * la clave en runtime. Permite trabajar con el JSON deserializado sin casts unchecked.
+     */
+    private static Map<String, Object> readObjectMap(Map<String, Object> source, String key) {
+        Object raw = source.get(key);
+        Map<String, Object> result = new HashMap<>();
+        if (raw instanceof Map<?, ?> map) {
+            map.forEach((k, v) -> {
+                if (k instanceof String sk) {
+                    result.put(sk, v);
+                }
+            });
+        }
+        return result;
     }
 }
 

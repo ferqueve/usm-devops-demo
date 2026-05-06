@@ -3,16 +3,18 @@ import { BarChart3, Settings } from 'lucide-react';
 import { JvmCharts } from '../sections/JvmCharts';
 import { JvmDetailsTable } from '../sections/JvmDetailsTable';
 import { useSidebarTransition } from '@/hooks/useSidebarTransition';
+import type { MetricInfo } from '@/lib/types/actuator';
+import type { MetricsChartDataPoint } from '@/components/ui/metrics-chart';
 
 interface PerformanceTabProps {
-  memoryMetrics: any;
-  memoryMaxMetrics: any;
-  cpuMetrics: any;
-  threadsMetrics: any;
-  gcMetrics: any;
-  uptimeMetrics: any;
-  httpMetrics: any;
-  metricsHistory: any[];
+  memoryMetrics: MetricInfo | null | undefined;
+  memoryMaxMetrics: MetricInfo | null | undefined;
+  cpuMetrics: MetricInfo | null | undefined;
+  threadsMetrics: MetricInfo | null | undefined;
+  gcMetrics: MetricInfo | null | undefined;
+  uptimeMetrics: MetricInfo | null | undefined;
+  httpMetrics: MetricInfo | null | undefined;
+  metricsHistory: MetricsChartDataPoint[];
 }
 
 export const PerformanceTab = memo(function PerformanceTab({

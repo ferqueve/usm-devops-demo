@@ -42,11 +42,10 @@ export function DeleteSpaceDialog({
       
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al eliminar espacio:', error);
-      toast.error('Error al eliminar espacio', {
-        description: error.message || 'No se pudo eliminar el espacio'
-      });
+      const description = error instanceof Error ? error.message : 'No se pudo eliminar el espacio';
+      toast.error('Error al eliminar espacio', { description });
     } finally {
       setLoading(false);
     }

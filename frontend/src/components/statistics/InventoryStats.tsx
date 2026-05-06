@@ -339,12 +339,12 @@ export default function InventoryStats() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Espacio</label>
-              <Select 
-                value={filterEspacio?.toString() || 'todos'} 
+              <label htmlFor="filter-espacio" className="text-sm font-medium">Espacio</label>
+              <Select
+                value={filterEspacio?.toString() || 'todos'}
                 onValueChange={(value) => setFilterEspacio(value === 'todos' ? null : Number.parseInt(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger id="filter-espacio">
                   <SelectValue placeholder="Todos los espacios" />
                 </SelectTrigger>
                 <SelectContent>
@@ -359,12 +359,12 @@ export default function InventoryStats() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tipo de Elemento</label>
-              <Select 
-                value={filterTipoElemento?.toString() || 'todos'} 
+              <label htmlFor="filter-tipo-elemento" className="text-sm font-medium">Tipo de Elemento</label>
+              <Select
+                value={filterTipoElemento?.toString() || 'todos'}
                 onValueChange={(value) => setFilterTipoElemento(value === 'todos' ? null : Number.parseInt(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger id="filter-tipo-elemento">
                   <SelectValue placeholder="Todos los tipos" />
                 </SelectTrigger>
                 <SelectContent>
@@ -379,9 +379,9 @@ export default function InventoryStats() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Estado</label>
+              <label htmlFor="filter-estado" className="text-sm font-medium">Estado</label>
               <Select value={filterEstado} onValueChange={setFilterEstado}>
-                <SelectTrigger>
+                <SelectTrigger id="filter-estado">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

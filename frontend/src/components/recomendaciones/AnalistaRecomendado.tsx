@@ -71,10 +71,11 @@ export function AnalistaRecomendado({
           {analistas.slice(0, 3).map((analista) => {
             const isSelected = analistaSeleccionadoId === analista.analistaId;
             return (
-              <div
+              <button
+                type="button"
                 key={analista.analistaId}
                 className={cn(
-                  "flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer",
+                  "w-full text-left flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer",
                   isSelected
                     ? "bg-primary/5 border-primary"
                     : "hover:bg-gray-50 border-gray-200"
@@ -110,7 +111,7 @@ export function AnalistaRecomendado({
                   </Badge>
                   {isSelected && <CheckCircle className="h-5 w-5 text-primary" />}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

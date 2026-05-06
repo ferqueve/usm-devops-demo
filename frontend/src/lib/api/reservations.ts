@@ -19,13 +19,56 @@ export interface PagedResponse<T> {
   numberOfElements: number;
 }
 
+export type DateOrStringFilter = Date | string | null;
+
+export interface MisReservasPagedParams {
+  page?: number;
+  size?: number;
+  estado?: string;
+  espacioId?: number | null;
+  carreraId?: number | null;
+  tipoEspacioId?: number | null;
+  fechaInicio?: Date | null;
+  fechaFin?: Date | null;
+  tiempo?: string;
+}
+
+export interface TodasReservasPagedParams extends MisReservasPagedParams {
+  usuarioId?: number | null;
+}
+
+function buildReservasPagedParams(options: MisReservasPagedParams): URLSearchParams {
+  const {
+    page = 0,
+    size = 10,
+    estado,
+    espacioId,
+    carreraId,
+    tipoEspacioId,
+    fechaInicio,
+    fechaFin,
+    tiempo,
+  } = options;
+  const params = new URLSearchParams();
+  params.append('page', page.toString());
+  params.append('size', size.toString());
+  if (estado && estado !== 'todas') params.append('estado', estado);
+  if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
+  if (carreraId !== null && carreraId !== undefined) params.append('carreraId', carreraId.toString());
+  if (tipoEspacioId !== null && tipoEspacioId !== undefined) params.append('tipoEspacioId', tipoEspacioId.toString());
+  if (fechaInicio) params.append('fechaInicio', fechaInicio.toISOString());
+  if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
+  if (tiempo && tiempo !== 'todas') params.append('tiempo', tiempo);
+  return params;
+}
+
 export interface InventoryRequestsQuery {
   page?: number;
   size?: number;
   estados?: ReservaItemSolicitadoEstado[];
   espacioId?: number;
-  fechaDesde?: Date | string | null;
-  fechaHasta?: Date | string | null;
+  fechaDesde?: DateOrStringFilter;
+  fechaHasta?: DateOrStringFilter;
   search?: string;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
@@ -70,27 +113,9 @@ export const reservationsApi = {
 
   // Obtener mis reservas con paginación y filtros
   async obtenerMisReservasPaged(
-    page: number = 0,
-    size: number = 10,
-    estado?: string,
-    espacioId?: number | null,
-    carreraId?: number | null,
-    tipoEspacioId?: number | null,
-    fechaInicio?: Date | null,
-    fechaFin?: Date | null,
-    tiempo?: string
+    query: MisReservasPagedParams
   ): Promise<ApiResponse<PagedResponse<Reserva>>> {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('size', size.toString());
-    if (estado && estado !== 'todas') params.append('estado', estado);
-    if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
-    if (carreraId !== null && carreraId !== undefined) params.append('carreraId', carreraId.toString());
-    if (tipoEspacioId !== null && tipoEspacioId !== undefined) params.append('tipoEspacioId', tipoEspacioId.toString());
-    if (fechaInicio) params.append('fechaInicio', fechaInicio.toISOString());
-    if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
-    if (tiempo && tiempo !== 'todas') params.append('tiempo', tiempo);
-    
+    const params = buildReservasPagedParams(query);
     return apiRequest<PagedResponse<Reserva>>(`/reservas/mis-reservas/paged?${params.toString()}`, { method: 'GET' });
   },
 
@@ -148,29 +173,12 @@ export const reservationsApi = {
 
   // Obtener todas las reservas del sistema con paginación (para ANALISTA/ADMIN)
   async obtenerTodasReservasPaged(
-    page: number = 0,
-    size: number = 10,
-    estado?: string,
-    espacioId?: number | null,
-    carreraId?: number | null,
-    tipoEspacioId?: number | null,
-    usuarioId?: number | null,
-    fechaInicio?: Date | null,
-    fechaFin?: Date | null,
-    tiempo?: string
+    query: TodasReservasPagedParams
   ): Promise<ApiResponse<PagedResponse<Reserva>>> {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('size', size.toString());
-    if (estado && estado !== 'todas') params.append('estado', estado);
-    if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
-    if (carreraId !== null && carreraId !== undefined) params.append('carreraId', carreraId.toString());
-    if (tipoEspacioId !== null && tipoEspacioId !== undefined) params.append('tipoEspacioId', tipoEspacioId.toString());
-    if (usuarioId !== null && usuarioId !== undefined) params.append('usuarioId', usuarioId.toString());
-    if (fechaInicio) params.append('fechaInicio', fechaInicio.toISOString());
-    if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
-    if (tiempo && tiempo !== 'todas') params.append('tiempo', tiempo);
-    
+    const params = buildReservasPagedParams(query);
+    if (query.usuarioId !== null && query.usuarioId !== undefined) {
+      params.append('usuarioId', query.usuarioId.toString());
+    }
     return apiRequest<PagedResponse<Reserva>>(`/reservas/paged?${params.toString()}`, { method: 'GET' });
   },
 

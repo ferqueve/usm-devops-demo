@@ -14,6 +14,8 @@ import {
   ResponsiveContainer,
   ComposedChart
 } from 'recharts';
+import type { TooltipProps } from 'recharts';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import type { InventoryStats } from '@/lib/types/spaces';
 
 interface InventoryChartsProps {
@@ -29,9 +31,24 @@ const COLORS = {
 };
 
 const CHART_COLORS = [
-  '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', 
+  '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981',
   '#06b6d4', '#f97316', '#84cc16', '#e11d48', '#6366f1'
 ];
+
+const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-white border rounded-lg shadow-lg p-3">
+        {payload.map((entry, index) => (
+          <p key={`${entry.name ?? 'entry'}-${index}`} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function InventoryCharts({ stats, loading = false }: Readonly<InventoryChartsProps>) {
   // Datos para gráfico de distribución por estado
@@ -79,21 +96,6 @@ export default function InventoryCharts({ stats, loading = false }: Readonly<Inv
         danados: tipo.danados
       }));
   }, [stats.itemsPorTipo]);
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload?.length) {
-      return (
-        <div className="bg-white border rounded-lg shadow-lg p-3">
-          {payload.map((entry: any, index: number) => (
-            <p key={`${entry.name ?? 'entry'}-${index}`} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (loading) {
     return (

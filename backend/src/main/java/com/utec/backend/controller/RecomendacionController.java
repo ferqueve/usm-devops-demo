@@ -21,6 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecomendacionController {
 
+    private static final String USUARIO_NO_ENCONTRADO_MSG = "Usuario no encontrado: ";
+
     private final RecomendacionService recomendacionService;
     private final UsuarioRepository usuarioRepository;
 
@@ -39,7 +41,7 @@ public class RecomendacionController {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(USUARIO_NO_ENCONTRADO_MSG + userEmail));
             List<RecomendacionEspacioDto> recomendaciones = recomendacionService
                 .obtenerRecomendacionesEspacios(usuario.getId(), inicio, fin, capacidad);
             return ResponseEntity.ok(ApiResponse.success(recomendaciones, "Recomendaciones obtenidas exitosamente"));
@@ -61,7 +63,7 @@ public class RecomendacionController {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(USUARIO_NO_ENCONTRADO_MSG + userEmail));
             List<HorarioRecomendadoDto> horarios = recomendacionService
                 .obtenerHorariosOptimos(usuario.getId(), espacioId, fecha);
             return ResponseEntity.ok(ApiResponse.success(horarios, "Horarios recomendados obtenidos exitosamente"));
@@ -82,7 +84,7 @@ public class RecomendacionController {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(USUARIO_NO_ENCONTRADO_MSG + userEmail));
             List<RecomendacionEspacioDto> espacios = recomendacionService
                 .obtenerEspaciosSimilares(espacioId, usuario.getId());
             return ResponseEntity.ok(ApiResponse.success(espacios, "Espacios similares obtenidos exitosamente"));
@@ -171,7 +173,7 @@ public class RecomendacionController {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(USUARIO_NO_ENCONTRADO_MSG + userEmail));
             List<RecomendacionItemDto> items = recomendacionService
                 .obtenerItemsRecomendadosParaReserva(espacioId, usuario.getId());
             return ResponseEntity.ok(ApiResponse.success(items, "Items recomendados obtenidos exitosamente"));
@@ -228,7 +230,7 @@ public class RecomendacionController {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(USUARIO_NO_ENCONTRADO_MSG + userEmail));
             List<RecomendacionAnalistaDto> reservas = recomendacionService
                 .obtenerReservasPrioritarias(usuario.getId());
             return ResponseEntity.ok(ApiResponse.success(reservas, "Reservas prioritarias obtenidas exitosamente"));
@@ -250,7 +252,7 @@ public class RecomendacionController {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado: " + userEmail));
+                .orElseThrow(() -> new UsuarioNotFoundException(USUARIO_NO_ENCONTRADO_MSG + userEmail));
             DashboardRecomendacionesDto recomendaciones = recomendacionService
                 .obtenerRecomendacionesDashboard(usuario.getId(), usuario.getRolApp());
             return ResponseEntity.ok(ApiResponse.success(recomendaciones, "Recomendaciones del dashboard obtenidas exitosamente"));

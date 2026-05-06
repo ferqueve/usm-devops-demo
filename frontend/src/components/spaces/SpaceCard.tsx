@@ -146,7 +146,7 @@ export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>
           <Button
             size="sm"
             variant="outline"
-            className={`${canEdit ? 'w-full' : 'w-full'} h-8 text-sm hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors duration-200`}
+            className="w-full h-8 text-sm hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors duration-200"
             onClick={handleViewDetails}
           >
             <Eye className="h-4 w-4 mr-1.5" />

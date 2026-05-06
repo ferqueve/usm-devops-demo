@@ -198,7 +198,7 @@ class EspacioServiceTest {
 
     @Test
     @DisplayName("Debe eliminar espacio exitosamente")
-    void debeEliminarEspacioExitosamente() throws Exception {
+    void debeEliminarEspacioExitosamente() {
         // Given
         when(espacioRepository.findById(espacioId)).thenReturn(Optional.of(espacioTest));
 

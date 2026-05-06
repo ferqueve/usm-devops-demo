@@ -50,7 +50,7 @@ export default function Rooms() {
       <div className="flex items-center justify-end">
         <Button>
           <span className="mr-2">+</span>
-          Agregar Espacio
+          {'Agregar Espacio'}
         </Button>
       </div>
 

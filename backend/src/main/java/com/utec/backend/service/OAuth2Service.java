@@ -51,82 +51,62 @@ public class OAuth2Service {
      */
     public AuthenticationResponse handleGoogleCallback(String authorizationCode) {
         try {
-            // Intercambiar código de autorización por tokens
             GoogleTokenResponse tokenResponse = exchangeCodeForTokens(authorizationCode);
-            
-            // Verificar ID token y extraer información del usuario
             GoogleUserInfo googleUser = verifyIdToken(tokenResponse.getIdToken());
-            
             if (googleUser == null) {
                 throw new AuthenticationException("ID Token de Google inválido");
             }
-
-            // Buscar o crear usuario
             Usuario usuario = findOrCreateOAuthUser(googleUser);
-
-            // Verificar si el usuario está activo (no eliminado)
-            if (usuario.getDeletedAt() != null) {
-                log.warn("Intento de login OAuth con usuario inactivo: {}", usuario.getEmail());
-                throw new AuthenticationException("Tu cuenta ha sido desactivada. Por favor, contacta al administrador para más información.");
-            }
-
-            // Generar tokens JWT
-            UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
-            
-            if (userDetails == null) {
-                throw new AuthenticationException("No se pudo cargar los detalles del usuario");
-            }
-            
-            String token = jwtService.generateToken(userDetails);
-            String refreshToken = jwtService.generateRefreshToken(userDetails);
-            
-            if (token == null || token.trim().isEmpty()) {
-                throw new AuthenticationException("No se pudo generar el token de acceso");
-            }
-            
-            if (refreshToken == null || refreshToken.trim().isEmpty()) {
-                throw new AuthenticationException("No se pudo generar el token de refresh");
-            }
-
-            log.info("Usuario autenticado exitosamente con Google OAuth: {}", usuario.getEmail());
-
-            // Validar que todos los valores requeridos no sean null
-            String email = usuario.getEmail();
-            String nombre = usuario.getNombre();
-            String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : ROLE_EXTERNO;
-            Long expiresIn = jwtService.getExpirationTime();
-            
-            if (email == null || email.trim().isEmpty()) {
-                throw new AuthenticationException("Email del usuario es requerido");
-            }
-            
-            if (nombre == null || nombre.trim().isEmpty()) {
-                nombre = "Usuario OAuth"; // Valor por defecto
-            }
-            
-            // expiresIn nunca será null ya que getExpirationTime() retorna un long primitivo
-            // pero mantenemos la validación por seguridad
-            if (expiresIn == null || expiresIn <= 0) {
-                expiresIn = 3600000L; // 1 hora por defecto
-            }
-            
-            return new AuthenticationResponse(
-                token,
-                refreshToken,
-                email,
-                nombre,
-                rol,
-                expiresIn,
-                usuario.getId()
-            );
-
+            ensureUsuarioActivo(usuario);
+            return buildAuthenticationResponse(usuario);
         } catch (AuthenticationException e) {
-            // Re-lanzar AuthenticationException sin modificar el mensaje
             log.error("Error de autenticación en callback de Google OAuth: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Error en callback de Google OAuth: {}", e.getMessage(), e);
             throw new AuthenticationException("Error al procesar autenticación con Google");
+        }
+    }
+
+    private void ensureUsuarioActivo(Usuario usuario) {
+        if (usuario.getDeletedAt() != null) {
+            log.warn("Intento de login OAuth con usuario inactivo: {}", usuario.getEmail());
+            throw new AuthenticationException(
+                    "Tu cuenta ha sido desactivada. Por favor, contacta al administrador para más información.");
+        }
+    }
+
+    private AuthenticationResponse buildAuthenticationResponse(Usuario usuario) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
+        if (userDetails == null) {
+            throw new AuthenticationException("No se pudo cargar los detalles del usuario");
+        }
+        String token = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        validarTokenNoVacio(token, "No se pudo generar el token de acceso");
+        validarTokenNoVacio(refreshToken, "No se pudo generar el token de refresh");
+
+        log.info("Usuario autenticado exitosamente con Google OAuth: {}", usuario.getEmail());
+
+        String email = usuario.getEmail();
+        if (email == null || email.trim().isEmpty()) {
+            throw new AuthenticationException("Email del usuario es requerido");
+        }
+        String nombre = usuario.getNombre();
+        if (nombre == null || nombre.trim().isEmpty()) {
+            nombre = "Usuario OAuth";
+        }
+        String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : ROLE_EXTERNO;
+        Long expiresIn = jwtService.getExpirationTime();
+        if (expiresIn == null || expiresIn <= 0) {
+            expiresIn = 3600000L;
+        }
+        return new AuthenticationResponse(token, refreshToken, email, nombre, rol, expiresIn, usuario.getId());
+    }
+
+    private void validarTokenNoVacio(String token, String errorMessage) {
+        if (token == null || token.trim().isEmpty()) {
+            throw new AuthenticationException(errorMessage);
         }
     }
 

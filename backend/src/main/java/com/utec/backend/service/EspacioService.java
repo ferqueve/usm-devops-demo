@@ -21,6 +21,8 @@ import java.util.List;
 @Transactional
 public class EspacioService {
 
+    private static final String ESPACIO_NO_ENCONTRADO_MSG = "Espacio no encontrado con ID: ";
+
     private final EspacioRepository espacioRepository;
 
     @Nullable
@@ -87,14 +89,14 @@ public class EspacioService {
     @org.springframework.cache.annotation.Cacheable(value = "espacios", key = "#id")
     public EspacioResponseDto getEspacioById(Long id) {
         Espacio espacio = espacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + id));
         return mapToResponseDto(espacio);
     }
 
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public EspacioResponseDto updateEspacio(Long id, EspacioUpdateDto updateDto) {
         Espacio espacio = espacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + id));
         
         espacio.setNombre(updateDto.getNombre());
         espacio.setCapacidad(updateDto.getCapacidad());
@@ -113,7 +115,7 @@ public class EspacioService {
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public void deleteEspacio(Long id) {
         Espacio espacio = espacioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + id));
         
         // Soft delete: marcar como eliminado
         espacio.setDeletedAt(Instant.now());
@@ -164,82 +166,111 @@ public class EspacioService {
                 .toList();
     }
     
+    /**
+     * Conjunto de filtros opcionales para búsqueda de espacios. Sustituye
+     * la antigua firma con 9 parámetros posicionales.
+     */
+    public record EspacioFilters(
+            String search,
+            Long tipoEspacioId,
+            Long edificioId,
+            Integer capacidadMin,
+            Integer capacidadMax,
+            String estado,
+            List<Long> tipoElementoIds,
+            List<Integer> cantidadMins,
+            List<Integer> cantidadMaxs) {}
+
     @Transactional(readOnly = true)
-    public List<EspacioResponseDto> filterEspacios(String search, Long tipoEspacioId, Long edificioId, Integer capacidadMin, Integer capacidadMax, 
+    public List<EspacioResponseDto> filterEspacios(String search, Long tipoEspacioId, Long edificioId, Integer capacidadMin, Integer capacidadMax,
                                                    String estado, List<Long> tipoElementoIds, List<Integer> cantidadMins, List<Integer> cantidadMaxs) {
+        return filterEspacios(new EspacioFilters(search, tipoEspacioId, edificioId, capacidadMin, capacidadMax,
+                estado, tipoElementoIds, cantidadMins, cantidadMaxs));
+    }
+
+    @Transactional(readOnly = true)
+    public List<EspacioResponseDto> filterEspacios(EspacioFilters filters) {
         List<Espacio> espacios = espacioRepository.findAll();
-        
-        // Aplicar filtros básicos
-        if (search != null && !search.trim().isEmpty()) {
-            espacios = espacios.stream()
-                    .filter(e -> e.getNombre().toLowerCase().contains(search.toLowerCase()))
-                    .toList();
-        }
-        
-        if (tipoEspacioId != null) {
-            espacios = espacios.stream()
-                    .filter(e -> e.getTipoEspacioId().equals(tipoEspacioId))
-                    .toList();
-        }
-        
-        if (edificioId != null) {
-            espacios = espacios.stream()
-                    .filter(e -> e.getEdificioId() != null && e.getEdificioId().equals(edificioId))
-                    .toList();
-        }
-        
-        if (capacidadMin != null) {
-            espacios = espacios.stream()
-                    .filter(e -> e.getCapacidad() >= capacidadMin)
-                    .toList();
-        }
-        
-        if (capacidadMax != null) {
-            espacios = espacios.stream()
-                    .filter(e -> e.getCapacidad() <= capacidadMax)
-                    .toList();
-        }
-        
-        if (estado != null && !estado.trim().isEmpty()) {
-            espacios = espacios.stream()
-                    .filter(e -> e.getEstado() != null && e.getEstado().equals(estado))
-                    .toList();
-        }
-        
-        // Aplicar filtros de inventario múltiples
-        if (tipoElementoIds != null && !tipoElementoIds.isEmpty()) {
-            for (int i = 0; i < tipoElementoIds.size(); i++) {
-                Long tipoElementoId = tipoElementoIds.get(i);
-                Integer cantidadMin = (cantidadMins != null && i < cantidadMins.size()) ? cantidadMins.get(i) : null;
-                Integer cantidadMax = (cantidadMaxs != null && i < cantidadMaxs.size()) ? cantidadMaxs.get(i) : null;
-                
-                espacios = espacios.stream()
-                        .filter(e -> {
-                            // Verificar si el espacio tiene inventario con este tipo de elemento
-                            return e.getInventarioItems().stream()
-                                    .anyMatch(item -> {
-                                        if (!item.getTipoElemento().getId().equals(tipoElementoId)) {
-                                            return false;
-                                        }
-                                        
-                                        // Aplicar filtros de cantidad
-                                        if (cantidadMin != null && item.getCantidad() < cantidadMin) {
-                                            return false;
-                                        }
-                                        if (cantidadMax != null && item.getCantidad() > cantidadMax) {
-                                            return false;
-                                        }
-                                        
-                                        return true;
-                                    });
-                        })
-                        .toList();
-            }
-        }
-        
+        espacios = aplicarFiltrosBasicos(espacios, filters);
+        espacios = aplicarFiltrosInventario(espacios, filters);
+
         return espacios.stream()
                 .map(this::mapToResponseDto)
                 .toList();
+    }
+
+    private List<Espacio> aplicarFiltrosBasicos(List<Espacio> espacios, EspacioFilters f) {
+        List<Espacio> resultado = espacios;
+        if (f.search() != null && !f.search().trim().isEmpty()) {
+            String searchLower = f.search().toLowerCase();
+            resultado = resultado.stream()
+                    .filter(e -> e.getNombre().toLowerCase().contains(searchLower))
+                    .toList();
+        }
+        if (f.tipoEspacioId() != null) {
+            resultado = resultado.stream()
+                    .filter(e -> e.getTipoEspacioId().equals(f.tipoEspacioId()))
+                    .toList();
+        }
+        if (f.edificioId() != null) {
+            resultado = resultado.stream()
+                    .filter(e -> e.getEdificioId() != null && e.getEdificioId().equals(f.edificioId()))
+                    .toList();
+        }
+        if (f.capacidadMin() != null) {
+            resultado = resultado.stream()
+                    .filter(e -> e.getCapacidad() >= f.capacidadMin())
+                    .toList();
+        }
+        if (f.capacidadMax() != null) {
+            resultado = resultado.stream()
+                    .filter(e -> e.getCapacidad() <= f.capacidadMax())
+                    .toList();
+        }
+        if (f.estado() != null && !f.estado().trim().isEmpty()) {
+            resultado = resultado.stream()
+                    .filter(e -> e.getEstado() != null && e.getEstado().equals(f.estado()))
+                    .toList();
+        }
+        return resultado;
+    }
+
+    private List<Espacio> aplicarFiltrosInventario(List<Espacio> espacios, EspacioFilters f) {
+        List<Long> tipoElementoIds = f.tipoElementoIds();
+        if (tipoElementoIds == null || tipoElementoIds.isEmpty()) {
+            return espacios;
+        }
+        List<Espacio> resultado = espacios;
+        for (int i = 0; i < tipoElementoIds.size(); i++) {
+            Long tipoElementoId = tipoElementoIds.get(i);
+            Integer cantidadMin = obtenerEnIndice(f.cantidadMins(), i);
+            Integer cantidadMax = obtenerEnIndice(f.cantidadMaxs(), i);
+
+            resultado = resultado.stream()
+                    .filter(e -> tieneInventarioConCantidad(e, tipoElementoId, cantidadMin, cantidadMax))
+                    .toList();
+        }
+        return resultado;
+    }
+
+    private Integer obtenerEnIndice(List<Integer> lista, int i) {
+        return (lista != null && i < lista.size()) ? lista.get(i) : null;
+    }
+
+    private boolean tieneInventarioConCantidad(Espacio espacio, Long tipoElementoId, Integer cantidadMin, Integer cantidadMax) {
+        return espacio.getInventarioItems().stream()
+                .anyMatch(item -> coincideItemConCantidad(item, tipoElementoId, cantidadMin, cantidadMax));
+    }
+
+    private boolean coincideItemConCantidad(com.utec.backend.model.InventarioItem item, Long tipoElementoId,
+                                            Integer cantidadMin, Integer cantidadMax) {
+        if (!item.getTipoElemento().getId().equals(tipoElementoId)) {
+            return false;
+        }
+        if (cantidadMin != null && item.getCantidad() < cantidadMin) {
+            return false;
+        }
+        return cantidadMax == null || item.getCantidad() <= cantidadMax;
     }
     
     @Transactional(readOnly = true)
@@ -278,7 +309,7 @@ public class EspacioService {
     @org.springframework.cache.annotation.CacheEvict(value = "espacios", allEntries = true)
     public void updateEspacioImagen(Long espacioId, String objectName) {
         Espacio espacio = espacioRepository.findById(espacioId)
-                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + espacioId));
+                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
         
         // Si hay una imagen anterior y es diferente, eliminarla
         String oldImageUrl = espacio.getImagenUrl();

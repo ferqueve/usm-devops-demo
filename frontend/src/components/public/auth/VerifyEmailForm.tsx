@@ -49,14 +49,14 @@ export function VerifyEmailForm({
     if (status === 'error' && resendCooldown === 0) {
       setResendCooldown(40);
     }
-  }, [status]);
+  }, [status, resendCooldown]);
 
   const handleResendEmail = async () => {
     if (!email.trim() || resendCooldown > 0) {
       return;
     }
     if (onResendEmail) {
-      await onResendEmail(email);
+      onResendEmail(email);
       setResendCooldown(40); // Reiniciar cooldown después del reenvío
     }
   };
@@ -65,17 +65,15 @@ export function VerifyEmailForm({
     switch (status) {
       case 'loading':
         return (
-          <>
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-              <h1 className="text-2xl font-bold">Verificando email...</h1>
-              <p className="text-muted-foreground text-sm text-balance">
-                Por favor espera mientras verificamos tu email.
-              </p>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          </>
+            <h1 className="text-2xl font-bold">Verificando email...</h1>
+            <p className="text-muted-foreground text-sm text-balance">
+              Por favor espera mientras verificamos tu email.
+            </p>
+          </div>
         );
 
       case 'success':

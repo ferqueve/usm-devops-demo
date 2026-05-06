@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +39,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class ReservaItemSolicitadoService {
-    
+
+    private static final String FIELD_RESERVA = "reserva";
+
     private final ReservaItemSolicitadoRepository reservaItemSolicitadoRepository;
     private final ReservaRepository reservaRepository;
     private final TipoElementoRepository tipoElementoRepository;
@@ -147,7 +150,7 @@ public class ReservaItemSolicitadoService {
         // SOLO mostrar solicitudes de reservas APROBADAS
         // Las solicitudes de reservas pendientes o canceladas no deben aparecer
         Specification<ReservaItemSolicitado> reservaAprobadaSpec = (root, query, cb) -> {
-            Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join("reserva", JoinType.INNER);
+            Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join(FIELD_RESERVA, JoinType.INNER);
             return cb.equal(reservaJoin.get("estado"), Reserva.EstadoReserva.APROBADO);
         };
         spec = spec.and(reservaAprobadaSpec);
@@ -159,7 +162,7 @@ public class ReservaItemSolicitadoService {
 
         if (espacioId != null) {
             Specification<ReservaItemSolicitado> espacioSpec = (root, query, cb) -> {
-                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join("reserva", JoinType.INNER);
+                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join(FIELD_RESERVA, JoinType.INNER);
                 Join<Reserva, Espacio> espacioJoin = reservaJoin.join("espacio", JoinType.INNER);
                 return cb.equal(espacioJoin.get("id"), espacioId);
             };
@@ -168,7 +171,7 @@ public class ReservaItemSolicitadoService {
 
         if (fechaDesde != null) {
             Specification<ReservaItemSolicitado> desdeSpec = (root, query, cb) -> {
-                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join("reserva", JoinType.INNER);
+                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join(FIELD_RESERVA, JoinType.INNER);
                 return cb.greaterThanOrEqualTo(reservaJoin.get("inicio"), fechaDesde);
             };
             spec = spec.and(desdeSpec);
@@ -176,7 +179,7 @@ public class ReservaItemSolicitadoService {
 
         if (fechaHasta != null) {
             Specification<ReservaItemSolicitado> hastaSpec = (root, query, cb) -> {
-                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join("reserva", JoinType.INNER);
+                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join(FIELD_RESERVA, JoinType.INNER);
                 return cb.lessThanOrEqualTo(reservaJoin.get("inicio"), fechaHasta);
             };
             spec = spec.and(hastaSpec);
@@ -188,7 +191,7 @@ public class ReservaItemSolicitadoService {
             Long numero = parseLong(trimmed);
 
             Specification<ReservaItemSolicitado> searchSpec = (root, query, cb) -> {
-                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join("reserva", JoinType.LEFT);
+                Join<ReservaItemSolicitado, Reserva> reservaJoin = root.join(FIELD_RESERVA, JoinType.LEFT);
                 Join<Reserva, Usuario> usuarioJoin = reservaJoin.join("usuario", JoinType.LEFT);
                 Join<ReservaItemSolicitado, TipoElemento> tipoJoin = root.join("tipoElemento", JoinType.LEFT);
 
@@ -244,95 +247,129 @@ public class ReservaItemSolicitadoService {
             throw new IllegalStateException("La solicitud de inventario fue eliminada y no puede modificarse");
         }
 
-        boolean cambios = false;
-
         ReservaItemSolicitado.EstadoSolicitud estadoAnterior = item.getEstado();
-        if (updateDto.getEstado() != null && updateDto.getEstado() != item.getEstado()) {
-            validarTransicionEstado(item.getEstado(), updateDto.getEstado());
-            item.setEstado(updateDto.getEstado());
-            cambios = true;
-        }
+        boolean cambios = aplicarCambioEstado(item, updateDto)
+                | aplicarCambioInventario(item, updateDto)
+                | aplicarCambioObservaciones(item, updateDto);
 
-        if (updateDto.getInventarioItemId() != null) {
-            Long nuevoInventarioId = updateDto.getInventarioItemId();
-
-            if (nuevoInventarioId != null && nuevoInventarioId <= 0) {
-                if (item.getInventarioItem() != null) {
-                    item.setInventarioItem(null);
-                    cambios = true;
-                }
-            } else if (nuevoInventarioId != null) {
-                InventarioItem inventarioItem = inventarioItemRepository.findById(nuevoInventarioId)
-                        .orElseThrow(() -> new IllegalArgumentException("Item de inventario no encontrado con ID: " + nuevoInventarioId));
-
-                if (!Boolean.TRUE.equals(inventarioItem.getActivo())) {
-                    throw new IllegalArgumentException("El item de inventario seleccionado no está activo");
-                }
-
-                if (!"DISPONIBLE".equalsIgnoreCase(inventarioItem.getEstado())) {
-                    throw new IllegalArgumentException("El item de inventario seleccionado no está disponible (estado actual: " + inventarioItem.getEstado() + ")");
-                }
-
-                if (!inventarioItem.getTipoElemento().getId().equals(item.getTipoElemento().getId())) {
-                    throw new IllegalArgumentException("El item de inventario seleccionado no corresponde al tipo solicitado");
-                }
-
-                if (item.getInventarioItem() == null || !Objects.equals(item.getInventarioItem().getId(), inventarioItem.getId())) {
-                    item.setInventarioItem(inventarioItem);
-                    cambios = true;
-                }
-            }
-        }
-
-        if (updateDto.getObservaciones() != null) {
-            String nuevasObs = updateDto.getObservaciones().trim();
-            if (nuevasObs.isEmpty()) {
-                nuevasObs = null;
-            }
-            if (!Objects.equals(nuevasObs, item.getObservaciones())) {
-                item.setObservaciones(nuevasObs);
-                cambios = true;
-            }
-        }
-
-        if (item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO && item.getInventarioItem() == null) {
-            throw new IllegalArgumentException("Para marcar como ENTREGADO es necesario asociar un item de inventario disponible");
-        }
+        validarEntregadoTieneInventario(item);
 
         if (!cambios) {
             return mapToResponseDto(item);
         }
 
         ReservaItemSolicitado guardado = reservaItemSolicitadoRepository.save(item);
-        log.info("Solicitud de inventario {} actualizada por {}", guardado.getId(), actualizadoPor != null ? actualizadoPor : "sistema");
-        
+        log.info("Solicitud de inventario {} actualizada por {}", guardado.getId(),
+                actualizadoPor != null ? actualizadoPor : "sistema");
+
         ReservaItemSolicitadoResponseDto dto = mapToResponseDto(guardado);
-        
-        // Enviar notificación al usuario si cambió el estado
-        if (cambios && updateDto.getEstado() != null && updateDto.getEstado() != estadoAnterior) {
-            try {
-                if (dto.getSolicitanteEmail() != null) {
-                    boolean emailEnviado = emailService.enviarEmailNotificacionEstadoSolicitudInventario(
-                        dto.getSolicitanteEmail(),
-                        dto,
-                        estadoAnterior != null ? estadoAnterior.toString() : "N/A",
-                        updateDto.getEstado().toString()
-                    );
-                    if (emailEnviado) {
-                        log.info("Email de notificación de cambio de estado de solicitud de inventario enviado al usuario: {}", 
-                                dto.getSolicitanteEmail());
-                    } else {
-                        log.warn("No se pudo enviar email de notificación al usuario: {}", 
-                                dto.getSolicitanteEmail());
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error al enviar email de notificación de cambio de estado de solicitud de inventario: {}", e.getMessage());
-                // No lanzar excepción para no interrumpir el flujo
-            }
-        }
-        
+        notificarCambioEstadoSolicitud(dto, updateDto, estadoAnterior);
         return dto;
+    }
+
+    private boolean aplicarCambioEstado(ReservaItemSolicitado item, ReservaItemSolicitadoUpdateDto updateDto) {
+        if (updateDto.getEstado() == null || updateDto.getEstado() == item.getEstado()) {
+            return false;
+        }
+        validarTransicionEstado(item.getEstado(), updateDto.getEstado());
+        item.setEstado(updateDto.getEstado());
+        return true;
+    }
+
+    private boolean aplicarCambioInventario(ReservaItemSolicitado item, ReservaItemSolicitadoUpdateDto updateDto) {
+        Long nuevoInventarioId = updateDto.getInventarioItemId();
+        if (nuevoInventarioId == null) {
+            return false;
+        }
+        if (nuevoInventarioId <= 0) {
+            return desasignarInventario(item);
+        }
+        return asignarNuevoInventario(item, nuevoInventarioId);
+    }
+
+    private boolean desasignarInventario(ReservaItemSolicitado item) {
+        if (item.getInventarioItem() == null) {
+            return false;
+        }
+        item.setInventarioItem(null);
+        return true;
+    }
+
+    private boolean asignarNuevoInventario(ReservaItemSolicitado item, Long nuevoInventarioId) {
+        InventarioItem inventarioItem = inventarioItemRepository.findById(nuevoInventarioId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Item de inventario no encontrado con ID: " + nuevoInventarioId));
+        validarInventarioAsignable(inventarioItem, item);
+        boolean igual = item.getInventarioItem() != null
+                && Objects.equals(item.getInventarioItem().getId(), inventarioItem.getId());
+        if (igual) {
+            return false;
+        }
+        item.setInventarioItem(inventarioItem);
+        return true;
+    }
+
+    private void validarInventarioAsignable(InventarioItem inventarioItem, ReservaItemSolicitado item) {
+        if (!Boolean.TRUE.equals(inventarioItem.getActivo())) {
+            throw new IllegalArgumentException("El item de inventario seleccionado no está activo");
+        }
+        if (!"DISPONIBLE".equalsIgnoreCase(inventarioItem.getEstado())) {
+            throw new IllegalArgumentException(
+                    "El item de inventario seleccionado no está disponible (estado actual: "
+                            + inventarioItem.getEstado() + ")");
+        }
+        if (!inventarioItem.getTipoElemento().getId().equals(item.getTipoElemento().getId())) {
+            throw new IllegalArgumentException("El item de inventario seleccionado no corresponde al tipo solicitado");
+        }
+    }
+
+    private boolean aplicarCambioObservaciones(ReservaItemSolicitado item, ReservaItemSolicitadoUpdateDto updateDto) {
+        if (updateDto.getObservaciones() == null) {
+            return false;
+        }
+        String nuevasObs = updateDto.getObservaciones().trim();
+        if (nuevasObs.isEmpty()) {
+            nuevasObs = null;
+        }
+        if (Objects.equals(nuevasObs, item.getObservaciones())) {
+            return false;
+        }
+        item.setObservaciones(nuevasObs);
+        return true;
+    }
+
+    private void validarEntregadoTieneInventario(ReservaItemSolicitado item) {
+        if (item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO
+                && item.getInventarioItem() == null) {
+            throw new IllegalArgumentException(
+                    "Para marcar como ENTREGADO es necesario asociar un item de inventario disponible");
+        }
+    }
+
+    private void notificarCambioEstadoSolicitud(ReservaItemSolicitadoResponseDto dto,
+                                                ReservaItemSolicitadoUpdateDto updateDto,
+                                                ReservaItemSolicitado.EstadoSolicitud estadoAnterior) {
+        if (updateDto.getEstado() == null || updateDto.getEstado() == estadoAnterior
+                || dto.getSolicitanteEmail() == null) {
+            return;
+        }
+        try {
+            boolean emailEnviado = emailService.enviarEmailNotificacionEstadoSolicitudInventario(
+                    dto.getSolicitanteEmail(),
+                    dto,
+                    estadoAnterior != null ? estadoAnterior.toString() : "N/A",
+                    updateDto.getEstado().toString()
+            );
+            if (emailEnviado) {
+                log.info("Email de notificación de cambio de estado de solicitud de inventario enviado al usuario: {}",
+                        dto.getSolicitanteEmail());
+            } else {
+                log.warn("No se pudo enviar email de notificación al usuario: {}", dto.getSolicitanteEmail());
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación de cambio de estado de solicitud de inventario: {}",
+                    e.getMessage());
+        }
     }
 
     private void validarTransicionEstado(ReservaItemSolicitado.EstadoSolicitud actual,
@@ -341,22 +378,25 @@ public class ReservaItemSolicitadoService {
             return;
         }
 
-        switch (actual) {
-            case PENDIENTE -> {
-                if (nuevo != ReservaItemSolicitado.EstadoSolicitud.APROBADO
-                        && nuevo != ReservaItemSolicitado.EstadoSolicitud.RECHAZADO) {
-                    throw new IllegalArgumentException("Transición inválida desde PENDIENTE hacia " + nuevo);
-                }
-            }
-            case APROBADO -> {
-                if (nuevo != ReservaItemSolicitado.EstadoSolicitud.ENTREGADO
-                        && nuevo != ReservaItemSolicitado.EstadoSolicitud.RECHAZADO) {
-                    throw new IllegalArgumentException("Transición inválida desde APROBADO hacia " + nuevo);
-                }
-            }
-            case RECHAZADO, ENTREGADO ->
-                    throw new IllegalArgumentException("No es posible cambiar el estado una vez marcado como " + actual);
-            default -> throw new IllegalArgumentException("Transición de estado no soportada");
+        validarSiguienteEstado(actual, nuevo);
+    }
+
+    private void validarSiguienteEstado(ReservaItemSolicitado.EstadoSolicitud actual,
+                                        ReservaItemSolicitado.EstadoSolicitud nuevo) {
+        Set<ReservaItemSolicitado.EstadoSolicitud> permitidos = switch (actual) {
+            case PENDIENTE -> Set.of(
+                    ReservaItemSolicitado.EstadoSolicitud.APROBADO,
+                    ReservaItemSolicitado.EstadoSolicitud.RECHAZADO);
+            case APROBADO -> Set.of(
+                    ReservaItemSolicitado.EstadoSolicitud.ENTREGADO,
+                    ReservaItemSolicitado.EstadoSolicitud.RECHAZADO);
+            case RECHAZADO, ENTREGADO -> Set.of();
+        };
+        if (permitidos.isEmpty()) {
+            throw new IllegalArgumentException("No es posible cambiar el estado una vez marcado como " + actual);
+        }
+        if (!permitidos.contains(nuevo)) {
+            throw new IllegalArgumentException("Transición inválida desde " + actual + " hacia " + nuevo);
         }
     }
 

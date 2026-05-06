@@ -26,6 +26,9 @@ import java.util.Map;
 @Transactional
 public class InventarioItemService {
 
+    private static final String ITEM_NO_ENCONTRADO_MSG = "Item de inventario no encontrado con ID: ";
+    private static final String FIELD_ESPACIO = "espacio";
+
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
     private final TipoElementoRepository tipoElementoRepository;
@@ -93,14 +96,14 @@ public class InventarioItemService {
         // Filtro por espacio
         if (espacioId != null) {
             Specification<InventarioItem> espacioSpec = (root, query, cb) -> 
-                cb.equal(root.get("espacio").get("id"), espacioId);
+                cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId);
             spec = spec.and(espacioSpec);
         }
         
         // Filtro "Sin Asignar" - items que tienen espacio_id = null
         if (Boolean.TRUE.equals(sinAsignar)) {
             Specification<InventarioItem> sinAsignarSpec = (root, query, cb) -> 
-                cb.isNull(root.get("espacio"));
+                cb.isNull(root.get(FIELD_ESPACIO));
             spec = spec.and(sinAsignarSpec);
         }
         
@@ -130,13 +133,13 @@ public class InventarioItemService {
     @Transactional(readOnly = true)
     public InventarioItemResponseDto getInventarioItemById(Long id) {
         InventarioItem inventarioItem = inventarioItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Item de inventario no encontrado con ID: " + id));
+                .orElseThrow(() -> new RuntimeException(ITEM_NO_ENCONTRADO_MSG + id));
         return mapToResponseDto(inventarioItem);
     }
     
     public InventarioItemResponseDto updateInventarioItem(Long id, InventarioItemUpdateDto updateDto) {
         InventarioItem inventarioItem = inventarioItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Item de inventario no encontrado con ID: " + id));
+                .orElseThrow(() -> new RuntimeException(ITEM_NO_ENCONTRADO_MSG + id));
         
         // Verificar que el espacio existe (si se proporciona para actualizar)
         if (updateDto.getEspacioId() != null) {
@@ -177,7 +180,7 @@ public class InventarioItemService {
     
     public void deleteInventarioItem(Long id) {
         InventarioItem inventarioItem = inventarioItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Item de inventario no encontrado con ID: " + id));
+                .orElseThrow(() -> new RuntimeException(ITEM_NO_ENCONTRADO_MSG + id));
         
         // Soft delete: marcar como inactivo y eliminado
         inventarioItem.setActivo(false);
@@ -247,69 +250,81 @@ public class InventarioItemService {
     }
     
     @Transactional(readOnly = true)
-    public List<InventarioItemResponseDto> filterInventario(String search, Long espacioId, 
-                                                           Long tipoElementoId, String estado, 
+    public List<InventarioItemResponseDto> filterInventario(String search, Long espacioId,
+                                                           Long tipoElementoId, String estado,
                                                            Boolean sinAsignar, String sortBy, String sortDir) {
         List<InventarioItem> items = inventarioItemRepository.findAll();
-        
-        // Aplicar filtros
-        if (search != null && !search.trim().isEmpty()) {
-            String searchLower = search.toLowerCase();
-            items = items.stream()
-                    .filter(item -> {
-                        boolean matchesSearch = false;
-                        // Buscar en tipo de elemento
-                        if (item.getTipoElemento().getNombre().toLowerCase().contains(searchLower)) {
-                            matchesSearch = true;
-                        }
-                        // Buscar en espacio
-                        if (item.getEspacio() != null && item.getEspacio().getNombre().toLowerCase().contains(searchLower)) {
-                            matchesSearch = true;
-                        }
-                        // Buscar en estado
-                        if (item.getEstado() != null && item.getEstado().toLowerCase().contains(searchLower)) {
-                            matchesSearch = true;
-                        }
-                        return matchesSearch;
-                    })
-                    .toList();
-        }
-        
-        if (espacioId != null) {
-            items = items.stream()
-                    .filter(item -> item.getEspacio() != null && item.getEspacio().getId().equals(espacioId))
-                    .toList();
-        }
-        
-        if (tipoElementoId != null) {
-            items = items.stream()
-                    .filter(item -> item.getTipoElemento().getId().equals(tipoElementoId))
-                    .toList();
-        }
-        
-        if (estado != null) {
-            items = items.stream()
-                    .filter(item -> item.getEstado().equals(estado))
-                    .toList();
-        }
-        
-        if (Boolean.TRUE.equals(sinAsignar)) {
-            // Filtrar items sin espacio asignado (espacio null)
-            items = items.stream()
-                    .filter(item -> item.getEspacio() == null)
-                    .toList();
-        }
-        
+        items = aplicarFiltroSearch(items, search);
+        items = aplicarFiltroEspacio(items, espacioId);
+        items = aplicarFiltroTipoElemento(items, tipoElementoId);
+        items = aplicarFiltroEstado(items, estado);
+        items = aplicarFiltroSinAsignar(items, sinAsignar);
+
         List<InventarioItemResponseDto> result = items.stream()
                 .map(this::mapToResponseDto)
                 .toList();
-        
-        // Aplicar ordenamiento si se especifica
+
         if (sortBy != null && !sortBy.isEmpty()) {
             result = sortList(result, sortBy, sortDir);
         }
-        
+
         return result;
+    }
+
+    private List<InventarioItem> aplicarFiltroSearch(List<InventarioItem> items, String search) {
+        if (search == null || search.trim().isEmpty()) {
+            return items;
+        }
+        String searchLower = search.toLowerCase();
+        return items.stream()
+                .filter(item -> coincideBusqueda(item, searchLower))
+                .toList();
+    }
+
+    private boolean coincideBusqueda(InventarioItem item, String searchLower) {
+        if (item.getTipoElemento().getNombre().toLowerCase().contains(searchLower)) {
+            return true;
+        }
+        if (item.getEspacio() != null && item.getEspacio().getNombre().toLowerCase().contains(searchLower)) {
+            return true;
+        }
+        return item.getEstado() != null && item.getEstado().toLowerCase().contains(searchLower);
+    }
+
+    private List<InventarioItem> aplicarFiltroEspacio(List<InventarioItem> items, Long espacioId) {
+        if (espacioId == null) {
+            return items;
+        }
+        return items.stream()
+                .filter(item -> item.getEspacio() != null && item.getEspacio().getId().equals(espacioId))
+                .toList();
+    }
+
+    private List<InventarioItem> aplicarFiltroTipoElemento(List<InventarioItem> items, Long tipoElementoId) {
+        if (tipoElementoId == null) {
+            return items;
+        }
+        return items.stream()
+                .filter(item -> item.getTipoElemento().getId().equals(tipoElementoId))
+                .toList();
+    }
+
+    private List<InventarioItem> aplicarFiltroEstado(List<InventarioItem> items, String estado) {
+        if (estado == null) {
+            return items;
+        }
+        return items.stream()
+                .filter(item -> item.getEstado().equals(estado))
+                .toList();
+    }
+
+    private List<InventarioItem> aplicarFiltroSinAsignar(List<InventarioItem> items, Boolean sinAsignar) {
+        if (!Boolean.TRUE.equals(sinAsignar)) {
+            return items;
+        }
+        return items.stream()
+                .filter(item -> item.getEspacio() == null)
+                .toList();
     }
     
     private List<InventarioItemResponseDto> sortList(List<InventarioItemResponseDto> items, String sortBy, String sortDir) {
@@ -331,10 +346,6 @@ public class InventarioItemService {
                             comparison = Long.compare(a.getId(), b.getId());
                             break;
                         case "nombre":  // Para tipoElemento.nombre o espacio.nombre
-                            String nombreA = a.getTipoElementoNombre();
-                            String nombreB = b.getTipoElementoNombre();
-                            comparison = nombreA.compareToIgnoreCase(nombreB);
-                            break;
                         case "tipo":
                         case "tipoelementonombre":
                             comparison = a.getTipoElementoNombre().compareToIgnoreCase(b.getTipoElementoNombre());

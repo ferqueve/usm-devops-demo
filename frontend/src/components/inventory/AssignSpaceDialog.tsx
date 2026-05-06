@@ -117,10 +117,10 @@ export default function AssignSpaceDialog({
       }
 
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al desasignar espacio:', error);
       toast.error('Error al desasignar espacio', {
-        description: error.message || 'No se pudo desasignar el espacio'
+        description: error instanceof Error ? error.message : 'No se pudo desasignar el espacio'
       });
     } finally {
       setLoading(false);
@@ -196,10 +196,10 @@ export default function AssignSpaceDialog({
       }
       
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al asignar espacio:', error);
       toast.error('Error al asignar espacio', {
-        description: error.message || 'No se pudo asignar el espacio'
+        description: error instanceof Error ? error.message : 'No se pudo asignar el espacio'
       });
     } finally {
       setLoading(false);

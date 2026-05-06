@@ -128,9 +128,7 @@ export function TermsAndPrivacyDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-xl">
-            {showAcceptButton
-              ? "Términos y Condiciones / Política de Privacidad"
-              : "Términos y Condiciones / Política de Privacidad"}
+            Términos y Condiciones / Política de Privacidad
           </DialogTitle>
         </DialogHeader>
 

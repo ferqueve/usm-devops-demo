@@ -396,10 +396,13 @@ export default function InventoryRequestsManagement() {
   const tableContent = useMemo(() => requestsPage?.content ?? [], [requestsPage]);
 
   const inventorySelectOptions = useMemo(() => {
-    const options = inventoryOptions.map((item) => ({
-      value: item.id,
-      label: `Item #${item.id}${item.espacioNombre ? ` · ${item.espacioNombre}` : ''}`,
-    }));
+    const options = inventoryOptions.map((item) => {
+      const espacioSuffix = item.espacioNombre ? ` · ${item.espacioNombre}` : '';
+      return {
+        value: item.id,
+        label: `Item #${item.id}${espacioSuffix}`,
+      };
+    });
 
     if (
       selectedRequest?.inventarioItemId &&

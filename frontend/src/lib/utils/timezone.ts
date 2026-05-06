@@ -30,7 +30,7 @@ export function fromUTC(utcDateString: string): Date {
   }
   const date = new Date(utcDateString);
   if (Number.isNaN(date.getTime())) {
-    throw new Error(`Fecha UTC inválida: ${utcDateString}`);
+    throw new TypeError(`Fecha UTC inválida: ${utcDateString}`);
   }
   return date;
 }

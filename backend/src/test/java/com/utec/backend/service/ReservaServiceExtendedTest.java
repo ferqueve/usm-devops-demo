@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -776,7 +777,6 @@ class ReservaServiceExtendedTest {
 
     @Test
     @DisplayName("ANALISTA debe ver solo reservas asignadas a él + sin asignar")
-    @SuppressWarnings("unchecked")
     void analistaFiltrarSoloSusReservas() {
         // Given
         Reserva reserva1 = new Reserva(); // Asignada a analista1
@@ -797,24 +797,24 @@ class ReservaServiceExtendedTest {
         Page<Reserva> page = new PageImpl<>(Arrays.asList(reserva1, reserva2), pageable, 2);
 
         lenient().when(usuarioRepository.findByEmail("analista1@utec.edu.uy")).thenReturn(Optional.of(usuarioAnalista1));
-        when(reservaRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any(), eq(pageable))).thenReturn(page);
         lenient().when(fileStorageService.getImageUrl(anyString())).thenReturn("url");
 
         // When
         Page<ReservaResponseDto> resultado = reservaService.getAllReservasPaged(
-                pageable, null, null, null, null, null, null, null, null,
+                pageable,
+                new com.utec.backend.dto.reserva.ReservaFilters(null, null, null, null, null, null, null, null),
                 "analista1@utec.edu.uy", ROLE_ANALISTA
         );
 
         // Then
         assertNotNull(resultado);
         assertEquals(2, resultado.getTotalElements());
-        verify(reservaRepository).findAll(any(Specification.class), eq(pageable));
+        verify(reservaRepository).findAll(ArgumentMatchers.<Specification<Reserva>>any(), eq(pageable));
     }
 
     @Test
     @DisplayName("EXTERNO debe ver solo reservas públicas")
-    @SuppressWarnings("unchecked")
     void externoFiltrarSoloPublicas() {
         // Given
         Reserva reservaPublica = new Reserva();
@@ -825,18 +825,18 @@ class ReservaServiceExtendedTest {
         reservaPublica.setInicio(inicioFuturo);
 
         lenient().when(usuarioRepository.findByEmail("externo@gmail.com")).thenReturn(Optional.of(usuarioExterno));
-        when(reservaRepository.findAll(any(Specification.class))).thenReturn(Arrays.asList(reservaPublica));
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenReturn(Arrays.asList(reservaPublica));
         lenient().when(fileStorageService.getImageUrl(anyString())).thenReturn("url");
 
         // When
         List<ReservaResponseDto> resultado = reservaService.getTodasLasReservas(
-                null, null, null, null, null, null,
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
                 "externo@gmail.com", ROLE_EXTERNO
         );
 
         // Then
         assertNotNull(resultado);
-        verify(reservaRepository).findAll(any(Specification.class));
+        verify(reservaRepository).findAll(ArgumentMatchers.<Specification<Reserva>>any());
     }
 
     @Test

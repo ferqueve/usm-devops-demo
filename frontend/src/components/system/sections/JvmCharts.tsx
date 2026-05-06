@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { Activity, MemoryStick, Cpu } from 'lucide-react';
-import { MetricsChart } from '@/components/ui/metrics-chart';
+import { MetricsChart, type MetricsChartDataPoint } from '@/components/ui/metrics-chart';
 
 interface JvmChartsProps {
-  metricsHistory: any[];
+  metricsHistory: MetricsChartDataPoint[];
   isPaused?: boolean;
 }
 

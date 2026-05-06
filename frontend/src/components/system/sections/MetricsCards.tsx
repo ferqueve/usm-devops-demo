@@ -2,13 +2,14 @@ import { memo } from 'react';
 import { CheckCircle2, AlertCircle, HardDrive, Cpu, Clock } from 'lucide-react';
 import { MetricCard } from '@/components/ui/metric-card';
 import { formatBytes, formatUptime } from '@/lib/utils/formatters';
+import type { HealthInfo, MetricInfo, MetricMeasurement } from '@/lib/types/actuator';
 
 interface MetricsCardsProps {
-  health: any;
-  memoryMetrics: any;
-  memoryMaxMetrics: any;
-  cpuMetrics: any;
-  uptimeMetrics: any;
+  health: HealthInfo | null | undefined;
+  memoryMetrics: MetricInfo | null | undefined;
+  memoryMaxMetrics: MetricInfo | null | undefined;
+  cpuMetrics: MetricInfo | null | undefined;
+  uptimeMetrics: MetricInfo | null | undefined;
 }
 
 export const MetricsCards = memo(function MetricsCards({
@@ -21,12 +22,15 @@ export const MetricsCards = memo(function MetricsCards({
   const healthStatus = health?.status || 'UNKNOWN';
   const isHealthy = healthStatus === 'UP';
   
-  const memoryUsed = memoryMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-  const memoryMax = memoryMaxMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 2147483648;
+  const findStatistic = (metric: MetricInfo | null | undefined, stat: string): number =>
+    metric?.measurements?.find((m: MetricMeasurement) => m.statistic === stat)?.value ?? 0;
+
+  const memoryUsed = findStatistic(memoryMetrics, 'VALUE');
+  const memoryMax = memoryMaxMetrics?.measurements?.find((m: MetricMeasurement) => m.statistic === 'VALUE')?.value ?? 2147483648;
   const memoryUsagePercent = memoryMax > 0 ? (memoryUsed / memoryMax) * 100 : 0;
-  
-  const cpuUsage = cpuMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
-  const uptimeSeconds = uptimeMetrics?.measurements?.find((m: any) => m.statistic === 'VALUE')?.value || 0;
+
+  const cpuUsage = findStatistic(cpuMetrics, 'VALUE');
+  const uptimeSeconds = findStatistic(uptimeMetrics, 'VALUE');
 
   const memoryVariant: 'error' | 'warning' | 'success' = (() => {
     if (memoryUsagePercent > 90) return 'error';

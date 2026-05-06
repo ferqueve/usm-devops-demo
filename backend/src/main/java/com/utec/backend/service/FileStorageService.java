@@ -25,6 +25,9 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
+    private static final String HTTP_PREFIX = "http://";
+    private static final String HTTPS_PREFIX = "https://";
+
     @Nullable
     private final MinioClient minioClient;
 
@@ -80,7 +83,7 @@ public class FileStorageService {
             String timestamp = Instant.now().atZone(java.time.ZoneOffset.UTC).format(DATE_FORMATTER);
             String uniqueFilename = String.format("%s-%s%s", timestamp, UUID.randomUUID().toString().substring(0, 8), extension);
             
-            // Ruta del objeto: espacios/{espacioId}/{filename}
+            // Construir la ruta del objeto siguiendo el patron espacios por id y nombre de archivo
             String objectName = String.format("espacios/%d/%s", espacioId, uniqueFilename);
 
             // Subir archivo a MinIO
@@ -119,7 +122,7 @@ public class FileStorageService {
         }
 
         // Si es una URL externa (http/https), no intentar eliminar
-        if (objectName.startsWith("http://") || objectName.startsWith("https://")) {
+        if (objectName.startsWith(HTTP_PREFIX) || objectName.startsWith(HTTPS_PREFIX)) {
             log.info("No se elimina URL externa: {}", objectName);
             return;
         }
@@ -150,7 +153,7 @@ public class FileStorageService {
         }
 
         // Si ya es una URL externa, retornarla tal cual
-        if (objectName.startsWith("http://") || objectName.startsWith("https://")) {
+        if (objectName.startsWith(HTTP_PREFIX) || objectName.startsWith(HTTPS_PREFIX)) {
             return objectName;
         }
 
@@ -245,7 +248,7 @@ public class FileStorageService {
         }
 
         // Si es una URL externa, asumir que existe
-        if (objectName.startsWith("http://") || objectName.startsWith("https://")) {
+        if (objectName.startsWith(HTTP_PREFIX) || objectName.startsWith(HTTPS_PREFIX)) {
             return true;
         }
 

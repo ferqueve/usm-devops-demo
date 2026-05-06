@@ -17,12 +17,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.beans.BeanWrapperImpl;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -346,65 +349,90 @@ public class AuditService {
         }
     }
     
+    private static final Set<String> IGNORED_FIELDS = Set.of(
+            "hibernateLazyInitializer",
+            "createdAt",
+            "updatedAt",
+            "deletedAt"
+    );
+
     /**
-     * Extraer solo campos simples de una entidad, evitando relaciones JPA
+     * Extraer solo campos simples de una entidad, evitando relaciones JPA.
+     *
+     * Se utiliza {@link BeanWrapperImpl} (acceso vía getters) en lugar de
+     * acceder a campos privados con reflexión.
      */
     private Map<String, Object> extractSimpleFields(Object obj) {
         Map<String, Object> data = new HashMap<>();
         if (obj == null) {
             return data;
         }
-        
-        Class<?> clazz = obj.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        
+
+        BeanWrapperImpl wrapper = new BeanWrapperImpl(obj);
+        Field[] fields = obj.getClass().getDeclaredFields();
+
         for (Field field : fields) {
-            // Ignorar campos que son relaciones JPA o colecciones
-            if (field.isAnnotationPresent(jakarta.persistence.ManyToOne.class) ||
-                field.isAnnotationPresent(jakarta.persistence.OneToOne.class) ||
-                field.isAnnotationPresent(jakarta.persistence.OneToMany.class) ||
-                field.isAnnotationPresent(jakarta.persistence.ManyToMany.class)) {
-                // Para relaciones, solo guardar el ID si existe
-                try {
-                    field.setAccessible(true);
-                    Object relationValue = field.get(obj);
-                    if (relationValue != null) {
-                        // Intentar obtener el ID de la relación
-                        Field idField = relationValue.getClass().getDeclaredField("id");
-                        idField.setAccessible(true);
-                        Object idValue = idField.get(relationValue);
-                        if (idValue != null) {
-                            data.put(field.getName() + "Id", idValue);
-                        }
-                    }
-                } catch (Exception e) {
-                    // Ignorar si no se puede obtener el ID
-                }
-                continue;
-            }
-            
-            // Ignorar campos de auditoría y metadatos de Hibernate
             String fieldName = field.getName();
-            if (fieldName.equals("hibernateLazyInitializer") ||
-                fieldName.equals("createdAt") ||
-                fieldName.equals("updatedAt") ||
-                fieldName.equals("deletedAt")) {
+            if (IGNORED_FIELDS.contains(fieldName)) {
                 continue;
             }
-            
-            try {
-                field.setAccessible(true);
-                Object value = field.get(obj);
-                // Solo incluir valores no nulos y tipos simples
-                if (value != null && isSimpleType(value.getClass())) {
-                    data.put(fieldName, value);
-                }
-            } catch (Exception e) {
-                // Ignorar campos que no se pueden acceder
+
+            if (isJpaRelation(field)) {
+                extractRelationId(wrapper, fieldName).ifPresent(idValue ->
+                        data.put(fieldName + "Id", idValue));
+                continue;
             }
+
+            extractSimpleValue(wrapper, fieldName)
+                    .ifPresent(value -> data.put(fieldName, value));
         }
-        
+
         return data;
+    }
+
+    private boolean isJpaRelation(Field field) {
+        return field.isAnnotationPresent(jakarta.persistence.ManyToOne.class) ||
+               field.isAnnotationPresent(jakarta.persistence.OneToOne.class) ||
+               field.isAnnotationPresent(jakarta.persistence.OneToMany.class) ||
+               field.isAnnotationPresent(jakarta.persistence.ManyToMany.class);
+    }
+
+    private java.util.Optional<Object> extractRelationId(BeanWrapperImpl wrapper, String fieldName) {
+        try {
+            if (!wrapper.isReadableProperty(fieldName)) {
+                return java.util.Optional.empty();
+            }
+            Object relationValue = wrapper.getPropertyValue(fieldName);
+            if (relationValue == null) {
+                return java.util.Optional.empty();
+            }
+            BeanWrapperImpl relationWrapper = new BeanWrapperImpl(relationValue);
+            if (!relationWrapper.isReadableProperty("id")) {
+                return java.util.Optional.empty();
+            }
+            return java.util.Optional.ofNullable(relationWrapper.getPropertyValue("id"));
+        } catch (Exception e) {
+            return java.util.Optional.empty();
+        }
+    }
+
+    private java.util.Optional<Object> extractSimpleValue(BeanWrapperImpl wrapper, String fieldName) {
+        try {
+            if (!wrapper.isReadableProperty(fieldName)) {
+                return java.util.Optional.empty();
+            }
+            PropertyDescriptor descriptor = wrapper.getPropertyDescriptor(fieldName);
+            if (descriptor == null) {
+                return java.util.Optional.empty();
+            }
+            Object value = wrapper.getPropertyValue(fieldName);
+            if (value != null && isSimpleType(value.getClass())) {
+                return java.util.Optional.of(value);
+            }
+        } catch (Exception e) {
+            // Ignorar campos que no se pueden leer
+        }
+        return java.util.Optional.empty();
     }
     
     /**

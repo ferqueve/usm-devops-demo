@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Network, Search, Filter } from 'lucide-react';
+import type { HttpExchange, HttpTraceInfo } from '@/lib/types/actuator';
 
 interface HttpTrace {
   timestamp: string;
@@ -27,8 +28,9 @@ interface HttpTrace {
 }
 
 interface HttpTraceTableProps {
-  data: any;
+  data: HttpTraceInfo | (HttpTraceInfo & { traces?: HttpExchange[] }) | null | undefined;
 }
+
 
 export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,26 +42,33 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
   // Extraer traces del formato de actuator (httpexchanges o httptrace)
   const traces: HttpTrace[] = useMemo(() => {
     // Spring Boot 2.2+ usa "exchanges", versiones anteriores usan "traces"
-    const exchanges = data?.exchanges || data?.traces || [];
-    
+    const dataWithTraces = data as (HttpTraceInfo & { traces?: HttpExchange[] }) | null | undefined;
+    const exchanges: HttpExchange[] = dataWithTraces?.exchanges ?? dataWithTraces?.traces ?? [];
+
     // Normalizar el formato
-    return exchanges.slice(0, 50).map((exchange: any) => {
-      // Si viene en formato httpexchanges (nuevo)
-      if (exchange.request && exchange.response) {
+    return exchanges.slice(0, 50).map((exchange) => {
+      const req = exchange.request;
+      const res = exchange.response;
+      if (req && res) {
         return {
-          timestamp: exchange.timestamp,
+          timestamp: exchange.timestamp ?? '',
           request: {
-            method: exchange.request.method,
-            uri: exchange.request.uri
+            method: req.method ?? '',
+            uri: req.uri ?? ''
           },
           response: {
-            status: exchange.response.status
+            status: res.status ?? 0
           },
-          timeTaken: exchange.timeTaken
+          timeTaken: typeof exchange.timeTaken === 'string' ? Number(exchange.timeTaken) || 0 : 0
         };
       }
-      // Si viene en formato httptrace (antiguo)
-      return exchange;
+      // Si viene en formato httptrace (antiguo) sin request/response, descartar
+      return {
+        timestamp: exchange.timestamp ?? '',
+        request: { method: '', uri: '' },
+        response: { status: 0 },
+        timeTaken: 0
+      };
     });
   }, [data]);
 

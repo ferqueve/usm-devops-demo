@@ -30,7 +30,7 @@ export default function ImportCSVDialog({
   const [preview, setPreview] = useState<string[][] | null>(null);
   const [errors] = useState<string[]>([]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -44,14 +44,10 @@ export default function ImportCSVDialog({
     setPreview(null);
 
     // Leer y mostrar preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      const lines = content.split('\n').slice(0, 6); // Primeras 5 líneas
-      const previewData = lines.map(line => line.split(','));
-      setPreview(previewData);
-    };
-    reader.readAsText(selectedFile);
+    const content = await selectedFile.text();
+    const lines = content.split('\n').slice(0, 6); // Primeras 5 líneas
+    const previewData = lines.map(line => line.split(','));
+    setPreview(previewData);
   };
 
   const handleImport = async () => {

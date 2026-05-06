@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +52,7 @@ class JwtServiceTest {
         // Then
         assertNotNull(token);
         assertFalse(token.isEmpty());
-        assertTrue(token.split("\\.").length == 3); // JWT tiene 3 partes
+        assertEquals(3, token.split("\\.").length); // JWT tiene 3 partes
     }
 
     @Test
@@ -178,10 +181,15 @@ class JwtServiceTest {
 
     @Test
     @DisplayName("Debe generar tokens diferentes para el mismo usuario")
-    void debeGenerarTokensDiferentes() throws InterruptedException {
+    void debeGenerarTokensDiferentes() {
+        // Given: usar un Clock controlado para avanzar el tiempo de forma determinista
+        Instant base = Instant.parse("2026-01-01T00:00:00Z");
+        jwtService.setClock(Clock.fixed(base, ZoneOffset.UTC));
+
         // When
         String token1 = jwtService.generateToken(userDetails);
-        Thread.sleep(1000); // Esperar 1 segundo para que cambie el timestamp
+        // Avanzar el reloj 2 segundos (iat de JWT esta en segundos)
+        jwtService.setClock(Clock.fixed(base.plusSeconds(2), ZoneOffset.UTC));
         String token2 = jwtService.generateToken(userDetails);
 
         // Then

@@ -98,6 +98,40 @@ function formatMesAnterior(diferencia: number, porcentaje: number): string {
   return `${signo}${diferencia} (${signoPorcentaje}${porcentaje.toFixed(1)}%)`;
 }
 
+// Salto de página si no entra requiredHeight; devuelve el nuevo yPos.
+function pageBreakIfNeeded(
+  doc: ExtendedJsPDF,
+  yPos: number,
+  pageHeight: number,
+  margin: number,
+  requiredHeight: number,
+): number {
+  if (yPos + requiredHeight > pageHeight - margin) {
+    doc.addPage();
+    return margin;
+  }
+  return yPos;
+}
+
+// Dibuja una banda de título de sección y devuelve el nuevo yPos.
+function drawSectionTitleBlock(
+  doc: ExtendedJsPDF,
+  yPos: number,
+  pageWidth: number,
+  margin: number,
+  title: string,
+  color: [number, number, number],
+): number {
+  doc.setFillColor(color[0], color[1], color[2]);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text(title, margin + 2, yPos + 5.5);
+  doc.setTextColor(0, 0, 0);
+  return yPos + 12;
+}
+
 // Función auxiliar para agregar pie de página
 function addFooter(doc: ExtendedJsPDF, pageWidth: number, pageHeight: number, grayColor: [number, number, number]): void {
   const totalPages = doc.getNumberOfPages();
@@ -141,32 +175,20 @@ export function exportInventoryStatsToPDF(
     const dangerColor: [number, number, number] = [244, 67, 54]; // Rojo
     const grayColor: [number, number, number] = [158, 158, 158]; // Gris
 
-    // Función helper para agregar nueva página si es necesario
     const checkPageBreak = (requiredHeight: number) => {
-      if (yPos + requiredHeight > pageHeight - margin) {
-        doc.addPage();
-        yPos = margin;
-      }
+      yPos = pageBreakIfNeeded(doc, yPos, pageHeight, margin, requiredHeight);
     };
 
-    // Función helper para agregar título de sección
     const addSectionTitle = (title: string, color: [number, number, number] = primaryColor) => {
       checkPageBreak(10);
-      doc.setFillColor(color[0], color[1], color[2]);
-      doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, margin + 2, yPos + 5.5);
-      doc.setTextColor(0, 0, 0);
-      yPos += 12;
+      yPos = drawSectionTitleBlock(doc, yPos, pageWidth, margin, title, color);
     };
 
 
     // Portada
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.rect(0, 0, pageWidth, 40, 'F');
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
@@ -543,6 +565,31 @@ interface ReservationExportFilters {
   carreraNombre?: string;
 }
 
+function buildReservationFilterText(filters: ReservationExportFilters): string {
+  const parts: string[] = [];
+  if (filters.espacioNombre) parts.push(`Espacio: ${filters.espacioNombre}`);
+  if (filters.carreraNombre) parts.push(`Carrera: ${filters.carreraNombre}`);
+  return parts.join(' | ');
+}
+
+function safePercent(part: number, total: number): string {
+  return total > 0 ? ((part / total) * 100).toFixed(1) : '0';
+}
+
+function formatHoursLabel(hours: number): string {
+  if (hours < 1) return `${Math.round(hours * 60)} min`;
+  if (hours === Math.floor(hours)) return `${Math.floor(hours)}h`;
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return `${h}h ${m}min`;
+}
+
+function formatChangeLabel(diferencia: number, porcentaje: number): string {
+  const signoDif = diferencia > 0 ? '+' : '';
+  const signoPct = porcentaje > 0 ? '+' : '';
+  return `Cambio: ${signoDif}${diferencia} (${signoPct}${porcentaje.toFixed(1)}%)`;
+}
+
 /**
  * Exporta las estadísticas de reservas a PDF con un diseño profesional
  */
@@ -563,25 +610,13 @@ export function exportReservationStatsToPDF(
     const warningColor: [number, number, number] = [255, 152, 0]; // Naranja
     const grayColor: [number, number, number] = [158, 158, 158]; // Gris
 
-    // Función helper para agregar nueva página si es necesario
     const checkPageBreak = (requiredHeight: number) => {
-      if (yPos + requiredHeight > pageHeight - margin) {
-        doc.addPage();
-        yPos = margin;
-      }
+      yPos = pageBreakIfNeeded(doc, yPos, pageHeight, margin, requiredHeight);
     };
 
-    // Función helper para agregar título de sección
     const addSectionTitle = (title: string, color: [number, number, number] = primaryColor) => {
       checkPageBreak(10);
-      doc.setFillColor(color[0], color[1], color[2]);
-      doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, margin + 2, yPos + 5.5);
-      doc.setTextColor(0, 0, 0);
-      yPos += 12;
+      yPos = drawSectionTitleBlock(doc, yPos, pageWidth, margin, title, color);
     };
 
     // Portada
@@ -602,7 +637,8 @@ export function exportReservationStatsToPDF(
     yPos = 50;
 
     // Información de filtros aplicados
-    if (filters && (filters.espacioNombre || filters.carreraNombre)) {
+    const filterText = filters ? buildReservationFilterText(filters) : '';
+    if (filterText) {
       checkPageBreak(15);
       doc.setFillColor(245, 245, 245);
       doc.rect(margin, yPos, pageWidth - 2 * margin, 12, 'F');
@@ -610,26 +646,17 @@ export function exportReservationStatsToPDF(
       doc.setFont('helvetica', 'bold');
       doc.text('Filtros Aplicados:', margin + 2, yPos + 5);
       doc.setFont('helvetica', 'normal');
-      let filterText = '';
-      if (filters.espacioNombre) filterText += `Espacio: ${filters.espacioNombre} | `;
-      if (filters.carreraNombre) filterText += `Carrera: ${filters.carreraNombre}`;
-      doc.text(filterText.replace(/\s*\|\s*$/, ''), margin + 2, yPos + 10);
+      doc.text(filterText, margin + 2, yPos + 10);
       yPos += 18;
     }
 
     // === RESUMEN EJECUTIVO ===
     addSectionTitle('RESUMEN EJECUTIVO', primaryColor);
-    
+
     checkPageBreak(40);
-    const porcentajeAprobadas = stats.totalReservas > 0 
-      ? ((stats.totalAprobadas / stats.totalReservas) * 100).toFixed(1)
-      : '0';
-    const porcentajePendientes = stats.totalReservas > 0 
-      ? ((stats.totalPendientes / stats.totalReservas) * 100).toFixed(1)
-      : '0';
-    const porcentajeCanceladas = stats.totalReservas > 0 
-      ? ((stats.totalCanceladas / stats.totalReservas) * 100).toFixed(1)
-      : '0';
+    const porcentajeAprobadas = safePercent(stats.totalAprobadas, stats.totalReservas);
+    const porcentajePendientes = safePercent(stats.totalPendientes, stats.totalReservas);
+    const porcentajeCanceladas = safePercent(stats.totalCanceladas, stats.totalReservas);
 
     const summaryData = [
       ['Total Reservas', stats.totalReservas.toString()],
@@ -656,16 +683,10 @@ export function exportReservationStatsToPDF(
     addSectionTitle('ANALISIS TEMPORAL', successColor);
 
     checkPageBreak(30);
-    const formatHours = (hours: number) => {
-      if (hours < 1) return `${Math.round(hours * 60)} min`;
-      if (hours === Math.floor(hours)) return `${Math.floor(hours)}h`;
-      const h = Math.floor(hours);
-      const m = Math.round((hours - h) * 60);
-      return `${h}h ${m}min`;
-    };
+    const formatHours = formatHoursLabel;
 
     const temporalData = [
-      ['Reservas Este Mes', stats.reservasEsteMes.toString(), `Cambio: ${stats.diferenciaMesAnterior > 0 ? '+' : ''}${stats.diferenciaMesAnterior} (${stats.porcentajeCambioMesAnterior > 0 ? '+' : ''}${stats.porcentajeCambioMesAnterior.toFixed(1)}%)`],
+      ['Reservas Este Mes', stats.reservasEsteMes.toString(), formatChangeLabel(stats.diferenciaMesAnterior, stats.porcentajeCambioMesAnterior)],
       ['Reservas Próximo Mes', stats.reservasProximoMes.toString(), 'Reservas programadas'],
       ['Reservas Este Año', stats.reservasEsteAnio.toString(), `Promedio: ${stats.promedioReservasPorMes.toFixed(1)}/mes`],
       ['Promedio Semanal', stats.promedioReservasPorSemana.toFixed(1), `${stats.promedioReservasPorMes.toFixed(1)} por mes`],
@@ -797,7 +818,7 @@ export function exportReservationStatsToPDF(
         .map(([dia, cantidad]) => ({
           dia,
           cantidad,
-          orden: diasOrden.indexOf(dia) === -1 ? 99 : diasOrden.indexOf(dia)
+          orden: diasOrden.includes(dia) ? diasOrden.indexOf(dia) : 99
         }))
         .sort((a, b) => a.orden - b.orden)
         .map(({ dia, cantidad }) => [dia, cantidad.toString()]);

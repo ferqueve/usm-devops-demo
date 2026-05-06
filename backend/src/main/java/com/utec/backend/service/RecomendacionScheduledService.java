@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Servicio para tareas programadas de recomendaciones
@@ -50,20 +49,9 @@ public class RecomendacionScheduledService {
             int errores = 0;
             
             for (Long usuarioId : usuariosActivos) {
-                try {
-                    // Calcular recomendaciones para el usuario
-                    Instant ahora = Instant.now();
-                    Instant finSemana = ahora.plusSeconds(7L * 24 * 3600);
-                    List<RecomendacionEspacioDto> recomendaciones = recomendacionService
-                        .obtenerRecomendacionesEspacios(usuarioId, ahora, finSemana, null);
-                    
-                    // Guardar top 20 en BD
-                    if (!recomendaciones.isEmpty()) {
-                        recomendacionService.guardarTop20EnBD(usuarioId, recomendaciones);
-                        procesados++;
-                    }
-                } catch (Exception e) {
-                    log.error("Error procesando recomendaciones para usuario {}: {}", usuarioId, e.getMessage());
+                if (procesarRecomendacionesUsuario(usuarioId)) {
+                    procesados++;
+                } else {
                     errores++;
                 }
             }
@@ -74,7 +62,27 @@ public class RecomendacionScheduledService {
             log.error("Error en actualización batch de recomendaciones: {}", e.getMessage(), e);
         }
     }
-    
+
+    private boolean procesarRecomendacionesUsuario(Long usuarioId) {
+        try {
+            // Calcular recomendaciones para el usuario
+            Instant ahora = Instant.now();
+            Instant finSemana = ahora.plusSeconds(7L * 24 * 3600);
+            List<RecomendacionEspacioDto> recomendaciones = recomendacionService
+                .obtenerRecomendacionesEspacios(usuarioId, ahora, finSemana, null);
+
+            // Guardar top 20 en BD
+            if (!recomendaciones.isEmpty()) {
+                recomendacionService.guardarTop20EnBD(usuarioId, recomendaciones);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            log.error("Error procesando recomendaciones para usuario {}: {}", usuarioId, e.getMessage());
+            return false;
+        }
+    }
+
     /**
      * Pre-calcular métricas base para recomendaciones
      * Se ejecuta diariamente a las 2:30 AM (después de actualizar recomendaciones)

@@ -168,24 +168,8 @@ public class RecomendacionService {
                 dto.setReservasPrioritarias(obtenerReservasPrioritarias(usuarioId));
                 break;
             case MANTENIMIENTO:
-                // Para mantenimiento: items urgentes y espacios que requieren atención
-                dto.setMantenimientoUrgente(obtenerItemsMantenimientoUrgente());
-                dto.setEspaciosRecomendados(
-                    obtenerEspaciosAtencion().stream()
-                        .map(inv -> {
-                            RecomendacionEspacioDto esp = new RecomendacionEspacioDto();
-                            esp.setEspacioId(inv.getEspacioId());
-                            esp.setEspacioNombre(inv.getEspacioNombre());
-                            esp.setTipoRecomendacion(TipoRecomendacion.ESPACIO_ATENCION);
-                            esp.setPuntaje(inv.getPuntaje());
-                            esp.setRazon(inv.getRazon());
-                            return esp;
-                        })
-                        .toList()
-                );
-                break;
             case ADMIN:
-                // Para admin: todo
+                // Para mantenimiento y admin: items urgentes y espacios que requieren atención
                 dto.setMantenimientoUrgente(obtenerItemsMantenimientoUrgente());
                 dto.setEspaciosRecomendados(
                     obtenerEspaciosAtencion().stream()
@@ -203,6 +187,7 @@ public class RecomendacionService {
                 break;
             case ESTUDIANTE:
             case EXTERNO:
+            default:
                 // Para estudiantes y externos: no hay recomendaciones específicas
                 break;
         }

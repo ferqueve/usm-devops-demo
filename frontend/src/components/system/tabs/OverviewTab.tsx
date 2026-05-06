@@ -4,16 +4,19 @@ import { AppInfoCard } from '../sections/AppInfoCard';
 import { ActiveUsersCard } from '../sections/ActiveUsersCard';
 import { JvmCharts } from '../sections/JvmCharts';
 import { useSidebarTransition } from '@/hooks/useSidebarTransition';
+import type { AppInfo, HealthInfo, MetricInfo } from '@/lib/types/actuator';
+import type { ActiveUsersStats } from '@/lib/types';
+import type { MetricsChartDataPoint } from '@/components/ui/metrics-chart';
 
 interface OverviewTabProps {
-  health: any;
-  memoryMetrics: any;
-  memoryMaxMetrics: any;
-  cpuMetrics: any;
-  uptimeMetrics: any;
-  info: any;
-  activeUsers: any;
-  metricsHistory: any[];
+  health: HealthInfo | null | undefined;
+  memoryMetrics: MetricInfo | null | undefined;
+  memoryMaxMetrics: MetricInfo | null | undefined;
+  cpuMetrics: MetricInfo | null | undefined;
+  uptimeMetrics: MetricInfo | null | undefined;
+  info: AppInfo | null | undefined;
+  activeUsers: ActiveUsersStats | null;
+  metricsHistory: MetricsChartDataPoint[];
 }
 
 export const OverviewTab = memo(function OverviewTab({

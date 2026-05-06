@@ -28,6 +28,10 @@ import static com.utec.backend.security.Constants.*;
 @RequiredArgsConstructor
 public class ReservaController {
 
+    private static final String ROLE_PREFIX = "ROLE_";
+    private static final String MSG_RESERVAS_OBTENIDAS = "Reservas obtenidas exitosamente";
+    private static final String MSG_ERROR_OBTENER_RESERVAS = "Error al obtener reservas: ";
+
     private final ReservaService reservaService;
 
     /**
@@ -47,13 +51,10 @@ public class ReservaController {
             // Buscar específicamente la authority que empieza con "ROLE_" para evitar confusión con permisos
             String userRole = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
                     .findFirst()
-                    .map(auth -> auth.replace("ROLE_", ""))
+                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
                     .orElse("");
-
-            // Log para debug: verificar que el rol se obtiene correctamente
-            // log.info("Usuario {} con rol {} creando reserva", userEmail, userRole);
 
             ReservaResponseDto reserva = reservaService.createReserva(createDto, userEmail, userRole);
             String mensaje;
@@ -80,10 +81,10 @@ public class ReservaController {
         try {
             String userEmail = authentication.getName();
             List<ReservaResponseDto> reservas = reservaService.getReservasByUsuario(userEmail);
-            return ResponseEntity.ok(ApiResponse.success(reservas, "Reservas obtenidas exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(reservas, MSG_RESERVAS_OBTENIDAS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_RESERVAS + e.getMessage()));
         }
     }
 
@@ -108,19 +109,15 @@ public class ReservaController {
             var reservasPage = reservaService.getReservasByUsuarioPaged(
                     userEmail,
                     pageable,
-                    estado,
-                    espacioId,
-                    carreraId,
-                    tipoEspacioId,
-                    fechaInicio,
-                    fechaFin,
-                    tiempo);
+                    com.utec.backend.dto.reserva.ReservaFilters.of(
+                            estado, espacioId, carreraId, tipoEspacioId,
+                            fechaInicio, fechaFin, tiempo));
 
             PagedResponseDto<ReservaResponseDto> pagedResponse = PagedResponseDto.of(reservasPage);
-            return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Reservas obtenidas exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(pagedResponse, MSG_RESERVAS_OBTENIDAS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_RESERVAS + e.getMessage()));
         }
     }
 
@@ -224,17 +221,20 @@ public class ReservaController {
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
                     .findFirst()
-                    .map(auth -> auth.replace("ROLE_", ""))
+                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
                     .orElse("");
 
             List<ReservaResponseDto> reservas = reservaService.getTodasLasReservas(
-                    estado, espacioId, carreraId, tipoEspacioId, fechaInicio, fechaFin, userEmail, userRole);
-            return ResponseEntity.ok(ApiResponse.success(reservas, "Reservas obtenidas exitosamente"));
+                    com.utec.backend.dto.reserva.ReservaFilters.of(
+                            estado, espacioId, carreraId, tipoEspacioId,
+                            fechaInicio, fechaFin, null),
+                    userEmail, userRole);
+            return ResponseEntity.ok(ApiResponse.success(reservas, MSG_RESERVAS_OBTENIDAS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_RESERVAS + e.getMessage()));
         }
     }
 
@@ -252,7 +252,7 @@ public class ReservaController {
             // Obtener el rol del usuario desde la autenticación
             String userRole = authentication.getAuthorities().stream()
                     .findFirst()
-                    .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+                    .map(auth -> auth.getAuthority().replace(ROLE_PREFIX, ""))
                     .orElse("");
 
             ReservaStatsDto stats;
@@ -292,29 +292,24 @@ public class ReservaController {
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
                     .findFirst()
-                    .map(auth -> auth.replace("ROLE_", ""))
+                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
                     .orElse("");
 
             var reservasPage = reservaService.getAllReservasPaged(
                     pageable,
-                    estado,
-                    espacioId,
-                    carreraId,
-                    tipoEspacioId,
-                    usuarioId,
-                    fechaInicio,
-                    fechaFin,
-                    tiempo,
+                    new com.utec.backend.dto.reserva.ReservaFilters(
+                            estado, espacioId, carreraId, tipoEspacioId, usuarioId,
+                            fechaInicio, fechaFin, tiempo),
                     userEmail,
                     userRole);
 
             PagedResponseDto<ReservaResponseDto> pagedResponse = PagedResponseDto.of(reservasPage);
-            return ResponseEntity.ok(ApiResponse.success(pagedResponse, "Reservas obtenidas exitosamente"));
+            return ResponseEntity.ok(ApiResponse.success(pagedResponse, MSG_RESERVAS_OBTENIDAS));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener reservas: " + e.getMessage()));
+                    .body(ApiResponse.error(MSG_ERROR_OBTENER_RESERVAS + e.getMessage()));
         }
     }
 
@@ -341,9 +336,9 @@ public class ReservaController {
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
                     .findFirst()
-                    .map(auth -> auth.replace("ROLE_", ""))
+                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
                     .orElse("");
 
             ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado, userEmail, userRole, mensajeAnalista);

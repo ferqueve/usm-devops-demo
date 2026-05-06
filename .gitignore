@@ -113,3 +113,8 @@ CLAUDE.md
 # ===== CLAUDE CODE / MCP =====
 .mcp.json
 .claude/
+.sonar-issues.md
+
+# ===== SONARLINT (commit only the binding) =====
+.sonarlint/*
+!.sonarlint/connectedMode.json

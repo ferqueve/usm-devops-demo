@@ -21,12 +21,12 @@ export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUse
     const diffSeconds = Math.floor(diffMs / 1000);
 
     if (diffSeconds < 60) {
-      return `hace ${diffSeconds} segundo${diffSeconds !== 1 ? 's' : ''}`;
+      return `hace ${diffSeconds} segundo${diffSeconds === 1 ? '' : 's'}`;
     } else if (diffMinutes < 60) {
-      return `hace ${diffMinutes} minuto${diffMinutes !== 1 ? 's' : ''}`;
+      return `hace ${diffMinutes} minuto${diffMinutes === 1 ? '' : 's'}`;
     } else {
       const diffHours = Math.floor(diffMinutes / 60);
-      return `hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`;
+      return `hace ${diffHours} hora${diffHours === 1 ? '' : 's'}`;
     }
   };
 

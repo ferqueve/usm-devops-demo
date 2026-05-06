@@ -1,6 +1,7 @@
 package com.utec.backend.service;
 
 import com.utec.backend.dto.reserva.ReservaCreateDto;
+import com.utec.backend.dto.reserva.ReservaFilters;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
 import com.utec.backend.dto.reserva.ReservaUpdateDto;
@@ -109,142 +110,141 @@ public class ReservaService {
     public ReservaResponseDto createReserva(ReservaCreateDto createDto, String userEmail, String userRole) {
         log.info("Creando reserva para usuario: {} con rol: {}", userEmail, userRole);
 
-        // 1. Validar y obtener usuario autenticado
-        Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
+        Usuario usuario = obtenerUsuarioParaReserva(userEmail);
+        Espacio espacio = obtenerYValidarEspacio(createDto.getEspacioId());
+        Carrera carrera = obtenerYValidarCarrera(createDto.getCarreraId());
 
-        // 2. Validar y obtener espacio
-        Espacio espacio = espacioRepository.findById(createDto.getEspacioId())
-                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + createDto.getEspacioId()));
+        validarHorariosBasicos(createDto);
+        validarRecurrenciaSiCorresponde(createDto);
 
-        // 3. Validar que el espacio está disponible
-        if (!"DISPONIBLE".equals(espacio.getEstado())) {
-            throw new IllegalStateException("El espacio no está disponible. Estado actual: " + espacio.getEstado());
-        }
-
-        // 3.5. Validar y obtener carrera si se proporciona
-        Carrera carrera = null;
-        if (createDto.getCarreraId() != null) {
-            carrera = carreraRepository.findById(createDto.getCarreraId())
-                    .orElseThrow(
-                            () -> new IllegalArgumentException("Carrera no encontrada con ID: " + createDto.getCarreraId()));
-            // Verificar que la carrera no esté eliminada
-            if (carrera.getDeletedAt() != null) {
-                throw new IllegalStateException("La carrera especificada ha sido eliminada");
-            }
-        }
-
-        // 4. Validar horarios lógicos
-        if (!createDto.getInicio().isBefore(createDto.getFin())) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
-        }
-
-        // 5. Validar que no sea en el pasado
-        if (createDto.getInicio().isBefore(Instant.now())) {
-            throw new IllegalArgumentException("No se puede reservar en el pasado");
-        }
-
-        // 6. Validar duración mínima (30 minutos)
-        long durationMinutes = java.time.Duration.between(createDto.getInicio(), createDto.getFin()).toMinutes();
-        if (durationMinutes < 30) {
-            throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
-        }
-
-        // 6.5. Validar recurrencia si se proporciona
-        if (createDto.getTipoRecurrencia() != null) {
-            if (createDto.getFechaFinRecurrencia() == null) {
-                throw new IllegalArgumentException(
-                        "La fecha de fin de recurrencia es requerida cuando se especifica un tipo de recurrencia");
-            }
-            if (!createDto.getFechaFinRecurrencia().isAfter(createDto.getInicio())) {
-                throw new IllegalArgumentException("La fecha de fin de recurrencia debe ser posterior a la fecha de inicio");
-            }
-            // Validar que no se generen demasiadas reservas (límite de seguridad: 1000
-            // reservas)
-            long maxReservas = calcularMaxReservas(createDto);
-            if (maxReservas > 1000) {
-                throw new IllegalArgumentException(
-                        "La recurrencia generaría más de 1000 reservas. Por favor, reduzca el rango de fechas.");
-            }
-        }
-
-        // 7. Validar y obtener analista asignado
-        Usuario analistaAsignado = null;
         boolean esDocente = ROLE_DOCENTE.equals(userRole);
         boolean esExterno = ROLE_EXTERNO.equals(userRole);
         boolean esAnalista = ROLE_ANALISTA.equals(userRole);
 
-        if (esDocente) {
-            if (createDto.getAnalistaId() == null) {
-                throw new IllegalArgumentException("El docente debe seleccionar un analista para gestionar la solicitud");
-            }
+        Usuario analistaAsignado = resolverAnalistaAsignado(createDto, usuario, userEmail, esDocente, esAnalista);
+        Boolean esPublica = resolverEsPublica(createDto, esExterno);
+        Reserva.EstadoReserva estadoInicial = resolverEstadoInicialYValidarConflictos(createDto, esDocente, esExterno);
 
-            analistaAsignado = usuarioRepository.findById(createDto.getAnalistaId())
-                    .orElseThrow(
-                            () -> new IllegalArgumentException("Analista no encontrado con ID: " + createDto.getAnalistaId()));
-
-            // Validar que el usuario seleccionado es realmente un analista
-            if (analistaAsignado.getRolApp() != Usuario.RolApp.ANALISTA) {
-                throw new IllegalArgumentException("El usuario seleccionado no es un analista");
-            }
-
-            // Validar que el analista no esté eliminado
-            if (analistaAsignado.getDeletedAt() != null) {
-                throw new IllegalStateException("El analista seleccionado ha sido eliminado");
-            }
-
-            log.info("Analista {} asignado a solicitud de docente {}", analistaAsignado.getEmail(), userEmail);
-        } else if (esAnalista) {
-            // Si el usuario es ANALISTA, asignarse a sí mismo
-            analistaAsignado = usuario;
-            log.info("Analista {} se auto-asignó a la reserva que está creando", userEmail);
-        }
-        // Para externos, no se requiere analista asignado inicialmente
-
-        // 7.5. Determinar si la reserva es pública
-        Boolean esPublica;
-        if (esExterno) {
-            // Los externos siempre crean reservas públicas
-            esPublica = true;
-            log.info("Usuario externo creando reserva pública");
-        } else {
-            // Para usuarios internos, usar el valor del DTO o false por defecto
-            esPublica = createDto.getEsPublica() != null ? createDto.getEsPublica() : false;
-        }
-
-        // 8. Determinar el estado inicial según el rol
-        Reserva.EstadoReserva estadoInicial;
-
-        if (esDocente || esExterno) {
-            estadoInicial = Reserva.EstadoReserva.PENDIENTE;
-            log.info("{} creando solicitud pendiente", esDocente ? "Docente" : "Usuario externo");
-        } else {
-            estadoInicial = Reserva.EstadoReserva.APROBADO;
-            log.info("Admin/Analista creando reserva auto-aprobada");
-
-            // 7.1 VALIDACIÓN CRÍTICA: Verificar conflictos solo para reservas APROBADO
-            // Las solicitudes PENDIENTE no bloquean el espacio
-            List<Reserva> conflictos = reservaRepository.findConflictingReservas(
-                    createDto.getEspacioId(),
-                    createDto.getInicio(),
-                    createDto.getFin(),
-                    Reserva.EstadoReserva.APROBADO);
-
-            if (!conflictos.isEmpty()) {
-                log.warn("Conflicto de horario detectado. Espacio ocupado en ese rango de tiempo");
-                throw new IllegalStateException(
-                        "El espacio ya está reservado en ese horario. Por favor, seleccione otro horario.");
-            }
-        }
-
-        // 9. Crear reserva(s) - simple o recurrente
         if (createDto.getTipoRecurrencia() != null) {
-            // Crear múltiples reservas recurrentes
-            return crearReservasRecurrentes(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial,
-                    esDocente, esPublica);
-        } else {
-            // Crear una sola reserva (comportamiento original)
-            return crearReservaSimple(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial, esPublica);
+            return crearReservasRecurrentes(new ReservaRecurrenteContext(createDto, usuario, espacio, carrera,
+                    analistaAsignado, estadoInicial, esDocente, esPublica));
+        }
+        return crearReservaSimple(createDto, usuario, espacio, carrera, analistaAsignado, estadoInicial, esPublica);
+    }
+
+    private Usuario obtenerUsuarioParaReserva(String userEmail) {
+        return usuarioRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
+    }
+
+    private Espacio obtenerYValidarEspacio(Long espacioId) {
+        Espacio espacio = espacioRepository.findById(espacioId)
+                .orElseThrow(() -> new IllegalArgumentException("Espacio no encontrado con ID: " + espacioId));
+        if (!"DISPONIBLE".equals(espacio.getEstado())) {
+            throw new IllegalStateException("El espacio no está disponible. Estado actual: " + espacio.getEstado());
+        }
+        return espacio;
+    }
+
+    private Carrera obtenerYValidarCarrera(Long carreraId) {
+        if (carreraId == null) {
+            return null;
+        }
+        Carrera carrera = carreraRepository.findById(carreraId)
+                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + carreraId));
+        if (carrera.getDeletedAt() != null) {
+            throw new IllegalStateException("La carrera especificada ha sido eliminada");
+        }
+        return carrera;
+    }
+
+    private void validarHorariosBasicos(ReservaCreateDto createDto) {
+        if (!createDto.getInicio().isBefore(createDto.getFin())) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
+        }
+        if (createDto.getInicio().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("No se puede reservar en el pasado");
+        }
+        long durationMinutes = Duration.between(createDto.getInicio(), createDto.getFin()).toMinutes();
+        if (durationMinutes < 30) {
+            throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
+        }
+    }
+
+    private void validarRecurrenciaSiCorresponde(ReservaCreateDto createDto) {
+        if (createDto.getTipoRecurrencia() == null) {
+            return;
+        }
+        if (createDto.getFechaFinRecurrencia() == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de fin de recurrencia es requerida cuando se especifica un tipo de recurrencia");
+        }
+        if (!createDto.getFechaFinRecurrencia().isAfter(createDto.getInicio())) {
+            throw new IllegalArgumentException("La fecha de fin de recurrencia debe ser posterior a la fecha de inicio");
+        }
+        if (calcularMaxReservas(createDto) > 1000) {
+            throw new IllegalArgumentException(
+                    "La recurrencia generaría más de 1000 reservas. Por favor, reduzca el rango de fechas.");
+        }
+    }
+
+    private Usuario resolverAnalistaAsignado(ReservaCreateDto createDto, Usuario usuario, String userEmail,
+                                             boolean esDocente, boolean esAnalista) {
+        if (esDocente) {
+            return validarAnalistaSeleccionadoPorDocente(createDto, userEmail);
+        }
+        if (esAnalista) {
+            log.info("Analista {} se auto-asignó a la reserva que está creando", userEmail);
+            return usuario;
+        }
+        return null; // Externos / admin sin analista
+    }
+
+    private Usuario validarAnalistaSeleccionadoPorDocente(ReservaCreateDto createDto, String userEmail) {
+        if (createDto.getAnalistaId() == null) {
+            throw new IllegalArgumentException("El docente debe seleccionar un analista para gestionar la solicitud");
+        }
+        Usuario analistaAsignado = usuarioRepository.findById(createDto.getAnalistaId())
+                .orElseThrow(() -> new IllegalArgumentException("Analista no encontrado con ID: " + createDto.getAnalistaId()));
+        if (analistaAsignado.getRolApp() != Usuario.RolApp.ANALISTA) {
+            throw new IllegalArgumentException("El usuario seleccionado no es un analista");
+        }
+        if (analistaAsignado.getDeletedAt() != null) {
+            throw new IllegalStateException("El analista seleccionado ha sido eliminado");
+        }
+        log.info("Analista {} asignado a solicitud de docente {}", analistaAsignado.getEmail(), userEmail);
+        return analistaAsignado;
+    }
+
+    private Boolean resolverEsPublica(ReservaCreateDto createDto, boolean esExterno) {
+        if (esExterno) {
+            log.info("Usuario externo creando reserva pública");
+            return true;
+        }
+        return createDto.getEsPublica() != null && createDto.getEsPublica();
+    }
+
+    private Reserva.EstadoReserva resolverEstadoInicialYValidarConflictos(ReservaCreateDto createDto,
+                                                                          boolean esDocente, boolean esExterno) {
+        if (esDocente || esExterno) {
+            log.info("{} creando solicitud pendiente", esDocente ? "Docente" : "Usuario externo");
+            return Reserva.EstadoReserva.PENDIENTE;
+        }
+        log.info("Admin/Analista creando reserva auto-aprobada");
+        validarSinConflictosAprobado(createDto);
+        return Reserva.EstadoReserva.APROBADO;
+    }
+
+    private void validarSinConflictosAprobado(ReservaCreateDto createDto) {
+        List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                createDto.getEspacioId(),
+                createDto.getInicio(),
+                createDto.getFin(),
+                Reserva.EstadoReserva.APROBADO);
+        if (!conflictos.isEmpty()) {
+            log.warn("Conflicto de horario detectado. Espacio ocupado en ese rango de tiempo");
+            throw new IllegalStateException(
+                    "El espacio ya está reservado en ese horario. Por favor, seleccione otro horario.");
         }
     }
 
@@ -314,9 +314,9 @@ public class ReservaService {
     }
 
     /**
-     * Crear múltiples reservas recurrentes
+     * Contexto inmutable para la creación de reservas recurrentes.
      */
-    private ReservaResponseDto crearReservasRecurrentes(
+    private record ReservaRecurrenteContext(
             ReservaCreateDto createDto,
             Usuario usuario,
             Espacio espacio,
@@ -324,37 +324,32 @@ public class ReservaService {
             Usuario analistaAsignado,
             Reserva.EstadoReserva estadoInicial,
             boolean esDocente,
-            Boolean esPublica) {
+            Boolean esPublica) {}
+
+    /**
+     * Crear múltiples reservas recurrentes
+     */
+    private ReservaResponseDto crearReservasRecurrentes(ReservaRecurrenteContext ctx) {
+        ReservaCreateDto createDto = ctx.createDto();
+        Usuario usuario = ctx.usuario();
+        Espacio espacio = ctx.espacio();
+        Carrera carrera = ctx.carrera();
+        Usuario analistaAsignado = ctx.analistaAsignado();
+        Reserva.EstadoReserva estadoInicial = ctx.estadoInicial();
+        boolean esDocente = ctx.esDocente();
+        Boolean esPublica = ctx.esPublica();
 
         List<Instant> fechasInicio = generarFechasRecurrentes(createDto);
         log.info("Generando {} reservas recurrentes de tipo {}", fechasInicio.size(), createDto.getTipoRecurrencia());
 
         long duracionMinutos = Duration.between(createDto.getInicio(), createDto.getFin()).toMinutes();
         List<Reserva> reservasCreadas = new ArrayList<>();
-        List<Reserva> reservasConError = new ArrayList<>();
 
         for (Instant fechaInicio : fechasInicio) {
             Instant fechaFin = fechaInicio.plusSeconds(duracionMinutos * 60);
 
-            // Validar que no sea en el pasado
-            if (fechaInicio.isBefore(Instant.now())) {
-                continue; // Saltar fechas pasadas
-            }
-
-            // Si es docente, no validar conflictos (será PENDIENTE)
-            // Si es admin/analista, validar conflictos antes de crear
-            if (!esDocente) {
-                List<Reserva> conflictos = reservaRepository.findConflictingReservas(
-                        espacio.getId(),
-                        fechaInicio,
-                        fechaFin,
-                        Reserva.EstadoReserva.APROBADO);
-
-                if (!conflictos.isEmpty()) {
-                    log.warn("Conflicto detectado para fecha recurrente: {}. Se omite esta reserva.", fechaInicio);
-                    reservasConError.add(null); // Marcador de error
-                    continue;
-                }
+            if (!esFechaRecurrenteValida(fechaInicio, fechaFin, espacio, esDocente)) {
+                continue;
             }
 
             // Crear la reserva
@@ -411,6 +406,27 @@ public class ReservaService {
         }
 
         return primeraReservaDto;
+    }
+
+    /**
+     * Determina si una fecha recurrente puede convertirse en reserva: descarta
+     * fechas pasadas y, para no-docentes, valida que no haya conflictos con
+     * reservas ya aprobadas.
+     */
+    private boolean esFechaRecurrenteValida(Instant fechaInicio, Instant fechaFin, Espacio espacio, boolean esDocente) {
+        if (fechaInicio.isBefore(Instant.now())) {
+            return false;
+        }
+        if (esDocente) {
+            return true;
+        }
+        List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                espacio.getId(), fechaInicio, fechaFin, Reserva.EstadoReserva.APROBADO);
+        if (!conflictos.isEmpty()) {
+            log.warn("Conflicto detectado para fecha recurrente: {}. Se omite esta reserva.", fechaInicio);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -497,89 +513,95 @@ public class ReservaService {
     public Page<ReservaResponseDto> getReservasByUsuarioPaged(
             String userEmail,
             Pageable pageable,
-            String estado,
-            Long espacioId,
-            Long carreraId,
-            Long tipoEspacioId,
-            Instant fechaInicio,
-            Instant fechaFin,
-            String tiempo) {
+            ReservaFilters filters) {
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
-        Specification<Reserva> spec = buildSpecification(usuario.getId(), estado, espacioId, carreraId, tipoEspacioId,
-                fechaInicio, fechaFin, tiempo);
+        Specification<Reserva> spec = buildSpecification(usuario.getId(), filters);
 
         Page<Reserva> reservasPage = reservaRepository.findAll(spec, pageable);
         return reservasPage.map(this::mapToResponseDto);
     }
 
     /**
-     * Construir Specification para filtrar reservas
+     * Construir Specification para filtrar reservas. Aplica filtro obligatorio
+     * por {@code usuarioId} y delega los filtros opcionales a métodos privados
+     * para mantener baja la complejidad cognitiva.
      */
-    private Specification<Reserva> buildSpecification(
-            Long usuarioId,
-            String estado,
-            Long espacioId,
-            Long carreraId,
-            Long tipoEspacioId,
-            Instant fechaInicio,
-            Instant fechaFin,
-            String tiempo) {
+    private Specification<Reserva> buildSpecification(Long usuarioId, ReservaFilters filters) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            // Siempre filtrar por usuario
             predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
-
-            // Filtro por estado
-            if (estado != null && !estado.isEmpty() && !estado.equals(ESTADO_FILTRO_TODAS)) {
-                try {
-                    Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
-                    predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
-                } catch (IllegalArgumentException e) {
-                    // Ignorar si el estado no es válido
-                }
-            }
-
-            // Filtro por espacio
-            if (espacioId != null) {
-                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId));
-            }
-
-            // Filtro por tipo de espacio
-            if (tipoEspacioId != null) {
-                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID), tipoEspacioId));
-            }
-
-            // Filtro por carrera
-            if (carreraId != null) {
-                predicates.add(cb.equal(root.get(FIELD_CARRERA).get("id"), carreraId));
-            }
-
-            // Filtro por fecha inicio
-            if (fechaInicio != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
-            }
-
-            // Filtro por fecha fin
-            if (fechaFin != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
-            }
-
-            // Filtro por tiempo (pasadas/futuras)
-            Instant ahora = Instant.now();
-            if ("futuras".equals(tiempo)) {
-                predicates.add(cb.greaterThan(root.get(FIELD_INICIO), ahora));
-            } else if ("pasadas".equals(tiempo)) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), ahora));
-            }
-
-            // Ordenar por fecha descendente
+            appendCommonFilters(predicates, root, cb, filters);
             query.orderBy(cb.desc(root.get(FIELD_INICIO)));
-
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    /**
+     * Agrega al listado de predicados los filtros comunes de estado, espacio,
+     * carrera, fechas y particionado por tiempo (pasadas/futuras).
+     */
+    private void appendCommonFilters(
+            List<Predicate> predicates,
+            jakarta.persistence.criteria.Root<Reserva> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            ReservaFilters filters) {
+        addEstadoPredicate(predicates, root, cb, filters.estado());
+        addIdPredicate(predicates, root.get(FIELD_ESPACIO).get("id"), filters.espacioId(), cb);
+        addIdPredicate(predicates, root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID), filters.tipoEspacioId(), cb);
+        addIdPredicate(predicates, root.get(FIELD_CARRERA).get("id"), filters.carreraId(), cb);
+        addRangoFechas(predicates, root, cb, filters.fechaInicio(), filters.fechaFin());
+        addTiempoPredicate(predicates, root, cb, filters.tiempo());
+    }
+
+    private void addEstadoPredicate(List<Predicate> predicates,
+                                    jakarta.persistence.criteria.Root<Reserva> root,
+                                    jakarta.persistence.criteria.CriteriaBuilder cb,
+                                    String estado) {
+        if (estado == null || estado.isEmpty() || estado.equals(ESTADO_FILTRO_TODAS)) {
+            return;
+        }
+        try {
+            Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
+            predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
+        } catch (IllegalArgumentException e) {
+            // Estado no válido: se ignora el filtro silenciosamente
+        }
+    }
+
+    private void addIdPredicate(List<Predicate> predicates,
+                                jakarta.persistence.criteria.Path<?> path,
+                                Long value,
+                                jakarta.persistence.criteria.CriteriaBuilder cb) {
+        if (value != null) {
+            predicates.add(cb.equal(path, value));
+        }
+    }
+
+    private void addRangoFechas(List<Predicate> predicates,
+                                jakarta.persistence.criteria.Root<Reserva> root,
+                                jakarta.persistence.criteria.CriteriaBuilder cb,
+                                Instant fechaInicio,
+                                Instant fechaFin) {
+        if (fechaInicio != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
+        }
+        if (fechaFin != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
+        }
+    }
+
+    private void addTiempoPredicate(List<Predicate> predicates,
+                                    jakarta.persistence.criteria.Root<Reserva> root,
+                                    jakarta.persistence.criteria.CriteriaBuilder cb,
+                                    String tiempo) {
+        Instant ahora = Instant.now();
+        if ("futuras".equals(tiempo)) {
+            predicates.add(cb.greaterThan(root.get(FIELD_INICIO), ahora));
+        } else if ("pasadas".equals(tiempo)) {
+            predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), ahora));
+        }
     }
 
     /**
@@ -590,19 +612,10 @@ public class ReservaService {
     @Transactional(readOnly = true)
     public Page<ReservaResponseDto> getAllReservasPaged(
             Pageable pageable,
-            String estado,
-            Long espacioId,
-            Long carreraId,
-            Long tipoEspacioId,
-            Long usuarioId,
-            Instant fechaInicio,
-            Instant fechaFin,
-            String tiempo,
+            ReservaFilters filters,
             String userEmail,
             String userRole) {
-        Specification<Reserva> spec = buildSpecificationAll(
-                estado, espacioId, carreraId, tipoEspacioId, usuarioId, fechaInicio, fechaFin, tiempo, userEmail,
-                userRole);
+        Specification<Reserva> spec = buildSpecificationAll(filters, userEmail, userRole);
 
         Page<Reserva> reservasPage = reservaRepository.findAll(spec, pageable);
         return reservasPage.map(this::mapToResponseDto);
@@ -614,87 +627,46 @@ public class ReservaService {
      * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
     private Specification<Reserva> buildSpecificationAll(
-            String estado,
-            Long espacioId,
-            Long carreraId,
-            Long tipoEspacioId,
-            Long usuarioId,
-            Instant fechaInicio,
-            Instant fechaFin,
-            String tiempo,
+            ReservaFilters filters,
             String userEmail,
             String userRole) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            // Si el usuario es ANALISTA, mostrar reservas asignadas a él O sin analista
-            // asignado (incluye externos)
-            if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
-                Usuario analista = usuarioRepository.findByEmail(userEmail)
-                        .orElse(null);
-                if (analista != null) {
-                    // Mostrar reservas asignadas a este analista O sin analista asignado (null)
-                    Predicate asignadasAMi = cb.equal(root.get(FIELD_ANALISTA_ASIGNADO).get("id"), analista.getId());
-                    Predicate sinAnalista = cb.isNull(root.get(FIELD_ANALISTA_ASIGNADO));
-                    predicates.add(cb.or(asignadasAMi, sinAnalista));
-                    log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail,
-                            analista.getId());
-                }
-            }
-
-            // Filtro opcional por usuario (para ADMIN filtrar por solicitante)
-            if (usuarioId != null && !ROLE_ANALISTA.equals(userRole)) {
-                predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
-            }
-
-            // Filtro por estado
-            if (estado != null && !estado.isEmpty() && !estado.equals(ESTADO_FILTRO_TODAS)) {
-                try {
-                    Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
-                    predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
-                } catch (IllegalArgumentException e) {
-                    // Ignorar si el estado no es válido
-                }
-            }
-
-            // Filtro por espacio
-            if (espacioId != null) {
-                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId));
-            }
-
-            // Filtro por tipo de espacio
-            if (tipoEspacioId != null) {
-                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID), tipoEspacioId));
-            }
-
-            // Filtro por carrera
-            if (carreraId != null) {
-                predicates.add(cb.equal(root.get(FIELD_CARRERA).get("id"), carreraId));
-            }
-
-            // Filtro por fecha inicio
-            if (fechaInicio != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
-            }
-
-            // Filtro por fecha fin
-            if (fechaFin != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
-            }
-
-            // Filtro por tiempo (pasadas/futuras)
-            Instant ahora = Instant.now();
-            if ("futuras".equals(tiempo)) {
-                predicates.add(cb.greaterThan(root.get(FIELD_INICIO), ahora));
-            } else if ("pasadas".equals(tiempo)) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), ahora));
-            }
-
-            // Ordenar por fecha descendente
+            addAnalistaScopePredicate(predicates, root, cb, userEmail, userRole);
+            addUsuarioOpcionalPredicate(predicates, root, cb, filters.usuarioId(), userRole);
+            appendCommonFilters(predicates, root, cb, filters);
             query.orderBy(cb.desc(root.get(FIELD_INICIO)));
-
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private void addAnalistaScopePredicate(List<Predicate> predicates,
+                                           jakarta.persistence.criteria.Root<Reserva> root,
+                                           jakarta.persistence.criteria.CriteriaBuilder cb,
+                                           String userEmail,
+                                           String userRole) {
+        if (!ROLE_ANALISTA.equals(userRole) || userEmail == null) {
+            return;
+        }
+        Usuario analista = usuarioRepository.findByEmail(userEmail).orElse(null);
+        if (analista == null) {
+            return;
+        }
+        Predicate asignadasAMi = cb.equal(root.get(FIELD_ANALISTA_ASIGNADO).get("id"), analista.getId());
+        Predicate sinAnalista = cb.isNull(root.get(FIELD_ANALISTA_ASIGNADO));
+        predicates.add(cb.or(asignadasAMi, sinAnalista));
+        log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail,
+                analista.getId());
+    }
+
+    private void addUsuarioOpcionalPredicate(List<Predicate> predicates,
+                                             jakarta.persistence.criteria.Root<Reserva> root,
+                                             jakarta.persistence.criteria.CriteriaBuilder cb,
+                                             Long usuarioId,
+                                             String userRole) {
+        if (usuarioId != null && !ROLE_ANALISTA.equals(userRole)) {
+            predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
+        }
     }
 
     /**
@@ -709,7 +681,25 @@ public class ReservaService {
         log.info("Cambiando estado de reserva ID: {} a {} por usuario: {} (rol: {})", id, nuevoEstadoStr, userEmail,
                 userRole);
 
-        // Validar que el nuevo estado es válido
+        Reserva.EstadoReserva nuevoEstado = parseNuevoEstado(nuevoEstadoStr);
+        Reserva reserva = obtenerReservaPendiente(id);
+        validarPermisosAnalista(reserva, userEmail, userRole);
+
+        if (nuevoEstado == Reserva.EstadoReserva.APROBADO) {
+            validarSinConflictosAprobacion(reserva);
+        }
+
+        Reserva savedReserva = aplicarCambioEstado(reserva, nuevoEstado, mensajeAnalista);
+        log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
+
+        invalidarCacheRecomendacionesUsuario(reserva.getUsuario().getId());
+
+        ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
+        notificarCambioEstadoUsuario(reserva, reservaDto, nuevoEstado);
+        return reservaDto;
+    }
+
+    private Reserva.EstadoReserva parseNuevoEstado(String nuevoEstadoStr) {
         Reserva.EstadoReserva nuevoEstado;
         try {
             nuevoEstado = Reserva.EstadoReserva.valueOf(nuevoEstadoStr.toUpperCase());
@@ -717,149 +707,139 @@ public class ReservaService {
             throw new IllegalArgumentException(
                     "Estado inválido: " + nuevoEstadoStr + ". Estados válidos: PENDIENTE, APROBADO, CANCELADO", e);
         }
-
-        // Solo permitir APROBADO o CANCELADO
         if (nuevoEstado != Reserva.EstadoReserva.APROBADO && nuevoEstado != Reserva.EstadoReserva.CANCELADO) {
             throw new IllegalArgumentException("Solo se puede cambiar el estado a APROBADO o CANCELADO");
         }
+        return nuevoEstado;
+    }
 
-        // Obtener la reserva
+    private Reserva obtenerReservaPendiente(Long id) {
         Reserva reserva = reservaRepository.findByIdWithRelations(id);
         if (reserva == null) {
             throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
         }
-
-        // Validar que la reserva está en estado PENDIENTE
         if (reserva.getEstado() != Reserva.EstadoReserva.PENDIENTE) {
-            throw new IllegalStateException("Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: "
-                    + reserva.getEstado());
+            throw new IllegalStateException(
+                    "Solo se pueden aprobar/rechazar reservas en estado PENDIENTE. Estado actual: "
+                            + reserva.getEstado());
         }
+        return reserva;
+    }
 
-        // Si el usuario es ANALISTA, validar permisos
-        if (ROLE_ANALISTA.equals(userRole)) {
-            Usuario analista = usuarioRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
-
-            // Si la reserva tiene analista asignado, solo ese analista puede gestionarla
-            // Si no tiene analista asignado (reservas de externos), cualquier analista
-            // puede gestionarla
-            if (reserva.getAnalistaAsignado() != null) {
-                if (!reserva.getAnalistaAsignado().getId().equals(analista.getId())) {
-                    throw new AccesoDenegadoException(
-                            "No tienes permisos para gestionar esta reserva. Solo puedes gestionar las reservas asignadas a ti.");
-                }
-                log.info("Analista {} aprobando/rechazando reserva asignada a él", userEmail);
-            } else {
-                // Reserva sin analista asignado (probablemente de externo), cualquier analista
-                // puede gestionarla
-                log.info("Analista {} aprobando/rechazando reserva sin analista asignado (posible reserva de externo)",
-                        userEmail);
-            }
+    private void validarPermisosAnalista(Reserva reserva, String userEmail, String userRole) {
+        if (!ROLE_ANALISTA.equals(userRole)) {
+            return;
         }
-
-        // Si se aprueba, validar conflictos con otras reservas APROBADO
-        if (nuevoEstado == Reserva.EstadoReserva.APROBADO) {
-            List<Reserva> conflictos = reservaRepository.findConflictingReservas(
-                    reserva.getEspacio().getId(),
-                    reserva.getInicio(),
-                    reserva.getFin(),
-                    Reserva.EstadoReserva.APROBADO);
-
-            // Excluir la reserva actual de los conflictos
-            conflictos = conflictos.stream()
-                    .filter(c -> !c.getId().equals(reserva.getId()))
-                    .toList();
-
-            if (!conflictos.isEmpty()) {
-                log.warn("Conflicto de horario detectado al aprobar reserva. Espacio ocupado en ese rango de tiempo");
-                throw new IllegalStateException(
-                        "No se puede aprobar la reserva: el espacio ya está reservado en ese horario por otra reserva aprobada.");
-            }
+        Usuario analista = usuarioRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
+        Usuario asignado = reserva.getAnalistaAsignado();
+        if (asignado == null) {
+            log.info("Analista {} aprobando/rechazando reserva sin analista asignado (posible reserva de externo)",
+                    userEmail);
+            return;
         }
+        if (!asignado.getId().equals(analista.getId())) {
+            throw new AccesoDenegadoException(
+                    "No tienes permisos para gestionar esta reserva. Solo puedes gestionar las reservas asignadas a ti.");
+        }
+        log.info("Analista {} aprobando/rechazando reserva asignada a él", userEmail);
+    }
 
-        // Cambiar el estado
+    private void validarSinConflictosAprobacion(Reserva reserva) {
+        List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                reserva.getEspacio().getId(),
+                reserva.getInicio(),
+                reserva.getFin(),
+                Reserva.EstadoReserva.APROBADO);
+        boolean hayConflictoExterno = conflictos.stream()
+                .anyMatch(c -> !c.getId().equals(reserva.getId()));
+        if (hayConflictoExterno) {
+            log.warn("Conflicto de horario detectado al aprobar reserva. Espacio ocupado en ese rango de tiempo");
+            throw new IllegalStateException(
+                    "No se puede aprobar la reserva: el espacio ya está reservado en ese horario por otra reserva aprobada.");
+        }
+    }
+
+    private Reserva aplicarCambioEstado(Reserva reserva, Reserva.EstadoReserva nuevoEstado, String mensajeAnalista) {
         reserva.setEstado(nuevoEstado);
-        // Guardar mensaje del analista si se proporciona (tanto para aprobar como
-        // rechazar)
         if (mensajeAnalista != null && !mensajeAnalista.trim().isEmpty()) {
             reserva.setMensajeAnalista(mensajeAnalista.trim());
-        } else {
-            // Si no se proporciona mensaje, mantener el existente o dejarlo null
-            // No se limpia automáticamente para permitir que el analista pueda actualizarlo
-            // después
         }
-        Reserva savedReserva = reservaRepository.save(reserva);
+        return reservaRepository.save(reserva);
+    }
 
-        log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
-
-        // Invalidar caché de recomendaciones para el usuario
+    private void invalidarCacheRecomendacionesUsuario(Long usuarioId) {
         try {
-            recomendacionService.invalidarCacheRecomendaciones(reserva.getUsuario().getId());
+            recomendacionService.invalidarCacheRecomendaciones(usuarioId);
         } catch (Exception e) {
             log.warn(LOG_ERROR_INVALIDAR_CACHE_RECOMENDACIONES, e.getMessage());
         }
+    }
 
-        ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
-
-        // Enviar notificación al usuario sobre el cambio de estado
+    private void notificarCambioEstadoUsuario(Reserva reserva, ReservaResponseDto reservaDto,
+                                              Reserva.EstadoReserva nuevoEstado) {
         try {
             if (nuevoEstado == Reserva.EstadoReserva.APROBADO) {
-                boolean emailEnviado = emailService.enviarEmailNotificacionReservaAprobada(
-                        reserva.getUsuario().getEmail(), reservaDto);
-                if (emailEnviado) {
-                    log.info("Email de notificación de reserva aprobada enviado al usuario: {}",
-                            reserva.getUsuario().getEmail());
-                } else {
-                    log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO,
-                            reserva.getUsuario().getEmail());
-                }
-
-                // Si la reserva tiene items solicitados, notificar a MANTENIMIENTO
-                if (reservaDto.getItemsSolicitados() != null && !reservaDto.getItemsSolicitados().isEmpty()) {
-                    try {
-                        List<Usuario> personalMantenimiento = usuarioRepository
-                                .findByRolAppAndDeletedAtIsNull(Usuario.RolApp.MANTENIMIENTO);
-                        if (!personalMantenimiento.isEmpty()) {
-                            int cantidadItems = reservaDto.getItemsSolicitados().size();
-                            for (Usuario mantenimiento : personalMantenimiento) {
-                                boolean emailMantenimientoEnviado = emailService
-                                        .enviarEmailNotificacionNuevaSolicitudInventario(
-                                                mantenimiento.getEmail(), reservaDto, cantidadItems);
-                                if (emailMantenimientoEnviado) {
-                                    log.info(
-                                            "Email de notificación de solicitud de inventario enviado a mantenimiento: {}",
-                                            mantenimiento.getEmail());
-                                } else {
-                                    log.warn("No se pudo enviar email de notificación a mantenimiento: {}",
-                                            mantenimiento.getEmail());
-                                }
-                            }
-                        } else {
-                            log.warn(
-                                    "No se encontró personal de mantenimiento para notificar sobre solicitud de inventario");
-                        }
-                    } catch (Exception e) {
-                        log.error("Error al enviar email de notificación a mantenimiento: {}", e.getMessage());
-                        // No lanzar excepción para no interrumpir el flujo
-                    }
-                }
+                notificarAprobacion(reserva, reservaDto);
             } else if (nuevoEstado == Reserva.EstadoReserva.CANCELADO) {
-                boolean emailEnviado = emailService.enviarEmailNotificacionReservaRechazada(
-                        reserva.getUsuario().getEmail(), reservaDto);
-                if (emailEnviado) {
-                    log.info("Email de notificación de reserva rechazada enviado al usuario: {}",
-                            reserva.getUsuario().getEmail());
-                } else {
-                    log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO,
-                            reserva.getUsuario().getEmail());
-                }
+                notificarRechazo(reserva, reservaDto);
             }
         } catch (Exception e) {
             log.error("Error al enviar email de notificación al usuario: {}", e.getMessage());
-            // No lanzar excepción para no interrumpir el flujo de cambio de estado
         }
+    }
 
-        return reservaDto;
+    private void notificarAprobacion(Reserva reserva, ReservaResponseDto reservaDto) {
+        boolean emailEnviado = emailService.enviarEmailNotificacionReservaAprobada(
+                reserva.getUsuario().getEmail(), reservaDto);
+        if (emailEnviado) {
+            log.info("Email de notificación de reserva aprobada enviado al usuario: {}",
+                    reserva.getUsuario().getEmail());
+        } else {
+            log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO, reserva.getUsuario().getEmail());
+        }
+        if (reservaDto.getItemsSolicitados() != null && !reservaDto.getItemsSolicitados().isEmpty()) {
+            notificarMantenimientoSolicitudInventario(reservaDto);
+        }
+    }
+
+    private void notificarRechazo(Reserva reserva, ReservaResponseDto reservaDto) {
+        boolean emailEnviado = emailService.enviarEmailNotificacionReservaRechazada(
+                reserva.getUsuario().getEmail(), reservaDto);
+        if (emailEnviado) {
+            log.info("Email de notificación de reserva rechazada enviado al usuario: {}",
+                    reserva.getUsuario().getEmail());
+        } else {
+            log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO, reserva.getUsuario().getEmail());
+        }
+    }
+
+    private void notificarMantenimientoSolicitudInventario(ReservaResponseDto reservaDto) {
+        try {
+            List<Usuario> personalMantenimiento = usuarioRepository
+                    .findByRolAppAndDeletedAtIsNull(Usuario.RolApp.MANTENIMIENTO);
+            if (personalMantenimiento.isEmpty()) {
+                log.warn("No se encontró personal de mantenimiento para notificar sobre solicitud de inventario");
+                return;
+            }
+            int cantidadItems = reservaDto.getItemsSolicitados().size();
+            for (Usuario mantenimiento : personalMantenimiento) {
+                boolean emailMantenimientoEnviado = emailService
+                        .enviarEmailNotificacionNuevaSolicitudInventario(
+                                mantenimiento.getEmail(), reservaDto, cantidadItems);
+                if (emailMantenimientoEnviado) {
+                    log.info(
+                            "Email de notificación de solicitud de inventario enviado a mantenimiento: {}",
+                            mantenimiento.getEmail());
+                } else {
+                    log.warn("No se pudo enviar email de notificación a mantenimiento: {}",
+                            mantenimiento.getEmail());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación a mantenimiento: {}", e.getMessage());
+            // No lanzar excepción para no interrumpir el flujo
+        }
     }
 
     /**
@@ -890,67 +870,14 @@ public class ReservaService {
     public ReservaResponseDto updateReserva(Long id, ReservaUpdateDto updateDto, String userEmail) {
         log.info("Actualizando reserva ID: {} para usuario: {}", id, userEmail);
 
-        Usuario usuario = usuarioRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
+        Usuario usuario = obtenerUsuarioParaReserva(userEmail);
+        Reserva reserva = obtenerReservaParaEditar(id, usuario);
 
-        Reserva reserva = reservaRepository.findByIdWithRelations(id);
-        if (reserva == null) {
-            throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
-        }
+        // Capturar horarios anteriores antes de cualquier mutación
+        Instant inicioAnterior = reserva.getInicio();
+        Instant finAnterior = reserva.getFin();
 
-        // Verificar que el usuario es dueño de la reserva
-        if (!reserva.getUsuario().getId().equals(usuario.getId())) {
-            throw new AccesoDenegadoException("No tienes permisos para editar esta reserva");
-        }
-
-        // Si está cancelada, no se puede editar
-        if (reserva.getEstado() == Reserva.EstadoReserva.CANCELADO) {
-            throw new IllegalStateException("No se puede editar una reserva cancelada");
-        }
-
-        // Si ya pasó, no se puede editar
-        if (reserva.getInicio().isBefore(Instant.now())) {
-            throw new IllegalStateException("No se puede editar una reserva que ya pasó");
-        }
-
-        // Actualizar campos si se proporcionaron
-        boolean cambioHorarios = false;
-        if (updateDto.getInicio() != null && updateDto.getFin() != null) {
-            // Validar nuevos horarios
-            if (!updateDto.getInicio().isBefore(updateDto.getFin())) {
-                throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
-            }
-
-            if (updateDto.getInicio().isBefore(Instant.now())) {
-                throw new IllegalArgumentException("No se puede reservar en el pasado");
-            }
-
-            // Validar duración mínima (30 minutos)
-            long durationMinutes = java.time.Duration.between(updateDto.getInicio(), updateDto.getFin()).toMinutes();
-            if (durationMinutes < 30) {
-                throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
-            }
-
-            // Verificar conflictos con los nuevos horarios
-            List<Reserva> conflictos = reservaRepository.findConflictingReservas(
-                    reserva.getEspacio().getId(),
-                    updateDto.getInicio(),
-                    updateDto.getFin(),
-                    Reserva.EstadoReserva.APROBADO);
-
-            // Excluir la reserva actual de los conflictos
-            conflictos = conflictos.stream()
-                    .filter(r -> !r.getId().equals(id))
-                    .toList();
-
-            if (!conflictos.isEmpty()) {
-                throw new IllegalStateException("El espacio ya está reservado en ese horario");
-            }
-
-            reserva.setInicio(updateDto.getInicio());
-            reserva.setFin(updateDto.getFin());
-            cambioHorarios = true;
-        }
+        boolean cambioHorarios = aplicarCambioHorariosSiCorresponde(reserva, updateDto, id);
 
         if (updateDto.getEstado() != null) {
             reserva.setEstado(updateDto.getEstado());
@@ -960,53 +887,95 @@ public class ReservaService {
 
         if (cambioHorarios) {
             log.info("Horarios actualizados para reserva ID: {}", id);
-
-            // Enviar notificaciones sobre el cambio de horario
-            try {
-                ReservaResponseDto reservaDto = mapToResponseDto(updatedReserva);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-                        .withZone(ZoneId.of(appTimezone));
-                String horarioAnterior = formatter.format(reserva.getInicio()) + " - "
-                        + formatter.format(reserva.getFin());
-
-                // Notificar al usuario
-                boolean emailUsuarioEnviado = emailService.enviarEmailNotificacionReservaActualizada(
-                        reserva.getUsuario().getEmail(),
-                        reservaDto,
-                        horarioAnterior,
-                        false // esAnalista = false
-                );
-                if (emailUsuarioEnviado) {
-                    log.info("Email de notificación de actualización de reserva enviado al usuario: {}",
-                            reserva.getUsuario().getEmail());
-                } else {
-                    log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO,
-                            reserva.getUsuario().getEmail());
-                }
-
-                // Notificar al analista si está asignado
-                if (reserva.getAnalistaAsignado() != null) {
-                    boolean emailAnalistaEnviado = emailService.enviarEmailNotificacionReservaActualizada(
-                            reserva.getAnalistaAsignado().getEmail(),
-                            reservaDto,
-                            horarioAnterior,
-                            true // esAnalista = true
-                    );
-                    if (emailAnalistaEnviado) {
-                        log.info("Email de notificación de actualización de reserva enviado al analista: {}",
-                                reserva.getAnalistaAsignado().getEmail());
-                    } else {
-                        log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO,
-                                reserva.getAnalistaAsignado().getEmail());
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error al enviar email de notificación de actualización de reserva: {}", e.getMessage());
-                // No lanzar excepción para no interrumpir el flujo
-            }
+            notificarActualizacionReserva(updatedReserva, inicioAnterior, finAnterior);
         }
 
         return mapToResponseDto(updatedReserva);
+    }
+
+    private Reserva obtenerReservaParaEditar(Long id, Usuario usuario) {
+        Reserva reserva = reservaRepository.findByIdWithRelations(id);
+        if (reserva == null) {
+            throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
+        }
+        if (!reserva.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccesoDenegadoException("No tienes permisos para editar esta reserva");
+        }
+        if (reserva.getEstado() == Reserva.EstadoReserva.CANCELADO) {
+            throw new IllegalStateException("No se puede editar una reserva cancelada");
+        }
+        if (reserva.getInicio().isBefore(Instant.now())) {
+            throw new IllegalStateException("No se puede editar una reserva que ya pasó");
+        }
+        return reserva;
+    }
+
+    private boolean aplicarCambioHorariosSiCorresponde(Reserva reserva, ReservaUpdateDto updateDto, Long id) {
+        if (updateDto.getInicio() == null || updateDto.getFin() == null) {
+            return false;
+        }
+        validarHorariosUpdate(updateDto);
+        validarSinConflictosUpdate(reserva.getEspacio().getId(), updateDto, id);
+        reserva.setInicio(updateDto.getInicio());
+        reserva.setFin(updateDto.getFin());
+        return true;
+    }
+
+    private void validarHorariosUpdate(ReservaUpdateDto updateDto) {
+        if (!updateDto.getInicio().isBefore(updateDto.getFin())) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
+        }
+        if (updateDto.getInicio().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("No se puede reservar en el pasado");
+        }
+        long durationMinutes = Duration.between(updateDto.getInicio(), updateDto.getFin()).toMinutes();
+        if (durationMinutes < 30) {
+            throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
+        }
+    }
+
+    private void validarSinConflictosUpdate(Long espacioId, ReservaUpdateDto updateDto, Long reservaId) {
+        List<Reserva> conflictos = reservaRepository.findConflictingReservas(
+                espacioId,
+                updateDto.getInicio(),
+                updateDto.getFin(),
+                Reserva.EstadoReserva.APROBADO).stream()
+                .filter(r -> !r.getId().equals(reservaId))
+                .toList();
+        if (!conflictos.isEmpty()) {
+            throw new IllegalStateException("El espacio ya está reservado en ese horario");
+        }
+    }
+
+    private void notificarActualizacionReserva(Reserva reserva, Instant inicioAnterior, Instant finAnterior) {
+        try {
+            ReservaResponseDto reservaDto = mapToResponseDto(reserva);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                    .withZone(ZoneId.of(appTimezone));
+            String horarioAnterior = formatter.format(inicioAnterior) + " - " + formatter.format(finAnterior);
+
+            enviarEmailActualizacion(reserva.getUsuario().getEmail(), reservaDto, horarioAnterior, false);
+
+            if (reserva.getAnalistaAsignado() != null) {
+                enviarEmailActualizacion(reserva.getAnalistaAsignado().getEmail(), reservaDto, horarioAnterior, true);
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar email de notificación de actualización de reserva: {}", e.getMessage());
+        }
+    }
+
+    private void enviarEmailActualizacion(String destinatario, ReservaResponseDto reservaDto,
+                                          String horarioAnterior, boolean esAnalista) {
+        boolean enviado = emailService.enviarEmailNotificacionReservaActualizada(
+                destinatario, reservaDto, horarioAnterior, esAnalista);
+        if (enviado) {
+            log.info("Email de notificación de actualización de reserva enviado a {}: {}",
+                    esAnalista ? "analista" : "usuario", destinatario);
+        } else if (esAnalista) {
+            log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO, destinatario);
+        } else {
+            log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO, destinatario);
+        }
     }
 
     /**
@@ -1089,107 +1058,38 @@ public class ReservaService {
      */
     @Transactional(readOnly = true)
     public List<ReservaResponseDto> getTodasLasReservas(
-            String estado,
-            Long espacioId,
-            Long carreraId,
-            Long tipoEspacioId,
-            Instant fechaInicio,
-            Instant fechaFin,
+            ReservaFilters filters,
             String userEmail,
             String userRole) {
-        Specification<Reserva> spec = buildSpecificationPublico(estado, espacioId, carreraId, tipoEspacioId,
-                fechaInicio, fechaFin, userEmail, userRole);
+        Specification<Reserva> spec = buildSpecificationPublico(filters, userEmail, userRole);
 
         List<Reserva> reservas = reservaRepository.findAll(spec);
         return reservas.stream()
                 .map(this::mapToResponseDto)
-                .sorted((a, b) -> b.getInicio().compareTo(a.getInicio())) // Ordenar por fecha descendente
+                .sorted((a, b) -> b.getInicio().compareTo(a.getInicio()))
                 .toList();
     }
 
     /**
      * Construir Specification para filtrar reservas públicas (sin filtrar por
-     * usuario)
-     * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
+     * usuario). Si el usuario es ANALISTA, solo muestra las reservas asignadas
+     * a él. Si es EXTERNO, solo las marcadas como públicas.
      */
     private Specification<Reserva> buildSpecificationPublico(
-            String estado,
-            Long espacioId,
-            Long carreraId,
-            Long tipoEspacioId,
-            Instant fechaInicio,
-            Instant fechaFin,
+            ReservaFilters filters,
             String userEmail,
             String userRole) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Si el usuario es EXTERNO, solo mostrar reservas públicas
             if (ROLE_EXTERNO.equals(userRole)) {
                 predicates.add(cb.equal(root.get("esPublica"), true));
                 log.debug("Filtrando solo reservas públicas para usuario externo: {}", userEmail);
             }
 
-            // Si el usuario es ANALISTA, mostrar reservas asignadas a él O sin analista
-            // asignado (incluye externos)
-            if (ROLE_ANALISTA.equals(userRole) && userEmail != null) {
-                Usuario analista = usuarioRepository.findByEmail(userEmail)
-                        .orElse(null);
-                if (analista != null) {
-                    // Mostrar reservas asignadas a este analista O sin analista asignado (null)
-                    Predicate asignadasAMi = cb.equal(root.get(FIELD_ANALISTA_ASIGNADO).get("id"), analista.getId());
-                    Predicate sinAnalista = cb.isNull(root.get(FIELD_ANALISTA_ASIGNADO));
-                    predicates.add(cb.or(asignadasAMi, sinAnalista));
-                    log.debug("Filtrando reservas para analista: {} (ID: {}) - incluyendo sin asignar", userEmail,
-                            analista.getId());
-                }
-            }
-
-            // NO filtrar por usuario - mostrar todas las reservas (solo para ADMIN y otros
-            // roles internos)
-
-            // Filtro por estado
-            if (estado != null && !estado.isEmpty() && !estado.equals(ESTADO_FILTRO_TODAS)) {
-                try {
-                    Reserva.EstadoReserva estadoEnum = Reserva.EstadoReserva.valueOf(estado.toUpperCase());
-                    predicates.add(cb.equal(root.get(FIELD_ESTADO), estadoEnum));
-                } catch (IllegalArgumentException e) {
-                    // Ignorar si el estado no es válido
-                }
-            }
-
-            // Filtro por espacio
-            if (espacioId != null) {
-                predicates.add(cb.equal(root.get(FIELD_ESPACIO).get("id"), espacioId));
-            }
-
-            // Filtro por tipo de espacio (tipoEspacioId es un campo directo en Espacio, no
-            // una relación)
-            if (tipoEspacioId != null) {
-                // Acceder al campo tipoEspacioId directamente del espacio
-                predicates.add(cb.equal(
-                        root.get(FIELD_ESPACIO).get(FIELD_TIPO_ESPACIO_ID),
-                        tipoEspacioId));
-            }
-
-            // Filtro por carrera
-            if (carreraId != null) {
-                predicates.add(cb.equal(root.get(FIELD_CARRERA).get("id"), carreraId));
-            }
-
-            // Filtro por fecha inicio
-            if (fechaInicio != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get(FIELD_INICIO), fechaInicio));
-            }
-
-            // Filtro por fecha fin
-            if (fechaFin != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(FIELD_INICIO), fechaFin));
-            }
-
-            // Ordenar por fecha descendente
+            addAnalistaScopePredicate(predicates, root, cb, userEmail, userRole);
+            appendCommonFilters(predicates, root, cb, filters);
             query.orderBy(cb.desc(root.get(FIELD_INICIO)));
-
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
@@ -1222,72 +1122,114 @@ public class ReservaService {
      */
     private ReservaStatsDto calcularEstadisticasLegacy(List<Reserva> reservas) {
         Instant now = Instant.now();
-        ZonedDateTime nowZdt = now.atZone(ZoneOffset.UTC);
-        YearMonth mesActual = YearMonth.from(nowZdt);
-        YearMonth proximoMes = mesActual.plusMonths(1);
-        YearMonth mesAnterior = mesActual.minusMonths(1);
-        int anioActual = nowZdt.getYear();
+        YearMonth mesActual = YearMonth.from(now.atZone(ZoneOffset.UTC));
 
-        // ========== MÉTRICAS BÁSICAS ==========
+        MetricasBasicas basicas = calcularMetricasBasicas(reservas, now);
+        MetricasTemporales temporales = calcularMetricasTemporales(reservas, now, mesActual);
+        MetricasEspacios espacios = calcularMetricasEspacios(reservas, basicas.totalReservas());
+        MetricasDuracion duracion = calcularMetricasDuracion(reservas, basicas.totalReservas(), mesActual);
+        MetricasFrecuencia frecuencia = calcularMetricasFrecuencia(reservas, now, basicas.totalReservas());
+        MetricasComparativas comparativas = calcularMetricasComparativas(reservas, mesActual, temporales.reservasEsteMes());
+
+        return new ReservaStatsDto(
+                basicas.totalReservas(),
+                basicas.totalAprobadas(),
+                basicas.totalPendientes(),
+                basicas.totalCanceladas(),
+                basicas.totalFuturas(),
+                basicas.totalPasadas(),
+                basicas.totalActivas(),
+                basicas.reservasPorEstado(),
+                temporales.reservasEsteMes(),
+                temporales.reservasProximoMes(),
+                temporales.reservasEsteAnio(),
+                temporales.reservasPorMes(),
+                temporales.reservasPorDiaSemana(),
+                temporales.mesConMasReservas(),
+                temporales.promedioReservasPorMes(),
+                espacios.totalEspaciosUsados(),
+                espacios.espacioMasUsado(),
+                espacios.nombreEspacioMasUsado(),
+                espacios.reservasPorEspacio(),
+                espacios.distribucionPorEspacio(),
+                duracion.duracionTotalHoras(),
+                duracion.duracionPromedioHoras(),
+                duracion.reservaMasLargaHoras(),
+                duracion.reservaMasCortaHoras(),
+                duracion.horasReservadasEsteMes(),
+                frecuencia.promedioReservasPorSemana(),
+                frecuencia.diasDesdeUltimaReserva(),
+                frecuencia.diasHastaProximaReserva(),
+                frecuencia.fechaUltimaReserva(),
+                frecuencia.fechaProximaReserva(),
+                comparativas.reservasMesActual(),
+                comparativas.reservasMesAnterior(),
+                comparativas.diferenciaMesAnterior(),
+                comparativas.porcentajeCambioMesAnterior());
+    }
+
+    private record MetricasBasicas(long totalReservas, long totalAprobadas, long totalPendientes,
+                                   long totalCanceladas, long totalFuturas, long totalPasadas,
+                                   long totalActivas, Map<String, Long> reservasPorEstado) {}
+
+    private record MetricasTemporales(long reservasEsteMes, long reservasProximoMes, long reservasEsteAnio,
+                                      Map<String, Long> reservasPorMes, Map<String, Long> reservasPorDiaSemana,
+                                      String mesConMasReservas, double promedioReservasPorMes) {}
+
+    private record MetricasEspacios(long totalEspaciosUsados, Long espacioMasUsado,
+                                    String nombreEspacioMasUsado, Map<Long, Long> reservasPorEspacio,
+                                    Map<String, Long> distribucionPorEspacio) {}
+
+    private record MetricasDuracion(double duracionTotalHoras, double duracionPromedioHoras,
+                                    double reservaMasLargaHoras, double reservaMasCortaHoras,
+                                    double horasReservadasEsteMes) {}
+
+    private record MetricasFrecuencia(double promedioReservasPorSemana, Long diasDesdeUltimaReserva,
+                                      Long diasHastaProximaReserva, Instant fechaUltimaReserva,
+                                      Instant fechaProximaReserva) {}
+
+    private record MetricasComparativas(long reservasMesActual, long reservasMesAnterior,
+                                        long diferenciaMesAnterior, double porcentajeCambioMesAnterior) {}
+
+    private MetricasBasicas calcularMetricasBasicas(List<Reserva> reservas, Instant now) {
         long totalReservas = reservas.size();
-
-        long totalAprobadas = reservas.stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO)
-                .count();
-
-        long totalPendientes = reservas.stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
-                .count();
-
-        long totalCanceladas = reservas.stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.CANCELADO)
-                .count();
-
-        long totalFuturas = reservas.stream()
-                .filter(r -> r.getInicio().isAfter(now))
-                .count();
-
-        long totalPasadas = reservas.stream()
-                .filter(r -> r.getFin().isBefore(now))
-                .count();
-
+        long totalAprobadas = contarPorEstado(reservas, Reserva.EstadoReserva.APROBADO);
+        long totalPendientes = contarPorEstado(reservas, Reserva.EstadoReserva.PENDIENTE);
+        long totalCanceladas = contarPorEstado(reservas, Reserva.EstadoReserva.CANCELADO);
+        long totalFuturas = reservas.stream().filter(r -> r.getInicio().isAfter(now)).count();
+        long totalPasadas = reservas.stream().filter(r -> r.getFin().isBefore(now)).count();
         long totalActivas = reservas.stream()
                 .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO && r.getInicio().isAfter(now))
                 .count();
 
-        // Reservas por estado
         Map<String, Long> reservasPorEstado = new HashMap<>();
         for (Reserva.EstadoReserva estado : Reserva.EstadoReserva.values()) {
-            long count = reservas.stream()
-                    .filter(r -> r.getEstado() == estado)
-                    .count();
-            reservasPorEstado.put(estado.name(), count);
+            reservasPorEstado.put(estado.name(), contarPorEstado(reservas, estado));
         }
+        return new MetricasBasicas(totalReservas, totalAprobadas, totalPendientes, totalCanceladas,
+                totalFuturas, totalPasadas, totalActivas, reservasPorEstado);
+    }
 
-        // ========== MÉTRICAS TEMPORALES ==========
-        long reservasEsteMes = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesActual))
-                .count();
+    private long contarPorEstado(List<Reserva> reservas, Reserva.EstadoReserva estado) {
+        return reservas.stream().filter(r -> r.getEstado() == estado).count();
+    }
 
-        long reservasProximoMes = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(proximoMes))
-                .count();
+    private MetricasTemporales calcularMetricasTemporales(List<Reserva> reservas, Instant now, YearMonth mesActual) {
+        YearMonth proximoMes = mesActual.plusMonths(1);
+        int anioActual = now.atZone(ZoneOffset.UTC).getYear();
 
+        long reservasEsteMes = contarEnMes(reservas, mesActual);
+        long reservasProximoMes = contarEnMes(reservas, proximoMes);
         long reservasEsteAnio = reservas.stream()
                 .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).getYear() == anioActual)
                 .count();
 
-        // Reservas por mes (últimos 12 meses)
         Map<String, Long> reservasPorMes = new HashMap<>();
         for (int i = 11; i >= 0; i--) {
             YearMonth mes = mesActual.minusMonths(i);
-            long count = reservas.stream()
-                    .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mes))
-                    .count();
-            reservasPorMes.put(mes.toString(), count);
+            reservasPorMes.put(mes.toString(), contarEnMes(reservas, mes));
         }
 
-        // Reservas por día de semana
         Map<String, Long> reservasPorDiaSemana = new HashMap<>();
         for (DayOfWeek dia : DayOfWeek.values()) {
             long count = reservas.stream()
@@ -1296,168 +1238,131 @@ public class ReservaService {
             reservasPorDiaSemana.put(dia.name(), count);
         }
 
-        // Mes con más reservas
         String mesConMasReservas = reservasPorMes.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
-        // Promedio reservas por mes
         double promedioReservasPorMes = reservasPorMes.values().stream()
                 .mapToLong(Long::longValue)
                 .average()
                 .orElse(0.0);
 
-        // ========== MÉTRICAS DE ESPACIOS ==========
+        return new MetricasTemporales(reservasEsteMes, reservasProximoMes, reservasEsteAnio,
+                reservasPorMes, reservasPorDiaSemana, mesConMasReservas, promedioReservasPorMes);
+    }
+
+    private long contarEnMes(List<Reserva> reservas, YearMonth mes) {
+        return reservas.stream()
+                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mes))
+                .count();
+    }
+
+    private MetricasEspacios calcularMetricasEspacios(List<Reserva> reservas, long totalReservas) {
         Set<Long> espaciosDistintos = reservas.stream()
                 .map(r -> r.getEspacio().getId())
                 .collect(Collectors.toSet());
         long totalEspaciosUsados = espaciosDistintos.size();
 
-        // Reservas por espacio
         Map<Long, Long> reservasPorEspacio = reservas.stream()
-                .collect(Collectors.groupingBy(
-                        r -> r.getEspacio().getId(),
-                        Collectors.counting()));
+                .collect(Collectors.groupingBy(r -> r.getEspacio().getId(), Collectors.counting()));
 
-        // Espacio más usado
         Long espacioMasUsado = reservasPorEspacio.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
-        String nombreEspacioMasUsado = null;
-        if (espacioMasUsado != null) {
-            nombreEspacioMasUsado = reservas.stream()
-                    .filter(r -> r.getEspacio().getId().equals(espacioMasUsado))
-                    .findFirst()
-                    .map(r -> r.getEspacio().getNombre())
-                    .orElse(null);
-        }
+        String nombreEspacioMasUsado = obtenerNombreEspacioMasUsado(reservas, espacioMasUsado);
 
-        // Distribución por espacio (porcentual)
         Map<String, Long> distribucionPorEspacio = new HashMap<>();
         for (Map.Entry<Long, Long> entry : reservasPorEspacio.entrySet()) {
             long porcentaje = Math.round((entry.getValue() * 100.0) / totalReservas);
             distribucionPorEspacio.put(entry.getKey().toString(), porcentaje);
         }
 
-        // ========== MÉTRICAS DE USO Y DURACIÓN ==========
+        return new MetricasEspacios(totalEspaciosUsados, espacioMasUsado, nombreEspacioMasUsado,
+                reservasPorEspacio, distribucionPorEspacio);
+    }
+
+    private String obtenerNombreEspacioMasUsado(List<Reserva> reservas, Long espacioMasUsado) {
+        if (espacioMasUsado == null) {
+            return null;
+        }
+        return reservas.stream()
+                .filter(r -> r.getEspacio().getId().equals(espacioMasUsado))
+                .findFirst()
+                .map(r -> r.getEspacio().getNombre())
+                .orElse(null);
+    }
+
+    private MetricasDuracion calcularMetricasDuracion(List<Reserva> reservas, long totalReservas, YearMonth mesActual) {
         double duracionTotalHoras = reservas.stream()
                 .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
                 .sum();
+        double duracionPromedioHoras = totalReservas > 0 ? duracionTotalHoras / totalReservas : 0.0;
 
-        double duracionPromedioHoras = totalReservas > 0
-                ? duracionTotalHoras / totalReservas
-                : 0.0;
-
-        OptionalDouble reservaMasLargaOpt = reservas.stream()
+        double reservaMasLargaHoras = reservas.stream()
                 .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
-                .max();
-        double reservaMasLargaHoras = reservaMasLargaOpt.isPresent() ? reservaMasLargaOpt.getAsDouble() : 0.0;
-
-        OptionalDouble reservaMasCortaOpt = reservas.stream()
+                .max().orElse(0.0);
+        double reservaMasCortaHoras = reservas.stream()
                 .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
-                .min();
-        double reservaMasCortaHoras = reservaMasCortaOpt.isPresent() ? reservaMasCortaOpt.getAsDouble() : 0.0;
+                .min().orElse(0.0);
 
         double horasReservadasEsteMes = reservas.stream()
                 .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesActual))
                 .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
                 .sum();
 
-        // ========== MÉTRICAS DE FRECUENCIA ==========
-        // Promedio reservas por semana (calcular semanas totales)
-        Optional<Reserva> primeraReservaOpt = reservas.stream()
-                .min(Comparator.comparing(Reserva::getInicio));
+        return new MetricasDuracion(duracionTotalHoras, duracionPromedioHoras,
+                reservaMasLargaHoras, reservaMasCortaHoras, horasReservadasEsteMes);
+    }
 
-        long semanasTotales = 1;
-        if (primeraReservaOpt.isPresent()) {
-            Instant primeraReserva = primeraReservaOpt.get().getInicio();
-            long dias = Duration.between(primeraReserva, now).toDays();
-            semanasTotales = Math.max(1, dias / 7);
-        }
+    private MetricasFrecuencia calcularMetricasFrecuencia(List<Reserva> reservas, Instant now, long totalReservas) {
+        long semanasTotales = calcularSemanasTotales(reservas, now);
+        double promedioReservasPorSemana = semanasTotales > 0 ? totalReservas / (double) semanasTotales : 0.0;
 
-        double promedioReservasPorSemana = semanasTotales > 0
-                ? totalReservas / (double) semanasTotales
-                : 0.0;
-
-        // Días desde última reserva
         Optional<Reserva> ultimaReservaOpt = reservas.stream()
                 .filter(r -> r.getFin().isBefore(now))
                 .max(Comparator.comparing(Reserva::getFin));
+        Instant fechaUltimaReserva = ultimaReservaOpt.map(Reserva::getFin).orElse(null);
+        Long diasDesdeUltimaReserva = fechaUltimaReserva != null
+                ? Duration.between(fechaUltimaReserva, now).toDays() : null;
 
-        Long diasDesdeUltimaReserva = null;
-        Instant fechaUltimaReserva = null;
-        if (ultimaReservaOpt.isPresent()) {
-            fechaUltimaReserva = ultimaReservaOpt.get().getFin();
-            diasDesdeUltimaReserva = Duration.between(fechaUltimaReserva, now).toDays();
-        }
-
-        // Días hasta próxima reserva
         Optional<Reserva> proximaReservaOpt = reservas.stream()
                 .filter(r -> r.getInicio().isAfter(now))
                 .min(Comparator.comparing(Reserva::getInicio));
+        Instant fechaProximaReserva = proximaReservaOpt.map(Reserva::getInicio).orElse(null);
+        Long diasHastaProximaReserva = fechaProximaReserva != null
+                ? Duration.between(now, fechaProximaReserva).toDays() : null;
 
-        Long diasHastaProximaReserva = null;
-        Instant fechaProximaReserva = null;
-        if (proximaReservaOpt.isPresent()) {
-            fechaProximaReserva = proximaReservaOpt.get().getInicio();
-            diasHastaProximaReserva = Duration.between(now, fechaProximaReserva).toDays();
+        return new MetricasFrecuencia(promedioReservasPorSemana, diasDesdeUltimaReserva, diasHastaProximaReserva,
+                fechaUltimaReserva, fechaProximaReserva);
+    }
+
+    private long calcularSemanasTotales(List<Reserva> reservas, Instant now) {
+        Optional<Reserva> primeraReservaOpt = reservas.stream().min(Comparator.comparing(Reserva::getInicio));
+        if (primeraReservaOpt.isEmpty()) {
+            return 1;
         }
+        long dias = Duration.between(primeraReservaOpt.get().getInicio(), now).toDays();
+        return Math.max(1, dias / 7);
+    }
 
-        // ========== MÉTRICAS COMPARATIVAS ==========
-        long reservasMesActual = reservasEsteMes;
-
-        long reservasMesAnterior = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesAnterior))
-                .count();
-
+    private MetricasComparativas calcularMetricasComparativas(List<Reserva> reservas, YearMonth mesActual,
+                                                              long reservasMesActual) {
+        YearMonth mesAnterior = mesActual.minusMonths(1);
+        long reservasMesAnterior = contarEnMes(reservas, mesAnterior);
         long diferenciaMesAnterior = reservasMesActual - reservasMesAnterior;
 
-        double porcentajeCambioMesAnterior = 0.0;
+        double porcentajeCambio;
         if (reservasMesAnterior > 0) {
-            porcentajeCambioMesAnterior = ((diferenciaMesAnterior * 100.0) / reservasMesAnterior);
+            porcentajeCambio = (diferenciaMesAnterior * 100.0) / reservasMesAnterior;
         } else if (reservasMesActual > 0) {
-            porcentajeCambioMesAnterior = 100.0; // Nuevas reservas cuando no había ninguna antes
+            porcentajeCambio = 100.0;
+        } else {
+            porcentajeCambio = 0.0;
         }
-
-        // Crear y retornar DTO
-        return new ReservaStatsDto(
-                totalReservas,
-                totalAprobadas,
-                totalPendientes,
-                totalCanceladas,
-                totalFuturas,
-                totalPasadas,
-                totalActivas,
-                reservasPorEstado,
-                reservasEsteMes,
-                reservasProximoMes,
-                reservasEsteAnio,
-                reservasPorMes,
-                reservasPorDiaSemana,
-                mesConMasReservas,
-                promedioReservasPorMes,
-                totalEspaciosUsados,
-                espacioMasUsado,
-                nombreEspacioMasUsado,
-                reservasPorEspacio,
-                distribucionPorEspacio,
-                duracionTotalHoras,
-                duracionPromedioHoras,
-                reservaMasLargaHoras,
-                reservaMasCortaHoras,
-                horasReservadasEsteMes,
-                promedioReservasPorSemana,
-                diasDesdeUltimaReserva,
-                diasHastaProximaReserva,
-                fechaUltimaReserva,
-                fechaProximaReserva,
-                reservasMesActual,
-                reservasMesAnterior,
-                diferenciaMesAnterior,
-                porcentajeCambioMesAnterior);
+        return new MetricasComparativas(reservasMesActual, reservasMesAnterior, diferenciaMesAnterior, porcentajeCambio);
     }
 
     /**

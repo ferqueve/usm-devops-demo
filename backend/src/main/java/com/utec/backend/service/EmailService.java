@@ -445,47 +445,34 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarEmailNotificacionCambioEmail(String toEmailViejo, String toEmailNuevo, String nombreUsuario) {
-        // Verificar preferencias para ambos emails
         boolean enviarViejo = configuracionService.debeEnviarEmail(toEmailViejo, "cambioEmail");
         boolean enviarNuevo = configuracionService.debeEnviarEmail(toEmailNuevo, "cambioEmail");
-        
+
         if (!enviarViejo && !enviarNuevo) {
             log.debug("Email de cambio de email no enviado por preferencias del usuario");
             return false;
         }
         String subject = "Tu email ha sido actualizado - UTEC Space Manager";
-        
-        // Enviar al email viejo (si está permitido)
-        boolean enviadoViejo = true;
-        if (enviarViejo) {
-            Map<String, String> variablesViejo = new HashMap<>();
-            variablesViejo.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
-            variablesViejo.put("emailViejo", toEmailViejo != null ? toEmailViejo : "N/A");
-            variablesViejo.put("emailNuevo", toEmailNuevo != null ? toEmailNuevo : "N/A");
-            variablesViejo.put(VAR_FRONTEND_URL, frontendUrl);
-            
-            String htmlContentViejo = emailTemplateService.loadTemplate("cambio-email.html", variablesViejo);
-            String htmlBodyViejo = emailTemplateService.wrapInBaseTemplate(htmlContentViejo, subject, frontendUrl);
 
-            enviadoViejo = sendHtmlEmailSafe(toEmailViejo, subject, htmlBodyViejo);
-        }
-        
-        // Enviar al email nuevo (si está permitido)
-        boolean enviadoNuevo = true;
-        if (enviarNuevo) {
-            Map<String, String> variablesNuevo = new HashMap<>();
-            variablesNuevo.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
-            variablesNuevo.put("emailViejo", toEmailViejo != null ? toEmailViejo : "N/A");
-            variablesNuevo.put("emailNuevo", toEmailNuevo != null ? toEmailNuevo : "N/A");
-            variablesNuevo.put(VAR_FRONTEND_URL, frontendUrl);
-            
-            String htmlContentNuevo = emailTemplateService.loadTemplate("cambio-email.html", variablesNuevo);
-            String htmlBodyNuevo = emailTemplateService.wrapInBaseTemplate(htmlContentNuevo, subject, frontendUrl);
+        boolean enviadoViejo = !enviarViejo
+                || enviarCambioEmailA(toEmailViejo, toEmailViejo, toEmailNuevo, nombreUsuario, subject);
+        boolean enviadoNuevo = !enviarNuevo
+                || enviarCambioEmailA(toEmailNuevo, toEmailViejo, toEmailNuevo, nombreUsuario, subject);
 
-            enviadoNuevo = sendHtmlEmailSafe(toEmailNuevo, subject, htmlBodyNuevo);
-        }
-        
         return enviadoViejo && enviadoNuevo;
+    }
+
+    private boolean enviarCambioEmailA(String destinatario, String emailViejo, String emailNuevo,
+                                       String nombreUsuario, String subject) {
+        Map<String, String> variables = new HashMap<>();
+        variables.put(VAR_NOMBRE_USUARIO, nombreUsuario != null ? nombreUsuario : DEFAULT_USUARIO);
+        variables.put("emailViejo", emailViejo != null ? emailViejo : "N/A");
+        variables.put("emailNuevo", emailNuevo != null ? emailNuevo : "N/A");
+        variables.put(VAR_FRONTEND_URL, frontendUrl);
+
+        String htmlContent = emailTemplateService.loadTemplate("cambio-email.html", variables);
+        String htmlBody = emailTemplateService.wrapInBaseTemplate(htmlContent, subject, frontendUrl);
+        return sendHtmlEmailSafe(destinatario, subject, htmlBody);
     }
 
     /**
@@ -508,7 +495,13 @@ public class EmailService {
         String fechaInicioNueva = formatter.format(reserva.getInicio());
         String fechaFinNueva = formatter.format(reserva.getFin());
         
-        String destinatario = esAnalista ? "Hola," : "Hola " + (reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : DEFAULT_USUARIO) + ",";
+        String destinatario;
+        if (esAnalista) {
+            destinatario = "Hola,";
+        } else {
+            String nombreUsuario = reserva.getUsuarioNombre() != null ? reserva.getUsuarioNombre() : DEFAULT_USUARIO;
+            destinatario = "Hola " + nombreUsuario + ",";
+        }
         String mensaje = esAnalista 
             ? "Se ha actualizado una reserva que está asignada a ti."
             : "Tu reserva ha sido actualizada.";

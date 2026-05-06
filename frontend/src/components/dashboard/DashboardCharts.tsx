@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import type { TooltipProps } from 'recharts';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import type { Reserva } from '@/lib/types/spaces';
 
 interface DashboardChartsProps {
@@ -12,6 +14,19 @@ const COLORS = {
   APROBADO: '#10b981', // green
   PENDIENTE: '#f59e0b', // yellow
   CANCELADO: '#ef4444', // red
+};
+
+const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-white border rounded-lg shadow-lg p-3">
+        <p className="text-sm font-medium text-gray-900">
+          {payload[0].name}: {payload[0].value}
+        </p>
+      </div>
+    );
+  }
+  return null;
 };
 
 export default function DashboardCharts({ reservas, loading = false }: Readonly<DashboardChartsProps>) {
@@ -38,7 +53,7 @@ export default function DashboardCharts({ reservas, loading = false }: Readonly<
       const diaIndex = diaSemana === 0 ? 6 : diaSemana - 1; // Ajustar para que lunes sea 0
       acc[diaIndex] = (acc[diaIndex] || 0) + 1;
       return acc;
-    }, Array(7).fill(0) as number[]);
+    }, Array.from<number>({ length: 7 }).fill(0));
 
     return dias.map((dia, index) => ({
       dia,
@@ -80,19 +95,6 @@ export default function DashboardCharts({ reservas, loading = false }: Readonly<
       </div>
     );
   }
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload?.length) {
-      return (
-        <div className="bg-white border rounded-lg shadow-lg p-3">
-          <p className="text-sm font-medium text-gray-900">
-            {payload[0].name}: {payload[0].value}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="grid gap-6 md:grid-cols-2">

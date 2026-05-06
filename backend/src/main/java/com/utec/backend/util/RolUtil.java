@@ -7,11 +7,15 @@ import lombok.extern.slf4j.Slf4j;
  * Utilidad para determinar el rol de un usuario basado en su email
  */
 @Slf4j
-public class RolUtil {
+public final class RolUtil {
 
     // Dominios de UTEC que otorgan rol de ESTUDIANTE
     private static final String DOMINIO_ESTUDIANTES = "@estudiantes.utec.edu.uy";
     private static final String DOMINIO_UTEC = "@utec.edu.uy";
+
+    private RolUtil() {
+        // Utility class - prevent instantiation
+    }
 
     /**
      * Determina el rol de un usuario basado en el dominio de su email

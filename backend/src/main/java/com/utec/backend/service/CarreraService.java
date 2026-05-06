@@ -18,7 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class CarreraService {
-    
+
+    private static final String CARRERA_NO_ENCONTRADA_MSG = "Carrera no encontrada con ID: ";
+
     private final CarreraRepository carreraRepository;
     
     public CarreraResponseDto createCarrera(CarreraCreateDto createDto) {
@@ -68,19 +70,18 @@ public class CarreraService {
     @Transactional(readOnly = true)
     public CarreraResponseDto getCarreraById(Long id) {
         Carrera carrera = carreraRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(CARRERA_NO_ENCONTRADA_MSG + id));
         return mapToResponseDto(carrera);
     }
 
     public CarreraResponseDto updateCarrera(Long id, CarreraUpdateDto updateDto) {
         Carrera carrera = carreraRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(CARRERA_NO_ENCONTRADA_MSG + id));
 
         // Verificar si ya existe otra carrera con el mismo código (si se proporciona)
-        if (updateDto.getCodigo() != null && !updateDto.getCodigo().trim().isEmpty()) {
-            if (carreraRepository.existsByCodigoAndIdNot(updateDto.getCodigo(), id)) {
-                throw new IllegalStateException("Ya existe otra carrera con el código: " + updateDto.getCodigo());
-            }
+        if (updateDto.getCodigo() != null && !updateDto.getCodigo().trim().isEmpty()
+                && carreraRepository.existsByCodigoAndIdNot(updateDto.getCodigo(), id)) {
+            throw new IllegalStateException("Ya existe otra carrera con el código: " + updateDto.getCodigo());
         }
         
         if (updateDto.getNombre() != null) {
@@ -99,7 +100,7 @@ public class CarreraService {
     
     public void deleteCarrera(Long id) {
         Carrera carrera = carreraRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Carrera no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(CARRERA_NO_ENCONTRADA_MSG + id));
         
         // Soft delete: marcar como eliminada
         carrera.setDeletedAt(Instant.now());

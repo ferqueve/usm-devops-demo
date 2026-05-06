@@ -18,7 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class TipoElementoService {
-    
+
+    private static final String TIPO_ELEMENTO_NO_ENCONTRADO_MSG = "Tipo de elemento no encontrado con ID: ";
+
     private final TipoElementoRepository tipoElementoRepository;
     
     public TipoElementoResponseDto createTipoElemento(TipoElementoCreateDto createDto) {
@@ -66,13 +68,13 @@ public class TipoElementoService {
     @Transactional(readOnly = true)
     public TipoElementoResponseDto getTipoElementoById(Long id) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ELEMENTO_NO_ENCONTRADO_MSG + id));
         return mapToResponseDto(tipoElemento);
     }
 
     public TipoElementoResponseDto updateTipoElemento(Long id, TipoElementoUpdateDto updateDto) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ELEMENTO_NO_ENCONTRADO_MSG + id));
 
         // Verificar si ya existe otro tipo con el mismo nombre
         if (tipoElementoRepository.existsByNombreIgnoreCaseAndIdNot(updateDto.getNombre(), id)) {
@@ -89,7 +91,7 @@ public class TipoElementoService {
     
     public void deleteTipoElemento(Long id) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ELEMENTO_NO_ENCONTRADO_MSG + id));
         
         // Soft delete: marcar como inactivo
         tipoElemento.setActivo(false);
@@ -101,7 +103,7 @@ public class TipoElementoService {
     
     public TipoElementoResponseDto toggleActivo(Long id) {
         TipoElemento tipoElemento = tipoElementoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de elemento no encontrado con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(TIPO_ELEMENTO_NO_ENCONTRADO_MSG + id));
         
         tipoElemento.setActivo(!tipoElemento.getActivo());
         tipoElemento.setUpdatedAt(Instant.now());

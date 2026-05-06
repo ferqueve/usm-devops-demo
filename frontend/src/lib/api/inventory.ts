@@ -5,7 +5,8 @@ import type {
   InventarioItem,
   TipoElemento,
   PagedInventario,
-  InventoryStats
+  InventoryStats,
+  InventarioFilters
 } from '../types/spaces';
 
 export interface InventorySummary {
@@ -15,6 +16,16 @@ export interface InventorySummary {
   danados: number;
   sinAsignar: number;
 }
+
+export interface CrearInventarioItemRequest {
+  espacioId?: number | null;
+  tipoElementoId: number;
+  cantidad: number;
+  estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'DANADO';
+  observaciones?: string;
+}
+
+export type ActualizarInventarioItemRequest = CrearInventarioItemRequest;
 
 export const inventarioApi = {
   async listarInventarioPorEspacio(espacioId: number): Promise<ApiResponse<InventarioItem[]>> {
@@ -37,11 +48,11 @@ export const inventarioApi = {
     return apiRequest<void>(`/tipos-elemento/${id}`, { method: 'DELETE' });
   },
 
-  async crearInventarioItem(data: any): Promise<ApiResponse<InventarioItem>> {
+  async crearInventarioItem(data: CrearInventarioItemRequest): Promise<ApiResponse<InventarioItem>> {
     return apiRequest<InventarioItem>('/inventario', { method: 'POST', body: JSON.stringify(data) });
   },
 
-  async actualizarInventarioItem(id: number, data: any): Promise<ApiResponse<InventarioItem>> {
+  async actualizarInventarioItem(id: number, data: ActualizarInventarioItemRequest): Promise<ApiResponse<InventarioItem>> {
     return apiRequest<InventarioItem>(`/inventario/${id}`, { method: 'PUT', body: JSON.stringify(data) });
   },
 
@@ -49,7 +60,7 @@ export const inventarioApi = {
     return apiRequest<void>(`/inventario/${id}`, { method: 'DELETE' });
   },
 
-  async listarInventario(page: number = 0, size: number = 12, filters?: any, sortBy?: string, sortDir?: 'asc' | 'desc'): Promise<ApiResponse<PagedInventario>> {
+  async listarInventario(page: number = 0, size: number = 12, filters?: InventarioFilters, sortBy?: string, sortDir?: 'asc' | 'desc'): Promise<ApiResponse<PagedInventario>> {
     const params = new URLSearchParams({ page: page.toString(), size: size.toString() });
     if (filters?.search) params.append('search', filters.search);
     if (filters?.espacioId) params.append('espacioId', filters.espacioId.toString());
@@ -60,7 +71,7 @@ export const inventarioApi = {
     return apiRequest<PagedInventario>(`/inventario/paged?${params.toString()}`, { method: 'GET' });
   },
 
-  async filtrarInventario(filters?: any, sortBy?: string, sortDir?: 'asc' | 'desc'): Promise<ApiResponse<InventarioItem[]>> {
+  async filtrarInventario(filters?: InventarioFilters, sortBy?: string, sortDir?: 'asc' | 'desc'): Promise<ApiResponse<InventarioItem[]>> {
     const params = new URLSearchParams();
     if (filters?.search) params.append('search', filters.search);
     if (filters?.espacioId) params.append('espacioId', filters.espacioId.toString());
@@ -91,8 +102,8 @@ export const inventarioApi = {
 
   async obtenerSolicitudesPendientes(): Promise<ApiResponse<ReservaItemSolicitado[]>> {
     const res = await reservationsApi.listarSolicitudesInventario({ estados: ['PENDIENTE'], page: 0, size: 50 });
-    const content = res.data && (res.data as any).content ? (res.data as any).content as ReservaItemSolicitado[] : (res.data as any) || [];
-    return { success: res.success, message: res.message, data: content } as ApiResponse<ReservaItemSolicitado[]>;
+    const content: ReservaItemSolicitado[] = res.data?.content ?? [];
+    return { success: res.success, message: res.message, data: content };
   }
 };
 

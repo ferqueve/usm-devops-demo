@@ -32,9 +32,11 @@ export function TimeSelect({
   const [isTyping, setIsTyping] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputValueRef = useRef(inputValue);
+  inputValueRef.current = inputValue;
 
   useEffect(() => {
-    if (value !== inputValue) {
+    if (value !== inputValueRef.current) {
       setInputValue(value);
       setIsTyping(false);
     }
@@ -141,8 +143,10 @@ export function TimeSelect({
           maxLength={maxLength}
         />
         {/* Botón de dropdown */}
-        <div
-          className="absolute right-1 top-1/2 -translate-y-1/2 cursor-pointer"
+        <button
+          type="button"
+          aria-label="Abrir selector de hora"
+          className="absolute right-1 top-1/2 -translate-y-1/2 cursor-pointer bg-transparent border-0 p-0"
           onClick={() => setIsOpen(true)}
         >
           <svg
@@ -160,7 +164,7 @@ export function TimeSelect({
               clipRule="evenodd"
             ></path>
           </svg>
-        </div>
+        </button>
       </div>
 
       {/* Select invisible para mantener la funcionalidad */}

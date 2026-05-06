@@ -43,11 +43,10 @@ export function DeleteTipoEspacioDialog({
       
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al eliminar tipo de espacio:', error);
-      toast.error('Error al desactivar tipo de espacio', {
-        description: error.message || 'No se pudo desactivar el tipo de espacio'
-      });
+      const description = error instanceof Error ? error.message : 'No se pudo desactivar el tipo de espacio';
+      toast.error('Error al desactivar tipo de espacio', { description });
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import { memo, useRef, useState, useEffect } from 'react';
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar-context";
 import { Clock, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 

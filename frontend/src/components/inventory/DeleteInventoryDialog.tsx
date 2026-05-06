@@ -38,10 +38,10 @@ export default function DeleteInventoryDialog({
       onSuccess();
       onOpenChange(false);
       toast.success('Item eliminado exitosamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al eliminar item:', error);
       toast.error('Error al eliminar item', {
-        description: error.message || 'No se pudo eliminar el item'
+        description: error instanceof Error ? error.message : 'No se pudo eliminar el item'
       });
     } finally {
       setLoading(false);

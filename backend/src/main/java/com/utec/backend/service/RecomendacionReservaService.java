@@ -19,7 +19,6 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Servicio para recomendaciones relacionadas con reservas
@@ -108,7 +107,7 @@ public class RecomendacionReservaService {
                     dto.setTipoRecomendacion(TipoRecomendacion.ESPACIO_PARA_RESERVA);
                     dto.setPuntaje(BigDecimal.valueOf(puntajes.getOrDefault(espacio.getId(), 0.0))
                             .setScale(2, RoundingMode.HALF_UP));
-                    dto.setRazon(generarRazonEspacio(espacio, historialAprobado, puntajes.get(espacio.getId())));
+                    dto.setRazon(generarRazonEspacio(espacio, historialAprobado));
                     dto.setEspacioId(espacio.getId());
                     dto.setEspacioNombre(espacio.getNombre());
 
@@ -182,9 +181,7 @@ public class RecomendacionReservaService {
 
             // Verificar disponibilidad
             boolean disponible = reservasExistentes.stream()
-                    .noneMatch(r -> {
-                        return (inicioInstant.isBefore(r.getFin()) && finInstant.isAfter(r.getInicio()));
-                    });
+                    .noneMatch(r -> inicioInstant.isBefore(r.getFin()) && finInstant.isAfter(r.getInicio()));
 
             if (disponible) {
                 HorarioRecomendadoDto dto = new HorarioRecomendadoDto();
@@ -304,7 +301,7 @@ public class RecomendacionReservaService {
         return Math.min(similitud, 1.0);
     }
 
-    private String generarRazonEspacio(Espacio espacio, List<Reserva> historial, Double puntaje) {
+    private String generarRazonEspacio(Espacio espacio, List<Reserva> historial) {
         long vecesReservado = historial.stream()
                 .filter(r -> r.getEspacio().getId().equals(espacio.getId()))
                 .count();

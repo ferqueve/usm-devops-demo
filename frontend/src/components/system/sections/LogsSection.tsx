@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { LogViewer } from '@/components/ui/log-viewer';
+import type { LoggersInfo } from '@/lib/types/actuator';
 
 interface LogsSectionProps {
-  loggers: any;
+  loggers: LoggersInfo | null | undefined;
   logFile: string;
   onLoggerUpdate: (name: string, level: string) => Promise<void>;
 }

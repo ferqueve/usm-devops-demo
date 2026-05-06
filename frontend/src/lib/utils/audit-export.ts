@@ -54,6 +54,39 @@ export function exportAuditLogsToCSV(logs: AuditLog[]): void {
   }
 }
 
+type PdfWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
+
+const PRIMARY_COLOR: [number, number, number] = [82, 89, 97]; // #525961
+const SUCCESS_COLOR: [number, number, number] = [34, 197, 94]; // #22c55e
+
+function buildAuditFilterRows(filters: AuditLogFilters): string[][] {
+  const rows: string[][] = [];
+  if (filters.entidad) rows.push(['Entidad', filters.entidad]);
+  if (filters.usuarioId) rows.push(['Usuario ID', filters.usuarioId.toString()]);
+  if (filters.accion) rows.push(['Acción', filters.accion]);
+  if (filters.fechaDesde) rows.push(['Fecha Desde', format(new Date(filters.fechaDesde), 'dd/MM/yyyy HH:mm', { locale: es })]);
+  if (filters.fechaHasta) rows.push(['Fecha Hasta', format(new Date(filters.fechaHasta), 'dd/MM/yyyy HH:mm', { locale: es })]);
+  if (filters.search) rows.push(['Búsqueda', filters.search]);
+  return rows;
+}
+
+function renderAuditCover(doc: PdfWithAutoTable, margin: number): number {
+  doc.setFillColor(PRIMARY_COLOR[0], PRIMARY_COLOR[1], PRIMARY_COLOR[2]);
+  doc.rect(0, 0, 210, 50, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Reporte de Auditoría', margin, 25);
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generado el ${format(new Date(), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}`, margin, 35);
+
+  doc.setTextColor(0, 0, 0);
+  return 60;
+}
+
 /**
  * Exporta logs de auditoría a PDF
  */
@@ -62,14 +95,10 @@ export function exportAuditLogsToPDF(
   filters?: AuditLogFilters
 ): void {
   try {
-    const doc = new jsPDF('p', 'mm', 'a4') as jsPDF & { lastAutoTable?: { finalY: number } };
+    const doc = new jsPDF('p', 'mm', 'a4') as PdfWithAutoTable;
     const margin = 15;
     let yPos = 20;
-    
-    // Colores (tuplas de 3 elementos)
-    const primaryColor: [number, number, number] = [82, 89, 97]; // #525961
-    const successColor: [number, number, number] = [34, 197, 94]; // #22c55e
-    
+
     // Función auxiliar para agregar título de sección
     const addSectionTitle = (title: string, color: [number, number, number]) => {
       if (yPos > 250) {
@@ -83,51 +112,27 @@ export function exportAuditLogsToPDF(
       yPos += 8;
       doc.setTextColor(0, 0, 0);
     };
-    
-    // Portada
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 50, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Reporte de Auditoría', margin, 25);
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Generado el ${format(new Date(), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}`, margin, 35);
-    
-    doc.setTextColor(0, 0, 0);
-    yPos = 60;
-    
+
+    yPos = renderAuditCover(doc, margin);
+
     // Filtros aplicados
-    if (filters && Object.keys(filters).length > 0) {
-      addSectionTitle('FILTROS APLICADOS', primaryColor);
-      
-      const filterData: string[][] = [];
-      if (filters.entidad) filterData.push(['Entidad', filters.entidad]);
-      if (filters.usuarioId) filterData.push(['Usuario ID', filters.usuarioId.toString()]);
-      if (filters.accion) filterData.push(['Acción', filters.accion]);
-      if (filters.fechaDesde) filterData.push(['Fecha Desde', format(new Date(filters.fechaDesde), 'dd/MM/yyyy HH:mm', { locale: es })]);
-      if (filters.fechaHasta) filterData.push(['Fecha Hasta', format(new Date(filters.fechaHasta), 'dd/MM/yyyy HH:mm', { locale: es })]);
-      if (filters.search) filterData.push(['Búsqueda', filters.search]);
-      
-      if (filterData.length > 0) {
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Filtro', 'Valor']],
-      body: filterData,
-      theme: 'striped',
-          headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      margin: { left: margin, right: margin },
-    });
-        yPos = (doc.lastAutoTable?.finalY ?? yPos) + 10;
-      }
+    const filterRows = filters ? buildAuditFilterRows(filters) : [];
+    if (filterRows.length > 0) {
+      addSectionTitle('FILTROS APLICADOS', PRIMARY_COLOR);
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Filtro', 'Valor']],
+        body: filterRows,
+        theme: 'striped',
+        headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        margin: { left: margin, right: margin },
+      });
+      yPos = (doc.lastAutoTable?.finalY ?? yPos) + 10;
     }
     
     // Resumen ejecutivo
-    addSectionTitle('RESUMEN EJECUTIVO', successColor);
+    addSectionTitle('RESUMEN EJECUTIVO', SUCCESS_COLOR);
     
     const totalLogs = logs.length;
     const createCount = logs.filter(l => l.accion === 'CREATE').length;
@@ -146,14 +151,14 @@ export function exportAuditLogsToPDF(
       head: [['Métrica', 'Valor']],
       body: summaryData,
       theme: 'striped',
-          headStyles: { fillColor: successColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+          headStyles: { fillColor: SUCCESS_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 3 },
       margin: { left: margin, right: margin },
     });
     yPos = (doc.lastAutoTable?.finalY ?? yPos) + 10;
     
     // Tabla de logs
-    addSectionTitle('REGISTROS DE AUDITORÍA', primaryColor);
+    addSectionTitle('REGISTROS DE AUDITORÍA', PRIMARY_COLOR);
     
     const tableData = logs.map(log => [
       log.id.toString(),
@@ -172,7 +177,7 @@ export function exportAuditLogsToPDF(
       head: [['ID', 'Entidad', 'ID Ent.', 'Acción', 'Usuario', 'Email', 'Fecha/Hora', 'Previos', 'Nuevos']],
       body: tableData,
       theme: 'striped',
-          headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+          headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 7, cellPadding: 2 },
       margin: { left: margin, right: margin },
       columnStyles: {

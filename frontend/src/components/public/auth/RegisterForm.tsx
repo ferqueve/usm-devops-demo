@@ -68,8 +68,7 @@ export function RegisterForm({
     if (showSuccessMessage && resendCooldown === 0) {
       setResendCooldown(40);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSuccessMessage]);
+  }, [showSuccessMessage, resendCooldown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

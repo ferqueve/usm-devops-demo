@@ -475,8 +475,7 @@ export default function InventoryManagement() {
   };
 
   const handleBulkExport = async () => {
-    const selectedItemsArray = Array.from(selectedItems);
-    const itemsToExport = items.filter(item => selectedItemsArray.includes(item.id));
+    const itemsToExport = items.filter(item => selectedItems.has(item.id));
     
     try {
       exportInventarioToCSV(itemsToExport);
@@ -625,13 +624,15 @@ export default function InventoryManagement() {
             </Button>
           </PermissionGuard>
           
-          <div 
+          <button
+            type="button"
             onClick={isRefreshing ? undefined : handleRefresh}
+            disabled={isRefreshing}
             className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-1 sm:flex-none justify-center ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
             <span className="text-sm font-medium hidden sm:inline">Actualizar</span>
-          </div>
+          </button>
           
           <PermissionGuard requiredPermission="inventario:crear">
             <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
@@ -673,9 +674,10 @@ export default function InventoryManagement() {
           <CardContent>
             <div className="space-y-3">
               {reasignaciones.slice(0, 5).map((rec) => (
-                <div
+                <button
+                  type="button"
                   key={rec.id}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="w-full text-left flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => {
                     if (rec.inventarioItemId) {
                       // Filtrar por itemId
@@ -704,7 +706,7 @@ export default function InventoryManagement() {
                   <span className="text-xs font-medium text-primary ml-2">
                     {(rec.puntaje * 100).toFixed(0)}%
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           </CardContent>

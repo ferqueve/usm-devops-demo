@@ -31,11 +31,10 @@ export function DeleteInventarioDialog({
       onSuccess();
       onOpenChange(false);
       toast.success('Elemento eliminado exitosamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al eliminar elemento:', error);
-      toast.error('Error al eliminar elemento', {
-        description: error.message || 'No se pudo eliminar el elemento'
-      });
+      const description = error instanceof Error ? error.message : 'No se pudo eliminar el elemento';
+      toast.error('Error al eliminar elemento', { description });
     }
   };
 

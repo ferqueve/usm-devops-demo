@@ -104,6 +104,361 @@ const defaultButtonClass =
 const formatShortDate = (date?: Date) =>
   date ? format(date, "d MMM", { locale: es }) : "";
 
+interface SearchInputProps {
+  searchValue: string;
+  activeSearch: string;
+  onSearchChange: (value: string) => void;
+  onSearchClear: () => void;
+}
+
+function SearchInput({ searchValue, activeSearch, onSearchChange, onSearchClear }: Readonly<SearchInputProps>) {
+  const wrapperClass = cn(
+    "flex items-center gap-1.5 rounded-md bg-white px-1.5 py-1 transition-colors shadow-xs",
+    activeSearch ? "ring-1 ring-blue-500/40" : ""
+  );
+  const iconClass = cn("h-3.5 w-3.5 shrink-0", activeSearch ? "text-blue-600" : "text-gray-500");
+  return (
+    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+      <div className={wrapperClass}>
+        <Search className={iconClass} />
+        <Input
+          value={searchValue}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Buscar por solicitante, correo, tipo o ID..."
+          className="h-[20px] border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        {searchValue && (
+          <button
+            type="button"
+            onClick={onSearchClear}
+            className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Limpiar búsqueda"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface DateButtonProps {
+  date?: Date;
+  otherDate?: Date;
+  isStart: boolean;
+  onChange: (date: Date | undefined) => void;
+  Icon: ElementType;
+  tooltipFallback: string;
+}
+
+function DateRangeButton({ date, otherDate, isStart, onChange, Icon, tooltipFallback }: Readonly<DateButtonProps>) {
+  const buttonClass = cn(
+    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
+    date ? highlightClass : defaultButtonClass
+  );
+  const iconClass = cn("h-3.5 w-3.5 shrink-0", date ? "text-blue-600" : "text-gray-500");
+  const disabledChecker = (candidate: Date) => {
+    if (!otherDate) return false;
+    const limit = new Date(otherDate);
+    if (isStart) {
+      limit.setHours(23, 59, 59, 999);
+      return candidate > limit;
+    }
+    limit.setHours(0, 0, 0, 0);
+    return candidate < limit;
+  };
+  return (
+    <Popover>
+      <Tooltip>
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
+            <button type="button" className={buttonClass}>
+              <Icon className={iconClass} />
+              {date && <span className="text-[11px]">{formatShortDate(date)}</span>}
+            </button>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <TooltipContent>
+          {date ? format(date, "PPP", { locale: es }) : tooltipFallback}
+        </TooltipContent>
+      </Tooltip>
+      <PopoverContent className="w-auto p-0" align="start" onClick={(e) => e.stopPropagation()}>
+        <CalendarComponent
+          mode="single"
+          selected={date}
+          onSelect={(d) => onChange(d ?? undefined)}
+          disabled={disabledChecker}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+interface DateRangeFilterProps {
+  fechaDesde?: Date;
+  fechaHasta?: Date;
+  onFechaDesdeChange: (date: Date | undefined) => void;
+  onFechaHastaChange: (date: Date | undefined) => void;
+  onResetFechas: () => void;
+}
+
+function DateRangeFilter({
+  fechaDesde,
+  fechaHasta,
+  onFechaDesdeChange,
+  onFechaHastaChange,
+  onResetFechas,
+}: Readonly<DateRangeFilterProps>) {
+  const resetClass = cn(
+    "p-1.5 rounded transition-colors",
+    !fechaDesde && !fechaHasta ? highlightClass : defaultButtonClass
+  );
+  return (
+    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={onResetFechas} className={resetClass}>
+            <Filter className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Todas las fechas</TooltipContent>
+      </Tooltip>
+      <DateRangeButton
+        date={fechaDesde}
+        otherDate={fechaHasta}
+        isStart
+        onChange={onFechaDesdeChange}
+        Icon={CalendarArrowDown}
+        tooltipFallback="Fecha desde"
+      />
+      <span className="mx-1 text-xs text-gray-400">-</span>
+      <DateRangeButton
+        date={fechaHasta}
+        otherDate={fechaDesde}
+        isStart={false}
+        onChange={onFechaHastaChange}
+        Icon={CalendarArrowUp}
+        tooltipFallback="Fecha hasta"
+      />
+    </div>
+  );
+}
+
+interface EstadoFilterProps {
+  selectedEstados: ReservaItemSolicitadoEstado[];
+  onToggleEstado: (estado: ReservaItemSolicitadoEstado) => void;
+  onClearEstados: () => void;
+}
+
+function EstadoFilter({ selectedEstados, onToggleEstado, onClearEstados }: Readonly<EstadoFilterProps>) {
+  const clearClass = cn(
+    "p-1.5 rounded transition-colors",
+    selectedEstados.length === 0 ? highlightClass : defaultButtonClass
+  );
+  const entries = Object.entries(estadoConfig) as Array<
+    [ReservaItemSolicitadoEstado, (typeof estadoConfig)[ReservaItemSolicitadoEstado]]
+  >;
+  return (
+    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={onClearEstados} className={clearClass}>
+            <Filter className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Todos los estados</TooltipContent>
+      </Tooltip>
+      {entries.map(([estado, config]) => {
+        const Icon = config.icon;
+        const active = selectedEstados.includes(estado);
+        const buttonClass = cn(
+          "p-1.5 rounded transition-colors",
+          active ? highlightClass : defaultButtonClass
+        );
+        const iconClass = cn("h-3.5 w-3.5", active ? config.activeClass : config.inactiveClass);
+        return (
+          <Tooltip key={estado}>
+            <TooltipTrigger asChild>
+              <button type="button" onClick={() => onToggleEstado(estado)} className={buttonClass}>
+                <Icon className={iconClass} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{config.label}</TooltipContent>
+          </Tooltip>
+        );
+      })}
+    </div>
+  );
+}
+
+interface EspacioFilterProps {
+  espacios: Espacio[];
+  selectedEspacio: number | null;
+  onEspacioChange: (espacioId: number | null) => void;
+}
+
+function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<EspacioFilterProps>) {
+  const isAll = selectedEspacio === null;
+  const allClass = cn(
+    "p-1.5 rounded transition-colors",
+    isAll ? highlightClass : defaultButtonClass
+  );
+  const triggerClass = cn(
+    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
+    isAll ? defaultButtonClass : "bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
+  );
+  const iconClass = cn("h-3.5 w-3.5", isAll ? "text-gray-500" : "text-blue-700");
+  const selectedNombre = isAll
+    ? null
+    : espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ?? "Espacio seleccionado";
+  const tooltipText = isAll ? "Seleccionar espacio" : selectedNombre ?? "Seleccionar espacio";
+  return (
+    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => onEspacioChange(null)} className={allClass}>
+            <Filter className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Todos los espacios</TooltipContent>
+      </Tooltip>
+      <Popover>
+        <Tooltip>
+          <PopoverTrigger asChild>
+            <TooltipTrigger asChild>
+              <button type="button" className={triggerClass}>
+                <Building2 className={iconClass} />
+                {selectedNombre && (
+                  <span className="max-w-[140px] truncate text-[11px]">{selectedNombre}</span>
+                )}
+              </button>
+            </TooltipTrigger>
+          </PopoverTrigger>
+          <TooltipContent>{tooltipText}</TooltipContent>
+        </Tooltip>
+        <PopoverContent className="w-64 max-h-[280px] overflow-y-auto p-2" align="start">
+          {espacios.length > 0 ? (
+            <div className="space-y-1">
+              {espacios.map((espacio) => {
+                const itemClass = cn(
+                  "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                  espacio.id === selectedEspacio
+                    ? "bg-gray-100 text-gray-900 font-medium"
+                    : "text-gray-700 hover:bg-gray-50"
+                );
+                return (
+                  <button
+                    key={espacio.id}
+                    type="button"
+                    onClick={() => onEspacioChange(espacio.id)}
+                    className={itemClass}
+                  >
+                    {espacio.nombre}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center rounded-md border border-dashed border-gray-200 px-3 py-6 text-center text-[12px] text-muted-foreground">
+              No hay espacios disponibles.
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+interface ViewModeToggleProps {
+  viewMode: 'table' | 'cards';
+  onViewModeChange: (mode: 'table' | 'cards') => void;
+}
+
+function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewModeToggleProps>) {
+  const cardsClass = cn(
+    "p-1.5 rounded transition-colors",
+    viewMode === 'cards' ? highlightClass : defaultButtonClass
+  );
+  const tableClass = cn(
+    "p-1.5 rounded transition-colors",
+    viewMode === 'table' ? highlightClass : defaultButtonClass
+  );
+  return (
+    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => onViewModeChange('cards')} className={cardsClass}>
+            <LayoutGrid className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Vista de tarjetas</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => onViewModeChange('table')} className={tableClass}>
+            <TableIcon className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Vista de tabla</TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+
+interface PageSizeSelectorProps {
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+}
+
+function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelectorProps>) {
+  const triggerClass = cn(
+    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
+    highlightClass
+  );
+  return (
+    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn("px-1.5 text-[11px] text-muted-foreground", "hidden sm:inline")}>
+            Pág.
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>Elementos por página</TooltipContent>
+      </Tooltip>
+      <Popover>
+        <Tooltip>
+          <PopoverTrigger asChild>
+            <TooltipTrigger asChild>
+              <button type="button" className={triggerClass}>
+                <ListFilter className="h-3.5 w-3.5 text-blue-600" />
+                <span className="text-[11px]">{pageSize}</span>
+              </button>
+            </TooltipTrigger>
+          </PopoverTrigger>
+          <TooltipContent>Seleccionar tamaño de página</TooltipContent>
+        </Tooltip>
+        <PopoverContent className="w-40 p-2" align="start">
+          <div className="space-y-1">
+            {[10, 20, 50].map((size) => {
+              const itemClass = cn(
+                "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                size === pageSize
+                  ? "bg-blue-100 text-blue-900 font-medium shadow-inner"
+                  : "text-gray-700 hover:bg-gray-50"
+              );
+              return (
+                <button key={size} type="button" onClick={() => onPageSizeChange(size)} className={itemClass}>
+                  {size} por página
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 export function InventoryRequestFilters({
   searchValue,
   activeSearch,
@@ -144,366 +499,36 @@ export function InventoryRequestFilters({
         </Tooltip>
       )}
 
-      <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
-        <div
-          className={cn(
-            "flex items-center gap-1.5 rounded-md bg-white px-1.5 py-1 transition-colors shadow-xs",
-            activeSearch ? "ring-1 ring-blue-500/40" : ""
-          )}
-        >
-          <Search
-            className={cn(
-              "h-3.5 w-3.5 shrink-0",
-              activeSearch ? "text-blue-600" : "text-gray-500"
-            )}
-          />
-          <Input
-            value={searchValue}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Buscar por solicitante, correo, tipo o ID..."
-            className="h-[20px] border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-          {searchValue && (
-            <button
-              type="button"
-              onClick={onSearchClear}
-              className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-              aria-label="Limpiar búsqueda"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
+      <SearchInput
+        searchValue={searchValue}
+        activeSearch={activeSearch}
+        onSearchChange={onSearchChange}
+        onSearchClear={onSearchClear}
+      />
 
-      <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={onResetFechas}
-              className={cn(
-                "p-1.5 rounded transition-colors",
-                !fechaDesde && !fechaHasta ? highlightClass : defaultButtonClass
-              )}
-            >
-              <Filter className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Todas las fechas</TooltipContent>
-        </Tooltip>
+      <DateRangeFilter
+        fechaDesde={fechaDesde}
+        fechaHasta={fechaHasta}
+        onFechaDesdeChange={onFechaDesdeChange}
+        onFechaHastaChange={onFechaHastaChange}
+        onResetFechas={onResetFechas}
+      />
 
-        <Popover>
-          <Tooltip>
-            <PopoverTrigger asChild>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
-                    fechaDesde ? highlightClass : defaultButtonClass
-                  )}
-                >
-                  <CalendarArrowDown
-                    className={cn(
-                      "h-3.5 w-3.5 shrink-0",
-                      fechaDesde ? "text-blue-600" : "text-gray-500"
-                    )}
-                  />
-                  {fechaDesde && (
-                    <span className="text-[11px]">{formatShortDate(fechaDesde)}</span>
-                  )}
-                </button>
-              </TooltipTrigger>
-            </PopoverTrigger>
-            <TooltipContent>
-              {fechaDesde
-                ? format(fechaDesde, "PPP", { locale: es })
-                : "Fecha desde"}
-            </TooltipContent>
-          </Tooltip>
-          <PopoverContent className="w-auto p-0" align="start" onClick={(e) => e.stopPropagation()}>
-            <CalendarComponent
-              mode="single"
-              selected={fechaDesde}
-              onSelect={(date) => onFechaDesdeChange(date ?? undefined)}
-              disabled={(date) => {
-                if (fechaHasta) {
-                  const limit = new Date(fechaHasta);
-                  limit.setHours(23, 59, 59, 999);
-                  return date > limit;
-                }
-                return false;
-              }}
-            />
-          </PopoverContent>
-        </Popover>
+      <EstadoFilter
+        selectedEstados={selectedEstados}
+        onToggleEstado={onToggleEstado}
+        onClearEstados={onClearEstados}
+      />
 
-        <span className="mx-1 text-xs text-gray-400">-</span>
+      <EspacioFilter
+        espacios={espacios}
+        selectedEspacio={selectedEspacio}
+        onEspacioChange={onEspacioChange}
+      />
 
-        <Popover>
-          <Tooltip>
-            <PopoverTrigger asChild>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
-                    fechaHasta ? highlightClass : defaultButtonClass
-                  )}
-                >
-                  <CalendarArrowUp
-                    className={cn(
-                      "h-3.5 w-3.5 shrink-0",
-                      fechaHasta ? "text-blue-600" : "text-gray-500"
-                    )}
-                  />
-                  {fechaHasta && (
-                    <span className="text-[11px]">{formatShortDate(fechaHasta)}</span>
-                  )}
-                </button>
-              </TooltipTrigger>
-            </PopoverTrigger>
-            <TooltipContent>
-              {fechaHasta
-                ? format(fechaHasta, "PPP", { locale: es })
-                : "Fecha hasta"}
-            </TooltipContent>
-          </Tooltip>
-          <PopoverContent className="w-auto p-0" align="start" onClick={(e) => e.stopPropagation()}>
-            <CalendarComponent
-              mode="single"
-              selected={fechaHasta}
-              onSelect={(date) => onFechaHastaChange(date ?? undefined)}
-              disabled={(date) => {
-                if (fechaDesde) {
-                  const limit = new Date(fechaDesde);
-                  limit.setHours(0, 0, 0, 0);
-                  return date < limit;
-                }
-                return false;
-              }}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+      <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
 
-      <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={onClearEstados}
-              className={cn(
-                "p-1.5 rounded transition-colors",
-                selectedEstados.length === 0 ? highlightClass : defaultButtonClass
-              )}
-            >
-              <Filter className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Todos los estados</TooltipContent>
-        </Tooltip>
-
-        {(
-          Object.entries(estadoConfig) as Array<
-            [ReservaItemSolicitadoEstado, (typeof estadoConfig)[ReservaItemSolicitadoEstado]]
-          >
-        ).map(([estado, config]) => {
-          const Icon = config.icon;
-          const active = selectedEstados.includes(estado);
-          return (
-            <Tooltip key={estado}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => onToggleEstado(estado)}
-                  className={cn(
-                    "p-1.5 rounded transition-colors",
-                    active ? highlightClass : defaultButtonClass
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      active ? config.activeClass : config.inactiveClass
-                    )}
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{config.label}</TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </div>
-
-      <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onEspacioChange(null)}
-              className={cn(
-                "p-1.5 rounded transition-colors",
-                selectedEspacio === null ? highlightClass : defaultButtonClass
-              )}
-            >
-              <Filter className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Todos los espacios</TooltipContent>
-        </Tooltip>
-
-        <Popover>
-          <Tooltip>
-            <PopoverTrigger asChild>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
-                    selectedEspacio === null ? defaultButtonClass : "bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
-                  )}
-                >
-                  <Building2
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      selectedEspacio === null ? "text-gray-500" : "text-blue-700"
-                    )}
-                  />
-                  {selectedEspacio !== null && (
-                    <span className="max-w-[140px] truncate text-[11px]">
-                      {espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ??
-                        "Espacio seleccionado"}
-                    </span>
-                  )}
-                </button>
-              </TooltipTrigger>
-            </PopoverTrigger>
-            <TooltipContent>
-              {selectedEspacio === null
-                ? "Seleccionar espacio"
-                : espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ??
-                  "Seleccionar espacio"}
-            </TooltipContent>
-          </Tooltip>
-          <PopoverContent
-            className="w-64 max-h-[280px] overflow-y-auto p-2"
-            align="start"
-          >
-            {espacios.length > 0 ? (
-              <div className="space-y-1">
-                {espacios.map((espacio) => (
-                  <button
-                    key={espacio.id}
-                    type="button"
-                    onClick={() => onEspacioChange(espacio.id)}
-                    className={cn(
-                      "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                      espacio.id === selectedEspacio
-                        ? "bg-gray-100 text-gray-900 font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    {espacio.nombre}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center rounded-md border border-dashed border-gray-200 px-3 py-6 text-center text-[12px] text-muted-foreground">
-                No hay espacios disponibles.
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onViewModeChange('cards')}
-              className={cn(
-                "p-1.5 rounded transition-colors",
-                viewMode === 'cards' ? highlightClass : defaultButtonClass
-              )}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Vista de tarjetas</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onViewModeChange('table')}
-              className={cn(
-                "p-1.5 rounded transition-colors",
-                viewMode === 'table' ? highlightClass : defaultButtonClass
-              )}
-            >
-              <TableIcon className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Vista de tabla</TooltipContent>
-        </Tooltip>
-      </div>
-
-      <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span
-              className={cn(
-                "px-1.5 text-[11px] text-muted-foreground",
-                "hidden sm:inline"
-              )}
-            >
-              Pág.
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Elementos por página</TooltipContent>
-        </Tooltip>
-        <Popover>
-          <Tooltip>
-            <PopoverTrigger asChild>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
-                    highlightClass
-                  )}
-                >
-                  <ListFilter className="h-3.5 w-3.5 text-blue-600" />
-                  <span className="text-[11px]">{pageSize}</span>
-                </button>
-              </TooltipTrigger>
-            </PopoverTrigger>
-            <TooltipContent>Seleccionar tamaño de página</TooltipContent>
-          </Tooltip>
-          <PopoverContent className="w-40 p-2" align="start">
-            <div className="space-y-1">
-              {[10, 20, 50].map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => onPageSizeChange(size)}
-                  className={cn(
-                    "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                    size === pageSize
-                      ? "bg-blue-100 text-blue-900 font-medium shadow-inner"
-                      : "text-gray-700 hover:bg-gray-50"
-                  )}
-                >
-                  {size} por página
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+      <PageSizeSelector pageSize={pageSize} onPageSizeChange={onPageSizeChange} />
     </div>
   );
 }

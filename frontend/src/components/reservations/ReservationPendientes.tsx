@@ -130,7 +130,7 @@ export default function ReservationPendientes({
           </div>
         )}
       </CardHeader>
-      <div className={isCollapsed ? "" : ""}>
+      <div>
         {isCollapsed ? (
           <CardContent className="px-1.5 sm:px-2 pb-2">
             {!loading && (
@@ -182,6 +182,15 @@ export default function ReservationPendientes({
                     key={reserva.id}
                     className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer ${obtenerRingClass(isAltaUrgencia, isPrioritaria)}`}
                     onClick={() => onViewDetails(reserva)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onViewDetails(reserva);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Ver detalles de reserva`}
                     >
                     {/* Franja de color recta en el lado izquierdo */}
                     <div className={`absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 ${estadoConfig.stripeColor}`} />

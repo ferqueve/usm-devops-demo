@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,14 +36,14 @@ export function EditUserDialog({
   });
 
   // Actualizar formData cuando cambia el usuario
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setFormData({
         email: user.email,
         nombre: user.nombre
       });
     }
-  });
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

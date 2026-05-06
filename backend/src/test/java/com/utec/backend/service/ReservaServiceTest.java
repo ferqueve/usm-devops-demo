@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -299,43 +300,44 @@ class ReservaServiceTest {
 
     @Test
     @DisplayName("Debe obtener reservas por usuario paginadas")
-    @SuppressWarnings("unchecked")
     void debeObtenerReservasPorUsuarioPaginadas() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<Reserva> page = new PageImpl<>(Arrays.asList(reservaTest), pageable, 1);
 
         when(usuarioRepository.findByEmail(userEmail)).thenReturn(Optional.of(usuarioTest));
-        when(reservaRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any(), eq(pageable))).thenReturn(page);
 
         // When
         Page<ReservaResponseDto> resultado = reservaService.getReservasByUsuarioPaged(
-                userEmail, pageable, null, null, null, null, null, null, null);
+                userEmail, pageable,
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null));
 
         // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
-        verify(reservaRepository).findAll(any(Specification.class), eq(pageable));
+        verify(reservaRepository).findAll(ArgumentMatchers.<Specification<Reserva>>any(), eq(pageable));
     }
 
     @Test
     @DisplayName("Debe obtener todas las reservas paginadas")
-    @SuppressWarnings("unchecked")
     void debeObtenerTodasLasReservasPaginadas() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<Reserva> page = new PageImpl<>(Arrays.asList(reservaTest), pageable, 1);
 
-        when(reservaRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any(), eq(pageable))).thenReturn(page);
 
         // When
         Page<ReservaResponseDto> resultado = reservaService.getAllReservasPaged(
-                pageable, null, null, null, null, null, null, null, null, "admin@utec.edu.uy", ROLE_ADMIN);
+                pageable,
+                new com.utec.backend.dto.reserva.ReservaFilters(null, null, null, null, null, null, null, null),
+                "admin@utec.edu.uy", ROLE_ADMIN);
 
         // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
-        verify(reservaRepository).findAll(any(Specification.class), eq(pageable));
+        verify(reservaRepository).findAll(ArgumentMatchers.<Specification<Reserva>>any(), eq(pageable));
     }
 
     @Test

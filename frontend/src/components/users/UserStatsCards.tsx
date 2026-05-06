@@ -24,10 +24,10 @@ export function UserStatsCards() {
       const response = await usuariosApi.obtenerEstadisticas();
       // El backend devuelve los datos directamente, no envueltos en .data
       setStats(response || null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al cargar estadísticas:', error);
       toast.error('Error al cargar estadísticas', {
-        description: error.message || 'No se pudieron cargar las estadísticas'
+        description: error instanceof Error ? error.message : 'No se pudieron cargar las estadísticas'
       });
     } finally {
       setLoading(false);

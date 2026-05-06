@@ -2,9 +2,10 @@ import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Server, Info } from 'lucide-react';
+import type { AppInfo } from '@/lib/types/actuator';
 
 interface AppInfoCardProps {
-  info: any;
+  info: AppInfo | null | undefined;
 }
 
 export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps) {
@@ -17,7 +18,7 @@ export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps)
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
-        {info && info.app ? (
+        {info?.app ? (
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-muted-foreground font-medium">Nombre:</span>

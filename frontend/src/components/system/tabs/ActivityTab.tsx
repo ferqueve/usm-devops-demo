@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { Globe, List } from 'lucide-react';
 import { HttpTraceSection } from '../sections/HttpTraceSection';
 import { EndpointsSection } from '../sections/EndpointsSection';
+import type { HttpTraceInfo, MappingsInfo } from '@/lib/types/actuator';
 
 interface ActivityTabProps {
-  httpTrace: any;
-  mappings: any;
+  httpTrace: HttpTraceInfo | null | undefined;
+  mappings: MappingsInfo | null | undefined;
 }
 
 export const ActivityTab = memo(function ActivityTab({

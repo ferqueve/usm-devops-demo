@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -99,13 +100,12 @@ class AuditServiceTest {
 
     @Test
     @DisplayName("Debe buscar logs con filtros y paginación")
-    @SuppressWarnings("unchecked")
     void debeBuscarLogs() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<AuditLog> page = new PageImpl<>(Arrays.asList(auditLogTest), pageable, 1);
         
-        when(auditLogRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(auditLogRepository.findAll(ArgumentMatchers.<Specification<AuditLog>>any(), eq(pageable))).thenReturn(page);
 
         // When
         PagedResponseDto<AuditLogResponseDto> resultado = auditService.buscarLogs(
@@ -114,18 +114,17 @@ class AuditServiceTest {
         // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.getContent().size());
-        verify(auditLogRepository).findAll(any(Specification.class), eq(pageable));
+        verify(auditLogRepository).findAll(ArgumentMatchers.<Specification<AuditLog>>any(), eq(pageable));
     }
 
     @Test
     @DisplayName("Debe buscar logs con todos los filtros")
-    @SuppressWarnings("unchecked")
     void debeBuscarLogsConTodosLosFiltros() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<AuditLog> page = new PageImpl<>(Arrays.asList(auditLogTest), pageable, 1);
         
-        when(auditLogRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(auditLogRepository.findAll(ArgumentMatchers.<Specification<AuditLog>>any(), eq(pageable))).thenReturn(page);
 
         Instant fechaDesde = Instant.now().minusSeconds(86400);
         Instant fechaHasta = Instant.now();
@@ -136,7 +135,7 @@ class AuditServiceTest {
 
         // Then
         assertNotNull(resultado);
-        verify(auditLogRepository).findAll(any(Specification.class), eq(pageable));
+        verify(auditLogRepository).findAll(ArgumentMatchers.<Specification<AuditLog>>any(), eq(pageable));
     }
 
     @Test

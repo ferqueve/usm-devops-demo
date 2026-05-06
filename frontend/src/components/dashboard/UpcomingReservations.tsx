@@ -133,7 +133,7 @@ export default function UpcomingReservations({
                       <MapPin className="h-3.5 w-3.5" />
                       <span>{reserva.espacioNombre}</span>
                     </div>
-                    {reserva.capacidadEspacio && (
+                    {!!reserva.capacidadEspacio && (
                       <div className="flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
                         <span>Capacidad: {reserva.capacidadEspacio}</span>

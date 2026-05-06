@@ -19,6 +19,47 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 
+interface MetricItemProps {
+  label: string;
+  value: React.ReactNode;
+  icon?: React.ReactNode;
+  fullWidth?: boolean;
+  collapsed?: boolean;
+}
+
+function MetricItem({ label, value, icon, fullWidth, collapsed }: Readonly<MetricItemProps>) {
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
+        <div className="text-muted-foreground mb-1">
+          {icon}
+        </div>
+        <div className="text-sm font-semibold text-center leading-tight truncate w-full">
+          {value}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col ${fullWidth ? 'col-span-2' : ''}`}>
+      <div className="flex items-center gap-1.5 mb-1">
+        {icon}
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+      <span className="text-base font-semibold leading-tight">{value}</span>
+    </div>
+  );
+}
+
+function SectionDivider() {
+  return <div className="col-span-2 border-t my-2"></div>;
+}
+
+function SectionTitle({ title }: Readonly<{ title: string }>) {
+  return <h3 className="text-sm font-semibold text-muted-foreground mb-3 col-span-2">{title}</h3>;
+}
+
 interface ReservationStatsProps {
   onRefresh?: () => void;
   collapsed?: boolean;
@@ -38,7 +79,7 @@ export default function ReservationStats({
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
   
   // Usar el estado externo si está disponible, sino usar el interno
-  const collapsed = externalCollapsed === undefined ? internalCollapsed : externalCollapsed;
+  const collapsed = externalCollapsed ?? internalCollapsed;
   const setCollapsed = onCollapsedChange || setInternalCollapsed;
 
   // Detectar cuando el layout está en vertical (menor a lg breakpoint)
@@ -145,40 +186,6 @@ export default function ReservationStats({
     if (value < 0) return <TrendingDown className="h-4 w-4 text-red-600" />;
     return null;
   };
-
-  // Componente unificado para todas las métricas - más compacto
-  const MetricItem = ({ label, value, icon, fullWidth, collapsed }: { label: string; value: React.ReactNode; icon?: React.ReactNode; fullWidth?: boolean; collapsed?: boolean }) => {
-    if (collapsed) {
-      return (
-        <div className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-          <div className="text-muted-foreground mb-1">
-            {icon}
-          </div>
-          <div className="text-sm font-semibold text-center leading-tight truncate w-full">
-            {value}
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <div className={`flex flex-col ${fullWidth ? 'col-span-2' : ''}`}>
-        <div className="flex items-center gap-1.5 mb-1">
-          {icon}
-          <span className="text-xs text-muted-foreground">{label}</span>
-        </div>
-        <span className="text-base font-semibold leading-tight">{value}</span>
-      </div>
-    );
-  };
-
-  // Separador visual para grupos de métricas
-  const SectionDivider = () => <div className="col-span-2 border-t my-2"></div>;
-
-  // Título de sección
-  const SectionTitle = ({ title }: { title: string }) => (
-    <h3 className="text-sm font-semibold text-muted-foreground mb-3 col-span-2">{title}</h3>
-  );
 
   // En modo vertical o horizontal, forzar que siempre esté extendido
   const isCollapsed = (isVerticalLayout || horizontal) ? false : collapsed;
