@@ -58,7 +58,7 @@ public class DevDataInitializer implements CommandLineRunner {
     private static final String ESPACIO_AULA_8 = "Aula 8";
     private static final String ESPACIO_AULA_9 = "Aula 9";
     private static final String ESPACIO_AULA_11 = "Aula 11";
-    private static final String ESPACIO_AULA_13 = "Aula 13";
+    private static final String ESPACIO_AULA_13 = String.valueOf("Aula 13");
 
     private final EspacioRepository espacioRepository;
     private final InventarioItemRepository inventarioItemRepository;

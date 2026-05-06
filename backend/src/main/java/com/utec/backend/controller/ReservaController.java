@@ -3,6 +3,7 @@ package com.utec.backend.controller;
 import com.utec.backend.common.ApiResponse;
 import com.utec.backend.dto.common.PagedResponseDto;
 import com.utec.backend.dto.reserva.ReservaCreateDto;
+import com.utec.backend.dto.reserva.ReservaFilters;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
 import com.utec.backend.dto.reserva.ReservaUpdateDto;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static com.utec.backend.security.Constants.*;
 
@@ -109,7 +111,7 @@ public class ReservaController {
             var reservasPage = reservaService.getReservasByUsuarioPaged(
                     userEmail,
                     pageable,
-                    com.utec.backend.dto.reserva.ReservaFilters.of(
+                    ReservaFilters.of(
                             estado, espacioId, carreraId, tipoEspacioId,
                             fechaInicio, fechaFin, tiempo));
 
@@ -227,7 +229,7 @@ public class ReservaController {
                     .orElse("");
 
             List<ReservaResponseDto> reservas = reservaService.getTodasLasReservas(
-                    com.utec.backend.dto.reserva.ReservaFilters.of(
+                    ReservaFilters.of(
                             estado, espacioId, carreraId, tipoEspacioId,
                             fechaInicio, fechaFin, null),
                     userEmail, userRole);
@@ -299,7 +301,7 @@ public class ReservaController {
 
             var reservasPage = reservaService.getAllReservasPaged(
                     pageable,
-                    new com.utec.backend.dto.reserva.ReservaFilters(
+                    new ReservaFilters(
                             estado, espacioId, carreraId, tipoEspacioId, usuarioId,
                             fechaInicio, fechaFin, tiempo),
                     userEmail,
@@ -322,7 +324,7 @@ public class ReservaController {
     @PreAuthorize("hasPermission(null, 'reserva:aprobar')")
     public ResponseEntity<ApiResponse<ReservaResponseDto>> cambiarEstadoReserva(
             @PathVariable Long id,
-            @RequestBody java.util.Map<String, String> requestBody,
+            @RequestBody Map<String, String> requestBody,
             Authentication authentication) {
         try {
             String nuevoEstado = requestBody.get("estado");

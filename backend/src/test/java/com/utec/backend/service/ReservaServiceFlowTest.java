@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -131,7 +132,7 @@ class ReservaServiceFlowTest {
         });
 
         // Simular findAll con Specification
-        lenient().when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
+        lenient().when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenAnswer(invocation -> {
             // Retornar todas las reservas (simplificado)
             return new ArrayList<>(reservasDB.values());
         });
@@ -181,7 +182,7 @@ class ReservaServiceFlowTest {
 
         // PASO 2: Externo Carlos intenta listar TODAS las reservas → NO debe ver la privada
         lenient().when(usuarioRepository.findByEmail("carlos@gmail.com")).thenReturn(Optional.of(externoCarlos));
-        lenient().when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
+        lenient().when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenAnswer(invocation -> {
             // Simular filtro: solo públicas para EXTERNO
             return reservasDB.values().stream()
                     .filter(Reserva::getEsPublica)
@@ -199,7 +200,7 @@ class ReservaServiceFlowTest {
 
         // PASO 3: Analista Ana (asignada) lista SUS reservas → SÍ debe verla
         lenient().when(usuarioRepository.findByEmail("ana@utec.edu.uy")).thenReturn(Optional.of(analistaAna));
-        when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenAnswer(invocation -> {
             // Simular filtro: asignadas a Ana o sin asignar
             return reservasDB.values().stream()
                     .filter(r -> r.getAnalistaAsignado() == null ||
@@ -218,7 +219,7 @@ class ReservaServiceFlowTest {
 
         // PASO 4: Analista Luis (NO asignado) NO debe verla
         lenient().when(usuarioRepository.findByEmail("luis@utec.edu.uy")).thenReturn(Optional.of(analistaLuis));
-        when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenAnswer(invocation -> {
             // Simular filtro: asignadas a Luis o sin asignar
             return reservasDB.values().stream()
                     .filter(r -> r.getAnalistaAsignado() == null ||
@@ -257,7 +258,7 @@ class ReservaServiceFlowTest {
 
         // PASO 2: Otro Externo (Maria) SÍ la ve
         lenient().when(usuarioRepository.findByEmail("maria@yahoo.com")).thenReturn(Optional.of(externoMaria));
-        when(reservaRepository.findAll(any(Specification.class))).thenAnswer(invocation -> {
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenAnswer(invocation -> {
             return reservasDB.values().stream()
                     .filter(Reserva::getEsPublica)
                     .toList();
@@ -273,7 +274,7 @@ class ReservaServiceFlowTest {
 
         // PASO 3: Docente Juan SÍ la ve
         lenient().when(usuarioRepository.findByEmail("juan@utec.edu.uy")).thenReturn(Optional.of(docenteJuan));
-        when(reservaRepository.findAll(any(Specification.class))).thenReturn(new ArrayList<>(reservasDB.values()));
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any())).thenReturn(new ArrayList<>(reservasDB.values()));
 
         List<ReservaResponseDto> reservasJuan = reservaService.getTodasLasReservas(
                 com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
