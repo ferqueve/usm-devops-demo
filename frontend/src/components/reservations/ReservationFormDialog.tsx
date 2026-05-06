@@ -587,9 +587,8 @@ export default function ReservationFormDialog({
     setLoadingRecomendacionesGenerales(true);
     try {
       const response = await recomendacionesApi.obtenerRecomendacionesDashboard();
-      const tieneRecomendaciones = response.success && response.data
-        && response.data.espaciosRecomendados
-        && response.data.espaciosRecomendados.length > 0;
+      const tieneRecomendaciones = response.success
+        && (response.data?.espaciosRecomendados?.length ?? 0) > 0;
       if (tieneRecomendaciones) {
         setRecomendacionesGenerales(response.data!);
       } else {

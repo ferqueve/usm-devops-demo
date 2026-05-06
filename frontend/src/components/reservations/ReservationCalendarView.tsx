@@ -317,7 +317,8 @@ interface ReservationBarProps {
   colorConfig: { bg: string; border: string; hoverBg: string; hoverBorder: string };
   tituloTooltip: string;
   zIndex: number;
-  onViewDetails: () => void;
+  reserva: Reserva;
+  onViewDetails: (reserva: Reserva) => void;
 }
 
 function ReservationBar({
@@ -328,10 +329,12 @@ function ReservationBar({
   colorConfig,
   tituloTooltip,
   zIndex,
+  reserva,
   onViewDetails,
 }: Readonly<ReservationBarProps>) {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const handleClick = useCallback(() => onViewDetails(reserva), [onViewDetails, reserva]);
 
   return (
     <button
@@ -344,7 +347,7 @@ function ReservationBar({
         height: `${altura}px`,
         zIndex: zIndex,
       }}
-      onClick={onViewDetails}
+      onClick={handleClick}
       aria-label={tituloTooltip}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => {
@@ -375,6 +378,39 @@ function ReservationBar({
       )}
     </button>
   );
+}
+
+// Lee la vista actual del calendario respetando preferencias del usuario.
+function useCalendarViewMode(prefersWeekDefault: boolean) {
+  const { preferencias } = usePreferences();
+  const preferenciaCalendarViewMode = preferencias?.reservasCalendarViewMode as CalendarViewMode | undefined;
+  const defaultMode: CalendarViewMode = prefersWeekDefault ? 'week' : 'month';
+  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(
+    preferenciaCalendarViewMode ?? defaultMode,
+  );
+  useEffect(() => {
+    if (preferencias?.reservasCalendarViewMode) {
+      setCalendarViewMode(preferencias.reservasCalendarViewMode as CalendarViewMode);
+    }
+  }, [preferencias]);
+  return { calendarViewMode, setCalendarViewMode };
+}
+
+// Maneja modo pantalla completa local + scroll-lock del documento.
+function useFullScreen(isFullScreenProp?: boolean, onToggleFullScreenProp?: () => void) {
+  const [isFullScreenInternal, setIsFullScreenInternal] = useState(false);
+  const isFullScreen = isFullScreenProp ?? isFullScreenInternal;
+  const handleToggleFullScreen = onToggleFullScreenProp ?? (() => setIsFullScreenInternal(prev => !prev));
+  useEffect(() => {
+    const overflowValue = isFullScreen ? 'hidden' : '';
+    document.body.style.overflow = overflowValue;
+    document.documentElement.style.overflow = overflowValue;
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isFullScreen]);
+  return { isFullScreen, handleToggleFullScreen };
 }
 
 interface ReservationCalendarViewProps {
@@ -448,42 +484,14 @@ export default function ReservationCalendarView({
   readOnly = false,
 }: Readonly<ReservationCalendarViewProps>) {
   const { hasPermission } = useRolePermissions();
-  const { preferencias } = usePreferences();
-
-  // Permission-based logic
   const canApprove = hasPermission('reserva:aprobar');
   const canViewRecommendations = hasPermission('recomendacion:ver');
-  // Vista desde preferencias o por defecto: Semana para usuarios que pueden aprobar o ver recomendaciones, Mes para otros
-  const defaultCalendarViewMode: CalendarViewMode = (canApprove || canViewRecommendations) ? 'week' : 'month';
-  const preferenciaCalendarViewMode = preferencias?.reservasCalendarViewMode as CalendarViewMode | undefined;
-  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(preferenciaCalendarViewMode ?? defaultCalendarViewMode);
-  
-  // Aplicar preferencias cuando se carguen
-  useEffect(() => {
-    if (preferencias?.reservasCalendarViewMode) {
-      setCalendarViewMode(preferencias.reservasCalendarViewMode as CalendarViewMode);
-    }
-  }, [preferencias]);
+
+  const { calendarViewMode, setCalendarViewMode } = useCalendarViewMode(canApprove || canViewRecommendations);
+  const { isFullScreen, handleToggleFullScreen } = useFullScreen(isFullScreenProp, onToggleFullScreenProp);
+
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [isFullScreenInternal, setIsFullScreenInternal] = useState(false);
   const [hideNightHours, setHideNightHours] = useState(true);
-  
-  // ReservationBar definido a nivel de módulo
-
-  // Usar props si están disponibles, sino usar estado interno
-  const isFullScreen = isFullScreenProp ?? isFullScreenInternal;
-  const handleToggleFullScreen = onToggleFullScreenProp || (() => setIsFullScreenInternal(!isFullScreenInternal));
-
-  // Prevenir scroll del body y html cuando está en pantalla completa
-  useEffect(() => {
-    const overflowValue = isFullScreen ? 'hidden' : '';
-    document.body.style.overflow = overflowValue;
-    document.documentElement.style.overflow = overflowValue;
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [isFullScreen]);
 
   // Obtener reservas para una fecha específica
   const getReservasForDate = (date: Date): Reserva[] => {
@@ -968,7 +976,8 @@ export default function ReservationCalendarView({
                                 colorConfig={colorConfig}
                                 tituloTooltip={tituloTooltip}
                                 zIndex={10 + index}
-                                onViewDetails={() => onViewDetails(reservaPrincipal)}
+                                reserva={reservaPrincipal}
+                                onViewDetails={onViewDetails}
                               />
                           );
                       })}

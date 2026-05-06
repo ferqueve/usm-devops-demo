@@ -160,6 +160,31 @@ function replaceUserById(prevUsers: User[], userId: number, updater: (u: User) =
   return prevUsers.map(u => (u.id === userId ? updater(u) : u));
 }
 
+// Ejecuta una acción async con toast de éxito/error y maneja el spinner.
+async function runUserAction(
+  action: () => Promise<void>,
+  opts: {
+    errorTitle: string;
+    defaultErrorMessage: string;
+    setBusy?: (busy: boolean) => void;
+    onError?: () => void;
+    onFinally?: () => void;
+  },
+): Promise<void> {
+  opts.setBusy?.(true);
+  try {
+    await action();
+  } catch (error: unknown) {
+    const description = error instanceof Error ? error.message : opts.defaultErrorMessage;
+    console.error(`${opts.errorTitle}:`, error);
+    toast.error(opts.errorTitle, { description });
+    opts.onError?.();
+  } finally {
+    opts.setBusy?.(false);
+    opts.onFinally?.();
+  }
+}
+
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -235,45 +260,21 @@ export default function UserManagement() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const handleRoleFilter = (rol: string) => {
+  const updateFilter = <K extends keyof UserFilters>(patch: Partial<UserFilters>) => {
     setPage(0);
-    setFilters(prev => ({ 
-      ...prev, 
-      rol: rol === 'all' ? undefined : (rol as UserRole) 
-    }));
+    setFilters(prev => ({ ...prev, ...patch } as UserFilters & Record<K, UserFilters[K]>));
   };
 
-  const handleVerificadoFilter = (value: string) => {
-    setPage(0);
-    setFilters(prev => ({ 
-      ...prev, 
-      verificado: value === 'all' ? undefined : value === 'true' 
-    }));
-  };
-
-  const handleActivoFilter = (value: string) => {
-    setPage(0);
-    setFilters(prev => ({ 
-      ...prev, 
-      activo: value === 'all' ? undefined : value === 'true' 
-    }));
-  };
-
-  const handleFechaDesdeFilter = (value: string) => {
-    setPage(0);
-    setFilters(prev => ({ 
-      ...prev, 
-      fechaDesde: value || undefined 
-    }));
-  };
-
-  const handleFechaHastaFilter = (value: string) => {
-    setPage(0);
-    setFilters(prev => ({ 
-      ...prev, 
-      fechaHasta: value || undefined 
-    }));
-  };
+  const handleRoleFilter = (rol: string) =>
+    updateFilter({ rol: rol === 'all' ? undefined : (rol as UserRole) });
+  const handleVerificadoFilter = (value: string) =>
+    updateFilter({ verificado: value === 'all' ? undefined : value === 'true' });
+  const handleActivoFilter = (value: string) =>
+    updateFilter({ activo: value === 'all' ? undefined : value === 'true' });
+  const handleFechaDesdeFilter = (value: string) =>
+    updateFilter({ fechaDesde: value || undefined });
+  const handleFechaHastaFilter = (value: string) =>
+    updateFilter({ fechaHasta: value || undefined });
 
   const openChangeRoleDialog = (user: User) => {
     setSelectedUser(user);
@@ -281,29 +282,25 @@ export default function UserManagement() {
     setChangeRoleDialog(true);
   };
 
-  const handleChangeRole = async () => {
-    if (!selectedUser) return;
-
-    try {
-      setChangingRole(true);
-      await usuariosApi.cambiarRol(selectedUser.id, newRole);
-      
-      setUsers(prevUsers => replaceUserById(prevUsers, selectedUser.id, u => ({ ...u, rolApp: newRole })));
-      
-      toast.success('Rol actualizado', {
-        description: `El rol de ${selectedUser.nombre} se actualizó a ${ROLE_LABELS[newRole]}`
-      });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'No se pudo actualizar el rol del usuario';
-      console.error('Error al cambiar rol:', error);
-      toast.error('Error al cambiar rol', {
-        description: errorMessage
-      });
-      fetchUsers();
-    } finally {
-      setChangingRole(false);
-      setChangeRoleDialog(false);
-    }
+  const handleChangeRole = () => {
+    if (!selectedUser) return Promise.resolve();
+    const userSnapshot = selectedUser;
+    return runUserAction(
+      async () => {
+        await usuariosApi.cambiarRol(userSnapshot.id, newRole);
+        setUsers(prev => replaceUserById(prev, userSnapshot.id, u => ({ ...u, rolApp: newRole })));
+        toast.success('Rol actualizado', {
+          description: `El rol de ${userSnapshot.nombre} se actualizó a ${ROLE_LABELS[newRole]}`,
+        });
+      },
+      {
+        errorTitle: 'Error al cambiar rol',
+        defaultErrorMessage: 'No se pudo actualizar el rol del usuario',
+        setBusy: setChangingRole,
+        onError: () => fetchUsers(),
+        onFinally: () => setChangeRoleDialog(false),
+      },
+    );
   };
 
   const openConfirmStatusDialog = (user: User) => {
@@ -311,32 +308,27 @@ export default function UserManagement() {
     setConfirmStatusDialog(true);
   };
 
-  const handleToggleActivo = async () => {
-    if (!userToToggle) return;
-
-    try {
-      setTogglingStatus(true);
-      await usuariosApi.toggleActivo(userToToggle.id);
-      
-      const newStatus = !userToToggle.activo;
-      const action = newStatus ? 'activado' : 'desactivado';
-      
-      setUsers(prevUsers => replaceUserById(prevUsers, userToToggle.id, u => ({ ...u, activo: newStatus })));
-      
-      toast.success(`Usuario ${action}`, {
-        description: `${userToToggle.nombre} ha sido ${action} exitosamente`
-      });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'No se pudo cambiar el estado del usuario';
-      console.error('Error al cambiar estado:', error);
-      toast.error('Error al cambiar estado', {
-        description: errorMessage
-      });
-      fetchUsers();
-    } finally {
-      setTogglingStatus(false);
-      setConfirmStatusDialog(false);
-    }
+  const handleToggleActivo = () => {
+    if (!userToToggle) return Promise.resolve();
+    const userSnapshot = userToToggle;
+    const newStatus = !userSnapshot.activo;
+    const action = newStatus ? 'activado' : 'desactivado';
+    return runUserAction(
+      async () => {
+        await usuariosApi.toggleActivo(userSnapshot.id);
+        setUsers(prev => replaceUserById(prev, userSnapshot.id, u => ({ ...u, activo: newStatus })));
+        toast.success(`Usuario ${action}`, {
+          description: `${userSnapshot.nombre} ha sido ${action} exitosamente`,
+        });
+      },
+      {
+        errorTitle: 'Error al cambiar estado',
+        defaultErrorMessage: 'No se pudo cambiar el estado del usuario',
+        setBusy: setTogglingStatus,
+        onError: () => fetchUsers(),
+        onFinally: () => setConfirmStatusDialog(false),
+      },
+    );
   };
 
   const clearFilters = () => {
@@ -346,20 +338,15 @@ export default function UserManagement() {
     toast.info('Filtros limpiados');
   };
 
-  const handleExportCSV = async () => {
-    try {
+  const handleExportCSV = () => runUserAction(
+    async () => {
       await exportUsersToCSV(filters);
       toast.success('Exportación completada', {
-        description: 'El archivo CSV se ha descargado exitosamente'
+        description: 'El archivo CSV se ha descargado exitosamente',
       });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'No se pudo exportar el archivo CSV';
-      console.error('Error al exportar CSV:', error);
-      toast.error('Error al exportar', {
-        description: errorMessage
-      });
-    }
-  };
+    },
+    { errorTitle: 'Error al exportar', defaultErrorMessage: 'No se pudo exportar el archivo CSV' },
+  );
 
   const openEditDialog = (user: User) => {
     setEditingUser(user);
@@ -371,41 +358,31 @@ export default function UserManagement() {
     setEditDialog(false);
   };
 
-  const handleResendVerification = async (userId: number) => {
-    try {
-      setResendingVerification(true);
+  const handleResendVerification = (userId: number) => runUserAction(
+    async () => {
       await usuariosApi.reenviarVerificacion(userId);
-      toast.success('Email reenviado', {
-        description: 'Se ha reenviado el email de verificación'
-      });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'No se pudo reenviar el email de verificación';
-      console.error('Error al reenviar verificación:', error);
-      toast.error('Error al reenviar', {
-        description: errorMessage
-      });
-    } finally {
-      setResendingVerification(false);
-    }
-  };
+      toast.success('Email reenviado', { description: 'Se ha reenviado el email de verificación' });
+    },
+    {
+      errorTitle: 'Error al reenviar',
+      defaultErrorMessage: 'No se pudo reenviar el email de verificación',
+      setBusy: setResendingVerification,
+    },
+  );
 
-  const handleResetPassword = async (userId: number, userName: string) => {
-    try {
-      setResettingPassword(true);
+  const handleResetPassword = (userId: number, userName: string) => runUserAction(
+    async () => {
       await usuariosApi.restablecerPassword(userId);
       toast.success('Contraseña restablecida', {
-        description: `Se ha enviado una nueva contraseña temporal a ${userName}`
+        description: `Se ha enviado una nueva contraseña temporal a ${userName}`,
       });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'No se pudo restablecer la contraseña';
-      console.error('Error al restablecer contraseña:', error);
-      toast.error('Error al restablecer', {
-        description: errorMessage
-      });
-    } finally {
-      setResettingPassword(false);
-    }
-  };
+    },
+    {
+      errorTitle: 'Error al restablecer',
+      defaultErrorMessage: 'No se pudo restablecer la contraseña',
+      setBusy: setResettingPassword,
+    },
+  );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
