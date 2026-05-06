@@ -149,6 +149,17 @@ function buildActiveUserFilters(
   return items;
 }
 
+// Reemplaza un usuario por id en la lista, manteniendo la posición original
+function replaceUserById(prevUsers: User[], userId: number, updater: (u: User) => User): User[] {
+  const index = prevUsers.findIndex(u => u.id === userId);
+  if (index !== -1) {
+    const newUsers = [...prevUsers];
+    newUsers[index] = updater(newUsers[index]);
+    return newUsers;
+  }
+  return prevUsers.map(u => (u.id === userId ? updater(u) : u));
+}
+
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -277,20 +288,7 @@ export default function UserManagement() {
       setChangingRole(true);
       await usuariosApi.cambiarRol(selectedUser.id, newRole);
       
-      setUsers(prevUsers => {
-        // Mantener la posición del elemento actualizado en la lista
-        const index = prevUsers.findIndex(u => u.id === selectedUser.id);
-        if (index !== -1) {
-          const newUsers = [...prevUsers];
-          newUsers[index] = { ...newUsers[index], rolApp: newRole };
-          return newUsers;
-        }
-        return prevUsers.map(u => 
-          u.id === selectedUser.id 
-            ? { ...u, rolApp: newRole }
-            : u
-        );
-      });
+      setUsers(prevUsers => replaceUserById(prevUsers, selectedUser.id, u => ({ ...u, rolApp: newRole })));
       
       toast.success('Rol actualizado', {
         description: `El rol de ${selectedUser.nombre} se actualizó a ${ROLE_LABELS[newRole]}`
@@ -323,20 +321,7 @@ export default function UserManagement() {
       const newStatus = !userToToggle.activo;
       const action = newStatus ? 'activado' : 'desactivado';
       
-      setUsers(prevUsers => {
-        // Mantener la posición del elemento actualizado en la lista
-        const index = prevUsers.findIndex(u => u.id === userToToggle.id);
-        if (index !== -1) {
-          const newUsers = [...prevUsers];
-          newUsers[index] = { ...newUsers[index], activo: newStatus };
-          return newUsers;
-        }
-        return prevUsers.map(u => 
-          u.id === userToToggle.id 
-            ? { ...u, activo: newStatus }
-            : u
-        );
-      });
+      setUsers(prevUsers => replaceUserById(prevUsers, userToToggle.id, u => ({ ...u, activo: newStatus })));
       
       toast.success(`Usuario ${action}`, {
         description: `${userToToggle.nombre} ha sido ${action} exitosamente`
@@ -382,17 +367,7 @@ export default function UserManagement() {
   };
 
   const handleEditSuccess = (updatedUser: User) => {
-    setUsers(prevUsers => {
-      // Mantener la posición del elemento actualizado en la lista
-      const index = prevUsers.findIndex(u => u.id === updatedUser.id);
-      if (index !== -1) {
-        const newUsers = [...prevUsers];
-        newUsers[index] = updatedUser;
-        return newUsers;
-      }
-      // Si no se encuentra, actualizar normalmente
-      return prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
-    });
+    setUsers(prevUsers => replaceUserById(prevUsers, updatedUser.id, () => updatedUser));
     setEditDialog(false);
   };
 

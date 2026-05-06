@@ -10,6 +10,8 @@ class BackendApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Spring Boot context bootstrapping smoke test:
+		// si el contexto no levanta, JUnit reporta el fallo automáticamente.
 	}
 
 }

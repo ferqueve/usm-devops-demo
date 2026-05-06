@@ -61,13 +61,18 @@ interface ReservaValidationInputs {
   fechaFinRecurrencia?: Date;
 }
 
-// Valida los datos básicos de una reserva. Devuelve mensaje de error o null
-function validateReservaBasica(input: ReservaValidationInputs): string | null {
+// Valida los campos requeridos del formulario
+function validateReservaCamposRequeridos(input: ReservaValidationInputs): string | null {
   if (!input.titulo || input.titulo.trim() === '') return 'Por favor ingresa un título para la reserva';
   if (!input.espacioId) return 'Por favor selecciona un espacio';
   if (!input.fecha) return 'Por favor selecciona una fecha';
   if (!input.horaInicioHora) return 'Por favor selecciona la hora de inicio';
   if (!input.horaFinHora) return 'Por favor selecciona la hora de fin';
+  return null;
+}
+
+// Valida el rango de fechas/horas
+function validateReservaRango(input: ReservaValidationInputs): string | null {
   if (Number.isNaN(input.inicio.getTime()) || Number.isNaN(input.fin.getTime())) {
     return 'Las horas ingresadas no son válidas';
   }
@@ -75,16 +80,29 @@ function validateReservaBasica(input: ReservaValidationInputs): string | null {
   if (input.inicio < new Date()) return 'No se puede reservar en el pasado';
   const diferenciaMinutos = (input.fin.getTime() - input.inicio.getTime()) / (1000 * 60);
   if (diferenciaMinutos < 30) return 'La reserva debe tener una duración mínima de 30 minutos';
+  return null;
+}
+
+// Valida la recurrencia si aplica
+function validateReservaRecurrencia(input: ReservaValidationInputs): string | null {
+  if (!input.tipoRecurrencia) return null;
+  if (!input.fechaFinRecurrencia) return 'Por favor selecciona la fecha de fin de recurrencia';
+  if (input.fecha && input.fechaFinRecurrencia <= input.fecha) {
+    return 'La fecha de fin de recurrencia debe ser posterior a la fecha de inicio';
+  }
+  return null;
+}
+
+// Valida los datos básicos de una reserva. Devuelve mensaje de error o null
+function validateReservaBasica(input: ReservaValidationInputs): string | null {
+  const camposError = validateReservaCamposRequeridos(input);
+  if (camposError) return camposError;
+  const rangoError = validateReservaRango(input);
+  if (rangoError) return rangoError;
   if (input.needsAnalystAssignment && !input.analistaId) {
     return 'Por favor selecciona un analista para gestionar tu solicitud';
   }
-  if (input.tipoRecurrencia) {
-    if (!input.fechaFinRecurrencia) return 'Por favor selecciona la fecha de fin de recurrencia';
-    if (input.fecha && input.fechaFinRecurrencia <= input.fecha) {
-      return 'La fecha de fin de recurrencia debe ser posterior a la fecha de inicio';
-    }
-  }
-  return null;
+  return validateReservaRecurrencia(input);
 }
 
 // Resuelve el id del analista a asignar según el rol del usuario actual
@@ -119,6 +137,39 @@ function construirMensajeExito(args: {
     : 'Reserva creada exitosamente';
 }
 
+// Carga espacios disponibles y los convierte a recomendaciones; null si no hay
+async function fetchEspaciosComoRecomendacion(): Promise<DashboardRecomendaciones | null> {
+  try {
+    const espaciosResponse = await espaciosApi.obtenerEspacios();
+    if (!espaciosResponse.data || espaciosResponse.data.length === 0) {
+      return null;
+    }
+    const espaciosRecomendados: RecomendacionEspacio[] = espaciosResponse.data
+      .slice(0, 4)
+      .map(espacio => ({
+        tipoRecomendacion: 'ESPACIO_PARA_RESERVA' as const,
+        puntaje: 0.7,
+        razon: 'Espacio disponible en el sistema',
+        espacioId: espacio.id,
+        espacioNombre: espacio.nombre,
+        capacidad: espacio.capacidad || 0,
+        tipoEspacioNombre: espacio.tipoEspacioNombre,
+        tipoEspacioColor: espacio.tipoEspacioColor,
+        disponible: true,
+      }));
+    return {
+      espaciosRecomendados,
+      itemsRecomendados: [],
+      mantenimientoUrgente: [],
+      reservasPrioritarias: [],
+      totalRecomendaciones: espaciosRecomendados.length,
+    };
+  } catch (espaciosError) {
+    console.error('Error cargando espacios como alternativa:', espaciosError);
+    return null;
+  }
+}
+
 // Convierte la fechaFinRecurrencia (Date local) a ISO UTC con final de día (23:59:59.999)
 function toFinDeDiaISO(fechaFin: Date): string {
   const fecha = new Date(fechaFin);
@@ -139,6 +190,107 @@ const HORARIO_VACIO: HorarioFormFields = {
   horaFinHora: '',
   horaFinMinuto: '00',
 };
+
+// Tarjeta individual de espacio recomendado
+interface RecomendacionEspacioCardProps {
+  rec: RecomendacionEspacio;
+  onSelect: (espacioId: number) => void;
+}
+
+function RecomendacionEspacioCard({ rec, onSelect }: Readonly<RecomendacionEspacioCardProps>) {
+  return (
+    <Card
+      className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
+      onClick={() => onSelect(rec.espacioId)}
+      style={{
+        borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
+      }}
+    >
+      <CardContent className="px-3 py-1.5">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
+            <div className="flex items-center gap-2 flex-wrap">
+              {rec.tipoEspacioNombre && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0.5 h-5"
+                  style={{
+                    borderColor: rec.tipoEspacioColor,
+                    color: rec.tipoEspacioColor,
+                  }}
+                >
+                  {rec.tipoEspacioNombre}
+                </Badge>
+              )}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3 w-3" />
+                <span>{rec.capacidad}</span>
+              </div>
+              {rec.disponible && (
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                  Disponible
+                </Badge>
+              )}
+            </div>
+          </div>
+          <Badge
+            className={`text-xs px-2 py-0.5 h-5 shrink-0 ${getPuntajeBadgeClass(rec.puntaje)}`}
+          >
+            {(rec.puntaje * 100).toFixed(0)}%
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Panel con recomendaciones generales (cuando aún no se completó el formulario)
+interface RecomendacionesGeneralesPanelProps {
+  loading: boolean;
+  recomendaciones: DashboardRecomendaciones | null;
+  onSelectEspacio: (espacioId: number) => void;
+}
+
+function RecomendacionesGeneralesPanel({
+  loading,
+  recomendaciones,
+  onSelectEspacio,
+}: Readonly<RecomendacionesGeneralesPanelProps>) {
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+      </div>
+    );
+  }
+  const espacios = recomendaciones?.espaciosRecomendados;
+  if (espacios && espacios.length > 0) {
+    return (
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span>Espacios Recomendados</span>
+        </div>
+        <div className="grid grid-cols-1 gap-2">
+          {espacios.slice(0, 4).map((rec) => (
+            <RecomendacionEspacioCard
+              key={rec.espacioId}
+              rec={rec}
+              onSelect={onSelectEspacio}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="text-center py-8 text-sm text-gray-500">
+      <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+      <p>Completa el formulario para ver recomendaciones</p>
+    </div>
+  );
+}
 
 // Convierte fechas ISO de inicio/fin a campos del formulario; retorna null si las fechas son inválidas
 function parseHorarioRecomendado(inicio: string, fin: string): HorarioFormFields | null {
@@ -425,86 +577,24 @@ export default function ReservationFormDialog({
     // Solo cargar si no hay datos seleccionados (sin espacio y sin horario completo)
     const tieneEspacio = formData.espacioId && formData.espacioId.trim() !== '';
     const tieneHorarioCompleto = formData.horaInicioHora && formData.horaFinHora;
-    
+
     if (tieneEspacio || tieneHorarioCompleto) {
       // Limpiar recomendaciones generales si hay datos seleccionados
       setRecomendacionesGenerales(null);
       return;
     }
-    
+
     setLoadingRecomendacionesGenerales(true);
     try {
       const response = await recomendacionesApi.obtenerRecomendacionesDashboard();
-      if (response.success && response.data) {
-        // Si hay espacios recomendados, usarlos
-        if (response.data.espaciosRecomendados && response.data.espaciosRecomendados.length > 0) {
-          setRecomendacionesGenerales(response.data);
-        } else {
-          // Si no hay recomendaciones del dashboard, usar espacios disponibles como alternativa
-          try {
-            const espaciosResponse = await espaciosApi.obtenerEspacios();
-            if (espaciosResponse.data && espaciosResponse.data.length > 0) {
-              // Convertir espacios a formato de recomendación
-              const espaciosRecomendados = espaciosResponse.data
-                .slice(0, 4) // Tomar los primeros 4
-                .map(espacio => ({
-                  espacioId: espacio.id,
-                  espacioNombre: espacio.nombre,
-                  capacidad: espacio.capacidad || 0,
-                  tipoEspacioNombre: espacio.tipoEspacioNombre,
-                  tipoEspacioColor: espacio.tipoEspacioColor,
-                  puntaje: 0.7, // Puntaje por defecto
-                  razon: 'Espacio disponible en el sistema',
-                  disponible: true,
-                  tipoRecomendacion: 'ESPACIO_PARA_RESERVA' as const
-                }));
-              setRecomendacionesGenerales({
-                espaciosRecomendados,
-                itemsRecomendados: [],
-                mantenimientoUrgente: [],
-                reservasPrioritarias: [],
-                totalRecomendaciones: espaciosRecomendados.length
-              });
-            } else {
-              setRecomendacionesGenerales(null);
-            }
-          } catch (espaciosError) {
-            console.error('Error cargando espacios como alternativa:', espaciosError);
-            setRecomendacionesGenerales(null);
-          }
-        }
+      const tieneRecomendaciones = response.success && response.data
+        && response.data.espaciosRecomendados
+        && response.data.espaciosRecomendados.length > 0;
+      if (tieneRecomendaciones) {
+        setRecomendacionesGenerales(response.data!);
       } else {
-        // Si no hay respuesta exitosa, intentar con espacios disponibles
-        try {
-          const espaciosResponse = await espaciosApi.obtenerEspacios();
-          if (espaciosResponse.data && espaciosResponse.data.length > 0) {
-            const espaciosRecomendados: RecomendacionEspacio[] = espaciosResponse.data
-              .slice(0, 4)
-              .map(espacio => ({
-                tipoRecomendacion: 'ESPACIO_PARA_RESERVA' as const,
-                puntaje: 0.7,
-                razon: 'Espacio disponible en el sistema',
-                espacioId: espacio.id,
-                espacioNombre: espacio.nombre,
-                capacidad: espacio.capacidad || 0,
-                tipoEspacioNombre: espacio.tipoEspacioNombre,
-                tipoEspacioColor: espacio.tipoEspacioColor,
-                disponible: true
-              }));
-            setRecomendacionesGenerales({
-              espaciosRecomendados,
-              itemsRecomendados: [],
-              mantenimientoUrgente: [],
-              reservasPrioritarias: [],
-              totalRecomendaciones: espaciosRecomendados.length
-            });
-          } else {
-            setRecomendacionesGenerales(null);
-          }
-        } catch (espaciosError) {
-          console.error('Error cargando espacios como alternativa:', espaciosError);
-          setRecomendacionesGenerales(null);
-        }
+        const fallback = await fetchEspaciosComoRecomendacion();
+        setRecomendacionesGenerales(fallback);
       }
     } catch (error) {
       console.error('Error cargando recomendaciones generales:', error);
@@ -1391,81 +1481,11 @@ export default function ReservationFormDialog({
 
                   {/* Recomendaciones generales cuando no hay datos seleccionados */}
                   {!formData.espacioId && !formData.horaInicioHora && !formData.horaFinHora && (
-                    <>
-                      {(() => {
-                        if (loadingRecomendacionesGenerales) {
-                          return (
-                            <div className="text-center py-8">
-                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
-                            </div>
-                          );
-                        }
-                        if (recomendacionesGenerales?.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0) {
-                          return (
-                            <div className="space-y-2.5">
-                              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                                <span>Espacios Recomendados</span>
-                              </div>
-                              <div className="grid grid-cols-1 gap-2">
-                                {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
-                                  <Card
-                                    key={rec.espacioId}
-                                    className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
-                                    onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
-                                    style={{
-                                      borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
-                                    }}
-                                  >
-                                    <CardContent className="px-3 py-1.5">
-                                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                                        <div className="flex-1 min-w-0">
-                                          <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
-                                          <div className="flex items-center gap-2 flex-wrap">
-                                            {rec.tipoEspacioNombre && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-[10px] px-1.5 py-0.5 h-5"
-                                                style={{
-                                                  borderColor: rec.tipoEspacioColor,
-                                                  color: rec.tipoEspacioColor,
-                                                }}
-                                              >
-                                                {rec.tipoEspacioNombre}
-                                              </Badge>
-                                            )}
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                              <Users className="h-3 w-3" />
-                                              <span>{rec.capacidad}</span>
-                                            </div>
-                                            {rec.disponible && (
-                                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
-                                                Disponible
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <Badge
-                                          className={`text-xs px-2 py-0.5 h-5 shrink-0 ${getPuntajeBadgeClass(rec.puntaje)}`}
-                                        >
-                                          {(rec.puntaje * 100).toFixed(0)}%
-                                        </Badge>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return (
-                          <div className="text-center py-8 text-sm text-gray-500">
-                            <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                            <p>Completa el formulario para ver recomendaciones</p>
-                          </div>
-                        );
-                      })()}
-                    </>
+                    <RecomendacionesGeneralesPanel
+                      loading={loadingRecomendacionesGenerales}
+                      recomendaciones={recomendacionesGenerales}
+                      onSelectEspacio={(espacioId) => setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }))}
+                    />
                   )}
                 </div>
               </div>
@@ -1558,81 +1578,11 @@ export default function ReservationFormDialog({
 
                   {/* Recomendaciones generales cuando no hay datos seleccionados */}
                   {!formData.espacioId && !formData.horaInicioHora && !formData.horaFinHora && (
-                    <>
-                      {(() => {
-                        if (loadingRecomendacionesGenerales) {
-                          return (
-                            <div className="text-center py-8">
-                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
-                            </div>
-                          );
-                        }
-                        if (recomendacionesGenerales?.espaciosRecomendados && recomendacionesGenerales.espaciosRecomendados.length > 0) {
-                          return (
-                            <div className="space-y-2.5">
-                              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                                <span>Espacios Recomendados</span>
-                              </div>
-                              <div className="grid grid-cols-1 gap-2">
-                                {recomendacionesGenerales.espaciosRecomendados.slice(0, 4).map((rec) => (
-                                  <Card
-                                    key={rec.espacioId}
-                                    className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
-                                    onClick={() => setFormData(prev => ({ ...prev, espacioId: rec.espacioId.toString() }))}
-                                    style={{
-                                      borderLeft: rec.tipoEspacioColor ? `3px solid ${rec.tipoEspacioColor}` : undefined,
-                                    }}
-                                  >
-                                    <CardContent className="px-3 py-1.5">
-                                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                                        <div className="flex-1 min-w-0">
-                                          <h4 className="font-semibold text-sm truncate mb-1">{rec.espacioNombre}</h4>
-                                          <div className="flex items-center gap-2 flex-wrap">
-                                            {rec.tipoEspacioNombre && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-[10px] px-1.5 py-0.5 h-5"
-                                                style={{
-                                                  borderColor: rec.tipoEspacioColor,
-                                                  color: rec.tipoEspacioColor,
-                                                }}
-                                              >
-                                                {rec.tipoEspacioNombre}
-                                              </Badge>
-                                            )}
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                              <Users className="h-3 w-3" />
-                                              <span>{rec.capacidad}</span>
-                                            </div>
-                                            {rec.disponible && (
-                                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
-                                                Disponible
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <Badge
-                                          className={`text-xs px-2 py-0.5 h-5 shrink-0 ${getPuntajeBadgeClass(rec.puntaje)}`}
-                                        >
-                                          {(rec.puntaje * 100).toFixed(0)}%
-                                        </Badge>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return (
-                          <div className="text-center py-8 text-sm text-gray-500">
-                            <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                            <p>Completa el formulario para ver recomendaciones</p>
-                          </div>
-                        );
-                      })()}
-                    </>
+                    <RecomendacionesGeneralesPanel
+                      loading={loadingRecomendacionesGenerales}
+                      recomendaciones={recomendacionesGenerales}
+                      onSelectEspacio={(espacioId) => setFormData(prev => ({ ...prev, espacioId: espacioId.toString() }))}
+                    />
                   )}
                 </div>
               )}

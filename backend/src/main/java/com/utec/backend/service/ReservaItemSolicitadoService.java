@@ -247,9 +247,12 @@ public class ReservaItemSolicitadoService {
         }
 
         ReservaItemSolicitado.EstadoSolicitud estadoAnterior = item.getEstado();
-        boolean cambios = aplicarCambioEstado(item, updateDto)
-                | aplicarCambioInventario(item, updateDto)
-                | aplicarCambioObservaciones(item, updateDto);
+        // Side-effects en los tres helpers: capturamos cada flag antes de combinar
+        // con `||`, para garantizar que los tres se ejecuten siempre.
+        boolean cambioEstado = aplicarCambioEstado(item, updateDto);
+        boolean cambioInventario = aplicarCambioInventario(item, updateDto);
+        boolean cambioObservaciones = aplicarCambioObservaciones(item, updateDto);
+        boolean cambios = cambioEstado || cambioInventario || cambioObservaciones;
 
         validarEntregadoTieneInventario(item);
 

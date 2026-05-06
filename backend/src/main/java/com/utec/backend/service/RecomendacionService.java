@@ -166,8 +166,7 @@ public class RecomendacionService {
                 // Para analistas: reservas prioritarias
                 dto.setReservasPrioritarias(obtenerReservasPrioritarias(usuarioId));
                 break;
-            case MANTENIMIENTO:
-            case ADMIN:
+            case MANTENIMIENTO, ADMIN:
                 // Para mantenimiento y admin: items urgentes y espacios que requieren atención
                 dto.setMantenimientoUrgente(obtenerItemsMantenimientoUrgente());
                 dto.setEspaciosRecomendados(
@@ -184,8 +183,7 @@ public class RecomendacionService {
                         .toList()
                 );
                 break;
-            case ESTUDIANTE:
-            case EXTERNO:
+            case ESTUDIANTE, EXTERNO:
             default:
                 // Para estudiantes y externos: no hay recomendaciones específicas
                 break;

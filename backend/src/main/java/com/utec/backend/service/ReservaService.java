@@ -62,6 +62,7 @@ public class ReservaService {
     private static final String FIELD_CARRERA = "carrera";
     private static final String FIELD_TIPO_ESPACIO_ID = "tipoEspacioId";
     private static final String FIELD_ANALISTA_ASIGNADO = "analistaAsignado";
+    private static final String FIELD_USUARIO = "usuario";
 
     // Valor especial del filtro de estado que significa "sin filtrar"
     private static final String ESTADO_FILTRO_TODAS = "todas";
@@ -531,7 +532,7 @@ public class ReservaService {
     private Specification<Reserva> buildSpecification(Long usuarioId, ReservaFilters filters) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
+            predicates.add(cb.equal(root.get(FIELD_USUARIO).get("id"), usuarioId));
             appendCommonFilters(predicates, root, cb, filters);
             query.orderBy(cb.desc(root.get(FIELD_INICIO)));
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -665,7 +666,7 @@ public class ReservaService {
                                              Long usuarioId,
                                              String userRole) {
         if (usuarioId != null && !ROLE_ANALISTA.equals(userRole)) {
-            predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
+            predicates.add(cb.equal(root.get(FIELD_USUARIO).get("id"), usuarioId));
         }
     }
 
@@ -970,7 +971,7 @@ public class ReservaService {
                 destinatario, reservaDto, horarioAnterior, esAnalista);
         if (enviado) {
             log.info("Email de notificación de actualización de reserva enviado a {}: {}",
-                    esAnalista ? "analista" : "usuario", destinatario);
+                    esAnalista ? "analista" : FIELD_USUARIO, destinatario);
         } else if (esAnalista) {
             log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO, destinatario);
         } else {

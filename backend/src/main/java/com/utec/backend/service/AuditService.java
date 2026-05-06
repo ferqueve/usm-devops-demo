@@ -369,25 +369,24 @@ public class AuditService {
         }
 
         BeanWrapperImpl wrapper = new BeanWrapperImpl(obj);
-        Field[] fields = obj.getClass().getDeclaredFields();
-
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            if (IGNORED_FIELDS.contains(fieldName)) {
-                continue;
-            }
-
-            if (isJpaRelation(field)) {
-                extractRelationId(wrapper, fieldName).ifPresent(idValue ->
-                        data.put(fieldName + "Id", idValue));
-                continue;
-            }
-
-            extractSimpleValue(wrapper, fieldName)
-                    .ifPresent(value -> data.put(fieldName, value));
+        for (Field field : obj.getClass().getDeclaredFields()) {
+            extractFieldInto(field, wrapper, data);
         }
-
         return data;
+    }
+
+    private void extractFieldInto(Field field, BeanWrapperImpl wrapper, Map<String, Object> data) {
+        String fieldName = field.getName();
+        if (IGNORED_FIELDS.contains(fieldName)) {
+            return;
+        }
+        if (isJpaRelation(field)) {
+            extractRelationId(wrapper, fieldName)
+                    .ifPresent(idValue -> data.put(fieldName + "Id", idValue));
+            return;
+        }
+        extractSimpleValue(wrapper, fieldName)
+                .ifPresent(value -> data.put(fieldName, value));
     }
 
     private boolean isJpaRelation(Field field) {

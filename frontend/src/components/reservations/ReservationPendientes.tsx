@@ -178,18 +178,11 @@ export default function ReservationPendientes({
                 const isAltaUrgencia = urgencia >= 7;
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={reserva.id}
-                    className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer ${obtenerRingClass(isAltaUrgencia, isPrioritaria)}`}
+                    className={`group relative overflow-hidden rounded-xl sm:rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm border-gray-200 hover:border-gray-300 bg-white cursor-pointer text-left w-full ${obtenerRingClass(isAltaUrgencia, isPrioritaria)}`}
                     onClick={() => onViewDetails(reserva)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        onViewDetails(reserva);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
                     aria-label={`Ver detalles de reserva`}
                     >
                     {/* Franja de color recta en el lado izquierdo */}
@@ -253,20 +246,16 @@ export default function ReservationPendientes({
 
                         {/* Acciones - a la derecha */}
                         <div className="flex-shrink-0 flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewDetails(reserva);
-                            }}
-                            className="p-1 sm:p-1.5 rounded transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          <span
+                            className="p-1 sm:p-1.5 rounded transition-colors text-gray-600 group-hover:text-gray-900 group-hover:bg-gray-100"
                             title="Ver detalles"
                           >
                             <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          </button>
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

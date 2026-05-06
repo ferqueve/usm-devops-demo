@@ -345,9 +345,8 @@ public class InventarioItemService {
                         case "id":
                             comparison = Long.compare(a.getId(), b.getId());
                             break;
-                        case "nombre":  // Para tipoElemento.nombre o espacio.nombre
-                        case "tipo":
-                        case "tipoelementonombre":
+                        case "nombre", "tipo", "tipoelementonombre":
+                            // Para tipoElemento.nombre o espacio.nombre
                             comparison = a.getTipoElementoNombre().compareToIgnoreCase(b.getTipoElementoNombre());
                             break;
                         case "cantidad":
@@ -356,7 +355,7 @@ public class InventarioItemService {
                         case "estado":
                             comparison = a.getEstado().compareToIgnoreCase(b.getEstado());
                             break;
-                        case "espacio":
+                        case FIELD_ESPACIO:
                             comparison = a.getEspacioNombre().compareToIgnoreCase(b.getEspacioNombre());
                             break;
                         default:

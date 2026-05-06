@@ -6,6 +6,7 @@ import com.utec.backend.dto.usuario.CambioRolDto;
 import com.utec.backend.dto.usuario.PagedUsuarioResponseDto;
 import com.utec.backend.dto.usuario.UsuarioResponseDto;
 import com.utec.backend.dto.usuario.UsuarioUpdateDto;
+import com.utec.backend.dto.usuario.UsuarioFilters;
 import com.utec.backend.dto.usuario.UsuarioStatsDto;
 import com.utec.backend.dto.usuario.UsuarioAdminUpdateDto;
 import com.utec.backend.model.Usuario;
@@ -174,19 +175,10 @@ public class UsuarioService {
         }
     }
 
-    public PagedUsuarioResponseDto listarUsuariosPaginados(
-            int page,
-            int size,
-            String search,
-            String rol,
-            Boolean verificado,
-            Boolean activo,
-            LocalDate fechaDesde,
-            LocalDate fechaHasta
-    ) {
+    public PagedUsuarioResponseDto listarUsuariosPaginados(int page, int size, UsuarioFilters filters) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(FIELD_CREATED_AT).descending());
 
-        Specification<Usuario> spec = construirUsuarioSpec(search, rol, verificado, activo, fechaDesde, fechaHasta);
+        Specification<Usuario> spec = construirUsuarioSpec(filters);
 
         Page<Usuario> pageResult = usuarioRepository.findAll(spec, pageable);
 
@@ -211,20 +203,14 @@ public class UsuarioService {
      * de búsqueda, rol, verificación, actividad y rango de fechas. Devuelve
      * {@code null} si no se aplica ningún filtro.
      */
-    private Specification<Usuario> construirUsuarioSpec(
-            String search,
-            String rol,
-            Boolean verificado,
-            Boolean activo,
-            LocalDate fechaDesde,
-            LocalDate fechaHasta) {
+    private Specification<Usuario> construirUsuarioSpec(UsuarioFilters filters) {
         Specification<Usuario> spec = null;
-        spec = combinarSpec(spec, buildSearchSpec(search));
-        spec = combinarSpec(spec, buildRolSpec(rol));
-        spec = combinarSpec(spec, buildVerificadoSpec(verificado));
-        spec = combinarSpec(spec, buildActivoSpec(activo));
-        spec = combinarSpec(spec, buildFechaDesdeSpec(fechaDesde));
-        spec = combinarSpec(spec, buildFechaHastaSpec(fechaHasta));
+        spec = combinarSpec(spec, buildSearchSpec(filters.search()));
+        spec = combinarSpec(spec, buildRolSpec(filters.rol()));
+        spec = combinarSpec(spec, buildVerificadoSpec(filters.verificado()));
+        spec = combinarSpec(spec, buildActivoSpec(filters.activo()));
+        spec = combinarSpec(spec, buildFechaDesdeSpec(filters.fechaDesde()));
+        spec = combinarSpec(spec, buildFechaHastaSpec(filters.fechaHasta()));
         return spec;
     }
 
@@ -466,15 +452,8 @@ public class UsuarioService {
         }
     }
     
-    public List<UsuarioResponseDto> obtenerUsuariosParaExport(
-            String search,
-            String rol,
-            Boolean verificado,
-            Boolean activo,
-            LocalDate fechaDesde,
-            LocalDate fechaHasta
-    ) {
-        Specification<Usuario> spec = construirUsuarioSpec(search, rol, verificado, activo, fechaDesde, fechaHasta);
+    public List<UsuarioResponseDto> obtenerUsuariosParaExport(UsuarioFilters filters) {
+        Specification<Usuario> spec = construirUsuarioSpec(filters);
 
         List<Usuario> usuarios = spec != null ? usuarioRepository.findAll(spec) : usuarioRepository.findAll();
 

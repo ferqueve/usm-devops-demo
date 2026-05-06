@@ -49,13 +49,18 @@ interface ReservaFormValidation {
   fechaFinRecurrencia?: Date;
 }
 
-// Valida los datos del formulario de reserva. Devuelve mensaje de error o null
-function validateReservationFormData(input: ReservaFormValidation): string | null {
+// Valida los campos requeridos del formulario
+function validateRequiredFields(input: ReservaFormValidation): string | null {
   if (!input.titulo || input.titulo.trim() === '') return 'Por favor ingresa un título para la reserva';
   if (!input.espacioId) return 'Por favor selecciona un espacio';
   if (!input.fecha) return 'Por favor selecciona una fecha';
   if (!input.horaInicioHora) return 'Por favor selecciona la hora de inicio';
   if (!input.horaFinHora) return 'Por favor selecciona la hora de fin';
+  return null;
+}
+
+// Valida el rango de fechas/horas de la reserva
+function validateReservationDates(input: ReservaFormValidation): string | null {
   if (Number.isNaN(input.inicio.getTime()) || Number.isNaN(input.fin.getTime())) {
     return 'Las horas ingresadas no son válidas';
   }
@@ -64,16 +69,29 @@ function validateReservationFormData(input: ReservaFormValidation): string | nul
   if ((input.fin.getTime() - input.inicio.getTime()) / 60000 < 30) {
     return 'La reserva debe tener una duración mínima de 30 minutos';
   }
+  return null;
+}
+
+// Valida los datos de recurrencia si aplica
+function validateRecurrencia(input: ReservaFormValidation): string | null {
+  if (!input.tipoRecurrencia) return null;
+  if (!input.fechaFinRecurrencia) return 'Por favor selecciona la fecha de fin de recurrencia';
+  if (input.fecha && input.fechaFinRecurrencia <= input.fecha) {
+    return 'La fecha de fin de recurrencia debe ser posterior a la fecha de inicio';
+  }
+  return null;
+}
+
+// Valida los datos del formulario de reserva. Devuelve mensaje de error o null
+function validateReservationFormData(input: ReservaFormValidation): string | null {
+  const requiredError = validateRequiredFields(input);
+  if (requiredError) return requiredError;
+  const dateError = validateReservationDates(input);
+  if (dateError) return dateError;
   if (input.needsAnalystAssignment && !input.analistaId) {
     return 'Por favor selecciona un analista para gestionar tu solicitud';
   }
-  if (input.tipoRecurrencia) {
-    if (!input.fechaFinRecurrencia) return 'Por favor selecciona la fecha de fin de recurrencia';
-    if (input.fecha && input.fechaFinRecurrencia <= input.fecha) {
-      return 'La fecha de fin de recurrencia debe ser posterior a la fecha de inicio';
-    }
-  }
-  return null;
+  return validateRecurrencia(input);
 }
 
 // Convierte la fecha de fin de recurrencia a ISO UTC con final de día

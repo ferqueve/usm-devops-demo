@@ -13,9 +13,9 @@ interface PriorityReservationsWidgetProps {
 }
 
 // Intenta extraer un id de reserva desde la razón (ej. "Reserva #123")
-function extractReservaIdFromRazon(razon: unknown): number | undefined {
+function extractReservaIdFromRazon(razon: string | undefined | null): number | undefined {
   if (!razon) return undefined;
-  const m = /#(\d+)/.exec(String(razon));
+  const m = /#(\d+)/.exec(razon);
   return m ? Number(m[1]) : undefined;
 }
 

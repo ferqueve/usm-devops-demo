@@ -5,6 +5,7 @@ import com.utec.backend.dto.usuario.CambioRolDto;
 import com.utec.backend.dto.usuario.PagedUsuarioResponseDto;
 import com.utec.backend.dto.usuario.UsuarioResponseDto;
 import com.utec.backend.dto.usuario.UsuarioUpdateDto;
+import com.utec.backend.dto.usuario.UsuarioFilters;
 import com.utec.backend.dto.usuario.UsuarioStatsDto;
 import com.utec.backend.dto.usuario.UsuarioAdminUpdateDto;
 import com.utec.backend.service.UsuarioService;
@@ -63,9 +64,8 @@ public class UsuarioController {
             @RequestParam(required = false) LocalDate fechaDesde,
             @RequestParam(required = false) LocalDate fechaHasta
     ) {
-        PagedUsuarioResponseDto usuarios = usuarioService.listarUsuariosPaginados(
-                page, size, search, rol, verificado, activo, fechaDesde, fechaHasta
-        );
+        UsuarioFilters filters = new UsuarioFilters(search, rol, verificado, activo, fechaDesde, fechaHasta);
+        PagedUsuarioResponseDto usuarios = usuarioService.listarUsuariosPaginados(page, size, filters);
         return ResponseEntity.ok(usuarios);
     }
 
@@ -112,9 +112,8 @@ public class UsuarioController {
             @RequestParam(required = false) LocalDate fechaDesde,
             @RequestParam(required = false) LocalDate fechaHasta
     ) {
-        List<UsuarioResponseDto> usuarios = usuarioService.obtenerUsuariosParaExport(
-                search, rol, verificado, activo, fechaDesde, fechaHasta
-        );
+        UsuarioFilters filters = new UsuarioFilters(search, rol, verificado, activo, fechaDesde, fechaHasta);
+        List<UsuarioResponseDto> usuarios = usuarioService.obtenerUsuariosParaExport(filters);
 
         String csvContent = csvExportUtil.generateUsersCsv(usuarios);
         String fileName = "usuarios_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".csv";

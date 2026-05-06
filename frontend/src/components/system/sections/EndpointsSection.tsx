@@ -88,12 +88,12 @@ export const EndpointsSection = memo(function EndpointsSection({ mappings }: End
         let path = '';
         
         // Formato: {GET [/api/v1/...]}
-        const bracketMatch = predicate.match(/\[([^\]]+)\]/);
+        const bracketMatch = /\[([^\]]+)\]/.exec(predicate);
         if (bracketMatch) {
           path = bracketMatch[1];
         }
-        
-        const methodMatch = predicate.match(/^(\{)?([A-Z]+)/);
+
+        const methodMatch = /^(\{)?([A-Z]+)/.exec(predicate);
         if (methodMatch) {
           method = methodMatch[2];
         }

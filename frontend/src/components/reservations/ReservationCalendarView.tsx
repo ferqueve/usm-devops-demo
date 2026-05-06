@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -251,6 +251,64 @@ function getColorConfigByEstado(estado: string, columnaIndex: number): ColorConf
   return paleta[columnaIndex % paleta.length];
 }
 
+// Resultado del cálculo: posición y dimensiones de una reserva en la grilla
+interface ReservaConPosicionCompleta {
+  reserva: Reserva;
+  topPercent: number;
+  alturaPercent: number;
+  minutosInicio: number;
+  minutosFin: number;
+  leftPercent: number;
+  widthPercent: number;
+}
+
+// Asigna posición horizontal a una reserva dentro de su grupo de superposición
+function calcularPosicionHorizontal<T extends RangoMinutos & { reserva: Reserva }>(
+  reservaActual: T,
+  grupos: T[][],
+): T & { leftPercent: number; widthPercent: number } {
+  const grupo = grupos.find(g => g.some(r => r.reserva.id === reservaActual.reserva.id));
+  if (!grupo) {
+    return { ...reservaActual, leftPercent: 0, widthPercent: 100 };
+  }
+  const grupoOrdenado = [...grupo].sort((a, b) => a.minutosInicio - b.minutosInicio);
+  const indiceEnGrupo = grupoOrdenado.findIndex(r => r.reserva.id === reservaActual.reserva.id);
+  const numColumnas = grupoOrdenado.length;
+  const widthPercent = 100 / numColumnas;
+  const leftPercent = widthPercent * indiceEnGrupo;
+  return { ...reservaActual, leftPercent, widthPercent };
+}
+
+// Renderiza el resumen de cantidad de reservas en la semana
+function renderResumenSemana(days: Date[], getReservasForDate: (d: Date) => Reserva[]): ReactNode {
+  const totalReservas = days.reduce((total, day) => total + getReservasForDate(day).length, 0);
+  if (totalReservas === 0) return null;
+  const sufijo = totalReservas === 1 ? '' : 's';
+  return (
+    <div className="text-xs text-muted-foreground">
+      {totalReservas} reserva{sufijo} programada{sufijo} para esta semana
+    </div>
+  );
+}
+
+// Calcula posiciones (vertical y horizontal) para reservas que pueden superponerse
+function calcularPosicionesConSuperposicion(
+  reservasOrdenadas: Reserva[],
+  rangoCfg: RangoVisibleConfig,
+): ReservaConPosicionCompleta[] {
+  const reservasConPosicion = reservasOrdenadas.map(reserva => {
+    const posicion = calcularPosicionVerticalReserva(reserva, rangoCfg);
+    return posicion ? { reserva, ...posicion } : null;
+  }).filter((item): item is NonNullable<typeof item> => item !== null);
+
+  const grupos: Array<Array<typeof reservasConPosicion[0]>> = [];
+  reservasConPosicion.forEach(reservaActual => {
+    insertarReservaEnGrupos(grupos, reservaActual);
+  });
+
+  return reservasConPosicion.map(reservaActual => calcularPosicionHorizontal(reservaActual, grupos));
+}
+
 interface ReservationBarProps {
   top: number;
   left: number;
@@ -276,8 +334,9 @@ function ReservationBar({
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div
-      className="absolute cursor-pointer group"
+    <button
+      type="button"
+      className="absolute cursor-pointer group p-0 bg-transparent border-0 text-left"
       style={{
         top: `${top}px`,
         left: `${left}px`,
@@ -286,14 +345,6 @@ function ReservationBar({
         zIndex: zIndex,
       }}
       onClick={onViewDetails}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onViewDetails();
-        }
-      }}
-      role="button"
-      tabIndex={0}
       aria-label={tituloTooltip}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => {
@@ -322,7 +373,7 @@ function ReservationBar({
         </div>,
         document.body
       )}
-    </div>
+    </button>
   );
 }
 
@@ -420,18 +471,14 @@ export default function ReservationCalendarView({
   // ReservationBar definido a nivel de módulo
 
   // Usar props si están disponibles, sino usar estado interno
-  const isFullScreen = isFullScreenProp === undefined ? isFullScreenInternal : isFullScreenProp;
+  const isFullScreen = isFullScreenProp ?? isFullScreenInternal;
   const handleToggleFullScreen = onToggleFullScreenProp || (() => setIsFullScreenInternal(!isFullScreenInternal));
 
   // Prevenir scroll del body y html cuando está en pantalla completa
   useEffect(() => {
-    if (isFullScreen) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
+    const overflowValue = isFullScreen ? 'hidden' : '';
+    document.body.style.overflow = overflowValue;
+    document.documentElement.style.overflow = overflowValue;
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
@@ -454,26 +501,20 @@ export default function ReservationCalendarView({
     });
   };
 
-  // Navegación
-  const handlePrevious = () => {
-    if (calendarViewMode === 'day') {
-      setCurrentDate(subDays(currentDate, 1));
-    } else if (calendarViewMode === 'week') {
-      setCurrentDate(subWeeks(currentDate, 1));
-    } else {
-      setCurrentDate(subMonths(currentDate, 1));
-    }
+  // Navegación: tablas de transición por modo de vista
+  const previousByMode: Record<CalendarViewMode, (d: Date) => Date> = {
+    day: (d) => subDays(d, 1),
+    week: (d) => subWeeks(d, 1),
+    month: (d) => subMonths(d, 1),
+  };
+  const nextByMode: Record<CalendarViewMode, (d: Date) => Date> = {
+    day: (d) => addDays(d, 1),
+    week: (d) => addWeeks(d, 1),
+    month: (d) => addMonths(d, 1),
   };
 
-  const handleNext = () => {
-    if (calendarViewMode === 'day') {
-      setCurrentDate(addDays(currentDate, 1));
-    } else if (calendarViewMode === 'week') {
-      setCurrentDate(addWeeks(currentDate, 1));
-    } else {
-      setCurrentDate(addMonths(currentDate, 1));
-    }
-  };
+  const handlePrevious = () => setCurrentDate(previousByMode[calendarViewMode](currentDate));
+  const handleNext = () => setCurrentDate(nextByMode[calendarViewMode](currentDate));
 
   const handleToday = () => {
     setCurrentDate(new Date());
@@ -508,45 +549,7 @@ export default function ReservationCalendarView({
     };
 
     // Detectar reservas superpuestas y calcular posiciones horizontales
-    const calcularPosicionesConSuperposicion = () => {
-      const reservasConPosicion = reservasOrdenadas.map(reserva => {
-        const posicion = calcularPosicionVerticalReserva(reserva, rangoCfg);
-        return posicion ? { reserva, ...posicion } : null;
-      }).filter((item): item is NonNullable<typeof item> => item !== null);
-
-      const grupos: Array<Array<typeof reservasConPosicion[0]>> = [];
-      reservasConPosicion.forEach(reservaActual => {
-        insertarReservaEnGrupos(grupos, reservaActual);
-      });
-
-      // Calcular posiciones horizontales para cada reserva
-      const reservasConPosicionHorizontal = reservasConPosicion.map(reservaActual => {
-        // Encontrar el grupo al que pertenece esta reserva
-        const grupo = grupos.find(g => g.some(r => r.reserva.id === reservaActual.reserva.id));
-        if (!grupo) {
-          return { ...reservaActual, leftPercent: 0, widthPercent: 100 };
-        }
-
-        // Ordenar el grupo por hora de inicio
-        const grupoOrdenado = [...grupo].sort((a, b) => a.minutosInicio - b.minutosInicio);
-        
-        // Encontrar el índice de esta reserva en el grupo
-        const indiceEnGrupo = grupoOrdenado.findIndex(r => r.reserva.id === reservaActual.reserva.id);
-        
-        // Calcular ancho y posición izquierda
-        const numColumnas = grupoOrdenado.length;
-        const widthPercent = 100 / numColumnas;
-        const leftPercent = widthPercent * indiceEnGrupo;
-
-        return {
-          ...reservaActual,
-          leftPercent,
-          widthPercent
-        };
-      });
-
-      return reservasConPosicionHorizontal;
-    };
+    const posicionesConSuperposicion = calcularPosicionesConSuperposicion(reservasOrdenadas, rangoCfg);
 
     // Crear intervalos de 15 minutos solo para el rango visible
     const intervalos = Array.from({ length: (minutosTotalesVisibles / 15) }, (_, i) => {
@@ -652,7 +655,7 @@ export default function ReservationCalendarView({
                     right: 0,
                     backgroundColor: 'transparent',
                   }}>
-                    {calcularPosicionesConSuperposicion().map((item, index) => {
+                    {posicionesConSuperposicion.map((item, index) => {
                       const { reserva, topPercent, alturaPercent, leftPercent, widthPercent } = item;
                       const estadoConfig = getEstadoConfig(reserva.estado);
                       const esFutura = new Date(reserva.inicio) > new Date();
@@ -663,7 +666,7 @@ export default function ReservationCalendarView({
                       return (
                         <div
                           key={reserva.id}
-                          className={`absolute rounded-md border-l-4 shadow-sm cursor-pointer transition-all hover:shadow-md group ${
+                          className={`absolute rounded-md border-l-4 shadow-sm transition-all hover:shadow-md group ${
                             estadoConfig.borderColor
                           }`}
                           style={{
@@ -675,16 +678,6 @@ export default function ReservationCalendarView({
                             opacity: 1,
                             zIndex: 10 + index,
                           }}
-                          onClick={() => onViewDetails(reserva)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              onViewDetails(reserva);
-                            }
-                          }}
-                          role="button"
-                          tabIndex={0}
-                          aria-label={`Ver detalles de ${reserva.titulo || reserva.espacioNombre}`}
                         >
                           <div
                             className={`h-full rounded-md p-1.5 border flex flex-col relative ${
@@ -987,14 +980,7 @@ export default function ReservationCalendarView({
         </div>
 
         {/* Resumen de la semana */}
-        {(() => {
-          const totalReservas = days.reduce((total, day) => total + getReservasForDate(day).length, 0);
-          return totalReservas > 0 ? (
-            <div className="text-xs text-muted-foreground">
-              {totalReservas} reserva{totalReservas === 1 ? '' : 's'} programada{totalReservas === 1 ? '' : 's'} para esta semana
-            </div>
-          ) : null;
-        })()}
+        {renderResumenSemana(days, getReservasForDate)}
       </div>
     );
   };
@@ -1059,24 +1045,16 @@ export default function ReservationCalendarView({
               return 'text-muted-foreground';
             };
             return (
-              <div
+              <button
+                type="button"
                 key={day.toISOString()}
-                className={`min-h-[100px] border rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md ${getDayBgClass()}`}
+                className={`min-h-[100px] border rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md text-left bg-transparent w-full ${getDayBgClass()}`}
                 onClick={() => {
                   if (tieneReservas) {
                     setCurrentDate(day);
                     setCalendarViewMode('day');
                   }
                 }}
-                onKeyDown={(e) => {
-                  if ((e.key === 'Enter' || e.key === ' ') && tieneReservas) {
-                    e.preventDefault();
-                    setCurrentDate(day);
-                    setCalendarViewMode('day');
-                  }
-                }}
-                role="button"
-                tabIndex={0}
                 aria-label={`Día ${format(day, 'd')}`}
               >
                 <div className={`text-xs font-medium mb-2 ${getDayTextClass()}`}>
@@ -1106,7 +1084,7 @@ export default function ReservationCalendarView({
                     )}
                   </div>
                 ) : null}
-              </div>
+              </button>
             );
           })}
         </div>

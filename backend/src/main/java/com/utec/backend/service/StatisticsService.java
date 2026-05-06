@@ -41,6 +41,9 @@ public class StatisticsService {
     private static final String KEY_CANTIDAD = "cantidad";
     private static final String KEY_ITEMS = "items";
     private static final String KEY_PROBLEMAS = "problemas";
+    private static final String KEY_TOTAL_ITEMS = "totalItems";
+    private static final String KEY_TOTAL_CANTIDAD = "totalCantidad";
+    private static final String KEY_ASIGNADOS = "asignados";
 
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
@@ -109,7 +112,7 @@ public class StatisticsService {
         Map<String, Object> stats = new LinkedHashMap<>();
 
         agregarTotalesYBasicas(stats, allItems);
-        agregarPorcentajes(stats, allItems);
+        agregarPorcentajes(stats);
 
         Map<Long, Map<String, Object>> itemsPorTipoMap = construirAgrupacionPorTipo(allItems);
         List<Map<String, Object>> itemsPorTipo = ordenarPorItemsDesc(itemsPorTipoMap.values());
@@ -133,7 +136,7 @@ public class StatisticsService {
         agregarComparativas(stats, allItems, ventana);
         agregarEficiencia(stats, allEspacios.size(), itemsPorEspacio);
 
-        log.info("Estadísticas calculadas exitosamente - Total items: {}", stats.get("totalItems"));
+        log.info("Estadísticas calculadas exitosamente - Total items: {}", stats.get(KEY_TOTAL_ITEMS));
         return stats;
     }
 
@@ -158,13 +161,13 @@ public class StatisticsService {
         int itemsInactivos = (int) inventarioItemRepository.findAll().stream()
                 .filter(item -> !item.getActivo()).count();
 
-        stats.put("totalItems", totalItems);
-        stats.put("totalCantidad", totalCantidad);
+        stats.put(KEY_TOTAL_ITEMS, totalItems);
+        stats.put(KEY_TOTAL_CANTIDAD, totalCantidad);
         stats.put(KEY_DISPONIBLES, disponibles);
         stats.put(KEY_MANTENIMIENTO, mantenimiento);
         stats.put(KEY_DANADOS, danados);
         stats.put("sinAsignar", sinAsignar);
-        stats.put("asignados", asignados);
+        stats.put(KEY_ASIGNADOS, asignados);
         stats.put("itemsInactivos", itemsInactivos);
     }
 
@@ -172,13 +175,13 @@ public class StatisticsService {
         return items.stream().filter(i -> estado.equals(i.getEstado())).count();
     }
 
-    private void agregarPorcentajes(Map<String, Object> stats, List<InventarioItem> allItems) {
-        int totalItems = (int) stats.get("totalItems");
+    private void agregarPorcentajes(Map<String, Object> stats) {
+        int totalItems = (int) stats.get(KEY_TOTAL_ITEMS);
         int disponibles = (int) stats.get(KEY_DISPONIBLES);
         int mantenimiento = (int) stats.get(KEY_MANTENIMIENTO);
         int danados = (int) stats.get(KEY_DANADOS);
         int sinAsignar = (int) stats.get("sinAsignar");
-        int asignados = (int) stats.get("asignados");
+        int asignados = (int) stats.get(KEY_ASIGNADOS);
         int itemsInactivos = (int) stats.get("itemsInactivos");
         int totalTodosItems = (int) inventarioItemRepository.count();
 
@@ -265,8 +268,8 @@ public class StatisticsService {
     }
 
     private void agregarPromedios(Map<String, Object> stats, int cantEspacios, int cantTipos) {
-        int totalItems = (int) stats.get("totalItems");
-        int totalCantidad = (int) stats.get("totalCantidad");
+        int totalItems = (int) stats.get(KEY_TOTAL_ITEMS);
+        int totalCantidad = (int) stats.get(KEY_TOTAL_CANTIDAD);
         double promedioItemsPorEspacio = cantEspacios > 0 ? (double) totalItems / cantEspacios : 0;
         double promedioCantidadPorItem = totalItems > 0 ? (double) totalCantidad / totalItems : 0;
         double promedioItemsPorTipo = cantTipos > 0 ? (double) totalItems / cantTipos : 0;
@@ -328,11 +331,11 @@ public class StatisticsService {
 
     private void agregarSaludInventario(Map<String, Object> stats,
                                         long totalEspacios, int espaciosConInventario) {
-        int totalItems = (int) stats.get("totalItems");
+        int totalItems = (int) stats.get(KEY_TOTAL_ITEMS);
         int disponibles = (int) stats.get(KEY_DISPONIBLES);
         int mantenimiento = (int) stats.get(KEY_MANTENIMIENTO);
         int danados = (int) stats.get(KEY_DANADOS);
-        int asignados = (int) stats.get("asignados");
+        int asignados = (int) stats.get(KEY_ASIGNADOS);
 
         stats.put("ratioSalud", porcentaje(disponibles, totalItems));
         stats.put("ratioProblemas", porcentaje(mantenimiento + danados, totalItems));
@@ -417,7 +420,7 @@ public class StatisticsService {
     }
 
     private void agregarObservaciones(Map<String, Object> stats, List<InventarioItem> allItems) {
-        int totalItems = (int) stats.get("totalItems");
+        int totalItems = (int) stats.get(KEY_TOTAL_ITEMS);
         int itemsConObservaciones = contarSi(allItems,
                 item -> item.getObservaciones() != null && !item.getObservaciones().trim().isEmpty());
         stats.put("itemsConObservaciones", itemsConObservaciones);
@@ -452,7 +455,7 @@ public class StatisticsService {
 
     private void agregarEficiencia(Map<String, Object> stats,
                                    long totalEspacios, List<Map<String, Object>> itemsPorEspacio) {
-        int totalCantidad = (int) stats.get("totalCantidad");
+        int totalCantidad = (int) stats.get(KEY_TOTAL_CANTIDAD);
         double eficienciaAsignacion = totalEspacios > 0
                 ? (itemsPorEspacio.size() * 100.0 / totalEspacios) : 0;
         double densidadInventario = (double) stats.get("promedioItemsPorEspacio");

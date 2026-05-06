@@ -156,8 +156,7 @@ class UsuarioControllerTest {
                                 true // last
                 );
 
-                when(usuarioService.listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull(),
-                                isNull(), isNull()))
+                when(usuarioService.listarUsuariosPaginados(eq(0), eq(10), any()))
                                 .thenReturn(pagedResponse);
 
                 // When & Then
@@ -172,8 +171,7 @@ class UsuarioControllerTest {
                                 .andExpect(jsonPath("$.totalElements").value(2))
                                 .andExpect(jsonPath("$.totalPages").value(1));
 
-                verify(usuarioService).listarUsuariosPaginados(eq(0), eq(10), isNull(), isNull(), isNull(), isNull(),
-                                isNull(), isNull());
+                verify(usuarioService).listarUsuariosPaginados(eq(0), eq(10), any());
         }
 
         @Test

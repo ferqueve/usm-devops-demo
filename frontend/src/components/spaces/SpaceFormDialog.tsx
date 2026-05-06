@@ -29,12 +29,14 @@ interface SpaceFormDialogProps {
   onSuccess: (espacio: Espacio) => void;
 }
 
+type EstadoEspacio = 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
+
 interface SpaceFormData {
   nombre: string;
   capacidad: number;
   tipoEspacioId: number;
   imagenUrl: string;
-  estado: 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
+  estado: EstadoEspacio;
 }
 
 // Devuelve mensaje de error si los datos del espacio no son válidos, null si todo bien
@@ -82,7 +84,7 @@ export function SpaceFormDialog({
     capacidad: 1,
     tipoEspacioId: 0,
     imagenUrl: '',
-    estado: 'DISPONIBLE' as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE'
+    estado: 'DISPONIBLE' as EstadoEspacio
   });
 
   const isEditing = !!espacio;
@@ -383,7 +385,7 @@ export function SpaceFormDialog({
               <Select
                 value={formData.estado}
                 onValueChange={(value) => {
-                  setFormData(prev => ({ ...prev, estado: value as 'DISPONIBLE' | 'MANTENIMIENTO' | 'NO_DISPONIBLE' }));
+                  setFormData(prev => ({ ...prev, estado: value as EstadoEspacio }));
                 }}
                 disabled={loading}
               >

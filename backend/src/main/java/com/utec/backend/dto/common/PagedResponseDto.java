@@ -21,7 +21,7 @@ public class PagedResponseDto<T> {
     private boolean hasPrevious;
     private int numberOfElements;
 
-    public static <T> PagedResponseDto<T> of(org.springframework.data.domain.Page<T> page) {
+    public static <E> PagedResponseDto<E> of(org.springframework.data.domain.Page<E> page) {
         return new PagedResponseDto<>(
             page.getContent(),
             page.getNumber(),
