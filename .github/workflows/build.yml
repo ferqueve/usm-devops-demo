@@ -43,6 +43,11 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Run frontend tests with coverage
+        working-directory: frontend
+        run: npm run test:coverage
+        continue-on-error: true
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v3
         env:

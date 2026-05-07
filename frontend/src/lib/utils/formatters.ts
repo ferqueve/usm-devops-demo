@@ -53,13 +53,13 @@ export const generateColorFromString = (str: string): string => {
   
   // Usar solo colores brillantes/pastel (evitando muy claros)
   const r = 100 + (hash % 100);
-  const g = 100 + ((hash / 100) % 100);
-  const b = 100 + ((hash / 10000) % 100);
-  
+  const g = 100 + (Math.floor(hash / 100) % 100);
+  const b = 100 + (Math.floor(hash / 10000) % 100);
+
   const rValid = Math.min(255, Math.max(100, r));
   const gValid = Math.min(255, Math.max(100, g));
   const bValid = Math.min(255, Math.max(100, b));
-  
+
   return `#${rValid.toString(16).padStart(2, '0')}${gValid.toString(16).padStart(2, '0')}${bValid.toString(16).padStart(2, '0')}`;
 };
 
