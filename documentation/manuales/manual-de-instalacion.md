@@ -499,9 +499,7 @@ UTEC-Space-Manager/
 │   └── Dockerfile             # Imagen Docker del frontend
 │
 ├── scripts/                   # Scripts de configuración
-│   ├── SetIP-Linux.sh         # Configurar IPs (Linux)
-│   ├── SetIP-Windows.ps1      # Configurar IPs (Windows)
-│   └── RUN-SetIP-Windows.bat  # Configurar IPs (Windows)
+│   └── e2e.sh                 # Orquestador de pruebas extremo a extremo
 │
 ├── docker-compose.yml         # Orquestación Docker
 ├── docker-compose.hub.yml     # Docker Compose para Docker Hub
@@ -881,22 +879,9 @@ nano .env
 
 Agregar variables del frontend (ver sección [6.1.2](#612-frontendenv)).
 
-#### 2.3 Configurar IPs (si necesita acceso desde red)
+#### 2.3 Configurar URLs (si necesita acceso desde red)
 
-El proyecto incluye scripts de ayuda para detectar la IP de la red local y dejarla escrita en los archivos `.env` automáticamente.
-
-```bash
-# Linux / macOS
-bash scripts/SetIP-Linux.sh
-
-# Windows (PowerShell)
-powershell -File scripts/SetIP-Windows.ps1
-
-# Windows (alternativa con batch)
-scripts\RUN-SetIP-Windows.bat
-```
-
-Si prefiere hacerlo manualmente, basta con editar las URLs en los archivos `.env` (`VITE_API_URL`, `VITE_FRONTEND_URL`, `BACKEND_URL`, `CORS_ALLOWED_ORIGINS`).
+Si el frontend o el backend necesitan ser accesibles desde otro dispositivo de la red local (por ejemplo un celular o una segunda máquina), se editan manualmente las URLs en los archivos `.env` (`VITE_API_URL`, `VITE_FRONTEND_URL`, `BACKEND_URL`, `CORS_ALLOWED_ORIGINS`) reemplazando `localhost` por la IP de red de la máquina que corre los servicios.
 
 ### Paso 3: Instalar Backend
 
@@ -1466,21 +1451,6 @@ VITE_FRONTEND_URL=https://tu-dominio.com
 VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 ```
 
-**Configuración automática de IPs:**
-
-El proyecto incluye scripts para detectar la IP de red local y actualizar los archivos `.env`:
-
-```bash
-# Linux / macOS
-bash scripts/SetIP-Linux.sh
-
-# Windows (PowerShell)
-powershell -File scripts/SetIP-Windows.ps1
-
-# Windows (lanzador batch)
-scripts\RUN-SetIP-Windows.bat
-```
-
 ### 6.1.3 `.env` (Raíz - Docker Compose)
 
 Ubicación: `.env` (raíz del proyecto)
@@ -1795,21 +1765,7 @@ sudo iptables-save > /etc/iptables/rules.v4
 
 ### 6.5.3 Configuración de IPs para Red Local
 
-Si necesita acceso desde otros dispositivos en la red local:
-
-**Opción 1: Automática (recomendado)**
-
-```bash
-# Linux / macOS
-bash scripts/SetIP-Linux.sh
-
-# Windows
-powershell -File scripts/SetIP-Windows.ps1
-```
-
-**Opción 2: Manual**
-
-Editar `frontend/.env` y `backend/.env` con la IP de red:
+Si necesita acceso desde otros dispositivos en la red local, editar `frontend/.env` y `backend/.env` con la IP de red de la máquina que corre los servicios:
 
 ```env
 # frontend/.env

@@ -31,9 +31,7 @@ USM_UTEC/
 ├── frontend/                          Frontend React + Vite
 ├── documentation/                     Documentación markdown (manuales + fichas técnicas)
 ├── scripts/                           Scripts utilitarios para entornos locales
-│   ├── SetIP-Linux.sh
-│   ├── SetIP-Windows.ps1
-│   └── RUN-SetIP-Windows.bat
+│   └── e2e.sh                         Orquestador de pruebas extremo a extremo
 ├── .github/workflows/                 CI: build.yml, docker-push.yml
 ├── docker-compose.yml                 Compose con build local
 ├── docker-compose.hub.yml             Compose con imágenes pre-construidas (Docker Hub)

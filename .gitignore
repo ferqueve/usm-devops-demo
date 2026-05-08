@@ -93,6 +93,9 @@ temp/
 *.tpm
 *~
 
+# Logs del orquestador E2E (scripts/e2e.sh)
+.e2e-logs/
+
 # ===== DOCKER =====
 docker-compose.override.yml
 

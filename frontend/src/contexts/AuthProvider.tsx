@@ -131,7 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (response.success && response.data) {
           // Guardar tokens y datos del usuario
           const userData = {
-            id: response.data.id,
+            id: response.data.userId,
             email: response.data.email,
             nombre: response.data.nombre,
             rol: response.data.rol

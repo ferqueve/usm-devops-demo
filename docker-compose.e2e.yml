@@ -1,0 +1,32 @@
+# Postgres dedicado a las pruebas extremo a extremo.
+# Levanta en el puerto 5433 para no chocar con la base de desarrollo (5432).
+# Volumen efímero (no se persiste) — cada corrida arranca limpia si se baja con `down -v`.
+
+services:
+  e2e-db:
+    image: postgres:15
+    container_name: utec_e2e_db
+    environment:
+      POSTGRES_DB: utec_e2e
+      POSTGRES_USER: utec_e2e
+      POSTGRES_PASSWORD: utec_e2e
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U utec_e2e -d utec_e2e"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  e2e-redis:
+    image: redis:7-alpine
+    container_name: utec_e2e_redis
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
