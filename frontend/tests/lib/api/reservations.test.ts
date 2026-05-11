@@ -67,14 +67,6 @@ describe('reservationsApi', () => {
     expect(mockApiRequest).toHaveBeenCalledWith('/reservas/1', { method: 'GET' });
   });
 
-  it('actualizarReserva PUT', async () => {
-    await reservationsApi.actualizarReserva(2, { estado: 'APROBADO' });
-    expect(mockApiRequest).toHaveBeenCalledWith(
-      '/reservas/2',
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify({ estado: 'APROBADO' }) }),
-    );
-  });
-
   it('cancelarReserva DELETE', async () => {
     await reservationsApi.cancelarReserva(3);
     expect(mockApiRequest).toHaveBeenCalledWith('/reservas/3', { method: 'DELETE' });

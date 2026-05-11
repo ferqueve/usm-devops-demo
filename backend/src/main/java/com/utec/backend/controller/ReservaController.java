@@ -6,7 +6,6 @@ import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaFilters;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.service.ReservaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -141,28 +140,6 @@ public class ReservaController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener reserva: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Actualizar una reserva
-     */
-    @PutMapping("/{id}")
-    @PreAuthorize("hasPermission(null, 'reserva:editar')")
-    public ResponseEntity<ApiResponse<ReservaResponseDto>> updateReserva(
-            @PathVariable Long id,
-            @RequestBody ReservaUpdateDto updateDto,
-            Authentication authentication) {
-        try {
-            String userEmail = authentication.getName();
-            ReservaResponseDto reserva = reservaService.updateReserva(id, updateDto, userEmail);
-            return ResponseEntity.ok(ApiResponse.success(reserva, "Reserva actualizada exitosamente"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Error al actualizar reserva: " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al actualizar reserva: " + e.getMessage()));
         }
     }
 

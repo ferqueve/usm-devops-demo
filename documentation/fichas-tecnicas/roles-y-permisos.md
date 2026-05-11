@@ -91,7 +91,7 @@ Es el único rol con acceso a Auditoría, gestión de Usuarios, panel de Sistema
 #### ANALISTA
 
 ```
-reserva:crear, reserva:ver_propias, reserva:ver_todas, reserva:editar,
+reserva:crear, reserva:ver_propias, reserva:ver_todas,
 reserva:cancelar, reserva:aprobar
 espacio:ver
 inventario:ver
@@ -162,7 +162,6 @@ Resumen de qué roles tienen cada permiso. ADMIN aparece en todos por su comodí
 | `reserva:crear` | ✓ | | ✓ | | ✓ |
 | `reserva:ver_propias` | ✓ | | ✓ | | ✓ |
 | `reserva:ver_todas` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `reserva:editar` | ✓ | | | | |
 | `reserva:cancelar` | ✓ | | ✓ | | ✓ |
 | `reserva:aprobar` | ✓ | | | | |
 | `espacio:ver` | ✓ | ✓ | ✓ | ✓ | ✓ |

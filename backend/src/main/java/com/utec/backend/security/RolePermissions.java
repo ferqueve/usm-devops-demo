@@ -20,7 +20,6 @@ public final class RolePermissions {
     public static final String RESERVA_CREAR = "reserva:crear";
     public static final String RESERVA_VER_PROPIAS = "reserva:ver_propias";
     public static final String RESERVA_VER_TODAS = "reserva:ver_todas";
-    public static final String RESERVA_EDITAR = "reserva:editar";
     public static final String RESERVA_CANCELAR = "reserva:cancelar";
     public static final String RESERVA_APROBAR = "reserva:aprobar";
 
@@ -97,7 +96,6 @@ public final class RolePermissions {
             RESERVA_CREAR,
             RESERVA_VER_PROPIAS,
             RESERVA_VER_TODAS,
-            RESERVA_EDITAR,
             RESERVA_CANCELAR,
             RESERVA_APROBAR,
 

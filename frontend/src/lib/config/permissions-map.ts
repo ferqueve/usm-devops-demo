@@ -61,12 +61,11 @@ const TIPO_FORM_PERMS: Permission[] = ['tipo:crear', 'tipo:editar'];
 const RESERVATION_LIST_PERMS: Permission[] = [
   'reserva:ver_propias',
   'reserva:ver_todas',
-  'reserva:editar',
   'reserva:aprobar',
   'reserva:cancelar',
 ];
 
-const RESERVATION_FORM_PERMS: Permission[] = ['reserva:crear', 'reserva:editar'];
+const RESERVATION_FORM_PERMS: Permission[] = ['reserva:crear'];
 
 // Componentes de estadística que comparten "ver_<area> + ver" para exportar
 const buildStatsPerms = (specific: Permission): Permission[] => [specific, 'estadisticas:ver'];

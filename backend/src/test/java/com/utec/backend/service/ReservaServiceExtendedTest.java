@@ -2,7 +2,6 @@ package com.utec.backend.service;
 
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.model.Carrera;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Reserva;
@@ -591,30 +590,6 @@ class ReservaServiceExtendedTest {
     }
 
     @Test
-    @DisplayName("Usuario NO dueño intentando editar reserva debe fallar")
-    void noDuenoEditarReservaDebeFallar() {
-        // Given
-        Reserva reserva = new Reserva();
-        reserva.setId(1L);
-        reserva.setUsuario(usuarioDocente); // Dueño es docente
-        reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
-        reserva.setInicio(inicioFuturo);
-
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-
-        when(reservaRepository.findByIdWithRelations(1L)).thenReturn(reserva);
-        lenient().when(usuarioRepository.findByEmail("externo@gmail.com")).thenReturn(Optional.of(usuarioExterno));
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                reservaService.updateReserva(1L, updateDto, "externo@gmail.com")
-        );
-
-        assertTrue(exception.getMessage().contains("No tienes permisos"));
-        verify(reservaRepository, never()).save(any());
-    }
-
-    @Test
     @DisplayName("Usuario NO dueño intentando cancelar reserva debe fallar")
     void noDuenoCancelarReservaDebeFallar() {
         // Given
@@ -637,95 +612,6 @@ class ReservaServiceExtendedTest {
     }
 
     // ==================== TESTS DE VALIDACIONES DE ESTADO ====================
-
-    @Test
-    @DisplayName("Editar reserva CANCELADA debe fallar")
-    void editarReservaCanceladaDebeFallar() {
-        // Given
-        Reserva reserva = new Reserva();
-        reserva.setId(1L);
-        reserva.setUsuario(usuarioDocente);
-        reserva.setEstado(Reserva.EstadoReserva.CANCELADO); // Cancelada
-        reserva.setInicio(inicioFuturo);
-
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(inicioFuturo.plus(2, ChronoUnit.HOURS));
-        updateDto.setFin(finFuturo.plus(2, ChronoUnit.HOURS));
-
-        when(reservaRepository.findByIdWithRelations(1L)).thenReturn(reserva);
-        lenient().when(usuarioRepository.findByEmail("docente@utec.edu.uy")).thenReturn(Optional.of(usuarioDocente));
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                reservaService.updateReserva(1L, updateDto, "docente@utec.edu.uy")
-        );
-
-        assertTrue(exception.getMessage().contains("cancelada"));
-        verify(reservaRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Editar reserva ya PASADA debe fallar")
-    void editarReservaPasadaDebeFallar() {
-        // Given
-        Instant inicioPasado = Instant.now().minus(2, ChronoUnit.DAYS);
-
-        Reserva reserva = new Reserva();
-        reserva.setId(1L);
-        reserva.setUsuario(usuarioDocente);
-        reserva.setEstado(Reserva.EstadoReserva.APROBADO);
-        reserva.setInicio(inicioPasado); // Ya pasó
-
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-
-        when(reservaRepository.findByIdWithRelations(1L)).thenReturn(reserva);
-        lenient().when(usuarioRepository.findByEmail("docente@utec.edu.uy")).thenReturn(Optional.of(usuarioDocente));
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                reservaService.updateReserva(1L, updateDto, "docente@utec.edu.uy")
-        );
-
-        assertTrue(exception.getMessage().contains("ya pasó"));
-        verify(reservaRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Actualizar con conflicto de horario debe fallar")
-    void actualizarConConflictoDebeFallar() {
-        // Given
-        Reserva reserva = new Reserva();
-        reserva.setId(1L);
-        reserva.setUsuario(usuarioDocente);
-        reserva.setEstado(Reserva.EstadoReserva.APROBADO);
-        reserva.setEspacio(espacioTest);
-        reserva.setInicio(inicioFuturo);
-        reserva.setFin(finFuturo);
-
-        Instant nuevoInicio = inicioFuturo.plus(3, ChronoUnit.HOURS);
-        Instant nuevoFin = finFuturo.plus(3, ChronoUnit.HOURS);
-
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(nuevoInicio);
-        updateDto.setFin(nuevoFin);
-
-        Reserva otraReserva = new Reserva();
-        otraReserva.setId(2L);
-        otraReserva.setEstado(Reserva.EstadoReserva.APROBADO);
-
-        when(reservaRepository.findByIdWithRelations(1L)).thenReturn(reserva);
-        lenient().when(usuarioRepository.findByEmail("docente@utec.edu.uy")).thenReturn(Optional.of(usuarioDocente));
-        when(reservaRepository.findConflictingReservas(espacioId, nuevoInicio, nuevoFin, Reserva.EstadoReserva.APROBADO))
-                .thenReturn(Arrays.asList(otraReserva)); // Conflicto
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                reservaService.updateReserva(1L, updateDto, "docente@utec.edu.uy")
-        );
-
-        assertTrue(exception.getMessage().contains("ya está reservado"));
-        verify(reservaRepository, never()).save(any());
-    }
 
     @Test
     @DisplayName("Cancelar reserva ya PASADA debe fallar")

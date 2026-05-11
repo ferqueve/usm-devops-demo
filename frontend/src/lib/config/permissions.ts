@@ -12,7 +12,6 @@ export type Permission =
   | 'reserva:crear'
   | 'reserva:ver_propias'
   | 'reserva:ver_todas'
-  | 'reserva:editar'
   | 'reserva:cancelar'
   | 'reserva:aprobar'
   // Espacios
@@ -75,7 +74,6 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     'reserva:crear',
     'reserva:ver_propias',
     'reserva:ver_todas',
-    'reserva:editar',
     'reserva:cancelar',
     'reserva:aprobar',
 
@@ -142,7 +140,6 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     'reserva:crear',
     'reserva:ver_propias',
     'reserva:ver_todas',
-    'reserva:editar',
     'reserva:cancelar',
     'reserva:aprobar',
 

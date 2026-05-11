@@ -11,7 +11,6 @@ public enum Permission {
     RESERVA_VER_TODAS("reserva:ver:todas"),
     RESERVA_VER_PROPIAS("reserva:ver:propias"),
     RESERVA_VER_PUBLICAS("reserva:ver:publicas"),
-    RESERVA_EDITAR("reserva:editar"),
     RESERVA_ELIMINAR("reserva:eliminar"),
     RESERVA_APROBAR("reserva:aprobar"),
     RESERVA_CANCELAR("reserva:cancelar"),

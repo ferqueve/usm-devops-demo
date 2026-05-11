@@ -4,7 +4,6 @@ import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaFilters;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.exception.AccesoDenegadoException;
 import com.utec.backend.exception.UsuarioNotFoundException;
 import com.utec.backend.model.Carrera;
@@ -25,16 +24,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import jakarta.persistence.criteria.Predicate;
@@ -76,9 +72,6 @@ public class ReservaService {
     private final RecomendacionService recomendacionService;
     private final FileStorageService fileStorageService;
     private final ReservaService self;
-
-    @Value("${app.timezone:America/Montevideo}")
-    private String appTimezone;
 
     public ReservaService(
             ReservaRepository reservaRepository,
@@ -436,10 +429,10 @@ public class ReservaService {
     private List<Instant> generarFechasRecurrentes(ReservaCreateDto createDto) {
         List<Instant> fechas = new ArrayList<>();
         ZonedDateTime fechaActual = createDto.getInicio().atZone(ZoneOffset.UTC);
-        ZonedDateTime fechaFin = createDto.getFechaFinRecurrencia().atZone(ZoneOffset.UTC);
-
-        // Ajustar fechaFin para incluir el día completo si es necesario
-        ZonedDateTime fechaFinAjustada = fechaFin.plusDays(1).withHour(0).withMinute(0).minusMinutes(1);
+        // El frontend envía fechaFinRecurrencia como fin de día en la zona del
+        // usuario (`toFinDeDiaISO`), por lo que ya cubre todo el día elegido.
+        // Se usa directamente como cota superior inclusiva.
+        ZonedDateTime fechaFinAjustada = createDto.getFechaFinRecurrencia().atZone(ZoneOffset.UTC);
 
         while (!fechaActual.isAfter(fechaFinAjustada)) {
             fechas.add(fechaActual.toInstant());
@@ -862,121 +855,6 @@ public class ReservaService {
         }
 
         return mapToResponseDto(reserva);
-    }
-
-    /**
-     * Actualizar una reserva con validaciones de concurrencia
-     */
-    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
-    public ReservaResponseDto updateReserva(Long id, ReservaUpdateDto updateDto, String userEmail) {
-        log.info("Actualizando reserva ID: {} para usuario: {}", id, userEmail);
-
-        Usuario usuario = obtenerUsuarioParaReserva(userEmail);
-        Reserva reserva = obtenerReservaParaEditar(id, usuario);
-
-        // Capturar horarios anteriores antes de cualquier mutación
-        Instant inicioAnterior = reserva.getInicio();
-        Instant finAnterior = reserva.getFin();
-
-        boolean cambioHorarios = aplicarCambioHorariosSiCorresponde(reserva, updateDto, id);
-
-        if (updateDto.getEstado() != null) {
-            reserva.setEstado(updateDto.getEstado());
-        }
-
-        Reserva updatedReserva = reservaRepository.save(reserva);
-
-        if (cambioHorarios) {
-            log.info("Horarios actualizados para reserva ID: {}", id);
-            notificarActualizacionReserva(updatedReserva, inicioAnterior, finAnterior);
-        }
-
-        return mapToResponseDto(updatedReserva);
-    }
-
-    private Reserva obtenerReservaParaEditar(Long id, Usuario usuario) {
-        Reserva reserva = reservaRepository.findByIdWithRelations(id);
-        if (reserva == null) {
-            throw new IllegalArgumentException("Reserva no encontrada con ID: " + id);
-        }
-        if (!reserva.getUsuario().getId().equals(usuario.getId())) {
-            throw new AccesoDenegadoException("No tienes permisos para editar esta reserva");
-        }
-        if (reserva.getEstado() == Reserva.EstadoReserva.CANCELADO) {
-            throw new IllegalStateException("No se puede editar una reserva cancelada");
-        }
-        if (reserva.getInicio().isBefore(Instant.now())) {
-            throw new IllegalStateException("No se puede editar una reserva que ya pasó");
-        }
-        return reserva;
-    }
-
-    private boolean aplicarCambioHorariosSiCorresponde(Reserva reserva, ReservaUpdateDto updateDto, Long id) {
-        if (updateDto.getInicio() == null || updateDto.getFin() == null) {
-            return false;
-        }
-        validarHorariosUpdate(updateDto);
-        validarSinConflictosUpdate(reserva.getEspacio().getId(), updateDto, id);
-        reserva.setInicio(updateDto.getInicio());
-        reserva.setFin(updateDto.getFin());
-        return true;
-    }
-
-    private void validarHorariosUpdate(ReservaUpdateDto updateDto) {
-        if (!updateDto.getInicio().isBefore(updateDto.getFin())) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
-        }
-        if (updateDto.getInicio().isBefore(Instant.now())) {
-            throw new IllegalArgumentException("No se puede reservar en el pasado");
-        }
-        long durationMinutes = Duration.between(updateDto.getInicio(), updateDto.getFin()).toMinutes();
-        if (durationMinutes < 30) {
-            throw new IllegalArgumentException("La reserva debe tener una duración mínima de 30 minutos");
-        }
-    }
-
-    private void validarSinConflictosUpdate(Long espacioId, ReservaUpdateDto updateDto, Long reservaId) {
-        List<Reserva> conflictos = reservaRepository.findConflictingReservas(
-                espacioId,
-                updateDto.getInicio(),
-                updateDto.getFin(),
-                Reserva.EstadoReserva.APROBADO).stream()
-                .filter(r -> !r.getId().equals(reservaId))
-                .toList();
-        if (!conflictos.isEmpty()) {
-            throw new IllegalStateException("El espacio ya está reservado en ese horario");
-        }
-    }
-
-    private void notificarActualizacionReserva(Reserva reserva, Instant inicioAnterior, Instant finAnterior) {
-        try {
-            ReservaResponseDto reservaDto = mapToResponseDto(reserva);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-                    .withZone(ZoneId.of(appTimezone));
-            String horarioAnterior = formatter.format(inicioAnterior) + " - " + formatter.format(finAnterior);
-
-            enviarEmailActualizacion(reserva.getUsuario().getEmail(), reservaDto, horarioAnterior, false);
-
-            if (reserva.getAnalistaAsignado() != null) {
-                enviarEmailActualizacion(reserva.getAnalistaAsignado().getEmail(), reservaDto, horarioAnterior, true);
-            }
-        } catch (Exception e) {
-            log.error("Error al enviar email de notificación de actualización de reserva: {}", e.getMessage());
-        }
-    }
-
-    private void enviarEmailActualizacion(String destinatario, ReservaResponseDto reservaDto,
-                                          String horarioAnterior, boolean esAnalista) {
-        boolean enviado = emailService.enviarEmailNotificacionReservaActualizada(
-                destinatario, reservaDto, horarioAnterior, esAnalista);
-        if (enviado) {
-            log.info("Email de notificación de actualización de reserva enviado a {}: {}",
-                    esAnalista ? "analista" : FIELD_USUARIO, destinatario);
-        } else if (esAnalista) {
-            log.warn(LOG_WARN_EMAIL_ANALISTA_NO_ENVIADO, destinatario);
-        } else {
-            log.warn(LOG_WARN_EMAIL_USUARIO_NO_ENVIADO, destinatario);
-        }
     }
 
     /**

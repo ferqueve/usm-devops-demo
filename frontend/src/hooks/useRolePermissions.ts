@@ -123,7 +123,6 @@ export function useRolePermissions() {
 
       // Reservas
       'reservations.create': 'reserva:crear',
-      'reservations.edit': 'reserva:editar',
       'reservations.cancel': 'reserva:cancelar',
       'reservations.approve': 'reserva:aprobar',
       'reservations.view_own': 'reserva:ver_propias',

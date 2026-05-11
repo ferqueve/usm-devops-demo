@@ -2,7 +2,6 @@ package com.utec.backend.service;
 
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Reserva;
 import com.utec.backend.model.Usuario;
@@ -108,7 +107,6 @@ class ReservaServiceFlowTest {
         lenient().when(emailService.enviarEmailNotificacionReservaAprobada(anyString(), any())).thenReturn(true);
         lenient().when(emailService.enviarEmailNotificacionReservaRechazada(anyString(), any())).thenReturn(true);
         lenient().when(emailService.enviarEmailNotificacionReservaCancelada(anyString(), any())).thenReturn(true);
-        lenient().when(emailService.enviarEmailNotificacionReservaActualizada(anyString(), any(), anyString(), anyBoolean())).thenReturn(true);
 
         // Simular BD para save
         lenient().when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> {
@@ -334,31 +332,7 @@ class ReservaServiceFlowTest {
 
         assertEquals(Reserva.EstadoReserva.APROBADO, reservaAprobada.getEstado());
 
-        // PASO 4: Docente Juan (dueño) intenta modificar horario
-        Instant nuevoInicio = inicioFuturo.plus(1, ChronoUnit.HOURS);
-        Instant nuevoFin = finFuturo.plus(1, ChronoUnit.HOURS);
-
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(nuevoInicio);
-        updateDto.setFin(nuevoFin);
-
-        lenient().when(usuarioRepository.findByEmail("juan@utec.edu.uy")).thenReturn(Optional.of(docenteJuan));
-        lenient().when(reservaRepository.findConflictingReservas(eq(espacioId), eq(nuevoInicio), eq(nuevoFin), any()))
-                .thenReturn(Collections.emptyList());
-
-        ReservaResponseDto reservaActualizada = reservaService.updateReserva(
-                reservaId, updateDto, "juan@utec.edu.uy"
-        );
-
-        assertEquals(nuevoInicio, reservaActualizada.getInicio());
-        assertEquals(nuevoFin, reservaActualizada.getFin());
-
-        // PASO 5: Docente Pedro intenta modificar → DEBE FALLAR
-        assertThrows(RuntimeException.class, () ->
-                reservaService.updateReserva(reservaId, updateDto, "pedro@utec.edu.uy"),
-                "Usuario NO dueño NO debe poder editar");
-
-        // PASO 6: Docente Juan cancela su reserva
+        // PASO 4: Docente Juan cancela su reserva
         lenient().when(usuarioRepository.findByEmail("juan@utec.edu.uy")).thenReturn(Optional.of(docenteJuan));
 
         assertDoesNotThrow(() -> reservaService.cancelReserva(reservaId, "juan@utec.edu.uy"));
@@ -366,11 +340,6 @@ class ReservaServiceFlowTest {
         // Verificar que está cancelada
         Reserva reservaCancelada = reservasDB.get(reservaId);
         assertEquals(Reserva.EstadoReserva.CANCELADO, reservaCancelada.getEstado());
-
-        // PASO 7: Intenta editar después de cancelar → DEBE FALLAR
-        assertThrows(RuntimeException.class, () ->
-                reservaService.updateReserva(reservaId, updateDto, "juan@utec.edu.uy"),
-                "NO se puede editar reserva CANCELADA");
     }
 
     // ==================== FLUJOS DE CONFLICTOS ====================
@@ -653,82 +622,4 @@ class ReservaServiceFlowTest {
         assertEquals(Reserva.EstadoReserva.APROBADO, reservasDB.get(reservaId).getEstado());
     }
 
-    // ==================== FLUJO COMPLETO DE ACTUALIZACIÓN CON VALIDACIONES ====================
-
-    @Test
-    @DisplayName("FLUJO: Actualizar horario → Validar conflicto → Otro usuario ocupa el nuevo horario → Falla")
-    void flujoActualizarConConflictoEnNuevoHorario() {
-        // PASO 1: Docente Juan crea y aprueba reserva en horario A
-        lenient().when(usuarioRepository.findByEmail("juan@utec.edu.uy")).thenReturn(Optional.of(docenteJuan));
-        lenient().when(usuarioRepository.findById(analistaAna.getId())).thenReturn(Optional.of(analistaAna));
-        lenient().when(reservaRepository.findConflictingReservas(anyLong(), any(), any(), any()))
-                .thenReturn(Collections.emptyList());
-
-        Instant inicioA = inicioFuturo;
-        Instant finA = finFuturo;
-
-        ReservaCreateDto createJuan = new ReservaCreateDto();
-        createJuan.setEspacioId(espacioId);
-        createJuan.setTitulo("Reserva Juan");
-        createJuan.setInicio(inicioA);
-        createJuan.setFin(finA);
-        createJuan.setAnalistaId(analistaAna.getId());
-
-        ReservaResponseDto reservaJuan = reservaService.createReserva(createJuan, "juan@utec.edu.uy", ROLE_DOCENTE);
-        Long reservaJuanId = reservaJuan.getId();
-
-        // Aprobar
-        lenient().when(usuarioRepository.findByEmail("ana@utec.edu.uy")).thenReturn(Optional.of(analistaAna));
-        reservaService.cambiarEstadoReserva(reservaJuanId, "APROBADO", "ana@utec.edu.uy", ROLE_ANALISTA, null);
-
-        // PASO 2: Admin crea reserva en horario B
-        Instant inicioB = inicioFuturo.plus(5, ChronoUnit.HOURS);
-        Instant finB = finFuturo.plus(5, ChronoUnit.HOURS);
-
-        lenient().when(usuarioRepository.findByEmail("rosa@utec.edu.uy")).thenReturn(Optional.of(adminRosa));
-        lenient().when(reservaRepository.findConflictingReservas(eq(espacioId), eq(inicioB), eq(finB), any()))
-                .thenReturn(Collections.emptyList());
-
-        ReservaCreateDto createAdmin = new ReservaCreateDto();
-        createAdmin.setEspacioId(espacioId);
-        createAdmin.setTitulo("Reserva Admin");
-        createAdmin.setInicio(inicioB);
-        createAdmin.setFin(finB);
-
-        ReservaResponseDto reservaAdmin = reservaService.createReserva(createAdmin, "rosa@utec.edu.uy", ROLE_ADMIN);
-        Long reservaAdminId = reservaAdmin.getId();
-
-        // PASO 3: Juan intenta mover SU reserva del horario A al horario B → DEBE FALLAR (ocupado por Admin)
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(inicioB);
-        updateDto.setFin(finB);
-
-        lenient().when(usuarioRepository.findByEmail("juan@utec.edu.uy")).thenReturn(Optional.of(docenteJuan));
-        lenient().when(reservaRepository.findConflictingReservas(eq(espacioId), eq(inicioB), eq(finB), any()))
-                .thenReturn(List.of(reservasDB.get(reservaAdminId))); // Conflicto
-
-        assertThrows(RuntimeException.class, () ->
-                        reservaService.updateReserva(reservaJuanId, updateDto, "juan@utec.edu.uy"),
-                "NO se puede actualizar a horario ocupado");
-
-        // Verificar que la reserva de Juan sigue en horario A
-        assertEquals(inicioA, reservasDB.get(reservaJuanId).getInicio());
-        assertEquals(finA, reservasDB.get(reservaJuanId).getFin());
-
-        // PASO 4: Admin cancela su reserva del horario B
-        lenient().when(usuarioRepository.findByEmail("rosa@utec.edu.uy")).thenReturn(Optional.of(adminRosa));
-        reservaService.cancelReserva(reservaAdminId, "rosa@utec.edu.uy");
-
-        // PASO 5: Ahora Juan SÍ puede mover su reserva al horario B
-        lenient().when(usuarioRepository.findByEmail("juan@utec.edu.uy")).thenReturn(Optional.of(docenteJuan));
-        lenient().when(reservaRepository.findConflictingReservas(eq(espacioId), eq(inicioB), eq(finB), any()))
-                .thenReturn(Collections.emptyList()); // Sin conflictos
-
-        ReservaResponseDto reservaActualizada = reservaService.updateReserva(
-                reservaJuanId, updateDto, "juan@utec.edu.uy"
-        );
-
-        assertEquals(inicioB, reservaActualizada.getInicio());
-        assertEquals(finB, reservaActualizada.getFin());
-    }
 }

@@ -124,21 +124,6 @@ export const reservationsApi = {
     return apiRequest<Reserva>(`/reservas/${id}`, { method: 'GET' });
   },
 
-  // Actualizar una reserva
-  async actualizarReserva(
-    id: number,
-    data: {
-      inicio?: string;
-      fin?: string;
-      estado?: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
-    }
-  ): Promise<ApiResponse<Reserva>> {
-    return apiRequest<Reserva>(`/reservas/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
   // Cancelar una reserva
   async cancelarReserva(id: number): Promise<ApiResponse<void>> {
     return apiRequest<void>(`/reservas/${id}`, { method: 'DELETE' });

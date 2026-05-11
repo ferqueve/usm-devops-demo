@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.service.ReservaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -149,28 +148,6 @@ class ReservaControllerTest {
                 .andExpect(jsonPath("$.data.id").value(reservaId));
 
         verify(reservaService).getReservaById(reservaId, userEmail);
-    }
-
-    @Test
-    @DisplayName("PUT /api/v1/reservas/{id} - Debe actualizar reserva exitosamente")
-    @WithMockUser(username = "admin@utec.edu.uy", roles = {"ADMIN"})
-    void debeActualizarReservaExitosamente() throws Exception {
-        // Given
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(inicioFuturo.plus(1, ChronoUnit.HOURS));
-        updateDto.setFin(finFuturo.plus(1, ChronoUnit.HOURS));
-
-        when(reservaService.updateReserva(eq(reservaId), any(ReservaUpdateDto.class), eq("admin@utec.edu.uy")))
-                .thenReturn(reservaResponseDto);
-
-        // When & Then
-        mockMvc.perform(put("/api/v1/reservas/{id}", reservaId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
-
-        verify(reservaService).updateReserva(eq(reservaId), any(ReservaUpdateDto.class), eq("admin@utec.edu.uy"));
     }
 
     @Test

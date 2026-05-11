@@ -27,7 +27,6 @@ public class PermissionService {
             Permission.RESERVA_SOLICITAR,
             Permission.RESERVA_VER_TODAS,
             Permission.RESERVA_VER_PUBLICAS,
-            Permission.RESERVA_EDITAR,
             Permission.RESERVA_ELIMINAR,
             Permission.RESERVA_APROBAR,
             Permission.RESERVA_CANCELAR,

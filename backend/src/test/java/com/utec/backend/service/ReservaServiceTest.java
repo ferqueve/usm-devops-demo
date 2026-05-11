@@ -3,7 +3,6 @@ package com.utec.backend.service;
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.exception.UsuarioNotFoundException;
 import com.utec.backend.model.Carrera;
 import com.utec.backend.model.Espacio;
@@ -372,28 +371,6 @@ class ReservaServiceTest {
         // Then
         assertNotNull(resultado);
         verify(reservaRepository).findByIdWithRelations(reservaId);
-    }
-
-    @Test
-    @DisplayName("Debe actualizar reserva exitosamente")
-    void debeActualizarReservaExitosamente() {
-        // Given
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(inicioFuturo.plus(1, ChronoUnit.HOURS));
-        updateDto.setFin(finFuturo.plus(1, ChronoUnit.HOURS));
-
-        when(reservaRepository.findByIdWithRelations(reservaId)).thenReturn(reservaTest);
-        when(usuarioRepository.findByEmail(userEmail)).thenReturn(Optional.of(usuarioTest));
-        when(reservaRepository.findConflictingReservas(eq(espacioId), any(Instant.class), any(Instant.class), eq(Reserva.EstadoReserva.APROBADO)))
-                .thenReturn(Collections.emptyList());
-        when(reservaRepository.save(any(Reserva.class))).thenReturn(reservaTest);
-
-        // When
-        ReservaResponseDto resultado = reservaService.updateReserva(reservaId, updateDto, userEmail);
-
-        // Then
-        assertNotNull(resultado);
-        verify(reservaRepository).save(any(Reserva.class));
     }
 
     @Test

@@ -26,7 +26,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -76,10 +79,12 @@ public class E2EDataSeeder implements CommandLineRunner {
         TipoEspacio tipoSala = seedTipoEspacio();
         List<Espacio> espacios = seedEspacios(edificio, tipoSala);
         TipoElemento tipoProyector = seedTipoElemento();
-        seedInventario(espacios.get(0), tipoProyector);
+        TipoElemento tipoNotebook = seedTipoElementoSecundario();
+        seedInventario(espacios, tipoProyector, tipoNotebook);
         Carrera carrera = seedCarrera();
         List<Reserva> reservas = seedReservas(espacios, carrera);
         seedSolicitudInventario(reservas.get(2), tipoProyector);
+        seedSolicitudInventarioParaRechazo(reservas.get(2), tipoProyector);
 
         log.info("E2E seed: completado.");
     }
@@ -142,14 +147,72 @@ public class E2EDataSeeder implements CommandLineRunner {
         return tipoElementoRepository.save(t);
     }
 
-    private void seedInventario(Espacio espacio, TipoElemento tipo) {
-        InventarioItem item = new InventarioItem();
-        item.setEspacio(espacio);
-        item.setTipoElemento(tipo);
-        item.setCantidad(2);
-        item.setEstado("DISPONIBLE");
-        item.setActivo(true);
-        inventarioItemRepository.save(item);
+    private TipoElemento seedTipoElementoSecundario() {
+        TipoElemento t = new TipoElemento();
+        t.setNombre("Notebook E2E");
+        t.setDescripcion("Segundo tipo seedeado, usado por tests de filtros y CRUD.");
+        t.setActivo(true);
+        return tipoElementoRepository.save(t);
+    }
+
+    private void seedInventario(List<Espacio> espacios, TipoElemento proyector, TipoElemento notebook) {
+        // Ítem principal usado por request-flow: Sala 101, DISPONIBLE, cantidad 2.
+        InventarioItem disponibleEnSala101 = new InventarioItem();
+        disponibleEnSala101.setEspacio(espacios.get(0));
+        disponibleEnSala101.setTipoElemento(proyector);
+        disponibleEnSala101.setCantidad(2);
+        disponibleEnSala101.setEstado("DISPONIBLE");
+        disponibleEnSala101.setActivo(true);
+
+        // Ítem en MANTENIMIENTO para tests de filtro por estado y de edición.
+        InventarioItem enMantenimiento = new InventarioItem();
+        enMantenimiento.setEspacio(espacios.get(1));
+        enMantenimiento.setTipoElemento(proyector);
+        enMantenimiento.setCantidad(1);
+        enMantenimiento.setEstado("MANTENIMIENTO");
+        enMantenimiento.setActivo(true);
+        enMantenimiento.setObservaciones("Proyector E2E en mantenimiento");
+
+        // Ítem sin espacio asignado para el filtro "sin asignar" y el flujo
+        // de asignación a un espacio.
+        InventarioItem sinAsignar = new InventarioItem();
+        sinAsignar.setEspacio(null);
+        sinAsignar.setTipoElemento(proyector);
+        sinAsignar.setCantidad(1);
+        sinAsignar.setEstado("DISPONIBLE");
+        sinAsignar.setActivo(true);
+
+        // Ítem de tipo secundario para el flujo de eliminación.
+        InventarioItem notebookItem = new InventarioItem();
+        notebookItem.setEspacio(espacios.get(0));
+        notebookItem.setTipoElemento(notebook);
+        notebookItem.setCantidad(4);
+        notebookItem.setEstado("DISPONIBLE");
+        notebookItem.setActivo(true);
+
+        // Dos ítems descartables solo para `bulk-actions.spec.ts`. Se siembran
+        // al final para que queden como las dos últimas filas en el listado
+        // ordenado por ID (la pestaña los identifica como las dos
+        // sin observaciones específicas).
+        InventarioItem bulkTarget1 = new InventarioItem();
+        bulkTarget1.setEspacio(espacios.get(0));
+        bulkTarget1.setTipoElemento(proyector);
+        bulkTarget1.setCantidad(1);
+        bulkTarget1.setEstado("DISPONIBLE");
+        bulkTarget1.setActivo(true);
+        bulkTarget1.setObservaciones("Bulk target 1 E2E");
+
+        InventarioItem bulkTarget2 = new InventarioItem();
+        bulkTarget2.setEspacio(espacios.get(1));
+        bulkTarget2.setTipoElemento(proyector);
+        bulkTarget2.setCantidad(1);
+        bulkTarget2.setEstado("DISPONIBLE");
+        bulkTarget2.setActivo(true);
+        bulkTarget2.setObservaciones("Bulk target 2 E2E");
+
+        inventarioItemRepository.saveAll(List.of(
+                disponibleEnSala101, enMantenimiento, sinAsignar, notebookItem, bulkTarget1, bulkTarget2
+        ));
     }
 
     private Carrera seedCarrera() {
@@ -164,10 +227,22 @@ public class E2EDataSeeder implements CommandLineRunner {
                 .orElseThrow();
         Usuario admin = usuarioRepository.findByEmail(emailFor(Usuario.RolApp.ADMIN))
                 .orElseThrow();
+        Usuario analista = usuarioRepository.findByEmail(emailFor(Usuario.RolApp.ANALISTA))
+                .orElseThrow();
 
-        Instant manana10 = Instant.now()
-                .plus(1, ChronoUnit.DAYS)
-                .truncatedTo(ChronoUnit.HOURS);
+        // Horarios deterministas: 10:00, 14:00 y 18:00 de mañana, en zona
+        // local de Montevideo. Esto hace que las pruebas E2E que dependen
+        // de horarios concretos (como el conflicto 409) sean estables.
+        ZoneId tz = ZoneId.of("America/Montevideo");
+        LocalDate manana = LocalDate.now(tz).plusDays(1);
+        LocalDate ayer = LocalDate.now(tz).minusDays(1);
+        LocalDate enCincoDias = LocalDate.now(tz).plusDays(5);
+        java.time.Instant inicioPendienteAprobar = LocalDateTime.of(manana, LocalTime.of(10, 0)).atZone(tz).toInstant();
+        java.time.Instant inicioPendienteRechazar = LocalDateTime.of(manana, LocalTime.of(14, 0)).atZone(tz).toInstant();
+        java.time.Instant inicioAprobada = LocalDateTime.of(manana, LocalTime.of(18, 0)).atZone(tz).toInstant();
+        java.time.Instant inicioCharlaAnalista = LocalDateTime.of(manana, LocalTime.of(12, 0)).atZone(tz).toInstant();
+        java.time.Instant inicioPasada = LocalDateTime.of(ayer, LocalTime.of(10, 0)).atZone(tz).toInstant();
+        java.time.Instant inicioBloqueoRecurrencia = LocalDateTime.of(enCincoDias, LocalTime.of(14, 0)).atZone(tz).toInstant();
 
         // Pendiente para el test de aprobación del admin.
         Reserva pendienteAprobar = new Reserva();
@@ -175,8 +250,8 @@ public class E2EDataSeeder implements CommandLineRunner {
         pendienteAprobar.setUsuario(docente);
         pendienteAprobar.setAnalistaAsignado(admin);
         pendienteAprobar.setCarrera(carrera);
-        pendienteAprobar.setInicio(manana10);
-        pendienteAprobar.setFin(manana10.plus(2, ChronoUnit.HOURS));
+        pendienteAprobar.setInicio(inicioPendienteAprobar);
+        pendienteAprobar.setFin(inicioPendienteAprobar.plus(2, ChronoUnit.HOURS));
         pendienteAprobar.setEstado(Reserva.EstadoReserva.PENDIENTE);
         pendienteAprobar.setEsPublica(false);
         pendienteAprobar.setTitulo("Reunión de proyecto E2E");
@@ -188,25 +263,85 @@ public class E2EDataSeeder implements CommandLineRunner {
         pendienteRechazar.setUsuario(docente);
         pendienteRechazar.setAnalistaAsignado(admin);
         pendienteRechazar.setCarrera(carrera);
-        pendienteRechazar.setInicio(manana10.plus(8, ChronoUnit.HOURS));
-        pendienteRechazar.setFin(manana10.plus(10, ChronoUnit.HOURS));
+        pendienteRechazar.setInicio(inicioPendienteRechazar);
+        pendienteRechazar.setFin(inicioPendienteRechazar.plus(2, ChronoUnit.HOURS));
         pendienteRechazar.setEstado(Reserva.EstadoReserva.PENDIENTE);
         pendienteRechazar.setEsPublica(false);
         pendienteRechazar.setTitulo("Sesión de laboratorio E2E");
 
-        // Aprobada: la usa el test de cancelación del docente
-        // (sólo APROBADO + esFutura permite cancelar desde la UI).
+        // Aprobada en Sala 202 a las 18:00–20:00. Los tests de cancelación
+        // del dueño (DOCENTE) y de conflicto 409 (ADMIN intentando crear
+        // sobre este rango) la consumen.
         Reserva aprobada = new Reserva();
         aprobada.setEspacio(espacios.get(1));
         aprobada.setUsuario(docente);
         aprobada.setCarrera(carrera);
-        aprobada.setInicio(manana10.plus(4, ChronoUnit.HOURS));
-        aprobada.setFin(manana10.plus(6, ChronoUnit.HOURS));
+        aprobada.setInicio(inicioAprobada);
+        aprobada.setFin(inicioAprobada.plus(2, ChronoUnit.HOURS));
         aprobada.setEstado(Reserva.EstadoReserva.APROBADO);
         aprobada.setEsPublica(true);
         aprobada.setTitulo("Clase abierta E2E");
 
-        return reservaRepository.saveAll(List.of(pendienteAprobar, pendienteRechazar, aprobada));
+        // Pendiente asignada al ANALISTA (no al admin). Sirve para validar el
+        // aislamiento del panel "Pendientes" en /reservations: el analista la
+        // ve, el admin no.
+        Reserva pendienteAnalista = new Reserva();
+        pendienteAnalista.setEspacio(espacios.get(0));
+        pendienteAnalista.setUsuario(docente);
+        pendienteAnalista.setAnalistaAsignado(analista);
+        pendienteAnalista.setCarrera(carrera);
+        pendienteAnalista.setInicio(inicioCharlaAnalista);
+        pendienteAnalista.setFin(inicioCharlaAnalista.plus(2, ChronoUnit.HOURS));
+        pendienteAnalista.setEstado(Reserva.EstadoReserva.PENDIENTE);
+        pendienteAnalista.setEsPublica(false);
+        pendienteAnalista.setTitulo("Charla docente E2E");
+
+        // Aprobada ya pasada. Permite testear filtros temporales.
+        Reserva pasada = new Reserva();
+        pasada.setEspacio(espacios.get(1));
+        pasada.setUsuario(docente);
+        pasada.setCarrera(carrera);
+        pasada.setInicio(inicioPasada);
+        pasada.setFin(inicioPasada.plus(2, ChronoUnit.HOURS));
+        pasada.setEstado(Reserva.EstadoReserva.APROBADO);
+        pasada.setEsPublica(false);
+        pasada.setTitulo("Tutoría pasada E2E");
+
+        // APROBADA en Sala 101 a 5 días, 14:00-15:00. Solo se usa como
+        // bloqueo en `recurring-conflict.spec.ts`: cuando el admin arma
+        // una serie diaria sobre Sala 101 14:00, esta instancia se omite.
+        Reserva bloqueoRecurrencia = new Reserva();
+        bloqueoRecurrencia.setEspacio(espacios.get(0));
+        bloqueoRecurrencia.setUsuario(docente);
+        bloqueoRecurrencia.setCarrera(carrera);
+        bloqueoRecurrencia.setInicio(inicioBloqueoRecurrencia);
+        bloqueoRecurrencia.setFin(inicioBloqueoRecurrencia.plus(1, ChronoUnit.HOURS));
+        bloqueoRecurrencia.setEstado(Reserva.EstadoReserva.APROBADO);
+        bloqueoRecurrencia.setEsPublica(false);
+        bloqueoRecurrencia.setTitulo("Bloqueo recurrencia E2E");
+
+        List<Reserva> base = new java.util.ArrayList<>(List.of(
+                pendienteAprobar, pendienteRechazar, aprobada, pendienteAnalista, pasada, bloqueoRecurrencia
+        ));
+
+        // Reservas históricas adicionales para que el listado del docente
+        // supere 10 elementos y se active la paginación.
+        for (int i = 2; i <= 10; i++) {
+            LocalDate dia = LocalDate.now(tz).minusDays(i);
+            java.time.Instant inicio = LocalDateTime.of(dia, LocalTime.of(9, 0)).atZone(tz).toInstant();
+            Reserva historica = new Reserva();
+            historica.setEspacio(espacios.get(0));
+            historica.setUsuario(docente);
+            historica.setCarrera(carrera);
+            historica.setInicio(inicio);
+            historica.setFin(inicio.plus(1, ChronoUnit.HOURS));
+            historica.setEstado(Reserva.EstadoReserva.APROBADO);
+            historica.setEsPublica(false);
+            historica.setTitulo("Histórico " + i + " E2E");
+            base.add(historica);
+        }
+
+        return reservaRepository.saveAll(base);
     }
 
     private void seedSolicitudInventario(Reserva reservaAprobada, TipoElemento tipo) {
@@ -217,6 +352,19 @@ public class E2EDataSeeder implements CommandLineRunner {
         solicitud.setTipoElemento(tipo);
         solicitud.setCantidadSolicitada(1);
         solicitud.setEstado(ReservaItemSolicitado.EstadoSolicitud.PENDIENTE);
+        solicitud.setObservaciones("Solicitud principal E2E");
+        reservaItemSolicitadoRepository.save(solicitud);
+    }
+
+    private void seedSolicitudInventarioParaRechazo(Reserva reservaAprobada, TipoElemento tipo) {
+        // Segunda solicitud PENDIENTE para el test de rechazo. Mantenerla
+        // separada hace que los tests sean independientes del orden.
+        ReservaItemSolicitado solicitud = new ReservaItemSolicitado();
+        solicitud.setReserva(reservaAprobada);
+        solicitud.setTipoElemento(tipo);
+        solicitud.setCantidadSolicitada(2);
+        solicitud.setEstado(ReservaItemSolicitado.EstadoSolicitud.PENDIENTE);
+        solicitud.setObservaciones("Solicitud para rechazo E2E");
         reservaItemSolicitadoRepository.save(solicitud);
     }
 

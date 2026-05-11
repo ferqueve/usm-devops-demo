@@ -408,43 +408,6 @@ public class EmailService {
     }
 
     /**
-     * Envía email de notificación cuando se actualiza una reserva (cambios de horario)
-     */
-    public boolean enviarEmailNotificacionReservaActualizada(String toEmail, ReservaResponseDto reserva, String horarioAnterior, boolean esAnalista) {
-        return sendIfAllowed(toEmail, "reservaActualizada", () -> {
-            String subject = "Reserva actualizada - UTEC Space Manager";
-
-            DateTimeFormatter formatter = dateFormatter();
-            String fechaInicioNueva = formatter.format(reserva.getInicio());
-            String fechaFinNueva = formatter.format(reserva.getFin());
-
-            String destinatario;
-            if (esAnalista) {
-                destinatario = "Hola,";
-            } else {
-                destinatario = "Hola " + orDefault(reserva.getUsuarioNombre(), DEFAULT_USUARIO) + ",";
-            }
-            String mensaje = esAnalista
-                ? "Se ha actualizado una reserva que está asignada a ti."
-                : "Tu reserva ha sido actualizada.";
-
-            Map<String, String> variables = baseVariables();
-            variables.put("destinatario", destinatario);
-            variables.put("mensaje", mensaje);
-            variables.put(VAR_ESPACIO_NOMBRE, orNa(reserva.getEspacioNombre()));
-            variables.put("horarioAnterior", orNa(horarioAnterior));
-            variables.put("fechaInicioNueva", fechaInicioNueva);
-            variables.put("fechaFinNueva", fechaFinNueva);
-            variables.put("estado", reserva.getEstado() != null ? reserva.getEstado().toString() : NA);
-            variables.put("mensajeAdicional", esAnalista
-                ? "Por favor, revisa los cambios y contacta al usuario si es necesario."
-                : "Por favor, ten en cuenta el nuevo horario de tu reserva.");
-
-            return renderAndSend(toEmail, subject, "reserva-actualizada.html", variables);
-        });
-    }
-
-    /**
      * Envía email de notificación a personal de mantenimiento cuando hay una nueva solicitud de inventario
      */
     public boolean enviarEmailNotificacionNuevaSolicitudInventario(String to, ReservaResponseDto reserva, int cantidadItems) {

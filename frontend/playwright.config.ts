@@ -24,6 +24,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
+    // Alineamos la zona horaria del navegador con la que usa el seeder
+    // (`America/Montevideo`) para que los tests que generan fechas en JS y
+    // las comparan contra reservas seedeadas sean estables sin importar
+    // la zona horaria del host.
+    timezoneId: 'America/Montevideo',
   },
 
   projects: [

@@ -3,7 +3,6 @@ package com.utec.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
-import com.utec.backend.dto.reserva.ReservaUpdateDto;
 import com.utec.backend.model.Reserva;
 import com.utec.backend.service.ReservaService;
 import org.junit.jupiter.api.BeforeEach;
@@ -346,49 +345,6 @@ class ReservaControllerExtendedTest {
                 .andExpect(jsonPath("$.message").value("Reserva rechazada exitosamente"));
 
         verify(reservaService).cambiarEstadoReserva(reservaId, "CANCELADO", "analista@utec.edu.uy", "ANALISTA", "No cumple requisitos");
-    }
-
-    // ==================== TESTS PARA ACTUALIZACIÓN ====================
-
-    @Test
-    @DisplayName("PUT /api/v1/reservas/{id} - ANALISTA debe poder actualizar reserva")
-    @WithMockUser(username = "analista@utec.edu.uy", roles = {"ANALISTA"})
-    void analistaDebePodeActualizarReserva() throws Exception {
-        // Given
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(inicioFuturo.plus(1, ChronoUnit.HOURS));
-        updateDto.setFin(finFuturo.plus(1, ChronoUnit.HOURS));
-        when(reservaService.updateReserva(eq(reservaId), any(ReservaUpdateDto.class), eq("analista@utec.edu.uy")))
-                .thenReturn(reservaResponseDto);
-
-        // When & Then
-        mockMvc.perform(put("/api/v1/reservas/{id}", reservaId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
-
-        verify(reservaService).updateReserva(eq(reservaId), any(ReservaUpdateDto.class), eq("analista@utec.edu.uy"));
-    }
-
-    @Test
-    @DisplayName("PUT /api/v1/reservas/{id} - DOCENTE no puede editar (sin permiso reserva:editar)")
-    @WithMockUser(username = "docente@utec.edu.uy", roles = {"DOCENTE"})
-    void docenteNoPuedeEditar() throws Exception {
-        // Given
-        ReservaUpdateDto updateDto = new ReservaUpdateDto();
-        updateDto.setInicio(inicioFuturo.plus(1, ChronoUnit.HOURS));
-        updateDto.setFin(finFuturo.plus(1, ChronoUnit.HOURS));
-
-        // When & Then - DOCENTE no tiene permiso reserva:editar, debe recibir 403
-        mockMvc.perform(put("/api/v1/reservas/{id}", reservaId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false));
-
-        // No debe llegar al servicio
-        verify(reservaService, never()).updateReserva(anyLong(), any(ReservaUpdateDto.class), anyString());
     }
 
     // ==================== TESTS PARA CANCELACIÓN ====================
