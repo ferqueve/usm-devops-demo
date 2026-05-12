@@ -5,6 +5,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { createLocalDateTimeUTC } from '@/lib/utils/timezone';
+import { AnalistaRecomendado } from '@/components/recomendaciones/AnalistaRecomendado';
 import { EspaciosRecomendados } from '@/components/recomendaciones/EspaciosRecomendados';
 import { HorariosRecomendados } from '@/components/recomendaciones/HorariosRecomendados';
 import { ItemsRecomendados } from '@/components/recomendaciones/ItemsRecomendados';
@@ -202,6 +203,17 @@ export default function ReservationForm({
                 analistas={analistas}
                 onChange={(value) => setFormData(prev => ({ ...prev, analistaId: value }))}
               />
+              {user?.id && (
+                <AnalistaRecomendado
+                  docenteId={user.id}
+                  analistaSeleccionadoId={
+                    formData.analistaId ? Number.parseInt(formData.analistaId) : undefined
+                  }
+                  onSelectAnalista={(analistaId) =>
+                    setFormData(prev => ({ ...prev, analistaId: analistaId.toString() }))
+                  }
+                />
+              )}
               <div className="border-t border-dashed border-gray-300 my-4"></div>
             </>
           )}

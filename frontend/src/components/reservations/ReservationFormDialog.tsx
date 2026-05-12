@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { espaciosApi } from '@/lib/api/spaces';
 import { createLocalDateTimeUTC } from '@/lib/utils/timezone';
+import { AnalistaRecomendado } from '@/components/recomendaciones/AnalistaRecomendado';
 import { EspaciosRecomendados } from '@/components/recomendaciones/EspaciosRecomendados';
 import { HorariosRecomendados } from '@/components/recomendaciones/HorariosRecomendados';
 import { ItemsRecomendados } from '@/components/recomendaciones/ItemsRecomendados';
@@ -529,6 +530,17 @@ export default function ReservationFormDialog({
                     analistas={analistas}
                     onChange={(value) => setFormData(prev => ({ ...prev, analistaId: value }))}
                   />
+                  {user?.id && (
+                    <AnalistaRecomendado
+                      docenteId={user.id}
+                      analistaSeleccionadoId={
+                        formData.analistaId ? Number.parseInt(formData.analistaId) : undefined
+                      }
+                      onSelectAnalista={(analistaId) =>
+                        setFormData(prev => ({ ...prev, analistaId: analistaId.toString() }))
+                      }
+                    />
+                  )}
                   <div className="border-t border-dashed border-gray-300 my-4"></div>
                 </>
               )}

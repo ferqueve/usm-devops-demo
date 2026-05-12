@@ -94,6 +94,7 @@
     - [10.8 Exportar Usuarios a CSV](#108-exportar-usuarios-a-csv)
     - [10.9 Estadísticas de Usuarios](#109-estadísticas-de-usuarios)
     - [10.10 Filtros y Búsqueda](#1010-filtros-y-búsqueda)
+    - [10.11 Gestionar Carreras](#1011-gestionar-carreras)
 11. [Calendario de Reservas](#11-calendario-de-reservas)
     - [11.1 Vista de Calendario](#111-vista-de-calendario)
     - [11.2 Navegación del Calendario](#112-navegación-del-calendario)
@@ -2513,6 +2514,18 @@ Filtros avanzados para usuarios:
 
 - Hacer clic en **"Limpiar filtros"** para resetear todos
 - O remover filtros individuales
+
+## 10.11 Gestionar Carreras
+
+Desde la página de usuarios, el administrador encuentra el botón **Gestionar Carreras**, que abre un diálogo dedicado para administrar las carreras académicas disponibles en el sistema. Esas carreras alimentan el selector que aparece al solicitar una reserva.
+
+### Acciones disponibles
+
+- **Crear carrera**: botón "Crear Carrera" en el pie del diálogo. Pide nombre (requerido) y código opcional, por ejemplo "Ingeniería en Sistemas" / "ITR-IS".
+- **Editar carrera**: ícono de lápiz en cada fila para corregir nombre o código.
+- **Eliminar carrera**: ícono de papelera con confirmación previa. La baja es lógica; la carrera deja de estar disponible para nuevas reservas pero las existentes preservan su asociación.
+
+El cambio se refleja de inmediato en el selector de carreras del formulario de reserva, sin necesidad de recargar la página.
 
 ---
 

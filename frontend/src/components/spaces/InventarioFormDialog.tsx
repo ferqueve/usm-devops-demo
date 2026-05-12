@@ -143,7 +143,7 @@ export function InventarioFormDialog({
                     }
                   }}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id="tipo-elemento" className="w-full">
                     <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
@@ -183,7 +183,7 @@ export function InventarioFormDialog({
                     setFormData(prev => ({ ...prev, estado: value }))
                   }
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id="estado" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

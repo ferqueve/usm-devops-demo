@@ -265,7 +265,7 @@ export function SpaceFormDialog({
                 }}
                 disabled={loading}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="tipoEspacio" className="w-full">
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -389,7 +389,7 @@ export function SpaceFormDialog({
                 }}
                 disabled={loading}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="estado" className="w-full">
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>

@@ -77,7 +77,8 @@ public class E2EDataSeeder implements CommandLineRunner {
         seedUsuarios();
         Edificio edificio = seedEdificio();
         TipoEspacio tipoSala = seedTipoEspacio();
-        List<Espacio> espacios = seedEspacios(edificio, tipoSala);
+        TipoEspacio tipoLaboratorio = seedTipoEspacioSecundario();
+        List<Espacio> espacios = seedEspacios(edificio, tipoSala, tipoLaboratorio);
         TipoElemento tipoProyector = seedTipoElemento();
         TipoElemento tipoNotebook = seedTipoElementoSecundario();
         seedInventario(espacios, tipoProyector, tipoNotebook);
@@ -121,7 +122,16 @@ public class E2EDataSeeder implements CommandLineRunner {
         return tipoEspacioRepository.save(t);
     }
 
-    private List<Espacio> seedEspacios(Edificio edificio, TipoEspacio tipo) {
+    private TipoEspacio seedTipoEspacioSecundario() {
+        TipoEspacio t = new TipoEspacio();
+        t.setNombre("Laboratorio E2E");
+        t.setDescripcion("Segundo tipo seedeado, usado por tests de filtros y CRUD de espacios.");
+        t.setColor("#a855f7");
+        t.setActivo(true);
+        return tipoEspacioRepository.save(t);
+    }
+
+    private List<Espacio> seedEspacios(Edificio edificio, TipoEspacio tipo, TipoEspacio tipoSecundario) {
         Espacio s1 = new Espacio();
         s1.setNombre("Sala 101");
         s1.setCapacidad(30);
@@ -136,7 +146,16 @@ public class E2EDataSeeder implements CommandLineRunner {
         s2.setEdificioId(edificio.getId());
         s2.setTipoEspacioId(tipo.getId());
 
-        return espacioRepository.saveAll(List.of(s1, s2));
+        // Sala extra: tipo "Laboratorio E2E" en estado MANTENIMIENTO. La usan
+        // los tests de filtros (estado y tipo) y de vista de detalle.
+        Espacio s3 = new Espacio();
+        s3.setNombre("Lab 303");
+        s3.setCapacidad(15);
+        s3.setEstado("MANTENIMIENTO");
+        s3.setEdificioId(edificio.getId());
+        s3.setTipoEspacioId(tipoSecundario.getId());
+
+        return espacioRepository.saveAll(List.of(s1, s2, s3));
     }
 
     private TipoElemento seedTipoElemento() {

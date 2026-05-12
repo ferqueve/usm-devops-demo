@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserStatsCards } from './UserStatsCards';
 import { EditUserDialog } from './EditUserDialog';
+import { CarrerasManagement } from '@/components/carreras/CarrerasManagement';
 import { exportUsersToCSV } from '@/lib/utils/csv-export';
 import { formatDate, formatRelativeTime } from '@/lib/utils/date-helpers';
 import {
@@ -67,7 +68,8 @@ import {
   Download,
   Edit,
   Mail as MailIcon,
-  KeyRound
+  KeyRound,
+  GraduationCap
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -277,6 +279,9 @@ export default function UserManagement() {
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   
+  // Modal de gestión de carreras
+  const [carrerasDialog, setCarrerasDialog] = useState(false);
+
   // Modal de cambio de rol
   const [changeRoleDialog, setChangeRoleDialog] = useState(false);
   const [changingRole, setChangingRole] = useState(false);
@@ -527,8 +532,19 @@ export default function UserManagement() {
             <span className="text-sm text-muted-foreground whitespace-nowrap">usuarios</span>
           </div>
           
+          <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>
+            <Button
+              variant="outline"
+              onClick={() => setCarrerasDialog(true)}
+              className="h-10"
+            >
+              <GraduationCap className="h-4 w-4 mr-2" />
+              Gestionar Carreras
+            </Button>
+          </PermissionGuard>
+
           <PermissionGuard requiredPermission="usuario:gestionar">
-            <Button 
+            <Button
               variant="outline"
               onClick={handleExportCSV}
               className="h-10"
@@ -1048,12 +1064,15 @@ export default function UserManagement() {
       </Dialog>
 
       {/* Dialog de edición de usuario */}
-      <EditUserDialog 
+      <EditUserDialog
         user={editingUser}
         open={editDialog}
         onOpenChange={setEditDialog}
         onSuccess={handleEditSuccess}
       />
+
+      {/* Dialog de gestión de carreras */}
+      <CarrerasManagement open={carrerasDialog} onOpenChange={setCarrerasDialog} />
     </div>
   );
 }
