@@ -22,6 +22,7 @@ documentation/
     ├── arquitectura-y-estructura.md
     ├── sistema-de-diseno-ui.md
     ├── analisis-de-codigo.md
+    ├── pruebas-exploratorias.md
     ├── plan-de-calidad.md                 (futuro)
     └── analisis-de-seguridad.md           (futuro)
 ```

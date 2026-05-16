@@ -230,6 +230,33 @@ public class ReservaItemSolicitadoService {
         );
     }
 
+    /**
+     * Cierra (soft-delete) las solicitudes de inventario activas de una reserva.
+     * Se usa al cancelar una reserva: las solicitudes pendientes/aprobadas dejan
+     * de aparecer en el panel de mantenimiento. No tocamos las ya cerradas
+     * (RECHAZADO/ENTREGADO) para preservar historia.
+     */
+    public int cerrarSolicitudesDeReserva(Long reservaId) {
+        List<ReservaItemSolicitado> items = reservaItemSolicitadoRepository.findByReservaId(reservaId);
+        Instant ahora = Instant.now();
+        int cerradas = 0;
+        for (ReservaItemSolicitado item : items) {
+            if (item.getDeletedAt() != null) {
+                continue;
+            }
+            if (item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.PENDIENTE
+                    || item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.APROBADO) {
+                item.setDeletedAt(ahora);
+                reservaItemSolicitadoRepository.save(item);
+                cerradas++;
+            }
+        }
+        if (cerradas > 0) {
+            log.info("Cerradas {} solicitudes activas al cancelar reserva {}", cerradas, reservaId);
+        }
+        return cerradas;
+    }
+
     public ReservaItemSolicitadoResponseDto actualizarSolicitud(
             Long id,
             ReservaItemSolicitadoUpdateDto updateDto,
@@ -323,6 +350,16 @@ public class ReservaItemSolicitadoService {
         if (!inventarioItem.getTipoElemento().getId().equals(item.getTipoElemento().getId())) {
             throw new IllegalArgumentException("El item de inventario seleccionado no corresponde al tipo solicitado");
         }
+        // El item debe pertenecer al mismo espacio de la reserva (los items sin espacio asignado
+        // son pool genérico y pueden usarse para cualquier reserva).
+        if (inventarioItem.getEspacio() != null && item.getReserva() != null
+                && item.getReserva().getEspacio() != null
+                && !inventarioItem.getEspacio().getId().equals(item.getReserva().getEspacio().getId())) {
+            throw new IllegalArgumentException(
+                    "El item de inventario pertenece a otro espacio ("
+                            + inventarioItem.getEspacio().getNombre()
+                            + "). Solo se pueden asignar items del mismo espacio o sin espacio asignado.");
+        }
     }
 
     private boolean aplicarCambioObservaciones(ReservaItemSolicitado item, ReservaItemSolicitadoUpdateDto updateDto) {
@@ -341,6 +378,11 @@ public class ReservaItemSolicitadoService {
     }
 
     private void validarEntregadoTieneInventario(ReservaItemSolicitado item) {
+        if (item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.APROBADO
+                && item.getInventarioItem() == null) {
+            throw new IllegalArgumentException(
+                    "Para marcar como APROBADO es necesario asignar previamente un item de inventario disponible");
+        }
         if (item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO
                 && item.getInventarioItem() == null) {
             throw new IllegalArgumentException(

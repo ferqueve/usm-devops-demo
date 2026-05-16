@@ -299,6 +299,13 @@ public class EspacioService {
     public Integer getCapacidadMinima() {
         return espacioRepository.getCapacidadMinima();
     }
+
+    @Transactional(readOnly = true)
+    public Long countByEstado(String estado) {
+        return espacioRepository.findAll().stream()
+                .filter(e -> estado.equals(e.getEstado()))
+                .count();
+    }
     
     /**
      * Actualiza solo la imagen de un espacio

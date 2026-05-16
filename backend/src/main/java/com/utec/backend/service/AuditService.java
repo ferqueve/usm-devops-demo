@@ -11,6 +11,7 @@ import com.utec.backend.dto.common.PagedResponseDto;
 import com.utec.backend.model.AuditLog;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.AuditLogRepository;
+import com.utec.backend.repository.UsuarioRepository;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -49,11 +50,13 @@ public class AuditService {
     private static final String FIELD_USUARIO = "usuario";
 
     private final AuditLogRepository auditLogRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
 
     // Constructor para inicializar ObjectMapper con soporte para Instant
-    public AuditService(AuditLogRepository auditLogRepository) {
+    public AuditService(AuditLogRepository auditLogRepository, UsuarioRepository usuarioRepository) {
         this.auditLogRepository = auditLogRepository;
+        this.usuarioRepository = usuarioRepository;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -178,7 +181,10 @@ public class AuditService {
             // Usar CREATE para eventos exitosos, DELETE para fallos (convención)
             AuditLog.AccionAudit accion = exitoso ? AuditLog.AccionAudit.CREATE : AuditLog.AccionAudit.DELETE;
 
-            AuditLog auditLog = buildAuditLog(accion, "Autenticacion", 0L, null,
+            Usuario usuarioAuth = usuarioEmail != null
+                    ? usuarioRepository.findByEmail(usuarioEmail).orElse(null)
+                    : null;
+            AuditLog auditLog = buildAuditLog(accion, "Autenticacion", 0L, usuarioAuth,
                     al -> {
                         Map<String, Object> eventData = new HashMap<>();
                         eventData.put("eventoTipo", eventoTipo);

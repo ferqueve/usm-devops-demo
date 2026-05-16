@@ -686,6 +686,16 @@ public class ReservaService {
         Reserva savedReserva = aplicarCambioEstado(reserva, nuevoEstado, mensajeAnalista);
         log.info("Estado de reserva ID: {} cambiado exitosamente a {}", id, nuevoEstado);
 
+        // Si el analista cancela la reserva, también cerramos las solicitudes
+        // de inventario activas para que no queden zombies en el panel de mantenimiento.
+        if (nuevoEstado == Reserva.EstadoReserva.CANCELADO) {
+            try {
+                reservaItemSolicitadoService.cerrarSolicitudesDeReserva(savedReserva.getId());
+            } catch (Exception e) {
+                log.warn("No se pudieron cerrar solicitudes de inventario de reserva {}: {}", id, e.getMessage());
+            }
+        }
+
         invalidarCacheRecomendacionesUsuario(reserva.getUsuario().getId());
 
         ReservaResponseDto reservaDto = mapToResponseDto(savedReserva);
@@ -889,6 +899,15 @@ public class ReservaService {
         reservaRepository.save(reserva);
 
         log.info("Reserva ID: {} cancelada exitosamente", id);
+
+        // Cerrar las solicitudes de inventario activas asociadas (PENDIENTE/APROBADO).
+        // Si la reserva se cancela, no tiene sentido seguir gestionando sus pedidos
+        // de items en el panel de mantenimiento.
+        try {
+            reservaItemSolicitadoService.cerrarSolicitudesDeReserva(reserva.getId());
+        } catch (Exception e) {
+            log.warn("No se pudieron cerrar solicitudes de inventario de reserva {}: {}", id, e.getMessage());
+        }
 
         // Invalidar caché de recomendaciones para el usuario
         try {

@@ -187,6 +187,9 @@ public class EspacioController {
             Double capacidadPromedio = espacioService.getCapacidadPromedio();
             Integer capacidadMaxima = espacioService.getCapacidadMaxima();
             Integer capacidadMinima = espacioService.getCapacidadMinima();
+            Long disponibles = espacioService.countByEstado("DISPONIBLE");
+            Long enMantenimiento = espacioService.countByEstado("MANTENIMIENTO");
+            long ocupados = (totalEspacios == null ? 0L : totalEspacios) - disponibles - enMantenimiento;
 
             // Crear un Map para las estadísticas
             Map<String, Object> stats = new HashMap<>();
@@ -194,6 +197,9 @@ public class EspacioController {
             stats.put("capacidadPromedio", capacidadPromedio);
             stats.put("capacidadMaxima", capacidadMaxima);
             stats.put("capacidadMinima", capacidadMinima);
+            stats.put("disponibles", disponibles);
+            stats.put("enMantenimiento", enMantenimiento);
+            stats.put("ocupados", ocupados);
 
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas obtenidas exitosamente"));
         } catch (Exception e) {

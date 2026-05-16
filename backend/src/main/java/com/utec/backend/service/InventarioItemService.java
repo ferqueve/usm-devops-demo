@@ -8,6 +8,7 @@ import com.utec.backend.model.InventarioItem;
 import com.utec.backend.model.TipoElemento;
 import com.utec.backend.repository.EspacioRepository;
 import com.utec.backend.repository.InventarioItemRepository;
+import com.utec.backend.repository.ReservaItemSolicitadoRepository;
 import com.utec.backend.repository.TipoElementoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -32,16 +33,19 @@ public class InventarioItemService {
     private final InventarioItemRepository inventarioItemRepository;
     private final EspacioRepository espacioRepository;
     private final TipoElementoRepository tipoElementoRepository;
+    private final ReservaItemSolicitadoRepository reservaItemSolicitadoRepository;
     private final InventarioItemService self;
 
     public InventarioItemService(
             InventarioItemRepository inventarioItemRepository,
             EspacioRepository espacioRepository,
             TipoElementoRepository tipoElementoRepository,
+            ReservaItemSolicitadoRepository reservaItemSolicitadoRepository,
             @Lazy @Autowired InventarioItemService self) {
         this.inventarioItemRepository = inventarioItemRepository;
         this.espacioRepository = espacioRepository;
         this.tipoElementoRepository = tipoElementoRepository;
+        this.reservaItemSolicitadoRepository = reservaItemSolicitadoRepository;
         this.self = self;
     }
     
@@ -181,12 +185,20 @@ public class InventarioItemService {
     public void deleteInventarioItem(Long id) {
         InventarioItem inventarioItem = inventarioItemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(ITEM_NO_ENCONTRADO_MSG + id));
-        
+
+        long activas = reservaItemSolicitadoRepository.countActiveByInventarioItemId(id);
+        if (activas > 0) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el item: tiene " + activas
+                            + " solicitud(es) PENDIENTE/APROBADA(s) que lo referencian. "
+                            + "Libera o rechaza esas solicitudes primero.");
+        }
+
         // Soft delete: marcar como inactivo y eliminado
         inventarioItem.setActivo(false);
         inventarioItem.setDeletedAt(Instant.now());
         inventarioItem.setUpdatedAt(Instant.now());
-        
+
         inventarioItemRepository.save(inventarioItem);
     }
     

@@ -33,5 +33,13 @@ public interface ReservaItemSolicitadoRepository extends JpaRepository<ReservaIt
            "LEFT JOIN FETCH ris.inventarioItem " +
            "WHERE ris.reserva.id = :reservaId AND ris.deletedAt IS NULL")
     List<ReservaItemSolicitado> findByReservaIdWithRelations(@Param("reservaId") Long reservaId);
+
+    // Cuenta solicitudes activas (PENDIENTE o APROBADO, no eliminadas) que usan el item dado.
+    @Query("SELECT COUNT(ris) FROM ReservaItemSolicitado ris " +
+           "WHERE ris.inventarioItem.id = :inventarioItemId " +
+           "AND ris.deletedAt IS NULL " +
+           "AND ris.estado IN (com.utec.backend.model.ReservaItemSolicitado.EstadoSolicitud.PENDIENTE, " +
+           "com.utec.backend.model.ReservaItemSolicitado.EstadoSolicitud.APROBADO)")
+    long countActiveByInventarioItemId(@Param("inventarioItemId") Long inventarioItemId);
 }
 

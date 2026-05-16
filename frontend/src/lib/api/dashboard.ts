@@ -132,8 +132,8 @@ interface EspaciosCounts {
 
 function calcularEstadisticasEspacios(espacios: Espacio[]): EspaciosCounts {
   return {
-    espaciosDisponibles: espacios.filter((e) => e.activo && e.estado === 'DISPONIBLE').length,
-    espaciosOcupados: espacios.filter((e) => !e.activo || e.estado !== 'DISPONIBLE').length,
+    espaciosDisponibles: espacios.filter((e) => e.estado === 'DISPONIBLE').length,
+    espaciosOcupados: espacios.filter((e) => e.estado !== 'DISPONIBLE' && e.estado !== 'MANTENIMIENTO').length,
     espaciosEnMantenimiento: espacios.filter((e) => e.estado === 'MANTENIMIENTO').length,
   };
 }
@@ -182,7 +182,7 @@ function buildDashboardStats(input: BuildStatsInput): DashboardStats {
   if (reservasZeroed) {
     const espaciosCounts = calcularEstadisticasEspacios(espacios);
     return {
-      totalReservas: reservas.length,
+      totalReservas: 0,
       reservasHoy: 0,
       reservasPendientes: 0,
       reservasAprobadas: 0,

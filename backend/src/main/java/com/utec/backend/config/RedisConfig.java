@@ -1,9 +1,6 @@
 package com.utec.backend.config;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -16,6 +13,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.JacksonObjectWriter;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -24,7 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Configuración de Redis para cache y almacenamiento distribuido
+ * Configuración de Redis para cache y almacenamiento distribuido.
+ *
+ * Usamos {@link GenericJackson2JsonRedisSerializer#builder()} — su {@code TypeResolverBuilder}
+ * interno emite el campo {@code @class} también en raíces de colecciones, lo que evita
+ * el bug "expected VALUE_STRING ... for subtype of Object" al deserializar List<DTO>
+ * (que aparece si se activa el typing de Jackson manualmente con As.PROPERTY o WRAPPER_ARRAY).
  */
 @Configuration
 @EnableCaching
@@ -43,52 +46,42 @@ public class RedisConfig {
     private long reservasTtl;
 
     @Value("${cache.recomendaciones.ttl:1800000}")
-    private long recomendacionesTtl; // 30 minutos
+    private long recomendacionesTtl;
 
     @Value("${cache.recomendaciones.metricas.ttl:86400000}")
-    private long recomendacionesMetricasTtl; // 24 horas
+    private long recomendacionesMetricasTtl;
 
-    /**
-     * Configuración de ObjectMapper específico para Redis
-     * Este mapper solo se usa para serialización de Redis, no afecta Spring MVC
-     * Debe incluir información de tipo para deserialización correcta de DTOs
-     */
-    private ObjectMapper redisObjectMapper() {
+    private GenericJackson2JsonRedisSerializer redisSerializer() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         mapper.registerModule(new JavaTimeModule());
-        // Activar información de tipo para deserialización correcta
-        // Esto permite que Redis deserialice LinkedHashMap de vuelta al tipo correcto (UsuarioStatsDto, etc.)
-        mapper.activateDefaultTyping(
-            LaissezFaireSubTypeValidator.instance,
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
-        );
-        return mapper;
+        // writer customizado: forzar el tipo estático Object al serializar, de modo que
+        // Jackson emita el hint @class en la raíz también para List/Map/colecciones
+        // (sin esto, una List<DTO> se guarda como [{...}] sin marcador de tipo en la raíz
+        // y al leerla rompe con "expected VALUE_STRING ... for subtype of Object")
+        JacksonObjectWriter rootTypedWriter = (om, source) ->
+                om.writerFor(Object.class).writeValueAsBytes(source);
+        return GenericJackson2JsonRedisSerializer.builder()
+                .objectMapper(mapper)
+                .defaultTyping(true)
+                .typeHintPropertyName("@class")
+                .writer(rootTypedWriter)
+                .build();
     }
 
-    /**
-     * StringRedisTemplate para operaciones simples con strings
-     */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
         return new StringRedisTemplate(connectionFactory);
     }
 
-    /**
-     * RedisTemplate para operaciones con objetos complejos
-     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Serializador para claves (Strings)
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
 
-        // Serializador para valores (JSON)
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+        GenericJackson2JsonRedisSerializer jsonSerializer = redisSerializer();
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 
@@ -96,21 +89,16 @@ public class RedisConfig {
         return template;
     }
 
-    /**
-     * Configuración de CacheManager con TTLs específicos por cache
-     */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
 
-        // Configuración por defecto
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMillis(600000)) // 10 minutos por defecto
+                .entryTtl(Duration.ofMillis(600000))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(redisObjectMapper())))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer()))
                 .disableCachingNullValues();
 
-        // Configuraciones específicas por cache
         cacheConfigurations.put("usuarioStats", defaultConfig.entryTtl(Duration.ofMillis(usuarioStatsTtl)));
         cacheConfigurations.put("inventarioStatistics", defaultConfig.entryTtl(Duration.ofMillis(inventarioStatisticsTtl)));
         cacheConfigurations.put("espacios", defaultConfig.entryTtl(Duration.ofMillis(espaciosTtl)));
@@ -125,4 +113,3 @@ public class RedisConfig {
                 .build();
     }
 }
-

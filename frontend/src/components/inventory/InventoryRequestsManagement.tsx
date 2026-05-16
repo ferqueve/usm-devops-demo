@@ -424,6 +424,7 @@ export default function InventoryRequestsManagement() {
   const canApprove =
     selectedRequest?.estado === 'PENDIENTE' && selectedRequest?.inventarioItemId != null;
   const canReject = Boolean(selectedRequest && !isRequestRejected && !isRequestDelivered);
+  const canDeliver = isRequestApproved && selectedRequest?.inventarioItemId != null;
 
   return (
     <div className="space-y-6">
@@ -933,31 +934,51 @@ export default function InventoryRequestsManagement() {
                           Rechazar
                         </Button>
                       </PermissionGuard>
-                      <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
-                        <Button
-                          size="sm"
-                          title={canApprove ? undefined : 'Asigna un item antes de aprobar'}
-                          onClick={() => {
-                            if (!selectedRequest) {
-                              return;
-                            }
-                            if (!canApprove) {
-                              toast.error('Asigna un item antes de aprobar la solicitud');
-                              return;
-                            }
-                            updateRequest(
-                              selectedRequest,
-                              { estado: 'APROBADO' },
-                              'Solicitud aprobada'
-                            );
-                          }}
-                          disabled={updatingRequest || !canApprove}
-                          className="h-9 bg-emerald-600 hover:bg-emerald-700"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                          Aprobar
-                        </Button>
-                      </PermissionGuard>
+                      {isRequestApproved ? (
+                        <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
+                          <Button
+                            size="sm"
+                            title={canDeliver ? undefined : 'Asigna un item antes de confirmar la entrega'}
+                            onClick={() => {
+                              if (!selectedRequest) {
+                                return;
+                              }
+                              handleMarkDelivered(selectedRequest);
+                            }}
+                            disabled={updatingRequest || !canDeliver}
+                            className="h-9 bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            <ClipboardCheck className="h-4 w-4" />
+                            Confirmar entrega
+                          </Button>
+                        </PermissionGuard>
+                      ) : (
+                        <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
+                          <Button
+                            size="sm"
+                            title={canApprove ? undefined : 'Asigna un item antes de aprobar'}
+                            onClick={() => {
+                              if (!selectedRequest) {
+                                return;
+                              }
+                              if (!canApprove) {
+                                toast.error('Asigna un item antes de aprobar la solicitud');
+                                return;
+                              }
+                              updateRequest(
+                                selectedRequest,
+                                { estado: 'APROBADO' },
+                                'Solicitud aprobada'
+                              );
+                            }}
+                            disabled={updatingRequest || !canApprove}
+                            className="h-9 bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            Aprobar
+                          </Button>
+                        </PermissionGuard>
+                      )}
                     </div>
                   </PermissionGuard>
                 </div>
