@@ -547,6 +547,20 @@ public class ReservaService {
         addIdPredicate(predicates, root.get(FIELD_CARRERA).get("id"), filters.carreraId(), cb);
         addRangoFechas(predicates, root, cb, filters.fechaInicio(), filters.fechaFin());
         addTiempoPredicate(predicates, root, cb, filters.tiempo());
+        addSearchPredicate(predicates, root, cb, filters.search());
+    }
+
+    private void addSearchPredicate(List<Predicate> predicates,
+                                    jakarta.persistence.criteria.Root<Reserva> root,
+                                    jakarta.persistence.criteria.CriteriaBuilder cb,
+                                    String search) {
+        if (search == null || search.isBlank()) {
+            return;
+        }
+        String like = "%" + search.trim().toLowerCase() + "%";
+        Predicate titulo = cb.like(cb.lower(root.get("titulo")), like);
+        Predicate usuario = cb.like(cb.lower(root.get(FIELD_USUARIO).get("nombre")), like);
+        predicates.add(cb.or(titulo, usuario));
     }
 
     private void addEstadoPredicate(List<Predicate> predicates,

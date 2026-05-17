@@ -330,7 +330,7 @@ class ReservaServiceTest {
         // When
         Page<ReservaResponseDto> resultado = reservaService.getAllReservasPaged(
                 pageable,
-                new com.utec.backend.dto.reserva.ReservaFilters(null, null, null, null, null, null, null, null),
+                new com.utec.backend.dto.reserva.ReservaFilters(null, null, null, null, null, null, null, null, null),
                 "admin@utec.edu.uy", ROLE_ADMIN);
 
         // Then

@@ -689,7 +689,7 @@ class ReservaServiceExtendedTest {
         // When
         Page<ReservaResponseDto> resultado = reservaService.getAllReservasPaged(
                 pageable,
-                new com.utec.backend.dto.reserva.ReservaFilters(null, null, null, null, null, null, null, null),
+                new com.utec.backend.dto.reserva.ReservaFilters(null, null, null, null, null, null, null, null, null),
                 "analista1@utec.edu.uy", ROLE_ANALISTA
         );
 

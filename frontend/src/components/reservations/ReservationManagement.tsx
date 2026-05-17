@@ -181,6 +181,10 @@ export default function ReservationManagement() {
   const [pendientesLoading, setPendientesLoading] = useState(false);
   const [pendientesPage, setPendientesPage] = useState(0);
   const [pendientesTotalElements, setPendientesTotalElements] = useState(0);
+  // Búsqueda del sidebar de pendientes: el input se actualiza inmediato y el término
+  // "aplicado" se debouncea para no disparar fetch por tecla.
+  const [pendientesSearchInput, setPendientesSearchInput] = useState('');
+  const [pendientesSearchTerm, setPendientesSearchTerm] = useState('');
   const PENDIENTES_PAGE_SIZE = 8;
 
   // Rango actualmente visible en el calendario embebido. Permite que el fetch
@@ -265,6 +269,7 @@ export default function ReservationManagement() {
         tipoEspacioId: tipoEspacioFilter ?? undefined,
         fechaInicio: fechaInicio ?? undefined,
         fechaFin: fechaFin ?? undefined,
+        search: pendientesSearchTerm.trim() || undefined,
       });
 
       if (response.data) {
@@ -277,7 +282,7 @@ export default function ReservationManagement() {
     } finally {
       setPendientesLoading(false);
     }
-  }, [canApprove, user?.id, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin, pendientesPage]);
+  }, [canApprove, user?.id, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin, pendientesPage, pendientesSearchTerm]);
 
   const fetchReservasPaged = useCallback(async () => {
     setContentLoading(true);
@@ -371,7 +376,15 @@ export default function ReservationManagement() {
   // Resetear página de pendientes cuando cambian sus filtros relevantes
   useEffect(() => {
     setPendientesPage(0);
-  }, [espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin, pendientesSearchTerm]);
+
+  // Debounce de la búsqueda del sidebar de pendientes para evitar un fetch por cada tecla.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setPendientesSearchTerm(pendientesSearchInput);
+    }, 350);
+    return () => clearTimeout(handle);
+  }, [pendientesSearchInput]);
 
   // Cargar reservas con paginación para table y cards
   // Se ejecuta cuando cambia la página o los filtros
@@ -669,6 +682,8 @@ export default function ReservationManagement() {
                   pageSize: PENDIENTES_PAGE_SIZE,
                   totalElements: pendientesTotalElements,
                   onPageChange: setPendientesPage,
+                  searchTerm: pendientesSearchInput,
+                  onSearchChange: setPendientesSearchInput,
                 }}
               />
             )}

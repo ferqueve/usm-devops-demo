@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Clock, User, Hourglass, CheckCircle2, Users, ChevronRight, ChevronLeft, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, User, Hourglass, CheckCircle2, Users, ChevronRight, ChevronLeft, AlertTriangle, Search, Flame } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Reserva } from '@/lib/types/spaces';
 import { formatTime, formatShortDate } from './reservationUtils';
 import { recomendacionesApi } from '@/lib/api/recomendaciones';
@@ -24,6 +26,9 @@ interface ReservationPendientesProps {
     pageSize: number;
     totalElements: number;
     onPageChange: (page: number) => void;
+    /** Si se pasa, el search box queda controlado y el filtrado lo hace el server. */
+    searchTerm?: string;
+    onSearchChange?: (term: string) => void;
   };
 }
 
@@ -38,8 +43,19 @@ export default function ReservationPendientes({
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
   const [reservasPrioritarias, setReservasPrioritarias] = useState<RecomendacionAnalista[]>([]);
   const [page, setPage] = useState(0);
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [onlyUrgent, setOnlyUrgent] = useState(false);
   const PAGE_SIZE = 8;
   const isServerPaginated = !!serverPagination;
+  // Cuando el parent controla la búsqueda (server-side), usamos su valor; si no, local.
+  const searchTermControlled = serverPagination?.onSearchChange !== undefined;
+  const searchTerm = searchTermControlled
+    ? (serverPagination?.searchTerm ?? '')
+    : localSearchTerm;
+  const setSearchTerm = (value: string) => {
+    if (searchTermControlled) serverPagination!.onSearchChange!(value);
+    else setLocalSearchTerm(value);
+  };
 
   // Detectar cuando el layout está en vertical (menor a lg breakpoint)
   useEffect(() => {
@@ -96,18 +112,36 @@ export default function ReservationPendientes({
     return urgenciaB - urgenciaA;
   });
 
+  // Aplicar filtros sobre la lista cargada. La búsqueda puede ser server-side
+  // (en cuyo caso la lista ya viene filtrada del backend) o client-side.
+  // El toggle "Solo urgentes" siempre filtra client-side porque la urgencia
+  // se calcula a partir del feed de recomendaciones, no del listado base.
+  const termino = searchTerm.trim().toLowerCase();
+  const reservasFiltradas = reservasOrdenadas.filter((r) => {
+    if (onlyUrgent && getUrgencia(r.id) < 7) return false;
+    if (!searchTermControlled && termino.length > 0) {
+      const titulo = (r.titulo ?? r.espacioNombre ?? '').toLowerCase();
+      const usuario = (r.usuarioNombre ?? '').toLowerCase();
+      if (!titulo.includes(termino) && !usuario.includes(termino)) return false;
+    }
+    return true;
+  });
+  const hayFiltrosActivos = onlyUrgent || termino.length > 0;
+
   // Paginación: server-side si el parent la controla, client-side en otro caso.
+  // En modo server-paginated, los filtros operan sobre la página ya cargada.
+  const totalElementsServer = isServerPaginated ? serverPagination!.totalElements : null;
   const totalElements = isServerPaginated
-    ? serverPagination!.totalElements
-    : reservasOrdenadas.length;
+    ? (hayFiltrosActivos ? reservasFiltradas.length : totalElementsServer!)
+    : reservasFiltradas.length;
   const effectivePageSize = isServerPaginated ? serverPagination!.pageSize : PAGE_SIZE;
   const totalPages = Math.max(1, Math.ceil(totalElements / effectivePageSize));
   const currentPage = isServerPaginated
     ? serverPagination!.page
     : Math.min(page, totalPages - 1);
   const reservasPagina = isServerPaginated
-    ? reservasOrdenadas
-    : reservasOrdenadas.slice(
+    ? reservasFiltradas
+    : reservasFiltradas.slice(
         currentPage * PAGE_SIZE,
         (currentPage + 1) * PAGE_SIZE,
       );
@@ -126,6 +160,11 @@ export default function ReservationPendientes({
       setPage(0);
     }
   }, [page, totalPages, isServerPaginated]);
+
+  // Al cambiar los filtros volver a la primera página.
+  useEffect(() => {
+    if (!isServerPaginated) setPage(0);
+  }, [searchTerm, onlyUrgent, isServerPaginated]);
 
   // En modo vertical, forzar que siempre esté extendido
   const isCollapsed = isVerticalLayout ? false : collapsed;
@@ -192,6 +231,36 @@ export default function ReservationPendientes({
           </CardContent>
         ) : (
         <CardContent className="flex-1 flex flex-col space-y-2 sm:space-y-3 px-3 sm:px-4 pb-3 sm:pb-4 overflow-hidden">
+          {/* Filtros compactos: búsqueda + toggle "solo urgentes" */}
+          {reservasPendientes.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar título o usuario..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-7 pr-2 text-xs"
+                />
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant={onlyUrgent ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => setOnlyUrgent((prev) => !prev)}
+                    aria-label="Solo urgentes"
+                    aria-pressed={onlyUrgent}
+                    className={`h-8 w-8 flex-shrink-0 ${onlyUrgent ? 'bg-red-600 hover:bg-red-700 text-white' : ''}`}
+                  >
+                    <Flame className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Solo urgentes (≥ 7/10)</TooltipContent>
+              </Tooltip>
+            </div>
+          )}
           {(() => {
             if (loading) {
               return (
@@ -202,6 +271,25 @@ export default function ReservationPendientes({
               );
             }
             if (totalElements === 0) {
+              if (hayFiltrosActivos) {
+                return (
+                  <div className="text-center py-6 px-2">
+                    <p className="text-xs sm:text-sm font-medium text-gray-700">Sin resultados</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">No hay pendientes con esos filtros</p>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setOnlyUrgent(false);
+                      }}
+                      className="text-xs h-auto p-0 mt-2"
+                    >
+                      Limpiar filtros
+                    </Button>
+                  </div>
+                );
+              }
               return (
                 <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg border border-gray-200 px-2">
                   <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />

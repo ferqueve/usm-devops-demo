@@ -16,6 +16,7 @@ import java.time.Instant;
  * @param fechaInicio     fecha mínima (inicio &gt;= valor)
  * @param fechaFin        fecha máxima (inicio &lt;= valor)
  * @param tiempo          {@code "futuras"} o {@code "pasadas"} para particionar el dataset
+ * @param search          texto libre buscado en título o nombre del solicitante (case-insensitive)
  */
 public record ReservaFilters(
         String estado,
@@ -25,7 +26,8 @@ public record ReservaFilters(
         Long usuarioId,
         Instant fechaInicio,
         Instant fechaFin,
-        String tiempo
+        String tiempo,
+        String search
 ) {
 
     public static ReservaFilters of(
@@ -37,6 +39,6 @@ public record ReservaFilters(
             Instant fechaFin,
             String tiempo) {
         return new ReservaFilters(estado, espacioId, carreraId, tipoEspacioId, null,
-                fechaInicio, fechaFin, tiempo);
+                fechaInicio, fechaFin, tiempo, null);
     }
 }

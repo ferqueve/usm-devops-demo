@@ -266,7 +266,8 @@ public class ReservaController {
             @RequestParam(required = false) Long usuarioId,
             @RequestParam(required = false) Instant fechaInicio,
             @RequestParam(required = false) Instant fechaFin,
-            @RequestParam(required = false) String tiempo) {
+            @RequestParam(required = false) String tiempo,
+            @RequestParam(required = false) String search) {
         try {
             String userEmail = authentication.getName();
             String userRole = authentication.getAuthorities().stream()
@@ -280,7 +281,7 @@ public class ReservaController {
                     pageable,
                     new ReservaFilters(
                             estado, espacioId, carreraId, tipoEspacioId, usuarioId,
-                            fechaInicio, fechaFin, tiempo),
+                            fechaInicio, fechaFin, tiempo, search),
                     userEmail,
                     userRole);
 
