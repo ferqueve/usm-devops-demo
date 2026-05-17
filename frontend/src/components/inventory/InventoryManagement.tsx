@@ -719,8 +719,10 @@ export default function InventoryManagement() {
         </Card>
       )}
 
-      {/* Barra de filtros — estilo compacto consistente con Reservas */}
-      <div className="flex items-center gap-2 flex-wrap py-2">
+      {/* Inventario con filtros embebidos */}
+      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-2 flex-wrap">
         <PopoverFilterSection<number>
           selectedId={filters.sinAsignar ? -1 : (filters.espacioId ?? null)}
           items={[
@@ -791,31 +793,30 @@ export default function InventoryManagement() {
         >
           {viewMode === 'table' ? <LayoutGrid className="h-4 w-4" /> : <LayoutList className="h-4 w-4" />}
         </Button>
-      </div>
+          </div>
+          {activeFilters.length > 0 && (
+            <FilterBar
+              filters={activeFilters}
+              onClearAll={clearFilters}
+              className="mt-3 animate-slide-up"
+            />
+          )}
+          {selectedItems.size > 0 && (
+            <div className="mt-3">
+              <BulkActionsBar
+                selectedCount={selectedItems.size}
+                onBulkStateChange={handleBulkStateChange}
+                onBulkAssign={handleBulkAssign}
+                onBulkUnassign={handleBulkUnassign}
+                onBulkExport={handleBulkExport}
+                onClearSelection={clearSelectedItems}
+              />
+            </div>
+          )}
+        </div>
 
-      {/* Filtros activos */}
-      {activeFilters.length > 0 && (
-        <FilterBar 
-          filters={activeFilters} 
-          onClearAll={clearFilters}
-          className="animate-slide-up"
-        />
-      )}
-
-      {/* Barra de acciones masivas */}
-      {selectedItems.size > 0 && (
-        <BulkActionsBar
-          selectedCount={selectedItems.size}
-          onBulkStateChange={handleBulkStateChange}
-          onBulkAssign={handleBulkAssign}
-          onBulkUnassign={handleBulkUnassign}
-          onBulkExport={handleBulkExport}
-          onClearSelection={clearSelectedItems}
-        />
-      )}
-
-      {/* Tabla o Cards de inventario */}
-      {(() => {
+        {/* Tabla o Cards de inventario */}
+        {(() => {
         if (loading) {
           return (
             <div className="flex items-center justify-center py-8">
@@ -839,32 +840,36 @@ export default function InventoryManagement() {
         return (
         <>
           {viewMode === 'table' ? (
-          <InventoryTable
-              items={sortedItems}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onAssign={handleAssign}
-              onView={handleView}
-              selectedItems={selectedItems}
-              onToggleSelect={handleToggleSelect}
-              sortConfig={sortConfig}
-              onSort={handleSort}
-            />
+            <div className="px-4 pt-2">
+              <InventoryTable
+                items={sortedItems}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onAssign={handleAssign}
+                onView={handleView}
+                selectedItems={selectedItems}
+                onToggleSelect={handleToggleSelect}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+            </div>
           ) : (
-            <InventoryCardView
-              items={sortedItems}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onAssign={handleAssign}
-              onView={handleView}
-              selectedItems={selectedItems}
-              onToggleSelect={handleToggleSelect}
-          />
+            <div className="px-4 pt-2">
+              <InventoryCardView
+                items={sortedItems}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onAssign={handleAssign}
+                onView={handleView}
+                selectedItems={selectedItems}
+                onToggleSelect={handleToggleSelect}
+              />
+            </div>
           )}
 
           {/* Paginación - siempre mostrar si hay totalPages */}
           {totalPages > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t bg-gray-50/50">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3">
               <p className="text-sm text-muted-foreground">
                 <span className="hidden sm:inline">
                   Mostrando {items.length} de {totalElements} items (Página {page + 1} de {totalPages})
@@ -897,7 +902,8 @@ export default function InventoryManagement() {
           )}
         </>
         );
-      })()}
+        })()}
+      </div>
 
       {/* Modales */}
       <InventoryFormDialog

@@ -61,49 +61,49 @@ export function SpaceTable({
   };
 
   return (
-    <div className="border rounded-lg shadow-card overflow-x-auto">
+    <div className="border rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-[80px]">
+          <TableRow className="hover:bg-transparent border-b-0">
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[80px]">
               <button
                 onClick={() => onSort && handleSort('id')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 ID {onSort && getSortIcon('id')}
               </button>
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               <button
                 onClick={() => onSort && handleSort('nombre')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 Nombre {onSort && getSortIcon('nombre')}
               </button>
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               <button
                 onClick={() => onSort && handleSort('tipo')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 Tipo de Espacio {onSort && getSortIcon('tipo')}
               </button>
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               Edificio
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               <button
                 onClick={() => onSort && handleSort('capacidad')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 Capacidad {onSort && getSortIcon('capacidad')}
               </button>
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               Estado
             </TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

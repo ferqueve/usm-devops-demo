@@ -59,7 +59,7 @@ export default function InventoryTable({
   };
 
   return (
-    <div className="border rounded-lg shadow-card overflow-hidden">
+    <div className="border rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b-0">

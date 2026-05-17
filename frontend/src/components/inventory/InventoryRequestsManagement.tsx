@@ -464,15 +464,7 @@ export default function InventoryRequestsManagement() {
       </div>
 
       <Card className="shadow-card">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold">Solicitudes</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Gestiona los pedidos asociados a reservas aprobadas o pendientes de revisión.
-            </p>
-          </div>
-        </CardHeader>
-        <div className="px-6 pb-4">
+        <div className="px-6 pt-4 pb-4">
           <InventoryRequestFilters
             searchValue={searchInput}
             activeSearch={searchTerm}

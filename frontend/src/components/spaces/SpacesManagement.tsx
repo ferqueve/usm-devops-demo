@@ -622,12 +622,9 @@ export default function SpacesManagement() {
         </div>
       </div>
 
-      {/* Barra de búsqueda y filtros compacta */}
-      <Card className="shadow-card">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-lg">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
+      {/* Espacios con filtros embebidos */}
+      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+        <div className="px-4 pt-4 pb-3">
           <div className="space-y-2">
             <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
               {/* Campo de búsqueda principal */}
@@ -847,20 +844,17 @@ export default function SpacesManagement() {
               );
             })()}
           </div>
-        </CardContent>
-      </Card>
+          {activeFilters.length > 0 && (
+            <FilterBar
+              filters={activeFilters}
+              onClearAll={clearFilters}
+              className="mt-3 animate-slide-up"
+            />
+          )}
+        </div>
 
-      {/* Filtros activos */}
-      {activeFilters.length > 0 && (
-        <FilterBar 
-          filters={activeFilters} 
-          onClearAll={clearFilters}
-          className="animate-slide-up"
-        />
-      )}
-
-      {/* Vista de espacios */}
-      {(() => {
+        {/* Vista de espacios */}
+        {(() => {
         if (loading) {
           if (viewMode === 'cards') {
             return (
@@ -897,7 +891,7 @@ export default function SpacesManagement() {
         return (
         <>
           {viewMode === 'cards' ? (
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="px-4 pt-2 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sortedEspacios.map((espacio) => (
                 <SpaceCard
                   key={espacio.id}
@@ -908,17 +902,19 @@ export default function SpacesManagement() {
               ))}
             </div>
           ) : (
-            <SpaceTable
-              espacios={sortedEspacios}
-              onEdit={handleEdit}
-              onDelete={canEdit ? handleDelete : undefined}
-              sortConfig={sortConfig}
-              onSort={handleSort}
-            />
+            <div className="px-4 pt-2">
+              <SpaceTable
+                espacios={sortedEspacios}
+                onEdit={handleEdit}
+                onDelete={canEdit ? handleDelete : undefined}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+            </div>
           )}
 
           {/* Paginación */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t bg-gray-50/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3">
             <p className="text-sm text-muted-foreground">
               <span className="hidden sm:inline">
                 Mostrando {sortedEspacios.length} de {totalElements} espacios (Página {page + 1} de {totalPages})
@@ -951,6 +947,7 @@ export default function SpacesManagement() {
         </>
         );
       })()}
+      </div>
 
       {/* Modales */}
       <SpaceFormDialog

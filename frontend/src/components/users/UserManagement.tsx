@@ -580,111 +580,97 @@ export default function UserManagement() {
       {/* Estadísticas de usuarios */}
       <UserStatsCards />
 
-      {/* Barra de búsqueda y filtros compacta */}
-      <Card className="shadow-card">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-lg">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
-          <div className="space-y-2">
-            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-              {/* Campo de búsqueda principal */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Buscar por email o nombre..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Filtros compactos estilo Reservas */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <PopoverFilterSection<string>
-                  selectedId={filters.rol ?? null}
-                  items={USER_ROLES.map(r => ({ id: r, primary: ROLE_LABELS[r] }))}
-                  onChange={(v) => handleRoleFilter(v ?? '')}
-                  Icon={UserCog}
-                  tooltipNone="Todos los roles"
-                  activeBgClass="bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300"
-                  activeTextColorClass="text-indigo-700"
-                />
-                <EnumFilterSection
-                  value={filters.verificado === undefined ? null : (filters.verificado ? 'true' : 'false')}
-                  options={[
-                    { value: null, tooltip: 'Todos', Icon: Filter },
-                    {
-                      value: 'true',
-                      tooltip: 'Verificados',
-                      Icon: CheckCircle2,
-                      activeColorClass: 'text-green-600',
-                      inactiveColorClass: 'text-green-500',
-                    },
-                    {
-                      value: 'false',
-                      tooltip: 'Sin verificar',
-                      Icon: Hourglass,
-                      activeColorClass: 'text-amber-600',
-                      inactiveColorClass: 'text-amber-500',
-                    },
-                  ]}
-                  onChange={(v) => handleVerificadoFilter(v ?? '')}
-                />
-                <EnumFilterSection
-                  value={filters.activo === undefined ? null : (filters.activo ? 'true' : 'false')}
-                  options={[
-                    { value: null, tooltip: 'Todos', Icon: Filter },
-                    {
-                      value: 'true',
-                      tooltip: 'Activos',
-                      Icon: CheckCircle2,
-                      activeColorClass: 'text-green-600',
-                      inactiveColorClass: 'text-green-500',
-                    },
-                    {
-                      value: 'false',
-                      tooltip: 'Inactivos',
-                      Icon: XCircle,
-                      activeColorClass: 'text-red-600',
-                      inactiveColorClass: 'text-red-500',
-                    },
-                  ]}
-                  onChange={(v) => handleActivoFilter(v ?? '')}
-                />
-                <DateRangeFilterSection
-                  fechaInicio={filters.fechaDesde ? new Date(filters.fechaDesde) : undefined}
-                  fechaFin={filters.fechaHasta ? new Date(filters.fechaHasta) : undefined}
-                  onFechaInicioChange={(d) =>
-                    handleFechaDesdeFilter(d ? d.toISOString().slice(0, 10) : '')
-                  }
-                  onFechaFinChange={(d) =>
-                    handleFechaHastaFilter(d ? d.toISOString().slice(0, 10) : '')
-                  }
-                />
-                <ClearFiltersButton
-                  visible={activeFilters.length > 0}
-                  onClear={clearFilters}
+      {/* Tabla de usuarios con filtros embebidos */}
+      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Buscar por email o nombre..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-10"
                 />
               </div>
             </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <PopoverFilterSection<string>
+                selectedId={filters.rol ?? null}
+                items={USER_ROLES.map(r => ({ id: r, primary: ROLE_LABELS[r] }))}
+                onChange={(v) => handleRoleFilter(v ?? '')}
+                Icon={UserCog}
+                tooltipNone="Todos los roles"
+                activeBgClass="bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300"
+                activeTextColorClass="text-indigo-700"
+              />
+              <EnumFilterSection
+                value={filters.verificado === undefined ? null : (filters.verificado ? 'true' : 'false')}
+                options={[
+                  { value: null, tooltip: 'Todos', Icon: Filter },
+                  {
+                    value: 'true',
+                    tooltip: 'Verificados',
+                    Icon: CheckCircle2,
+                    activeColorClass: 'text-green-600',
+                    inactiveColorClass: 'text-green-500',
+                  },
+                  {
+                    value: 'false',
+                    tooltip: 'Sin verificar',
+                    Icon: Hourglass,
+                    activeColorClass: 'text-amber-600',
+                    inactiveColorClass: 'text-amber-500',
+                  },
+                ]}
+                onChange={(v) => handleVerificadoFilter(v ?? '')}
+              />
+              <EnumFilterSection
+                value={filters.activo === undefined ? null : (filters.activo ? 'true' : 'false')}
+                options={[
+                  { value: null, tooltip: 'Todos', Icon: Filter },
+                  {
+                    value: 'true',
+                    tooltip: 'Activos',
+                    Icon: CheckCircle2,
+                    activeColorClass: 'text-green-600',
+                    inactiveColorClass: 'text-green-500',
+                  },
+                  {
+                    value: 'false',
+                    tooltip: 'Inactivos',
+                    Icon: XCircle,
+                    activeColorClass: 'text-red-600',
+                    inactiveColorClass: 'text-red-500',
+                  },
+                ]}
+                onChange={(v) => handleActivoFilter(v ?? '')}
+              />
+              <DateRangeFilterSection
+                fechaInicio={filters.fechaDesde ? new Date(filters.fechaDesde) : undefined}
+                fechaFin={filters.fechaHasta ? new Date(filters.fechaHasta) : undefined}
+                onFechaInicioChange={(d) =>
+                  handleFechaDesdeFilter(d ? d.toISOString().slice(0, 10) : '')
+                }
+                onFechaFinChange={(d) =>
+                  handleFechaHastaFilter(d ? d.toISOString().slice(0, 10) : '')
+                }
+              />
+              <ClearFiltersButton
+                visible={activeFilters.length > 0}
+                onClear={clearFilters}
+              />
+            </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Filtros activos */}
-      {activeFilters.length > 0 && (
-        <FilterBar 
-          filters={activeFilters} 
-          onClearAll={clearFilters}
-          className="animate-slide-up"
-        />
-      )}
-
-      {/* Tabla de usuarios */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+          {activeFilters.length > 0 && (
+            <FilterBar
+              filters={activeFilters}
+              onClearAll={clearFilters}
+              className="mt-3 animate-slide-up"
+            />
+          )}
+        </div>
         {users.length === 0 ? (
           <EmptyState
             icon={UsersIcon}
@@ -698,15 +684,16 @@ export default function UserManagement() {
         ) : (
             <>
               {/* Vista de tabla para desktop (1280px+) */}
-              <div className="hidden xl:block">
+              <div className="hidden xl:block px-4 pt-2">
+                <div className="border rounded-lg overflow-hidden">
                 <Table>
-                    <TableHeader style={{ backgroundColor: '#525961' }}>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-[#d1d5db] min-w-[200px]">Email</TableHead>
-                        <TableHead className="text-[#d1d5db] min-w-[150px]">Nombre</TableHead>
-                        <TableHead className="text-[#d1d5db]">Rol</TableHead>
-                        <TableHead className="text-[#d1d5db] text-center">Estado</TableHead>
-                        <TableHead className="text-[#d1d5db] text-right">Acciones</TableHead>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent border-b-0">
+                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[200px]">Email</TableHead>
+                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[150px]">Nombre</TableHead>
+                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Rol</TableHead>
+                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-center">Estado</TableHead>
+                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -796,6 +783,7 @@ export default function UserManagement() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
               </div>
 
               {/* Vista de cards para móvil, tablet y desktop pequeño (< 1280px) */}
@@ -881,7 +869,7 @@ export default function UserManagement() {
               </div>
 
               {/* Paginación */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t bg-gray-50/50">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3">
                 <p className="text-sm text-muted-foreground">
                   Mostrando {users.length} de {totalElements} usuarios (Página {page + 1} de {totalPages})
                 </p>

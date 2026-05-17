@@ -214,15 +214,15 @@ export default function AuditManagement() {
         </div>
       </div>
 
-      {/* Filtros (estilo compacto, siempre visible) */}
-      <AuditFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        onClearFilters={clearFilters}
-      />
-
-      {/* Tabla de logs */}
+      {/* Tabla de logs con filtros embebidos */}
       <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+        <div className="px-4 pt-4 pb-3">
+          <AuditFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            onClearFilters={clearFilters}
+          />
+        </div>
         {logs.length === 0 ? (
           <EmptyState
             icon={FileText}
@@ -235,7 +235,8 @@ export default function AuditManagement() {
           />
         ) : (
           <>
-            <div className="border rounded-lg overflow-hidden">
+            <div className="px-4 pt-4">
+              <div className="overflow-x-auto border rounded-lg overflow-hidden">
             <Table>
               <TableHeader style={{ backgroundColor: '#525961' }}>
                 <TableRow className="hover:bg-transparent border-b-0">
@@ -308,11 +309,12 @@ export default function AuditManagement() {
                 })}
               </TableBody>
             </Table>
+              </div>
             </div>
 
             {/* Paginación */}
             {totalPages > 1 && (
-              <div className="border-t p-4">
+              <div className="p-4">
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
