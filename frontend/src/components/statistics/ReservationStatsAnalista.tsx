@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,15 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
+  ChevronDown,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { exportReservationStatsToPDF } from '@/lib/utils/pdf-export';
 import ReservationCharts from './ReservationCharts';
 import { format } from 'date-fns';
@@ -303,48 +312,55 @@ export default function ReservationStatsAnalista() {
     ? ((stats.totalCanceladas / stats.totalReservas) * 100).toFixed(1)
     : '0';
 
-  return (
-    <div className="space-y-6">
-      {/* Header con filtros y acciones */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Estadísticas de Reservas</h2>
-          <p className="text-sm text-muted-foreground">
-            Análisis completo de reservas del sistema
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+  const actionsSlot = typeof document !== 'undefined'
+    ? document.getElementById('stats-actions-slot')
+    : null;
+  const actions = (
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={() => globalThis.location.reload()}
-            className="gap-2"
+            aria-label="Actualizar"
+            className="h-9 w-9"
           >
             <RefreshCw className="h-4 w-4" />
-            Actualizar
           </Button>
-          <PermissionGuard requiredPermission="estadisticas:ver_reservas">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="gap-2"
-            >
-              <FileDown className="h-4 w-4" />
+        </TooltipTrigger>
+        <TooltipContent>Actualizar</TooltipContent>
+      </Tooltip>
+      <PermissionGuard requiredPermission="estadisticas:ver_reservas">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="h-9">
+              <FileDown className="h-4 w-4 mr-1.5" />
+              Exportar
+              <ChevronDown className="h-4 w-4 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportCSV}>
+              <FileDown className="h-4 w-4 mr-2" />
               Exportar CSV
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportPDF}
-              className="gap-2"
-            >
-              <FileDown className="h-4 w-4" />
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportPDF}>
+              <FileDown className="h-4 w-4 mr-2" />
               Exportar PDF
-            </Button>
-          </PermissionGuard>
-        </div>
-      </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </PermissionGuard>
+    </>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Si existe el slot en el header de tabs (vista admin), portalizar; si no, renderizar inline. */}
+      {actionsSlot
+        ? createPortal(actions, actionsSlot)
+        : <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
 
       {/* Tarjetas de métricas principales */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

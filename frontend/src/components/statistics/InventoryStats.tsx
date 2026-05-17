@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  PopoverFilterSection,
+  EnumFilterSection,
+  ClearFiltersButton,
+} from "@/components/ui/compact-filter";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
@@ -32,6 +39,8 @@ import {
   ShieldAlert,
   Info,
   FileText,
+  Tag,
+  XCircle,
 } from 'lucide-react';
 import {
   Select,
@@ -196,106 +205,91 @@ export default function InventoryStats() {
     );
   }
 
+  const actionsSlot = typeof document !== 'undefined'
+    ? document.getElementById('stats-actions-slot')
+    : null;
+  const actions = (
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            aria-label="Actualizar"
+            className="h-9 w-9"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Actualizar</TooltipContent>
+      </Tooltip>
+      <PermissionGuard requiredPermission="estadisticas:ver_inventario">
+        <Button onClick={handleExport} className="h-9">
+          <FileDown className="h-4 w-4 mr-1.5" />
+          Exportar
+        </Button>
+      </PermissionGuard>
+    </>
+  );
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">Estadísticas de Inventario</h2>
-          <p className="text-muted-foreground">
-            Análisis completo y detallado del inventario disponible
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-          <PermissionGuard requiredPermission="estadisticas:ver_inventario">
-            <Button onClick={handleExport}>
-              <FileDown className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-          </PermissionGuard>
-        </div>
-      </div>
+      {actionsSlot
+        ? createPortal(actions, actionsSlot)
+        : <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
 
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Filtros de Consulta</CardTitle>
-            {hayFiltrosActivos && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearFilters}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Limpiar Filtros
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <label htmlFor="filter-espacio" className="text-sm font-medium">Espacio</label>
-              <Select
-                value={filterEspacio?.toString() || 'todos'}
-                onValueChange={(value) => setFilterEspacio(value === 'todos' ? null : Number.parseInt(value))}
-              >
-                <SelectTrigger id="filter-espacio">
-                  <SelectValue placeholder="Todos los espacios" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los espacios</SelectItem>
-                  {espacios.map(espacio => (
-                    <SelectItem key={espacio.id} value={espacio.id.toString()}>
-                      {espacio.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="filter-tipo-elemento" className="text-sm font-medium">Tipo de Elemento</label>
-              <Select
-                value={filterTipoElemento?.toString() || 'todos'}
-                onValueChange={(value) => setFilterTipoElemento(value === 'todos' ? null : Number.parseInt(value))}
-              >
-                <SelectTrigger id="filter-tipo-elemento">
-                  <SelectValue placeholder="Todos los tipos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los tipos</SelectItem>
-                  {tiposElemento.map(tipo => (
-                    <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                      {tipo.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="filter-estado" className="text-sm font-medium">Estado</label>
-              <Select value={filterEstado} onValueChange={setFilterEstado}>
-                <SelectTrigger id="filter-estado">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los estados</SelectItem>
-                  <SelectItem value="DISPONIBLE">Disponible</SelectItem>
-                  <SelectItem value="MANTENIMIENTO">Mantenimiento</SelectItem>
-                  <SelectItem value="DANADO">Dañado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Filtros compactos al estilo del resto de la app */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <PopoverFilterSection<number>
+          selectedId={filterEspacio ?? null}
+          items={espacios.map(e => ({ id: e.id, primary: e.nombre }))}
+          onChange={(value) => setFilterEspacio(value ?? null)}
+          Icon={Building2}
+          tooltipNone="Todos los espacios"
+        />
+        <PopoverFilterSection<number>
+          selectedId={filterTipoElemento ?? null}
+          items={tiposElemento.map(t => ({ id: t.id, primary: t.nombre }))}
+          onChange={(value) => setFilterTipoElemento(value ?? null)}
+          Icon={Tag}
+          tooltipNone="Todos los tipos"
+          activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
+          activeTextColorClass="text-purple-700"
+        />
+        <EnumFilterSection
+          value={filterEstado === 'todos' ? null : filterEstado}
+          options={[
+            { value: null, tooltip: 'Todos los estados', Icon: Filter },
+            {
+              value: 'DISPONIBLE',
+              tooltip: 'Disponible',
+              Icon: CheckCircle2,
+              activeColorClass: 'text-green-600',
+              inactiveColorClass: 'text-green-500',
+            },
+            {
+              value: 'MANTENIMIENTO',
+              tooltip: 'En mantenimiento',
+              Icon: Wrench,
+              activeColorClass: 'text-amber-600',
+              inactiveColorClass: 'text-amber-500',
+            },
+            {
+              value: 'DANADO',
+              tooltip: 'Dañado',
+              Icon: XCircle,
+              activeColorClass: 'text-red-600',
+              inactiveColorClass: 'text-red-500',
+            },
+          ]}
+          onChange={(value) => setFilterEstado(value ?? 'todos')}
+        />
+        <ClearFiltersButton
+          visible={hayFiltrosActivos}
+          onClear={handleClearFilters}
+        />
+      </div>
 
       {/* Estadísticas principales - 8 cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

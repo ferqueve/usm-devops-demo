@@ -604,25 +604,17 @@ export default function ReservationManagement() {
   return (
     <div className="flex flex-col flex-1 min-h-[calc(100vh-8rem)]">
       <div className="space-y-4 sm:space-y-6 flex-shrink-0">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold">
-              {canViewRecommendations && !canApprove ? 'Mis Solicitudes' : 'Gestión de Reservas'}
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              {canViewRecommendations && !canApprove
-                ? 'Administra tus solicitudes de reserva de espacios'
-                : 'Administra todas las reservas y solicitudes del sistema'}
-            </p>
-          </div>
+        {/* Acciones de página */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {canViewRecommendations && !canApprove
+              ? 'Administra tus solicitudes de reserva de espacios'
+              : 'Administra todas las reservas y solicitudes del sistema'}
+          </p>
           <PermissionGuard requiredPermissions={['reserva:crear']}>
-            <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">
-                {canViewRecommendations && !canApprove ? 'Nueva Solicitud' : 'Nueva Reserva'}
-              </span>
-              <span className="sm:hidden">{canViewRecommendations && !canApprove ? 'Solicitar' : 'Nueva'}</span>
+            <Button onClick={() => setIsFormDialogOpen(true)} className="h-9">
+              <Plus className="h-4 w-4 mr-1.5" />
+              {canViewRecommendations && !canApprove ? 'Nueva Solicitud' : 'Nueva Reserva'}
             </Button>
           </PermissionGuard>
         </div>

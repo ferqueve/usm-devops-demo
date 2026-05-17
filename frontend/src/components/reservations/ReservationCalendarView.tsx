@@ -292,23 +292,42 @@ interface ReservaConPosicionCompleta {
   minutosFin: number;
   leftPercent: number;
   widthPercent: number;
+  indiceColumna: number;
+  columnasGrupo: number;
 }
 
-// Asigna posición horizontal a una reserva dentro de su grupo de superposición
+// Asigna posición horizontal a una reserva dentro de su grupo de superposición.
+// Usa "interval scheduling" greedy: asigna cada reserva a la primera "pista" cuya
+// última reserva ya terminó. Esto permite reutilizar columnas y minimiza el ancho
+// que necesita cada reserva (no se queda atrapada con el ancho del peor caso del grupo).
 function calcularPosicionHorizontal<T extends RangoMinutos & { reserva: Reserva }>(
   reservaActual: T,
   grupos: T[][],
-): T & { leftPercent: number; widthPercent: number } {
+): T & { leftPercent: number; widthPercent: number; indiceColumna: number; columnasGrupo: number } {
   const grupo = grupos.find(g => g.some(r => r.reserva.id === reservaActual.reserva.id));
   if (!grupo) {
-    return { ...reservaActual, leftPercent: 0, widthPercent: 100 };
+    return { ...reservaActual, leftPercent: 0, widthPercent: 100, indiceColumna: 0, columnasGrupo: 1 };
   }
-  const grupoOrdenado = [...grupo].sort((a, b) => a.minutosInicio - b.minutosInicio);
-  const indiceEnGrupo = grupoOrdenado.findIndex(r => r.reserva.id === reservaActual.reserva.id);
-  const numColumnas = grupoOrdenado.length;
-  const widthPercent = 100 / numColumnas;
-  const leftPercent = widthPercent * indiceEnGrupo;
-  return { ...reservaActual, leftPercent, widthPercent };
+  const ordenado = [...grupo].sort((a, b) => a.minutosInicio - b.minutosInicio);
+  // Pistas: cada pista guarda el `minutosFin` de la última reserva colocada ahí.
+  const pistas: number[] = [];
+  const indicePorReservaId = new Map<number, number>();
+  for (const r of ordenado) {
+    const id = r.reserva.id;
+    let asignada = pistas.findIndex(fin => fin <= r.minutosInicio);
+    if (asignada === -1) {
+      pistas.push(r.minutosFin);
+      asignada = pistas.length - 1;
+    } else {
+      pistas[asignada] = r.minutosFin;
+    }
+    indicePorReservaId.set(id, asignada);
+  }
+  const columnasGrupo = pistas.length;
+  const indiceColumna = indicePorReservaId.get(reservaActual.reserva.id) ?? 0;
+  const widthPercent = 100 / columnasGrupo;
+  const leftPercent = widthPercent * indiceColumna;
+  return { ...reservaActual, leftPercent, widthPercent, indiceColumna, columnasGrupo };
 }
 
 // Tope de columnas visibles por día en la vista semanal. Cuando un día tiene más grupos
@@ -948,106 +967,66 @@ export default function ReservationCalendarView({
                     backgroundColor: 'transparent',
                   }}>
                     {posicionesConSuperposicion.map((item, index) => {
-                      const { reserva, topPercent, alturaPercent, leftPercent, widthPercent } = item;
-                      const estadoConfig = getEstadoConfig(reserva.estado);
-                      const esFutura = new Date(reserva.inicio) > new Date();
+                      const { reserva, topPercent, alturaPercent, leftPercent, widthPercent, indiceColumna } = item;
                       const esPasada = new Date(reserva.fin) < new Date();
                       const alturaAreaVisible = alturaMinima - (mostrarColapsadoAntes ? 48 : 0) - (mostrarColapsadoDespues ? 48 : 0);
-                      const alturaPx = Math.max(alturaPercent * alturaAreaVisible / 100, 48);
+                      const alturaPx = Math.max(alturaPercent * alturaAreaVisible / 100, 26);
+                      // Cap del ancho para que cuando esté sola o solo se solape con pocas no
+                      // ocupe toda la columna del día. Cuando aplica el cap, reubicamos también
+                      // el left para que las tarjetas queden pegadas en vez de espaciadas.
+                      const MAX_WIDTH_PERCENT = 30;
+                      const aplicaCap = widthPercent > MAX_WIDTH_PERCENT;
+                      const widthEfectivo = aplicaCap ? MAX_WIDTH_PERCENT : widthPercent;
+                      const leftEfectivo = aplicaCap ? indiceColumna * MAX_WIDTH_PERCENT : leftPercent;
+                      // Cuando la barra es angosta (mucha superposición) escondemos detalles
+                      // secundarios para evitar que se rompan a varias líneas.
+                      const mostrarCapacidad = widthEfectivo >= 20 && alturaPx >= 60;
+                      const tipoColor = reserva.tipoEspacioColor ?? '#9ca3af';
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={reserva.id}
-                          className={`absolute rounded-md border-l-4 shadow-sm transition-all hover:shadow-md group ${
-                            estadoConfig.borderColor
-                          }`}
+                          onClick={() => onViewDetails(reserva)}
+                          className="absolute rounded-md transition-all hover:shadow-md group text-left p-0 cursor-pointer"
                           style={{
-                            top: `${topPercent}%`,
-                            left: `calc(${leftPercent}% + 2px)`,
-                            width: `calc(${widthPercent}% - 4px)`,
-                            height: `${alturaPx}px`,
-                            backgroundColor: 'transparent',
-                            opacity: 1,
+                            top: `calc(${topPercent}% + 3px)`,
+                            left: `calc(${leftEfectivo}% + 3px)`,
+                            width: `calc(${widthEfectivo}% - 6px)`,
+                            height: `${Math.max(2, alturaPx - 6)}px`,
+                            backgroundColor: esPasada ? '#f9fafb' : '#ffffff',
+                            borderLeft: `4px solid ${tipoColor}`,
+                            border: `1px solid ${esPasada ? '#e5e7eb' : '#e5e7eb'}`,
+                            borderLeftWidth: '4px',
+                            borderLeftColor: tipoColor,
+                            opacity: esPasada ? 0.85 : 1,
+                            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                             zIndex: 10 + index,
                           }}
+                          aria-label={`${reserva.titulo || reserva.espacioNombre} · ${formatTime(reserva.inicio)}-${formatTime(reserva.fin)}`}
                         >
-                          <div
-                            className={`h-full rounded-md p-1.5 border flex flex-col relative ${
-                              esPasada
-                                ? 'border-gray-200'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            style={{
-                              backgroundColor: esPasada ? '#f9fafb' : '#ffffff',
-                              opacity: esPasada ? 0.85 : 1,
-                              isolation: 'isolate',
-                              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                              backfaceVisibility: 'hidden',
-                            }}
-                          >
-                            {/* Indicador tipo esquina doblada en la esquina superior derecha - color del tipo de espacio */}
-                            {reserva.tipoEspacioColor ? (
-                              <div 
-                                className="absolute top-0 right-0 w-0 h-0 border-l-transparent border-l-[12px] border-t-[12px] pointer-events-none rounded-tr-md" 
-                                style={{ borderTopColor: reserva.tipoEspacioColor }}
-                              />
-                            ) : (
-                              <div className={`absolute top-0 right-0 w-0 h-0 ${estadoConfig.cornerBorderColor} border-l-transparent border-l-[12px] border-t-[12px] pointer-events-none rounded-tr-md`} />
-                            )}
+                          <div className="h-full px-1.5 py-1 flex flex-col gap-0.5 overflow-hidden">
                             <h4
-                              className={`text-xs font-semibold truncate mb-0.5 ${
+                              className={`text-xs font-semibold truncate leading-tight ${
                                 esPasada ? 'text-muted-foreground' : 'text-foreground'
                               }`}
                             >
                               {reserva.titulo || reserva.espacioNombre}
                             </h4>
-                            <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-2.5 w-2.5" />
-                                <span className="truncate">
-                                  {formatTime(reserva.inicio)} - {formatTime(reserva.fin)}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MapPin className="h-2.5 w-2.5" />
-                                <span>Cap. {reserva.capacidadEspacio}</span>
-                              </div>
-                              <div className="flex items-center gap-1 mt-0.5">
-                                <Badge
-                                  className={`${estadoConfig.color} border text-[10px] font-medium px-1 py-0 h-4`}
-                                >
-                                  {estadoConfig.label}
-                                </Badge>
-                              </div>
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                              <Clock className="h-2.5 w-2.5 flex-shrink-0" />
+                              <span className="truncate">
+                                {formatTime(reserva.inicio)}–{formatTime(reserva.fin)}
+                              </span>
                             </div>
-                            <div className="flex items-center gap-1 mt-auto pt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onViewDetails(reserva);
-                                }}
-                                className="h-5 px-1.5 text-[10px]"
-                              >
-                                Ver
-                              </Button>
-                              {!readOnly && !esPasada && esFutura && reserva.estado === 'APROBADO' && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onCancelReserva(reserva);
-                                  }}
-                                  className="h-5 px-1.5 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  Cancelar
-                                </Button>
-                              )}
-                            </div>
+                            {mostrarCapacidad && (
+                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                                <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+                                <span className="truncate">Cap. {reserva.capacidadEspacio}</span>
+                              </div>
+                            )}
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -1067,7 +1046,7 @@ export default function ReservationCalendarView({
                     
                     return (
                       <div
-                        className="absolute left-0 right-0 z-10"
+                        className="absolute left-0 right-0 z-50 pointer-events-none"
                         style={{ 
                           top: `${(mostrarColapsadoAntes ? 48 : 0) + (topPercent * (alturaMinima - (mostrarColapsadoAntes ? 48 : 0) - (mostrarColapsadoDespues ? 48 : 0)) / 100)}px`
                         }}
@@ -1338,7 +1317,7 @@ export default function ReservationCalendarView({
   const renderMonthView = () => {
     const start = startOfMonth(currentDate);
     const end = endOfMonth(currentDate);
-    
+
     // Asegurar que empiece en lunes
     const firstDay = startOfWeek(start, { weekStartsOn: 1 });
     const lastDay = endOfWeek(end, { weekStartsOn: 1 });
@@ -1346,7 +1325,7 @@ export default function ReservationCalendarView({
 
     const reservasMes = getReservasForRange(start, end);
     const reservasPorDia = new Map<string, Reserva[]>();
-    
+
     reservasMes.forEach(reserva => {
       // Filtrar pendientes para analistas/admin (no deben aparecer en la vista principal)
       if (reserva.estado === 'PENDIENTE' && !showPendienteFilter) {
@@ -1360,6 +1339,39 @@ export default function ReservationCalendarView({
       reservasPorDia.get(key)!.push(reserva);
     });
 
+    // Máximo de reservas en cualquier día del mes — sirve para escalar el heatmap.
+    const maxReservasDia = Math.max(
+      1,
+      ...Array.from(reservasPorDia.values()).map(rs => rs.length),
+    );
+
+    // Heatmap en escala azul, alineada con el resto de las vistas del calendario.
+    const getHeatmapBgClass = (densidad: number): string => {
+      if (densidad === 0) return '';
+      if (densidad < 0.2) return 'bg-blue-50';
+      if (densidad < 0.4) return 'bg-blue-100';
+      if (densidad < 0.6) return 'bg-blue-200';
+      if (densidad < 0.8) return 'bg-blue-300';
+      return 'bg-blue-400';
+    };
+
+    // Top tipos de espacio del día con su color y cantidad.
+    const calcularTiposDelDia = (reservas: Reserva[]) => {
+      const conteo = new Map<string, { nombre: string; color?: string; cantidad: number }>();
+      reservas.forEach(r => {
+        const nombre = r.tipoEspacioNombre ?? 'Otro';
+        const existente = conteo.get(nombre);
+        if (existente) {
+          existente.cantidad += 1;
+        } else {
+          conteo.set(nombre, { nombre, color: r.tipoEspacioColor, cantidad: 1 });
+        }
+      });
+      return Array.from(conteo.values()).sort((a, b) => b.cantidad - a.cantidad);
+    };
+
+    const ahora = new Date();
+
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-7 gap-1">
@@ -1369,70 +1381,77 @@ export default function ReservationCalendarView({
               {day}
             </div>
           ))}
-          
+
           {/* Días del calendario */}
           {allDays.map((day) => {
             const key = format(day, 'yyyy-MM-dd');
             const reservasDia = reservasPorDia.get(key) || [];
+            const cantidad = reservasDia.length;
             const esHoy = isToday(day);
             const esDelMes = isSameMonth(day, currentDate);
-            
-            // Contar reservas por estado
-            const confirmadas = reservasDia.filter(r => r.estado === 'APROBADO').length;
-            const canceladas = reservasDia.filter(r => r.estado === 'CANCELADO').length;
-            const pendientes = reservasDia.filter(r => r.estado === 'PENDIENTE').length;
-            const tieneReservas = reservasDia.length > 0;
+            const esPasado = day < ahora && !esHoy;
 
-            const getDayBgClass = () => {
-              if (esHoy) return 'bg-blue-50 border-blue-200';
-              if (esDelMes) return 'bg-white border-gray-200';
-              return 'bg-gray-50 border-gray-100';
-            };
-            const getDayTextClass = () => {
-              if (esHoy) return 'text-blue-700';
-              if (esDelMes) return '';
-              return 'text-muted-foreground';
-            };
+            const densidad = cantidad / maxReservasDia;
+            const heatmapBg = getHeatmapBgClass(densidad);
+            const tiposDelDia = calcularTiposDelDia(reservasDia).slice(0, 3);
+
+            const containerClass = [
+              'min-h-[100px] rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md text-left w-full flex flex-col gap-1.5 border',
+              // Hoy: anillo azul exterior para que destaque incluso encima del heatmap.
+              esHoy
+                ? 'border-blue-600 ring-2 ring-blue-500 ring-offset-1'
+                : esDelMes ? 'border-gray-200' : 'border-gray-100',
+              !esDelMes ? 'opacity-50' : '',
+              esPasado && esDelMes ? 'opacity-70' : '',
+              heatmapBg || (esDelMes ? 'bg-white' : 'bg-gray-50'),
+            ].filter(Boolean).join(' ');
+
             return (
               <button
                 type="button"
                 key={day.toISOString()}
-                className={`min-h-[100px] border rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md text-left bg-transparent w-full ${getDayBgClass()}`}
+                className={containerClass}
                 onClick={() => {
-                  if (tieneReservas) {
-                    setCurrentDate(day);
-                    setCalendarViewMode('day');
-                  }
+                  setCurrentDate(day);
+                  setCalendarViewMode('day');
                 }}
-                aria-label={`Día ${format(day, 'd')}`}
+                aria-label={`Día ${format(day, 'd')}${cantidad ? ` · ${cantidad} reservas` : ''}`}
               >
-                <div className={`text-xs font-medium mb-2 ${getDayTextClass()}`}>
-                  {format(day, 'd')}
+                <div className="flex items-center justify-between gap-1">
+                  <span
+                    className={
+                      esHoy
+                        ? 'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold'
+                        : `text-xs font-medium ${esDelMes ? 'text-foreground' : 'text-muted-foreground'}`
+                    }
+                  >
+                    {format(day, 'd')}
+                  </span>
+                  {cantidad > 0 && (
+                    <span className="text-[10px] text-muted-foreground font-medium tabular-nums">
+                      {cantidad}
+                    </span>
+                  )}
                 </div>
-                
-                {tieneReservas ? (
-                  <div className="flex flex-col gap-1.5">
-                    {/* Iconos con contadores */}
-                    {confirmadas > 0 && (
-                      <div className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" />
-                        <span className="text-[9px] font-medium text-foreground">{confirmadas}</span>
-                      </div>
-                    )}
-                    {pendientes > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Hourglass className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                        <span className="text-[9px] font-medium text-foreground">{pendientes}</span>
-                      </div>
-                    )}
-                    {canceladas > 0 && (
-                      <div className="flex items-center gap-1">
-                        <XCircle className="h-3.5 w-3.5 text-red-600 shrink-0" />
-                        <span className="text-[9px] font-medium text-foreground">{canceladas}</span>
-                      </div>
-                    )}
+
+                {/* Puntos por tipo de espacio (top 3) — sin fondo, sólo dot + número. */}
+                {tiposDelDia.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-auto">
+                    {tiposDelDia.map(tipo => (
+                      <span
+                        key={tipo.nombre}
+                        className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-700"
+                        title={`${tipo.cantidad} ${tipo.nombre}`}
+                      >
+                        <span
+                          className="inline-block h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: tipo.color ?? '#9ca3af' }}
+                        />
+                        {tipo.cantidad}
+                      </span>
+                    ))}
                   </div>
-                ) : null}
+                )}
               </button>
             );
           })}

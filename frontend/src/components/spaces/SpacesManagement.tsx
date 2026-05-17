@@ -26,18 +26,26 @@ import {
   EnumFilterSection,
   ClearFiltersButton,
 } from "@/components/ui/compact-filter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { espaciosApi } from '@/lib/api/spaces';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
 import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, Edificio } from '@/lib/types/spaces';
 import { 
-  Plus, 
-  Search, 
-  Filter, 
-  ChevronLeft, 
-  ChevronRight, 
-  Loader2, 
-  RefreshCw, 
-  Building2, 
+  Plus,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Loader2,
+  RefreshCw,
+  Building2,
   Download,
   Package,
   ClipboardList,
@@ -525,98 +533,80 @@ export default function SpacesManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header con estadísticas */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">Gestión de Espacios</h2>
-          <p className="text-muted-foreground">
-            Administra los espacios disponibles en el sistema
-          </p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full lg:w-auto">
-          <div className="flex items-center gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10">
-            <Building2 className="h-4 w-4 text-utec-blue" />
-            <span className="font-bold text-sm">{totalElements}</span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">espacios</span>
-          </div>
-          
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/inventory')}
-            className="h-10 flex-1 sm:flex-none"
-          >
-            <Package className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Gestionar Inventario</span>
-            <span className="sm:hidden">Inventario</span>
-          </Button>
+      {/* Acciones de página */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{totalElements}</span> espacios · administra los espacios disponibles
+        </p>
 
-          <PermissionGuard requiredPermission="solicitud_inventario:ver">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/inventory/requests')}
-              className="h-10 flex-1 sm:flex-none"
-            >
-              <ClipboardList className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Solicitudes de Inventario</span>
-              <span className="sm:hidden">Solicitudes</span>
-            </Button>
-          </PermissionGuard>
-          
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Acciones utilitarias */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={isRefreshing ? undefined : handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Actualizar"
+                className="h-9 w-9"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Actualizar</TooltipContent>
+          </Tooltip>
+
           <PermissionGuard requiredPermission="espacio:ver">
-            <Button 
-              variant="outline"
-              onClick={handleExport}
-              className="h-10 flex-1 sm:flex-none"
-            >
-              <Download className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Exportar CSV</span>
-              <span className="sm:hidden">CSV</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleExport}
+                  aria-label="Exportar CSV"
+                  className="h-9 w-9"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Exportar CSV</TooltipContent>
+            </Tooltip>
           </PermissionGuard>
-          
-          <button
-            type="button"
-            onClick={isRefreshing ? undefined : handleRefresh}
-            disabled={isRefreshing}
-            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-1 sm:flex-none justify-center ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-            <span className="text-sm font-medium hidden sm:inline">Actualizar</span>
-          </button>
 
-          {/* Botones de switch de vista */}
-          <div className="flex items-center border rounded-lg shadow-sm bg-white h-10 p-1 flex-shrink-0">
-            <Button
-              variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('cards')}
-              className="h-8 px-3"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className="h-8 px-3"
-            >
-              <LayoutList className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <PermissionGuard requiredPermissions={['espacio:crear', 'tipo:crear']} requireAll={false}>
-            <Button onClick={() => setShowTiposManagement(true)} variant="outline" className="h-10 flex-1 sm:flex-none">
-              <Building2 className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Tipos de Espacios</span>
-              <span className="sm:hidden">Tipos</span>
-            </Button>
-          </PermissionGuard>
+          {/* Acciones secundarias en dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-9">
+                Gestionar
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate('/inventory')}>
+                <Package className="h-4 w-4 mr-2" />
+                Gestionar Inventario
+              </DropdownMenuItem>
+              <PermissionGuard requiredPermission="solicitud_inventario:ver">
+                <DropdownMenuItem onClick={() => navigate('/inventory/requests')}>
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Solicitudes de Inventario
+                </DropdownMenuItem>
+              </PermissionGuard>
+              <PermissionGuard requiredPermissions={['espacio:crear', 'tipo:crear']} requireAll={false}>
+                <DropdownMenuItem onClick={() => setShowTiposManagement(true)}>
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Tipos de Espacios
+                </DropdownMenuItem>
+              </PermissionGuard>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Acción principal */}
           <PermissionGuard requiredPermission="espacio:crear">
-            <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Agregar Espacio</span>
-              <span className="sm:hidden">Agregar</span>
+            <Button onClick={() => setCreateDialog(true)} className="h-9">
+              <Plus className="h-4 w-4 mr-1.5" />
+              Agregar Espacio
             </Button>
           </PermissionGuard>
         </div>
@@ -708,6 +698,27 @@ export default function SpacesManagement() {
                   <Filter className="h-3.5 w-3.5 mr-1.5" />
                   Avanzados
                 </Button>
+                {/* Switch de vista (cards / tabla) */}
+                <div className="flex items-center border rounded-md bg-white h-9 p-0.5 ml-auto flex-shrink-0">
+                  <Button
+                    variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('cards')}
+                    className="h-8 px-2.5"
+                    aria-label="Vista de tarjetas"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('table')}
+                    className="h-8 px-2.5"
+                    aria-label="Vista de tabla"
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 

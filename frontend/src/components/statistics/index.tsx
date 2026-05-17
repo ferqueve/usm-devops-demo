@@ -16,23 +16,24 @@ export default function Statistics() {
   if (canManageInventory && canViewReservationStats) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Estadísticas</h1>
-          <p className="text-muted-foreground">
-            Visualiza las estadísticas de reservas e inventario
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Visualiza las estadísticas de reservas e inventario
+        </p>
         <Tabs defaultValue="reservas" className="w-full">
-          <TabsList>
-            <TabsTrigger value="reservas">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Reservas
-            </TabsTrigger>
-            <TabsTrigger value="inventario">
-              <Package className="h-4 w-4 mr-2" />
-              Inventario
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <TabsList>
+              <TabsTrigger value="reservas">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Reservas
+              </TabsTrigger>
+              <TabsTrigger value="inventario">
+                <Package className="h-4 w-4 mr-2" />
+                Inventario
+              </TabsTrigger>
+            </TabsList>
+            {/* Las acciones de cada tab se portalizan dentro de este slot. */}
+            <div id="stats-actions-slot" className="flex items-center gap-2" />
+          </div>
           <TabsContent value="reservas" className="space-y-6">
             <ReservationStatsAnalista />
           </TabsContent>

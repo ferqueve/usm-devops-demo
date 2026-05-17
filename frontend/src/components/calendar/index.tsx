@@ -179,17 +179,14 @@ export default function Calendar() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Calendario de Reservas</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {isExterno ? 'Visualiza las reservas públicas del sistema' : 'Visualiza todas las reservas del sistema'}
-          </p>
-        </div>
+      {/* Acciones de página */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          {isExterno ? 'Visualiza las reservas públicas del sistema' : 'Visualiza todas las reservas del sistema'}
+        </p>
         {isExterno && (
-          <Button onClick={handleCreateReserva} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
+          <Button onClick={handleCreateReserva} className="h-9">
+            <Plus className="h-4 w-4 mr-1.5" />
             Solicitar Reserva
           </Button>
         )}

@@ -3,6 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserStatsCards } from './UserStatsCards';
@@ -56,7 +62,8 @@ import type { User, UserRole, UserFilters } from '@/lib/types/users';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { 
   Search, 
-  ChevronLeft, 
+  ChevronLeft,
+  ChevronDown,
   ChevronRight, 
   Shield, 
   Mail, 
@@ -527,53 +534,62 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header con estadísticas */}
-      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">Gestión de Usuarios</h2>
-          <p className="text-muted-foreground">
-            Administra los usuarios del sistema
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10">
-            <UsersIcon className="h-4 w-4 text-utec-blue" />
-            <span className="font-bold text-sm">{totalElements}</span>
-            <span className="text-sm text-muted-foreground whitespace-nowrap">usuarios</span>
-          </div>
-          
-          <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>
-            <Button
-              variant="outline"
-              onClick={() => setCarrerasDialog(true)}
-              className="h-10"
-            >
-              <GraduationCap className="h-4 w-4 mr-2" />
-              Gestionar Carreras
-            </Button>
-          </PermissionGuard>
+      {/* Acciones de página */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{totalElements}</span> usuarios · administra los usuarios del sistema
+        </p>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={isRefreshing ? undefined : handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Actualizar"
+                className="h-9 w-9"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Actualizar</TooltipContent>
+          </Tooltip>
 
           <PermissionGuard requiredPermission="usuario:gestionar">
-            <Button
-              variant="outline"
-              onClick={handleExportCSV}
-              className="h-10"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar CSV
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleExportCSV}
+                  aria-label="Exportar CSV"
+                  className="h-9 w-9"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Exportar CSV</TooltipContent>
+            </Tooltip>
           </PermissionGuard>
-          
-          <button
-            type="button"
-            onClick={isRefreshing ? undefined : handleRefresh}
-            disabled={isRefreshing}
-            className={`flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10 transition-all ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-            <span className="text-sm font-medium whitespace-nowrap">Actualizar</span>
-          </button>
+
+          <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-9">
+                  Gestionar
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setCarrerasDialog(true)}>
+                  <GraduationCap className="h-4 w-4 mr-2" />
+                  Gestionar Carreras
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </PermissionGuard>
         </div>
       </div>
 

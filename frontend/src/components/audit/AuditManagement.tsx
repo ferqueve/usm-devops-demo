@@ -3,6 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -32,6 +38,8 @@ import {
   FileDown,
   FileSpreadsheet,
   Eye,
+  Download,
+  ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -168,49 +176,48 @@ export default function AuditManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">Auditoría del Sistema</h2>
-          <p className="text-muted-foreground">
-            Registro de todos los cambios realizados en el sistema
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10">
-            <FileText className="h-4 w-4 text-utec-blue" />
-            <span className="font-bold text-sm">{totalElements}</span>
-            <span className="text-sm text-muted-foreground whitespace-nowrap">registros</span>
-          </div>
-          
-          <Button 
-            variant="outline"
-            onClick={handleExportCSV}
-            className="h-10"
-          >
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
-          
-          <Button 
-            variant="outline"
-            onClick={handleExportPDF}
-            className="h-10"
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Exportar PDF
-          </Button>
-          
-          <button
-            type="button"
-            onClick={isRefreshing ? undefined : handleRefresh}
-            disabled={isRefreshing}
-            className={`flex items-center gap-2 px-4 border rounded-lg shadow-sm bg-white h-10 transition-all ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="text-sm font-medium whitespace-nowrap">Actualizar</span>
-          </button>
+      {/* Acciones de página */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{totalElements}</span> registros · cambios realizados en el sistema
+        </p>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={isRefreshing ? undefined : handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Actualizar"
+                className="h-9 w-9"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Actualizar</TooltipContent>
+          </Tooltip>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-9">
+                <Download className="h-4 w-4 mr-1.5" />
+                Exportar
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Exportar CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Exportar PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

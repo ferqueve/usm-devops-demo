@@ -232,13 +232,8 @@ export default function UnifiedDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">{getDashboardTitle()}</h2>
-          <p className="text-muted-foreground">{getDashboardDescription()}</p>
-        </div>
-      </div>
+      {/* Descripción de página */}
+      <p className="text-sm text-muted-foreground">{getDashboardDescription()}</p>
 
       {/* Alertas de reservas pendientes (ANALISTA/ADMIN/DOCENTE/EXTERNO) */}
       <PendingReservationsAlert

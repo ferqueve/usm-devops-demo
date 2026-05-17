@@ -2,11 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from 'sonner';
 import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Loader2,
   RefreshCw,
   Package,
@@ -580,83 +588,84 @@ export default function InventoryManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <Button 
-            variant="outline" 
+      {/* Acciones de página */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate('/rooms')}
-            className="self-start sm:self-auto"
+            className="h-9"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
             Volver
           </Button>
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold">Gestión de Inventario</h2>
-            <p className="text-muted-foreground">
-              Administra todos los items de inventario del sistema
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{totalElements}</span> items · administra el inventario del sistema
+          </p>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full lg:w-auto">
-          <div className="flex items-center gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10">
-            <Package className="h-4 w-4 text-utec-blue" />
-            <span className="font-bold text-sm">{totalElements}</span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">items</span>
-          </div>
-          
-          <PermissionGuard requiredPermission="inventario:crear">
-            <Button 
-              variant="outline"
-              onClick={() => setImportDialog(true)}
-              className="h-10 flex-1 sm:flex-none"
-            >
-              <Upload className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Importar CSV</span>
-              <span className="sm:hidden">Importar</span>
-            </Button>
-          </PermissionGuard>
-          
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={isRefreshing ? undefined : handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Actualizar"
+                className="h-9 w-9"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Actualizar</TooltipContent>
+          </Tooltip>
+
           <PermissionGuard requiredPermission="inventario:ver">
-            <Button 
-              variant="outline"
-              onClick={handleExport}
-              className="h-10 flex-1 sm:flex-none"
-            >
-              <Download className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Exportar CSV</span>
-              <span className="sm:hidden">Exportar</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleExport}
+                  aria-label="Exportar CSV"
+                  className="h-9 w-9"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Exportar CSV</TooltipContent>
+            </Tooltip>
           </PermissionGuard>
-          
-          <button
-            type="button"
-            onClick={isRefreshing ? undefined : handleRefresh}
-            disabled={isRefreshing}
-            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10 transition-all flex-1 sm:flex-none justify-center ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-            <span className="text-sm font-medium hidden sm:inline">Actualizar</span>
-          </button>
-          
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-9">
+                Gestionar
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <PermissionGuard requiredPermission="inventario:crear">
+                <DropdownMenuItem onClick={() => setImportDialog(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Importar CSV
+                </DropdownMenuItem>
+              </PermissionGuard>
+              <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
+                <DropdownMenuItem onClick={() => setShowTiposManagement(true)}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Gestionar Tipos
+                </DropdownMenuItem>
+              </PermissionGuard>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <PermissionGuard requiredPermission="inventario:crear">
-            <Button onClick={() => setCreateDialog(true)} className="h-10 flex-1 sm:flex-none">
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Agregar Item</span>
-              <span className="sm:hidden">Agregar</span>
-            </Button>
-          </PermissionGuard>
-          
-          <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
-            <Button 
-              onClick={() => setShowTiposManagement(true)} 
-              variant="outline" 
-              className="h-10 flex-1 sm:flex-none"
-            >
-              <Package className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Gestionar Tipos</span>
-              <span className="sm:hidden">Tipos</span>
+            <Button onClick={() => setCreateDialog(true)} className="h-9">
+              <Plus className="h-4 w-4 mr-1.5" />
+              Agregar Item
             </Button>
           </PermissionGuard>
         </div>

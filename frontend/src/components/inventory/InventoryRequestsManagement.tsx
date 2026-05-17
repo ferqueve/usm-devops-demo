@@ -420,47 +420,38 @@ export default function InventoryRequestsManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <Button variant="outline" onClick={() => navigate('/rooms')} className="self-start sm:self-auto">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/rooms')}
+            className="h-9"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
             Volver
           </Button>
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <ClipboardList className="h-5 w-5 text-utec-blue" />
-              Solicitudes de Inventario
-            </h2>
-            <p className="text-muted-foreground max-w-xl">
-              Visualiza y coordina los pedidos de equipamiento vinculados a las reservas de espacios.
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{summary.total}</span> solicitudes ·{' '}
+            <span className="font-medium text-foreground">{summary.pendingItems}</span> activas en página
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10">
-            <ClipboardList className="h-4 w-4 text-utec-blue" />
-            <span className="font-bold text-sm">{summary.total}</span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">solicitudes</span>
-          </div>
-
-          <div className="flex items-center gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10">
-            <Boxes className="h-4 w-4 text-utec-blue" />
-            <span className="font-bold text-sm">{summary.pendingItems}</span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">activas en página</span>
-          </div>
-
-          <Button
-            variant="outline"
-            className="h-10 flex-1 sm:flex-none"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Actualizar</span>
-            <span className="sm:hidden">Refrescar</span>
-          </Button>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              aria-label="Actualizar"
+              className="h-9 w-9"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Actualizar</TooltipContent>
+        </Tooltip>
       </div>
 
       <Card className="shadow-card">
