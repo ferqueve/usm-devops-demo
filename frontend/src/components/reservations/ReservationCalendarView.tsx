@@ -340,6 +340,43 @@ function construirOverflowBuckets(grupos: GrupoReservasConPosicion[]): OverflowC
   return cubos;
 }
 
+// Lista compartida para popovers: muestra reservas como botones con swatch, nombre y horario.
+// La usan tanto el chip de overflow como las barras agrupadas (×N).
+function ListaReservasPopoverContent({
+  titulo,
+  reservas,
+  onViewDetails,
+}: Readonly<{ titulo: string; reservas: Reserva[]; onViewDetails: (r: Reserva) => void }>) {
+  return (
+    <>
+      <div className="text-xs font-semibold text-foreground mb-1.5 px-1">{titulo}</div>
+      <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto">
+        {reservas
+          .slice()
+          .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime())
+          .map(r => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => onViewDetails(r)}
+              className="flex items-center gap-2 text-left text-xs rounded-sm px-2 py-1.5 hover:bg-muted transition-colors"
+            >
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-sm flex-shrink-0 border border-black/10"
+                style={{ backgroundColor: r.tipoEspacioColor ?? '#9ca3af' }}
+                aria-hidden="true"
+              />
+              <span className="flex-1 min-w-0 truncate">{r.espacioNombre}</span>
+              <span className="text-muted-foreground whitespace-nowrap">
+                {formatTime(r.inicio)}–{formatTime(r.fin)}
+              </span>
+            </button>
+          ))}
+      </div>
+    </>
+  );
+}
+
 interface OverflowChipProps {
   top: number;
   leftPercent: number;
@@ -381,32 +418,11 @@ function OverflowChip({ top, leftPercent, widthPercent, altura, reservas, onView
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-2" align="start">
-        <div className="text-xs font-semibold text-foreground mb-1.5 px-1">
-          {cuenta} reservas adicionales
-        </div>
-        <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto">
-          {reservas
-            .slice()
-            .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime())
-            .map(r => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => onViewDetails(r)}
-                className="flex items-center gap-2 text-left text-xs rounded-sm px-2 py-1.5 hover:bg-muted transition-colors"
-              >
-                <span
-                  className="inline-block h-2.5 w-2.5 rounded-sm flex-shrink-0 border border-black/10"
-                  style={{ backgroundColor: r.tipoEspacioColor ?? '#9ca3af' }}
-                  aria-hidden="true"
-                />
-                <span className="flex-1 min-w-0 truncate">{r.espacioNombre}</span>
-                <span className="text-muted-foreground whitespace-nowrap">
-                  {formatTime(r.inicio)}–{formatTime(r.fin)}
-                </span>
-              </button>
-            ))}
-        </div>
+        <ListaReservasPopoverContent
+          titulo={`${cuenta} reservas adicionales`}
+          reservas={reservas}
+          onViewDetails={onViewDetails}
+        />
       </PopoverContent>
     </Popover>
   );
@@ -486,7 +502,10 @@ interface ReservationBarProps {
   /** Cantidad de reservas que se agrupan en esta barra (>1 muestra contador "×N"). */
   cantidadAgrupada?: number;
   zIndex: number;
+  /** Reserva principal (representante del grupo cuando hay agrupación). */
   reserva: Reserva;
+  /** Conjunto completo de reservas del grupo. Cuando hay >1 se muestra popover con la lista. */
+  reservasGrupo?: Reserva[];
   onViewDetails: (reserva: Reserva) => void;
 }
 
@@ -501,12 +520,18 @@ function ReservationBar({
   label,
   zIndex,
   reserva,
+  reservasGrupo,
   onViewDetails,
   cantidadAgrupada,
 }: Readonly<ReservationBarProps>) {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  const handleClick = useCallback(() => onViewDetails(reserva), [onViewDetails, reserva]);
+  const esAgrupada = (cantidadAgrupada ?? 0) > 1 && (reservasGrupo?.length ?? 0) > 1;
+  const handleClick = useCallback(() => {
+    // Para barras agrupadas el click lo maneja el PopoverTrigger; el detalle se abre
+    // recién cuando el usuario elige una reserva de la lista.
+    if (!esAgrupada) onViewDetails(reserva);
+  }, [onViewDetails, reserva, esAgrupada]);
 
   const usarColorTipo = !!bgColorOverride;
   const colorTextoClase = usarColorTipo
@@ -520,7 +545,7 @@ function ReservationBar({
   const contadorDosDigitos = (cantidadAgrupada ?? 0) >= 10;
   const contadorApilado = mostrarContador && (widthPercent < 16 || (contadorDosDigitos && widthPercent < 20));
 
-  return (
+  const botonBarra = (
     <button
       type="button"
       className="absolute cursor-pointer group p-0 bg-transparent border-0 text-left"
@@ -590,6 +615,22 @@ function ReservationBar({
       )}
     </button>
   );
+
+  if (esAgrupada && reservasGrupo) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>{botonBarra}</PopoverTrigger>
+        <PopoverContent className="w-72 p-2" align="start">
+          <ListaReservasPopoverContent
+            titulo={`${cantidadAgrupada} reservas en este horario`}
+            reservas={reservasGrupo}
+            onViewDetails={onViewDetails}
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  }
+  return botonBarra;
 }
 
 // Lee la vista actual del calendario respetando preferencias del usuario.
@@ -1244,6 +1285,7 @@ export default function ReservationCalendarView({
                                 tituloTooltip={tituloTooltip}
                                 label={label}
                                 cantidadAgrupada={cantidadReservas}
+                                reservasGrupo={reservas}
                                 zIndex={10 + index}
                                 reserva={reservaPrincipal}
                                 onViewDetails={onViewDetails}
@@ -1272,7 +1314,7 @@ export default function ReservationCalendarView({
                             altura={altura}
                             reservas={bucket.reservas}
                             onViewDetails={onViewDetails}
-                            zIndex={500 + idx}
+                            zIndex={20 + idx}
                           />
                         );
                       })}
