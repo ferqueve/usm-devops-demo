@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, CheckCircle2, XCircle, Hourglass, Loader2 } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import { getEstadoConfig, formatTime } from './reservationUtils';
@@ -252,6 +253,36 @@ function getColorConfigByEstado(estado: string, columnaIndex: number): ColorConf
   return paleta[columnaIndex % paleta.length];
 }
 
+// Genera una abreviación corta del nombre de un espacio para mostrar en barras estrechas.
+// Mantiene el sufijo numérico cuando existe (clave para distinguir "Aula 8" de "Aula 11").
+function abreviarNombreEspacio(nombre: string): string {
+  if (!nombre) return '';
+  const limpio = nombre.trim();
+  const aula = limpio.match(/^aula\s+(\d+)$/i);
+  if (aula) return `A${aula[1]}`;
+  const aulaTeorica = limpio.match(/^aula\s+te[oó]rica\s+(\d+)$/i);
+  if (aulaTeorica) return `AT${aulaTeorica[1]}`;
+  const lab = limpio.match(/^laboratorio\s+(.+)$/i);
+  if (lab) return `Lab. ${lab[1].slice(0, 4)}`;
+  const sala = limpio.match(/^sala\s+(?:de\s+)?(.+)$/i);
+  if (sala) return `S. ${sala[1].slice(0, 4)}`;
+  if (/^anfiteatro/i.test(limpio)) return 'Anfit.';
+  return limpio.length > 8 ? `${limpio.slice(0, 7)}…` : limpio;
+}
+
+// Determina si el texto sobre un fondo dado debe ser claro u oscuro
+// usando luminancia perceptual (relativa a la fórmula sRGB).
+function textoSobreFondo(hex?: string): 'light' | 'dark' {
+  if (!hex) return 'light';
+  const limpio = hex.replace('#', '');
+  if (limpio.length !== 6) return 'light';
+  const r = parseInt(limpio.slice(0, 2), 16);
+  const g = parseInt(limpio.slice(2, 4), 16);
+  const b = parseInt(limpio.slice(4, 6), 16);
+  const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminancia > 0.6 ? 'dark' : 'light';
+}
+
 // Resultado del cálculo: posición y dimensiones de una reserva en la grilla
 interface ReservaConPosicionCompleta {
   reserva: Reserva;
@@ -278,6 +309,137 @@ function calcularPosicionHorizontal<T extends RangoMinutos & { reserva: Reserva 
   const widthPercent = 100 / numColumnas;
   const leftPercent = widthPercent * indiceEnGrupo;
   return { ...reservaActual, leftPercent, widthPercent };
+}
+
+// Tope de columnas visibles por día en la vista semanal. Cuando un día tiene más grupos
+// superpuestos que esto, los excedentes se colapsan en un chip "+N" que abre un popover.
+const MAX_COLUMNAS_VISIBLES_SEMANA = 6;
+
+interface OverflowChipBucket {
+  inicio: Date;
+  fin: Date;
+  reservas: Reserva[];
+}
+
+// Mergea los grupos que cayeron fuera del tope de columnas en "cubos" de overflow:
+// dos grupos que se superponen en el tiempo se funden en un único chip que abarca
+// la unión de sus rangos. Así evitamos apilar varios chips en la misma franja horaria.
+function construirOverflowBuckets(grupos: GrupoReservasConPosicion[]): OverflowChipBucket[] {
+  if (grupos.length === 0) return [];
+  const ordenados = [...grupos].sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
+  const cubos: OverflowChipBucket[] = [];
+  for (const g of ordenados) {
+    const ultimo = cubos[cubos.length - 1];
+    if (ultimo && g.inicio.getTime() < ultimo.fin.getTime()) {
+      ultimo.fin = new Date(Math.max(ultimo.fin.getTime(), g.fin.getTime()));
+      ultimo.reservas.push(...g.reservas);
+    } else {
+      cubos.push({ inicio: g.inicio, fin: new Date(g.fin), reservas: [...g.reservas] });
+    }
+  }
+  return cubos;
+}
+
+interface OverflowChipProps {
+  top: number;
+  leftPercent: number;
+  widthPercent: number;
+  altura: number;
+  reservas: Reserva[];
+  onViewDetails: (reserva: Reserva) => void;
+  zIndex: number;
+}
+
+function OverflowChip({ top, leftPercent, widthPercent, altura, reservas, onViewDetails, zIndex }: Readonly<OverflowChipProps>) {
+  const cuenta = reservas.length;
+  const apilado = widthPercent < 16;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="absolute cursor-pointer bg-gray-700 hover:bg-gray-800 text-white border border-gray-800 rounded-sm overflow-hidden transition-colors p-0"
+          style={{
+            top: `${top + 1}px`,
+            left: `calc(${leftPercent}% + 3px)`,
+            width: `calc(${widthPercent}% - 6px)`,
+            height: `${Math.max(2, altura - 2)}px`,
+            zIndex,
+          }}
+          aria-label={`${cuenta} reservas adicionales — abrir lista`}
+        >
+          {apilado ? (
+            <span className="absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold leading-none">
+              <span>+</span>
+              <span>{cuenta}</span>
+            </span>
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none">
+              +{cuenta}
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-2" align="start">
+        <div className="text-xs font-semibold text-foreground mb-1.5 px-1">
+          {cuenta} reservas adicionales
+        </div>
+        <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto">
+          {reservas
+            .slice()
+            .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime())
+            .map(r => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => onViewDetails(r)}
+                className="flex items-center gap-2 text-left text-xs rounded-sm px-2 py-1.5 hover:bg-muted transition-colors"
+              >
+                <span
+                  className="inline-block h-2.5 w-2.5 rounded-sm flex-shrink-0 border border-black/10"
+                  style={{ backgroundColor: r.tipoEspacioColor ?? '#9ca3af' }}
+                  aria-hidden="true"
+                />
+                <span className="flex-1 min-w-0 truncate">{r.espacioNombre}</span>
+                <span className="text-muted-foreground whitespace-nowrap">
+                  {formatTime(r.inicio)}–{formatTime(r.fin)}
+                </span>
+              </button>
+            ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Renderiza una leyenda de los tipos de espacio que aparecen en las reservas visibles,
+// con un swatch del color asignado a ese tipo (mismo que se usa en las barras del calendario).
+function renderLeyendaTipos(reservas: Reserva[]): ReactNode {
+  const mapa = new Map<string, { nombre: string; color?: string }>();
+  reservas.forEach(r => {
+    const nombre = r.tipoEspacioNombre;
+    if (!nombre) return;
+    if (!mapa.has(nombre)) {
+      mapa.set(nombre, { nombre, color: r.tipoEspacioColor });
+    }
+  });
+  if (mapa.size === 0) return null;
+  const items = Array.from(mapa.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+      <span className="font-medium text-foreground">Tipos:</span>
+      {items.map(item => (
+        <span key={item.nombre} className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-2.5 w-2.5 rounded-sm border border-black/10"
+            style={{ backgroundColor: item.color ?? '#9ca3af' }}
+            aria-hidden="true"
+          />
+          {item.nombre}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 // Renderiza el resumen de cantidad de reservas en la semana
@@ -312,11 +474,17 @@ function calcularPosicionesConSuperposicion(
 
 interface ReservationBarProps {
   top: number;
-  left: number;
-  anchoFijo: number;
+  leftPercent: number;
+  widthPercent: number;
   altura: number;
   colorConfig: { bg: string; border: string; hoverBg: string; hoverBorder: string };
+  /** Color hex opcional (del tipo de espacio). Si se pasa, sobrescribe las clases bg/border. */
+  bgColorOverride?: string;
   tituloTooltip: string;
+  /** Texto descriptivo (no se pinta, solo para debugging / accesibilidad extra). */
+  label?: string;
+  /** Cantidad de reservas que se agrupan en esta barra (>1 muestra contador "×N"). */
+  cantidadAgrupada?: number;
   zIndex: number;
   reserva: Reserva;
   onViewDetails: (reserva: Reserva) => void;
@@ -324,32 +492,50 @@ interface ReservationBarProps {
 
 function ReservationBar({
   top,
-  left,
-  anchoFijo,
+  leftPercent,
+  widthPercent,
   altura,
   colorConfig,
+  bgColorOverride,
   tituloTooltip,
+  label,
   zIndex,
   reserva,
   onViewDetails,
+  cantidadAgrupada,
 }: Readonly<ReservationBarProps>) {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const handleClick = useCallback(() => onViewDetails(reserva), [onViewDetails, reserva]);
+
+  const usarColorTipo = !!bgColorOverride;
+  const colorTextoClase = usarColorTipo
+    ? (textoSobreFondo(bgColorOverride) === 'dark' ? 'text-gray-900' : 'text-white')
+    : 'text-white';
+  // Indicador de agrupación: solo si la barra es lo suficientemente alta como para
+  // que el contador no encime visualmente al cuerpo de la barra.
+  const mostrarContador = (cantidadAgrupada ?? 0) > 1 && altura >= 16;
+  // Si la barra es muy angosta, el "×N" no entra en una sola línea horizontal:
+  // lo apilamos en dos renglones ("×" arriba, número abajo) para que siga siendo legible.
+  const contadorDosDigitos = (cantidadAgrupada ?? 0) >= 10;
+  const contadorApilado = mostrarContador && (widthPercent < 16 || (contadorDosDigitos && widthPercent < 20));
 
   return (
     <button
       type="button"
       className="absolute cursor-pointer group p-0 bg-transparent border-0 text-left"
       style={{
-        top: `${top}px`,
-        left: `${left}px`,
-        width: `${anchoFijo}px`,
-        height: `${altura}px`,
+        // Pequeño margen vertical para que dos reservas consecutivas en el tiempo
+        // no queden pegadas (mismo color → se leían como una sola barra).
+        top: `${top + 1}px`,
+        left: `calc(${leftPercent}% + 3px)`,
+        width: `calc(${widthPercent}% - 6px)`,
+        height: `${Math.max(2, altura - 2)}px`,
         zIndex: zIndex,
       }}
       onClick={handleClick}
       aria-label={tituloTooltip}
+      data-label={label}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => {
         setShowTooltip(false);
@@ -359,11 +545,36 @@ function ReservationBar({
         setMousePosition({ x: e.clientX, y: e.clientY });
       }}
     >
-      {/* Barra fina con borde - solo color */}
       <div
-        className={`h-full border-2 rounded-sm ${colorConfig.bg} ${colorConfig.border} ${colorConfig.hoverBg} ${colorConfig.hoverBorder} transition-colors relative`}
-        style={{ minHeight: '2px' }}
-      />
+        className={
+          usarColorTipo
+            ? 'h-full border rounded-sm overflow-hidden relative hover:brightness-110 transition-[filter]'
+            : `h-full border rounded-sm overflow-hidden relative transition-colors ${colorConfig.bg} ${colorConfig.border} ${colorConfig.hoverBg} ${colorConfig.hoverBorder}`
+        }
+        style={{
+          minHeight: '2px',
+          ...(usarColorTipo
+            ? { backgroundColor: bgColorOverride, borderColor: bgColorOverride }
+            : {}),
+        }}
+      >
+        {mostrarContador && (
+          contadorApilado ? (
+            <span
+              className={`absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold leading-none pointer-events-none ${colorTextoClase}`}
+            >
+              <span>×</span>
+              <span>{cantidadAgrupada}</span>
+            </span>
+          ) : (
+            <span
+              className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none pointer-events-none ${colorTextoClase}`}
+            >
+              ×{cantidadAgrupada}
+            </span>
+          )
+        )}
+      </div>
       {/* Tooltip que sigue el cursor - renderizado en portal para quedar por encima del resto */}
       {showTooltip && mousePosition && typeof document !== 'undefined' && createPortal(
         <div
@@ -906,7 +1117,7 @@ export default function ReservationCalendarView({
     return (
       <div className="space-y-4">
         <div className="border rounded-lg overflow-hidden bg-white">
-          <div className="grid grid-cols-8 border-b bg-gray-50">
+          <div className="grid grid-cols-8 gap-x-2 border-b bg-gray-50">
             {/* Celda vacía para el header de horas */}
             <div className="p-2 border-r"></div>
             {/* Headers de días */}
@@ -930,7 +1141,7 @@ export default function ReservationCalendarView({
 
           {/* Contenido - sin scroll, se extiende */}
           <div className="overflow-visible">
-            <div className="grid grid-cols-8">
+            <div className="grid grid-cols-8 gap-x-2">
               {/* Columna de horas */}
               <div className="border-r bg-gray-50/50">
                 {horas.map((hora) => (
@@ -950,24 +1161,40 @@ export default function ReservationCalendarView({
                 const esHoy = isToday(day);
 
                 const reservasConPosiciones = calcularPosicionesReservasPorDia(reservasDia);
+                // Cantidad máxima de columnas necesarias en este día (para repartir el ancho
+                // disponible entre las barras que se superponen sin recurrir a un ancho fijo).
+                const maxColumnasDia = reservasConPosiciones.reduce(
+                  (max, g) => Math.max(max, (g.columna ?? 0) + 1),
+                  1,
+                );
+                // Si el día supera el tope, reservamos la última columna para un chip "+N"
+                // que colapsa todo lo que no entra. El resto se renderiza normal.
+                const hayOverflow = maxColumnasDia > MAX_COLUMNAS_VISIBLES_SEMANA;
+                const columnasEfectivas = hayOverflow ? MAX_COLUMNAS_VISIBLES_SEMANA : maxColumnasDia;
+                const columnaUmbralOverflow = hayOverflow ? MAX_COLUMNAS_VISIBLES_SEMANA - 1 : Infinity;
+                const gruposVisibles = reservasConPosiciones.filter(g => g.columna < columnaUmbralOverflow);
+                const gruposOverflow = hayOverflow
+                  ? reservasConPosiciones.filter(g => g.columna >= columnaUmbralOverflow)
+                  : [];
+                const overflowBuckets = construirOverflowBuckets(gruposOverflow);
 
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`border-r last:border-r-0 relative ${esHoy ? 'bg-blue-50/30' : 'bg-white'}`}                                                     
+                    className={`border-r last:border-r-0 relative ${esHoy ? 'bg-blue-50/30' : 'bg-white'}`}
                     style={{ minHeight: `${alturaTotal}px` }}
                   >
                     {/* Líneas de horas */}
                     {horas.map((hora) => (
                       <div
                         key={`line-${day.toISOString()}-${hora}`}
-                        className="absolute left-0 right-0 border-b border-gray-200"                                                                            
-                        style={{ top: `${(hora - horaInicioVisible) * alturaPorHora}px` }}                                                                      
+                        className="absolute left-0 right-0 border-b border-gray-200"
+                        style={{ top: `${(hora - horaInicioVisible) * alturaPorHora}px` }}
                       />
                     ))}
 
                                                                                                                                                                        {/* Barras finas para cada grupo de reservas */}
-                       {reservasConPosiciones.map((grupo, index) => {
+                       {gruposVisibles.map((grupo, index) => {
                          const { reservas, inicio, fin, columna, estado } = grupo;
                          if (!reservas || reservas.length === 0) return null;
                          const cantidadReservas = reservas.length;
@@ -979,39 +1206,75 @@ export default function ReservationCalendarView({
                           return null;
                         }
 
-                                                                                                   const top = Math.max(0, (horaInicio - horaInicioVisible) * alturaPorHora);
+                          const top = Math.max(0, (horaInicio - horaInicioVisible) * alturaPorHora);
                           const altura = Math.max(2, (horaFin - horaInicio) * alturaPorHora);
-                          
-                          // Ancho fijo de 8px para todas las barras
-                          const anchoFijo = 8;
-                          const paddingLateral = 2; // margen desde el borde izquierdo
-                          const separacionEntreBarras = 2; // espacio entre barras en px
-                          // Calcular posición horizontal: una al lado de la otra sin solaparse
-                          const left = paddingLateral + (columna * (anchoFijo + separacionEntreBarras));
+
+                          // Ancho proporcional: repartimos el ancho de la columna del día entre
+                          // las barras que se superponen para que cada una sea legible.
+                          const widthPercent = 100 / columnasEfectivas;
+                          const leftPercent = columna * widthPercent;
 
                           // Usar el estado del grupo (ya está normalizado)
                           const estadoNormalizado = estado?.toUpperCase() || 'APROBADO';
                           const reservaPrincipal = reservas[0];
-                          
-                          const colorConfig = getColorConfigByEstado(estadoNormalizado, columna);
-                          const tituloTooltip = cantidadReservas > 1 
-                            ? `${cantidadReservas} reservas de ${formatTime(inicio.toISOString())} a ${formatTime(fin.toISOString())}`
-                            : `${reservaPrincipal.espacioNombre} - ${formatTime(inicio.toISOString())} a ${formatTime(fin.toISOString())}`;
 
-                                                                                                           return (
+                          const colorConfig = getColorConfigByEstado(estadoNormalizado, columna);
+                          // Si todas las reservas del grupo comparten tipo de espacio, usamos
+                          // su color; de lo contrario caemos en la paleta por estado.
+                          const tipoColorComun = reservas.every(r => r.tipoEspacioColor === reservaPrincipal.tipoEspacioColor)
+                            ? reservaPrincipal.tipoEspacioColor
+                            : undefined;
+                          const horarioStr = `${formatTime(inicio.toISOString())} a ${formatTime(fin.toISOString())}`;
+                          const tituloTooltip = cantidadReservas > 1
+                            ? `${cantidadReservas} reservas de ${horarioStr}`
+                            : `${reservaPrincipal.espacioNombre} — ${horarioStr}`;
+                          const label = cantidadReservas > 1
+                            ? `×${cantidadReservas}`
+                            : abreviarNombreEspacio(reservaPrincipal.espacioNombre);
+
+                          return (
                               <ReservationBar
                                 key={`barra-${day.toISOString()}-${inicio.getTime()}-${fin.getTime()}-${index}`}
                                 top={top}
-                                left={left}
-                                anchoFijo={anchoFijo}
+                                leftPercent={leftPercent}
+                                widthPercent={widthPercent}
                                 altura={altura}
                                 colorConfig={colorConfig}
+                                bgColorOverride={tipoColorComun}
                                 tituloTooltip={tituloTooltip}
+                                label={label}
+                                cantidadAgrupada={cantidadReservas}
                                 zIndex={10 + index}
                                 reserva={reservaPrincipal}
                                 onViewDetails={onViewDetails}
                               />
                           );
+                      })}
+
+                      {/* Chips de overflow: una entrada por rango horario que tiene más
+                          reservas de las que entran en las columnas visibles. */}
+                      {overflowBuckets.map((bucket, idx) => {
+                        const horaInicio = bucket.inicio.getHours() + bucket.inicio.getMinutes() / 60;
+                        const horaFin = bucket.fin.getHours() === 0 && bucket.fin.getMinutes() === 0
+                          ? 24
+                          : bucket.fin.getHours() + bucket.fin.getMinutes() / 60;
+                        if (horaFin <= horaInicioVisible || horaInicio >= horaFinVisible) return null;
+                        const top = Math.max(0, (horaInicio - horaInicioVisible) * alturaPorHora);
+                        const altura = Math.max(2, (horaFin - horaInicio) * alturaPorHora);
+                        const widthPercent = 100 / columnasEfectivas;
+                        const leftPercent = columnaUmbralOverflow * widthPercent;
+                        return (
+                          <OverflowChip
+                            key={`overflow-${day.toISOString()}-${bucket.inicio.getTime()}-${idx}`}
+                            top={top}
+                            leftPercent={leftPercent}
+                            widthPercent={widthPercent}
+                            altura={altura}
+                            reservas={bucket.reservas}
+                            onViewDetails={onViewDetails}
+                            zIndex={500 + idx}
+                          />
+                        );
                       })}
                   </div>
                 );
@@ -1019,6 +1282,9 @@ export default function ReservationCalendarView({
             </div>
           </div>
         </div>
+
+        {/* Leyenda de tipos de espacio presentes en la semana */}
+        {renderLeyendaTipos(days.flatMap(d => getReservasForDate(d)))}
 
         {/* Resumen de la semana */}
         {renderResumenSemana(days, getReservasForDate)}

@@ -85,15 +85,13 @@ export const DashboardHeader = memo(function DashboardHeader({
         </div>
       </header>
 
-      {/* Hamburger flotante que aparece cuando el botón del header no está visible */}
-      {!isTriggerVisible && (
+      {/* Hamburger flotante que aparece cuando el botón del header no está visible.
+          Solo se muestra cuando el sidebar está colapsado: con el sidebar abierto el rail
+          interno alcanza para cerrarlo y este botón pisaba el contenido a la derecha. */}
+      {!isTriggerVisible && !(state === 'expanded' && open) && (
         <Button
           onClick={toggleSidebar}
-          className={`fixed top-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 ${
-            state === 'expanded' && open 
-              ? 'left-[calc(16rem+1.5rem)]' 
-              : 'left-6'
-          }`}
+          className="fixed top-6 left-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
           style={{ 
             backgroundColor: '#525961',
             color: '#d1d5db',
