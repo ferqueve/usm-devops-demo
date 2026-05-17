@@ -20,23 +20,25 @@ export function AvatarInitials({ name, email, size = 'md', className }: Readonly
     return (parts[0][0] + parts.at(-1)![0]).toUpperCase();
   };
 
-  // Generar color basado en el nombre (consistente)
+  // Generar color basado en el nombre (consistente).
+  // Solo usamos clases planas porque las variantes gradientes con custom colors
+  // (from-utec-blue, etc.) no están registradas en Tailwind y caían a sin color.
   const getColorFromName = (str: string): string => {
     const colors = [
       'bg-utec-blue text-white',
       'bg-utec-green text-white',
       'bg-utec-cyan text-white',
       'bg-utec-orange text-white',
-      'bg-gradient-to-br from-utec-blue to-utec-cyan text-white',
-      'bg-gradient-to-br from-utec-green to-utec-blue text-white',
-      'bg-gradient-to-br from-utec-orange to-utec-red text-white',
+      'bg-utec-red text-white',
+      'bg-slate-700 text-white',
+      'bg-indigo-600 text-white',
     ];
-    
+
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.codePointAt(i)! + ((hash << 5) - hash);
     }
-    
+
     return colors[Math.abs(hash) % colors.length];
   };
 

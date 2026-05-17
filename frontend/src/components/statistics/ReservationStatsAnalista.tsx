@@ -97,13 +97,26 @@ export default function ReservationStatsAnalista() {
 
   const reservasPorDiaSemanaData = useMemo(() => {
     if (!stats?.reservasPorDiaSemana) return [];
-    const diasOrden = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    // El backend devuelve DayOfWeek de Java (MONDAY..SUNDAY en MAYÚSCULAS inglés).
+    // Mapeamos al label en español y mantenemos el orden Lun..Dom.
+    const diaMap: Record<string, { label: string; orden: number }> = {
+      MONDAY: { label: 'Lunes', orden: 0 },
+      TUESDAY: { label: 'Martes', orden: 1 },
+      WEDNESDAY: { label: 'Miércoles', orden: 2 },
+      THURSDAY: { label: 'Jueves', orden: 3 },
+      FRIDAY: { label: 'Viernes', orden: 4 },
+      SATURDAY: { label: 'Sábado', orden: 5 },
+      SUNDAY: { label: 'Domingo', orden: 6 },
+    };
     return Object.entries(stats.reservasPorDiaSemana)
-      .map(([dia, cantidad]) => ({
-        dia,
-        cantidad,
-        orden: diasOrden.includes(dia) ? diasOrden.indexOf(dia) : 99
-      }))
+      .map(([dia, cantidad]) => {
+        const info = diaMap[dia.toUpperCase()];
+        return {
+          dia: info?.label ?? dia,
+          cantidad,
+          orden: info?.orden ?? 99,
+        };
+      })
       .sort((a, b) => a.orden - b.orden);
   }, [stats?.reservasPorDiaSemana]);
 

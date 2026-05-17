@@ -145,34 +145,9 @@ export default function ReservationCharts({
           </Card>
         )}
 
-        {/* Gráfico de barras horizontal: Top espacios */}
-        {reservasPorEspacioData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Top 10 Espacios Más Reservados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart 
-                  data={reservasPorEspacioData} 
-                  layout="vertical"
-                  margin={{ left: 100, right: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis 
-                    dataKey="nombre" 
-                    type="category" 
-                    width={90}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="cantidad" fill="#10b981" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
+        {/* El ranking detallado de Top 10 está abajo en ReservationStatsAnalista
+            como lista numerada con nombres + cantidades, así que evitamos
+            duplicar la misma información como bar chart. */}
       </div>
     </div>
   );

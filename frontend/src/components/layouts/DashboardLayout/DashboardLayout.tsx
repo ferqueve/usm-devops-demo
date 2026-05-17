@@ -50,7 +50,9 @@ export const DashboardLayout = memo(function DashboardLayout({ children, title, 
       'statistics': 'Estadísticas y Reportes',
       'users': 'Gestión de Usuarios',
       'system': 'Sistema',
-      'inventory': 'Gestión de Inventario'
+      'audit': 'Auditoría del Sistema',
+      'inventory': 'Gestión de Inventario',
+      'inventory/requests': 'Solicitudes de Inventario',
     };
     return titleMap[currentRoute] || currentRoute.charAt(0).toUpperCase() + currentRoute.slice(1);
   }, [currentRoute, location.pathname, title]);

@@ -16,7 +16,7 @@ export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = fa
         dataKey="memory"
         icon={MemoryStick}
         color="#0066CC"
-        unit=" bytes"
+        unit=" MB"
         type="area"
         height={280}
         isPaused={isPaused}

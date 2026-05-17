@@ -48,6 +48,10 @@ export default function Calendar() {
   const [tipoEspacioFilter, setTipoEspacioFilter] = useState<number | null>(null);
   const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined);
   const [fechaFin, setFechaFin] = useState<Date | undefined>(undefined);
+  // Rango actualmente visible en el calendario (lo reporta ReservationCalendarView
+  // cuando el usuario navega día/semana/mes). Si el usuario aplica un filtro
+  // explícito de fecha, ese gana; si no, usamos esta ventana visible para fetch.
+  const [visibleRange, setVisibleRange] = useState<{ start: Date; end: Date } | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   
   // Diálogo de detalles
@@ -74,14 +78,24 @@ export default function Calendar() {
   const fetchReservas = useCallback(async () => {
     setLoading(true);
     try {
-      // En el calendario público, TODOS los roles ven TODAS las reservas aprobadas
+      // Orden de prioridad para la ventana:
+      //   1. Filtro explícito del usuario (fechaInicio/fechaFin).
+      //   2. Rango actualmente visible en el calendario (visibleRange).
+      //   3. Default ±2 meses (carga inicial antes de que el calendario reporte rango).
+      const inicioEfectivo = fechaInicio
+        ?? visibleRange?.start
+        ?? new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+      const finEfectivo = fechaFin
+        ?? visibleRange?.end
+        ?? new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+
       const response = await reservationsApi.obtenerTodasLasReservas(
-        'APROBADO', // Solo confirmadas
+        'APROBADO',
         espacioFilter,
         carreraFilter,
         tipoEspacioFilter,
-        fechaInicio,
-        fechaFin
+        inicioEfectivo,
+        finEfectivo
       );
 
       if (response.data) {
@@ -105,7 +119,7 @@ export default function Calendar() {
     } finally {
       setLoading(false);
     }
-  }, [isExterno, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [isExterno, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin, visibleRange]);
 
   // Cargar reservas cuando cambian los filtros o el rol
   useEffect(() => {
@@ -213,6 +227,7 @@ export default function Calendar() {
         readOnly={!isExterno}
         isFullScreen={isFullScreen}
         onToggleFullScreen={handleToggleFullScreen}
+        onVisibleRangeChange={(start, end) => setVisibleRange({ start, end })}
       />
 
       {/* Diálogo de detalles */}

@@ -60,7 +60,6 @@ export default function AuditManagement() {
   
   // Filtros
   const [filters, setFilters] = useState<AuditLogFilters>({});
-  const [showFilters, setShowFilters] = useState(true);
   
   // Modal de detalles
   const [detailsDialog, setDetailsDialog] = useState(false);
@@ -208,13 +207,11 @@ export default function AuditManagement() {
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros (estilo compacto, siempre visible) */}
       <AuditFilters
         filters={filters}
         onFiltersChange={setFilters}
         onClearFilters={clearFilters}
-        showFilters={showFilters}
-        onToggleFilters={() => setShowFilters(!showFilters)}
       />
 
       {/* Tabla de logs */}

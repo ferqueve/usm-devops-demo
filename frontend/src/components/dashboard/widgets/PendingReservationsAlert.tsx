@@ -2,24 +2,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { Reserva } from '@/lib/types/spaces';
 
 interface PendingReservationsAlertProps {
-  reservasPendientes: Reserva[];
+  /** Total de reservas pendientes (viene del stats endpoint, no de descargar la lista). */
+  count: number;
   loading: boolean;
   canApprove: boolean;
 }
 
 export default function PendingReservationsAlert({
-  reservasPendientes,
+  count,
   loading,
-  canApprove
+  canApprove,
 }: Readonly<PendingReservationsAlertProps>) {
-  if (loading || reservasPendientes.length === 0) {
+  if (loading || count === 0) {
     return null;
   }
-
-  const count = reservasPendientes.length;
   const sufijoS = count > 1 ? 's' : '';
   const sufijoEs = count > 1 ? 'es' : '';
   const message = canApprove

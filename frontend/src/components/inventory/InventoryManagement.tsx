@@ -3,25 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { toast } from 'sonner';
-import { 
-  Plus, 
-  ChevronLeft, 
-  ChevronRight, 
-  Loader2, 
-  RefreshCw, 
+import {
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
   Package,
   Download,
   Upload,
   LayoutGrid,
   LayoutList,
   ArrowLeft,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Building2,
+  Tag,
+  CheckCircle2,
+  Wrench,
+  XCircle,
+  Filter,
 } from 'lucide-react';
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
+import { PopoverFilterSection, EnumFilterSection } from "@/components/ui/compact-filter";
 import {
   Select,
   SelectContent,
@@ -713,115 +719,79 @@ export default function InventoryManagement() {
         </Card>
       )}
 
-      {/* Barra de filtros */}
-      <Card className="shadow-card">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-lg">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
-          <div className="flex flex-col">
-            {/* Primera fila: Filtros */}
-            <div className="flex flex-wrap gap-4">
-              {/* Combobox para Espacio */}
-              <div className="flex-1 min-w-[200px]">
-                <Label htmlFor="espacio-combobox" className="text-xs text-muted-foreground mb-1 block">
-                  Espacio
-                </Label>
-                <Combobox
-                  options={[
-                    { value: 'all', label: 'Todos los espacios' },
-                    { value: 'sin-asignar', label: 'Sin asignar' },
-                    ...espacios.map(espacio => ({ 
-                      value: espacio.id.toString(), 
-                      label: espacio.nombre 
-                    }))
-                  ]}
-                  value={filters.sinAsignar ? 'sin-asignar' : (filters.espacioId?.toString() || 'all')}
-                  placeholder="Seleccionar espacio..."
-                  searchPlaceholder="Buscar espacio..."
-                  emptyMessage="No se encontraron espacios"
-                  onSelect={(value) => {
-                    setPage(0);
-                    if (value === 'sin-asignar') {
-                      const newFilters = { ...filters };
-                      delete newFilters.espacioId;
-                      setFilters({ ...newFilters, sinAsignar: true });
-                    } else if (value === 'all') {
-                      const newFilters = { ...filters };
-                      delete newFilters.sinAsignar;
-                      delete newFilters.espacioId;
-                      setFilters(newFilters);
-                    } else {
-                      const newFilters = { ...filters };
-                      delete newFilters.sinAsignar;
-                      setFilters({ ...newFilters, espacioId: Number.parseInt(value) });
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Combobox para Elemento */}
-              <div className="flex-1 min-w-[200px]">
-                <Label htmlFor="elemento-combobox" className="text-xs text-muted-foreground mb-1 block">
-                  Elemento
-                </Label>
-                <Combobox
-                  options={[
-                    { value: 'all', label: 'Todos los tipos' },
-                    ...tiposElemento.map(tipo => ({ 
-                      value: tipo.id.toString(), 
-                      label: tipo.nombre 
-                    }))
-                  ]}
-                  value={filters.tipoElementoId?.toString() || 'all'}
-                  placeholder="Seleccionar elemento..."
-                  searchPlaceholder="Buscar elemento..."
-                  emptyMessage="No se encontraron elementos"
-                  onSelect={(value) => handleFilterChange('tipoElementoId', value === 'all' ? undefined : Number.parseInt(value))}
-                />
-              </div>
-
-              {/* Select para Estado */}
-              <div className="flex-1 min-w-[200px]">
-                <Label htmlFor="estado-filter" className="text-xs text-muted-foreground mb-1 block">
-                  Estado
-                </Label>
-                <Select
-                  value={filters.estado || 'all'}
-                  onValueChange={(value) => handleFilterChange('estado', value === 'all' ? undefined : value)}
-                >
-                  <SelectTrigger id="estado-filter" className="w-full">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="DISPONIBLE">Disponible</SelectItem>
-                    <SelectItem value="MANTENIMIENTO">Mantenimiento</SelectItem>
-                    <SelectItem value="DANADO">Dañado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Botón de toggle vista */}
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setViewMode(prev => prev === 'table' ? 'cards' : 'table')}
-                  className="h-9"
-                  title={viewMode === 'table' ? 'Cambiar a vista de cards' : 'Cambiar a vista de tabla'}
-                >
-                  {viewMode === 'table' ? (
-                    <LayoutGrid className="h-4 w-4" />
-                  ) : (
-                    <LayoutList className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Barra de filtros — estilo compacto consistente con Reservas */}
+      <div className="flex items-center gap-2 flex-wrap py-2">
+        <PopoverFilterSection<number>
+          selectedId={filters.sinAsignar ? -1 : (filters.espacioId ?? null)}
+          items={[
+            { id: -1, primary: 'Sin asignar' },
+            ...espacios.map(e => ({ id: e.id, primary: e.nombre })),
+          ]}
+          onChange={(value) => {
+            setPage(0);
+            setFilters(prev => {
+              const next = { ...prev };
+              delete next.sinAsignar;
+              delete next.espacioId;
+              if (value === -1) next.sinAsignar = true;
+              else if (typeof value === 'number') next.espacioId = value;
+              return next;
+            });
+          }}
+          Icon={Building2}
+          tooltipNone="Todos los espacios"
+        />
+        <PopoverFilterSection<number>
+          selectedId={filters.tipoElementoId ?? null}
+          items={tiposElemento.map(t => ({ id: t.id, primary: t.nombre }))}
+          onChange={(value) =>
+            handleFilterChange('tipoElementoId', value ?? undefined)
+          }
+          Icon={Tag}
+          tooltipNone="Todos los tipos"
+          activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
+          activeTextColorClass="text-purple-700"
+        />
+        <EnumFilterSection
+          value={filters.estado ?? null}
+          options={[
+            { value: null, tooltip: 'Todos los estados', Icon: Filter },
+            {
+              value: 'DISPONIBLE',
+              tooltip: 'Disponible',
+              Icon: CheckCircle2,
+              activeColorClass: 'text-green-600',
+              inactiveColorClass: 'text-green-500',
+            },
+            {
+              value: 'MANTENIMIENTO',
+              tooltip: 'En mantenimiento',
+              Icon: Wrench,
+              activeColorClass: 'text-amber-600',
+              inactiveColorClass: 'text-amber-500',
+            },
+            {
+              value: 'DANADO',
+              tooltip: 'Dañado',
+              Icon: XCircle,
+              activeColorClass: 'text-red-600',
+              inactiveColorClass: 'text-red-500',
+            },
+          ]}
+          onChange={(value) =>
+            handleFilterChange('estado', value ?? undefined)
+          }
+        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setViewMode(prev => prev === 'table' ? 'cards' : 'table')}
+          className="h-9 ml-auto"
+          title={viewMode === 'table' ? 'Cambiar a vista de cards' : 'Cambiar a vista de tabla'}
+        >
+          {viewMode === 'table' ? <LayoutGrid className="h-4 w-4" /> : <LayoutList className="h-4 w-4" />}
+        </Button>
+      </div>
 
       {/* Filtros activos */}
       {activeFilters.length > 0 && (

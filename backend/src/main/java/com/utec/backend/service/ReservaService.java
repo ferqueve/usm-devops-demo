@@ -1194,21 +1194,25 @@ public class ReservaService {
     }
 
     private MetricasDuracion calcularMetricasDuracion(List<Reserva> reservas, long totalReservas, YearMonth mesActual) {
+        // Calculamos en minutos y dividimos por 60.0 para mantener precisión
+        // sub-hora. Si usamos Duration.toHours() directo, una reserva de 30 min
+        // colapsa a 0h y "Reserva Más Corta" se reporta como 0.
         double duracionTotalHoras = reservas.stream()
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
+                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
                 .sum();
         double duracionPromedioHoras = totalReservas > 0 ? duracionTotalHoras / totalReservas : 0.0;
 
         double reservaMasLargaHoras = reservas.stream()
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
+                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
                 .max().orElse(0.0);
         double reservaMasCortaHoras = reservas.stream()
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
+                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
+                .filter(d -> d > 0)
                 .min().orElse(0.0);
 
         double horasReservadasEsteMes = reservas.stream()
                 .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesActual))
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toHours())
+                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
                 .sum();
 
         return new MetricasDuracion(duracionTotalHoras, duracionPromedioHoras,

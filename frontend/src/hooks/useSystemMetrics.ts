@@ -55,9 +55,12 @@ export const useSystemMetrics = () => {
     const newDataPoint: MetricsHistory = {
       time: timestamp.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       timestamp: timestamp.getTime(),
-      memory,
-      cpu: cpu * 100,
-      threads
+      // Memoria en MB (los valores raw en bytes son ilegibles en el chart)
+      memory: Math.round((memory / (1024 * 1024)) * 10) / 10,
+      // CPU clamp 0-100: a veces el actuator devuelve valores >1 por mediciones
+      // ruidosas y el eje Y dibuja "101%", "102%" sin sentido.
+      cpu: Math.min(100, Math.max(0, cpu * 100)),
+      threads,
     };
 
     setMetricsHistory(prev => {

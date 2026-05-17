@@ -174,10 +174,16 @@ interface BuildStatsInput {
   overridePendientes?: number;
   /** Si se pasa true, los counters de reservas se ponen en cero (caso MANTENIMIENTO). */
   reservasZeroed?: boolean;
+  /**
+   * Si está disponible, se usan los conteos agregados pre-calculados por el
+   * backend (totalReservas, totalAprobadas, etc.) en vez de recorrer la lista
+   * de reservas. Evita descargar toda la tabla solo para contar estados.
+   */
+  reservaStatsAggregated?: ReservaStats | null;
 }
 
 function buildDashboardStats(input: BuildStatsInput): DashboardStats {
-  const { reservas, reservasHoyData, espacios, espaciosStats, userStats, activeUsers, overridePendientes, reservasZeroed } = input;
+  const { reservas, reservasHoyData, espacios, espaciosStats, userStats, activeUsers, overridePendientes, reservasZeroed, reservaStatsAggregated } = input;
 
   if (reservasZeroed) {
     const espaciosCounts = calcularEstadisticasEspacios(espacios);
@@ -199,17 +205,24 @@ function buildDashboardStats(input: BuildStatsInput): DashboardStats {
 
   const reservasCounts = calcularEstadisticasReservas(reservas, reservasHoyData);
   const espaciosCounts = calcularEstadisticasEspacios(espacios);
+
+  const totalReservas = reservaStatsAggregated?.totalReservas ?? reservas.length;
+  const reservasAprobadas = reservaStatsAggregated?.totalAprobadas ?? reservasCounts.reservasAprobadas;
+  const reservasPendientes = overridePendientes
+    ?? reservaStatsAggregated?.totalPendientes
+    ?? reservasCounts.reservasPendientes;
+  const reservasCanceladas = reservaStatsAggregated?.totalCanceladas ?? reservasCounts.reservasCanceladas;
   const promedioReservasPorEspacio = calcularPromedioReservasPorEspacio(
-    reservasCounts.reservasAprobadas,
+    reservasAprobadas,
     espacios.length,
   );
 
   return {
-    totalReservas: reservas.length,
+    totalReservas,
     reservasHoy: reservasCounts.reservasHoyCount,
-    reservasPendientes: overridePendientes ?? reservasCounts.reservasPendientes,
-    reservasAprobadas: reservasCounts.reservasAprobadas,
-    reservasCanceladas: reservasCounts.reservasCanceladas,
+    reservasPendientes,
+    reservasAprobadas,
+    reservasCanceladas,
     totalEspacios: espaciosStats.totalEspacios || espacios.length,
     ...espaciosCounts,
     capacidadPromedio: espaciosStats.capacidadPromedio || 0,
@@ -249,9 +262,11 @@ export const dashboardApi = {
   async obtenerDatosDashboardAdmin(): Promise<DashboardData> {
     try {
       const { hoy, finHoy } = rangoHoy();
+      // Próximas reservas: ventana acotada de 30 días para no descargar histórico completo.
+      const finProximas = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       const results = await Promise.allSettled([
-        reservationsApi.obtenerTodasLasReservas(),
+        reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, new Date(), finProximas),
         reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, hoy, finHoy),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
@@ -261,9 +276,9 @@ export const dashboardApi = {
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
       ]);
 
-      const [todasLasReservas, reservasHoy, espaciosRes, espaciosStatsRes, userStatsRes, reservaStatsRes, activeUsersRes] = results;
+      const [proximasReservasRes, reservasHoy, espaciosRes, espaciosStatsRes, userStatsRes, reservaStatsRes, activeUsersRes] = results;
 
-      const reservas = extractReservas(todasLasReservas);
+      const reservasVentana = extractReservas(proximasReservasRes);
       const reservasHoyData = extractReservas(reservasHoy);
       const espacios = extractEspacios(espaciosRes);
       const espaciosStats = extractEspacioStats(espaciosStatsRes);
@@ -272,17 +287,18 @@ export const dashboardApi = {
       const activeUsers = extractActiveUsers(activeUsersRes);
 
       const stats = buildDashboardStats({
-        reservas,
+        reservas: reservasVentana,
         reservasHoyData,
         espacios,
         espaciosStats,
         userStats,
         activeUsers,
+        reservaStatsAggregated: reservaStats,
       });
 
       return {
         stats,
-        proximasReservas: obtenerProximasReservas(reservas, new Date()),
+        proximasReservas: obtenerProximasReservas(reservasVentana, new Date()),
         reservasHoy: reservasHoyData,
         espacios,
         reservaStats: reservaStats || undefined,
@@ -298,9 +314,10 @@ export const dashboardApi = {
   async obtenerDatosDashboardAnalista(): Promise<DashboardData> {
     try {
       const { hoy, finHoy } = rangoHoy();
+      const finProximas = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       const results = await Promise.allSettled([
-        reservationsApi.obtenerTodasLasReservas(),
+        reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, new Date(), finProximas),
         reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, hoy, finHoy),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
@@ -308,19 +325,25 @@ export const dashboardApi = {
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
       ]);
 
-      const [todasLasReservas, reservasHoy, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
+      const [proximasReservasRes, reservasHoy, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
 
-      const reservas = extractReservas(todasLasReservas);
+      const reservasVentana = extractReservas(proximasReservasRes);
       const reservasHoyData = extractReservas(reservasHoy);
       const espacios = extractEspacios(espaciosRes);
       const espaciosStats = extractEspacioStats(espaciosStatsRes);
       const reservaStats = extractReservaStats(reservaStatsRes);
 
-      const stats = buildDashboardStats({ reservas, reservasHoyData, espacios, espaciosStats });
+      const stats = buildDashboardStats({
+        reservas: reservasVentana,
+        reservasHoyData,
+        espacios,
+        espaciosStats,
+        reservaStatsAggregated: reservaStats,
+      });
 
       return {
         stats,
-        proximasReservas: obtenerProximasReservas(reservas, new Date()),
+        proximasReservas: obtenerProximasReservas(reservasVentana, new Date()),
         reservasHoy: reservasHoyData,
         espacios,
         reservaStats: reservaStats || undefined,

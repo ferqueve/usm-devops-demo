@@ -176,9 +176,18 @@ export default function ReservationManagement() {
   }, [preferencias]);
   
   // Reservas pendientes separadas (solo para ANALISTA)
+  // Paginadas server-side para no descargar miles de pendientes históricas.
   const [reservasPendientes, setReservasPendientes] = useState<Reserva[]>([]);
   const [pendientesLoading, setPendientesLoading] = useState(false);
-  
+  const [pendientesPage, setPendientesPage] = useState(0);
+  const [pendientesTotalElements, setPendientesTotalElements] = useState(0);
+  const PENDIENTES_PAGE_SIZE = 8;
+
+  // Rango actualmente visible en el calendario embebido. Permite que el fetch
+  // se acople a la ventana que se está viendo (navegar al mes siguiente carga
+  // ese mes en lugar de quedarse limitado a ±60 días desde hoy).
+  const [visibleRange, setVisibleRange] = useState<{ start: Date; end: Date } | null>(null);
+
   // Estado compartido para colapsar/expandir el panel lateral
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
@@ -203,13 +212,20 @@ export default function ReservationManagement() {
         const response = await reservationsApi.obtenerMisReservas();
         reservasResultado = aplicarFiltroEstadoDocente(response.data ?? [], estadoFilter);
       } else {
+        // Prioridad: filtro del usuario > rango visible del calendario > default ±60d.
+        const inicioEfectivo = fechaInicio
+          ?? visibleRange?.start
+          ?? new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+        const finEfectivo = fechaFin
+          ?? visibleRange?.end
+          ?? new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
         const response = await reservationsApi.obtenerTodasLasReservas(
           estadoParaApiAnalista(estadoFilter),
           espacioFilter ?? undefined,
           carreraFilter ?? undefined,
           tipoEspacioFilter ?? undefined,
-          fechaInicio ?? undefined,
-          fechaFin ?? undefined
+          inicioEfectivo,
+          finEfectivo
         );
         reservasResultado = response.data && user?.id
           ? filtrarReservasParaAnalista(response.data, user.id)
@@ -226,7 +242,7 @@ export default function ReservationManagement() {
     } finally {
       setCalendarLoading(false);
     }
-  }, [showPendienteFilter, user?.id, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [showPendienteFilter, user?.id, estadoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin, visibleRange]);
 
   // Cargar reservas pendientes separadamente (solo para usuarios que pueden aprobar)
   const fetchReservasPendientes = useCallback(async () => {
@@ -237,26 +253,23 @@ export default function ReservationManagement() {
 
     setPendientesLoading(true);
     try {
-      const response = await reservationsApi.obtenerTodasLasReservas(
-        'PENDIENTE',
-        espacioFilter ?? undefined,
-        carreraFilter ?? undefined,
-        tipoEspacioFilter ?? undefined,
-        fechaInicio ?? undefined,
-        fechaFin ?? undefined
-      );
+      // Endpoint paginado server-side: solo descargamos la página actual
+      // (~8 records) en lugar de los miles de pendientes del sistema.
+      // El backend ya filtra por scope del analista vía addAnalistaScopePredicate.
+      const response = await reservationsApi.obtenerTodasReservasPaged({
+        estado: 'PENDIENTE',
+        page: pendientesPage,
+        size: PENDIENTES_PAGE_SIZE,
+        espacioId: espacioFilter ?? undefined,
+        carreraId: carreraFilter ?? undefined,
+        tipoEspacioId: tipoEspacioFilter ?? undefined,
+        fechaInicio: fechaInicio ?? undefined,
+        fechaFin: fechaFin ?? undefined,
+      });
 
-      if (response.data && user?.id) {
-        // Filtrar solo las reservas pendientes asignadas a este analista
-        const pendientesFiltradas = response.data.filter((reserva: Reserva) =>
-          reserva.analistaId === user.id
-        );
-
-        // Ordenar por fecha de creación descendente (más recientes primero)
-        const sorted = pendientesFiltradas.slice().sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setReservasPendientes(sorted);
+      if (response.data) {
+        setReservasPendientes(response.data.content ?? []);
+        setPendientesTotalElements(response.data.totalElements ?? 0);
       }
     } catch (error: unknown) {
       console.error('Error al cargar reservas pendientes:', error);
@@ -264,7 +277,7 @@ export default function ReservationManagement() {
     } finally {
       setPendientesLoading(false);
     }
-  }, [canApprove, user?.id, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
+  }, [canApprove, user?.id, espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin, pendientesPage]);
 
   const fetchReservasPaged = useCallback(async () => {
     setContentLoading(true);
@@ -354,6 +367,11 @@ export default function ReservationManagement() {
       setPage(0);
     }
   }, [viewMode, estadoFilter, tiempoFilter, espacioFilter, carreraFilter, tipoEspacioFilter, usuarioFilter, fechaInicio, fechaFin]);
+
+  // Resetear página de pendientes cuando cambian sus filtros relevantes
+  useEffect(() => {
+    setPendientesPage(0);
+  }, [espacioFilter, carreraFilter, tipoEspacioFilter, fechaInicio, fechaFin]);
 
   // Cargar reservas con paginación para table y cards
   // Se ejecuta cuando cambia la página o los filtros
@@ -578,6 +596,7 @@ export default function ReservationManagement() {
         isFullScreen={isFullScreen}
         onToggleFullScreen={handleToggleFullScreen}
         loading={calendarLoading}
+        onVisibleRangeChange={(start, end) => setVisibleRange({ start, end })}
       />
     );
   };
@@ -653,6 +672,12 @@ export default function ReservationManagement() {
                 onViewDetails={handleViewDetails}
                 collapsed={sidebarCollapsed}
                 onCollapsedChange={setSidebarCollapsed}
+                serverPagination={{
+                  page: pendientesPage,
+                  pageSize: PENDIENTES_PAGE_SIZE,
+                  totalElements: pendientesTotalElements,
+                  onPageChange: setPendientesPage,
+                }}
               />
             )}
           </PermissionGuard>

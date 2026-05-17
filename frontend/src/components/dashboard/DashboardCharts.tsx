@@ -3,12 +3,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import type { Reserva } from '@/lib/types/spaces';
+import type { Espacio, Reserva, ReservaStats } from '@/lib/types/spaces';
 
 interface DashboardChartsProps {
   reservas: Reserva[];
+  /**
+   * Si está disponible, los charts se calculan a partir de las agregaciones
+   * pre-calculadas del backend (mucho más liviano que descargar la lista
+   * completa de reservas para contar en cliente). Si no, cae al cálculo
+   * tradicional sobre {@link reservas}.
+   */
+  stats?: ReservaStats | null;
+  /** Necesario para mapear IDs de espacio devueltos por stats a nombres. */
+  espacios?: Espacio[];
   loading?: boolean;
 }
+
+// Lunes a Domingo en el orden visual que querés (DayOfWeek de Java viene en MAYÚSCULAS inglés).
+const DIAS_SEMANA_MAP: Array<{ key: string; label: string }> = [
+  { key: 'MONDAY', label: 'Lunes' },
+  { key: 'TUESDAY', label: 'Martes' },
+  { key: 'WEDNESDAY', label: 'Miércoles' },
+  { key: 'THURSDAY', label: 'Jueves' },
+  { key: 'FRIDAY', label: 'Viernes' },
+  { key: 'SATURDAY', label: 'Sábado' },
+  { key: 'SUNDAY', label: 'Domingo' },
+];
 
 const COLORS = {
   APROBADO: '#10b981', // green
@@ -29,40 +49,65 @@ const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) =
   return null;
 };
 
-export default function DashboardCharts({ reservas, loading = false }: Readonly<DashboardChartsProps>) {
-  // Datos para gráfico de reservas por estado
+export default function DashboardCharts({ reservas, stats, espacios = [], loading = false }: Readonly<DashboardChartsProps>) {
+  const espaciosById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const esp of espacios) {
+      map.set(String(esp.id), esp.nombre);
+    }
+    return map;
+  }, [espacios]);
+  // Datos para gráfico de reservas por estado.
+  // Prioridad: stats agregados del backend > cálculo en cliente.
   const reservasPorEstado = useMemo(() => {
-    const estados = reservas.reduce((acc, reserva) => {
-      acc[reserva.estado] = (acc[reserva.estado] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const conteos = stats?.reservasPorEstado
+      ? stats.reservasPorEstado
+      : reservas.reduce((acc, reserva) => {
+          acc[reserva.estado] = (acc[reserva.estado] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
 
     return [
-      { name: 'Aprobadas', value: estados.APROBADO || 0, color: COLORS.APROBADO },
-      { name: 'Pendientes', value: estados.PENDIENTE || 0, color: COLORS.PENDIENTE },
-      { name: 'Canceladas', value: estados.CANCELADO || 0, color: COLORS.CANCELADO },
+      { name: 'Aprobadas', value: conteos.APROBADO || 0, color: COLORS.APROBADO },
+      { name: 'Pendientes', value: conteos.PENDIENTE || 0, color: COLORS.PENDIENTE },
+      { name: 'Canceladas', value: conteos.CANCELADO || 0, color: COLORS.CANCELADO },
     ].filter(item => item.value > 0);
-  }, [reservas]);
+  }, [reservas, stats]);
 
-  // Datos para gráfico de reservas por día de la semana
+  // Datos para gráfico de reservas por día de la semana.
   const reservasPorDiaSemana = useMemo(() => {
+    if (stats?.reservasPorDiaSemana) {
+      return DIAS_SEMANA_MAP.map(({ key, label }) => ({
+        dia: label,
+        reservas: stats.reservasPorDiaSemana[key] || 0,
+      }));
+    }
     const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     const reservasPorDia = reservas.reduce((acc, reserva) => {
       const fecha = new Date(reserva.inicio);
       const diaSemana = fecha.getDay();
-      const diaIndex = diaSemana === 0 ? 6 : diaSemana - 1; // Ajustar para que lunes sea 0
+      const diaIndex = diaSemana === 0 ? 6 : diaSemana - 1;
       acc[diaIndex] = (acc[diaIndex] || 0) + 1;
       return acc;
     }, Array.from<number>({ length: 7 }).fill(0));
 
     return dias.map((dia, index) => ({
       dia,
-      reservas: reservasPorDia[index] || 0
+      reservas: reservasPorDia[index] || 0,
     }));
-  }, [reservas]);
+  }, [reservas, stats]);
 
   // Datos para gráfico de ocupación de espacios (top 5 para resumen)
   const ocupacionPorEspacio = useMemo(() => {
+    if (stats?.reservasPorEspacio) {
+      return Object.entries(stats.reservasPorEspacio)
+        .map(([idOrNombre, cantidad]) => ({
+          nombre: espaciosById.get(idOrNombre) ?? idOrNombre,
+          cantidad: Number(cantidad),
+        }))
+        .sort((a, b) => b.cantidad - a.cantidad)
+        .slice(0, 5);
+    }
     const espacios = reservas.reduce((acc, reserva) => {
       if (!acc[reserva.espacioNombre]) {
         acc[reserva.espacioNombre] = 0;
@@ -77,7 +122,7 @@ export default function DashboardCharts({ reservas, loading = false }: Readonly<
       .map(([nombre, cantidad]) => ({ nombre, cantidad }))
       .sort((a, b) => b.cantidad - a.cantidad)
       .slice(0, 5);
-  }, [reservas]);
+  }, [reservas, stats]);
 
   if (loading) {
     return (

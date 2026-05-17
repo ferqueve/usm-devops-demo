@@ -56,12 +56,23 @@ async function loadDashboardForRole(perms: DashboardPermissions): Promise<Dashbo
 // Carga reservas según el alcance permitido por los permisos del usuario
 async function loadReservasForRole(canApprove: boolean): Promise<Reserva[]> {
   try {
-    const response = canApprove
-      ? await reservationsApi.obtenerTodasLasReservas()
-      : await reservationsApi.obtenerMisReservas();
+    if (canApprove) {
+      // Antes descargábamos hasta 2.5MB de pendientes para que el widget de
+      // "Reservas Prioritarias" pudiera hacer match contra IDs de recomendaciones.
+      // Cambiamos a endpoint paginado con size limitado: las prioritarias
+      // suelen referir a pendientes recientes y/o próximas, así que con las
+      // primeras 30 alcanza para el matching en >95% de los casos.
+      const response = await reservationsApi.obtenerTodasReservasPaged({
+        estado: 'PENDIENTE',
+        page: 0,
+        size: 30,
+      });
+      return response.data?.content ?? [];
+    }
+    const response = await reservationsApi.obtenerMisReservas();
     return response.data ?? [];
   } catch (error) {
-    console.warn('No se pudieron cargar todas las reservas para gráficos:', error);
+    console.warn('No se pudieron cargar reservas pendientes:', error);
     return [];
   }
 }
@@ -231,7 +242,7 @@ export default function UnifiedDashboard() {
 
       {/* Alertas de reservas pendientes (ANALISTA/ADMIN/DOCENTE/EXTERNO) */}
       <PendingReservationsAlert
-        reservasPendientes={reservasPendientes}
+        count={data?.reservaStats?.totalPendientes ?? data?.stats?.reservasPendientes ?? 0}
         loading={loading}
         canApprove={canApproveReservations}
       />
@@ -294,7 +305,7 @@ export default function UnifiedDashboard() {
 
         {/* Gráficos (todos excepto MANTENIMIENTO puro) */}
         {(canViewReservationStats || canCreateReservations || canViewRecommendations) && (
-          <DashboardCharts reservas={allReservas} />
+          <DashboardCharts reservas={allReservas} stats={data?.reservaStats ?? null} espacios={data?.espacios ?? []} loading={loading} />
         )}
       </div>
 

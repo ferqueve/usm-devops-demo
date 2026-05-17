@@ -62,15 +62,25 @@ import {
   Monitor, 
   Loader2, 
   RefreshCw, 
-  Eye, 
+  Eye,
   Filter,
   Users as UsersIcon,
   Download,
   Edit,
   Mail as MailIcon,
   KeyRound,
-  GraduationCap
+  GraduationCap,
+  UserCog,
+  CheckCircle2,
+  XCircle,
+  Hourglass,
 } from 'lucide-react';
+import {
+  PopoverFilterSection,
+  EnumFilterSection,
+  DateRangeFilterSection,
+  ClearFiltersButton,
+} from '@/components/ui/compact-filter';
 import { toast } from 'sonner';
 
 // Componente para mostrar el icono del proveedor
@@ -576,7 +586,7 @@ export default function UserManagement() {
         </CardHeader>
         <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
           <div className="space-y-2">
-            <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
               {/* Campo de búsqueda principal */}
               <div className="flex-1">
                 <div className="relative">
@@ -590,33 +600,75 @@ export default function UserManagement() {
                 </div>
               </div>
 
-              {/* Botones de acción */}
-              <div className="flex gap-2">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`transition-all duration-200 ${
-                    showFilters 
-                      ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' 
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <Filter className={`h-4 w-4 mr-2 transition-transform duration-200 ${
-                    showFilters ? 'rotate-180' : ''
-                  }`} />
-                  Filtros
-                  {activeFilters.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 px-1.5 min-w-[20px]">
-                      {activeFilters.length}
-                    </Badge>
-                  )}
-                </Button>
+              {/* Filtros compactos estilo Reservas */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <PopoverFilterSection<string>
+                  selectedId={filters.rol ?? null}
+                  items={USER_ROLES.map(r => ({ id: r, primary: ROLE_LABELS[r] }))}
+                  onChange={(v) => handleRoleFilter(v ?? '')}
+                  Icon={UserCog}
+                  tooltipNone="Todos los roles"
+                  activeBgClass="bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300"
+                  activeTextColorClass="text-indigo-700"
+                />
+                <EnumFilterSection
+                  value={filters.verificado === undefined ? null : (filters.verificado ? 'true' : 'false')}
+                  options={[
+                    { value: null, tooltip: 'Todos', Icon: Filter },
+                    {
+                      value: 'true',
+                      tooltip: 'Verificados',
+                      Icon: CheckCircle2,
+                      activeColorClass: 'text-green-600',
+                      inactiveColorClass: 'text-green-500',
+                    },
+                    {
+                      value: 'false',
+                      tooltip: 'Sin verificar',
+                      Icon: Hourglass,
+                      activeColorClass: 'text-amber-600',
+                      inactiveColorClass: 'text-amber-500',
+                    },
+                  ]}
+                  onChange={(v) => handleVerificadoFilter(v ?? '')}
+                />
+                <EnumFilterSection
+                  value={filters.activo === undefined ? null : (filters.activo ? 'true' : 'false')}
+                  options={[
+                    { value: null, tooltip: 'Todos', Icon: Filter },
+                    {
+                      value: 'true',
+                      tooltip: 'Activos',
+                      Icon: CheckCircle2,
+                      activeColorClass: 'text-green-600',
+                      inactiveColorClass: 'text-green-500',
+                    },
+                    {
+                      value: 'false',
+                      tooltip: 'Inactivos',
+                      Icon: XCircle,
+                      activeColorClass: 'text-red-600',
+                      inactiveColorClass: 'text-red-500',
+                    },
+                  ]}
+                  onChange={(v) => handleActivoFilter(v ?? '')}
+                />
+                <DateRangeFilterSection
+                  fechaInicio={filters.fechaDesde ? new Date(filters.fechaDesde) : undefined}
+                  fechaFin={filters.fechaHasta ? new Date(filters.fechaHasta) : undefined}
+                  onFechaInicioChange={(d) =>
+                    handleFechaDesdeFilter(d ? d.toISOString().slice(0, 10) : '')
+                  }
+                  onFechaFinChange={(d) =>
+                    handleFechaHastaFilter(d ? d.toISOString().slice(0, 10) : '')
+                  }
+                />
+                <ClearFiltersButton
+                  visible={activeFilters.length > 0}
+                  onClear={clearFilters}
+                />
               </div>
             </div>
-
-            {/* Panel de filtros expandible */}
-            <FiltersPanel showFilters={showFilters} fields={filterFields} />
           </div>
         </CardContent>
       </Card>

@@ -14,17 +14,32 @@ interface ReservationPendientesProps {
   onViewDetails: (reserva: Reserva) => void;
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
+  /**
+   * Si está presente, la paginación es controlada por el parent (server-side):
+   * `reservasPendientes` ya es la página actual y se reportan los cambios via callback.
+   * Si está ausente, el widget pagina internamente la lista completa que recibe.
+   */
+  serverPagination?: {
+    page: number;
+    pageSize: number;
+    totalElements: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
-export default function ReservationPendientes({ 
-  reservasPendientes, 
-  loading, 
+export default function ReservationPendientes({
+  reservasPendientes,
+  loading,
   onViewDetails,
   collapsed,
-  onCollapsedChange
+  onCollapsedChange,
+  serverPagination,
 }: Readonly<ReservationPendientesProps>) {
   const [isVerticalLayout, setIsVerticalLayout] = useState(false);
   const [reservasPrioritarias, setReservasPrioritarias] = useState<RecomendacionAnalista[]>([]);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 8;
+  const isServerPaginated = !!serverPagination;
 
   // Detectar cuando el layout está en vertical (menor a lg breakpoint)
   useEffect(() => {
@@ -81,6 +96,37 @@ export default function ReservationPendientes({
     return urgenciaB - urgenciaA;
   });
 
+  // Paginación: server-side si el parent la controla, client-side en otro caso.
+  const totalElements = isServerPaginated
+    ? serverPagination!.totalElements
+    : reservasOrdenadas.length;
+  const effectivePageSize = isServerPaginated ? serverPagination!.pageSize : PAGE_SIZE;
+  const totalPages = Math.max(1, Math.ceil(totalElements / effectivePageSize));
+  const currentPage = isServerPaginated
+    ? serverPagination!.page
+    : Math.min(page, totalPages - 1);
+  const reservasPagina = isServerPaginated
+    ? reservasOrdenadas
+    : reservasOrdenadas.slice(
+        currentPage * PAGE_SIZE,
+        (currentPage + 1) * PAGE_SIZE,
+      );
+
+  const goToPage = (next: number) => {
+    if (isServerPaginated) {
+      serverPagination!.onPageChange(next);
+    } else {
+      setPage(next);
+    }
+  };
+
+  // Si cambia la lista en client-side (e.g. se aprobaron varias y bajó el total), resetear página.
+  useEffect(() => {
+    if (!isServerPaginated && page >= totalPages) {
+      setPage(0);
+    }
+  }, [page, totalPages, isServerPaginated]);
+
   // En modo vertical, forzar que siempre esté extendido
   const isCollapsed = isVerticalLayout ? false : collapsed;
 
@@ -109,9 +155,9 @@ export default function ReservationPendientes({
               <Hourglass className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 shrink-0" />
               <CardTitle className="text-sm sm:text-base truncate">
                 Pendientes
-                {reservasPendientes.length > 0 && (
+                {totalElements > 0 && (
                   <span className="ml-1.5 sm:ml-2 text-xs sm:text-sm font-normal text-muted-foreground">
-                    ({reservasPendientes.length})
+                    ({totalElements})
                   </span>
                 )}
               </CardTitle>
@@ -139,7 +185,7 @@ export default function ReservationPendientes({
                   <Hourglass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-600" />
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-center leading-tight truncate w-full">
-                  {reservasPendientes.length}
+                  {totalElements}
                 </div>
               </div>
             )}
@@ -155,7 +201,7 @@ export default function ReservationPendientes({
                 </div>
               );
             }
-            if (reservasPendientes.length === 0) {
+            if (totalElements === 0) {
               return (
                 <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg border border-gray-200 px-2">
                   <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />
@@ -170,8 +216,9 @@ export default function ReservationPendientes({
               return '';
             };
             return (
+            <>
             <div className="flex-1 space-y-1.5 sm:space-y-2 overflow-y-auto pr-0.5 sm:pr-1">
-              {reservasOrdenadas.map((reserva) => {
+              {reservasPagina.map((reserva) => {
                 const estadoConfig = getEstadoConfig(reserva.estado);
                 const urgencia = getUrgencia(reserva.id);
                 const isPrioritaria = urgencia > 0;
@@ -259,6 +306,36 @@ export default function ReservationPendientes({
                 );
               })}
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between gap-2 pt-2 border-t text-xs text-muted-foreground">
+                <span className="truncate">
+                  Página {currentPage + 1} de {totalPages} · {totalElements} pendientes
+                </span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => goToPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    title="Página anterior"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => goToPage(Math.min(totalPages - 1, currentPage + 1))}
+                    disabled={currentPage >= totalPages - 1}
+                    title="Página siguiente"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            </>
             );
           })()}
         </CardContent>

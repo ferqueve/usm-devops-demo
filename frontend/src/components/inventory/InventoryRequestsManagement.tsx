@@ -266,12 +266,14 @@ export default function InventoryRequestsManagement() {
     requestsPage?.content.forEach((item) => {
       counts[item.estado] = (counts[item.estado] ?? 0) + 1;
       if (item.estado === 'PENDIENTE' || item.estado === 'APROBADO') {
-        pendientes += item.cantidadSolicitada ?? 0;
+        pendientes += 1;
       }
     });
     return {
       total: requestsPage?.totalElements ?? 0,
       statusCounts: counts,
+      // Conteo de solicitudes (no unidades) en la página actual, evita confusión
+      // como "17 items" cuando hay 4000+ solicitudes totales.
       pendingItems: pendientes,
     };
   }, [requestsPage]);
@@ -455,7 +457,7 @@ export default function InventoryRequestsManagement() {
           <div className="flex items-center gap-2 px-3 md:px-4 border rounded-lg shadow-sm bg-white h-10">
             <Boxes className="h-4 w-4 text-utec-blue" />
             <span className="font-bold text-sm">{summary.pendingItems}</span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">items pendientes</span>
+            <span className="text-sm text-muted-foreground hidden sm:inline">activas en página</span>
           </div>
 
           <Button

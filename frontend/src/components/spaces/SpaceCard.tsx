@@ -83,14 +83,16 @@ export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>
           />
         </div>
       ) : (
-        <div className="aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors duration-200">
+        // Si no hay imagen, mostramos una banda fina en lugar del aspect-ratio
+        // completo: con 13 espacios sin foto la card se veía mitad placeholder.
+        <div className="h-12 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors duration-200">
           {imageError ? (
-            <>
-              <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-gray-400" />
               <span className="text-xs text-gray-500">Error al cargar imagen</span>
-            </>
+            </div>
           ) : (
-            <Users className="h-6 w-6 text-gray-400" />
+            <Users className="h-5 w-5 text-gray-400" />
           )}
         </div>
       )}

@@ -21,6 +21,11 @@ import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
+import {
+  PopoverFilterSection,
+  EnumFilterSection,
+  ClearFiltersButton,
+} from "@/components/ui/compact-filter";
 import { espaciosApi } from '@/lib/api/spaces';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
 import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, Edificio } from '@/lib/types/spaces';
@@ -38,7 +43,11 @@ import {
   ClipboardList,
   X,
   LayoutGrid,
-  LayoutList
+  LayoutList,
+  Tag,
+  CheckCircle2,
+  Wrench,
+  XCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -620,7 +629,7 @@ export default function SpacesManagement() {
         </CardHeader>
         <CardContent className="pt-0 px-4 md:px-6 pb-4 md:pb-6">
           <div className="space-y-2">
-            <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
               {/* Campo de búsqueda principal */}
               <div className="flex-1">
                 <div className="relative">
@@ -634,75 +643,81 @@ export default function SpacesManagement() {
                 </div>
               </div>
 
-              {/* Botones de acción */}
-              <div className="flex gap-2">
-                <Button 
+              {/* Filtros compactos estilo Reservas */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <PopoverFilterSection<number>
+                  selectedId={filters.tipoEspacioId ?? null}
+                  items={tiposEspacio.map(t => ({
+                    id: t.id,
+                    primary: t.nombre,
+                    swatchColor: t.color,
+                  }))}
+                  onChange={(v) => handleTipoEspacioFilter(v === null ? 'all' : String(v))}
+                  Icon={Tag}
+                  tooltipNone="Todos los tipos"
+                  activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
+                  activeTextColorClass="text-purple-700"
+                />
+                <PopoverFilterSection<number>
+                  selectedId={filters.edificioId ?? null}
+                  items={edificios.map(e => ({ id: e.id, primary: e.nombre }))}
+                  onChange={(v) => handleEdificioFilter(v === null ? 'all' : String(v))}
+                  Icon={Building2}
+                  tooltipNone="Todos los edificios"
+                />
+                <EnumFilterSection
+                  value={filters.estado ?? null}
+                  options={[
+                    { value: null, tooltip: 'Todos los estados', Icon: Filter },
+                    {
+                      value: 'DISPONIBLE',
+                      tooltip: 'Disponible',
+                      Icon: CheckCircle2,
+                      activeColorClass: 'text-green-600',
+                      inactiveColorClass: 'text-green-500',
+                    },
+                    {
+                      value: 'MANTENIMIENTO',
+                      tooltip: 'En mantenimiento',
+                      Icon: Wrench,
+                      activeColorClass: 'text-amber-600',
+                      inactiveColorClass: 'text-amber-500',
+                    },
+                    {
+                      value: 'NO_DISPONIBLE',
+                      tooltip: 'No disponible',
+                      Icon: XCircle,
+                      activeColorClass: 'text-red-600',
+                      inactiveColorClass: 'text-red-500',
+                    },
+                  ]}
+                  onChange={(v) => handleEstadoFilter(v ?? 'all')}
+                />
+                <ClearFiltersButton
+                  visible={activeFilters.length > 0}
+                  onClear={clearFilters}
+                />
+                {/* Toggle para filtros avanzados (capacidad + inventario) */}
+                <Button
                   type="button"
-                  variant="outline" 
+                  variant="outline"
+                  size="sm"
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`transition-all duration-200 ${
-                    showFilters 
-                      ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' 
-                      : 'hover:bg-gray-50'
+                  className={`h-9 ${
+                    showFilters ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' : ''
                   }`}
+                  title="Filtros avanzados (capacidad e inventario)"
                 >
-                  <Filter className={`h-4 w-4 mr-2 transition-transform duration-200 ${
-                    showFilters ? 'rotate-180' : ''
-                  }`} />
-                  Filtros
-                  {activeFilters.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 px-1.5 min-w-[20px]">
-                      {activeFilters.length}
-                    </Badge>
-                  )}
+                  <Filter className="h-3.5 w-3.5 mr-1.5" />
+                  Avanzados
                 </Button>
               </div>
             </div>
 
-            {/* Panel de filtros expandible */}
+            {/* Panel expandible: filtros menos frecuentes (capacidad + inventario).
+                Tipo/Edificio/Estado se manejan arriba en la fila compacta. */}
             {(() => {
               const filterFields: FilterField[] = [
-                {
-                  id: 'tipo-filter',
-                  label: 'Tipo de Espacio',
-                  type: 'select',
-                  value: filters.tipoEspacioId?.toString() || 'all',
-                  options: [
-                    { value: 'all', label: 'Todos los tipos' },
-                    ...tiposEspacio.map(tipo => ({ 
-                      value: tipo.id.toString(), 
-                      label: tipo.nombre 
-                    }))
-                  ],
-                  onChange: (value) => handleTipoEspacioFilter(value)
-                },
-                {
-                  id: 'edificio-filter',
-                  label: 'Edificio',
-                  type: 'select',
-                  value: filters.edificioId?.toString() || 'all',
-                  options: [
-                    { value: 'all', label: 'Todos los edificios' },
-                    ...edificios.map(edificio => ({ 
-                      value: edificio.id.toString(), 
-                      label: edificio.nombre 
-                    }))
-                  ],
-                  onChange: (value) => handleEdificioFilter(value)
-                },
-                {
-                  id: 'estado-filter',
-                  label: 'Estado',
-                  type: 'select',
-                  value: filters.estado || 'all',
-                  options: [
-                    { value: 'all', label: 'Todos los estados' },
-                    { value: 'DISPONIBLE', label: 'Disponible' },
-                    { value: 'MANTENIMIENTO', label: 'En Mantenimiento' },
-                    { value: 'NO_DISPONIBLE', label: 'No Disponible' }
-                  ],
-                  onChange: (value) => handleEstadoFilter(value)
-                },
                 {
                   id: 'capacidad-min-filter',
                   label: 'Capacidad Mínima',

@@ -450,6 +450,11 @@ interface ReservationCalendarViewProps {
   loading?: boolean;
   // Modo solo lectura (oculta acciones de gestión)
   readOnly?: boolean;
+  /**
+   * Notifica al parent cuándo cambia el rango visible (al navegar día/semana/mes).
+   * Sirve para que el parent reacople el fetch a la ventana que se está viendo.
+   */
+  onVisibleRangeChange?: (start: Date, end: Date) => void;
 }
 
 export default function ReservationCalendarView({
@@ -483,6 +488,7 @@ export default function ReservationCalendarView({
   onToggleFullScreen: onToggleFullScreenProp,
   loading = false,
   readOnly = false,
+  onVisibleRangeChange,
 }: Readonly<ReservationCalendarViewProps>) {
   const { hasPermission } = useRolePermissions();
   const canApprove = hasPermission('reserva:aprobar');
@@ -493,6 +499,31 @@ export default function ReservationCalendarView({
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [hideNightHours, setHideNightHours] = useState(true);
+
+  // Notificar al parent cuándo cambia el rango visible. Esto permite acotar el
+  // fetch a la ventana que el usuario está viendo (sin esto, navegar al mes
+  // siguiente no traería las reservas que caen fuera del default ±60 días).
+  // No incluimos `onVisibleRangeChange` en las deps porque se recrea en cada
+  // render del parent y dispararía un loop infinito de re-fetch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!onVisibleRangeChange) return;
+    let start: Date;
+    let end: Date;
+    if (calendarViewMode === 'day') {
+      start = new Date(currentDate);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(currentDate);
+      end.setHours(23, 59, 59, 999);
+    } else if (calendarViewMode === 'week') {
+      start = startOfWeek(currentDate, { weekStartsOn: 1 });
+      end = endOfWeek(currentDate, { weekStartsOn: 1 });
+    } else {
+      start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+      end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 });
+    }
+    onVisibleRangeChange(start, end);
+  }, [currentDate, calendarViewMode]);
 
   // Obtener reservas para una fecha específica
   const getReservasForDate = (date: Date): Reserva[] => {
