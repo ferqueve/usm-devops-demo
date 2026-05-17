@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,7 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { FileText, Search, Download, Copy, ArrowDown, Settings, Save, AlertCircle, Filter } from 'lucide-react';
+import { FileText, Search, Download, Copy, ArrowDown, Settings, Save, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { LoggersInfo, LoggerLevel } from '@/lib/types/actuator';
 
@@ -388,231 +389,185 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
       {/* Dialog de Configuración de Loggers */}
       {loggers && onLoggerUpdate && (
         <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-          <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 flex flex-col">
-            {/* Header fijo */}
-            <div className="flex-none px-6 pt-6 pb-4 border-b bg-white">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 flex-wrap">
-                  <Settings className="h-5 w-5 text-purple-600" />
-                  <span>Configuración de Loggers</span>
-                  {hasChanges && (
-                    <Badge variant="secondary" className="ml-auto">
-                      {Object.keys(changes).length} cambios
-                    </Badge>
-                  )}
-                </DialogTitle>
-                <DialogDescription>
-                  Configura los niveles de log. Los cambios son temporales y se perderán al reiniciar.
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-
-            {/* Contenido scrolleable */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <div className="px-6 py-5 space-y-5">
-              {/* Barra de búsqueda y botón guardar */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Buscar logger por paquete o clase..."
-                      value={loggerSearchTerm}
-                      onChange={(e) => setLoggerSearchTerm(e.target.value)}
-                      className="pl-10 h-10"
-                    />
-                  </div>
+          <DialogContent
+            showCloseButton={false}
+            className="sm:max-w-3xl w-[95vw] h-[85vh] p-0 gap-0 flex flex-col"
+          >
+            <DialogHeader className="px-6 pt-5 pb-4 border-b">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="text-base font-semibold">
+                    Configuración de Loggers
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                    Configura los niveles de log. Los cambios son temporales y se perderán al reiniciar.
+                  </DialogDescription>
                 </div>
-                <button
-                  onClick={() => setShowConfirm(true)}
-                  disabled={!hasChanges || saving}
-                  className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border transition-all font-medium whitespace-nowrap h-10 ${
-                    hasChanges && !saving
-                      ? 'bg-green-600 text-white hover:bg-green-700 border-green-600 cursor-pointer shadow-sm'
-                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                  }`}
-                >
-                  <Save className="h-4 w-4" />
-                  <span>Guardar Cambios</span>
-                </button>
+                {hasChanges && (
+                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0">
+                    {Object.keys(changes).length} cambios pendientes
+                  </Badge>
+                )}
               </div>
+            </DialogHeader>
 
-              {/* Filtros adicionales */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-4 border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Filter className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-gray-800">Filtros Avanzados</span>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="px-6 py-4 space-y-4">
+                {/* Buscador */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar logger por paquete o clase..."
+                    value={loggerSearchTerm}
+                    onChange={(e) => setLoggerSearchTerm(e.target.value)}
+                    className="pl-10 h-9"
+                  />
+                </div>
+
+                {/* Filtros: 3 columnas iguales + botón limpiar al lado */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                  <div className="space-y-1">
+                    <label htmlFor="log-level-filter" className="text-xs text-muted-foreground">
+                      Nivel
+                    </label>
+                    <Select value={loggerLevelFilter} onValueChange={setLoggerLevelFilter}>
+                      <SelectTrigger id="log-level-filter" className="w-full h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Todos los niveles</SelectItem>
+                        {LOG_LEVELS.map((level) => (
+                          <SelectItem key={level} value={level}>{level}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  {/* Limpiar filtros */}
-                  {(loggerSearchTerm || loggerLevelFilter !== 'ALL' || loggerPackageFilter !== 'ALL' || showOnlyModified) && (
+                  <div className="space-y-1">
+                    <label htmlFor="log-package-filter" className="text-xs text-muted-foreground">
+                      Paquete
+                    </label>
+                    <Select value={loggerPackageFilter} onValueChange={setLoggerPackageFilter}>
+                      <SelectTrigger id="log-package-filter" className="w-full h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Todos los paquetes</SelectItem>
+                        {uniquePackages.map((pkg) => (
+                          <SelectItem key={pkg} value={pkg}>{pkg}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <label className="flex items-center gap-2 h-9 px-3 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={showOnlyModified}
+                      onChange={(e) => setShowOnlyModified(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm">Solo modificados</span>
+                  </label>
+                </div>
+
+                {(loggerSearchTerm || loggerLevelFilter !== 'ALL' || loggerPackageFilter !== 'ALL' || showOnlyModified) && (
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      Mostrando {filteredLoggers.length} de {loggersArray.length} loggers
+                    </span>
                     <button
+                      type="button"
                       onClick={() => {
                         setLoggerSearchTerm('');
                         setLoggerLevelFilter('ALL');
                         setLoggerPackageFilter('ALL');
                         setShowOnlyModified(false);
                       }}
-                      className="flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-700 font-medium px-3 py-1.5 rounded-md hover:bg-purple-50 transition-colors"
+                      className="text-foreground hover:underline"
                     >
-                      <span>✕</span>
-                      <span>Limpiar</span>
+                      Limpiar filtros
                     </button>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Filtro por nivel */}
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="log-level-filter" className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Nivel de Log</label>
-                    <Select value={loggerLevelFilter} onValueChange={setLoggerLevelFilter}>
-                      <SelectTrigger id="log-level-filter" className="w-full h-9 text-sm bg-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">Todos los niveles</SelectItem>
-                        {LOG_LEVELS.map(level => (
-                          <SelectItem key={level} value={level}>{level}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
+                )}
 
-                  {/* Filtro por paquete */}
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="log-package-filter" className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Paquete</label>
-                    <Select value={loggerPackageFilter} onValueChange={setLoggerPackageFilter}>
-                      <SelectTrigger id="log-package-filter" className="w-full h-9 text-sm bg-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">Todos los paquetes</SelectItem>
-                        {uniquePackages.map(pkg => (
-                          <SelectItem key={pkg} value={pkg}>
-                            {pkg}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Solo modificados */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Vista</span>
-                    <label className="flex items-center gap-2.5 cursor-pointer h-9 px-3 border rounded-md bg-white hover:bg-gray-50 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={showOnlyModified}
-                        onChange={(e) => setShowOnlyModified(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Solo modificados</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Advertencia */}
-              {hasChanges && (
-                <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <p>
-                    Los cambios en los niveles de log son <strong>temporales</strong> y se perderán cuando reinicies el servidor.
-                  </p>
-                </div>
-              )}
-
-              {/* Lista de loggers */}
-              <div className="space-y-2">
-                {filteredLoggers.length > 0 ? (
-                  filteredLoggers.map((logger) => {
-                    const pendingLevel = changes[logger.name];
-                    const currentLevel = logger.configuredLevel || logger.effectiveLevel;
-                    const hasChange = pendingLevel && pendingLevel !== currentLevel;
-                    
-                    return (
-                      <div
-                        key={logger.name}
-                        className={`flex flex-col gap-3 p-3 border rounded-lg transition-all ${
-                          hasChange 
-                            ? 'bg-yellow-50 border-yellow-300' 
-                            : 'bg-white hover:bg-gray-50 border-gray-200'
-                        }`}
-                      >
-                        {/* Logger name - siempre en su propia fila para que no se corte */}
-                        <div className="w-full">
-                          <p className="font-mono text-xs break-words text-gray-900 leading-relaxed" title={logger.name}>
-                            {logger.name}
-                          </p>
-                        </div>
-                        
-                        {/* Nivel actual y selector - en una segunda fila */}
-                        <div className="flex flex-wrap items-center gap-3">
-                          {/* Nivel actual */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500 whitespace-nowrap">Actual:</span>
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-md border whitespace-nowrap ${getLevelColor(currentLevel)}`}>
-                              {currentLevel}
-                            </span>
-                          </div>
-                          
-                          {/* Flecha de cambio */}
-                          {hasChange && (
-                            <span className="text-yellow-600">→</span>
-                          )}
-                          
-                          {/* Selector */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500 whitespace-nowrap">Cambiar a:</span>
-                            <Select
-                              value={pendingLevel || currentLevel}
-                              onValueChange={(value) => handleLevelChange(logger.name, value)}
-                            >
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {LOG_LEVELS.map(level => (
-                                  <SelectItem key={level} value={level}>
-                                    {level}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
-                    <p className="font-medium">No se encontraron loggers</p>
-                    <p className="text-xs mt-1">
-                      {loggerSearchTerm || loggerLevelFilter !== 'ALL' || loggerPackageFilter !== 'ALL' || showOnlyModified
-                        ? 'Intenta ajustar o limpiar los filtros'
-                        : 'No hay loggers disponibles'}
+                {hasChanges && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
+                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <p>
+                      Los cambios son <strong>temporales</strong> y se perderán al reiniciar el servidor.
                     </p>
                   </div>
                 )}
-              </div>
 
-              {/* Footer con contador */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t mt-4">
-                <span>
-                  Mostrando {filteredLoggers.length} de {loggersArray.length} loggers
-                  {(loggerSearchTerm || loggerLevelFilter !== 'ALL' || loggerPackageFilter !== 'ALL' || showOnlyModified) && (
-                    <span className="ml-1 text-purple-600">(filtrado)</span>
+                {/* Lista de loggers */}
+                <div className="space-y-1.5">
+                  {filteredLoggers.length > 0 ? (
+                    filteredLoggers.map((logger) => {
+                      const pendingLevel = changes[logger.name];
+                      const currentLevel = logger.configuredLevel || logger.effectiveLevel;
+                      const hasChange = pendingLevel && pendingLevel !== currentLevel;
+
+                      return (
+                        <div
+                          key={logger.name}
+                          className={`flex items-center gap-3 p-2.5 border rounded-md transition-colors ${
+                            hasChange ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-muted/30'
+                          }`}
+                        >
+                          <p
+                            className="font-mono text-xs text-foreground flex-1 min-w-0 truncate"
+                            title={logger.name}
+                          >
+                            {logger.name}
+                          </p>
+                          <span
+                            className={`inline-flex px-2 py-0.5 text-[11px] font-semibold rounded-md border whitespace-nowrap flex-shrink-0 ${getLevelColor(currentLevel)}`}
+                          >
+                            {currentLevel}
+                          </span>
+                          {hasChange && <span className="text-amber-600 flex-shrink-0">→</span>}
+                          <Select
+                            value={pendingLevel || currentLevel}
+                            onValueChange={(value) => handleLevelChange(logger.name, value)}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-xs flex-shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LOG_LEVELS.map((level) => (
+                                <SelectItem key={level} value={level}>{level}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground border border-dashed rounded-md">
+                      <p className="font-medium">No se encontraron loggers</p>
+                      <p className="text-xs mt-1">
+                        {loggerSearchTerm || loggerLevelFilter !== 'ALL' || loggerPackageFilter !== 'ALL' || showOnlyModified
+                          ? 'Intenta ajustar o limpiar los filtros'
+                          : 'No hay loggers disponibles'}
+                      </p>
+                    </div>
                   )}
-                </span>
-                {hasChanges && (
-                  <span className="text-yellow-600 font-medium">
-                    {Object.keys(changes).length} cambio(s) pendiente(s)
-                  </span>
-                )}
+                </div>
               </div>
-              </div>
+            </div>
+
+            {/* Footer con acciones */}
+            <div className="px-6 py-3 border-t bg-muted/30 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 flex-shrink-0">
+              <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
+                Cerrar
+              </Button>
+              <Button
+                onClick={() => setShowConfirm(true)}
+                disabled={!hasChanges || saving}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-gray-200 disabled:text-muted-foreground"
+              >
+                <Save className="h-4 w-4 mr-1.5" />
+                Guardar cambios
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

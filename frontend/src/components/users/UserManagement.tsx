@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserStatsCards } from './UserStatsCards';
@@ -742,37 +743,52 @@ export default function UserManagement() {
                             </PermissionGuard>
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openDetailsDialog(user)}
-                                className="whitespace-nowrap rounded-2xl"
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Ver
-                              </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => openDetailsDialog(user)}
+                                    aria-label="Ver detalles"
+                                    className="h-8 w-8"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Ver detalles</TooltipContent>
+                              </Tooltip>
                               <PermissionGuard requiredPermission="usuario:gestionar">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openEditDialog(user)}
-                                  className="whitespace-nowrap rounded-2xl"
-                                >
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
-                                </Button>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => openEditDialog(user)}
+                                      aria-label="Editar usuario"
+                                      className="h-8 w-8"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Editar usuario</TooltipContent>
+                                </Tooltip>
                               </PermissionGuard>
                               <PermissionGuard requiredPermission="usuario:gestionar">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openChangeRoleDialog(user)}
-                                  className="whitespace-nowrap rounded-2xl"
-                                >
-                                  <Shield className="h-4 w-4 mr-2" />
-                                  Rol
-                                </Button>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => openChangeRoleDialog(user)}
+                                      aria-label="Cambiar rol"
+                                      className="h-8 w-8"
+                                    >
+                                      <Shield className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Cambiar rol</TooltipContent>
+                                </Tooltip>
                               </PermissionGuard>
                             </div>
                           </TableCell>

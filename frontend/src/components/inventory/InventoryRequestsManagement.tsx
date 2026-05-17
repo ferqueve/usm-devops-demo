@@ -11,6 +11,7 @@ import { inventarioApi } from '@/lib/api/inventory';
 import { useEspacios } from '@/hooks/useEspacios';
 import type { InventarioItem, ReservaItemSolicitado, ReservaItemSolicitadoEstado } from '@/lib/types/spaces';
 import { Button } from '@/components/ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -36,19 +37,15 @@ import {
   Boxes,
   RefreshCw,
   Loader2,
-  Building2,
   CalendarClock,
   ClipboardCheck,
-  History,
-  Mail,
   PackageMinus,
   PackagePlus,
   CheckCircle2,
   XCircle,
   User as UserIcon,
   FileText,
-  Undo2,
-  Save,
+  Settings2,
 } from 'lucide-react';
 import {
   Dialog,
@@ -76,13 +73,6 @@ const ESTADO_LABEL = ESTADO_OPTIONS.reduce<Record<ReservaItemSolicitadoEstado, s
   acc[item.value] = item.label;
   return acc;
 }, { PENDIENTE: 'Pendiente', APROBADO: 'Aprobado', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado' });
-
-const ESTADO_ACCENT: Record<ReservaItemSolicitadoEstado, string> = {
-  PENDIENTE: 'from-amber-500 via-amber-600 to-orange-600',
-  APROBADO: 'from-blue-500 via-blue-600 to-indigo-600',
-  ENTREGADO: 'from-emerald-500 via-teal-600 to-sky-600',
-  RECHAZADO: 'from-rose-500 via-rose-600 to-fuchsia-600',
-};
 
 export default function InventoryRequestsManagement() {
   const navigate = useNavigate();
@@ -529,7 +519,7 @@ export default function InventoryRequestsManagement() {
             }}
           />
         </div>
-        <CardContent className="p-0">
+        <CardContent className="px-4 pb-4 pt-0">
           {(() => {
             if (loading) {
               return (
@@ -549,18 +539,18 @@ export default function InventoryRequestsManagement() {
               );
             }
             return viewMode === 'table' ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Reserva</TableHead>
-                    <TableHead>Solicitante</TableHead>
-                    <TableHead>Elemento</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Creada</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                  <TableRow className="hover:bg-transparent border-b-0">
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">ID</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Reserva</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Solicitante</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Elemento</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Cantidad</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Estado</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Creada</TableHead>
+                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -596,27 +586,41 @@ export default function InventoryRequestsManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDateTime(item.createdAt)}</TableCell>
-                        <TableCell className="flex items-center justify-end gap-2">
+                        <TableCell className="flex items-center justify-end gap-1">
                           <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                             {item.estado === 'APROBADO' && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleMarkDelivered(item)}
-                                disabled={processingRequestId === item.id || item.inventarioItemId == null}
-                              >
-                                <ClipboardCheck className="h-3.5 w-3.5" />
-                                Entregado
-                              </Button>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleMarkDelivered(item)}
+                                    disabled={processingRequestId === item.id || item.inventarioItemId == null}
+                                    aria-label="Marcar entregado"
+                                    className="h-8 w-8"
+                                  >
+                                    <ClipboardCheck className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Marcar entregado</TooltipContent>
+                              </Tooltip>
                             )}
                           </PermissionGuard>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenDialog(item)}
-                            disabled={processingRequestId === item.id}
-                          >
-                            Gestionar
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleOpenDialog(item)}
+                                disabled={processingRequestId === item.id}
+                                aria-label="Gestionar"
+                                className="h-8 w-8"
+                              >
+                                <Settings2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Gestionar</TooltipContent>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     );
@@ -673,102 +677,69 @@ export default function InventoryRequestsManagement() {
         open={manageDialogOpen && !!selectedRequest}
         onOpenChange={handleManageDialogChange}
       >
-        <DialogContent className="max-w-[520px] max-h-[85vh] gap-0 p-0 overflow-hidden border border-slate-200 bg-white shadow-2xl flex flex-col">
+        <DialogContent showCloseButton={false} className="sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 gap-0">
           {selectedRequest ? (
             <>
-              {/* Header fijo */}
-              <DialogHeader
-                className={`shrink-0 gap-2 bg-gradient-to-br px-5 py-4 text-left text-white sm:text-left ${ESTADO_ACCENT[selectedRequest.estado] ?? 'from-slate-600 to-slate-800'}`}
-              >
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/70">
-                  <span>Solicitud #{selectedRequest.id}</span>
-                  <Badge className="bg-white/90 text-slate-900 border-0 px-2 py-0 text-[11px] font-semibold shadow-sm">
-                    {ESTADO_LABEL[selectedRequest.estado]}
-                  </Badge>
-                  <span className="ml-auto text-[10px] normal-case text-white/70">
-                    {formatCompactDateTime(selectedRequest.updatedAt)}
-                  </span>
-                </div>
-                <DialogTitle className="text-xl font-semibold leading-tight text-white">
-                  {selectedRequest.tipoElementoNombre}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-white/80">
-                  Gestiona el estado, inventario y observaciones asociadas a esta solicitud de equipamiento.
-                </DialogDescription>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-white/20 px-2 py-0.5">
-                    <Boxes className="h-3.5 w-3.5" />
-                    x{selectedRequest.cantidadSolicitada}
-                  </span>
-                  {selectedRequest.espacioNombre && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5">
-                      <Building2 className="h-3.5 w-3.5" />
-                      {selectedRequest.espacioNombre}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5">
-                    <ClipboardList className="h-3.5 w-3.5" />
-                    R#{selectedRequest.reservaId}
-                  </span>
+              <DialogHeader className="px-6 pt-5 pb-4 border-b">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <DialogTitle className="text-base font-semibold truncate">
+                      {selectedRequest.tipoElementoNombre}
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                      {selectedRequest.cantidadSolicitada} unidad{selectedRequest.cantidadSolicitada === 1 ? '' : 'es'}
+                      {selectedRequest.espacioNombre ? ` · ${selectedRequest.espacioNombre}` : ''}
+                      {` · Reserva #${selectedRequest.reservaId}`}
+                    </DialogDescription>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <Badge
+                      variant="outline"
+                      className={ESTADO_OPTIONS.find((e) => e.value === selectedRequest.estado)?.badgeClass ?? 'bg-gray-50 text-gray-700 border-gray-200'}
+                    >
+                      {ESTADO_LABEL[selectedRequest.estado]}
+                    </Badge>
+                    <span className="text-[11px] text-muted-foreground">#{selectedRequest.id}</span>
+                  </div>
                 </div>
               </DialogHeader>
 
-              {/* Contenido scrolleable */}
-              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 text-sm text-slate-900">
-                <div className="grid gap-2">
-                  <div className="flex items-start gap-2">
-                    <UserIcon className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold leading-tight">
-                        {selectedRequest.solicitanteNombre ?? '—'}
-                      </p>
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <Mail className="h-3 w-3 shrink-0" />
-                        <span className="truncate break-all">
-                          {selectedRequest.solicitanteEmail ?? '—'}
-                        </span>
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="px-6 py-4 space-y-4 text-sm">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <UserIcon className="h-3.5 w-3.5" />
+                      Solicitante
+                    </div>
+                    <p className="mt-0.5 font-medium">{selectedRequest.solicitanteNombre ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground break-all">
+                      {selectedRequest.solicitanteEmail ?? '—'}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CalendarClock className="h-3.5 w-3.5" />
+                      Reserva
+                    </div>
+                    <p className="mt-0.5 font-medium">
+                      {formatCompactDateTime(selectedRequest.reservaInicio)} – {formatCompactDateTime(selectedRequest.reservaFin)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Creada {formatCompactDateTime(selectedRequest.createdAt)} · actualizada {formatCompactDateTime(selectedRequest.updatedAt)}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Boxes className="h-3.5 w-3.5" />
+                        Inventario asignado
                       </div>
+                      {inventoryLoading && (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                      )}
                     </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <CalendarClock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div className="flex flex-wrap items-center gap-1 text-sm font-semibold leading-tight text-slate-900">
-                      <span>{formatCompactDateTime(selectedRequest.reservaInicio)}</span>
-                      <span className="text-[10px] text-muted-foreground">→</span>
-                      <span>{formatCompactDateTime(selectedRequest.reservaFin)}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                    <History className="mt-0.5 h-3.5 w-3.5" />
-                    <span>Creada {formatCompactDateTime(selectedRequest.createdAt)}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-semibold uppercase tracking-wide text-slate-500">Estado</span>
-                  <Badge
-                    variant="outline"
-                    className={`px-2 py-0 text-[11px] font-semibold ${ESTADO_OPTIONS.find((estado) => estado.value === selectedRequest.estado)?.badgeClass ?? 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                  >
-                    {ESTADO_LABEL[selectedRequest.estado]}
-                  </Badge>
-                  <span className="ml-auto text-[10px]">
-                    Actualizado {formatCompactDateTime(selectedRequest.updatedAt)}
-                  </span>
-                </div>
-
-                <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50/70 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      <Boxes className="h-3.5 w-3.5 text-blue-600" />
-                      <span>Inventario</span>
-                    </div>
-                    {inventoryLoading && (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                    )}
-                  </div>
                   <Select
                     value={selectedInventoryId === null ? 'none' : selectedInventoryId.toString()}
                     onValueChange={(value) => {
@@ -853,137 +824,114 @@ export default function InventoryRequestsManagement() {
                   </PermissionGuard>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <FileText className="h-3.5 w-3.5 text-slate-500" />
-                    Observaciones
-                  </div>
-                  <Textarea
-                    value={observacionesEdit}
-                    onChange={(event) => setObservacionesEdit(event.target.value)}
-                    rows={3}
-                    className="resize-none text-sm"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setObservacionesEdit(selectedRequest.observaciones ?? '')}
-                      disabled={
-                        updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
-                      }
-                    >
-                      <Undo2 className="h-3.5 w-3.5" />
-                      Deshacer
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        if (!selectedRequest) {
-                          return;
+                  <div className="pt-3 border-t space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <FileText className="h-3.5 w-3.5" />
+                      Observaciones
+                    </div>
+                    <Textarea
+                      value={observacionesEdit}
+                      onChange={(event) => setObservacionesEdit(event.target.value)}
+                      rows={3}
+                      className="resize-none text-sm"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setObservacionesEdit(selectedRequest.observaciones ?? '')}
+                        disabled={
+                          updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
                         }
-                        updateRequest(
-                          selectedRequest,
-                          { observaciones: observacionesEdit },
-                          'Observaciones actualizadas'
-                        );
-                      }}
-                      disabled={
-                        updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
-                      }
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                      Guardar
-                    </Button>
+                      >
+                        Deshacer
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          if (!selectedRequest) {
+                            return;
+                          }
+                          updateRequest(
+                            selectedRequest,
+                            { observaciones: observacionesEdit },
+                            'Observaciones actualizadas'
+                          );
+                        }}
+                        disabled={
+                          updatingRequest || observacionesEdit === (selectedRequest.observaciones ?? '')
+                        }
+                      >
+                        Guardar
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Footer fijo con acciones */}
-              <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-5 py-3">
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="px-6 py-3 border-t bg-muted/30 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={() => handleManageDialogChange(false)}
+                >
+                  Cerrar
+                </Button>
+                <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="h-9 px-4"
-                    onClick={() => handleManageDialogChange(false)}
+                    title={canReject ? undefined : 'La solicitud ya fue cerrada'}
+                    onClick={() => {
+                      if (!selectedRequest) return;
+                      updateRequest(
+                        selectedRequest,
+                        { estado: 'RECHAZADO', inventarioItemId: 0 },
+                        'Solicitud rechazada'
+                      );
+                    }}
+                    disabled={updatingRequest || !canReject}
+                    className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
                   >
-                    Cerrar
+                    <XCircle className="h-4 w-4 mr-1.5" />
+                    Rechazar
                   </Button>
-                  <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
-                    <div className="flex items-center gap-2">
-                      <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          title={canReject ? undefined : 'La solicitud ya fue cerrada'}
-                          onClick={() => {
-                            if (!selectedRequest) {
-                              return;
-                            }
-                            updateRequest(
-                              selectedRequest,
-                              { estado: 'RECHAZADO', inventarioItemId: 0 },
-                              'Solicitud rechazada'
-                            );
-                          }}
-                          disabled={updatingRequest || !canReject}
-                          className="h-9 border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          Rechazar
-                        </Button>
-                      </PermissionGuard>
-                      {isRequestApproved ? (
-                        <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
-                          <Button
-                            size="sm"
-                            title={canDeliver ? undefined : 'Asigna un item antes de confirmar la entrega'}
-                            onClick={() => {
-                              if (!selectedRequest) {
-                                return;
-                              }
-                              handleMarkDelivered(selectedRequest);
-                            }}
-                            disabled={updatingRequest || !canDeliver}
-                            className="h-9 bg-emerald-600 hover:bg-emerald-700"
-                          >
-                            <ClipboardCheck className="h-4 w-4" />
-                            Confirmar entrega
-                          </Button>
-                        </PermissionGuard>
-                      ) : (
-                        <PermissionGuard requiredPermission="solicitud_inventario:aprobar">
-                          <Button
-                            size="sm"
-                            title={canApprove ? undefined : 'Asigna un item antes de aprobar'}
-                            onClick={() => {
-                              if (!selectedRequest) {
-                                return;
-                              }
-                              if (!canApprove) {
-                                toast.error('Asigna un item antes de aprobar la solicitud');
-                                return;
-                              }
-                              updateRequest(
-                                selectedRequest,
-                                { estado: 'APROBADO' },
-                                'Solicitud aprobada'
-                              );
-                            }}
-                            disabled={updatingRequest || !canApprove}
-                            className="h-9 bg-emerald-600 hover:bg-emerald-700"
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                            Aprobar
-                          </Button>
-                        </PermissionGuard>
-                      )}
-                    </div>
-                  </PermissionGuard>
-                </div>
+                  {isRequestApproved ? (
+                    <Button
+                      title={canDeliver ? undefined : 'Asigna un item antes de confirmar la entrega'}
+                      onClick={() => {
+                        if (!selectedRequest) return;
+                        handleMarkDelivered(selectedRequest);
+                      }}
+                      disabled={updatingRequest || !canDeliver}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <ClipboardCheck className="h-4 w-4 mr-1.5" />
+                      Confirmar entrega
+                    </Button>
+                  ) : (
+                    <Button
+                      title={canApprove ? undefined : 'Asigna un item antes de aprobar'}
+                      onClick={() => {
+                        if (!selectedRequest) return;
+                        if (!canApprove) {
+                          toast.error('Asigna un item antes de aprobar la solicitud');
+                          return;
+                        }
+                        updateRequest(
+                          selectedRequest,
+                          { estado: 'APROBADO' },
+                          'Solicitud aprobada'
+                        );
+                      }}
+                      disabled={updatingRequest || !canApprove}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                      Aprobar
+                    </Button>
+                  )}
+                </PermissionGuard>
               </div>
             </>
           ) : null}

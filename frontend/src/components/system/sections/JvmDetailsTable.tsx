@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Cpu, Activity, MemoryStick, Trash2, Clock, Network } from 'lucide-react';
+import { Cpu, Activity, MemoryStick, Trash2, Clock, Network, Settings } from 'lucide-react';
 import { formatBytes, formatUptime } from '@/lib/utils/formatters';
 import type { MetricInfo, MetricMeasurement } from '@/lib/types/actuator';
 
@@ -47,13 +47,20 @@ export const JvmDetailsTable = memo(function JvmDetailsTable({
 
   return (
     <Card className="shadow-card">
-      <CardContent className="p-4 sm:p-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Settings className="h-5 w-5 text-utec-yellow" />
+          Detalle JVM
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="border rounded-lg overflow-hidden">
         <Table>
-          <TableHeader style={{ backgroundColor: '#525961' }}>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-[#d1d5db]">Métrica</TableHead>
-              <TableHead className="text-[#d1d5db]">Valor</TableHead>
-              <TableHead className="text-[#d1d5db] hidden md:table-cell">Descripción</TableHead>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-b-0">
+              <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Métrica</TableHead>
+              <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Valor</TableHead>
+              <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] hidden md:table-cell">Descripción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -157,6 +164,7 @@ export const JvmDetailsTable = memo(function JvmDetailsTable({
             </TableRow>
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

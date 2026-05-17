@@ -137,15 +137,15 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
         )}
 
         {/* Tabla de migraciones */}
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[400px] border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-[60px]">#</TableHead>
-                <TableHead className="w-[120px]">ID</TableHead>
-                <TableHead>Descripción</TableHead>
-                <TableHead className="w-[100px]">Autor</TableHead>
-                <TableHead className="w-[150px]">Fecha</TableHead>
+              <TableRow className="hover:bg-transparent border-b-0">
+                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[60px]">#</TableHead>
+                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[120px]">ID</TableHead>
+                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Descripción</TableHead>
+                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[100px]">Autor</TableHead>
+                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[150px]">Fecha</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

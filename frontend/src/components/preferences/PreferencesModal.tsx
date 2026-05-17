@@ -243,20 +243,32 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Preferencias de Usuario</DialogTitle>
+      <DialogContent
+        showCloseButton={false}
+        className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0"
+      >
+        <DialogHeader className="px-6 pt-5 pb-4 border-b">
+          <DialogTitle className="text-base font-semibold">Preferencias de Usuario</DialogTitle>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Personaliza las notificaciones, vistas por defecto y la seguridad de tu cuenta.
+          </p>
         </DialogHeader>
 
         {loading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : (
-          <div className="space-y-6">
+          <>
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 divide-y">
             {/* Sección de Notificaciones por Email */}
-            <div className="space-y-4">
-              <Label className="text-base font-semibold">Notificaciones por Email</Label>
+            <section className="space-y-3 pb-5">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Notificaciones por Email</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Elige qué eventos disparan correos hacia tu cuenta.
+                </p>
+              </div>
               {filteredEmailKeys.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground text-sm">
                   <p>No hay preferencias de email configurables para tu rol.</p>
@@ -281,17 +293,22 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                   ))}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Sección de Preferencias de Vista - Oculto para usuarios externos */}
             {user?.rol !== ROLES.EXTERNO && (
-            <div className="space-y-4">
-              <Label className="text-base font-semibold">Preferencias de Vista</Label>
-              <div className="space-y-4">
+            <section className="space-y-3 py-5">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Preferencias de Vista</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Cómo se presentan las distintas secciones al abrirlas.
+                </p>
+              </div>
+              <div className="space-y-3">
                 {/* Preferencias de Reservas */}
                 {puedeVerSeccion('reservas') && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Reservas</Label>
+                <div className="space-y-2 rounded-md border bg-muted/20 p-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Reservas</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="reservasViewMode" className="text-xs text-muted-foreground">
@@ -354,8 +371,8 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
 
                 {/* Preferencias de Espacios */}
                 {puedeVerSeccion('espacios') && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Espacios</Label>
+                <div className="space-y-2 rounded-md border bg-muted/20 p-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Espacios</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="espaciosViewMode" className="text-xs text-muted-foreground">
@@ -398,8 +415,8 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
 
                 {/* Preferencias de Inventario */}
                 {puedeVerSeccion('inventario') && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Inventario</Label>
+                <div className="space-y-2 rounded-md border bg-muted/20 p-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Inventario</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="inventarioViewMode" className="text-xs text-muted-foreground">
@@ -442,8 +459,8 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
 
                 {/* Otras preferencias - Solo ADMIN */}
                 {puedeVerSeccion('usuarios') && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Otras</Label>
+                <div className="space-y-2 rounded-md border bg-muted/20 p-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Otras</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="usuariosPageSize" className="text-xs text-muted-foreground">
@@ -487,13 +504,13 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                 </div>
                 )}
               </div>
-            </div>
+            </section>
             )}
 
             {/* Sección de Términos y Políticas */}
-            <div className="space-y-4">
-              <Label className="text-base font-semibold">Términos y Políticas</Label>
-              <div className="space-y-3">
+            <section className="space-y-3 py-5">
+              <h3 className="text-sm font-semibold text-foreground">Términos y Políticas</h3>
+              <div className="space-y-2">
                 <div className="flex items-center justify-between p-3 rounded-md border border-border">
                   <div>
                     <Label className="text-sm font-medium">Términos y Condiciones</Label>
@@ -531,15 +548,19 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                   </Button>
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* Sección de Seguridad - Colapsable */}
-            <Collapsible open={securityExpanded} onOpenChange={setSecurityExpanded}>
-              <div className="space-y-2">
-                <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-md border border-border hover:bg-accent transition-colors">
-                  <Label className="text-base font-semibold cursor-pointer">
-                    Seguridad
-                  </Label>
+            <section className="space-y-3 pt-5">
+              <Collapsible open={securityExpanded} onOpenChange={setSecurityExpanded}>
+              <div className="space-y-3">
+                <CollapsibleTrigger className="flex items-center justify-between w-full text-left hover:opacity-80 transition-opacity">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Seguridad</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Cambiá tu contraseña de inicio de sesión.
+                    </p>
+                  </div>
                   {securityExpanded ? (
                     <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   ) : (
@@ -641,22 +662,24 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                   </div>
                 </CollapsibleContent>
               </div>
-            </Collapsible>
+              </Collapsible>
+            </section>
 
-            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={saving}
-              >
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar
-              </Button>
-            </div>
           </div>
+          <div className="px-6 py-3 border-t bg-muted/30 flex justify-end gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={saving}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Guardar
+            </Button>
+          </div>
+          </>
         )}
         
         {/* Diálogo de términos y política */}

@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
@@ -17,7 +18,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MapPin, Users, Calendar, Clock, User, GraduationCap, CheckCircle2, XCircle, MessageSquare } from 'lucide-react';
+import { Users, Calendar, Clock, User, GraduationCap, CheckCircle2, XCircle, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import PermissionGuard from '@/components/auth/PermissionGuard';
@@ -161,233 +162,143 @@ export default function ReservationDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!grid-cols-1 w-[95vw] sm:max-w-[500px] !p-0 !gap-0 max-h-[85vh] !flex !flex-col overflow-hidden">
-        {/* Ticket Style Header */}
-        <div className={`relative ${estadoConfig.color} px-5 pt-4 pb-3 flex-shrink-0`}>
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-xs font-medium opacity-70">RESERVA #{reserva.id}</p>
-            <Badge className="bg-white/90 text-gray-900 border-0 font-semibold shadow-sm flex-shrink-0">
-              {estadoConfig.label}
-            </Badge>
-            {reserva.esPublica && (
-              <Badge className="bg-white/90 text-blue-700 border-0 font-semibold shadow-sm flex-shrink-0">
-                Externa
-              </Badge>
-            )}
-          </div>
-          <DialogTitle className="text-lg font-bold truncate">{reserva.titulo || reserva.espacioNombre}</DialogTitle>
-          {reserva.titulo && reserva.espacioNombre && (
-            <p className="text-sm text-white/80 truncate mt-1">{reserva.espacioNombre}</p>
-          )}
-          {/* Puntos decorativos tipo ticket */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
-            <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-            <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-            <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-            <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-            <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-            <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-          </div>
-        </div>
-
-        {/* Contenido del ticket */}
-        <div className="bg-white flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-          {/* Imagen del espacio - sin padding */}
-          <div className="relative w-full mt-3">
-            <div className="h-28 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-              {reserva.espacioImagen ? (
-                <img
-                  src={reserva.espacioImagen}
-                  alt={reserva.espacioNombre}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <MapPin className="h-14 w-14 text-gray-300" />
-                </div>
+      <DialogContent showCloseButton={false} className="sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-6 pt-5 pb-4 border-b">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-base font-semibold truncate">
+                {reserva.titulo || reserva.espacioNombre}
+              </DialogTitle>
+              {reserva.titulo && (
+                <p className="text-sm text-muted-foreground truncate mt-0.5">
+                  {reserva.espacioNombre}
+                </p>
               )}
             </div>
-          </div>
-
-          {/* Línea punteada tipo ticket */}
-          <div className="border-t border-dashed border-gray-300 w-full mt-3"></div>
-
-          {/* Contenedor con padding para el contenido */}
-          <div className="px-5 py-3 space-y-2.5">
-            {/* Título */}
-            {reserva.titulo && (
-              <div className="bg-blue-50 border-l-4 border-blue-400 rounded p-3 space-y-1">
-                <p className="text-xs font-semibold text-blue-800">Título</p>
-                <p className="text-sm text-blue-900 font-medium">{reserva.titulo}</p>
-              </div>
-            )}
-
-            {/* Motivo de solicitud - Solo visible para docentes/externos, NO para analistas/admin */}
-            {puedeVerMotivoSolicitud && reserva.motivoSolicitud && (
-              <div className="bg-gray-50 border-l-4 border-gray-400 rounded p-3 space-y-1">
-                <p className="text-xs font-semibold text-gray-800">Motivo de la solicitud</p>
-                <p className="text-xs text-gray-700 whitespace-pre-wrap">{reserva.motivoSolicitud}</p>
-              </div>
-            )}
-
-            {/* Información en grid compacto */}
-            <div className="grid grid-cols-2 gap-2">
-              {/* Fecha */}
-              <div className="flex items-center gap-1.5">
-                <div className="p-1.5 bg-blue-100 rounded-lg flex-shrink-0">
-                  <Calendar className="h-3.5 w-3.5 text-blue-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-500 mb-0.5">Fecha</p>
-                  <p className="text-xs font-semibold truncate leading-tight">{formatDate(reserva.inicio)}</p>
-                </div>
-              </div>
-
-              {/* Horario */}
-              <div className="flex items-center gap-1.5">
-                <div className="p-1.5 bg-purple-100 rounded-lg flex-shrink-0">
-                  <Clock className="h-3.5 w-3.5 text-purple-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-500 mb-0.5">Horario</p>
-                  <p className="text-xs font-semibold truncate leading-tight">{formatTime(reserva.inicio)} - {formatTime(reserva.fin)}</p>
-                </div>
-              </div>
-
-              {/* Capacidad */}
-              <div className="flex items-center gap-1.5">
-                <div className="p-1.5 bg-green-100 rounded-lg flex-shrink-0">
-                  <Users className="h-3.5 w-3.5 text-green-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-500 mb-0.5">Capacidad</p>
-                  <p className="text-xs font-semibold truncate leading-tight">{reserva.capacidadEspacio} personas</p>
-                </div>
-              </div>
-
-              {/* Duración */}
-              <div className="flex items-center gap-1.5">
-                <div className="p-1.5 bg-orange-100 rounded-lg flex-shrink-0">
-                  <Clock className="h-3.5 w-3.5 text-orange-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-500 mb-0.5">Duración</p>
-                  <p className="text-xs font-semibold truncate leading-tight">{duracionHoras}h</p>
-                </div>
-              </div>
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <Badge variant="outline" className={estadoConfig.color}>
+                {estadoConfig.label}
+              </Badge>
+              <span className="text-[11px] text-muted-foreground">#{reserva.id}</span>
             </div>
           </div>
+          {reserva.esPublica && (
+            <Badge variant="outline" className="mt-2 self-start text-xs">
+              Externa
+            </Badge>
+          )}
+        </DialogHeader>
 
-          {/* Línea punteada - fuera del contenedor con padding */}
-          <div className="border-t border-dashed border-gray-300 w-full"></div>
-
-          {/* Contenedor con padding para usuario y carrera */}
-          <div className="px-5 py-3 space-y-2.5">
-            {/* Usuario y Carrera */}
-            <div className="grid grid-cols-2 gap-2">
-              {/* Usuario */}
-              <div className="flex items-center gap-1.5">
-                <div className="p-1.5 bg-indigo-100 rounded-lg flex-shrink-0">
-                  <User className="h-3.5 w-3.5 text-indigo-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-500 mb-0.5">Reservado por</p>
-                  <p className="text-xs font-semibold truncate leading-tight">{reserva.usuarioNombre}</p>
-                  <p className="text-[10px] text-gray-400 truncate leading-tight">{reserva.usuarioEmail}</p>
-                </div>
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="px-6 py-4 space-y-4">
+            {/* Información principal en filas */}
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              <div>
+                <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Fecha
+                </dt>
+                <dd className="mt-0.5 font-medium">{formatDate(reserva.inicio)}</dd>
               </div>
-
-              {/* Carrera */}
-              {reserva.carreraId ? (
-                <div className="flex items-center gap-1.5">
-                  <div className="p-1.5 bg-amber-100 rounded-lg flex-shrink-0">
-                    <GraduationCap className="h-3.5 w-3.5 text-amber-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-500 mb-0.5">Carrera</p>
-                    <p className="text-xs font-semibold truncate leading-tight">{reserva.carreraNombre}</p>
+              <div>
+                <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  Horario
+                </dt>
+                <dd className="mt-0.5 font-medium">
+                  {formatTime(reserva.inicio)} – {formatTime(reserva.fin)}
+                  <span className="text-muted-foreground font-normal"> · {duracionHoras}h</span>
+                </dd>
+              </div>
+              <div>
+                <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" />
+                  Capacidad
+                </dt>
+                <dd className="mt-0.5 font-medium">{reserva.capacidadEspacio} personas</dd>
+              </div>
+              {reserva.carreraId && (
+                <div>
+                  <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    Carrera
+                  </dt>
+                  <dd className="mt-0.5 font-medium flex items-center gap-1.5">
+                    <span className="truncate">{reserva.carreraNombre}</span>
                     {reserva.carreraCodigo && (
-                      <Badge variant="outline" className="mt-0.5 text-[10px] py-0 h-4 px-1.5">
+                      <Badge variant="outline" className="text-[10px] py-0 h-4 px-1.5 flex-shrink-0">
                         {reserva.carreraCodigo}
                       </Badge>
                     )}
-                  </div>
+                  </dd>
                 </div>
-              ) : (
-                <div></div>
               )}
+            </dl>
+
+            {/* Reservado por */}
+            <div className="pt-3 border-t">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <User className="h-3.5 w-3.5" />
+                Reservado por
+              </div>
+              <div className="mt-0.5">
+                <p className="font-medium text-sm">{reserva.usuarioNombre}</p>
+                <p className="text-xs text-muted-foreground">{reserva.usuarioEmail}</p>
+              </div>
             </div>
 
-            {/* Alerta si ya pasó */}
-            {!esFutura && reserva.estado === 'APROBADO' && (
-              <div className="bg-blue-50 border-l-4 border-blue-400 rounded p-2 flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <p className="text-[10px] text-blue-700">Reserva completada</p>
+            {/* Motivo de solicitud (solo docentes/externos) */}
+            {puedeVerMotivoSolicitud && reserva.motivoSolicitud && (
+              <div className="pt-3 border-t">
+                <p className="text-xs text-muted-foreground">Motivo de la solicitud</p>
+                <p className="mt-1 text-sm whitespace-pre-wrap">{reserva.motivoSolicitud}</p>
               </div>
             )}
 
-            {/* Mensaje del analista si existe */}
+            {/* Mensaje del analista */}
             {reserva.mensajeAnalista && (
-              <div className={`border-l-4 rounded p-3 space-y-2 ${reserva.estado === 'CANCELADO'
-                  ? 'bg-red-50 border-red-400'
-                  : 'bg-green-50 border-green-400'
-                }`}>
-                <div className="flex items-center gap-2">
-                  <MessageSquare className={`h-4 w-4 flex-shrink-0 ${reserva.estado === 'CANCELADO' ? 'text-red-600' : 'text-green-600'
-                    }`} />
-                  <p className={`text-xs font-semibold ${reserva.estado === 'CANCELADO' ? 'text-red-800' : 'text-green-800'
-                    }`}>
-                    Mensaje del analista
-                  </p>
+              <div className="pt-3 border-t">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Mensaje del analista
                 </div>
-                <p className={`text-xs whitespace-pre-wrap ${reserva.estado === 'CANCELADO' ? 'text-red-700' : 'text-green-700'
-                  }`}>
-                  {reserva.mensajeAnalista}
-                </p>
+                <p className="mt-1 text-sm whitespace-pre-wrap">{reserva.mensajeAnalista}</p>
               </div>
+            )}
+
+            {/* Aviso si ya pasó */}
+            {!esFutura && reserva.estado === 'APROBADO' && (
+              <p className="pt-3 border-t text-xs text-muted-foreground italic">
+                Reserva completada.
+              </p>
             )}
           </div>
         </div>
 
-        {/* Footer tipo ticket */}
-        <div className="relative bg-gray-50 px-5 py-2.5 border-t border-dashed border-gray-300 flex-shrink-0">
-          {/* Puntos decorativos inferiores */}
-          <div className="absolute top-0 left-0 right-0 flex justify-between px-4 -mt-1.5">
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-          </div>
-
-          {/* Botones de acción para reservas pendientes */}
-          {reserva.estado === 'PENDIENTE' && (
-            <PermissionGuard requiredPermission="reserva:aprobar" fallback={null} showFallback={false}>
-              <div className="flex flex-col sm:flex-row gap-2 mb-2">
-                <Button
-                  variant="default"
-                  onClick={handleAprobarClick}
-                  className="flex-1 h-9 bg-green-600 hover:bg-green-700 text-white font-semibold"
-                >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Aprobar Reserva
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleRechazarClick}
-                  className="flex-1 h-9 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold"
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Rechazar
-                </Button>
-              </div>
-            </PermissionGuard>
-          )}
-
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full h-9 text-sm">
+        {/* Footer con acciones */}
+        <div className="px-6 py-3 border-t bg-muted/30 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 flex-shrink-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cerrar
           </Button>
+          {reserva.estado === 'PENDIENTE' && (
+            <PermissionGuard requiredPermission="reserva:aprobar" fallback={null} showFallback={false}>
+              <Button
+                variant="outline"
+                onClick={handleRechazarClick}
+                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <XCircle className="h-4 w-4 mr-1.5" />
+                Rechazar
+              </Button>
+              <Button
+                onClick={handleAprobarClick}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                Aprobar
+              </Button>
+            </PermissionGuard>
+          )}
         </div>
       </DialogContent>
 

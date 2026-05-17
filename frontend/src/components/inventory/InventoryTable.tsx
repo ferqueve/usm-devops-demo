@@ -59,12 +59,12 @@ export default function InventoryTable({
   };
 
   return (
-    <div className="border rounded-lg shadow-card">
+    <div className="border rounded-lg shadow-card overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="hover:bg-transparent border-b-0">
             {onToggleSelect && (
-              <TableHead className="w-[50px]">
+              <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[50px]">
                 <Checkbox
                   checked={selectedItems?.size === items.length}
                   onCheckedChange={(checked) => {
@@ -78,33 +78,33 @@ export default function InventoryTable({
                 />
               </TableHead>
             )}
-            <TableHead className="w-[50px]">
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[50px]">
               <button
                 onClick={() => onSort && handleSort('id')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 ID {sortConfig && getSortIcon('id')}
               </button>
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               <button
                 onClick={() => onSort && handleSort('tipo')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 Tipo {sortConfig && getSortIcon('tipo')}
               </button>
             </TableHead>
-            <TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
               <button
                 onClick={() => onSort && handleSort('cantidad')}
-                className="flex items-center hover:text-utec-blue transition-colors"
+                className="flex items-center hover:text-white transition-colors"
               >
                 Cantidad {sortConfig && getSortIcon('cantidad')}
               </button>
             </TableHead>
-            <TableHead>Espacio</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Espacio</TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Estado</TableHead>
+            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

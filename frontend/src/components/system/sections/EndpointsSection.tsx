@@ -160,29 +160,29 @@ export const EndpointsSection = memo(function EndpointsSection({ mappings }: End
       </CardHeader>
       <CardContent>
         {allEndpoints.length > 0 ? (
-          <ScrollArea className="h-[500px]">
+          <ScrollArea className="h-[500px] border rounded-lg overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">
+                <TableRow className="hover:bg-transparent border-b-0">
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[80px]">
                     <button
                       onClick={() => handleSort('method')}
-                      className="flex items-center hover:text-utec-blue transition-colors duration-150 font-semibold"
+                      className="flex items-center hover:text-white transition-colors duration-150 font-semibold"
                     >
                       Método
                       {getSortIcon('method')}
                     </button>
                   </TableHead>
-                  <TableHead className="w-[300px]">
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[300px]">
                     <button
                       onClick={() => handleSort('path')}
-                      className="flex items-center hover:text-utec-blue transition-colors duration-150 font-semibold"
+                      className="flex items-center hover:text-white transition-colors duration-150 font-semibold"
                     >
                       Endpoint
                       {getSortIcon('path')}
                     </button>
                   </TableHead>
-                  <TableHead>Descripción</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Descripción</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

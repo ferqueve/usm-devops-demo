@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -27,26 +28,32 @@ import AuditLogDetailsDialog from './AuditLogDetailsDialog';
 import {
   FileText,
   RefreshCw,
-  Eye,
   Loader2,
   FileDown,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
+  CREATE: { label: 'Crear', badge: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500' },
+  UPDATE: { label: 'Actualizar', badge: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
+  DELETE: { label: 'Eliminar', badge: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' },
+};
+
 function getAccionBadge(accion: AuditLog['accion']) {
-  switch (accion) {
-    case 'CREATE':
-      return <Badge className="bg-green-100 text-green-700 border-green-300">Crear</Badge>;
-    case 'UPDATE':
-      return <Badge className="bg-blue-100 text-blue-700 border-blue-300">Actualizar</Badge>;
-    case 'DELETE':
-      return <Badge className="bg-red-100 text-red-700 border-red-300">Eliminar</Badge>;
-    default:
-      return <Badge variant="outline">{accion}</Badge>;
+  const cfg = ACCION_CONFIG[accion];
+  if (!cfg) {
+    return <Badge variant="outline">{accion}</Badge>;
   }
+  return (
+    <Badge variant="outline" className={`gap-1.5 font-medium ${cfg.badge}`}>
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${cfg.dot}`} aria-hidden="true" />
+      {cfg.label}
+    </Badge>
+  );
 }
 
 export default function AuditManagement() {
@@ -228,58 +235,80 @@ export default function AuditManagement() {
           />
         ) : (
           <>
+            <div className="border rounded-lg overflow-hidden">
             <Table>
               <TableHeader style={{ backgroundColor: '#525961' }}>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-[#d1d5db] min-w-[80px]">ID</TableHead>
-                  <TableHead className="text-[#d1d5db] min-w-[120px]">Entidad</TableHead>
-                  <TableHead className="text-[#d1d5db] min-w-[100px]">ID Entidad</TableHead>
-                  <TableHead className="text-[#d1d5db] min-w-[100px]">Acción</TableHead>
-                  <TableHead className="text-[#d1d5db] min-w-[150px]">Usuario</TableHead>
-                  <TableHead className="text-[#d1d5db] min-w-[180px]">Fecha/Hora</TableHead>
-                  <TableHead className="text-[#d1d5db] text-center min-w-[100px]">Detalles</TableHead>
+                <TableRow className="hover:bg-transparent border-b-0">
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[90px]">ID</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[140px]">Entidad</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[100px]">ID Entidad</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[130px]">Acción</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[200px]">Usuario</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[200px]">Fecha/Hora</TableHead>
+                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right w-[80px]">Detalles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {logs.map((log) => (
-                  <TableRow 
-                    key={log.id} 
-                    className="hover:bg-muted/60 transition-colors"
-                  >
-                    <TableCell className="font-medium">{log.id}</TableCell>
-                    <TableCell>
-                      <span className="font-semibold">{log.entidad}</span>
-                    </TableCell>
-                    <TableCell>{log.entidadId}</TableCell>
-                    <TableCell>
-                      {getAccionBadge(log.accion)}
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{log.usuarioNombre || 'Sistema'}</p>
-                        {log.usuarioEmail && (
-                          <p className="text-xs text-muted-foreground">{log.usuarioEmail}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(log.timestamp), "dd/MM/yyyy HH:mm:ss", { locale: es })}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewDetails(log)}
-                        className="h-8"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {logs.map((log) => {
+                  const fecha = new Date(log.timestamp);
+                  const relativo = formatDistanceToNow(fecha, { locale: es, addSuffix: true });
+                  const accionCfg = ACCION_CONFIG[log.accion];
+                  return (
+                    <TableRow key={log.id} className="group">
+                      <TableCell className="py-2 font-mono text-xs text-muted-foreground tabular-nums">
+                        <span className="flex items-center gap-1.5">
+                          {accionCfg && (
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${accionCfg.dot}`}
+                              aria-hidden="true"
+                            />
+                          )}
+                          #{log.id}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2 font-medium">{log.entidad}</TableCell>
+                      <TableCell className="py-2 text-muted-foreground tabular-nums">
+                        {log.entidadId}
+                      </TableCell>
+                      <TableCell className="py-2">{getAccionBadge(log.accion)}</TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex flex-col leading-tight">
+                          <span className="font-medium">{log.usuarioNombre || 'Sistema'}</span>
+                          {log.usuarioEmail && (
+                            <span className="text-xs text-muted-foreground">{log.usuarioEmail}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex flex-col leading-tight tabular-nums">
+                          <span className="text-sm">
+                            {format(fecha, "dd MMM yyyy, HH:mm:ss", { locale: es })}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{relativo}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 text-right">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleViewDetails(log)}
+                              aria-label="Ver detalles"
+                              className="h-7 w-7 opacity-60 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Ver detalles</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
+            </div>
 
             {/* Paginación */}
             {totalPages > 1 && (

@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { BarChart3, Settings } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { JvmCharts } from '../sections/JvmCharts';
 import { JvmDetailsTable } from '../sections/JvmDetailsTable';
 import { useSidebarTransition } from '@/hooks/useSidebarTransition';
@@ -43,23 +43,15 @@ export const PerformanceTab = memo(function PerformanceTab({
       </section>
 
       {/* Tabla detallada JVM */}
-      <section>
-        <h3 className="section-title mb-4">
-          <span className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-utec-yellow" />
-            Detalle JVM
-          </span>
-        </h3>
-        <JvmDetailsTable
-          memoryMetrics={memoryMetrics}
-          memoryMaxMetrics={memoryMaxMetrics}
-          cpuMetrics={cpuMetrics}
-          threadsMetrics={threadsMetrics}
-          gcMetrics={gcMetrics}
-          uptimeMetrics={uptimeMetrics}
-          httpMetrics={httpMetrics}
-        />
-      </section>
+      <JvmDetailsTable
+        memoryMetrics={memoryMetrics}
+        memoryMaxMetrics={memoryMaxMetrics}
+        cpuMetrics={cpuMetrics}
+        threadsMetrics={threadsMetrics}
+        gcMetrics={gcMetrics}
+        uptimeMetrics={uptimeMetrics}
+        httpMetrics={httpMetrics}
+      />
     </div>
   );
 });
