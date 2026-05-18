@@ -71,5 +71,44 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
         @Param("analistaId") Long analistaId,
         @Param("estado") Reserva.EstadoReserva estado
     );
+
+    /**
+     * Heatmap día-de-semana × hora. Devuelve (dow 0=domingo, hora 0-23, count).
+     * Se calcula directo sobre OLTP porque el rollup diario no captura hora.
+     * Sólo cuenta reservas APROBADAS dentro del rango.
+     */
+    @Query(value = """
+            SELECT EXTRACT(DOW  FROM r.inicio AT TIME ZONE 'UTC')::int  AS dia_semana,
+                   EXTRACT(HOUR FROM r.inicio AT TIME ZONE 'UTC')::int  AS hora,
+                   COUNT(*)                                             AS cant
+            FROM reserva r
+            WHERE r.estado = 'APROBADO'
+              AND r.inicio >= :desde
+              AND r.inicio <  :hasta
+            GROUP BY dia_semana, hora
+            ORDER BY dia_semana, hora
+            """, nativeQuery = true)
+    List<Object[]> heatmapDiaHora(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
+    /**
+     * Top usuarios reservadores en un rango. Pensado para la tab de analistas/admin.
+     */
+    @Query(value = """
+            SELECT r.usuario_id           AS usuario_id,
+                   u.nombre               AS usuario_nombre,
+                   u.email                AS usuario_email,
+                   COUNT(*)               AS cant_reservas
+            FROM reserva r
+            JOIN usuario u ON u.id = r.usuario_id
+            WHERE r.inicio >= :desde
+              AND r.inicio <  :hasta
+            GROUP BY r.usuario_id, u.nombre, u.email
+            ORDER BY cant_reservas DESC
+            LIMIT :limite
+            """, nativeQuery = true)
+    List<Object[]> topUsuariosReservadores(
+            @Param("desde") Instant desde,
+            @Param("hasta") Instant hasta,
+            @Param("limite") int limite);
 }
 

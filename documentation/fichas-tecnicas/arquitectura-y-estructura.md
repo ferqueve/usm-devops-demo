@@ -179,10 +179,15 @@ cambiosdb/                             Migraciones numeradas, en orden de aplica
 ├── 017-create-edificio-table.xml
 ├── 018-add-edificio-to-espacio.xml
 ├── 019-add-mensaje-cancelacion-to-reserva.xml
-└── 020-enhance-audit-log.xml
+├── 020-enhance-audit-log.xml
+└── 021-create-hechos-tables.xml
 ```
 
-Liquibase corre automáticamente al iniciar el backend (`spring.liquibase.enabled=true`). Para agregar una migración: crear un nuevo XML con número siguiente y referenciarlo desde `db.changelog-master.xml`.
+La migración 021 introduce la **capa analítica**: dos tablas de hechos (`hechos_reserva_diario`, `hechos_inventario_diario`) que se mantienen separadas del modelo transaccional y se pueblan por un scheduler nocturno (`EstadisticasScheduledService`). Estas tablas alimentan los endpoints nuevos bajo `/api/v1/stats/reservas/*` y constituyen la base sobre la cual se calculan métricas como ocupación, heatmap, tasa de cancelación, distribución por edificio y top usuarios. Ver `sistema-de-estadisticas.md` para el detalle del modelado dimensional y la justificación de mantener todo en el mismo Postgres en lugar de un DWH separado.
+
+`db.changelog-master.xml` usa `<includeAll path="db/changelog/cambiosdb"/>`, por lo que agregar una migración nueva sólo requiere depositar el XML numerado en esa carpeta.
+
+Liquibase corre automáticamente al iniciar el backend (`spring.liquibase.enabled=true`).
 
 ### 3.5 Servicios y orquestación (Docker Compose)
 

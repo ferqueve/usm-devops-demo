@@ -2827,6 +2827,18 @@ Estadísticas detalladas de los espacios del sistema.
 - **Espacios más usados**: Gráfico de barras
 - **Tendencias temporales**: Gráfico de línea
 
+### Métricas avanzadas
+
+Al final de la pestaña de Reservas se incluye una sección de "Métricas avanzadas" con un selector de rango (Últimos 30 días, Mes actual, Año actual) que actualiza al instante las siguientes vistas:
+
+- **Mapa de calor día × hora**: una grilla que cruza los días de la semana con las horas del día y muestra cuántas reservas aprobadas hay en cada celda. Los tonos azules más intensos marcan las franjas de mayor demanda, lo que ayuda a identificar horarios pico.
+- **Porcentaje de ocupación por espacio**: para cada espacio se calcula cuántas horas estuvo reservado en el período frente a un total disponible asumido (catorce horas por día). El resultado se muestra como porcentaje y como barra, lo que permite reconocer espacios subutilizados o saturados.
+- **Reservas por edificio**: distribución del total de reservas aprobadas entre los edificios de la sede en el período seleccionado.
+- **Tasa de cancelación por carrera**: para cada carrera se indican las reservas aprobadas y el porcentaje de cancelaciones sobre el total. Las carreras con tasas elevadas se resaltan visualmente.
+- **Top diez usuarios reservadores**: ranking de los usuarios con más reservas en el período, útil para detectar perfiles de uso intensivo.
+
+Los datos de esta sección se actualizan automáticamente cada noche; el resto del tiempo se sirven prácticamente al instante porque están pre-calculados.
+
 ## 12.4 Gráficos y Visualizaciones
 
 El sistema incluye múltiples tipos de gráficos:

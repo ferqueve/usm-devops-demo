@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Capa analítica: tablas de hechos pobladas por scheduler nocturno.
+        Reemplazan los cálculos on-the-fly de StatisticsService y permiten
+        guardar serie histórica aunque los registros OLTP cambien o se borren.
+    -->
+
+    <!-- Tabla de hechos diarios de reservas -->
+    <changeSet id="001" author="Mathias">
+        <createTable tableName="hechos_reserva_diario">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="fecha" type="DATE">
+                <constraints notNullConstraintName="nn_hrd_fecha"/>
+            </column>
+            <column name="espacio_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_hrd_espacio_id"/>
+            </column>
+            <column name="carrera_id" type="BIGINT"/>
+            <column name="edificio_id" type="BIGINT"/>
+            <column name="estado" type="VARCHAR(20)">
+                <constraints notNullConstraintName="nn_hrd_estado"/>
+            </column>
+            <column name="cant_reservas" type="INTEGER" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_hrd_cant_reservas"/>
+            </column>
+            <column name="horas_totales" type="NUMERIC(10,2)" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_hrd_horas_totales"/>
+            </column>
+            <column name="cant_canceladas_late" type="INTEGER" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_hrd_canceladas_late"/>
+            </column>
+            <column name="lead_time_promedio_dias" type="NUMERIC(6,2)"/>
+            <column name="computed_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_hrd_computed_at"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!--
+        UNIQUE compuesto: el grano es (fecha × espacio × carrera × estado).
+        Se usa SQL crudo porque carrera_id es nullable y en Postgres los
+        UNIQUE índices tratan NULL como distinto; COALESCE lo normaliza.
+    -->
+    <changeSet id="002" author="Mathias">
+        <sql>
+            CREATE UNIQUE INDEX uk_hrd_grano
+                ON hechos_reserva_diario (fecha, espacio_id, COALESCE(carrera_id, -1), estado);
+        </sql>
+        <rollback>
+            DROP INDEX IF EXISTS uk_hrd_grano;
+        </rollback>
+    </changeSet>
+
+    <changeSet id="003" author="Mathias">
+        <createIndex tableName="hechos_reserva_diario" indexName="idx_hrd_fecha">
+            <column name="fecha"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="004" author="Mathias">
+        <createIndex tableName="hechos_reserva_diario" indexName="idx_hrd_espacio_fecha">
+            <column name="espacio_id"/>
+            <column name="fecha"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Tabla de hechos diarios de inventario (snapshot) -->
+    <changeSet id="005" author="Mathias">
+        <createTable tableName="hechos_inventario_diario">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="fecha" type="DATE">
+                <constraints notNullConstraintName="nn_hid_fecha"/>
+            </column>
+            <column name="espacio_id" type="BIGINT"/>
+            <column name="tipo_elemento_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_hid_tipo_elemento_id"/>
+            </column>
+            <column name="estado" type="VARCHAR(30)">
+                <constraints notNullConstraintName="nn_hid_estado"/>
+            </column>
+            <column name="count_items" type="INTEGER" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_hid_count_items"/>
+            </column>
+            <column name="suma_cantidad" type="INTEGER" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_hid_suma_cantidad"/>
+            </column>
+            <column name="computed_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_hid_computed_at"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="006" author="Mathias">
+        <sql>
+            CREATE UNIQUE INDEX uk_hid_grano
+                ON hechos_inventario_diario (fecha, COALESCE(espacio_id, -1), tipo_elemento_id, estado);
+        </sql>
+        <rollback>
+            DROP INDEX IF EXISTS uk_hid_grano;
+        </rollback>
+    </changeSet>
+
+    <changeSet id="007" author="Mathias">
+        <createIndex tableName="hechos_inventario_diario" indexName="idx_hid_fecha">
+            <column name="fecha"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

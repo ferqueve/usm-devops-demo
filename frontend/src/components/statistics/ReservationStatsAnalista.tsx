@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { exportReservationStatsToPDF } from '@/lib/utils/pdf-export';
 import ReservationCharts from './ReservationCharts';
+import EstadisticasAvanzadas from './EstadisticasAvanzadas';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -574,35 +575,30 @@ export default function ReservationStatsAnalista() {
           </Card>
         )}
 
-        {/* Resumen de duración */}
+        {/* Extremos de duración (resto de métricas de duración ya están arriba) */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Análisis de Duración</CardTitle>
+            <CardTitle className="text-lg">Extremos de duración</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Duración Total</span>
-              <span className="font-semibold">{formatHours(stats.duracionTotalHoras)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Duración Promedio</span>
-              <span className="font-semibold">{formatHours(stats.duracionPromedioHoras)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Reserva Más Larga</span>
+              <span className="text-sm text-muted-foreground">Reserva más larga</span>
               <span className="font-semibold">{formatHours(stats.reservaMasLargaHoras)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Reserva Más Corta</span>
+              <span className="text-sm text-muted-foreground">Reserva más corta</span>
               <span className="font-semibold">{formatHours(stats.reservaMasCortaHoras)}</span>
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
-              <span className="text-sm text-muted-foreground">Horas Este Mes</span>
+              <span className="text-sm text-muted-foreground">Horas este mes</span>
               <span className="font-semibold text-blue-600">{formatHours(stats.horasReservadasEsteMes)}</span>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Métricas avanzadas alimentadas desde la capa analítica (tablas de hechos) */}
+      <EstadisticasAvanzadas />
 
       {/* Información adicional */}
       <div className="grid gap-6 md:grid-cols-3">
