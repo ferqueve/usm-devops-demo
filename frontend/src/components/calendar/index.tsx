@@ -78,16 +78,15 @@ export default function Calendar() {
   const fetchReservas = useCallback(async () => {
     setLoading(true);
     try {
-      // Orden de prioridad para la ventana:
-      //   1. Filtro explícito del usuario (fechaInicio/fechaFin).
-      //   2. Rango actualmente visible en el calendario (visibleRange).
-      //   3. Default ±2 meses (carga inicial antes de que el calendario reporte rango).
-      const inicioEfectivo = fechaInicio
-        ?? visibleRange?.start
-        ?? new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
-      const finEfectivo = fechaFin
-        ?? visibleRange?.end
-        ?? new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+      // Si el calendario aún no reportó su ventana visible y no hay filtro
+      // de fechas, esperamos: evita un fetch inicial de ±60d que se descarta
+      // al instante cuando el calendario reporta su semana visible.
+      if (!fechaInicio && !fechaFin && !visibleRange) {
+        setLoading(false);
+        return;
+      }
+      const inicioEfectivo = fechaInicio ?? visibleRange!.start;
+      const finEfectivo = fechaFin ?? visibleRange!.end;
 
       const response = await reservationsApi.obtenerTodasLasReservas(
         'APROBADO',

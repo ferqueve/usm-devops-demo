@@ -62,5 +62,14 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
         @Param("inicioDesde") Instant inicioDesde,
         @Param("inicioHasta") Instant inicioHasta
     );
+
+    // Reservas asignadas a un analista en un estado específico (con joins eager
+    // para evitar el N+1 en RecomendacionAnalistaService.obtenerReservasPrioritarias).
+    @Query("SELECT r FROM Reserva r JOIN FETCH r.espacio JOIN FETCH r.usuario " +
+           "WHERE r.analistaAsignado.id = :analistaId AND r.estado = :estado")
+    List<Reserva> findByAnalistaAsignadoAndEstado(
+        @Param("analistaId") Long analistaId,
+        @Param("estado") Reserva.EstadoReserva estado
+    );
 }
 

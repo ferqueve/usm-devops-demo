@@ -32,6 +32,8 @@ export interface MisReservasPagedParams {
   fechaFin?: Date | null;
   tiempo?: string;
   search?: string;
+  /** Spring Pageable sort, ej: "inicio,asc". */
+  sort?: string;
 }
 
 export interface TodasReservasPagedParams extends MisReservasPagedParams {
@@ -50,6 +52,7 @@ function buildReservasPagedParams(options: MisReservasPagedParams): URLSearchPar
     fechaFin,
     tiempo,
     search,
+    sort,
   } = options;
   const params = new URLSearchParams();
   params.append('page', page.toString());
@@ -62,6 +65,7 @@ function buildReservasPagedParams(options: MisReservasPagedParams): URLSearchPar
   if (fechaFin) params.append('fechaFin', fechaFin.toISOString());
   if (tiempo && tiempo !== 'todas') params.append('tiempo', tiempo);
   if (search && search.trim().length > 0) params.append('search', search.trim());
+  if (sort) params.append('sort', sort);
   return params;
 }
 

@@ -50,6 +50,50 @@ export interface ApiResponse<T> {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
 // ============================================================================
+// Dedupe de GET requests
+// ----------------------------------------------------------------------------
+// Colapsa requests idénticos hechos en una ventana corta:
+//   - StrictMode dispara cada effect dos veces en dev
+//   - Componentes hermanos consultan los mismos catálogos en paralelo
+//   - Re-renders rápidos vuelven a llamar el mismo endpoint
+// El TTL es deliberadamente corto (1s) para no servir datos viejos: solo
+// cubre el burst de montaje y los duplicados sincrónicos.
+// ============================================================================
+
+const DEDUPE_TTL_MS = 1000;
+const inflightGets = new Map<string, Promise<unknown>>();
+const recentGets = new Map<string, { ts: number; value: unknown }>();
+
+function dedupeKey(url: string, method: string, body: BodyInit | null | undefined): string {
+  return `${method.toUpperCase()} ${url} ${typeof body === 'string' ? body : ''}`;
+}
+
+function isGetMethod(method: string | undefined): boolean {
+  return !method || method.toUpperCase() === 'GET';
+}
+
+async function withDedupe<T>(key: string, exec: () => Promise<T>): Promise<T> {
+  const cached = recentGets.get(key);
+  if (cached && Date.now() - cached.ts < DEDUPE_TTL_MS) {
+    return cached.value as T;
+  }
+  const inflight = inflightGets.get(key);
+  if (inflight) return inflight as Promise<T>;
+
+  const promise = (async () => {
+    try {
+      const value = await exec();
+      recentGets.set(key, { ts: Date.now(), value });
+      return value;
+    } finally {
+      inflightGets.delete(key);
+    }
+  })();
+  inflightGets.set(key, promise as Promise<unknown>);
+  return promise;
+}
+
+// ============================================================================
 // Cliente HTTP Base
 // ============================================================================
 
@@ -148,6 +192,24 @@ export async function apiRequest<T>(
   const config = createRequestConfig(options);
   const token = localStorage.getItem('token');
 
+  if (!isRetry && isGetMethod(options.method)) {
+    return withDedupe<ApiResponse<T>>(
+      dedupeKey(url, options.method || 'GET', options.body as BodyInit | null | undefined),
+      () => executeApiRequest<T>(endpoint, options, url, config, token, isRetry),
+    );
+  }
+
+  return executeApiRequest<T>(endpoint, options, url, config, token, isRetry);
+}
+
+async function executeApiRequest<T>(
+  endpoint: string,
+  options: RequestInit,
+  url: string,
+  config: RequestInit,
+  token: string | null,
+  isRetry: boolean,
+): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(url, config);
     const authEndpoint = isAuthEndpoint(endpoint);
@@ -253,13 +315,15 @@ function getStatusTextInSpanish(status: number): string {
 
 // Helper para hacer requests de Actuator con manejo de token refresh
 export async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<unknown> {
-  const token = localStorage.getItem('token');
   const url = `${API_BASE_URL.replace('/api/v1', '')}${endpoint}`;
+  if (isRetry) return executeActuatorRequest(endpoint, url, true);
+  return withDedupe<unknown>(dedupeKey(url, 'GET', null), () => executeActuatorRequest(endpoint, url, false));
+}
 
+async function executeActuatorRequest(endpoint: string, url: string, isRetry: boolean): Promise<unknown> {
+  const token = localStorage.getItem('token');
   const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: { 'Authorization': `Bearer ${token}` },
   });
 
   if (response.status === 401 && !isRetry) {
@@ -271,6 +335,12 @@ export async function actuatorRequest(endpoint: string, isRetry: boolean = false
   }
 
   return parseActuatorResponse(response);
+}
+
+// Invalida toda la cache de dedupe. Llamar después de una mutación que cambie
+// datos que algún componente pueda haber leído recientemente.
+export function clearApiCache(): void {
+  recentGets.clear();
 }
 
 // ============================================================================

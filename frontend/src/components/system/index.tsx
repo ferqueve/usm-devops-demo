@@ -2,7 +2,7 @@ import { Loader2, BarChart3, Settings, Globe, Database } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSystemMetrics } from '@/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 
 // Lazy loading para tabs pesados
 const OverviewTab = lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab })));
@@ -34,8 +34,25 @@ export default function System() {
     activeUsers,
     metricsHistory,
     handleRefresh,
-    handleLoggerUpdate
+    handleLoggerUpdate,
+    fetchActivityData,
+    fetchLogsData,
+    fetchLiquibase,
   } = useSystemMetrics();
+
+  // Recordamos qué tabs ya gatillaron su fetch lazy para no repetirlo en
+  // cada cambio de tab (la dedupe del API client igual lo cubriría, pero
+  // así evitamos el round-trip).
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['overview']));
+  const handleTabChange = (value: string) => {
+    if (loadedTabs.has(value)) return;
+    if (value === 'activity') fetchActivityData();
+    if (value === 'database-logs') {
+      fetchLogsData();
+      fetchLiquibase();
+    }
+    setLoadedTabs(prev => new Set(prev).add(value));
+  };
 
   if (loading) {
     return (
@@ -58,7 +75,7 @@ export default function System() {
         handleRefresh={handleRefresh}
       />
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs defaultValue="overview" className="w-full" onValueChange={handleTabChange}>
         <TabsList className="flex w-full mb-6 gap-1 lg:grid lg:grid-cols-4">
           <TabsTrigger 
             value="overview" 

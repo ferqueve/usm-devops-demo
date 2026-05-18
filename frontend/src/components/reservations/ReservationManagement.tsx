@@ -216,13 +216,15 @@ export default function ReservationManagement() {
         const response = await reservationsApi.obtenerMisReservas();
         reservasResultado = aplicarFiltroEstadoDocente(response.data ?? [], estadoFilter);
       } else {
-        // Prioridad: filtro del usuario > rango visible del calendario > default ±60d.
-        const inicioEfectivo = fechaInicio
-          ?? visibleRange?.start
-          ?? new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
-        const finEfectivo = fechaFin
-          ?? visibleRange?.end
-          ?? new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+        // Si el calendario aún no reportó su ventana visible y no hay filtro
+        // de fechas, esperamos: evita un fetch inicial de ±60d que se descarta
+        // al instante cuando el calendario reporta su semana visible.
+        if (!fechaInicio && !fechaFin && !visibleRange) {
+          setCalendarLoading(false);
+          return;
+        }
+        const inicioEfectivo = fechaInicio ?? visibleRange!.start;
+        const finEfectivo = fechaFin ?? visibleRange!.end;
         const response = await reservationsApi.obtenerTodasLasReservas(
           estadoParaApiAnalista(estadoFilter),
           espacioFilter ?? undefined,

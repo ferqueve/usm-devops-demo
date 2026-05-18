@@ -174,7 +174,10 @@ export const useSystemMetrics = () => {
   const fetchAllMetrics = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      
+
+      // Solo lo esencial para el tab Resumen/Rendimiento.
+      // Los endpoints pesados (httpexchanges, mappings, loggers, logfile)
+      // se cargan on-demand cuando se abre el tab correspondiente.
       const [
         healthData,
         memoryData,
@@ -184,10 +187,6 @@ export const useSystemMetrics = () => {
         uptimeData,
         gcData,
         memoryMaxData,
-        httpTraceData,
-        mappingsData,
-        loggersData,
-        logFileData
       ] = await Promise.allSettled([
         actuatorApi.getHealth(),
         actuatorApi.getMetric('jvm.memory.used'),
@@ -197,10 +196,6 @@ export const useSystemMetrics = () => {
         actuatorApi.getMetric('process.uptime'),
         actuatorApi.getMetric('jvm.gc.pause'),
         actuatorApi.getMetric('jvm.memory.max'),
-        actuatorApi.getHttpTrace(),
-        actuatorApi.getMappings(),
-        actuatorApi.getLoggers(),
-        actuatorApi.getLogFile()
       ]);
 
       const essentialResults = [healthData, memoryData, cpuData];
@@ -222,7 +217,6 @@ export const useSystemMetrics = () => {
         gcData,
         memoryMaxData
       });
-      updateAdditionalMetrics(httpTraceData, mappingsData, loggersData, logFileData);
       updateMetricsChart(memoryData, cpuData, threadsData);
       
     } catch (error) {
@@ -237,7 +231,34 @@ export const useSystemMetrics = () => {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [handleConnectionError, updateBasicMetrics, updateAdditionalMetrics, updateMetricsChart]);
+  }, [handleConnectionError, updateBasicMetrics, updateMetricsChart]);
+
+  // Lazy loaders por tab: cargan los endpoints pesados solo cuando se abre
+  // el tab correspondiente. Idempotentes vía dedupe del API client.
+  const fetchActivityData = useCallback(async () => {
+    const [httpTraceData, mappingsData] = await Promise.allSettled([
+      actuatorApi.getHttpTrace(),
+      actuatorApi.getMappings(),
+    ]);
+    updateAdditionalMetrics(
+      httpTraceData,
+      mappingsData,
+      { status: 'rejected', reason: 'not-loaded' } as PromiseSettledResult<unknown>,
+      { status: 'rejected', reason: 'not-loaded' } as PromiseSettledResult<unknown>,
+    );
+  }, [updateAdditionalMetrics]);
+
+  const fetchLogsData = useCallback(async () => {
+    const [loggersData, logFileData] = await Promise.allSettled([
+      actuatorApi.getLoggers(),
+      actuatorApi.getLogFile(),
+    ]);
+    if (loggersData.status === 'fulfilled') setLoggers(loggersData.value);
+    if (logFileData.status === 'fulfilled') {
+      const v = logFileData.value;
+      setLogFile(typeof v === 'string' ? v : String(v));
+    }
+  }, []);
 
   const handleRefresh = async () => {
     try {
@@ -266,13 +287,12 @@ export const useSystemMetrics = () => {
     setLoggers(loggersData);
   };
 
-  // Carga inicial
+  // Carga inicial: solo lo necesario para Resumen. Liquibase se difiere al tab DB.
   useEffect(() => {
     fetchAllMetrics();
     fetchInfo();
     fetchActiveUsers();
-    fetchLiquibase();
-  }, [fetchAllMetrics, fetchInfo, fetchActiveUsers, fetchLiquibase]);
+  }, [fetchAllMetrics, fetchInfo, fetchActiveUsers]);
 
   // Auto-refresh de métricas cada 10 segundos
   useEffect(() => {
@@ -319,6 +339,9 @@ export const useSystemMetrics = () => {
     activeUsers,
     metricsHistory,
     handleRefresh,
-    handleLoggerUpdate
+    handleLoggerUpdate,
+    fetchActivityData,
+    fetchLogsData,
+    fetchLiquibase,
   };
 };

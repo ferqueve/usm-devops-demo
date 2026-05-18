@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { dashboardApi, type DashboardData } from '@/lib/api/dashboard';
 import { espaciosApi } from '@/lib/api/spaces';
@@ -8,18 +8,16 @@ import { reservationsApi } from '@/lib/api/reservations';
 import type { Reserva, InventoryStats as InventoryStatsType } from '@/lib/types/spaces';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { useAuth } from '@/hooks/useAuth';
+import { ROLES } from '@/lib/config/constants';
 
-// Importar widgets
-import DashboardStats from './DashboardStats';
-import UpcomingReservations from './UpcomingReservations';
-import DashboardCharts from './DashboardCharts';
-import QuickActions from './QuickActions';
 import ReservationDetailsDialog from '@/components/reservations/ReservationDetailsDialog';
-import InventoryStatsWidget from './widgets/InventoryStatsWidget';
-import SpaceStatsWidget from './widgets/SpaceStatsWidget';
-import PendingReservationsAlert from './widgets/PendingReservationsAlert';
-import PriorityReservationsWidget from './widgets/PriorityReservationsWidget';
-import PendingInventoryRequestsAlert from './widgets/PendingInventoryRequestsAlert';
+import { AdminDashboard } from './views/AdminDashboard';
+import { AnalistaDashboard } from './views/AnalistaDashboard';
+import { DocenteDashboard } from './views/DocenteDashboard';
+import { MantenimientoDashboard } from './views/MantenimientoDashboard';
+import { EstudianteDashboard } from './views/EstudianteDashboard';
+import { ExternoDashboard } from './views/ExternoDashboard';
 
 interface EspaciosStats {
   totalEspacios: number;
@@ -36,7 +34,6 @@ interface DashboardPermissions {
   canViewReservationStats: boolean;
 }
 
-// Selecciona el endpoint de dashboard según los permisos del usuario actual
 async function loadDashboardForRole(perms: DashboardPermissions): Promise<DashboardData | null> {
   if (perms.canApproveReservations) {
     return dashboardApi.obtenerDatosDashboardAnalista();
@@ -53,15 +50,9 @@ async function loadDashboardForRole(perms: DashboardPermissions): Promise<Dashbo
   return dashboardApi.obtenerDatosDashboardEstudiante();
 }
 
-// Carga reservas según el alcance permitido por los permisos del usuario
 async function loadReservasForRole(canApprove: boolean): Promise<Reserva[]> {
   try {
     if (canApprove) {
-      // Antes descargábamos hasta 2.5MB de pendientes para que el widget de
-      // "Reservas Prioritarias" pudiera hacer match contra IDs de recomendaciones.
-      // Cambiamos a endpoint paginado con size limitado: las prioritarias
-      // suelen referir a pendientes recientes y/o próximas, así que con las
-      // primeras 30 alcanza para el matching en >95% de los casos.
       const response = await reservationsApi.obtenerTodasReservasPaged({
         estado: 'PENDIENTE',
         page: 0,
@@ -72,7 +63,7 @@ async function loadReservasForRole(canApprove: boolean): Promise<Reserva[]> {
     const response = await reservationsApi.obtenerMisReservas();
     return response.data ?? [];
   } catch (error) {
-    console.warn('No se pudieron cargar reservas pendientes:', error);
+    console.warn('No se pudieron cargar reservas:', error);
     return [];
   }
 }
@@ -83,7 +74,6 @@ interface MaintenanceStats {
   pendingRequests: number;
 }
 
-// Agrupa la carga de datos específicos del rol Mantenimiento
 async function loadMaintenanceStats(): Promise<MaintenanceStats> {
   try {
     const [inventarioRes, espaciosRes, pendingReqs] = await Promise.all([
@@ -105,9 +95,7 @@ async function loadMaintenanceStats(): Promise<MaintenanceStats> {
 async function loadReservasPrioritarias(): Promise<RecomendacionAnalista[]> {
   try {
     const prioritarias = await recomendacionesApi.obtenerReservasPrioritarias();
-    if (prioritarias.success && prioritarias.data) {
-      return prioritarias.data;
-    }
+    if (prioritarias.success && prioritarias.data) return prioritarias.data;
     return [];
   } catch (error) {
     console.warn('No se pudieron cargar reservas prioritarias:', error);
@@ -117,27 +105,24 @@ async function loadReservasPrioritarias(): Promise<RecomendacionAnalista[]> {
 
 export default function UnifiedDashboard() {
   const { hasPermission } = useRolePermissions();
+  const { user } = useAuth();
 
-  // Permission-based visibility
-  const canViewReservationStats = hasPermission('estadisticas:ver'); // ANALISTA, ADMIN
-  const canApproveReservations = hasPermission('reserva:aprobar'); // ANALISTA, ADMIN
-  const canManageInventory = hasPermission('inventario:editar'); // ADMIN, MANTENIMIENTO
-  const canViewRecommendations = hasPermission('recomendacion:ver'); // DOCENTE
-  const canCreateReservations = hasPermission('reserva:crear'); // All except ALUMNO
+  const canViewReservationStats = hasPermission('estadisticas:ver');
+  const canApproveReservations = hasPermission('reserva:aprobar');
+  const canManageInventory = hasPermission('inventario:editar');
+  const canViewRecommendations = hasPermission('recomendacion:ver');
+  const canCreateReservations = hasPermission('reserva:crear');
 
-  // Estados principales
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
 
-  // Estados para gráficos y widgets
   const [allReservas, setAllReservas] = useState<Reserva[]>([]);
   const [reservasPendientes, setReservasPendientes] = useState<Reserva[]>([]);
   const [reservasPrioritarias, setReservasPrioritarias] = useState<RecomendacionAnalista[]>([]);
   const [loadingPrioritarias, setLoadingPrioritarias] = useState(false);
 
-  // Estados para Mantenimiento
   const [inventarioStats, setInventarioStats] = useState<InventoryStatsType | null>(null);
   const [espaciosStats, setEspaciosStats] = useState<EspaciosStats | null>(null);
   const [pendingInventoryRequests, setPendingInventoryRequests] = useState(0);
@@ -153,37 +138,38 @@ export default function UnifiedDashboard() {
 
     const shouldLoadReservas =
       canViewReservationStats || canCreateReservations || canViewRecommendations;
-    const isMaintenanceOnly = canManageInventory && !canApproveReservations;
+    const needsMantenimiento = canManageInventory;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const dashboardData = await loadDashboardForRole(perms);
-        setData(dashboardData);
+        const [dashboardData, reservas, mantenimiento] = await Promise.all([
+          loadDashboardForRole(perms),
+          shouldLoadReservas ? loadReservasForRole(canApproveReservations) : Promise.resolve(null),
+          needsMantenimiento ? loadMaintenanceStats() : Promise.resolve(null),
+        ]);
 
-        if (shouldLoadReservas) {
-          const reservas = await loadReservasForRole(canApproveReservations);
+        setData(dashboardData);
+        if (reservas) {
           setAllReservas(reservas);
-          setReservasPendientes(reservas.filter(r => r.estado === 'PENDIENTE'));
+          setReservasPendientes(reservas.filter((r) => r.estado === 'PENDIENTE'));
+        }
+        if (mantenimiento) {
+          setInventarioStats(mantenimiento.inventario);
+          setEspaciosStats(mantenimiento.espacios);
+          setPendingInventoryRequests(mantenimiento.pendingRequests);
         }
 
         if (canApproveReservations) {
           setLoadingPrioritarias(true);
-          const prioritarias = await loadReservasPrioritarias();
-          setReservasPrioritarias(prioritarias);
-          setLoadingPrioritarias(false);
-        }
-
-        if (isMaintenanceOnly) {
-          const stats = await loadMaintenanceStats();
-          setInventarioStats(stats.inventario);
-          setEspaciosStats(stats.espacios);
-          setPendingInventoryRequests(stats.pendingRequests);
+          loadReservasPrioritarias()
+            .then((p) => setReservasPrioritarias(p))
+            .finally(() => setLoadingPrioritarias(false));
         }
       } catch (error: unknown) {
         console.error('Error al cargar datos del dashboard:', error);
-        const errorMessage = error instanceof Error ? error.message : 'No se pudieron cargar los datos';
-        toast.error('Error al cargar el dashboard', { description: errorMessage });
+        const msg = error instanceof Error ? error.message : 'No se pudieron cargar los datos';
+        toast.error('Error al cargar el dashboard', { description: msg });
       } finally {
         setLoading(false);
       }
@@ -192,129 +178,86 @@ export default function UnifiedDashboard() {
     fetchData();
   }, [canApproveReservations, canViewRecommendations, canManageInventory, canCreateReservations, canViewReservationStats]);
 
-  const handleViewDetails = (reserva: Reserva) => {
-    setSelectedReserva(reserva);
+  const handleViewDetails = (r: Reserva) => {
+    setSelectedReserva(r);
     setDetailsDialog(true);
   };
 
-  // Determinar título del dashboard
-  const getDashboardTitle = () => {
-    if (canApproveReservations) {
-      return canManageInventory ? 'Dashboard Administrador' : 'Dashboard Analista';
-    }
-    if (canViewRecommendations && !canApproveReservations) {
-      return 'Dashboard Docente';
-    }
-    if (canManageInventory && !canApproveReservations) {
-      return 'Dashboard Mantenimiento';
-    }
-    if (!canViewRecommendations && canCreateReservations) {
-      return 'Dashboard Externo';
-    }
-    return 'Dashboard';
-  };
+  // Selección de vista por rol. Roles compuestos (ADMIN ≈ ANALISTA + MANTENIMIENTO)
+  // priorizan el flujo más representativo: ADMIN ve el panel de operaciones.
+  const renderView = () => {
+    const rol = user?.rol;
 
-  const getDashboardDescription = () => {
-    if (canApproveReservations) {
-      return 'Gestión de reservas y seguimiento del sistema';
+    if (rol === ROLES.ADMIN) {
+      return (
+        <AdminDashboard
+          data={data}
+          loading={loading}
+          reservasPrioritarias={reservasPrioritarias}
+          reservasPendientes={reservasPendientes}
+          loadingPrioritarias={loadingPrioritarias}
+          pendingInventoryRequests={pendingInventoryRequests}
+          onViewDetails={handleViewDetails}
+        />
+      );
     }
-    if (canViewRecommendations && !canApproveReservations) {
-      return 'Gestiona tus clases y reservas de espacios';
+    if (rol === ROLES.ANALISTA) {
+      return (
+        <AnalistaDashboard
+          data={data}
+          loading={loading}
+          reservasPrioritarias={reservasPrioritarias}
+          reservasPendientes={reservasPendientes}
+          loadingPrioritarias={loadingPrioritarias}
+          onViewDetails={handleViewDetails}
+        />
+      );
     }
-    if (canManageInventory && !canApproveReservations) {
-      return 'Gestión de espacios e inventario';
+    if (rol === ROLES.MANTENIMIENTO) {
+      return (
+        <MantenimientoDashboard
+          loading={loading}
+          inventarioStats={inventarioStats}
+          espaciosStats={espaciosStats}
+          pendingInventoryRequests={pendingInventoryRequests}
+        />
+      );
     }
-    if (!canViewRecommendations && canCreateReservations) {
-      return 'Reserva espacios para tus eventos';
+    if (rol === ROLES.DOCENTE) {
+      return (
+        <DocenteDashboard
+          data={data}
+          loading={loading}
+          misReservas={allReservas}
+          onViewDetails={handleViewDetails}
+        />
+      );
     }
-    return 'Visualiza información del sistema';
+    if (rol === ROLES.EXTERNO) {
+      return (
+        <ExternoDashboard
+          data={data}
+          loading={loading}
+          misReservas={allReservas}
+          onViewDetails={handleViewDetails}
+        />
+      );
+    }
+    return (
+      <EstudianteDashboard data={data} loading={loading} onViewDetails={handleViewDetails} />
+    );
   };
 
   return (
-    <div className="space-y-6">
-      {/* Descripción de página */}
-      <p className="text-sm text-muted-foreground">{getDashboardDescription()}</p>
+    <div className="space-y-5">
+      {renderView()}
 
-      {/* Alertas de reservas pendientes (ANALISTA/ADMIN/DOCENTE/EXTERNO) */}
-      <PendingReservationsAlert
-        count={data?.reservaStats?.totalPendientes ?? data?.stats?.reservasPendientes ?? 0}
-        loading={loading}
-        canApprove={canApproveReservations}
-      />
-
-      {/* Alertas de solicitudes de inventario pendientes (ADMIN/MANTENIMIENTO) */}
-      {canManageInventory && pendingInventoryRequests > 0 && (
-        <PendingInventoryRequestsAlert count={pendingInventoryRequests} />
-      )}
-
-      {/* Estadísticas principales */}
-      {/* Mostrar DashboardStats para roles con acceso a reservas */}
-      {(canViewReservationStats || canCreateReservations || canViewRecommendations) && (
-        <DashboardStats
-          stats={data?.stats || {
-            totalReservas: 0,
-            reservasHoy: 0,
-            reservasPendientes: 0,
-            reservasAprobadas: 0,
-            reservasCanceladas: 0,
-            totalEspacios: 0,
-            espaciosDisponibles: 0,
-            espaciosOcupados: 0,
-            espaciosEnMantenimiento: 0,
-            capacidadPromedio: 0,
-            totalUsuarios: 0,
-            usuariosActivos: 0,
-            usuariosNuevosHoy: 0,
-            promedioReservasPorEspacio: 0
-          }}
-          loading={loading}
-        />
-      )}
-
-      {/* Estadísticas de inventario y espacios (solo MANTENIMIENTO sin acceso a reservas) */}
-      {canManageInventory && !canApproveReservations && (
-        <div className="grid gap-4 lg:gap-6 md:grid-cols-2">
-          <InventoryStatsWidget stats={inventarioStats} loading={loading} />
-          <SpaceStatsWidget stats={espaciosStats} loading={loading} />
-        </div>
-      )}
-
-      {/* Reservas Prioritarias (solo ANALISTA/ADMIN con permiso aprobar) */}
-      <PriorityReservationsWidget
-        reservasPrioritarias={reservasPrioritarias}
-        reservasPendientes={reservasPendientes}
-        loading={loadingPrioritarias}
-        canApprove={canApproveReservations}
-        onViewDetails={handleViewDetails}
-      />
-
-      {/* Layout de 2 columnas */}
-      <div className="grid gap-4 lg:gap-6 lg:grid-cols-2">
-        {/* Próximas reservas (ADMIN/ANALISTA/ALUMNO con acceso a reservas) */}
-        {(canApproveReservations || (!canViewRecommendations && !canManageInventory)) && data?.proximasReservas && (
-          <UpcomingReservations
-            reservas={data.proximasReservas}
-            onViewDetails={handleViewDetails}
-          />
-        )}
-
-        {/* Gráficos (todos excepto MANTENIMIENTO puro) */}
-        {(canViewReservationStats || canCreateReservations || canViewRecommendations) && (
-          <DashboardCharts reservas={allReservas} stats={data?.reservaStats ?? null} espacios={data?.espacios ?? []} loading={loading} />
-        )}
-      </div>
-
-      {/* Acciones rápidas (todos los roles) */}
-      {canCreateReservations && <QuickActions />}
-
-      {/* Diálogo de detalles de reserva */}
       {selectedReserva && (
         <ReservationDetailsDialog
           reserva={selectedReserva}
           open={detailsDialog}
           onOpenChange={setDetailsDialog}
           onReservaUpdated={() => {
-            // Recargar datos después de actualizar una reserva
             globalThis.location.reload();
           }}
         />

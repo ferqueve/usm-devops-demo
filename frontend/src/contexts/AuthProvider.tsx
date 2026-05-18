@@ -16,8 +16,21 @@ const AUTH_STORAGE_KEY = APP_CONFIG.STORAGE_KEYS.AUTH;
 
 // Provider del contexto de autenticación
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Carga optimista desde localStorage: si hay token + user, asumimos sesión válida
+  // y renderizamos al instante. Después revalidamos contra el backend en background
+  // y, si el token estaba inválido, hacemos logout. Esto evita un spinner
+  // de pantalla completa antes de empezar a pintar el dashboard.
+  const initialUser = (() => {
+    try {
+      const t = localStorage.getItem('token');
+      const u = localStorage.getItem('user');
+      if (t && u) return JSON.parse(u);
+    } catch { /* fallthrough */ }
+    return null;
+  })();
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!initialUser);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialUser);
   const [error, setError] = useState<string | null>(null);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [lastRegisteredEmail, setLastRegisteredEmail] = useState("");
@@ -26,38 +39,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     email: string;
     nombre: string;
     rol: string;
-  } | null>(null);
+  } | null>(initialUser);
 
   // Verificar estado de autenticación al cargar
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         const token = localStorage.getItem('token');
-        
-        if (token) {
-          // Verificar si el token es válido con el backend
-          try {
-            const response = await authApi.verifyToken();
-            
-            if (response.success && response.data) {
-                  // Cargar datos del usuario desde localStorage
-                  const userData = localStorage.getItem('user');
-                  if (userData) {
-                    const parsedUserData = JSON.parse(userData);
-                    setUser(parsedUserData);
-                  }
-              setIsAuthenticated(true);
-            } else {
-              // Token inválido, limpiar datos
-              localStorage.removeItem('token');
-              localStorage.removeItem('refreshToken');
-              localStorage.removeItem('user');
-              storage.remove(AUTH_STORAGE_KEY);
-              setUser(null);
-              setIsAuthenticated(false);
+
+        if (!token) {
+          setUser(null);
+          setIsAuthenticated(false);
+          return;
+        }
+
+        try {
+          const response = await authApi.verifyToken();
+
+          if (response.success && response.data) {
+            // Re-sincronizar con localStorage por si cambió.
+            const userData = localStorage.getItem('user');
+            if (userData) {
+              try { setUser(JSON.parse(userData)); } catch { /* keep optimistic */ }
             }
-          } catch {
-            // Error al verificar token, limpiar datos
+            setIsAuthenticated(true);
+          } else {
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('user');
@@ -65,7 +71,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(null);
             setIsAuthenticated(false);
           }
-        } else {
+        } catch {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          storage.remove(AUTH_STORAGE_KEY);
           setUser(null);
           setIsAuthenticated(false);
         }

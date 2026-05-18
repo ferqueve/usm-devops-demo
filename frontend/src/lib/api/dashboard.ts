@@ -68,6 +68,20 @@ function extractReservas(result: PromiseSettledResult<ApiResponse<Reserva[]>> | 
   return dataOrFallback(result, [] as Reserva[]);
 }
 
+function extractReservasPaged(
+  result: PromiseSettledResult<ApiResponse<{ content?: Reserva[] }>> | undefined,
+): Reserva[] {
+  const page = dataOrFallback(result, { content: [] as Reserva[] });
+  return page.content ?? [];
+}
+
+function extractPagedTotal(
+  result: PromiseSettledResult<ApiResponse<{ totalElements?: number }>> | undefined,
+): number {
+  const page = dataOrFallback(result, { totalElements: 0 });
+  return page.totalElements ?? 0;
+}
+
 function extractEspacios(result: PromiseSettledResult<ApiResponse<Espacio[]>> | undefined): Espacio[] {
   return dataOrFallback(result, [] as Espacio[]);
 }
@@ -154,6 +168,15 @@ function rangoHoy(): { hoy: Date; finHoy: Date } {
   return { hoy, finHoy };
 }
 
+// Devuelve "ahora" snappeado al inicio del minuto: dos llamadas en rápida
+// sucesión (StrictMode, montajes hermanos) generan exactamente el mismo
+// Date y por lo tanto la misma URL → el dedupe del API client las colapsa.
+function ahoraSnappeado(): Date {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  return d;
+}
+
 function calcularPromedioReservasPorEspacio(reservasAprobadas: number, totalEspacios: number): number {
   return totalEspacios > 0 ? Number.parseFloat((reservasAprobadas / totalEspacios).toFixed(1)) : 0;
 }
@@ -166,6 +189,8 @@ function calcularPromedioReservasPorEspacio(reservasAprobadas: number, totalEspa
 interface BuildStatsInput {
   reservas: Reserva[];
   reservasHoyData: Reserva[];
+  /** Count exacto de reservas de hoy. Si se pasa, gana sobre reservasHoyData.length. */
+  reservasHoyCount?: number;
   espacios: Espacio[];
   espaciosStats: EspacioStats;
   userStats?: UserStats | null;
@@ -183,7 +208,7 @@ interface BuildStatsInput {
 }
 
 function buildDashboardStats(input: BuildStatsInput): DashboardStats {
-  const { reservas, reservasHoyData, espacios, espaciosStats, userStats, activeUsers, overridePendientes, reservasZeroed, reservaStatsAggregated } = input;
+  const { reservas, reservasHoyData, reservasHoyCount, espacios, espaciosStats, userStats, activeUsers, overridePendientes, reservasZeroed, reservaStatsAggregated } = input;
 
   if (reservasZeroed) {
     const espaciosCounts = calcularEstadisticasEspacios(espacios);
@@ -219,7 +244,7 @@ function buildDashboardStats(input: BuildStatsInput): DashboardStats {
 
   return {
     totalReservas,
-    reservasHoy: reservasCounts.reservasHoyCount,
+    reservasHoy: reservasHoyCount ?? reservasCounts.reservasHoyCount,
     reservasPendientes,
     reservasAprobadas,
     reservasCanceladas,
@@ -262,12 +287,23 @@ export const dashboardApi = {
   async obtenerDatosDashboardAdmin(): Promise<DashboardData> {
     try {
       const { hoy, finHoy } = rangoHoy();
-      // Próximas reservas: ventana acotada de 30 días para no descargar histórico completo.
-      const finProximas = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
+      // Próximas reservas: solo las 10 próximas aprobadas ordenadas asc por inicio.
+      // Antes descargábamos ~2.7 MB / 2k+ filas para mostrar 10 items.
+      // reservasHoy: solo necesitamos el count (stats.reservasHoy) — page size 1
+      // devuelve totalElements sin descargar todas las filas.
       const results = await Promise.allSettled([
-        reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, new Date(), finProximas),
-        reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, hoy, finHoy),
+        reservationsApi.obtenerTodasReservasPaged({
+          estado: 'APROBADO',
+          tiempo: 'futuras',
+          size: 10,
+          sort: 'inicio,asc',
+        }),
+        reservationsApi.obtenerTodasReservasPaged({
+          fechaInicio: hoy,
+          fechaFin: finHoy,
+          size: 1,
+        }),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
         usuariosApi.obtenerEstadisticas().catch(() => null),
@@ -276,10 +312,11 @@ export const dashboardApi = {
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
       ]);
 
-      const [proximasReservasRes, reservasHoy, espaciosRes, espaciosStatsRes, userStatsRes, reservaStatsRes, activeUsersRes] = results;
+      const [proximasReservasRes, reservasHoyRes, espaciosRes, espaciosStatsRes, userStatsRes, reservaStatsRes, activeUsersRes] = results;
 
-      const reservasVentana = extractReservas(proximasReservasRes);
-      const reservasHoyData = extractReservas(reservasHoy);
+      const reservasVentana = extractReservasPaged(proximasReservasRes);
+      const reservasHoyCount = extractPagedTotal(reservasHoyRes);
+      const reservasHoyData: Reserva[] = [];
       const espacios = extractEspacios(espaciosRes);
       const espaciosStats = extractEspacioStats(espaciosStatsRes);
       const userStats = extractUserStats(userStatsRes);
@@ -289,6 +326,7 @@ export const dashboardApi = {
       const stats = buildDashboardStats({
         reservas: reservasVentana,
         reservasHoyData,
+        reservasHoyCount,
         espacios,
         espaciosStats,
         userStats,
@@ -314,21 +352,30 @@ export const dashboardApi = {
   async obtenerDatosDashboardAnalista(): Promise<DashboardData> {
     try {
       const { hoy, finHoy } = rangoHoy();
-      const finProximas = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       const results = await Promise.allSettled([
-        reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, new Date(), finProximas),
-        reservationsApi.obtenerTodasLasReservas(undefined, undefined, undefined, undefined, hoy, finHoy),
+        reservationsApi.obtenerTodasReservasPaged({
+          estado: 'APROBADO',
+          tiempo: 'futuras',
+          size: 10,
+          sort: 'inicio,asc',
+        }),
+        reservationsApi.obtenerTodasReservasPaged({
+          fechaInicio: hoy,
+          fechaFin: finHoy,
+          size: 1,
+        }),
         espaciosApi.obtenerEspacios(),
         apiRequest<EspacioStats>('/espacios/stats', { method: 'GET' }),
         reservationsApi.obtenerEstadisticasPersonales().catch(() => null),
         inventarioApi.obtenerEstadisticasInventario().catch(() => null),
       ]);
 
-      const [proximasReservasRes, reservasHoy, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
+      const [proximasReservasRes, reservasHoyRes, espaciosRes, espaciosStatsRes, reservaStatsRes] = results;
 
-      const reservasVentana = extractReservas(proximasReservasRes);
-      const reservasHoyData = extractReservas(reservasHoy);
+      const reservasVentana = extractReservasPaged(proximasReservasRes);
+      const reservasHoyCount = extractPagedTotal(reservasHoyRes);
+      const reservasHoyData: Reserva[] = [];
       const espacios = extractEspacios(espaciosRes);
       const espaciosStats = extractEspacioStats(espaciosStatsRes);
       const reservaStats = extractReservaStats(reservaStatsRes);
@@ -336,6 +383,7 @@ export const dashboardApi = {
       const stats = buildDashboardStats({
         reservas: reservasVentana,
         reservasHoyData,
+        reservasHoyCount,
         espacios,
         espaciosStats,
         reservaStatsAggregated: reservaStats,

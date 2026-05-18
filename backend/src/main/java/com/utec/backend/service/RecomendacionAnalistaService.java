@@ -34,44 +34,46 @@ public class RecomendacionAnalistaService {
     @Transactional(readOnly = true)
     public List<RecomendacionAnalistaDto> obtenerAnalistaRecomendado(Long docenteId) {
         log.debug("Obteniendo analista recomendado para docente {}", docenteId);
-        
+
         // Obtener todos los analistas
         List<Usuario> analistas = usuarioRepository.findByRolAppAndDeletedAtIsNull(Usuario.RolApp.ANALISTA);
-        
+
         // Obtener reservas del docente
         List<Reserva> reservasDocente = reservaRepository.findByUsuarioId(docenteId);
-        
+
+        // Antes este método hacía reservaRepository.findAll() DENTRO del loop por
+        // analista (N × tabla completa). Ahora una sola lectura y filtramos en
+        // memoria con maps indexados por analistaId.
+        List<Reserva> todasReservas = reservaRepository.findAll();
+        Map<Long, Long> pendientesPorAnalista = new HashMap<>();
+        Map<Long, Long> aprobadasPorAnalista = new HashMap<>();
+        Map<Long, Long> completadasPorAnalista = new HashMap<>();
+        for (Reserva r : todasReservas) {
+            if (r.getAnalistaAsignado() == null) continue;
+            Long aid = r.getAnalistaAsignado().getId();
+            if (r.getEstado() == Reserva.EstadoReserva.PENDIENTE) {
+                pendientesPorAnalista.merge(aid, 1L, Long::sum);
+            } else {
+                completadasPorAnalista.merge(aid, 1L, Long::sum);
+                if (r.getEstado() == Reserva.EstadoReserva.APROBADO) {
+                    aprobadasPorAnalista.merge(aid, 1L, Long::sum);
+                }
+            }
+        }
+
         // Calcular puntajes para cada analista
         List<RecomendacionAnalistaDto> recomendaciones = new ArrayList<>();
-        
+
         for (Usuario analista : analistas) {
             // Reservas asignadas a este analista
             long reservasAsignadas = reservasDocente.stream()
                 .filter(r -> r.getAnalistaAsignado() != null)
                 .filter(r -> r.getAnalistaAsignado().getId().equals(analista.getId()))
                 .count();
-            
-            // Reservas pendientes del analista
-            List<Reserva> todasReservas = reservaRepository.findAll();
-            long reservasPendientes = todasReservas.stream()
-                .filter(r -> r.getAnalistaAsignado() != null)
-                .filter(r -> r.getAnalistaAsignado().getId().equals(analista.getId()))
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
-                .count();
-            
-            // Reservas completadas (aprobadas o canceladas)
-            long reservasCompletadas = todasReservas.stream()
-                .filter(r -> r.getAnalistaAsignado() != null)
-                .filter(r -> r.getAnalistaAsignado().getId().equals(analista.getId()))
-                .filter(r -> r.getEstado() != Reserva.EstadoReserva.PENDIENTE)
-                .count();
-            
-            // Tasa de aprobación
-            long reservasAprobadas = todasReservas.stream()
-                .filter(r -> r.getAnalistaAsignado() != null)
-                .filter(r -> r.getAnalistaAsignado().getId().equals(analista.getId()))
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO)
-                .count();
+
+            long reservasPendientes = pendientesPorAnalista.getOrDefault(analista.getId(), 0L);
+            long reservasCompletadas = completadasPorAnalista.getOrDefault(analista.getId(), 0L);
+            long reservasAprobadas = aprobadasPorAnalista.getOrDefault(analista.getId(), 0L);
             double tasaAprobacion = reservasCompletadas > 0 
                 ? (double) reservasAprobadas / reservasCompletadas 
                 : 0.5;
@@ -111,14 +113,12 @@ public class RecomendacionAnalistaService {
     @Transactional(readOnly = true)
     public List<RecomendacionAnalistaDto> obtenerReservasPrioritarias(Long analistaId) {
         log.debug("Obteniendo reservas prioritarias para analista {}", analistaId);
-        
-        // Obtener todas las reservas pendientes asignadas al analista
-        List<Reserva> todasReservas = reservaRepository.findAll();
-        List<Reserva> reservasPendientes = todasReservas.stream()
-            .filter(r -> r.getAnalistaAsignado() != null)
-            .filter(r -> r.getAnalistaAsignado().getId().equals(analistaId))
-            .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
-            .toList();
+
+        // Antes esto hacía findAll() (descarga miles de filas y filtra en memoria),
+        // costando ~5s. Reemplazado por una query JPA que filtra en SQL y trae los
+        // joins necesarios de una vez.
+        List<Reserva> reservasPendientes = reservaRepository.findByAnalistaAsignadoAndEstado(
+            analistaId, Reserva.EstadoReserva.PENDIENTE);
         
         Instant ahora = Instant.now();
         
