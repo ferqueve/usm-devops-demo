@@ -2,8 +2,10 @@ package com.utec.backend.controller;
 
 import com.utec.backend.common.ApiResponse;
 import com.utec.backend.dto.stats.ActiveUsersStatsDTO;
+import com.utec.backend.service.EstadisticasInventarioService;
 import com.utec.backend.service.EstadisticasReservaService;
 import com.utec.backend.service.EstadisticasScheduledService;
+import com.utec.backend.service.ForecastingService;
 import com.utec.backend.service.StatisticsService;
 import com.utec.backend.service.UserActivityTrackingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,8 @@ public class StatsController {
     private final StatisticsService statisticsService;
     private final EstadisticasScheduledService estadisticasScheduledService;
     private final EstadisticasReservaService estadisticasReservaService;
+    private final EstadisticasInventarioService estadisticasInventarioService;
+    private final ForecastingService forecastingService;
 
     /**
      * Obtiene usuarios activos (solo ADMIN)
@@ -156,5 +160,84 @@ public class StatsController {
         return ResponseEntity.ok(ApiResponse.success(
                 estadisticasReservaService.topUsuarios(desde, hasta, limite),
                 "Top usuarios calculado"));
+    }
+
+    @Operation(summary = "Evolución del estado del inventario",
+               description = "Serie temporal: para cada fecha del rango, cantidad de items por estado.")
+    @GetMapping("/inventario/evolucion-estado")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_inventario')")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> evolucionEstadoInventario(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return ResponseEntity.ok(ApiResponse.success(
+                estadisticasInventarioService.evolucionEstado(desde, hasta),
+                "Evolución del estado calculada"));
+    }
+
+    @Operation(summary = "Evolución del parque de inventario",
+               description = "Serie temporal: items y unidades totales por fecha.")
+    @GetMapping("/inventario/evolucion-parque")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_inventario')")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> evolucionParqueInventario(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return ResponseEntity.ok(ApiResponse.success(
+                estadisticasInventarioService.evolucionParque(desde, hasta),
+                "Evolución del parque calculada"));
+    }
+
+    @Operation(summary = "Delta entre dos snapshots de inventario",
+               description = "Compara los snapshots de dos fechas y devuelve el cambio por espacio.")
+    @GetMapping("/inventario/delta")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_inventario')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deltaInventario(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        return ResponseEntity.ok(ApiResponse.success(
+                estadisticasInventarioService.delta(fechaInicio, fechaFin),
+                "Delta calculado"));
+    }
+
+    @Operation(summary = "Matriz cruzada espacio × tipo de elemento",
+               description = "Estado actual del inventario activo agrupado por espacio y tipo.")
+    @GetMapping("/inventario/matriz-espacio-tipo")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_inventario')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> matrizEspacioTipo() {
+        return ResponseEntity.ok(ApiResponse.success(
+                estadisticasInventarioService.matrizEspacioTipo(),
+                "Matriz calculada"));
+    }
+
+    @Operation(summary = "Forecast de demanda global",
+               description = "Predicción de cantidad diaria de reservas aprobadas, con banda de confianza, generada por el servicio ML.")
+    @GetMapping("/ml/forecast")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_reservas')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> forecastDemanda(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Integer diasHistorico) {
+        return ResponseEntity.ok(ApiResponse.success(
+                forecastingService.forecastGlobal(desde, hasta, diasHistorico),
+                "Forecast leído desde la capa ML"));
+    }
+
+    @Operation(summary = "Calidad del modelo ML activo",
+               description = "Metadatos y métricas del último modelo entrenado (MAPE, MAE, fecha, tamaño).")
+    @GetMapping("/ml/calidad-modelo")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_reservas')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> calidadModelo() {
+        return ResponseEntity.ok(ApiResponse.success(
+                forecastingService.calidadModeloGlobal(),
+                "Calidad del modelo"));
+    }
+
+    @Operation(summary = "Disparar reentrenamiento manual del modelo ML",
+               description = "Proxy a ml-svc/train. Solo ADMIN. Operación bloqueante.")
+    @PostMapping("/ml/reentrenar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> reentrenar() {
+        return ResponseEntity.ok(ApiResponse.success(
+                forecastingService.reentrenarGlobal(),
+                "Reentrenamiento solicitado"));
     }
 }

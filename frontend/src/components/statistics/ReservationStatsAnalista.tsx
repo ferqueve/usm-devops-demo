@@ -20,11 +20,10 @@ import {
   RefreshCw,
   FileDown,
   Activity,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus,
   ChevronDown,
+  TrendingUp,
 } from 'lucide-react';
+import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
@@ -260,18 +259,6 @@ export default function ReservationStatsAnalista() {
     return `${h}h ${m}min`;
   };
 
-  const getTrendIcon = (value: number) => {
-    if (value > 0) return <ArrowUpRight className="h-4 w-4 text-green-600" />;
-    if (value < 0) return <ArrowDownRight className="h-4 w-4 text-red-600" />;
-    return <Minus className="h-4 w-4 text-gray-400" />;
-  };
-
-  const getTrendColor = (value: number) => {
-    if (value > 0) return 'text-green-600';
-    if (value < 0) return 'text-red-600';
-    return 'text-gray-600';
-  };
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -363,177 +350,36 @@ export default function ReservationStatsAnalista() {
         ? createPortal(actions, actionsSlot)
         : <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
 
-      {/* Tarjetas de métricas principales */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Reservas */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reservas</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalReservas}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.reservasEsteAnio} este año
-            </p>
-          </CardContent>
-        </Card>
+      {/* Strip principal con colores institucionales UTEC */}
+      <StatStrip
+        items={[
+          { label: 'Total', value: stats.totalReservas, hint: `${stats.reservasEsteAnio} este año`, icon: BarChart3, bg: 'dark' },
+          { label: 'Aprobadas', value: stats.totalAprobadas, hint: `${porcentajeAprobadas}% del total`, icon: CheckCircle2, bg: 'green' },
+          { label: 'Pendientes', value: stats.totalPendientes, hint: `${porcentajePendientes}% del total`, icon: Hourglass, bg: 'yellow' },
+          { label: 'Canceladas', value: stats.totalCanceladas, hint: `${porcentajeCanceladas}% del total`, icon: XCircle, bg: 'red' },
+          { label: 'Este mes', value: stats.reservasEsteMes, hint: `${stats.diferenciaMesAnterior > 0 ? '+' : ''}${stats.diferenciaMesAnterior} vs anterior`, icon: Calendar, bg: 'blue' },
+          { label: 'Próximo mes', value: stats.reservasProximoMes, hint: 'programadas', icon: TrendingUp, bg: 'cyan' },
+        ]}
+      />
 
-        {/* Aprobadas */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aprobadas</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.totalAprobadas}</div>
-            <p className="text-xs text-muted-foreground">
-              {porcentajeAprobadas}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Pendientes */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <Hourglass className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.totalPendientes}</div>
-            <p className="text-xs text-muted-foreground">
-              {porcentajePendientes}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Canceladas */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.totalCanceladas}</div>
-            <p className="text-xs text-muted-foreground">
-              {porcentajeCanceladas}% del total
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Reservas Este Mes */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Este Mes</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.reservasEsteMes}</div>
-            <div className="flex items-center gap-1 text-xs">
-              {getTrendIcon(stats.diferenciaMesAnterior)}
-              <span className={getTrendColor(stats.diferenciaMesAnterior)}>
-                {stats.diferenciaMesAnterior > 0 ? '+' : ''}{stats.diferenciaMesAnterior} vs mes anterior
-              </span>
+      {/* Strip secundario más compacto */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 text-sm">
+        {[
+          { label: 'Futuras', value: stats.totalFuturas, icon: Calendar },
+          { label: 'Pasadas', value: stats.totalPasadas, icon: Clock },
+          { label: 'Activas', value: stats.totalActivas, icon: Activity, accent: 'text-utec-yellow' },
+          { label: 'Espacios usados', value: stats.totalEspaciosUsados, icon: MapPin },
+          { label: 'Duración total', value: formatHours(stats.duracionTotalHoras), icon: Clock },
+          { label: 'Prom. semanal', value: stats.promedioReservasPorSemana.toFixed(1), icon: BarChart3 },
+        ].map(({ label, value, icon: Icon, accent }) => (
+          <div key={label} className="rounded-lg bg-utec-dark text-white px-3 py-2 min-w-0">
+            <div className="flex items-center gap-1.5 text-[11px] text-white/60 mb-0.5">
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{label}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Próximo Mes */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Próximo Mes</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.reservasProximoMes}</div>
-            <p className="text-xs text-muted-foreground">
-              Reservas programadas
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Duración Total */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Duración Total</CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatHours(stats.duracionTotalHoras)}</div>
-            <p className="text-xs text-muted-foreground">
-              Promedio: {formatHours(stats.duracionPromedioHoras)}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Espacios Usados */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Espacios Usados</CardTitle>
-            <MapPin className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEspaciosUsados}</div>
-            <p className="text-xs text-muted-foreground truncate">
-              Más usado: {stats.nombreEspacioMasUsado || 'N/A'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Métricas adicionales */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Futuras</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalFuturas}</div>
-            <p className="text-xs text-muted-foreground">
-              Reservas programadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pasadas</CardTitle>
-            <Clock className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPasadas}</div>
-            <p className="text-xs text-muted-foreground">
-              Reservas completadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Activas</CardTitle>
-            <Activity className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.totalActivas}</div>
-            <p className="text-xs text-muted-foreground">
-              En curso ahora
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Promedio Semanal</CardTitle>
-            <BarChart3 className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.promedioReservasPorSemana.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.promedioReservasPorMes.toFixed(1)} por mes
-            </p>
-          </CardContent>
-        </Card>
+            <div className={`text-lg font-semibold tabular-nums ${accent ?? ''}`}>{value}</div>
+          </div>
+        ))}
       </div>
 
       {/* Gráficos */}
@@ -546,109 +392,80 @@ export default function ReservationStatsAnalista() {
         />
       )}
 
-      {/* Tablas de datos detallados */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Top Espacios */}
+      {/* Top espacios + extremos de duración, compactos */}
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         {reservasPorEspacioData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Top 10 Espacios Más Reservados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {reservasPorEspacioData.map((espacio, index) => (
-                  <div key={espacio.espacioId} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="w-8 justify-center">
-                        {index + 1}
-                      </Badge>
-                      <span className="font-medium">{espacio.nombre}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">{espacio.cantidad}</span>
-                      <span className="text-xs text-muted-foreground">reservas</span>
-                    </div>
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+              <span className="w-1 h-4 rounded-sm bg-utec-yellow shrink-0" />
+              <h3 className="text-sm font-semibold tracking-tight">Top 10 espacios más reservados</h3>
+            </div>
+            <div className="divide-y divide-border/60">
+              {reservasPorEspacioData.map((espacio, index) => (
+                <div key={espacio.espacioId} className="flex items-center justify-between px-4 py-1.5 text-sm hover:bg-muted/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-xs font-medium text-muted-foreground w-5 text-right tabular-nums">{index + 1}.</span>
+                    <span className="truncate">{espacio.nombre}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <span className="font-semibold tabular-nums">{espacio.cantidad}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* Extremos de duración (resto de métricas de duración ya están arriba) */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Extremos de duración</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Reserva más larga</span>
-              <span className="font-semibold">{formatHours(stats.reservaMasLargaHoras)}</span>
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
+            <h3 className="text-sm font-semibold tracking-tight">Duración</h3>
+          </div>
+          <div className="p-4 grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-0.5">Más larga</div>
+              <div className="font-semibold tabular-nums">{formatHours(stats.reservaMasLargaHoras)}</div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Reserva más corta</span>
-              <span className="font-semibold">{formatHours(stats.reservaMasCortaHoras)}</span>
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-0.5">Más corta</div>
+              <div className="font-semibold tabular-nums">{formatHours(stats.reservaMasCortaHoras)}</div>
             </div>
-            <div className="flex items-center justify-between pt-2 border-t">
-              <span className="text-sm text-muted-foreground">Horas este mes</span>
-              <span className="font-semibold text-blue-600">{formatHours(stats.horasReservadasEsteMes)}</span>
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-0.5">Promedio</div>
+              <div className="font-semibold tabular-nums">{formatHours(stats.duracionPromedioHoras)}</div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="col-span-3 pt-2 border-t flex items-center justify-between">
+              <span className="text-[11px] text-muted-foreground">Horas este mes</span>
+              <span className="font-semibold text-utec-blue tabular-nums">{formatHours(stats.horasReservadasEsteMes)}</span>
+            </div>
+          </div>
+          <div className="px-4 py-2 border-t bg-muted/30 grid grid-cols-3 gap-3 text-xs">
+            {stats.mesConMasReservas && (
+              <div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Mes pico</div>
+                <div className="font-semibold tabular-nums">{stats.mesConMasReservas}</div>
+              </div>
+            )}
+            {stats.fechaUltimaReserva && (
+              <div className="truncate">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Última</div>
+                <div className="font-semibold truncate" title={format(new Date(stats.fechaUltimaReserva), 'dd MMM yyyy, HH:mm', { locale: es })}>
+                  {format(new Date(stats.fechaUltimaReserva), 'dd MMM HH:mm', { locale: es })}
+                </div>
+              </div>
+            )}
+            {stats.fechaProximaReserva && (
+              <div className="truncate">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Próxima</div>
+                <div className="font-semibold truncate" title={format(new Date(stats.fechaProximaReserva), 'dd MMM yyyy, HH:mm', { locale: es })}>
+                  {format(new Date(stats.fechaProximaReserva), 'dd MMM HH:mm', { locale: es })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Métricas avanzadas alimentadas desde la capa analítica (tablas de hechos) */}
       <EstadisticasAvanzadas />
-
-      {/* Información adicional */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {stats.mesConMasReservas && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Mes con Más Reservas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.mesConMasReservas}</div>
-            </CardContent>
-          </Card>
-        )}
-        
-        {stats.fechaUltimaReserva && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Última Reserva</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-semibold">
-                {format(new Date(stats.fechaUltimaReserva), 'dd MMM yyyy, HH:mm', { locale: es })}
-              </div>
-              {stats.diasDesdeUltimaReserva !== null && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Hace {stats.diasDesdeUltimaReserva} días
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {stats.fechaProximaReserva && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Próxima Reserva</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm font-semibold">
-                {format(new Date(stats.fechaProximaReserva), 'dd MMM yyyy, HH:mm', { locale: es })}
-              </div>
-              {stats.diasHastaProximaReserva !== null && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  En {stats.diasHastaProximaReserva} días
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
     </div>
   );
 }

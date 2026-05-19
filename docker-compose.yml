@@ -81,6 +81,22 @@ services:
       - npm-cache:/root/.npm
       - node-modules:/app/node_modules
 
+  # Pipeline de Machine Learning · Forecasting de demanda con Prophet.
+  # Ver documentation/fichas-tecnicas/pipeline-de-ml.md
+  ml-svc:
+    build:
+      context: ./ml
+    container_name: utec_ml_svc
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      PORT: "8000"
+      LOG_LEVEL: INFO
+    depends_on:
+      - db
+    restart: unless-stopped
+
 volumes:
   pgdata:
   maven-cache:

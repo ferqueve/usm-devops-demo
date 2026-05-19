@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Pipeline de Machine Learning: tablas que persisten los modelos
+        entrenados por el servicio Python (ml-svc) y las predicciones que
+        produce. El backend Spring las lee para servirlas a la UI; no
+        escribe sobre ellas.
+    -->
+
+    <!-- Metadatos del modelo entrenado -->
+    <changeSet id="001" author="Mathias">
+        <createTable tableName="modelo_forecast">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="scope" type="VARCHAR(50)">
+                <constraints notNullConstraintName="nn_mf_scope"/>
+            </column>
+            <column name="espacio_id" type="BIGINT"/>
+            <column name="algoritmo" type="VARCHAR(50)" defaultValue="prophet">
+                <constraints notNullConstraintName="nn_mf_algoritmo"/>
+            </column>
+            <column name="trained_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_mf_trained_at"/>
+            </column>
+            <column name="sample_size" type="INTEGER" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_mf_sample_size"/>
+            </column>
+            <column name="holdout_size" type="INTEGER" defaultValueNumeric="0">
+                <constraints notNullConstraintName="nn_mf_holdout_size"/>
+            </column>
+            <column name="mape" type="NUMERIC(6,2)"/>
+            <column name="mae" type="NUMERIC(10,2)"/>
+            <column name="params_json" type="TEXT"/>
+            <column name="notas" type="TEXT"/>
+            <column name="activo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints notNullConstraintName="nn_mf_activo"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <createIndex tableName="modelo_forecast" indexName="idx_modelo_forecast_scope_activo">
+            <column name="scope"/>
+            <column name="espacio_id"/>
+            <column name="activo"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Predicciones generadas por el modelo -->
+    <changeSet id="003" author="Mathias">
+        <createTable tableName="prediccion_reserva">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="modelo_id" type="BIGINT">
+                <constraints notNullConstraintName="nn_pr_modelo_id"/>
+            </column>
+            <column name="fecha_objetivo" type="DATE">
+                <constraints notNullConstraintName="nn_pr_fecha_objetivo"/>
+            </column>
+            <column name="espacio_id" type="BIGINT"/>
+            <column name="prediccion" type="NUMERIC(10,2)">
+                <constraints notNullConstraintName="nn_pr_prediccion"/>
+            </column>
+            <column name="banda_inferior" type="NUMERIC(10,2)"/>
+            <column name="banda_superior" type="NUMERIC(10,2)"/>
+            <column name="generated_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints notNullConstraintName="nn_pr_generated_at"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="004" author="Mathias">
+        <addForeignKeyConstraint
+                baseTableName="prediccion_reserva"
+                baseColumnNames="modelo_id"
+                constraintName="fk_prediccion_modelo"
+                referencedTableName="modelo_forecast"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="005" author="Mathias">
+        <createIndex tableName="prediccion_reserva" indexName="idx_prediccion_fecha">
+            <column name="fecha_objetivo"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="006" author="Mathias">
+        <createIndex tableName="prediccion_reserva" indexName="idx_prediccion_modelo">
+            <column name="modelo_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

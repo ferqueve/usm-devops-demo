@@ -2743,6 +2743,17 @@ El sistema proporciona estadísticas detalladas del inventario.
 - **Tendencias temporales**: Gráfico de línea
 - **Rankings**: Gráfico de barras para top espacios/tipos
 
+### Métricas analíticas de inventario
+
+Al final de la pestaña de Inventario se incluye una sección de "Métricas analíticas" con un selector de rango (Últimos 30 días, Últimos 90 días, Año actual) que se apoya en los snapshots diarios del parque para responder preguntas que el estado actual del inventario, por sí solo, no podría responder:
+
+- **Evolución del estado del parque**: gráfico de líneas que muestra cómo cambió la cantidad de items disponibles, en mantenimiento y dañados a lo largo del tiempo. Permite identificar si el parque se está degradando o si las intervenciones de mantenimiento están manteniendo el ritmo.
+- **Crecimiento del parque**: gráfico de barras que compara la evolución del número de items registrados y de las unidades totales por fecha. Es la base para justificar planes de compra o renovación.
+- **Cambios entre snapshots**: tabla que compara la fotografía del inventario del inicio del período con la del final, listando los espacios donde hubo movimiento (incorporación o pérdida de items). Sirve como herramienta de auditoría y control patrimonial.
+- **Matriz espacio × tipo**: mapa de calor que cruza cada espacio con cada tipo de elemento y muestra cuántos items hay en cada combinación. Permite detectar concentraciones y huecos en la distribución del equipamiento entre aulas, laboratorios y demás espacios.
+
+Estas métricas se actualizan automáticamente cada noche, junto con las de reservas, y se sirven prácticamente al instante porque están pre-calculadas.
+
 ## 12.2 Estadísticas de Espacios
 
 Estadísticas detalladas de los espacios del sistema.
@@ -2838,6 +2849,16 @@ Al final de la pestaña de Reservas se incluye una sección de "Métricas avanza
 - **Top diez usuarios reservadores**: ranking de los usuarios con más reservas en el período, útil para detectar perfiles de uso intensivo.
 
 Los datos de esta sección se actualizan automáticamente cada noche; el resto del tiempo se sirven prácticamente al instante porque están pre-calculados.
+
+### Predicción de demanda (Machine Learning)
+
+Como cierre de la sección de métricas analíticas se incluye un gráfico de **predicción de demanda para los próximos treinta días**. El sistema entrena un modelo de aprendizaje automático sobre el histórico de reservas aprobadas y proyecta la cantidad esperada por día, junto con una banda de confianza que indica el rango probable.
+
+En el gráfico, la línea azul representa el histórico real, la línea cyan punteada la predicción del modelo, y el sombreado alrededor de la predicción la banda de confianza. Un panel lateral muestra el algoritmo utilizado, el error promedio del modelo (MAPE) y la fecha del último entrenamiento.
+
+El modelo se reentrena automáticamente cada domingo de madrugada con los datos disponibles a esa fecha. Los usuarios con perfil de administrador pueden además dispararlo manualmente mediante el botón **"Reentrenar"** en el encabezado de la sección, útil si recientemente se ingresaron muchos datos nuevos y se desea refrescar la predicción.
+
+Esta funcionalidad está pensada como insumo para la planificación de espacios y para anticipar picos de demanda en períodos académicos sensibles (inicio de cursos, semana de exámenes). La precisión efectiva del modelo mejora a medida que el sistema acumula más historia real de uso.
 
 ## 12.4 Gráficos y Visualizaciones
 

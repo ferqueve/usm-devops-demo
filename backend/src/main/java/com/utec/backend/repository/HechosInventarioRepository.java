@@ -46,4 +46,51 @@ public interface HechosInventarioRepository extends JpaRepository<HechosInventar
     Optional<LocalDate> findUltimaFecha();
 
     List<HechosInventarioDiario> findByFecha(LocalDate fecha);
+
+    /**
+     * Serie temporal del estado del parque: para cada fecha del rango,
+     * cuántos ítems había en cada estado.
+     */
+    @Query(value = """
+            SELECT h.fecha           AS fecha,
+                   h.estado          AS estado,
+                   SUM(h.count_items) AS total
+            FROM hechos_inventario_diario h
+            WHERE h.fecha BETWEEN :desde AND :hasta
+            GROUP BY h.fecha, h.estado
+            ORDER BY h.fecha
+            """, nativeQuery = true)
+    List<Object[]> evolucionEstado(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
+    /**
+     * Crecimiento del parque a lo largo del tiempo (filas y unidades por fecha).
+     */
+    @Query(value = """
+            SELECT h.fecha                AS fecha,
+                   SUM(h.count_items)     AS items,
+                   SUM(h.suma_cantidad)   AS unidades
+            FROM hechos_inventario_diario h
+            WHERE h.fecha BETWEEN :desde AND :hasta
+            GROUP BY h.fecha
+            ORDER BY h.fecha
+            """, nativeQuery = true)
+    List<Object[]> evolucionParque(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
+    /**
+     * Comparación entre dos snapshots: para cada espacio, total de ítems en
+     * cada fecha. Pensado para calcular el delta en el service.
+     */
+    @Query(value = """
+            SELECT h.fecha                AS fecha,
+                   h.espacio_id           AS espacio_id,
+                   e.nombre               AS espacio_nombre,
+                   SUM(h.count_items)     AS items,
+                   SUM(h.suma_cantidad)   AS unidades
+            FROM hechos_inventario_diario h
+            LEFT JOIN espacio e ON e.id = h.espacio_id
+            WHERE h.fecha IN (:fechaInicio, :fechaFin)
+            GROUP BY h.fecha, h.espacio_id, e.nombre
+            """, nativeQuery = true)
+    List<Object[]> snapshotsPorEspacio(@Param("fechaInicio") LocalDate fechaInicio,
+                                       @Param("fechaFin") LocalDate fechaFin);
 }

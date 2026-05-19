@@ -17,9 +17,9 @@ Esta ficha cubre el detalle técnico. Para la guía orientada al usuario final, 
 Flujo end-to-end resumido:
 
 1. El usuario abre `/statistics`. El componente `Statistics` resuelve la vista en función de los permisos del rol activo: ADMIN ve pestañas Reservas e Inventario, ANALISTA ve sólo Reservas, MANTENIMIENTO ve sólo Inventario y DOCENTE accede a una vista personal.
-2. La pestaña Reservas dispara una primera llamada a `GET /api/v1/reservas/mis-reservas/stats`. El backend distingue por rol y devuelve estadísticas globales (administradores y analistas) o personales (docentes).
-3. La sección **"Métricas avanzadas"** dispara en paralelo cinco llamadas a la capa analítica con el rango temporal seleccionado por el usuario (últimos treinta días, mes actual o año actual). Cada llamada retorna agregaciones pre-calculadas.
-4. La pestaña Inventario consume `GET /api/v1/stats/inventario/detailed` con filtros por espacio, tipo de elemento y estado. La respuesta agrupa más de cuarenta indicadores y se cachea cinco minutos en Redis.
+2. La pestaña Reservas dispara una primera llamada a `GET /api/v1/reservas/mis-reservas/stats`. El backend distingue por rol y devuelve estadísticas globales (administradores y analistas) o personales (docentes). Las tarjetas-resumen están organizadas en franjas de color institucional UTEC para alinearse con el dashboard principal.
+3. La sección **"Métricas analíticas"** de la pestaña Reservas dispara en paralelo cinco llamadas a la capa analítica con el rango temporal seleccionado por el usuario (últimos treinta días, mes actual o año actual). Cada llamada retorna agregaciones pre-calculadas y se renderiza como mapa de calor, ranking de ocupación, tabla de cancelaciones, distribución por edificio y top de usuarios.
+4. La pestaña Inventario se divide en dos bloques. El **bloque operativo** consume `GET /api/v1/stats/inventario/detailed` con filtros por espacio, tipo de elemento y estado, y presenta indicadores de salud, antigüedad del parque, promedios, rankings y un detalle completo por tipo. El **bloque analítico** dispara en paralelo cuatro llamadas a la capa OLAP (`evolucion-estado`, `evolucion-parque`, `delta`, `matriz-espacio-tipo`) y muestra series temporales, comparación entre snapshots y matriz cruzada espacio × tipo.
 5. El usuario puede exportar la información visible a PDF o CSV mediante el menú "Exportar" disponible en cada pestaña.
 
 En paralelo, durante la madrugada, el scheduler `EstadisticasScheduledService` actualiza las tablas de hechos para que el día siguiente las métricas estén listas. La intervención humana en este proceso se limita a inspección de logs y, eventualmente, a la ejecución manual de un *backfill* puntual si se detecta una desviación.
@@ -110,20 +110,34 @@ Métodos `backfillReservas(desde, hasta)` y `backfillInventario(desde, hasta)` p
 | `/api/v1/stats/reservas/por-carrera` | GET | `estadisticas:ver_reservas` | Capa analítica |
 | `/api/v1/stats/reservas/por-edificio` | GET | `estadisticas:ver_reservas` | Capa analítica |
 | `/api/v1/stats/reservas/top-usuarios` | GET | `estadisticas:ver_reservas` | OLTP directo (cardinalidad alta del usuario hace impráctico incluirlo en el rollup) |
+| `/api/v1/stats/inventario/evolucion-estado` | GET | `estadisticas:ver_inventario` | Serie temporal del estado del parque — leída de `hechos_inventario_diario` |
+| `/api/v1/stats/inventario/evolucion-parque` | GET | `estadisticas:ver_inventario` | Serie temporal de items y unidades — leída de la capa analítica |
+| `/api/v1/stats/inventario/delta` | GET | `estadisticas:ver_inventario` | Comparación entre dos snapshots por espacio — leída de la capa analítica |
+| `/api/v1/stats/inventario/matriz-espacio-tipo` | GET | `estadisticas:ver_inventario` | Matriz cruzada espacio × tipo — leída de OLTP (estado actual) |
 | `/api/v1/stats/admin/backfill` | POST | `hasRole('ADMIN')` | Operación administrativa |
 
 ### 3.5 Frontend
 
 La pantalla se compone en `frontend/src/components/statistics/`:
 
-- `index.tsx` — resolución de vistas por rol.
-- `ReservationStatsAnalista.tsx` — métricas legadas de la pestaña Reservas (tarjetas, gráficos recharts).
-- `InventoryStats.tsx` y `InventoryCharts.tsx` — pestaña Inventario.
-- `EstadisticasAvanzadas.tsx` — orquesta las cinco llamadas a la capa analítica, gestiona el selector de rango temporal y renderiza los cinco bloques de visualización (mapa de calor en grilla CSS, ocupación con barras de progreso, distribución por edificio, tasa de cancelación con badges, ranking de usuarios).
-- `ReservationCharts.tsx` — gráficos del bloque legado (pie, line, bar).
+- `index.tsx` — resolución de vistas por rol (admin ve ambas pestañas; analista, mantenimiento y docente ven la vista que les corresponde).
+- `ReservationStatsAnalista.tsx` — pestaña Reservas: tarjetas operativas y gráficos legados.
+- `ReservationCharts.tsx` — gráficos compactos de la pestaña Reservas (donut de estado, línea mensual, barras día de semana) rediseñados con la paleta institucional UTEC.
+- `EstadisticasAvanzadas.tsx` — orquesta las cinco llamadas a la capa analítica de reservas, gestiona el selector de rango temporal y renderiza los cinco bloques de visualización (mapa de calor en grilla CSS, ocupación con barras de progreso, distribución por edificio, tasa de cancelación con badges, ranking de usuarios).
+- `InventoryStats.tsx` — pestaña Inventario: indicadores de salud, antigüedad del parque, rankings, tabla de detalle por tipo. La vista se reorganizó eliminando métricas auto-derivadas sin uso operativo (concentración, densidad, buckets arbitrarios de cantidad, distribución combinatoria de estados) y descartando el componente `InventoryCharts` legado, cuyo contenido se vio absorbido por las listas Top y por la matriz cruzada del bloque analítico.
+- `EstadisticasAvanzadasInventario.tsx` — orquesta las cuatro llamadas a la capa OLAP de inventario: evolución del estado, crecimiento del parque, delta entre snapshots y matriz espacio × tipo. Misma estructura visual que su contraparte de reservas.
 - `StatCard.tsx` — primitivo reutilizable.
 
-Cliente API: `frontend/src/lib/api/stats.ts` con tipos TypeScript dedicados (`OcupacionEspacio`, `HeatmapCelda`, `ResumenCarrera`, `ResumenEdificio`, `TopUsuario`).
+Cliente API: `frontend/src/lib/api/stats.ts` con tipos TypeScript dedicados (`OcupacionEspacio`, `HeatmapCelda`, `ResumenCarrera`, `ResumenEdificio`, `TopUsuario`, `EvolucionEstadoPunto`, `EvolucionParquePunto`, `DeltaInventario`, `MatrizEspacioTipo`).
+
+#### Sistema visual aplicado
+
+Ambas pestañas reutilizan los primitivos del dashboard del administrador para mantener coherencia institucional:
+
+- `StatStrip` (`frontend/src/components/dashboard/views/_components/StatStrip.tsx`) — franja de tarjetas con fondos en paleta UTEC (`bg-utec-blue`, `bg-utec-green`, `bg-utec-yellow`, `bg-utec-red`, `bg-utec-cyan`, `bg-utec-dark`) sustituye los bloques de tarjetas blancas genéricas que dominaban la pantalla original.
+- Una segunda franja secundaria de tarjetas con fondo `bg-utec-dark` y texto blanco, alineada al color del topbar y del sidebar, agrupa los indicadores complementarios.
+- Cada bloque de contenido lleva un encabezado oscuro con barra de acento de color, mismo patrón que `DualPanel` del dashboard.
+- Los gráficos recharts adoptaron la misma paleta y un *tooltip* oscuro coherente con el sistema.
 
 ### 3.6 Decisiones de diseño
 
@@ -215,18 +229,52 @@ Cada métrica ofrecida por el subsistema se documenta a continuación con su def
 
 | Métrica | Definición | Uso |
 |---|---|---|
-| **Total de items y cantidad** | Composición del parque | Punto de referencia para crecimiento del inventario |
+| **Total de items y de unidades** | Composición del parque | Punto de referencia para crecimiento del inventario |
 | **Distribución por estado** | DISPONIBLE / MANTENIMIENTO / DANADO con porcentajes | Salud general del parque |
-| **Ratio de salud y de problemas** | Items disponibles vs. items en mantenimiento o dañados | Indicador agregado para reporting ejecutivo |
-| **Antigüedad promedio** | Días promedio desde la creación de los items | Justificar planes de renovación o de baja |
+| **Ratio de salud** | Porcentaje de items disponibles sobre el total | Indicador agregado para reporting ejecutivo |
+| **Eficiencia de asignación** | Porcentaje de items con espacio asignado | Detectar items sin destino físico |
+| **% items con observaciones** | Porcentaje del parque con notas de mantenimiento documentadas | Indicador de calidad de la trazabilidad |
 | **Cobertura de espacios** | Porcentaje de espacios con al menos un item registrado | Detectar espacios sin inventariar |
 | **Items críticos** | Suma de items dañados más los problemáticos sin asignar | Cola de trabajo para mantenimiento |
+| **Antigüedad del parque** | Cuatro cubetas temporales: recientes (≤30 días), jóvenes (≤3 meses), viejos (≥1 año) y sin actualizar (≥6 meses) | Detectar envejecimiento y huecos de mantenimiento |
+| **Promedios del parque** | Items por espacio, items por tipo, unidades por item | Base de comparación para planificación |
 | **Top espacios y top tipos** | Rankings descendentes por volumen | Identificar concentraciones de recursos |
 | **Espacios y tipos con más problemas** | Rankings de mayor proporción en estado MANTENIMIENTO o DANADO | Priorización de intervenciones |
+| **Detalle por tipo de elemento** | Tabla con filas, unidades y composición por estado de cada tipo | Auditoría detallada del catálogo |
 
-### 4.4 Selección y filtrado
+La selección se redujo respecto a la versión inicial. Se descartaron métricas auto-derivadas que no respondían preguntas operativas claras (concentración, densidad, cubetas arbitrarias por cantidad, distribución combinatoria "solo disponibles / solo dañados / mezcla") porque tendían a inflar la pantalla sin alimentar decisión alguna. El criterio aplicado es el mismo que el catálogo de Reservas: cada métrica debe tener una pregunta de negocio identificable detrás.
 
-La pestaña Inventario permite filtrar por espacio, tipo de elemento y estado. La sección Métricas avanzadas de la pestaña Reservas opera sobre rangos temporales seleccionables: últimos treinta días, mes en curso o año en curso. Esta combinación cubre los tres horizontes típicos de análisis de gestión: monitoreo táctico (treinta días), reporte mensual y reporte anual.
+### 4.4 Métricas analíticas de inventario (capa OLAP)
+
+Estas métricas sólo son posibles gracias al snapshot diario almacenado en `hechos_inventario_diario`. Sobre la base transaccional no podrían responderse: el estado actual de la tabla `inventario_item` no contiene historia.
+
+#### Evolución del estado del parque
+
+- **Definición**: para cada fecha del rango, cantidad de items en cada uno de los tres estados.
+- **Cálculo**: `SUM(count_items) GROUP BY fecha, estado` sobre el rollup.
+- **Uso**: visualizar tendencia de degradación o mejora del parque. Una serie creciente de MANTENIMIENTO indica que las intervenciones no están manteniendo el ritmo del deterioro; una caída de DISPONIBLE en el tiempo es señal temprana para planificar reposición.
+
+#### Crecimiento del parque
+
+- **Definición**: filas y unidades totales del inventario activo por fecha.
+- **Cálculo**: `SUM(count_items)`, `SUM(suma_cantidad) GROUP BY fecha`.
+- **Uso**: justificar decisiones presupuestarias de compra. Permite responder preguntas como "¿cuánto creció el parque desde el último período académico?" y proyectar necesidades futuras a partir de la pendiente observada.
+
+#### Delta entre snapshots
+
+- **Definición**: para cada espacio, diferencia de items y unidades entre dos fechas elegidas.
+- **Cálculo**: comparación de dos snapshots agregados por espacio; se reportan los espacios con cambio no nulo.
+- **Uso**: auditoría de movimientos. Permite responder "¿qué espacios sumaron equipamiento desde el último inventario?" o "¿dónde se perdieron unidades?", una pregunta clásica de control patrimonial que sin serie histórica no tiene respuesta.
+
+#### Matriz espacio × tipo
+
+- **Definición**: cuántos items de cada tipo hay en cada espacio (estado actual).
+- **Cálculo**: `COUNT(*) GROUP BY espacio_id, tipo_elemento_id` sobre OLTP (es una vista del estado actual, no requiere historia).
+- **Uso**: identificar concentraciones y huecos en la distribución del equipamiento. Útil para detectar, por ejemplo, espacios sin proyector o aulas con exceso de un tipo particular de mobiliario.
+
+### 4.5 Selección y filtrado
+
+El bloque operativo de la pestaña Inventario permite filtrar por espacio, tipo de elemento y estado. La sección "Métricas analíticas" de la pestaña Reservas opera sobre rangos temporales seleccionables (últimos treinta días, mes en curso o año en curso), mientras que la sección "Métricas analíticas" de Inventario emplea una escala más larga (últimos treinta días, últimos noventa días o año en curso) porque sus indicadores son evolutivos por naturaleza y necesitan ventanas más amplias para mostrar tendencias significativas. En conjunto, los dos selectores cubren los horizontes típicos de análisis de gestión: monitoreo táctico, reporte mensual, trimestral y anual.
 
 ---
 
@@ -245,8 +293,14 @@ Sobre el conjunto de datos del entorno de desarrollo (9 321 reservas, 51 items d
 | Tiempo de respuesta — `/por-carrera` | ~12 ms |
 | Tiempo de respuesta — `/por-edificio` | ~8 ms |
 | Tiempo de respuesta — `/top-usuarios` | ~25 ms |
+| Tiempo de respuesta — `/inventario/evolucion-estado` | ~10 ms |
+| Tiempo de respuesta — `/inventario/evolucion-parque` | ~9 ms |
+| Tiempo de respuesta — `/inventario/delta` | ~12 ms |
+| Tiempo de respuesta — `/inventario/matriz-espacio-tipo` | ~14 ms |
 | Tiempo del scheduler diario de reservas | < 1 s |
-| Validación de integridad | `SUM(cant_reservas) = COUNT(*)` exacto (9 321 = 9 321) |
+| Tiempo del scheduler diario de inventario | < 1 s |
+| Validación de integridad — reservas | `SUM(cant_reservas) = COUNT(*)` exacto (9 321 = 9 321) |
+| Validación de integridad — inventario | `SUM(count_items)` por snapshot = `COUNT(*)` activos en OLTP |
 
 La validación de integridad confirma que el proceso ETL no introduce pérdida ni duplicación de filas: el total agregado en la capa analítica coincide exactamente con el total transaccional.
 
@@ -282,9 +336,9 @@ La construcción presente cubre con holgura el escenario operativo previsto para
 - Entidades: `backend/src/main/java/com/utec/backend/model/HechosReservaDiario.java`, `HechosInventarioDiario.java`
 - Repositorios: `backend/src/main/java/com/utec/backend/repository/HechosReservaRepository.java`, `HechosInventarioRepository.java`
 - Scheduler ETL: `backend/src/main/java/com/utec/backend/service/EstadisticasScheduledService.java`
-- Servicio de lectura analítica: `backend/src/main/java/com/utec/backend/service/EstadisticasReservaService.java`
-- Servicio de cómputo on-the-fly (inventario): `backend/src/main/java/com/utec/backend/service/StatisticsService.java`
+- Servicios de lectura analítica: `backend/src/main/java/com/utec/backend/service/EstadisticasReservaService.java`, `EstadisticasInventarioService.java`
+- Servicio de cómputo on-the-fly (inventario operativo): `backend/src/main/java/com/utec/backend/service/StatisticsService.java`
 - Controlador: `backend/src/main/java/com/utec/backend/controller/StatsController.java`
 - Cliente API frontend: `frontend/src/lib/api/stats.ts`
-- Componente analítico frontend: `frontend/src/components/statistics/EstadisticasAvanzadas.tsx`
+- Componentes analíticos frontend: `frontend/src/components/statistics/EstadisticasAvanzadas.tsx`, `EstadisticasAvanzadasInventario.tsx`
 - Página principal: `frontend/src/app/statistics/page.tsx`

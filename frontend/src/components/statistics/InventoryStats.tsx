@@ -52,6 +52,8 @@ import {
 import { exportInventoryStatsToPDF } from '@/lib/utils/pdf-export';
 import InventoryCharts from './InventoryCharts';
 import { StatCard } from './StatCard';
+import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
+import EstadisticasAvanzadasInventario from './EstadisticasAvanzadasInventario';
 
 // Tipos: la forma completa de InventoryStats vive en `@/lib/types/spaces`.
 // Acá la importamos como `InventoryStatsData` para no chocar con el nombre del componente.
@@ -291,644 +293,328 @@ export default function InventoryStats() {
         />
       </div>
 
-      {/* Estadísticas principales - 8 cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Items"
-          value={stats.totalItems}
-          subtitle={`${stats.totalCantidad} unidades totales`}
-          icon={Package}
-        />
-        <StatCard
-          title="Disponibles"
-          value={stats.disponibles}
-          subtitle={`${stats.porcentajeDisponibles.toFixed(1)}% del total`}
-          icon={CheckCircle2}
-          accentClass="text-green-600"
-        />
-        <StatCard
-          title="En Mantenimiento"
-          value={stats.mantenimiento}
-          subtitle={`${stats.porcentajeMantenimiento.toFixed(1)}% del total`}
-          icon={Wrench}
-          accentClass="text-yellow-600"
-        />
-        <StatCard
-          title="Dañados"
-          value={stats.danados}
-          subtitle={`${stats.porcentajeDanados.toFixed(1)}% del total`}
-          icon={AlertCircle}
-          accentClass="text-red-600"
-        />
-        <StatCard
-          title="Asignados"
-          value={stats.asignados}
-          subtitle={`${stats.espaciosConInventario} espacios`}
-          icon={MapPin}
-          accentClass="text-blue-600"
-          iconOnly
-        />
-        <StatCard
-          title="Sin Asignar"
-          value={stats.sinAsignar}
-          subtitle={`${stats.porcentajeSinAsignar.toFixed(1)}% del total`}
-          icon={Boxes}
-          accentClass="text-gray-600"
-          iconOnly
-        />
-        <StatCard
-          title="Salud del Inventario"
-          value={`${stats.ratioSalud.toFixed(1)}%`}
-          subtitle={`${stats.ratioProblemas.toFixed(1)}% con problemas`}
-          icon={Shield}
-          accentClass="text-emerald-600"
-        />
-        <StatCard
-          title="Cobertura"
-          value={`${stats.indiceCobertura.toFixed(1)}%`}
-          subtitle={`${stats.espaciosConInventario}/${espacios.length} espacios`}
-          icon={Target}
-          accentClass="text-indigo-600"
-          iconOnly
-        />
+      {/* Strip principal con colores institucionales UTEC */}
+      <StatStrip
+        items={[
+          { label: 'Total items', value: stats.totalItems, hint: `${stats.totalCantidad} unidades`, icon: Package, bg: 'dark' },
+          { label: 'Disponibles', value: stats.disponibles, hint: `${stats.porcentajeDisponibles.toFixed(1)}% del total`, icon: CheckCircle2, bg: 'green' },
+          { label: 'En mantenimiento', value: stats.mantenimiento, hint: `${stats.porcentajeMantenimiento.toFixed(1)}% del total`, icon: Wrench, bg: 'yellow' },
+          { label: 'Dañados', value: stats.danados, hint: `${stats.porcentajeDanados.toFixed(1)}% del total`, icon: AlertCircle, bg: 'red' },
+          { label: 'Salud', value: `${stats.ratioSalud.toFixed(0)}%`, hint: `${stats.ratioProblemas.toFixed(0)}% con problemas`, icon: Shield, bg: 'cyan' },
+          { label: 'Cobertura', value: `${stats.indiceCobertura.toFixed(0)}%`, hint: `${stats.espaciosConInventario}/${espacios.length} espacios`, icon: Target, bg: 'blue' },
+        ]}
+      />
+
+      {/* Strip secundario compacto con asignación + temporales */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 text-sm">
+        {[
+          { label: 'Asignados', value: stats.asignados, icon: MapPin },
+          { label: 'Sin asignar', value: stats.sinAsignar, icon: Boxes },
+          { label: 'Creados este mes', value: stats.itemsCreadosEsteMes, icon: Calendar, accent: stats.diferenciaMesAnterior > 0 ? 'text-utec-yellow' : stats.diferenciaMesAnterior < 0 ? 'text-utec-red' : undefined },
+          { label: 'Creados este año', value: stats.itemsCreadosEsteAnio, icon: Activity },
+          { label: 'Actualizados este mes', value: stats.itemsActualizadosEsteMes, icon: RefreshCw },
+          { label: 'Antigüedad prom.', value: `${Math.round(stats.promedioAntiguedadDias)}d`, icon: Clock },
+        ].map(({ label, value, icon: Icon, accent }) => (
+          <div key={label} className="rounded-lg bg-utec-dark text-white px-3 py-2 min-w-0">
+            <div className="flex items-center gap-1.5 text-[11px] text-white/60 mb-0.5">
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{label}</span>
+            </div>
+            <div className={`text-lg font-semibold tabular-nums ${accent ?? ''}`}>{value}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Estadísticas temporales y de crecimiento */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Creados Este Mes</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.itemsCreadosEsteMes}</div>
-            <div className="flex items-center gap-1 text-xs mt-1">
-              {stats.diferenciaMesAnterior !== 0 && (
-                <>
-                  {stats.diferenciaMesAnterior > 0 ? (
-                    <TrendingUp className="h-3 w-3 text-green-600" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 text-red-600" />
-                  )}
-                  <span className={stats.diferenciaMesAnterior > 0 ? 'text-green-600' : 'text-red-600'}>
-                    {stats.diferenciaMesAnterior > 0 ? '+' : ''}{stats.diferenciaMesAnterior}
+      {/* Bloque 1: Salud operativa + Caracterización del parque */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Items críticos */}
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-red shrink-0" />
+            <ShieldAlert className="h-3.5 w-3.5 text-white/70 shrink-0" />
+            <h3 className="text-sm font-semibold tracking-tight">Items críticos</h3>
+          </div>
+          <div className="p-3 grid grid-cols-2 gap-2">
+            {[
+              { label: 'Críticos totales', value: stats.itemsCriticos, accent: 'text-utec-red' },
+              { label: 'Sin asignar + problemas', value: stats.itemsSinAsignarConProblemas, accent: 'text-utec-orange' },
+              { label: 'Espacios sin inventario', value: stats.espaciosSinInventario },
+              { label: 'Tipos sin items', value: stats.tiposSinItems },
+            ].map((it) => (
+              <div key={it.label} className="rounded-lg border bg-muted/30 px-3 py-2">
+                <div className="text-[11px] text-muted-foreground mb-0.5 truncate">{it.label}</div>
+                <div className={`text-xl font-semibold tabular-nums ${it.accent ?? ''}`}>{it.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Indicadores de salud */}
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-green shrink-0" />
+            <Shield className="h-3.5 w-3.5 text-white/70 shrink-0" />
+            <h3 className="text-sm font-semibold tracking-tight">Indicadores de salud</h3>
+          </div>
+          <div className="p-4 space-y-3">
+            {[
+              {
+                label: 'Ratio de salud',
+                hint: '% items disponibles',
+                value: stats.ratioSalud,
+                color: stats.ratioSalud > 70 ? 'bg-utec-green' : stats.ratioSalud > 40 ? 'bg-utec-yellow' : 'bg-utec-red',
+              },
+              {
+                label: 'Eficiencia de asignación',
+                hint: '% items con espacio asignado',
+                value: stats.eficienciaAsignacion,
+                color: 'bg-utec-blue',
+              },
+              {
+                label: '% items con observaciones',
+                hint: 'mantenimiento documentado',
+                value: stats.porcentajeConObservaciones,
+                color: 'bg-utec-cyan',
+              },
+            ].map((b) => (
+              <div key={b.label} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <div className="font-medium">{b.label}</div>
+                    <div className="text-[10px] text-muted-foreground">{b.hint}</div>
+                  </div>
+                  <span className="font-semibold tabular-nums">{b.value.toFixed(1)}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded">
+                  <div className={`h-2 rounded ${b.color}`} style={{ width: `${Math.min(100, b.value)}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bloque 2: Análisis de edad + Promedios clave */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-cyan shrink-0" />
+            <Clock className="h-3.5 w-3.5 text-white/70 shrink-0" />
+            <h3 className="text-sm font-semibold tracking-tight">Análisis de edad del parque</h3>
+          </div>
+          <div className="p-3 grid grid-cols-2 gap-2">
+            {[
+              { label: 'Recientes (30 días)', value: stats.itemsRecientes, icon: Zap, accent: 'text-utec-green' },
+              { label: 'Jóvenes (3 meses)', value: stats.itemsJovenes, icon: Activity, accent: 'text-utec-blue' },
+              { label: 'Viejos (1+ año)', value: stats.itemsViejos, icon: Clock, accent: 'text-utec-orange' },
+              { label: 'Sin actualizar (6+ meses)', value: stats.itemsSinActualizarMasDe6Meses, icon: AlertTriangle, accent: 'text-utec-red' },
+            ].map(({ label, value, icon: Icon, accent }) => (
+              <div key={label} className="rounded-lg border bg-muted/30 px-3 py-2">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-0.5">
+                  <Icon className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
+                  <span className="truncate">{label}</span>
+                </div>
+                <div className="text-xl font-semibold tabular-nums">{value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
+            <BarChart3 className="h-3.5 w-3.5 text-white/70 shrink-0" />
+            <h3 className="text-sm font-semibold tracking-tight">Promedios del parque</h3>
+          </div>
+          <div className="p-3 grid grid-cols-3 gap-2">
+            {[
+              { label: 'Items por espacio', value: stats.promedioItemsPorEspacio.toFixed(1), icon: Building2 },
+              { label: 'Items por tipo', value: stats.promedioItemsPorTipo.toFixed(1), icon: Layers },
+              { label: 'Unidades por item', value: stats.promedioCantidadPorItem.toFixed(1), icon: Package },
+            ].map(({ label, value, icon: Icon }) => (
+              <div key={label} className="rounded-lg border bg-muted/30 px-3 py-2">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-0.5">
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{label}</span>
+                </div>
+                <div className="text-xl font-semibold tabular-nums">{value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="px-3 py-1.5 border-t bg-muted/40 text-[10px] text-muted-foreground">
+            Cantidad mín/máx por item: <span className="font-semibold tabular-nums">{stats.cantidadMinima}–{stats.cantidadMaxima}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Top espacios + Top tipos con look de Reservas */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {stats.topEspacios.length > 0 && (
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+              <span className="w-1 h-4 rounded-sm bg-utec-yellow shrink-0" />
+              <Building2 className="h-3.5 w-3.5 text-white/70 shrink-0" />
+              <h3 className="text-sm font-semibold tracking-tight">Top 10 espacios con más inventario</h3>
+            </div>
+            <div className="divide-y divide-border/60">
+              {stats.topEspacios.map((espacio, index) => (
+                <div key={espacio.espacioId} className="flex items-center justify-between px-4 py-1.5 text-sm hover:bg-muted/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-xs font-medium text-muted-foreground w-5 text-right tabular-nums">{index + 1}.</span>
+                    <span className="truncate">{espacio.espacioNombre}</span>
+                  </div>
+                  <span className="tabular-nums text-xs text-muted-foreground shrink-0">
+                    <span className="font-semibold text-utec-dark">{espacio.items}</span> items · <span className="font-semibold text-utec-blue">{espacio.cantidad}</span> ud.
                   </span>
-                  <span className="text-muted-foreground">
-                    ({stats.porcentajeCambioMesAnterior > 0 ? '+' : ''}{stats.porcentajeCambioMesAnterior.toFixed(1)}%)
-                  </span>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <StatCard
-          title="Creados Este Año"
-          value={stats.itemsCreadosEsteAnio}
-          subtitle={`${stats.itemsCreadosUltimos6Meses} últimos 6 meses`}
-          icon={Activity}
-          accentClass="text-indigo-600"
-          iconOnly
-        />
-        <StatCard
-          title="Actualizados Este Mes"
-          value={stats.itemsActualizadosEsteMes}
-          subtitle={`${stats.itemsActualizadosUltimos7Dias} últimos 7 días`}
-          icon={RefreshCw}
-          accentClass="text-blue-600"
-          iconOnly
-        />
-        <StatCard
-          title="Antigüedad Promedio"
-          value={Math.round(stats.promedioAntiguedadDias)}
-          subtitle={`${Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar`}
-          icon={Clock}
-          accentClass="text-orange-600"
-          iconOnly
-        />
-      </div>
-
-      {/* Análisis de salud y problemas */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-red-600" />
-              Items Críticos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 border rounded-lg">
-                <div className="text-sm text-muted-foreground">Críticos Totales</div>
-                <div className="text-2xl font-bold text-red-600">{stats.itemsCriticos}</div>
-              </div>
-              <div className="p-3 border rounded-lg">
-                <div className="text-sm text-muted-foreground">Sin Asignar + Problemas</div>
-                <div className="text-2xl font-bold text-orange-600">{stats.itemsSinAsignarConProblemas}</div>
-              </div>
-              <div className="p-3 border rounded-lg">
-                <div className="text-sm text-muted-foreground">Espacios Sin Inventario</div>
-                <div className="text-2xl font-bold">{stats.espaciosSinInventario}</div>
-              </div>
-              <div className="p-3 border rounded-lg">
-                <div className="text-sm text-muted-foreground">Tipos Sin Items</div>
-                <div className="text-2xl font-bold">{stats.tiposSinItems}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              Ratios y Eficiencia
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Ratio de Salud</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${(() => {
-                        if (stats.ratioSalud > 70) return 'bg-green-500';
-                        if (stats.ratioSalud > 40) return 'bg-yellow-500';
-                        return 'bg-red-500';
-                      })()}`}
-                      style={{ width: `${stats.ratioSalud}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold w-12 text-right">{stats.ratioSalud.toFixed(1)}%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Eficiencia de Asignación</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${stats.eficienciaAsignacion}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold w-12 text-right">{stats.eficienciaAsignacion.toFixed(1)}%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Concentración</span>
-                <Badge variant="outline">{stats.concentracionInventario.toFixed(1)}%</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Densidad</span>
-                <Badge variant="outline">{stats.densidadInventario.toFixed(1)} items/espacio</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Análisis de edad y distribución */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Análisis de Edad</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-green-600" />
-                <span className="text-sm">Recientes (30 días)</span>
-              </div>
-              <span className="font-semibold">{stats.itemsRecientes}</span>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-blue-600" />
-                <span className="text-sm">Jóvenes (3 meses)</span>
-              </div>
-              <span className="font-semibold">{stats.itemsJovenes}</span>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-orange-600" />
-                <span className="text-sm">Viejos (1+ año)</span>
-              </div>
-              <span className="font-semibold">{stats.itemsViejos}</span>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <span className="text-sm">Sin actualizar (6+ meses)</span>
-              </div>
-              <span className="font-semibold">{stats.itemsSinActualizarMasDe6Meses}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Distribución por Cantidad</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <span className="text-sm">Cantidad 1</span>
-              <Badge variant="outline">{stats.itemsConCantidad1}</Badge>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <span className="text-sm">Cantidad Media (2-10)</span>
-              <Badge variant="outline">{stats.itemsConCantidadMedia}</Badge>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <span className="text-sm">Cantidad Alta (&gt;10)</span>
-              <Badge variant="outline">{stats.itemsConCantidadAlta}</Badge>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <span className="text-sm">Rango</span>
-              <Badge variant="outline">{stats.cantidadMinima} - {stats.cantidadMaxima}</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Observaciones</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-blue-600" />
-                <span className="text-sm">Con Observaciones</span>
-              </div>
-              <span className="font-semibold">{stats.itemsConObservaciones}</span>
-            </div>
-            <div className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Info className="h-4 w-4 text-gray-600" />
-                <span className="text-sm">Sin Observaciones</span>
-              </div>
-              <span className="font-semibold">{stats.itemsSinObservaciones}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
-              <div 
-                className="bg-blue-500 h-2 rounded-full"
-                style={{ width: `${stats.porcentajeConObservaciones}%` }}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground text-center">
-              {stats.porcentajeConObservaciones.toFixed(1)}% con observaciones
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Promedios y métricas */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Promedios Generales</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Items por espacio</span>
-              </div>
-              <span className="text-lg font-semibold">{stats.promedioItemsPorEspacio.toFixed(1)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Cantidad por item</span>
-              </div>
-              <span className="text-lg font-semibold">{stats.promedioCantidadPorItem.toFixed(1)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Items por tipo</span>
-              </div>
-              <span className="text-lg font-semibold">{stats.promedioItemsPorTipo.toFixed(1)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Cantidad por espacio</span>
-              </div>
-              <span className="text-lg font-semibold">{stats.promedioCantidadPorEspacio.toFixed(1)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Cantidad por tipo</span>
-              </div>
-              <span className="text-lg font-semibold">{stats.promedioCantidadPorTipo.toFixed(1)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Distribución por Estado</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-                  <span>Disponibles</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>{stats.disponibles}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {stats.porcentajeDisponibles.toFixed(1)}%
-                  </Badge>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all"
-                  style={{ width: `${stats.porcentajeDisponibles}%` }}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Wrench className="h-3.5 w-3.5 text-yellow-600" />
-                  <span>Mantenimiento</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>{stats.mantenimiento}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {stats.porcentajeMantenimiento.toFixed(1)}%
-                  </Badge>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-yellow-500 h-2 rounded-full transition-all"
-                  style={{ width: `${stats.porcentajeMantenimiento}%` }}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-3.5 w-3.5 text-red-600" />
-                  <span>Dañados</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>{stats.danados}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {stats.porcentajeDanados.toFixed(1)}%
-                  </Badge>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-red-500 h-2 rounded-full transition-all"
-                  style={{ width: `${stats.porcentajeDanados}%` }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Distribución de Estados</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-2 border rounded-lg">
-                <span className="text-sm">Espacios solo disponibles</span>
-                <Badge variant="outline">{stats.espaciosConSoloDisponibles}</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 border rounded-lg">
-                <span className="text-sm">Espacios solo mantenimiento</span>
-                <Badge variant="outline">{stats.espaciosConSoloMantenimiento}</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 border rounded-lg">
-                <span className="text-sm">Espacios solo dañados</span>
-                <Badge variant="outline">{stats.espaciosConSoloDanados}</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 border rounded-lg">
-                <span className="text-sm">Espacios con mezcla</span>
-                <Badge variant="outline">{stats.espaciosConMezclaEstados}</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top espacios y tipos */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top 10 Espacios con Más Inventario</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.topEspacios.length > 0 ? (
-                stats.topEspacios.map((espacio, index) => (
-                  <div key={espacio.espacioId} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <span className="text-blue-600 font-semibold text-sm">{index + 1}</span>
-                      </div>
-                      <div>
-                        <p className="font-medium">{espacio.espacioNombre}</p>
-                        <p className="text-sm text-muted-foreground">{espacio.items} items</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-blue-600">{espacio.cantidad}</p>
-                      <p className="text-xs text-muted-foreground">unidades</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No hay espacios con inventario asignado
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Top 10 Tipos de Elemento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.topTipos.length > 0 ? (
-                stats.topTipos.map((tipo, index) => (
-                  <div key={tipo.tipoId} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <span className="text-purple-600 font-semibold text-sm">{index + 1}</span>
-                      </div>
-                      <div>
-                        <p className="font-medium">{tipo.tipoNombre}</p>
-                        <p className="text-sm text-muted-foreground">{tipo.items} items</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-purple-600">{tipo.cantidad}</p>
-                      <p className="text-xs text-muted-foreground">unidades</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No hay tipos de elemento disponibles
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Espacios y tipos con problemas */}
-      {stats.espaciosConMasProblemas.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="h-5 w-5" />
-              Espacios con Más Problemas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {stats.espaciosConMasProblemas.map((espacio, index) => (
-                <div key={espacio.espacioId} className="p-3 border rounded-lg border-red-200 bg-red-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-sm">{espacio.espacioNombre}</span>
-                    <Badge variant="destructive" className="text-xs">
-                      #{index + 1}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Problemas</span>
-                    <span className="font-bold text-red-600">{espacio.problemas}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                    <div 
-                      className="bg-red-500 h-1.5 rounded-full"
-                      style={{ width: `${espacio.porcentaje}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {espacio.porcentaje.toFixed(1)}% del inventario
-                  </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {stats.tiposConMasProblemas.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="h-5 w-5" />
-              Tipos con Más Problemas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {stats.tiposConMasProblemas.map((tipo, index) => (
-                <div key={tipo.tipoId} className="p-3 border rounded-lg border-red-200 bg-red-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-sm">{tipo.tipoNombre}</span>
-                    <Badge variant="destructive" className="text-xs">
-                      #{index + 1}
-                    </Badge>
+        {stats.topTipos.length > 0 && (
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+              <span className="w-1 h-4 rounded-sm bg-utec-cyan shrink-0" />
+              <Tag className="h-3.5 w-3.5 text-white/70 shrink-0" />
+              <h3 className="text-sm font-semibold tracking-tight">Top 10 tipos de elemento</h3>
+            </div>
+            <div className="divide-y divide-border/60">
+              {stats.topTipos.map((tipo, index) => (
+                <div key={tipo.tipoId} className="flex items-center justify-between px-4 py-1.5 text-sm hover:bg-muted/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-xs font-medium text-muted-foreground w-5 text-right tabular-nums">{index + 1}.</span>
+                    <span className="truncate">{tipo.tipoNombre}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Problemas</span>
-                    <span className="font-bold text-red-600">{tipo.problemas}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                    <div 
-                      className="bg-red-500 h-1.5 rounded-full"
-                      style={{ width: `${tipo.porcentaje}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {tipo.porcentaje.toFixed(1)}% del inventario
-                  </div>
+                  <span className="tabular-nums text-xs text-muted-foreground shrink-0">
+                    <span className="font-semibold text-utec-dark">{tipo.items}</span> items · <span className="font-semibold text-utec-cyan">{tipo.cantidad}</span> ud.
+                  </span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Tabla completa de tipos */}
-      {stats.itemsPorTipo.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventario Completo por Tipo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+      {/* Espacios + tipos con más problemas: tablas compactas en 2 cols */}
+      {(stats.espaciosConMasProblemas.length > 0 || stats.tiposConMasProblemas.length > 0) && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {stats.espaciosConMasProblemas.length > 0 && (
+            <div className="rounded-xl border bg-card overflow-hidden">
+              <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+                <span className="w-1 h-4 rounded-sm bg-utec-red shrink-0" />
+                <AlertTriangle className="h-3.5 w-3.5 text-white/70 shrink-0" />
+                <h3 className="text-sm font-semibold tracking-tight">Espacios con más problemas</h3>
+              </div>
+              <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2 font-medium">Tipo de Elemento</th>
-                    <th className="text-right p-2 font-medium">Items</th>
-                    <th className="text-right p-2 font-medium">Cantidad Total</th>
-                    <th className="text-right p-2 font-medium">Disponibles</th>
-                    <th className="text-right p-2 font-medium">Mantenimiento</th>
-                    <th className="text-right p-2 font-medium">Dañados</th>
-                    <th className="text-right p-2 font-medium">% del Total</th>
+                  <tr className="text-[10px] uppercase tracking-wide text-muted-foreground border-b">
+                    <th className="text-left py-1.5 px-3 font-medium">Espacio</th>
+                    <th className="text-right py-1.5 px-3 font-medium w-20">Problemas</th>
+                    <th className="text-right py-1.5 px-3 font-medium w-20">% inv.</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {stats.itemsPorTipo.map((tipo) => {
-                    const porcentaje = stats.totalItems > 0 ? (tipo.items / stats.totalItems) * 100 : 0;
-                    return (
-                      <tr key={tipo.tipoId} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium">{tipo.tipoNombre}</td>
-                        <td className="p-2 text-right">{tipo.items}</td>
-                        <td className="p-2 text-right">{tipo.cantidad}</td>
-                        <td className="p-2 text-right">
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {tipo.disponibles}
-                          </Badge>
-                        </td>
-                        <td className="p-2 text-right">
-                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                            {tipo.mantenimiento}
-                          </Badge>
-                        </td>
-                        <td className="p-2 text-right">
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                            {tipo.danados}
-                          </Badge>
-                        </td>
-                        <td className="p-2 text-right">
-                          <Badge variant="outline">{porcentaje.toFixed(1)}%</Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                <tbody className="divide-y divide-border/60">
+                  {stats.espaciosConMasProblemas.map((espacio) => (
+                    <tr key={espacio.espacioId} className="hover:bg-muted/30">
+                      <td className="py-1.5 px-3 truncate">{espacio.espacioNombre}</td>
+                      <td className="py-1.5 px-3 text-right font-semibold text-utec-red tabular-nums">{espacio.problemas}</td>
+                      <td className="py-1.5 px-3 text-right">
+                        <span className="inline-block min-w-[3rem] text-center px-2 py-0.5 rounded font-semibold tabular-nums text-[11px] bg-utec-red/15 text-utec-red">
+                          {espacio.porcentaje.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-          </CardContent>
-        </Card>
+          )}
+
+          {stats.tiposConMasProblemas.length > 0 && (
+            <div className="rounded-xl border bg-card overflow-hidden">
+              <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+                <span className="w-1 h-4 rounded-sm bg-utec-red shrink-0" />
+                <AlertTriangle className="h-3.5 w-3.5 text-white/70 shrink-0" />
+                <h3 className="text-sm font-semibold tracking-tight">Tipos con más problemas</h3>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-wide text-muted-foreground border-b">
+                    <th className="text-left py-1.5 px-3 font-medium">Tipo</th>
+                    <th className="text-right py-1.5 px-3 font-medium w-20">Problemas</th>
+                    <th className="text-right py-1.5 px-3 font-medium w-20">% inv.</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {stats.tiposConMasProblemas.map((tipo) => (
+                    <tr key={tipo.tipoId} className="hover:bg-muted/30">
+                      <td className="py-1.5 px-3 truncate">{tipo.tipoNombre}</td>
+                      <td className="py-1.5 px-3 text-right font-semibold text-utec-red tabular-nums">{tipo.problemas}</td>
+                      <td className="py-1.5 px-3 text-right">
+                        <span className="inline-block min-w-[3rem] text-center px-2 py-0.5 rounded font-semibold tabular-nums text-[11px] bg-utec-red/15 text-utec-red">
+                          {tipo.porcentaje.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Gráficos visuales */}
-      {stats && <InventoryCharts stats={stats} loading={false} />}
+      {/* Tabla completa por tipo */}
+      {stats.itemsPorTipo.length > 0 && (
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
+            <FileText className="h-3.5 w-3.5 text-white/70 shrink-0" />
+            <h3 className="text-sm font-semibold tracking-tight">Detalle completo por tipo de elemento</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-wide text-muted-foreground border-b">
+                  <th className="text-left py-1.5 px-3 font-medium">Tipo</th>
+                  <th className="text-right py-1.5 px-3 font-medium w-16">Items</th>
+                  <th className="text-right py-1.5 px-3 font-medium w-20">Unidades</th>
+                  <th className="text-right py-1.5 px-3 font-medium w-20">Dispon.</th>
+                  <th className="text-right py-1.5 px-3 font-medium w-20">Manten.</th>
+                  <th className="text-right py-1.5 px-3 font-medium w-16">Dañad.</th>
+                  <th className="text-right py-1.5 px-3 font-medium w-16">% tot.</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {stats.itemsPorTipo.map((tipo) => {
+                  const porcentaje = stats.totalItems > 0 ? (tipo.items / stats.totalItems) * 100 : 0;
+                  return (
+                    <tr key={tipo.tipoId} className="hover:bg-muted/30">
+                      <td className="py-1.5 px-3 font-medium truncate">{tipo.tipoNombre}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{tipo.items}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums text-muted-foreground">{tipo.cantidad}</td>
+                      <td className="py-1.5 px-3 text-right">
+                        <span className="inline-block min-w-[1.75rem] text-center font-semibold tabular-nums text-utec-green">{tipo.disponibles}</span>
+                      </td>
+                      <td className="py-1.5 px-3 text-right">
+                        <span className={`inline-block min-w-[1.75rem] text-center font-semibold tabular-nums ${tipo.mantenimiento > 0 ? 'text-utec-yellow' : 'text-muted-foreground/50'}`}>{tipo.mantenimiento}</span>
+                      </td>
+                      <td className="py-1.5 px-3 text-right">
+                        <span className={`inline-block min-w-[1.75rem] text-center font-semibold tabular-nums ${tipo.danados > 0 ? 'text-utec-red' : 'text-muted-foreground/50'}`}>{tipo.danados}</span>
+                      </td>
+                      <td className="py-1.5 px-3 text-right tabular-nums text-muted-foreground">{porcentaje.toFixed(1)}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Métricas analíticas (capa OLAP) */}
+      <EstadisticasAvanzadasInventario />
     </div>
   );
 }

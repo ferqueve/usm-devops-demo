@@ -180,8 +180,11 @@ cambiosdb/                             Migraciones numeradas, en orden de aplica
 ├── 018-add-edificio-to-espacio.xml
 ├── 019-add-mensaje-cancelacion-to-reserva.xml
 ├── 020-enhance-audit-log.xml
-└── 021-create-hechos-tables.xml
+├── 021-create-hechos-tables.xml
+└── 022-create-ml-tables.xml
 ```
+
+La migración 022 crea las tablas `modelo_forecast` y `prediccion_reserva`, que persisten los resultados del pipeline de Machine Learning (servicio `ml-svc` en Python). Ver `pipeline-de-ml.md` para el detalle del modelo, los hiperparámetros y la arquitectura de servicios.
 
 La migración 021 introduce la **capa analítica**: dos tablas de hechos (`hechos_reserva_diario`, `hechos_inventario_diario`) que se mantienen separadas del modelo transaccional y se pueblan por un scheduler nocturno (`EstadisticasScheduledService`). Estas tablas alimentan los endpoints nuevos bajo `/api/v1/stats/reservas/*` y constituyen la base sobre la cual se calculan métricas como ocupación, heatmap, tasa de cancelación, distribución por edificio y top usuarios. Ver `sistema-de-estadisticas.md` para el detalle del modelado dimensional y la justificación de mantener todo en el mismo Postgres en lugar de un DWH separado.
 
@@ -193,15 +196,18 @@ Liquibase corre automáticamente al iniciar el backend (`spring.liquibase.enable
 
 `docker-compose.yml` (build local):
 
-| Servicio | Imagen / Build | Puerto | Función |
-|---|---|---|---|
-| `db` | `postgres:15` | 5432 | Base de datos principal. |
-| `redis` | `redis:7-alpine` | 6379 | Caché de recomendaciones y estadísticas. |
-| `minio` | `minio/minio:latest` | 9000 (S3), 9001 (consola) | Almacenamiento de archivos S3-compatible. Opcional. |
-| `backend` | `./backend` (multi-stage) | 8080 | API REST Spring Boot. |
-| `frontend` | `./frontend` | 5173 | App React (modo dev en compose). |
+| Servicio | Imagen / Build | Puerto | Función | Lenguaje |
+|---|---|---|---|---|
+| `db` | `postgres:15` | 5432 | Base de datos principal | — |
+| `redis` | `redis:7-alpine` | 6379 | Caché de recomendaciones y estadísticas | — |
+| `minio` | `minio/minio:latest` | 9000 (S3), 9001 (consola) | Almacenamiento de archivos S3-compatible (opcional) | — |
+| `backend` | `./backend` (multi-stage) | 8080 | API REST principal | Java (Spring Boot) |
+| `frontend` | `./frontend` | 5173 | App web | TypeScript (React + Vite) |
+| `ml-svc` | `./ml` | 8000 | Pipeline de Machine Learning (forecasting) | Python (FastAPI + Prophet) |
 
-Dependencias: `backend` depende de `db`, `redis` y `minio`. `frontend` depende de `backend`.
+Dependencias: `backend` depende de `db`, `redis` y `minio`. `frontend` depende de `backend`. `ml-svc` depende sólo de `db` (no participa en el camino crítico del backend).
+
+El proyecto adopta deliberadamente un stack **políglota** en el que cada servicio usa el lenguaje más adecuado a su dominio: Java para la lógica transaccional con tipado fuerte y orientación a objetos, TypeScript para la UI web reactiva, y Python para el pipeline de Machine Learning donde el ecosistema (Prophet, pandas, scikit-learn) es el estándar industrial.
 
 `docker-compose.hub.yml` reemplaza los builds locales por imágenes publicadas en Docker Hub (`mathiaspena/utec-backend:latest`, `mathiaspena/utec-frontend:latest`). Está pensado para despliegues rápidos sin compilar.
 
