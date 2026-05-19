@@ -28,6 +28,12 @@ RUN mvn clean package -DskipTests
 # Etapa de runtime
 FROM eclipse-temurin:21-jdk AS runtime
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
+
+# start-period largo: Spring + Liquibase + wake-up de PG pueden tardar.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
+    CMD curl -fsS http://localhost:${SERVER_PORT:-8080}/actuator/health || exit 1
+
 ENTRYPOINT ["java","-jar","app.jar"]

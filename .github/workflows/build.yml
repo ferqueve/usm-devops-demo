@@ -48,6 +48,26 @@ jobs:
         run: npm run test:coverage
         continue-on-error: true
 
+      # Despierta Sonar (serverless en Railway) antes del scan.
+      - name: Wake SonarQube and wait for UP
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          set -e
+          deadline=$(( $(date +%s) + 240 ))
+          while [ $(date +%s) -lt $deadline ]; do
+            status=$(curl -sS -o /dev/null -w "%{http_code}|" "$SONAR_HOST_URL/api/system/status" || true)
+            body=$(curl -sS "$SONAR_HOST_URL/api/system/status" || true)
+            echo "HTTP=$status body=$body"
+            if echo "$body" | grep -q '"status":"UP"'; then
+              echo "SonarQube listo."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Timeout esperando a SonarQube (>4 min)."
+          exit 1
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v3
         env:
