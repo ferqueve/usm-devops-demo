@@ -49,23 +49,29 @@ jobs:
         continue-on-error: true
 
       # Despierta Sonar (serverless en Railway) antes del scan.
+      # Si reporta DB_MIGRATION_NEEDED, dispara la migración automáticamente.
       - name: Wake SonarQube and wait for UP
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           set -e
-          deadline=$(( $(date +%s) + 240 ))
+          deadline=$(( $(date +%s) + 360 ))
+          migration_triggered=0
           while [ $(date +%s) -lt $deadline ]; do
-            status=$(curl -sS -o /dev/null -w "%{http_code}|" "$SONAR_HOST_URL/api/system/status" || true)
             body=$(curl -sS "$SONAR_HOST_URL/api/system/status" || true)
-            echo "HTTP=$status body=$body"
+            echo "body=$body"
             if echo "$body" | grep -q '"status":"UP"'; then
               echo "SonarQube listo."
               exit 0
             fi
+            if echo "$body" | grep -q '"status":"DB_MIGRATION_NEEDED"' && [ $migration_triggered -eq 0 ]; then
+              echo "Disparando migración de DB..."
+              curl -sS -X POST "$SONAR_HOST_URL/api/system/migrate_db" || true
+              migration_triggered=1
+            fi
             sleep 10
           done
-          echo "Timeout esperando a SonarQube (>4 min)."
+          echo "Timeout esperando a SonarQube (>6 min)."
           exit 1
 
       - name: SonarQube Scan
