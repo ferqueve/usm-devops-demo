@@ -181,10 +181,13 @@ cambiosdb/                             Migraciones numeradas, en orden de aplica
 ├── 019-add-mensaje-cancelacion-to-reserva.xml
 ├── 020-enhance-audit-log.xml
 ├── 021-create-hechos-tables.xml
-└── 022-create-ml-tables.xml
+├── 022-create-ml-tables.xml
+└── 023-create-ai-tables.xml
 ```
 
 La migración 022 crea las tablas `modelo_forecast` y `prediccion_reserva`, que persisten los resultados del pipeline de Machine Learning (servicio `ml-svc` en Python). Ver `pipeline-de-ml.md` para el detalle del modelo, los hiperparámetros y la arquitectura de servicios.
+
+La migración 023 introduce la **capa de IA generativa**: habilita la extensión `pgvector` y crea la tabla `ai_embedding_espacio`, donde el servicio `ai-svc` persiste los embeddings vectoriales (3072 dimensiones, modelo `gemini-embedding-001`) que sustentan la búsqueda semántica de espacios y el chatbot con function calling. Ver `capa-ia-generativa.md`.
 
 La migración 021 introduce la **capa analítica**: dos tablas de hechos (`hechos_reserva_diario`, `hechos_inventario_diario`) que se mantienen separadas del modelo transaccional y se pueblan por un scheduler nocturno (`EstadisticasScheduledService`). Estas tablas alimentan los endpoints nuevos bajo `/api/v1/stats/reservas/*` y constituyen la base sobre la cual se calculan métricas como ocupación, heatmap, tasa de cancelación, distribución por edificio y top usuarios. Ver `sistema-de-estadisticas.md` para el detalle del modelado dimensional y la justificación de mantener todo en el mismo Postgres en lugar de un DWH separado.
 
@@ -204,10 +207,11 @@ Liquibase corre automáticamente al iniciar el backend (`spring.liquibase.enable
 | `backend` | `./backend` (multi-stage) | 8080 | API REST principal | Java (Spring Boot) |
 | `frontend` | `./frontend` | 5173 | App web | TypeScript (React + Vite) |
 | `ml-svc` | `./ml` | 8000 | Pipeline de Machine Learning (forecasting) | Python (FastAPI + Prophet) |
+| `ai-svc` | `./ai` | 8001 | Capa de IA Generativa (Gemini + LangChain + pgvector) | Python (FastAPI + LangChain) |
 
-Dependencias: `backend` depende de `db`, `redis` y `minio`. `frontend` depende de `backend`. `ml-svc` depende sólo de `db` (no participa en el camino crítico del backend).
+Dependencias: `backend` depende de `db`, `redis` y `minio`. `frontend` depende de `backend`. `ml-svc` y `ai-svc` dependen sólo de `db` (no participan en el camino crítico del backend). El backend Spring proxy-ea las llamadas a ambos servicios Python a través de `/api/v1/forecasting/*` y `/api/v1/ai/*` respectivamente.
 
-El proyecto adopta deliberadamente un stack **políglota** en el que cada servicio usa el lenguaje más adecuado a su dominio: Java para la lógica transaccional con tipado fuerte y orientación a objetos, TypeScript para la UI web reactiva, y Python para el pipeline de Machine Learning donde el ecosistema (Prophet, pandas, scikit-learn) es el estándar industrial.
+El proyecto adopta deliberadamente un stack **políglota** en el que cada servicio usa el lenguaje más adecuado a su dominio: Java para la lógica transaccional con tipado fuerte y orientación a objetos, TypeScript para la UI web reactiva, y Python para los servicios de inteligencia (ML batch con Prophet y IA generativa con LangChain), donde el ecosistema Python es claramente superior.
 
 `docker-compose.hub.yml` reemplaza los builds locales por imágenes publicadas en Docker Hub (`mathiaspena/utec-backend:latest`, `mathiaspena/utec-frontend:latest`). Está pensado para despliegues rápidos sin compilar.
 

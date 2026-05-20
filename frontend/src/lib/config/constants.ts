@@ -1,4 +1,4 @@
-import { 
+import {
   Home,
   Calendar,
   BookOpen,
@@ -6,7 +6,8 @@ import {
   BarChart3,
   Users,
   Server,
-  FileText
+  FileText,
+  Sparkles
 } from "lucide-react";
 import type { SidebarMenuItem } from '../types/ui';
 import type { UserRole } from '../types/users';
@@ -46,6 +47,12 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Estadísticas",
     icon: BarChart3,
     href: "/statistics"
+  },
+  {
+    id: "asistente",
+    label: "Asistente IA",
+    icon: Sparkles,
+    href: "/asistente"
   },
   {
     id: "users",
@@ -98,6 +105,7 @@ export const ROLE_PERMISSIONS = {
       '/inventory',
       '/inventory/requests',
       '/statistics',
+      '/asistente',
       '/system',
       '/audit'
     ],
@@ -105,10 +113,11 @@ export const ROLE_PERMISSIONS = {
       'dashboard',
       'rooms',
       'reservations',
-      'calendar', 
+      'calendar',
       'users',
       'inventory',
       'statistics',
+      'asistente',
       'Users',
       'system',
       'audit'
@@ -125,7 +134,8 @@ export const ROLE_PERMISSIONS = {
       '/reservations/create',
       '/calendar',
       '/inventory',
-      '/statistics'
+      '/statistics',
+      '/asistente'
     ],
     sidebarItems: [
       'dashboard',
@@ -133,7 +143,8 @@ export const ROLE_PERMISSIONS = {
       'reservations',
       'calendar',
       'inventory',
-      'statistics'
+      'statistics',
+      'asistente'
     ],
   },
   [ROLES.DOCENTE]: {

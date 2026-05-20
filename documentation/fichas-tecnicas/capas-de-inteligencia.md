@@ -8,7 +8,7 @@ UTEC Space Manager incorpora **tres capas progresivas de inteligencia**, cada un
 |---|---|---|---|
 | **1. Recomendaciones heurísticas** | Reglas explícitas + scoring determinístico | Operativa | [`sistema-de-recomendaciones.md`](./sistema-de-recomendaciones.md) |
 | **2. Machine Learning** | Modelo estadístico aprendido (Prophet) | Operativa | [`pipeline-de-ml.md`](./pipeline-de-ml.md) |
-| **3. Inteligencia Artificial generativa** | Modelos de lenguaje (LLM) | Planificada | (pendiente — ver sección 5) |
+| **3. Inteligencia Artificial generativa** | Modelos de lenguaje (LLM) | Operativa | [`capa-ia-generativa.md`](./capa-ia-generativa.md) |
 
 La existencia de esta progresión es una **decisión arquitectónica deliberada**, no un accidente histórico. Cada capa aporta un tipo de valor distinto que las otras no pueden cubrir bien, y las tres juntas trazan una narrativa coherente sobre cómo un sistema de gestión universitaria moderno puede incorporar inteligencia computacional sin caer en la trampa de aplicar la herramienta más sofisticada a problemas que no la necesitan.
 
@@ -88,21 +88,25 @@ Cuando el problema involucra **patrones temporales no triviales** que serían te
 
 Modelos de lenguaje grande (Large Language Models, LLMs) que **comprenden y generan texto en lenguaje natural**. A diferencia de las capas anteriores, el LLM no resuelve un problema acotado con una respuesta numérica, sino que **opera sobre lenguaje libre**, lo que abre un espacio de aplicaciones cualitativamente distinto: conversación, generación de contenido, comprensión semántica de pedidos abiertos, asistencia conversacional.
 
-### Qué resolvería en este sistema
+### Qué resuelve en este sistema
 
-Casos de uso identificados como candidatos para esta capa:
+La capa está implementada con cinco funcionalidades agrupadas en la página `/asistente` (acceso para analista y admin):
 
-- **Asistente conversacional**: que un usuario pueda escribir "necesito un aula para 40 personas el jueves a la tarde, preferiblemente cerca del laboratorio de mecatrónica" y el sistema interprete el pedido, consulte disponibilidad real (vía herramientas/tools) y proponga opciones.
-- **Generación automática de descripciones**: títulos sugeridos para reservas, descripciones de espacios, mensajes pre-formateados al analista cuando se rechaza una solicitud.
-- **Resumen ejecutivo en lenguaje natural** de los reportes estadísticos: "esta semana las reservas aumentaron un 18 % respecto a la anterior, con concentración en el edificio E entre las 14 y las 18 horas".
-- **Búsqueda semántica** sobre el historial de auditoría: que un administrador pueda preguntar "¿quién canceló reservas con menos de dos horas de antelación el mes pasado?" sin tener que armar el filtro manualmente.
-- **Validación inteligente de pedidos**: detectar inconsistencias o ambigüedades en motivos de reserva mal redactados antes de que lleguen al analista.
+- **Resumen automático de estadísticas**: interpretación en lenguaje natural del estado del sistema, pensada para encabezar el dashboard de estadísticas.
+- **Explicación de recomendaciones**: humaniza la salida del recomendador heurístico (capa 1), reescribiendo el campo `razon` en un texto más natural.
+- **Análisis del forecast Prophet**: síntesis accionable de las predicciones del modelo de demanda (capa 2), con identificación de tendencias, picos y sugerencias operativas.
+- **Búsqueda semántica de espacios (RAG)**: consulta en lenguaje natural sobre el catálogo de espacios, resuelta por similitud de embeddings vectoriales almacenados en pgvector.
+- **Chatbot con function calling**: agente conversacional que consulta la base de datos a través de un conjunto acotado de herramientas de sólo lectura (reservas propias, espacios disponibles, estadísticas globales, búsqueda semántica).
 
-### Cómo se implementaría (planificado)
+Las cinco están en `/asistente` como sandbox para validar comportamiento antes de migrarlas a su contexto natural en otras pantallas (resumen sobre `/statistics`, explicación en cards del recomendador, etc.).
 
-La arquitectura natural replica el patrón ya establecido por la capa de ML: un **servicio independiente** en el lenguaje más adecuado al dominio (probablemente Python para reutilizar el ecosistema LangChain / LlamaIndex / Anthropic SDK), que el backend Java consume cuando el usuario lo invoca explícitamente. Las salidas pueden persistirse en una tabla para auditoría y eventual reutilización.
+### Cómo está implementada
 
-La interacción con el LLM debe ser **acotada por tools** (tool use, function calling): el modelo no inventa disponibilidad de espacios; consulta los endpoints reales del backend y solo formatea la respuesta. Este patrón —LLM como interfaz, sistema deterministico como fuente de verdad— es el estándar para aplicaciones empresariales de IA generativa.
+Microservicio Python independiente `ai-svc` (FastAPI + LangChain), proxy-eado por el backend Spring vía `/api/v1/ai/...`. El proveedor de LLM se abstrae con LangChain para no acoplar el código a una API concreta; la implementación inicial usa Gemini 2.5 Flash para texto y `gemini-embedding-001` (3072 dim.) para embeddings.
+
+La interacción del chatbot con el LLM es **acotada por tools** (tool use, function calling): el modelo no inventa disponibilidad de espacios; consulta los endpoints reales del backend y sólo formatea la respuesta. Patrón estándar de LLM como interfaz, sistema determinístico como fuente de verdad. La identidad del usuario se inyecta desde el JWT del backend, no desde el prompt, para que el agente no pueda acceder a datos de otros usuarios aunque se lo pida explícitamente.
+
+Detalle técnico en [`capa-ia-generativa.md`](./capa-ia-generativa.md).
 
 ### Características y limitaciones esperadas
 
@@ -141,7 +145,7 @@ Las tres capas no compiten; resuelven problemas distintos. La elección entre el
 |---|---|---|---|
 | 1 · Heurística | Java | Spring Boot, JPA, Redis | dentro del `utec-backend` |
 | 2 · ML | Python | FastAPI, Prophet, pandas, SQLAlchemy | `ml-svc` (proceso separado) |
-| 3 · IA generativa (planificado) | Python | LangChain, Anthropic / OpenAI SDK, vector store | (a definir, probablemente `ai-svc`) |
+| 3 · IA generativa | Python | FastAPI, LangChain, Google Generative AI SDK, pgvector | `ai-svc` (proceso separado, siempre activo) |
 
 La incorporación progresiva de lenguajes (Java → Java + Python → Java + Python + Python) refleja un principio guía del proyecto: **cada capa usa el lenguaje y el ecosistema más adecuado a su dominio**, en lugar de forzar una única tecnología para problemas heterogéneos.
 
@@ -149,13 +153,13 @@ La incorporación progresiva de lenguajes (Java → Java + Python → Java + Pyt
 
 ## 7. Plan de evolución
 
-El sistema está diseñado para que la incorporación de la capa 3 no requiera modificaciones estructurales del resto. Específicamente:
+Con las tres capas operativas, la evolución natural está orientada a profundizar cada una:
 
-- **El patrón de servicio independiente con base de datos compartida** ya está validado por la capa 2.
-- **El backend Java actúa como orquestador**: invoca a los servicios especializados solo cuando el flujo lo requiere, sin acoplarse a su disponibilidad en los caminos transaccionales.
-- **La UI ya tiene primitivos** para distinguir resultados generados por inteligencia computacional (badges, paneles de metadata) de resultados determinísticos, lo que permite incorporar respuestas de LLM manteniendo la transparencia con el usuario.
+- **Capa 1**: enriquecer las heurísticas combinando señales adicionales del histórico ya disponible.
+- **Capa 2**: explorar modelos por espacio individual (cuando el volumen lo justifique), agregar predicción de cancelaciones, evaluar Prophet vs. otros métodos (ARIMA, modelos de gradient boosting con features temporales).
+- **Capa 3**: migrar las funcionalidades desde la página `/asistente` a su contexto natural en producción (resumen sobre `/statistics`, explicación de recomendación en cards, widget de chatbot flotante global), agregar memoria persistente para el chatbot, evaluar caching de respuestas para reducir consumo de tokens.
 
-Las próximas decisiones a tomar antes de implementar la capa 3 son: (a) selección del proveedor de modelo (Anthropic, OpenAI, modelo open-source autohospedado), (b) política de privacidad sobre los datos enviados al LLM (anonimización, qué información se incluye en los prompts), (c) presupuesto operativo y mecanismos de control de costo por usuario.
+Las decisiones de proveedor de LLM y control de costo se revisan periódicamente: la abstracción vía LangChain permite intercambiar proveedor (Gemini, Groq, OpenAI, Anthropic) modificando una sola variable de entorno, lo que reduce el riesgo de quedar atado a las políticas de free tier de un único proveedor.
 
 ---
 

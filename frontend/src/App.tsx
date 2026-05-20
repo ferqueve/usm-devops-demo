@@ -18,6 +18,7 @@ import CreateReservationPage from './app/reservations/create/page';
 import RoomsPage from './app/rooms/page';
 import RoomDetailsPage from './app/rooms/[id]/page';
 import StatisticsPage from './app/statistics/page';
+import AsistentePage from './app/asistente/page';
 import UsersPage from './app/users/page';
 import SystemPage from './app/system/page';
 import InventoryPage from './app/inventory/page';
@@ -136,13 +137,22 @@ function AppRoutes() {
         } 
       />
       
-      <Route 
-        path="/statistics" 
+      <Route
+        path="/statistics"
         element={
           <RoleProtectedRoute>
             <StatisticsPage />
           </RoleProtectedRoute>
-        } 
+        }
+      />
+
+      <Route
+        path="/asistente"
+        element={
+          <RoleProtectedRoute>
+            <AsistentePage />
+          </RoleProtectedRoute>
+        }
       />
       
       <Route 

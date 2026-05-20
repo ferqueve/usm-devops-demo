@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Capa de IA generativa: extensión pgvector para almacenar embeddings
+        de espacios (búsqueda semántica con RAG). El servicio ai-svc Python
+        escribe sobre ai_embedding_espacio; el backend Spring lo proxy-ea
+        pero no escribe directo.
+    -->
+
+    <changeSet id="001" author="Mathias">
+        <sql>CREATE EXTENSION IF NOT EXISTS vector;</sql>
+        <rollback>
+            <sql>DROP EXTENSION IF EXISTS vector;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <sql>
+            CREATE TABLE ai_embedding_espacio (
+                id              BIGSERIAL PRIMARY KEY,
+                espacio_id      BIGINT       NOT NULL UNIQUE,
+                texto_indexado  TEXT         NOT NULL,
+                embedding       vector(3072) NOT NULL,
+                model_version   VARCHAR(50)  NOT NULL,
+                updated_at      TIMESTAMPTZ  NOT NULL DEFAULT now()
+            );
+        </sql>
+        <rollback>
+            <sql>DROP TABLE IF EXISTS ai_embedding_espacio;</sql>
+        </rollback>
+    </changeSet>
+
+    <!--
+        pgvector exige <=2000 dims para los índices HNSW/IVFFlat. Gemini
+        embedding-001 devuelve 3072, así que por ahora no creamos índice y la
+        búsqueda hace sequential scan con el operador <=> (coseno). Para
+        catálogos chicos (~hasta varios miles) el costo es despreciable.
+
+        Plan a futuro: o bajar la dimensión al guardar (truncar a 1536) o usar
+        halfvec para que HNSW soporte la dimensión completa.
+    -->
+    <changeSet id="003" author="Mathias">
+        <comment>Sin índice vectorial por limitación de dimensión (3072 > 2000).</comment>
+        <sql>SELECT 1;</sql>
+        <rollback><sql>SELECT 1;</sql></rollback>
+    </changeSet>
+
+</databaseChangeLog>

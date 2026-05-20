@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     container_name: ut_db
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
@@ -93,6 +93,22 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       PORT: "8000"
       LOG_LEVEL: INFO
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # Capa de IA Generativa · Gemini + LangChain + pgvector.
+  # Ver documentation/fichas-tecnicas/capa-ia-generativa.md
+  ai-svc:
+    build:
+      context: ./ai
+    container_name: utec_ai_svc
+    ports:
+      - "8001:8001"
+    env_file:
+      - ai/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
     restart: unless-stopped

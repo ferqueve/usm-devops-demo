@@ -3390,6 +3390,40 @@ No existe una opción para ocultarlas, pero se pueden ignorar sin que afecte el 
 
 ---
 
+# 16-bis. ASISTENTE DE INTELIGENCIA ARTIFICIAL
+
+El sistema cuenta con un asistente de inteligencia artificial generativa, accesible desde el menú lateral con el ítem **Asistente IA**. Está disponible para los roles **Administrador** y **Analista**. La página agrupa cinco funcionalidades pensadas para que el usuario obtenga insights y consultas en lenguaje natural, sin necesidad de armar filtros complejos en pantalla.
+
+## 16-bis.1 Resumen automático de estadísticas
+
+Al presionar **Generar resumen**, el sistema toma una fotografía del estado actual del sistema (ocupación, reservas, distribución por carreras, etc.) y devuelve un párrafo ejecutivo de tres o cuatro oraciones en español, listo para incluir como introducción al dashboard de estadísticas.
+
+## 16-bis.2 Explicación de recomendaciones
+
+Convierte una recomendación de espacio en un texto natural y cálido para el usuario. En lugar de leer "puntaje 0.85, razón: disponibilidad alta los jueves", el sistema redacta una frase como "Te conviene la Sala 203: suele estar libre los jueves y otras personas de tu carrera la usan habitualmente".
+
+## 16-bis.3 Análisis del forecast de demanda
+
+Toma las predicciones del modelo de Machine Learning y genera un análisis accionable: tendencia general, picos esperados con fecha aproximada y recomendaciones operativas (por ejemplo, "considerar liberar más espacios el próximo martes").
+
+## 16-bis.4 Búsqueda semántica de espacios
+
+Permite buscar espacios escribiendo la necesidad en lenguaje natural, sin tener que conocer nombres exactos. Por ejemplo, "salón grande con proyector para un taller de 30 personas" devuelve los espacios cuyas características más se parecen al concepto consultado, ordenados por similitud. La búsqueda funciona aunque los términos exactos no coincidan con los nombres registrados.
+
+Los administradores cuentan con un botón **Reindexar embeddings** que actualiza el índice semántico cuando se agregan o modifican espacios.
+
+## 16-bis.5 Chatbot
+
+Un asistente conversacional al que se le puede preguntar por las propias reservas, espacios disponibles o estadísticas del sistema. El asistente entiende preguntas como "¿tengo reservas el jueves?", "buscame un salón para 50 personas el viernes a las 14" o "¿cuál es la ocupación de la última semana?". Detrás escena consulta directamente la base de datos a través de un conjunto acotado de herramientas de sólo lectura, por lo que las respuestas reflejan información real y no inventada.
+
+Por seguridad, el asistente nunca puede acceder a datos de otros usuarios: aunque se le pida explícitamente, sólo opera sobre las reservas y configuraciones del usuario autenticado. Tampoco puede crear, modificar ni cancelar reservas; sólo consultar.
+
+Las consultas al asistente pueden tomar de dos a seis segundos según la complejidad de la pregunta. Bajo cada respuesta el sistema muestra etiquetas con las herramientas que utilizó para responder, de modo que el usuario sepa de dónde salió la información.
+
+> Para detalles técnicos de la capa de IA (modelos utilizados, abstracción de proveedor, esquema de embeddings, manejo de seguridad), ver la ficha técnica `documentation/fichas-tecnicas/capa-ia-generativa.md`.
+
+---
+
 # 17. CARRERAS
 
 Las carreras se utilizan para asociar reservas a programas académicos y permiten organizar y filtrar la información a nivel institucional.
