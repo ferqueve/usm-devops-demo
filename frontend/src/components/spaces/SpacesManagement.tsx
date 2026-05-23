@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { espaciosApi } from '@/lib/api/spaces';
+import { reservationsApi } from '@/lib/api/reservations';
+import { AiSemanticSearch } from './AiSemanticSearch';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
 import type { Espacio, TipoEspacio, EspacioFilters, FiltroInventario, Edificio } from '@/lib/types/spaces';
 import { 
@@ -115,6 +117,36 @@ export default function SpacesManagement() {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<Espacio | null>(null);
   const [showTiposManagement, setShowTiposManagement] = useState(false);
+  const [espaciosOcupados, setEspaciosOcupados] = useState<Set<number>>(new Set());
+
+  // Cargar reservas aprobadas que están en curso ahora mismo
+  useEffect(() => {
+    const cargarOcupacion = async () => {
+      try {
+        const now = new Date();
+        const startOfDay = new Date(now);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(now);
+        endOfDay.setHours(23, 59, 59, 999);
+        const response = await reservationsApi.obtenerTodasLasReservas(
+          'APROBADO', null, null, null, startOfDay, endOfDay,
+        );
+        const t = now.getTime();
+        const occupied = new Set<number>();
+        for (const r of response.data ?? []) {
+          if (new Date(r.inicio).getTime() <= t && new Date(r.fin).getTime() >= t) {
+            occupied.add(r.espacioId);
+          }
+        }
+        setEspaciosOcupados(occupied);
+      } catch (error) {
+        console.warn('No se pudo cargar ocupación de espacios:', error);
+      }
+    };
+    cargarOcupacion();
+    const interval = setInterval(cargarOcupacion, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchEspacios = useCallback(async () => {
     try {
@@ -618,8 +650,8 @@ export default function SpacesManagement() {
           <div className="space-y-2">
             <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
               {/* Campo de búsqueda principal */}
-              <div className="flex-1">
-                <div className="relative">
+              <div className="flex-1 flex gap-2">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     placeholder="Buscar por nombre de espacio..."
@@ -628,6 +660,9 @@ export default function SpacesManagement() {
                     className="pl-10"
                   />
                 </div>
+                <AiSemanticSearch
+                  onSelectEspacio={(espacioId) => navigate(`/rooms/${espacioId}`)}
+                />
               </div>
 
               {/* Filtros compactos estilo Reservas */}
@@ -909,6 +944,7 @@ export default function SpacesManagement() {
                   espacio={espacio}
                   canEdit={canEdit}
                   onEdit={handleEdit}
+                  enCurso={espaciosOcupados.has(espacio.id)}
                 />
               ))}
             </div>

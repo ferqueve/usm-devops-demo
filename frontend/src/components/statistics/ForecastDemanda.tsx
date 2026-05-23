@@ -24,6 +24,7 @@ import {
   type CalidadModelo,
   type ForecastDemanda as ForecastData,
 } from '@/lib/api/stats';
+import { postAnalyzeForecast } from '@/lib/api/ai';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 
 interface SectionHeaderProps {
@@ -84,6 +85,9 @@ export default function ForecastDemanda() {
   const [calidad, setCalidad] = useState<CalidadModelo | null>(null);
   const [loading, setLoading] = useState(true);
   const [retraining, setRetraining] = useState(false);
+  const [aiAnalisis, setAiAnalisis] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const cargar = async () => {
     setLoading(true);
@@ -144,6 +148,34 @@ export default function ForecastDemanda() {
   }, [forecast]);
 
   const sinModelo = !loading && (!forecast || forecast.modeloId == null);
+
+  const handleAnalyzeAi = async () => {
+    if (!forecast) return;
+    setAiLoading(true);
+    setAiError(null);
+    setAiAnalisis(null);
+    try {
+      const res = await postAnalyzeForecast({
+        historico: forecast.historico.map((h) => ({ fecha: h.fecha, real: h.real })),
+        predicciones: forecast.predicciones.map((p) => ({
+          fecha: p.fecha,
+          prediccion: p.prediccion,
+          bandaInferior: p.bandaInferior,
+          bandaSuperior: p.bandaSuperior,
+        })),
+        mape: calidad?.mape ?? null,
+      });
+      if (res.success && res.data) {
+        setAiAnalisis(res.data.analisis);
+      } else {
+        setAiError(res.error || 'Sin respuesta');
+      }
+    } catch (e) {
+      setAiError(String(e));
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
@@ -275,6 +307,37 @@ export default function ForecastDemanda() {
           </div>
         </aside>
       </div>
+      {!sinModelo && (
+        <div className="border-t bg-utec-blue/5 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-utec-dark">
+              <Sparkles className="h-3.5 w-3.5 text-utec-blue" />
+              Análisis del forecast con IA
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-white px-1.5 py-0.5 rounded border">
+                Gemini
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAnalyzeAi}
+              disabled={aiLoading || loading}
+              className="h-7 text-xs px-2.5"
+            >
+              {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+              <span className="ml-1">{aiAnalisis ? 'Regenerar' : 'Analizar'}</span>
+            </Button>
+          </div>
+          {!aiAnalisis && !aiError && !aiLoading && (
+            <p className="text-xs text-muted-foreground">
+              Interpreta tendencia, picos de demanda y recomendaciones operativas en lenguaje natural.
+            </p>
+          )}
+          {aiLoading && <p className="text-xs italic text-muted-foreground">Analizando con Gemini…</p>}
+          {aiAnalisis && <p className="text-sm leading-relaxed text-gray-800 whitespace-pre-wrap">{aiAnalisis}</p>}
+          {aiError && <p className="text-xs text-red-600">Error: {aiError}</p>}
+        </div>
+      )}
       <div className="px-4 py-1.5 border-t bg-muted/40 text-[10px] text-muted-foreground">
         Modelo entrenado por el servicio Python <span className="font-mono">ml-svc</span> sobre la capa analítica. Reentrenamiento programado cada domingo.
       </div>

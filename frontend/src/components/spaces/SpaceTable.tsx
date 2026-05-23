@@ -65,7 +65,7 @@ export function SpaceTable({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b-0">
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[80px]">
+            <TableHead className="h-10 bg-utec-dark text-white/70 w-[80px]">
               <button
                 onClick={() => onSort && handleSort('id')}
                 className="flex items-center hover:text-white transition-colors"
@@ -73,7 +73,7 @@ export function SpaceTable({
                 ID {onSort && getSortIcon('id')}
               </button>
             </TableHead>
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
+            <TableHead className="h-10 bg-utec-dark text-white/70">
               <button
                 onClick={() => onSort && handleSort('nombre')}
                 className="flex items-center hover:text-white transition-colors"
@@ -81,7 +81,7 @@ export function SpaceTable({
                 Nombre {onSort && getSortIcon('nombre')}
               </button>
             </TableHead>
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
+            <TableHead className="h-10 bg-utec-dark text-white/70">
               <button
                 onClick={() => onSort && handleSort('tipo')}
                 className="flex items-center hover:text-white transition-colors"
@@ -89,10 +89,10 @@ export function SpaceTable({
                 Tipo de Espacio {onSort && getSortIcon('tipo')}
               </button>
             </TableHead>
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
+            <TableHead className="h-10 bg-utec-dark text-white/70">
               Edificio
             </TableHead>
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
+            <TableHead className="h-10 bg-utec-dark text-white/70">
               <button
                 onClick={() => onSort && handleSort('capacidad')}
                 className="flex items-center hover:text-white transition-colors"
@@ -100,10 +100,10 @@ export function SpaceTable({
                 Capacidad {onSort && getSortIcon('capacidad')}
               </button>
             </TableHead>
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">
+            <TableHead className="h-10 bg-utec-dark text-white/70">
               Estado
             </TableHead>
-            <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
+            <TableHead className="h-10 bg-utec-dark text-white/70 text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -148,27 +148,27 @@ export function SpaceTable({
                   const getEstadoConfig = (estado: string) => {
                     switch (estado) {
                       case 'DISPONIBLE':
-                        return { 
-                          label: 'Disponible', 
-                          color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        return {
+                          label: 'Disponible',
+                          color: 'bg-utec-green text-white border-utec-green',
                           icon: CheckCircle
                         };
                       case 'MANTENIMIENTO':
-                        return { 
-                          label: 'En Mantenimiento', 
-                          color: 'bg-amber-50 text-amber-700 border-amber-200',
+                        return {
+                          label: 'En Mantenimiento',
+                          color: 'bg-utec-yellow text-utec-dark border-utec-yellow',
                           icon: Wrench
                         };
                       case 'NO_DISPONIBLE':
-                        return { 
-                          label: 'No Disponible', 
-                          color: 'bg-red-50 text-red-700 border-red-200',
+                        return {
+                          label: 'No Disponible',
+                          color: 'bg-utec-red text-white border-utec-red',
                           icon: XCircle
                         };
                       default:
-                        return { 
-                          label: estado, 
-                          color: 'bg-gray-50 text-gray-700 border-gray-200',
+                        return {
+                          label: estado,
+                          color: 'bg-gray-200 text-utec-dark border-gray-300',
                           icon: CheckCircle
                         };
                     }

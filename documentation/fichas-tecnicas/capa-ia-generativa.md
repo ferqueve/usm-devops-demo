@@ -2,168 +2,174 @@
 
 ## 1. Resumen ejecutivo
 
-Tercera capa de inteligencia del sistema (ver [Capas de inteligencia](capas-de-inteligencia.md)). Mientras la primera capa es heurística determinística y la segunda es ML predictivo entrenado offline, esta capa orquesta llamadas a un modelo generativo en línea (Gemini 2.5 Flash de Google) para producir cinco funcionalidades dirigidas al usuario:
+Esta capa es la tercera (y más nueva) capa de inteligencia del sistema, complementando al recomendador heurístico y al modelo de predicción de demanda. Su rol es transformar datos numéricos y operativos en texto comprensible para personas: resúmenes, explicaciones, búsquedas en lenguaje natural y diálogo asistido.
 
-1. **Resumen automático de estadísticas** — interpretación en lenguaje natural del estado del sistema.
-2. **Explicación de recomendaciones** — humanización de la salida del recomendador heurístico.
-3. **Análisis del forecast Prophet** — síntesis accionable de las predicciones del modelo de demanda.
-4. **Búsqueda semántica de espacios (RAG)** — recuperación por similitud vectorial usando embeddings.
-5. **Chatbot con function calling** — agente conversacional que consulta la base de datos a través de un conjunto acotado de herramientas de sólo lectura.
+Ofrece cinco funcionalidades:
 
-Las funcionalidades viven en una página dedicada `/asistente` (acceso para analista y admin) que actúa como entorno de prueba previo a la integración en las pantallas operativas correspondientes.
+1. **Resumen automático de estadísticas** — interpreta el estado del sistema y lo presenta en un párrafo ejecutivo.
+2. **Explicación de recomendaciones** — toma una recomendación generada por el motor heurístico y la reescribe en lenguaje claro.
+3. **Análisis del forecast** — interpreta las predicciones del modelo de demanda y sugiere decisiones operativas.
+4. **Búsqueda semántica de espacios** — permite encontrar un espacio describiéndolo en lenguaje natural ("salón grande con proyector").
+5. **Asistente conversacional** — un chatbot que responde preguntas consultando datos reales del sistema.
 
-El acceso al modelo se hace siempre a través de una abstracción (`langchain`) que permite cambiar de proveedor con una sola variable de entorno; la implementación inicial usa Gemini por el costo cero de su nivel gratuito en el momento del desarrollo.
+Cada funcionalidad aparece en la pantalla donde es naturalmente útil: el resumen y el análisis del forecast en Estadísticas, la explicación dentro de cada tarjeta de recomendación, la búsqueda semántica en Espacios, y el asistente como un botón flotante disponible en todo el panel.
+
+El sistema usa el modelo Gemini de Google como proveedor principal y, ante cualquier indisponibilidad o agotamiento de cuota, reintenta automáticamente con un proveedor de respaldo (Groq). El usuario final no percibe el cambio.
 
 ## 2. Cómo se usa
 
-### Página `/asistente`
+- **Estadísticas → Resumen ejecutivo con IA**: en la pantalla de Estadísticas hay un panel destacado con un botón "Generar resumen". Al pulsarlo, el asistente devuelve dos o tres oraciones describiendo el estado actual de las reservas, los hallazgos más relevantes y eventuales señales de alerta.
+- **Estadísticas → Análisis del forecast**: dentro del bloque de Predicción de demanda, un botón "Analizar" produce una lectura en lenguaje natural de la curva: picos previstos, caídas y sugerencias operativas.
+- **Recomendaciones → "Explicar con IA"**: cada tarjeta de recomendación incluye un botón discreto que humaniza el motivo técnico de la recomendación.
+- **Espacios → "Buscar con IA"**: junto al buscador tradicional aparece un botón que abre un cuadro de búsqueda libre. El usuario escribe lo que necesita ("una sala chica para reuniones de cinco personas") y obtiene un ranking de espacios afines, con un porcentaje de afinidad y acceso directo al detalle.
+- **Asistente flotante**: un botón en la esquina inferior derecha abre una ventana de chat. El asistente reconoce frases como "hoy", "la semana que viene" o "mis reservas pendientes" y consulta los datos reales del sistema para responder. Cada respuesta muestra qué herramientas usó (por ejemplo, "buscar_mis_reservas") para que el usuario entienda de dónde sale la información.
 
-La página agrupa las cinco funcionalidades en paneles independientes:
-
-- **Resumen automático**: botón "Generar resumen" envía la última fotografía de estadísticas al servicio y devuelve un párrafo ejecutivo.
-- **Explicación de recomendación**: ejemplo precargado con una recomendación heurística que se reescribe en lenguaje natural.
-- **Análisis de forecast**: ejemplo con histórico y predicciones que se interpretan en clave operativa.
-- **Búsqueda semántica**: campo de texto libre que devuelve los espacios más similares al concepto consultado. Incluye un botón de reindexación accesible sólo para administradores.
-- **Chatbot**: cuadro de conversación que mantiene historial dentro de la sesión y muestra como etiquetas las herramientas que el modelo invocó para responder.
-
-### Integración futura
-
-La página `/asistente` es deliberadamente un sandbox. Una vez validado el comportamiento por feature, las funcionalidades migran a su contexto natural:
-
-| Feature | Destino sugerido |
-|---|---|
-| Resumen de estadísticas | Cabecera de `/statistics` |
-| Explicación de recomendación | Botón "¿Por qué?" en las tarjetas del recomendador |
-| Análisis de forecast | Sección de Predicción de demanda en `/statistics` |
-| Búsqueda semántica | Barra superior de `/rooms` |
-| Chatbot | Widget flotante global, persistente en `DashboardLayout` |
+El acceso a las funcionalidades respeta el rol del usuario. Las consultas que tocan datos sensibles (reservas globales de toda la organización, inventario completo, ranking de usuarios) sólo se ejecutan si el rol lo permite; en caso contrario el asistente responde explicando la limitación.
 
 ## 3. Detalle técnico
 
 ### Arquitectura
 
-La capa de IA se implementa como un microservicio Python independiente (`ai-svc`) que el backend Spring proxy-ea desde `/api/v1/ai/...`. La separación responde a tres razones: (1) el ecosistema de LangChain para RAG y agentes con herramientas es más maduro en Python, (2) mantiene al backend Java sin dependencias pesadas de cliente LLM, (3) clarifica la narrativa polyglot ya defendida en el sistema (Java para el plano transaccional, Python para inteligencia).
+La capa se implementa como un microservicio Python independiente llamado `ai-svc`. El backend Spring no llama a Google directamente; expone endpoints bajo `/api/v1/ai/...` que reenvían la petición al servicio Python (clase `AiService`). Esa separación tiene tres motivos: el ecosistema de IA generativa en Python es más rico y maduro (LangChain, integraciones con embeddings, agentes), el backend Java se mantiene liviano sin SDKs pesados, y se conserva la línea arquitectural ya presente con `ml-svc` (Java para lo transaccional, Python para lo analítico).
 
-A diferencia de `ml-svc` (batch, dormido entre invocaciones), `ai-svc` se mantiene siempre activo dado que las llamadas son sincrónicas desde la UI y el costo extra es marginal (~300 MB RAM ocupados).
+A diferencia de `ml-svc`, que es batch y duerme entre entrenamientos, `ai-svc` está siempre activo porque sus llamadas son sincrónicas y disparadas por el usuario.
 
 ```
-┌─────────────┐       ┌──────────────┐       ┌──────────────┐
-│  Frontend   │──────▶│ utec-backend │──────▶│   ai-svc     │
-│  /asistente │       │ AiController │       │   FastAPI    │
-└─────────────┘       └──────────────┘       └──────┬───────┘
-                                                    │
-                                  ┌─────────────────┼─────────────────┐
-                                  ▼                 ▼                 ▼
-                          ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-                          │   Gemini     │  │  Postgres    │  │   pgvector   │
-                          │  (text gen)  │  │ (queries)    │  │ (embeddings) │
-                          └──────────────┘  └──────────────┘  └──────────────┘
+┌─────────────────┐       ┌──────────────┐       ┌──────────────┐
+│  Frontend       │──────▶│ utec-backend │──────▶│   ai-svc     │
+│  (vistas con    │       │ AiController │       │   FastAPI    │
+│   widgets IA)   │       │              │       │              │
+└─────────────────┘       └──────────────┘       └──────┬───────┘
+                                                        │
+                                  ┌─────────────────────┼─────────────────────┐
+                                  ▼                     ▼                     ▼
+                          ┌──────────────┐      ┌──────────────┐      ┌──────────────────┐
+                          │ Cadena LLM:  │      │  Postgres    │      │ pgvector         │
+                          │ Gemini →     │      │ (lectura     │      │ (almacenamiento  │
+                          │ Groq         │      │  por tools)  │      │  de embeddings)  │
+                          └──────────────┘      └──────────────┘      └──────────────────┘
 ```
 
 ### Estructura del servicio
 
 ```
 ai/
-├── main.py            # FastAPI app, registra routers
-├── llm.py             # Fábrica de ChatModel y Embeddings vía LangChain
-├── db.py              # Acceso SQLAlchemy a Postgres compartido
-├── tools.py           # Tools del agente (sólo lectura)
+├── main.py            # Aplicación FastAPI y registro de rutas
+├── llm.py             # Selección de proveedor LLM y cadena de fallback
+├── db.py              # Acceso a Postgres (sólo lectura, salvo embeddings)
+├── tools.py           # Herramientas que el chatbot puede invocar
 ├── routes/
-│   ├── insights.py    # Endpoints de prompt simple (1.1, 1.2, 1.3)
-│   ├── search.py      # RAG de espacios
+│   ├── insights.py    # Resumen, explicación y análisis (un endpoint por feature)
+│   ├── search.py      # Búsqueda semántica de espacios
 │   ├── admin.py       # Reindexación de embeddings
-│   └── chat.py        # Chatbot con function calling
+│   └── chat.py        # Asistente conversacional
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
 ```
 
-### Endpoints
+### Endpoints y permisos
 
-| Método | Ruta backend | Ruta ai-svc | Permiso |
-|---|---|---|---|
-| POST | `/api/v1/ai/insights/stats-summary` | `/insights/stats-summary` | `estadisticas:ver_reservas` |
-| POST | `/api/v1/ai/insights/explain-recomendacion` | `/insights/explain-recomendacion` | `isAuthenticated` |
-| POST | `/api/v1/ai/insights/analyze-forecast` | `/insights/analyze-forecast` | `estadisticas:ver_reservas` |
-| GET | `/api/v1/ai/search/espacios?q&top` | `/search/espacios` | `isAuthenticated` |
-| POST | `/api/v1/ai/admin/reindex-embeddings` | `/admin/reindex-espacios` | `sistema:administrar` |
-| POST | `/api/v1/ai/chat` | `/chat` | `isAuthenticated` |
-
-El proxy Spring (`AiService`) sigue el mismo patrón que `ForecastingService`: si `ai-svc` no responde, devuelve un `Map` con la causa del fallo en lugar de propagar la excepción al cliente.
-
-### Modelo
-
-| Capacidad | Modelo | Dimensión |
+| Método | Ruta backend | Permiso |
 |---|---|---|
-| Text generation | `gemini-2.5-flash` | — |
-| Embeddings | `gemini-embedding-001` | 3072 |
+| POST | `/api/v1/ai/insights/stats-summary` | `estadisticas:ver_reservas` |
+| POST | `/api/v1/ai/insights/explain-recomendacion` | autenticado |
+| POST | `/api/v1/ai/insights/analyze-forecast` | `estadisticas:ver_reservas` |
+| GET  | `/api/v1/ai/search/espacios?q&top` | autenticado |
+| POST | `/api/v1/ai/admin/reindex-embeddings` | `sistema:administrar` |
+| POST | `/api/v1/ai/chat` | autenticado |
 
-Los nombres viven en variables de entorno (`LLM_MODEL`, `EMBEDDING_MODEL`) para no acoplar el código a versiones concretas.
+`AiService` actúa como proxy entre el backend Spring y el servicio Python. Si `ai-svc` está caído o tarda demasiado, devuelve una respuesta estructurada describiendo la causa en vez de propagar la excepción.
 
-### Abstracción de proveedor
+### Modelos en uso
 
-`ai/llm.py` decide en tiempo de arranque qué cliente instanciar según la variable `LLM_PROVIDER`. Por defecto usa Gemini; cambiar a otro proveedor compatible con LangChain (Groq, OpenAI, Anthropic) requiere modificar esa única variable. El resto del código del servicio nunca importa el SDK del proveedor directamente.
+| Capacidad | Modelo primario | Modelo de respaldo | Dimensión |
+|---|---|---|---|
+| Generación de texto | `gemini-2.5-flash` (Google) | `llama-3.3-70b-versatile` (Groq) | — |
+| Embeddings | `gemini-embedding-001` (Google) | sin respaldo | 3072 |
 
-La limitación actual es que sólo Gemini ofrece embeddings dentro del free tier; si se cambia el proveedor para text generation, las funcionalidades de RAG y chatbot continúan dependiendo de Gemini para los embeddings, lo cual está explicitado tanto en código como en este documento.
+Los nombres de modelo viven en variables de entorno para no acoplar el código a una versión concreta.
 
-### RAG (búsqueda semántica)
+### Multi-proveedor con fallback automático
 
-El pipeline de indexación lee todos los espacios activos y construye para cada uno un texto sintético del estilo `"Espacio Sala 203. Capacidad 30 personas. Tipo Salón con proyector. Edificio A. Estado DISPONIBLE."`. Ese texto se transforma en un vector de 3072 dimensiones con `gemini-embedding-001` y se persiste en la tabla `ai_embedding_espacio` mediante `UPSERT` por `espacio_id`.
+El módulo `ai/llm.py` no construye un único cliente LLM, sino una **cadena ordenada de proveedores**. La variable `LLM_PROVIDERS` lista los proveedores por prioridad (por defecto `gemini,groq`). El primero es el primario; los siguientes son respaldos. Si un proveedor no tiene su clave configurada se descarta silenciosamente al iniciar el servicio.
 
-La búsqueda usa el operador `<=>` (distancia coseno) de pgvector. El índice `ivfflat` con `lists=50` ofrece una buena relación tiempo-calidad para volúmenes del orden de cientos de espacios; al crecer significativamente conviene revisar el parámetro.
+Cuando llega una solicitud al endpoint `/chat`, el servicio prueba los proveedores en orden: construye un agente con el primero e intenta resolver la consulta; si falla (típicamente por agotamiento de la cuota gratuita), captura el error y reintenta con el siguiente. La respuesta incluye un campo `provider` que indica quién respondió finalmente, lo que facilita auditar el comportamiento sin abrir logs.
+
+La motivación de esta arquitectura es práctica: el nivel gratuito de Gemini para el modelo conversacional se agota rápido, y disponer de un segundo proveedor permite sostener la demo o la operación sin necesidad de activar un plan de pago. Groq ofrece un nivel gratuito generoso sin requisito de tarjeta de crédito, lo que lo hace ideal como respaldo.
+
+Para que el fallback se active rápido, los clientes de ambos proveedores están configurados con un único intento antes de propagar el error. Los SDK oficiales traen reintentos internos que esperan decenas de segundos entre intentos; deshabilitarlos asegura que un 429 caiga al respaldo en menos de un segundo.
+
+Los embeddings son un caso aparte: ningún proveedor con nivel gratuito ofrece embeddings comparables, por lo que dependen exclusivamente de Gemini. La cuota de embeddings es independiente y mucho más amplia que la de generación de texto, así que en la práctica esta dependencia no compromete la búsqueda semántica aunque el chat haya agotado su cuota.
+
+### Búsqueda semántica
+
+El pipeline de indexación recorre los espacios activos y, para cada uno, arma un texto descriptivo del estilo `"Espacio Sala 203. Capacidad 30 personas. Tipo Salón con proyector. Edificio A. Estado DISPONIBLE."`. Ese texto se transforma en un vector de 3072 dimensiones con el modelo de embeddings y se guarda en la tabla `ai_embedding_espacio`. La indexación es manual (botón de administrador) y se actualiza completa cada vez que se ejecuta.
+
+La búsqueda calcula el embedding de la consulta del usuario en el momento y la compara contra los vectores almacenados mediante distancia coseno (operador `<=>` de pgvector). La tabla no lleva índice vectorial porque los índices aproximados de pgvector aceptan hasta 2.000 dimensiones, y este modelo devuelve 3.072. Para el volumen de espacios del sistema el costo de un escaneo secuencial es marginal (decenas de milisegundos por consulta).
 
 ### Esquema `ai_embedding_espacio`
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| id | `BIGSERIAL` | PK |
-| espacio_id | `BIGINT UNIQUE` | clave lógica al espacio (sin FK declarada para tolerar borrados) |
-| texto_indexado | `TEXT` | texto exacto que se embedió, útil para debug y reindex |
+| id | `BIGSERIAL` | clave primaria |
+| espacio_id | `BIGINT UNIQUE` | referencia lógica al espacio |
+| texto_indexado | `TEXT` | texto exacto que se embedió |
 | embedding | `vector(3072)` | salida del modelo de embeddings |
 | model_version | `VARCHAR(50)` | identifica el modelo que generó el vector |
 | updated_at | `TIMESTAMPTZ` | momento de la última indexación |
 
-Migración: `023-create-ai-tables.xml`.
+Migración asociada: `023-create-ai-tables.xml`.
 
-### Chatbot con function calling
+### Asistente conversacional
 
-Implementado con `create_tool_calling_agent` de LangChain. Gemini decide cuáles de las herramientas registradas en `tools.py` debe invocar y con qué parámetros, hasta un máximo de cuatro iteraciones por consulta.
+El asistente está construido como un agente de LangChain que decide cuándo y con qué parámetros invocar una herramienta. Las herramientas son funciones Python registradas en `tools.py`; cada una expone una operación de lectura sobre la base de datos. El agente recibe un prompt de sistema que le explica su rol, el contexto del usuario (rol, identificador) y la lista de herramientas disponibles, y resuelve en hasta cuatro iteraciones por consulta.
 
-Las herramientas disponibles son todas de lectura:
+Las herramientas disponibles cubren los casos de uso más comunes:
 
-- `buscar_mis_reservas(desde, hasta)`
-- `buscar_espacios_disponibles(fecha, hora_inicio, hora_fin, capacidad_min)`
-- `obtener_estadistica_global(tipo, dias)`
-- `buscar_espacio_semantico(query, top)`
+| Herramienta | Visible para | Propósito |
+|---|---|---|
+| `obtener_fecha_actual` | todos | resuelve referencias como "hoy" o "esta semana" |
+| `buscar_mis_reservas` | todos | reservas del usuario autenticado en un rango |
+| `buscar_espacios_disponibles` | todos | espacios libres en un slot horario |
+| `buscar_espacio_semantico` | todos | búsqueda semántica de espacios |
+| `detalle_espacio` | todos | datos completos de un espacio |
+| `listar_inventario_de_espacio` | todos | inventario de un espacio puntual |
+| `listar_edificios` | todos | catálogo de edificios |
+| `listar_carreras` | todos | catálogo de carreras |
+| `obtener_estadistica_global` | todos | ocupación, top de espacios o reservas por carrera |
+| `buscar_reservas_globales` | administrador, analista | reservas de toda la organización |
+| `top_usuarios_reservadores` | administrador, analista | ranking de usuarios por cantidad de reservas |
+| `buscar_inventario_global` | administrador, mantenimiento | inventario agregado por tipo |
+| `items_en_mantenimiento` | administrador, mantenimiento | items en estado de mantenimiento |
 
-La identidad del usuario nunca se pasa a través del prompt: el backend Spring la inyecta en el `payload` reescribiendo `usuario_id` y `rol` con los valores derivados del JWT, y el servicio Python expone el `usuario_id` resultante a las herramientas a través de un `ContextVar` (`set_usuario_actual`). De este modo, aunque el agente decida invocar `buscar_mis_reservas`, las filas que obtiene están siempre filtradas por el usuario autenticado.
+La identidad del usuario nunca se toma del prompt: el backend Spring la inyecta a partir del token JWT al reenviar la solicitud, y el servicio Python la expone a las herramientas mediante una variable de contexto. De este modo, aunque el modelo decida invocar `buscar_mis_reservas`, las filas devueltas son siempre del usuario autenticado.
 
-La respuesta devuelve además la lista de tools invocadas, que la UI renderiza como etiquetas para que el usuario vea sobre qué datos basó su respuesta el modelo.
+El control de acceso por rol se hace dentro de cada herramienta restringida: si el rol no autoriza, la herramienta lanza un error tipado que LangChain entrega al agente como observación. El agente entonces explica al usuario, en lenguaje natural, que no tiene permiso para esa consulta y, si corresponde, ofrece una alternativa. El cliente nunca recibe un mensaje técnico ni un código HTTP de error.
+
+La respuesta al frontend incluye la lista de herramientas que el modelo invocó, que la interfaz renderiza como etiquetas debajo de cada mensaje para que el usuario vea sobre qué datos basó su respuesta.
 
 ### Prompts
 
-Los prompts del sistema viven en el código fuente (`routes/insights.py` y `routes/chat.py`), no en archivos externos, porque son chicos y forman parte de la lógica de cada feature. Pautas comunes:
-
-- Tono profesional en español rioplatense.
-- Salida acotada (2–4 oraciones por defecto).
-- Prohibición explícita de inventar datos.
+Los prompts viven dentro del código (en `routes/insights.py` y `routes/chat.py`), no en archivos externos, porque son cortos y conviven con la lógica de cada feature. Las pautas comunes son: tono profesional en español rioplatense, respuestas acotadas (dos a cuatro oraciones por defecto), y prohibición explícita de inventar datos cuando una herramienta no devuelve resultados.
 
 ## 4. Métricas y evidencia
 
-| Indicador | Valor inicial |
+| Indicador | Valor observado |
 |---|---|
-| Modelos en uso | `gemini-2.5-flash`, `gemini-embedding-001` |
-| Cuota Gemini consumida | Dentro del free tier (1.500 req/día) |
-| Costo mensual | USD 0 estimado |
-| Dimensión de embeddings | 3072 |
-| Cantidad de espacios indexados | Variable según seed/datos productivos; consultar `SELECT count(*) FROM ai_embedding_espacio` |
-| Latencia chat (con 1–2 tools) | 2–6 segundos en promedio |
-| Latencia stats-summary | 1–3 segundos en promedio |
+| Modelos en uso | `gemini-2.5-flash`, `llama-3.3-70b-versatile`, `gemini-embedding-001` |
+| Cuota gratuita aprovechada | nivel gratuito de Google + nivel gratuito de Groq |
+| Costo mensual | 0 USD estimado en operación de demostración |
+| Dimensión de embeddings | 3.072 |
+| Espacios indexados | depende del catálogo; consultable con `SELECT count(*) FROM ai_embedding_espacio` |
+| Latencia chat (con encadenamiento de 1–2 herramientas) | 2 a 6 segundos |
+| Latencia resumen ejecutivo | 1 a 3 segundos |
+| Disponibilidad del chat ante agotamiento de cuota Gemini | sostenida vía respaldo Groq, transparente al usuario |
 
-## 5. Riesgos, limitaciones y trabajo futuro
+## 5. Riesgos y limitaciones
 
-- **Reducción del free tier de Gemini**: Google ha venido recortando cuotas durante 2026. La abstracción vía LangChain reduce el costo de cambio de proveedor, pero la dependencia para embeddings es real en el corto plazo.
-- **Memoria del chatbot**: el historial se mantiene únicamente del lado del cliente, dentro de la sesión activa. No hay persistencia entre sesiones; agregarla requeriría una tabla `ai_conversacion` y manejo de sumarización.
-- **Reindexación de embeddings**: hoy es completa (reescribe la totalidad de `ai_embedding_espacio`). Para volúmenes mayores conviene un esquema incremental disparado por cambios en `espacio`.
-- **Tools sólo lectura**: el chatbot puede consultar pero no operar. Una eventual incorporación de herramientas de escritura (crear reserva, cancelar) debe acompañarse de confirmación explícita en la UI y un patrón de propuesta-aprobación.
-- **Caché**: por simplicidad inicial las respuestas no se cachean. Un cache Redis sobre `stats-summary` y `analyze-forecast` (donde la entrada cambia pocas veces al día) reduciría llamadas al modelo en escenarios de uso real.
+- **Dependencia de proveedores externos**: la capa requiere conectividad a Google y Groq. Una caída simultánea de ambos proveedores deja al chat inoperativo. La cadena de respaldo mitiga incidentes individuales pero no caídas concurrentes.
+- **Embeddings sin respaldo**: la búsqueda semántica depende exclusivamente del modelo de embeddings de Google. Si Google interrumpe el servicio, la búsqueda semántica queda inhabilitada hasta su reposición, aunque el resto de las funcionalidades sigue operativa.
+- **Memoria del asistente acotada a la sesión**: el historial conversacional se mantiene del lado del cliente y se pierde al cerrar el navegador. No hay persistencia entre sesiones.
+- **Herramientas de sólo lectura**: el asistente puede consultar pero no operar sobre el sistema. Decisión deliberada de seguridad: cualquier operación que modifique datos se realiza por las vistas operativas con sus controles habituales.
+- **Reducción de cuotas gratuitas**: los niveles gratuitos de los proveedores LLM han sido recortados durante 2026. La cadena multi-proveedor reduce la exposición, pero el comportamiento del sistema bajo carga sostenida en un entorno productivo requeriría evaluar planes de pago o proveedores adicionales.

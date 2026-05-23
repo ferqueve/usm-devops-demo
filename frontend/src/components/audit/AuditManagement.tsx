@@ -46,9 +46,9 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
-  CREATE: { label: 'Crear', badge: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500' },
-  UPDATE: { label: 'Actualizar', badge: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
-  DELETE: { label: 'Eliminar', badge: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' },
+  CREATE: { label: 'Crear', badge: 'bg-utec-green text-white border-utec-green', dot: 'bg-utec-green' },
+  UPDATE: { label: 'Actualizar', badge: 'bg-utec-blue text-white border-utec-blue', dot: 'bg-utec-blue' },
+  DELETE: { label: 'Eliminar', badge: 'bg-utec-red text-white border-utec-red', dot: 'bg-utec-red' },
 };
 
 function getAccionBadge(accion: AuditLog['accion']) {
@@ -245,15 +245,15 @@ export default function AuditManagement() {
             <div className="px-4 pt-4">
               <div className="overflow-x-auto border rounded-lg overflow-hidden">
             <Table>
-              <TableHeader style={{ backgroundColor: '#525961' }}>
+              <TableHeader className="bg-utec-dark">
                 <TableRow className="hover:bg-transparent border-b-0">
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[90px]">ID</TableHead>
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[140px]">Entidad</TableHead>
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[100px]">ID Entidad</TableHead>
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[130px]">Acción</TableHead>
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[200px]">Usuario</TableHead>
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[200px]">Fecha/Hora</TableHead>
-                  <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right w-[80px]">Detalles</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 w-[90px]">ID</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 min-w-[140px]">Entidad</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 w-[100px]">ID Entidad</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 w-[130px]">Acción</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 min-w-[200px]">Usuario</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 min-w-[200px]">Fecha/Hora</TableHead>
+                  <TableHead className="h-10 bg-utec-dark text-white/70 text-right w-[80px]">Detalles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

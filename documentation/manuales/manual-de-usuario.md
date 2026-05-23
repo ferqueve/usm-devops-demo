@@ -3392,33 +3392,33 @@ No existe una opción para ocultarlas, pero se pueden ignorar sin que afecte el 
 
 # 16-bis. ASISTENTE DE INTELIGENCIA ARTIFICIAL
 
-El sistema cuenta con un asistente de inteligencia artificial generativa, accesible desde el menú lateral con el ítem **Asistente IA**. Está disponible para los roles **Administrador** y **Analista**. La página agrupa cinco funcionalidades pensadas para que el usuario obtenga insights y consultas en lenguaje natural, sin necesidad de armar filtros complejos en pantalla.
+El sistema integra un asistente de inteligencia artificial generativa que aparece distribuido en las pantallas donde resulta más útil, en lugar de concentrarse en una página aparte. Las funcionalidades están disponibles según el rol del usuario.
 
-## 16-bis.1 Resumen automático de estadísticas
+## 16-bis.1 Resumen ejecutivo de estadísticas
 
-Al presionar **Generar resumen**, el sistema toma una fotografía del estado actual del sistema (ocupación, reservas, distribución por carreras, etc.) y devuelve un párrafo ejecutivo de tres o cuatro oraciones en español, listo para incluir como introducción al dashboard de estadísticas.
+En la pantalla de **Estadísticas**, en la parte superior, hay un panel destacado con un botón **Generar resumen**. Al presionarlo, el sistema interpreta el estado actual de las reservas y devuelve un párrafo de tres o cuatro oraciones describiendo la situación general, los hallazgos relevantes y posibles señales de alerta. Se puede regenerar las veces que se quiera.
 
 ## 16-bis.2 Explicación de recomendaciones
 
-Convierte una recomendación de espacio en un texto natural y cálido para el usuario. En lugar de leer "puntaje 0.85, razón: disponibilidad alta los jueves", el sistema redacta una frase como "Te conviene la Sala 203: suele estar libre los jueves y otras personas de tu carrera la usan habitualmente".
+Cada tarjeta de recomendación de espacio incluye un botón **Explicar con IA**. Al presionarlo, el sistema reescribe la razón técnica de la recomendación en un texto natural. En lugar de leer "puntaje 0.85, razón: disponibilidad alta los jueves", aparece una frase como "Te conviene la Sala 203: suele estar libre los jueves y otras personas de tu carrera la usan habitualmente".
 
 ## 16-bis.3 Análisis del forecast de demanda
 
-Toma las predicciones del modelo de Machine Learning y genera un análisis accionable: tendencia general, picos esperados con fecha aproximada y recomendaciones operativas (por ejemplo, "considerar liberar más espacios el próximo martes").
+Dentro del bloque de **Predicción de demanda** de la pantalla de Estadísticas, el botón **Analizar** genera una lectura natural de las predicciones: tendencia general, picos esperados con fecha aproximada y sugerencias operativas (por ejemplo, "considerar liberar más espacios el próximo martes").
 
 ## 16-bis.4 Búsqueda semántica de espacios
 
-Permite buscar espacios escribiendo la necesidad en lenguaje natural, sin tener que conocer nombres exactos. Por ejemplo, "salón grande con proyector para un taller de 30 personas" devuelve los espacios cuyas características más se parecen al concepto consultado, ordenados por similitud. La búsqueda funciona aunque los términos exactos no coincidan con los nombres registrados.
+En la pantalla de **Espacios**, junto al buscador habitual, está el botón **Buscar con IA**. Permite describir lo que se necesita en lenguaje natural, sin tener que conocer el nombre exacto del espacio. Por ejemplo, escribir "salón grande con proyector para un taller de 30 personas" devuelve los espacios cuyas características más se parecen al concepto consultado, ordenados por afinidad y con acceso directo al detalle de cada uno.
 
-Los administradores cuentan con un botón **Reindexar embeddings** que actualiza el índice semántico cuando se agregan o modifican espacios.
+## 16-bis.5 Asistente conversacional
 
-## 16-bis.5 Chatbot
+En la esquina inferior derecha de toda pantalla autenticada aparece un botón **Asistente**. Al pulsarlo se abre una ventana de chat donde se puede consultar al sistema en lenguaje natural sobre reservas propias, espacios disponibles, inventario y estadísticas. Entiende preguntas como "¿tengo reservas el jueves?", "buscame un salón para 50 personas el viernes a las 14" o "¿cuál es la ocupación de la última semana?".
 
-Un asistente conversacional al que se le puede preguntar por las propias reservas, espacios disponibles o estadísticas del sistema. El asistente entiende preguntas como "¿tengo reservas el jueves?", "buscame un salón para 50 personas el viernes a las 14" o "¿cuál es la ocupación de la última semana?". Detrás escena consulta directamente la base de datos a través de un conjunto acotado de herramientas de sólo lectura, por lo que las respuestas reflejan información real y no inventada.
+Por seguridad, el asistente nunca puede acceder a datos de otros usuarios: aunque se le pida explícitamente, sólo opera sobre las reservas y configuraciones del usuario autenticado. Tampoco puede crear, modificar ni cancelar reservas, ni realizar ninguna operación de escritura: sólo consultar.
 
-Por seguridad, el asistente nunca puede acceder a datos de otros usuarios: aunque se le pida explícitamente, sólo opera sobre las reservas y configuraciones del usuario autenticado. Tampoco puede crear, modificar ni cancelar reservas; sólo consultar.
+Las consultas que requieren información sensible (por ejemplo, ranking de usuarios o reservas globales) sólo se ejecutan si el rol del usuario lo permite; en caso contrario el asistente lo explica con palabras y, cuando corresponde, sugiere una alternativa.
 
-Las consultas al asistente pueden tomar de dos a seis segundos según la complejidad de la pregunta. Bajo cada respuesta el sistema muestra etiquetas con las herramientas que utilizó para responder, de modo que el usuario sepa de dónde salió la información.
+Las respuestas pueden tomar de dos a seis segundos según la complejidad de la pregunta. Debajo de cada respuesta el sistema muestra etiquetas con las herramientas que el asistente utilizó para responder, de modo que el usuario sepa de dónde salió la información.
 
 > Para detalles técnicos de la capa de IA (modelos utilizados, abstracción de proveedor, esquema de embeddings, manejo de seguridad), ver la ficha técnica `documentation/fichas-tecnicas/capa-ia-generativa.md`.
 

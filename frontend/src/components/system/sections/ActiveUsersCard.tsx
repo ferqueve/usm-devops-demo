@@ -1,6 +1,4 @@
 import { memo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, User, Clock } from 'lucide-react';
 import type { ActiveUsersStats } from '@/lib/types';
@@ -10,135 +8,117 @@ interface ActiveUsersCardProps {
   data: ActiveUsersStats | null;
 }
 
+const ROLE_BADGE_COLOR: Record<string, string> = {
+  ADMIN: 'bg-purple-100 text-purple-800 border-purple-200',
+  ANALISTA: 'bg-blue-100 text-blue-800 border-blue-200',
+  DOCENTE: 'bg-green-100 text-green-800 border-green-200',
+  ESTUDIANTE: 'bg-gray-100 text-gray-800 border-gray-200',
+  EXTERNO: 'bg-orange-100 text-orange-800 border-orange-200',
+  MANTENIMIENTO: 'bg-amber-100 text-amber-800 border-amber-200',
+};
+
+function getRelativeTime(lastActivity: string): string {
+  const now = new Date();
+  const activityDate = new Date(lastActivity);
+  const diffSeconds = Math.floor((now.getTime() - activityDate.getTime()) / 1000);
+  if (diffSeconds < 60) return `hace ${diffSeconds} segundo${diffSeconds === 1 ? '' : 's'}`;
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `hace ${diffMinutes} minuto${diffMinutes === 1 ? '' : 's'}`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  return `hace ${diffHours} hora${diffHours === 1 ? '' : 's'}`;
+}
+
+function getActivityColor(lastActivity: string): string {
+  const diffMinutes = Math.floor((Date.now() - new Date(lastActivity).getTime()) / 60000);
+  if (diffMinutes < 1) return 'text-utec-green';
+  if (diffMinutes < 3) return 'text-utec-blue';
+  if (diffMinutes < 5) return 'text-utec-yellow';
+  return 'text-muted-foreground';
+}
+
+interface SectionHeaderProps {
+  totalActive?: number;
+}
+
+function SectionHeader({ totalActive }: Readonly<SectionHeaderProps>) {
+  return (
+    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+      <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
+      <Users className="h-3.5 w-3.5 text-white/70 shrink-0" />
+      <h3 className="text-sm font-semibold tracking-tight truncate">Usuarios Activos</h3>
+      {typeof totalActive === 'number' && (
+        <span className="ml-auto text-xs text-white/70 tabular-nums">
+          {totalActive} {totalActive === 1 ? 'usuario' : 'usuarios'}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUsersCardProps) {
-  
-  // Función para obtener el tiempo relativo desde la última actividad
-  const getRelativeTime = (lastActivity: string): string => {
-    const now = new Date();
-    const activityDate = new Date(lastActivity);
-    const diffMs = now.getTime() - activityDate.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-    const diffSeconds = Math.floor(diffMs / 1000);
-
-    if (diffSeconds < 60) {
-      return `hace ${diffSeconds} segundo${diffSeconds === 1 ? '' : 's'}`;
-    } else if (diffMinutes < 60) {
-      return `hace ${diffMinutes} minuto${diffMinutes === 1 ? '' : 's'}`;
-    } else {
-      const diffHours = Math.floor(diffMinutes / 60);
-      return `hace ${diffHours} hora${diffHours === 1 ? '' : 's'}`;
-    }
-  };
-
-  // Función para obtener el color según qué tan reciente fue la actividad
-  const getActivityColor = (lastActivity: string): string => {
-    const now = new Date();
-    const activityDate = new Date(lastActivity);
-    const diffMinutes = Math.floor((now.getTime() - activityDate.getTime()) / 60000);
-
-    if (diffMinutes < 1) return 'text-green-600';
-    if (diffMinutes < 3) return 'text-blue-600';
-    if (diffMinutes < 5) return 'text-yellow-600';
-    return 'text-gray-600';
-  };
-
-  // Función para obtener el color del badge por rol
-  const getRoleBadgeColor = (rol: string): string => {
-    const colors: Record<string, string> = {
-      'ADMIN': 'bg-purple-100 text-purple-800 border-purple-200',
-      'ANALISTA': 'bg-blue-100 text-blue-800 border-blue-200',
-      'DOCENTE': 'bg-green-100 text-green-800 border-green-200',
-      'ESTUDIANTE': 'bg-gray-100 text-gray-800 border-gray-200',
-      'EXTERNO': 'bg-orange-100 text-orange-800 border-orange-200',
-    };
-    return colors[rol] || 'bg-gray-100 text-gray-800 border-gray-200';
-  };
-
   if (!data) {
     return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-utec-green" />
-            Usuarios Activos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <SectionHeader />
+        <div className="p-4">
+          <p className="text-muted-foreground text-center py-4 text-sm">
             Cargando información de usuarios activos...
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="shadow-card h-full flex flex-col">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-utec-green" />
-          Usuarios Activos
-          <Badge variant="secondary" className="ml-auto">
-            {data.totalActiveUsers} {data.totalActiveUsers === 1 ? 'usuario' : 'usuarios'}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
+    <div className="rounded-xl border bg-card overflow-hidden">
+      <SectionHeader totalActive={data.totalActiveUsers} />
+      <div className="p-4">
         {data.totalActiveUsers === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <User className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No hay usuarios activos en este momento</p>
+          <div className="text-center py-6 text-muted-foreground">
+            <User className="h-10 w-10 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No hay usuarios activos en este momento</p>
             <p className="text-xs mt-1">(últimos 5 minutos)</p>
           </div>
         ) : (
-          <ScrollArea className="h-[400px] pr-4">
-            <div className="space-y-3">
+          <ScrollArea className="max-h-[170px] pr-2">
+            <div className="divide-y">
               {data.activeUsers.map((user, index) => (
                 <div
                   key={`${user.email}-${index}`}
-                  className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors duration-150"
+                  className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0"
                 >
-                  {/* Avatar con iniciales */}
                   <AvatarInitials
                     name={`${user.nombre} ${user.apellido}`}
                     email={user.email}
-                    size="md"
+                    size="sm"
                     className="flex-shrink-0"
                   />
-
-                  {/* Información del usuario */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-sm truncate">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm truncate">
                         {user.nombre} {user.apellido}
                       </p>
-                      <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-md border ${getRoleBadgeColor(user.rol)}`}>
+                      <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-semibold rounded border ${ROLE_BADGE_COLOR[user.rol] || ROLE_BADGE_COLOR.ESTUDIANTE}`}>
                         {user.rol}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mb-2">
+                    <p className="text-xs text-muted-foreground truncate">
                       {user.email}
                     </p>
-                    <div className={`flex items-center gap-1 text-xs ${getActivityColor(user.lastActivity)}`}>
-                      <Clock className="h-3 w-3" />
-                      <span className="font-medium">
-                        {getRelativeTime(user.lastActivity)}
-                      </span>
-                    </div>
+                  </div>
+                  <div className={`flex items-center gap-1 text-xs ${getActivityColor(user.lastActivity)} shrink-0`}>
+                    <Clock className="h-3 w-3" />
+                    <span className="font-medium whitespace-nowrap">{getRelativeTime(user.lastActivity)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </ScrollArea>
         )}
-
-        <div className="mt-4 pt-3 border-t">
-          <p className="text-xs text-muted-foreground text-center">
-            Actualizado automáticamente cada 2 minutos
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+        <p className="text-[11px] text-muted-foreground text-center mt-3 pt-2 border-t">
+          Actualizado automáticamente cada 2 minutos
+        </p>
+      </div>
+    </div>
   );
 });
-

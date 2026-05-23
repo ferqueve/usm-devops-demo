@@ -703,13 +703,13 @@ export default function UserManagement() {
               <div className="hidden xl:block px-4 pt-2">
                 <div className="border rounded-lg overflow-hidden">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-utec-dark">
                       <TableRow className="hover:bg-transparent border-b-0">
-                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[200px]">Email</TableHead>
-                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] min-w-[150px]">Nombre</TableHead>
-                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Rol</TableHead>
-                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-center">Estado</TableHead>
-                        <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
+                        <TableHead className="h-10 text-white/80 min-w-[200px]">Email</TableHead>
+                        <TableHead className="h-10 text-white/80 min-w-[150px]">Nombre</TableHead>
+                        <TableHead className="h-10 text-white/80">Rol</TableHead>
+                        <TableHead className="h-10 text-white/80 text-center">Estado</TableHead>
+                        <TableHead className="h-10 text-white/80 text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

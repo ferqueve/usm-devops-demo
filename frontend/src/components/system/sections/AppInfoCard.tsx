@@ -1,6 +1,5 @@
 import { memo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 import { Server, Info } from 'lucide-react';
 import type { AppInfo } from '@/lib/types/actuator';
 
@@ -8,43 +7,51 @@ interface AppInfoCardProps {
   info: AppInfo | null | undefined;
 }
 
-export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps) {
+interface RowProps {
+  label: string;
+  children: React.ReactNode;
+}
+
+function Row({ label, children }: Readonly<RowProps>) {
   return (
-    <Card className="shadow-card h-full flex flex-col">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Server className="h-5 w-5 text-utec-blue" />
-          Información de la Aplicación
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1">
-        {info?.app ? (
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground font-medium">Nombre:</span>
-              <span className="font-semibold text-utec-blue">{info.app.name}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground font-medium">Versión:</span>
-              <Badge variant="outline">{info.app.version}</Badge>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground font-medium">Entorno:</span>
-              <Badge variant={info.app.environment === 'production' ? 'destructive' : 'default'}>
-                {info.app.environment}
+    <div className="flex justify-between items-center py-2 text-sm border-b last:border-b-0">
+      <span className="text-muted-foreground">{label}</span>
+      <div className="font-medium text-right">{children}</div>
+    </div>
+  );
+}
+
+export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps) {
+  const app = info?.app;
+
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+        <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-blue" aria-hidden />
+        <Server className="h-3.5 w-3.5 text-white/70 shrink-0" />
+        <h3 className="text-sm font-semibold tracking-tight truncate">Información de la Aplicación</h3>
+      </div>
+      <div className="p-4">
+        {app ? (
+          <div className="space-y-0">
+            <Row label="Nombre">
+              <span className="text-utec-blue">{app.name}</span>
+            </Row>
+            <Row label="Versión">
+              <Badge variant="outline">{app.version}</Badge>
+            </Row>
+            <Row label="Entorno">
+              <Badge variant={app.environment === 'production' ? 'destructive' : 'default'}>
+                {app.environment}
               </Badge>
-            </div>
-            {info.app.description && (
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-muted-foreground font-medium">Descripción:</span>
-                <span className="font-medium text-right text-xs">{info.app.description}</span>
-              </div>
+            </Row>
+            {app.description && (
+              <Row label="Descripción">
+                <span className="text-xs">{app.description}</span>
+              </Row>
             )}
-            {info.app['java.version'] && (
-              <div className="flex justify-between items-center py-2">
-                <span className="text-muted-foreground font-medium">Java:</span>
-                <span className="font-medium">{info.app['java.version']}</span>
-              </div>
+            {app['java.version'] && (
+              <Row label="Java">{app['java.version']}</Row>
             )}
           </div>
         ) : (
@@ -55,7 +62,7 @@ export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps)
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });

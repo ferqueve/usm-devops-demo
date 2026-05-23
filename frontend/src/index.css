@@ -35,6 +35,18 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Colores institucionales UTEC (expuestos como tokens para que variantes como hover:bg-utec-* funcionen) */
+  --color-utec-green: #86bb4c;
+  --color-utec-yellow: #F6CA21;
+  --color-utec-orange: #DE7A27;
+  --color-utec-red: #DF2B31;
+  --color-utec-blue: #184897;
+  --color-utec-cyan: #00c7ff;
+  --color-utec-purple: #9333ea;
+  --color-utec-dark: #343a40;
+  --color-utec-dark-lighter: #4a5057;
+  --color-utec-dark-subtle: #3a4046;
 }
 
 /* Variables CSS globales */

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import {
   DropdownMenu,
@@ -671,62 +670,59 @@ export default function InventoryManagement() {
         </div>
       </div>
 
-      {/* Estadísticas */}
-      <InventoryStatsCards statistics={statistics} />
-
       {/* Recomendaciones de Mantenimiento (solo para usuarios con permiso inventario:editar) */}
       {canManageInventory && <MantenimientoRecomendaciones />}
 
       {/* Recomendaciones de Reasignación (solo para usuarios con permiso inventario:editar) */}
       {canManageInventory && reasignaciones.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ArrowRightLeft className="h-5 w-5 text-blue-600" />
-              Reasignaciones Recomendadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {reasignaciones.slice(0, 5).map((rec) => (
-                <button
-                  type="button"
-                  key={rec.id}
-                  className="w-full text-left flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer"
-                  onClick={() => {
-                    if (rec.inventarioItemId) {
-                      // Filtrar por itemId
-                      setFilters(prev => ({ ...prev, itemId: rec.inventarioItemId }));
-                    } else if (rec.espacioId) {
-                      navigate(`/rooms/${rec.espacioId}`);
-                    }
-                  }}
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{rec.razon}</p>
-                    {rec.metadata && (() => {
-                      const meta = rec.metadata;
-                      const itemNombre = meta.itemNombre as string | undefined;
-                      const espacioActual = meta.espacioActual as string | undefined;
-                      const espacioRecomendado = meta.espacioRecomendado as string | undefined;
-                      return (itemNombre || espacioActual || espacioRecomendado) ? (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {itemNombre && `Item: ${itemNombre}`}
-                          {espacioActual && ` • Espacio actual: ${espacioActual}`}
-                          {espacioRecomendado && ` • Espacio recomendado: ${espacioRecomendado}`}
-                        </p>
-                      ) : null;
-                    })()}
-                  </div>
-                  <span className="text-xs font-medium text-primary ml-2">
-                    {(rec.puntaje * 100).toFixed(0)}%
-                  </span>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+            <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
+            <ArrowRightLeft className="h-4 w-4 text-utec-blue" />
+            <h3 className="text-sm font-semibold tracking-tight">Reasignaciones recomendadas</h3>
+            <span className="text-xs text-white/60 ml-auto">{reasignaciones.length} recomendaciones</span>
+          </div>
+          <div className="divide-y divide-border/60">
+            {reasignaciones.slice(0, 5).map((rec) => (
+              <button
+                type="button"
+                key={rec.id}
+                className="w-full text-left flex items-center justify-between px-4 py-2.5 text-sm hover:bg-muted/40 transition-colors cursor-pointer"
+                onClick={() => {
+                  if (rec.inventarioItemId) {
+                    setFilters(prev => ({ ...prev, itemId: rec.inventarioItemId }));
+                  } else if (rec.espacioId) {
+                    navigate(`/rooms/${rec.espacioId}`);
+                  }
+                }}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{rec.razon}</p>
+                  {rec.metadata && (() => {
+                    const meta = rec.metadata;
+                    const itemNombre = meta.itemNombre as string | undefined;
+                    const espacioActual = meta.espacioActual as string | undefined;
+                    const espacioRecomendado = meta.espacioRecomendado as string | undefined;
+                    return (itemNombre || espacioActual || espacioRecomendado) ? (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {itemNombre && `Item: ${itemNombre}`}
+                        {espacioActual && ` • Espacio actual: ${espacioActual}`}
+                        {espacioRecomendado && ` • Espacio recomendado: ${espacioRecomendado}`}
+                      </p>
+                    ) : null;
+                  })()}
+                </div>
+                <span className="text-xs font-semibold text-utec-blue ml-2 tabular-nums">
+                  {(rec.puntaje * 100).toFixed(0)}%
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
+
+      {/* Estadísticas */}
+      <InventoryStatsCards statistics={statistics} />
 
       {/* Inventario con filtros embebidos */}
       <div className="border rounded-lg shadow-card overflow-hidden bg-white">

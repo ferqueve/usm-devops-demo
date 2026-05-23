@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardHeader } from './DashboardHeader';
+import { AiChatWidget } from '@/components/ai/AiChatWidget';
 import { useAuth } from "@/hooks/useAuth";
 import type { ReactNode } from 'react';
 
@@ -94,6 +95,7 @@ export const DashboardLayout = memo(function DashboardLayout({ children, title, 
           </main>
         </div>
       </SidebarInset>
+      <AiChatWidget />
     </SidebarProvider>
   );
 });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { RecomendacionPanel } from "./RecomendacionPanel";
+import { RecomendacionList } from "./RecomendacionList";
 import { Card, CardContent } from "@/components/ui/card";
-import { Wrench, AlertTriangle, Package, Loader2 } from "lucide-react";
+import { Wrench, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
 import { recomendacionesApi } from "@/lib/api/recomendaciones";
 import type { RecomendacionInventario } from "@/lib/types/recomendaciones";
 import { toast } from "sonner";
@@ -10,6 +10,30 @@ import { cn } from "@/lib/utils/helpers";
 
 interface MantenimientoRecomendacionesProps {
   className?: string;
+}
+
+interface SectionProps {
+  title: string;
+  icon: React.ReactNode;
+  accentClass: string;
+  count: number;
+  children: React.ReactNode;
+}
+
+function SectionCard({ title, icon, accentClass, count, children }: Readonly<SectionProps>) {
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+        <span className={`w-1 h-4 rounded-sm shrink-0 ${accentClass}`} />
+        {icon}
+        <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
+        {count > 0 && (
+          <span className="text-xs text-white/60 ml-auto">{count} recomendaciones</span>
+        )}
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  );
 }
 
 export function MantenimientoRecomendaciones({ className }: Readonly<MantenimientoRecomendacionesProps>) {
@@ -54,49 +78,64 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
     );
   }
 
+  const hasAny = itemsUrgentes.length > 0 || espaciosAtencion.length > 0;
+
+  if (!hasAny) {
+    return (
+      <SectionCard
+        title="Recomendaciones de mantenimiento"
+        icon={<Sparkles className="h-4 w-4 text-utec-yellow" />}
+        accentClass="bg-utec-yellow"
+        count={0}
+      >
+        <p className="text-sm text-muted-foreground text-center py-2">
+          No hay recomendaciones de mantenimiento en este momento.
+        </p>
+      </SectionCard>
+    );
+  }
+
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("grid gap-4 lg:grid-cols-2", className)}>
       {itemsUrgentes.length > 0 && (
-        <RecomendacionPanel
+        <SectionCard
           title="Items que Requieren Mantenimiento Urgente"
-          recomendaciones={itemsUrgentes}
-          loading={loading}
-          maxItems={5}
-          icon={<Wrench className="h-5 w-5 text-amber-600" />}
-          emptyMessage="No hay items que requieran mantenimiento urgente"
-          onSelect={(rec) => {
-            if (rec.inventarioItemId) {
-              navigate(`/inventory?itemId=${rec.inventarioItemId}`);
-            }
-          }}
-        />
+          icon={<Wrench className="h-4 w-4 text-utec-yellow" />}
+          accentClass="bg-utec-yellow"
+          count={itemsUrgentes.length}
+        >
+          <RecomendacionList
+            recomendaciones={itemsUrgentes}
+            loading={loading}
+            maxItems={5}
+            onSelect={(rec) => {
+              if (rec.inventarioItemId) {
+                navigate(`/inventory?itemId=${rec.inventarioItemId}`);
+              }
+            }}
+          />
+        </SectionCard>
       )}
 
       {espaciosAtencion.length > 0 && (
-        <RecomendacionPanel
+        <SectionCard
           title="Espacios que Requieren Atención"
-          recomendaciones={espaciosAtencion}
-          loading={loading}
-          maxItems={5}
-          icon={<AlertTriangle className="h-5 w-5 text-red-600" />}
-          emptyMessage="No hay espacios que requieran atención"
-          onSelect={(rec) => {
-            if (rec.espacioId) {
-              navigate(`/rooms/${rec.espacioId}`);
-            }
-          }}
-        />
-      )}
-
-      {itemsUrgentes.length === 0 && espaciosAtencion.length === 0 && !loading && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-            <Package className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No hay recomendaciones de mantenimiento en este momento</p>
-          </CardContent>
-        </Card>
+          icon={<AlertTriangle className="h-4 w-4 text-utec-red" />}
+          accentClass="bg-utec-red"
+          count={espaciosAtencion.length}
+        >
+          <RecomendacionList
+            recomendaciones={espaciosAtencion}
+            loading={loading}
+            maxItems={5}
+            onSelect={(rec) => {
+              if (rec.espacioId) {
+                navigate(`/rooms/${rec.espacioId}`);
+              }
+            }}
+          />
+        </SectionCard>
       )}
     </div>
   );
 }
-

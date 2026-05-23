@@ -1,56 +1,43 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
-import { Users, Eye, Edit, CheckCircle, Wrench, XCircle, Image as ImageIcon, Building2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Users, Eye, Edit, CheckCircle, Wrench, XCircle, Building2, CircleDot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import type { Espacio } from "@/lib/types/spaces";
 import PermissionGuard from '@/components/auth/PermissionGuard';
-
-// Función para obtener configuración del estado
-function getEstadoConfig(estado: string) {
-  switch (estado) {
-    case 'DISPONIBLE':
-      return {
-        label: 'Disponible',
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        icon: CheckCircle
-      };
-    case 'MANTENIMIENTO':
-      return {
-        label: 'En Mantenimiento',
-        color: 'bg-amber-50 text-amber-700 border-amber-200',
-        icon: Wrench
-      };
-    case 'NO_DISPONIBLE':
-      return {
-        label: 'No Disponible',
-        color: 'bg-red-50 text-red-700 border-red-200',
-        icon: XCircle
-      };
-    default:
-      return {
-        label: estado,
-        color: 'bg-gray-50 text-gray-700 border-gray-200',
-        icon: CheckCircle
-      };
-  }
-}
+import { cn } from "@/lib/utils/helpers";
 
 interface SpaceCardProps {
   espacio: Espacio;
   canEdit: boolean;
   onEdit: (espacio: Espacio) => void;
+  enCurso?: boolean;
 }
 
-export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>) {
+function getEstadoLabel(estado: string) {
+  switch (estado) {
+    case 'MANTENIMIENTO': return 'En mantenimiento';
+    case 'NO_DISPONIBLE': return 'No disponible';
+    default: return estado;
+  }
+}
+
+function getEstadoIcon(estado: string) {
+  switch (estado) {
+    case 'MANTENIMIENTO': return Wrench;
+    case 'NO_DISPONIBLE': return XCircle;
+    default: return CheckCircle;
+  }
+}
+
+export function SpaceCard({ espacio, canEdit, onEdit, enCurso = false }: Readonly<SpaceCardProps>) {
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
 
   const handleViewDetails = (e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    if (e) e.stopPropagation();
     navigate(`/rooms/${espacio.id}`);
   };
 
@@ -59,54 +46,67 @@ export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>
     onEdit(espacio);
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-  };
+  const hasImagen = Boolean(espacio.imagenUrl) && !imageError;
+  const tipoColor = espacio.tipoEspacioColor;
+  const fueraDeServicio = espacio.estado !== 'DISPONIBLE';
+  const EstadoFueraIcon = getEstadoIcon(espacio.estado);
 
-  return (
+  // Disponibilidad en este momento (solo aplica si el espacio está DISPONIBLE)
+  const ocupadoBadge = enCurso
+    ? { label: 'Ocupado', className: 'bg-utec-orange text-white' }
+    : { label: 'Libre', className: 'bg-utec-green text-white' };
+
+  const cardBody = (
     <Card
-      className="group hover:shadow-md transition-all duration-200 cursor-pointer h-full flex flex-col border border-gray-200 hover:border-gray-300 overflow-hidden relative"
-      style={{
-        borderTop: espacio.tipoEspacioColor ? `6px solid ${espacio.tipoEspacioColor}` : undefined
-      }}
+      className={cn(
+        "group hover:shadow-lg shadow-sm transition-all duration-200 cursor-pointer h-full flex flex-col border-0 border-t-4 border-t-utec-dark overflow-hidden gap-0 py-0",
+        fueraDeServicio && "opacity-60 grayscale hover:opacity-80",
+      )}
       onClick={handleViewDetails}
     >
-      {/* Imagen del espacio - más compacta */}
-      {espacio.imagenUrl && !imageError ? (
-        <div className="aspect-[16/10] overflow-hidden bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200 relative">
+      {/* Banner superior uniforme */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-utec-dark">
+        {hasImagen ? (
           <img
             src={espacio.imagenUrl}
             alt={espacio.nombre}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
             loading="lazy"
-            onError={handleImageError}
+            onError={() => setImageError(true)}
           />
-        </div>
-      ) : (
-        // Si no hay imagen, mostramos una banda fina en lugar del aspect-ratio
-        // completo: con 13 espacios sin foto la card se veía mitad placeholder.
-        <div className="h-12 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors duration-200">
-          {imageError ? (
-            <div className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4 text-gray-400" />
-              <span className="text-xs text-gray-500">Error al cargar imagen</span>
-            </div>
-          ) : (
-            <Users className="h-5 w-5 text-gray-400" />
-          )}
-        </div>
-      )}
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-utec-dark">
+            <Building2 className="h-10 w-10 text-white/40" />
+            <span className="text-xs uppercase tracking-wider text-white/70 font-medium">
+              {espacio.tipoEspacioNombre || 'Sin tipo'}
+            </span>
+          </div>
+        )}
 
-      <CardContent className="p-4 flex-1 flex flex-col">
-        {/* Header con título y badge */}
-        <div className="flex items-start justify-between gap-2 mb-3">
+        {/* Badge en overlay: estado fuera de servicio, o disponibilidad ahora */}
+        {fueraDeServicio ? (
+          <Badge className="bg-gray-700 text-white font-medium text-xs absolute top-2 right-2 shadow-sm border-0">
+            <EstadoFueraIcon className="h-3 w-3 mr-1" />
+            {getEstadoLabel(espacio.estado)}
+          </Badge>
+        ) : (
+          <Badge className={`${ocupadoBadge.className} font-medium text-xs absolute top-2 right-2 shadow-sm border-0`}>
+            <CircleDot className="h-3 w-3 mr-1" />
+            {ocupadoBadge.label}
+          </Badge>
+        )}
+      </div>
+
+      <CardContent className="px-3 py-2.5 flex-1 flex flex-col">
+        {/* Header: título + chip de tipo */}
+        <div className="flex items-start justify-between gap-2 mb-1.5">
           <CardTitle className="text-sm font-semibold line-clamp-1 leading-tight flex-1 min-w-0">
             {espacio.nombre}
           </CardTitle>
-          {espacio.tipoEspacioColor ? (
+          {tipoColor ? (
             <span
               className="px-2 py-0.5 rounded text-white text-xs font-medium flex-shrink-0"
-              style={{ backgroundColor: espacio.tipoEspacioColor }}
+              style={{ backgroundColor: tipoColor }}
             >
               {espacio.tipoEspacioNombre}
             </span>
@@ -117,48 +117,38 @@ export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>
           )}
         </div>
 
-        {/* Capacidad, Edificio y Estado */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <span className="text-sm text-gray-600 font-medium">{espacio.capacidad} personas</span>
+        {/* Edificio + capacidad alineada a la derecha */}
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            {espacio.edificioNombre && (
+              <>
+                <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate">{espacio.edificioNombre}</span>
+              </>
+            )}
           </div>
-          {espacio.edificioNombre && (
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-600">{espacio.edificioNombre}</span>
-            </div>
-          )}
-          <div>
-            {(() => {
-              const estadoConfig = getEstadoConfig(espacio.estado);
-              const EstadoIcon = estadoConfig.icon;
-              return (
-                <Badge className={`${estadoConfig.color} border font-medium text-xs`}>
-                  <EstadoIcon className="h-3 w-3 mr-1" />
-                  {estadoConfig.label}
-                </Badge>
-              );
-            })()}
-          </div>
+          <span className="flex items-center gap-1 shrink-0">
+            <Users className="h-3.5 w-3.5" />
+            <span className="tabular-nums">{espacio.capacidad}</span>
+          </span>
         </div>
 
-        {/* Botones de acción */}
-        <div className={`flex gap-2 mt-auto ${canEdit ? 'flex-col' : ''}`}>
+        {/* Botones de acción side-by-side */}
+        <div className="flex gap-2 mt-auto">
           <Button
             size="sm"
             variant="outline"
-            className="w-full h-8 text-sm hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors duration-200"
+            className="flex-1 h-8 text-sm hover:bg-utec-dark hover:text-white hover:border-utec-dark transition-colors"
             onClick={handleViewDetails}
           >
             <Eye className="h-4 w-4 mr-1.5" />
-            Ver Detalles
+            Ver
           </Button>
           <PermissionGuard requiredPermission="espacio:editar">
             <Button
               size="sm"
               variant="outline"
-              className="w-full h-8 text-sm hover:bg-green-50 hover:border-green-200 hover:text-green-700 transition-colors duration-200"
+              className="flex-1 h-8 text-sm hover:bg-utec-dark hover:text-white hover:border-utec-dark transition-colors"
               onClick={handleEdit}
             >
               <Edit className="h-4 w-4 mr-1.5" />
@@ -169,4 +159,17 @@ export function SpaceCard({ espacio, canEdit, onEdit }: Readonly<SpaceCardProps>
       </CardContent>
     </Card>
   );
+
+  if (fueraDeServicio) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div>{cardBody}</div>
+        </TooltipTrigger>
+        <TooltipContent>{getEstadoLabel(espacio.estado)}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return cardBody;
 }

@@ -90,19 +90,17 @@ Modelos de lenguaje grande (Large Language Models, LLMs) que **comprenden y gene
 
 ### Qué resuelve en este sistema
 
-La capa está implementada con cinco funcionalidades agrupadas en la página `/asistente` (acceso para analista y admin):
+La capa está implementada con cinco funcionalidades, cada una integrada en la pantalla donde resulta naturalmente útil:
 
-- **Resumen automático de estadísticas**: interpretación en lenguaje natural del estado del sistema, pensada para encabezar el dashboard de estadísticas.
-- **Explicación de recomendaciones**: humaniza la salida del recomendador heurístico (capa 1), reescribiendo el campo `razon` en un texto más natural.
-- **Análisis del forecast Prophet**: síntesis accionable de las predicciones del modelo de demanda (capa 2), con identificación de tendencias, picos y sugerencias operativas.
-- **Búsqueda semántica de espacios (RAG)**: consulta en lenguaje natural sobre el catálogo de espacios, resuelta por similitud de embeddings vectoriales almacenados en pgvector.
-- **Chatbot con function calling**: agente conversacional que consulta la base de datos a través de un conjunto acotado de herramientas de sólo lectura (reservas propias, espacios disponibles, estadísticas globales, búsqueda semántica).
-
-Las cinco están en `/asistente` como sandbox para validar comportamiento antes de migrarlas a su contexto natural en otras pantallas (resumen sobre `/statistics`, explicación en cards del recomendador, etc.).
+- **Resumen automático de estadísticas**: interpretación en lenguaje natural del estado del sistema, presentada como un banner en la pantalla de Estadísticas.
+- **Explicación de recomendaciones**: humaniza la salida del recomendador heurístico (capa 1), disponible como un botón dentro de cada tarjeta de recomendación.
+- **Análisis del forecast**: síntesis accionable de las predicciones del modelo de demanda (capa 2), con identificación de tendencias, picos y sugerencias operativas. Aparece dentro del propio bloque de predicción de demanda en Estadísticas.
+- **Búsqueda semántica de espacios**: consulta en lenguaje natural sobre el catálogo de espacios, resuelta por similitud de embeddings vectoriales almacenados en pgvector. Disponible como botón "Buscar con IA" en la pantalla de Espacios.
+- **Asistente conversacional**: agente que consulta la base de datos a través de un conjunto acotado de herramientas de sólo lectura. Disponible como widget flotante en toda pantalla autenticada.
 
 ### Cómo está implementada
 
-Microservicio Python independiente `ai-svc` (FastAPI + LangChain), proxy-eado por el backend Spring vía `/api/v1/ai/...`. El proveedor de LLM se abstrae con LangChain para no acoplar el código a una API concreta; la implementación inicial usa Gemini 2.5 Flash para texto y `gemini-embedding-001` (3072 dim.) para embeddings.
+Microservicio Python independiente `ai-svc` (FastAPI + LangChain), proxy-eado por el backend Spring vía `/api/v1/ai/...`. El proveedor de LLM se abstrae con LangChain y se configura como una cadena con fallback automático: Gemini 2.5 Flash como primario y Llama 3.3 70B (vía Groq) como respaldo. Si el primario rechaza una solicitud, el servicio reintenta con el secundario sin que el usuario lo perciba. Los embeddings dependen exclusivamente de `gemini-embedding-001` (3.072 dimensiones).
 
 La interacción del chatbot con el LLM es **acotada por tools** (tool use, function calling): el modelo no inventa disponibilidad de espacios; consulta los endpoints reales del backend y sólo formatea la respuesta. Patrón estándar de LLM como interfaz, sistema determinístico como fuente de verdad. La identidad del usuario se inyecta desde el JWT del backend, no desde el prompt, para que el agente no pueda acceder a datos de otros usuarios aunque se lo pida explícitamente.
 
@@ -151,15 +149,15 @@ La incorporación progresiva de lenguajes (Java → Java + Python → Java + Pyt
 
 ---
 
-## 7. Plan de evolución
+## 7. Estado actual y direcciones de evolución
 
-Con las tres capas operativas, la evolución natural está orientada a profundizar cada una:
+Las tres capas están operativas e integradas en las pantallas correspondientes. Las direcciones de evolución que se identifican como naturales son:
 
 - **Capa 1**: enriquecer las heurísticas combinando señales adicionales del histórico ya disponible.
-- **Capa 2**: explorar modelos por espacio individual (cuando el volumen lo justifique), agregar predicción de cancelaciones, evaluar Prophet vs. otros métodos (ARIMA, modelos de gradient boosting con features temporales).
-- **Capa 3**: migrar las funcionalidades desde la página `/asistente` a su contexto natural en producción (resumen sobre `/statistics`, explicación de recomendación en cards, widget de chatbot flotante global), agregar memoria persistente para el chatbot, evaluar caching de respuestas para reducir consumo de tokens.
+- **Capa 2**: explorar modelos por espacio individual cuando el volumen lo justifique, e incorporar predicción de cancelaciones.
+- **Capa 3**: profundizar la abstracción multi-proveedor incorporando alternativas adicionales (por ejemplo OpenAI o Anthropic para escenarios productivos con plan de pago) y evaluar memoria persistente entre sesiones para el asistente conversacional.
 
-Las decisiones de proveedor de LLM y control de costo se revisan periódicamente: la abstracción vía LangChain permite intercambiar proveedor (Gemini, Groq, OpenAI, Anthropic) modificando una sola variable de entorno, lo que reduce el riesgo de quedar atado a las políticas de free tier de un único proveedor.
+La abstracción vía LangChain permite intercambiar o encadenar proveedores de LLM modificando variables de entorno, lo que reduce la exposición a cambios en las políticas de nivel gratuito de un único proveedor.
 
 ---
 

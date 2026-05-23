@@ -2,8 +2,17 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { reservationsApi } from '@/lib/api/reservations';
 import type { ReservaStats } from '@/lib/types/spaces';
+import type { LucideIcon } from 'lucide-react';
 import {
   TrendingUp,
   TrendingDown,
@@ -17,7 +26,137 @@ import {
   BarChart3,
   ChevronRight,
   ChevronLeft,
+  PieChart as PieChartIcon,
 } from 'lucide-react';
+
+type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
+
+const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string }> = {
+  blue:   { bg: 'bg-utec-blue',   text: 'text-white',     subtle: 'text-white/70' },
+  yellow: { bg: 'bg-utec-yellow', text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
+  green:  { bg: 'bg-utec-green',  text: 'text-white',     subtle: 'text-white/80' },
+  orange: { bg: 'bg-utec-orange', text: 'text-white',     subtle: 'text-white/80' },
+  red:    { bg: 'bg-utec-red',    text: 'text-white',     subtle: 'text-white/80' },
+  cyan:   { bg: 'bg-utec-cyan',   text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
+  dark:   { bg: 'bg-utec-dark',   text: 'text-white',     subtle: 'text-white/60' },
+};
+
+interface ColoredStatProps {
+  label: string;
+  value: React.ReactNode;
+  hint?: React.ReactNode;
+  icon: LucideIcon;
+  bg: UtecBg;
+}
+
+function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredStatProps>) {
+  const c = bgClasses[bg];
+  return (
+    <div className={`rounded-xl p-3 min-w-0 ${c.bg}`}>
+      <div className={`flex items-center gap-1.5 text-xs mb-1 ${c.subtle}`}>
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{label}</span>
+      </div>
+      <div className={`text-xl font-semibold tabular-nums ${c.text}`}>{value}</div>
+      {hint && <div className={`text-[11px] mt-0.5 truncate ${c.subtle}`}>{hint}</div>}
+    </div>
+  );
+}
+
+const ESTADO_COLOR: Record<'Aprobadas' | 'Pendientes' | 'Canceladas', string> = {
+  Aprobadas: '#86bb4c',
+  Pendientes: '#F6CA21',
+  Canceladas: '#DF2B31',
+};
+
+interface TooltipPayload {
+  name?: string;
+  value?: number;
+  color?: string;
+  payload?: { color?: string; fill?: string };
+}
+
+function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-utec-dark text-white border border-utec-dark/40 rounded-md shadow-lg px-2.5 py-1.5 text-xs">
+        {payload.map((entry, index) => {
+          const p = entry as TooltipPayload;
+          const color = p.color ?? p.payload?.fill;
+          return (
+            <p key={`${p.name ?? 'entry'}-${index}`} className="tabular-nums">
+              <span style={{ color }}>●</span>{' '}
+              <span className="text-white/70">{p.name}:</span>{' '}
+              <span className="font-semibold">{p.value}</span>
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+  return null;
+}
+
+interface EstadoDonutProps {
+  stats: ReservaStats;
+}
+
+function EstadoDonut({ stats }: Readonly<EstadoDonutProps>) {
+  const data = [
+    { name: 'Aprobadas', value: stats.totalAprobadas, color: ESTADO_COLOR.Aprobadas },
+    { name: 'Pendientes', value: stats.totalPendientes, color: ESTADO_COLOR.Pendientes },
+    { name: 'Canceladas', value: stats.totalCanceladas, color: ESTADO_COLOR.Canceladas },
+  ].filter(d => d.value > 0);
+
+  const total = stats.totalReservas;
+
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden h-full flex flex-col">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+        <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
+        <PieChartIcon className="h-3.5 w-3.5 text-white/70 shrink-0" />
+        <h3 className="text-sm font-semibold tracking-tight truncate">Distribución por estado</h3>
+      </div>
+      <div className="p-3 flex-1 flex items-center gap-3">
+        <div className="w-[45%] shrink-0">
+          <ResponsiveContainer width="100%" height={140}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                innerRadius={32}
+                outerRadius={58}
+                paddingAngle={2}
+                dataKey="value"
+                stroke="none"
+              >
+                {data.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<ChartTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <ul className="flex-1 flex flex-col gap-1.5 text-xs min-w-0">
+          {data.map((d) => {
+            const pct = total === 0 ? 0 : Math.round((d.value / total) * 100);
+            return (
+              <li key={d.name} className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: d.color }} />
+                <span className="text-muted-foreground truncate flex-1">{d.name}</span>
+                <span className="font-semibold tabular-nums shrink-0">{d.value}</span>
+                <span className="text-muted-foreground tabular-nums shrink-0 w-9 text-right">{pct}%</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 interface MetricItemProps {
   label: string;
@@ -190,102 +329,67 @@ export default function ReservationStats({
   // En modo vertical o horizontal, forzar que siempre esté extendido
   const isCollapsed = (isVerticalLayout || horizontal) ? false : collapsed;
 
-  // Si está en modo horizontal, usar un layout diferente
+  // Modo horizontal: layout estilo /users (tiles dark a la izquierda + donut a la derecha)
   if (horizontal) {
+    const aprobacionPct = stats.totalReservas === 0
+      ? 0
+      : Math.round((stats.totalAprobadas / stats.totalReservas) * 100);
+    const deltaMes = stats.diferenciaMesAnterior;
+    const esteMesHint = deltaMes === 0
+      ? 'igual que el mes anterior'
+      : `${deltaMes > 0 ? '+' : ''}${deltaMes} vs anterior`;
+
     return (
-      <Card className="w-full overflow-hidden">
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-            {/* Resumen General */}
-            <MetricItem
-              label="Total Reservas"
-              value={<span className="text-lg">{stats.totalReservas}</span>}
-              icon={<BarChart3 className="h-4 w-4" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Aprobadas"
-              value={<span className="text-green-600">{stats.totalAprobadas}</span>}
-              icon={<CheckCircle2 className="h-4 w-4 text-green-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Pendientes"
-              value={<span className="text-yellow-600">{stats.totalPendientes}</span>}
-              icon={<Hourglass className="h-4 w-4 text-yellow-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Canceladas"
-              value={<span className="text-red-600">{stats.totalCanceladas}</span>}
-              icon={<XCircle className="h-4 w-4 text-red-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Futuras"
-              value={<span className="text-blue-600">{stats.totalFuturas}</span>}
-              icon={<Calendar className="h-4 w-4 text-blue-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Pasadas"
-              value={stats.totalPasadas}
-              icon={<Clock className="h-4 w-4 text-gray-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Activas"
-              value={<span className="text-green-600">{stats.totalActivas}</span>}
-              icon={<Activity className="h-4 w-4 text-green-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Este Mes"
-              value={
-                <div className="flex items-center gap-1">
-                  <span>{stats.reservasEsteMes}</span>
-                  {stats.diferenciaMesAnterior !== 0 && (
-                    <div className="flex items-center gap-0.5">
-                      {getTrendIcon(stats.diferenciaMesAnterior)}
-                      <span className={`text-xs ${getTrendColor(stats.diferenciaMesAnterior)}`}>
-                        {stats.diferenciaMesAnterior > 0 ? '+' : ''}{stats.diferenciaMesAnterior}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              }
-              icon={<Calendar className="h-4 w-4 text-blue-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Próximo Mes"
-              value={stats.reservasProximoMes}
-              icon={<Calendar className="h-4 w-4" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Duración Total"
-              value={formatHours(stats.duracionTotalHoras)}
-              icon={<Clock className="h-4 w-4 text-blue-600" />}
-              collapsed={false}
-            />
-            <MetricItem
-              label="Espacios Usados"
-              value={stats.totalEspaciosUsados}
-              icon={<MapPin className="h-4 w-4 text-green-600" />}
-              collapsed={false}
-            />
-            {stats.nombreEspacioMasUsado && (
-              <MetricItem
-                label="Más Usado"
-                value={<span className="text-xs font-normal truncate">{stats.nombreEspacioMasUsado}</span>}
-                icon={<MapPin className="h-4 w-4" />}
-                collapsed={false}
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Izquierda: 6 stat cards dark en grid 2x3 / 3x2 */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <ColoredStat
+            label="Pendientes"
+            value={stats.totalPendientes}
+            hint="a revisar"
+            icon={Hourglass}
+            bg="dark"
+          />
+          <ColoredStat
+            label="Activas ahora"
+            value={stats.totalActivas}
+            hint="en curso"
+            icon={Activity}
+            bg="dark"
+          />
+          <ColoredStat
+            label="Este mes"
+            value={stats.reservasEsteMes}
+            hint={esteMesHint}
+            icon={Calendar}
+            bg="dark"
+          />
+          <ColoredStat
+            label="Aprobación"
+            value={`${aprobacionPct}%`}
+            hint={`${stats.totalAprobadas} aprobadas`}
+            icon={CheckCircle2}
+            bg="dark"
+          />
+          <ColoredStat
+            label="Espacios usados"
+            value={stats.totalEspaciosUsados}
+            hint={stats.nombreEspacioMasUsado ? `top: ${stats.nombreEspacioMasUsado}` : undefined}
+            icon={MapPin}
+            bg="dark"
+          />
+          <ColoredStat
+            label="Duración total"
+            value={formatHours(stats.duracionTotalHoras)}
+            hint="horas reservadas"
+            icon={Clock}
+            bg="dark"
+          />
+        </div>
+
+        {/* Derecha: donut de distribución por estado */}
+        <EstadoDonut stats={stats} />
+      </div>
     );
   }
 

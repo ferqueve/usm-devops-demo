@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
@@ -255,72 +254,35 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
 
   if (!content) {
     return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-utec-cyan" />
-            Visor de Logs
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            No hay logs disponibles. Asegúrate de que el endpoint <code className="text-xs bg-gray-100 px-2 py-1 rounded">/actuator/logfile</code> esté habilitado.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="border rounded-lg overflow-hidden shadow-card">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
+          <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
+          <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
+        </div>
+        <p className="text-muted-foreground text-center py-8 bg-card">
+          No hay logs disponibles. Asegúrate de que el endpoint <code className="text-xs bg-gray-100 px-2 py-1 rounded">/actuator/logfile</code> esté habilitado.
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card className="shadow-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-utec-cyan" />
-          Visor de Logs
-          <Badge variant="secondary" className="ml-auto">
-            {filteredLines.length} líneas
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Controles */}
-        <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar en logs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
+    <div className="border rounded-lg overflow-hidden shadow-card">
+      <div className="bg-utec-dark text-white">
+        {/* Fila 1: título + count + botones de acción */}
+        <div className="flex items-center gap-2 px-4 py-2.5">
+          <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
+          <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
+          <span className="text-xs text-white/70 tabular-nums mr-2">{filteredLines.length} líneas</span>
 
-          {/* Filtro de nivel */}
-          <div className="flex gap-1 p-1 border rounded-lg bg-gray-50">
-            {levels.map(level => (
-              <button
-                key={level}
-                onClick={() => setLevelFilter(level)}
-                className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                  levelFilter === level
-                    ? 'bg-white shadow-sm text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-
-          {/* Botones de acción */}
           {loggers && onLoggerUpdate && (
             <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
               <DialogTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-purple-600 text-white hover:bg-purple-700 border-purple-600 transition-all shadow-sm">
+                <button
+                  title="Configurar loggers"
+                  className="flex items-center justify-center h-7 w-7 rounded-md text-white/80 hover:bg-white/10 transition"
+                >
                   <Settings className="h-4 w-4" />
-                  <span className="text-sm font-medium hidden sm:inline">Configurar</span>
                 </button>
               </DialogTrigger>
             </Dialog>
@@ -328,63 +290,91 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
 
           <button
             onClick={() => setAutoScroll(!autoScroll)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
+            title="Auto-scroll"
+            className={`flex items-center justify-center h-7 w-7 rounded-md transition ${
               autoScroll
-                ? 'bg-utec-blue text-white border-utec-blue'
-                : 'bg-white hover:bg-gray-50 border-gray-200'
+                ? 'bg-utec-blue/30 text-utec-blue'
+                : 'text-white/80 hover:bg-white/10'
             }`}
           >
             <ArrowDown className="h-4 w-4" />
-            <span className="text-sm font-medium hidden sm:inline">Auto-scroll</span>
           </button>
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-white hover:bg-gray-50 border-gray-200 transition-all"
+            title="Copiar"
+            className="flex items-center justify-center h-7 w-7 rounded-md text-white/80 hover:bg-white/10 transition"
           >
             <Copy className="h-4 w-4" />
-            <span className="text-sm font-medium hidden sm:inline">Copiar</span>
           </button>
 
           <button
             onClick={handleDownload}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-utec-green text-white hover:bg-utec-green/90 border-utec-green transition-all"
+            title="Descargar"
+            className="flex items-center justify-center h-7 w-7 rounded-md text-utec-green hover:bg-white/10 transition"
           >
             <Download className="h-4 w-4" />
-            <span className="text-sm font-medium hidden sm:inline">Descargar</span>
           </button>
         </div>
 
-        {/* Visor de logs */}
-        <div className="border rounded-lg overflow-hidden bg-gray-900">
-          <ScrollArea className="h-[400px]" ref={scrollRef}>
-            <div className="p-4">
-              {filteredLines.map((line, index) => (
-                <div
-                  key={`${index}-${line.slice(0, 32)}`}
-                  className={`log-line py-0.5 px-2 rounded ${getLineClass(line)}`}
-                >
-                  <span className="text-gray-500 select-none inline-block w-12 text-right mr-3">
-                    {index + 1}
-                  </span>
-                  <span className="text-gray-100 font-mono text-xs whitespace-pre-wrap break-all">
-                    {highlightText(line, searchTerm)}
-                  </span>
-                </div>
-              ))}
-              {filteredLines.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No se encontraron líneas que coincidan con los filtros
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+        {/* Fila 2: search + chips de nivel */}
+        <div className="flex items-center gap-3 px-4 py-2 border-t border-white/10">
+          <div className="flex-1 min-w-0 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/50" />
+            <Input
+              placeholder="Buscar en logs..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8 h-8 bg-white/5 border-white/15 text-white text-xs placeholder:text-white/40 focus-visible:ring-white/30"
+            />
+          </div>
+          <div className="flex gap-0.5 p-0.5 rounded-md bg-white/5 border border-white/10">
+            {levels.map(level => (
+              <button
+                key={level}
+                onClick={() => setLevelFilter(level)}
+                className={`px-2.5 py-1 text-[11px] font-semibold rounded transition ${
+                  levelFilter === level
+                    ? 'bg-white/15 text-white'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <p className="text-xs text-muted-foreground">
-          Mostrando últimas {maxLines} líneas del log. {filteredLines.length} líneas después de filtrar.
-        </p>
-      </CardContent>
+      {/* Visor de logs */}
+      <div className="bg-gray-900">
+        <ScrollArea className="h-[400px]" ref={scrollRef}>
+          <div className="p-4">
+            {filteredLines.map((line, index) => (
+              <div
+                key={`${index}-${line.slice(0, 32)}`}
+                className={`log-line py-0.5 px-2 rounded ${getLineClass(line)}`}
+              >
+                <span className="text-gray-500 select-none inline-block w-12 text-right mr-3">
+                  {index + 1}
+                </span>
+                <span className="text-gray-100 font-mono text-xs whitespace-pre-wrap break-all">
+                  {highlightText(line, searchTerm)}
+                </span>
+              </div>
+            ))}
+            {filteredLines.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No se encontraron líneas que coincidan con los filtros
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+
+      <p className="text-xs text-muted-foreground bg-card px-4 py-2">
+        Mostrando últimas {maxLines} líneas del log. {filteredLines.length} líneas después de filtrar.
+      </p>
 
       {/* Dialog de Configuración de Loggers */}
       {loggers && onLoggerUpdate && (
@@ -591,7 +581,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
 }
 

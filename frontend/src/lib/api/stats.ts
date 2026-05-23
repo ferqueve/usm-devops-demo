@@ -182,4 +182,46 @@ export const statsApi = {
   async reentrenarModeloML(): Promise<ApiResponse<Record<string, unknown>>> {
     return apiRequest<Record<string, unknown>>('/stats/ml/reentrenar', { method: 'POST' });
   },
+
+  async getRecentErrors(top = 10, hoursBack = 24): Promise<RecentErrorsResponse> {
+    const r = await apiRequest<RecentErrorsResponse>(`/system/errors?top=${top}&hoursBack=${hoursBack}`, { method: 'GET' });
+    return (r.data ?? (r as unknown as RecentErrorsResponse));
+  },
+
+  async getSlowEndpoints(top = 10): Promise<SlowEndpointsResponse> {
+    const r = await apiRequest<SlowEndpointsResponse>(`/system/slow-endpoints?top=${top}`, { method: 'GET' });
+    return (r.data ?? (r as unknown as SlowEndpointsResponse));
+  },
 };
+
+export interface RecentError {
+  level: string;
+  message: string;
+  logger: string;
+  exception: string | null;
+  count: number;
+  lastTimestamp: string;
+}
+
+export interface RecentErrorsResponse {
+  totalCaptured: number;
+  totalGroupsInWindow: number;
+  windowHours: number;
+  top: RecentError[];
+}
+
+export interface SlowEndpoint {
+  uri: string;
+  method: string;
+  status: string;
+  count: number;
+  meanMs: number;
+  maxMs: number;
+  p95: number;
+  p99: number;
+}
+
+export interface SlowEndpointsResponse {
+  unit: string;
+  top: SlowEndpoint[];
+}

@@ -10,26 +10,28 @@ from fastapi import APIRouter, HTTPException
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
 
-from llm import get_chat_model
+from llm import invoke_with_fallback
 
 router = APIRouter()
 log = logging.getLogger("ai-svc.insights")
 
 
-def _invoke(system: str, user_payload: Any) -> str:
-    llm = get_chat_model()
+def _invoke(system: str, user_payload: Any, label: str) -> str:
+    """Invoca el LLM probando la cadena de providers en orden.
+
+    Si el primario (típicamente Gemini) está rate-limited, salta al secundario
+    (Groq) sin que el cliente lo perciba.
+    """
     payload_text = json.dumps(user_payload, ensure_ascii=False, default=str)
     try:
-        response = llm.invoke(
-            [
-                SystemMessage(content=system),
-                HumanMessage(content=payload_text),
-            ]
+        texto, _provider = invoke_with_fallback(
+            [SystemMessage(content=system), HumanMessage(content=payload_text)],
+            log_label=f"insights.{label}",
         )
+        return texto
     except Exception as exc:  # noqa: BLE001
-        log.exception("LLM falló")
+        log.exception("Toda la cadena LLM falló en %s", label)
         raise HTTPException(status_code=502, detail=f"LLM error: {exc}") from exc
-    return response.content if isinstance(response.content, str) else str(response.content)
 
 
 # --------- 1.1 Resumen de stats ---------
@@ -49,7 +51,7 @@ def stats_summary(body: StatsSummaryRequest) -> dict:
         "contexto. Pensá como si lo fuera a leer un decano apurado."
     )
     payload = {"periodo": body.periodo, "stats": body.stats}
-    texto = _invoke(system, payload)
+    texto = _invoke(system, payload, "stats_summary")
     return {"resumen": texto.strip()}
 
 
@@ -74,7 +76,7 @@ def explain_recomendacion(body: ExplainRecomendacionRequest) -> dict:
         "recomendacion": body.recomendacion,
         "contexto_usuario": body.contexto_usuario or {},
     }
-    texto = _invoke(system, payload)
+    texto = _invoke(system, payload, "explain")
     return {"explicacion": texto.strip()}
 
 
@@ -101,5 +103,5 @@ def analyze_forecast(body: AnalyzeForecastRequest) -> dict:
         "historico_reciente": body.historico[-30:],  # acotar tokens
         "predicciones": body.predicciones,
     }
-    texto = _invoke(system, payload)
+    texto = _invoke(system, payload, "forecast")
     return {"analisis": texto.strip()}

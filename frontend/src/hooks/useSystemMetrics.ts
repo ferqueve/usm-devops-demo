@@ -73,8 +73,8 @@ export const useSystemMetrics = () => {
       }
       
       const updated = [...prev, newDataPoint];
-      // Mantener solo los últimos 20 puntos para mejor rendimiento
-      return updated.slice(-20);
+      // Mantener hasta 1 hora de historia (poll cada 10s → 360 puntos)
+      return updated.slice(-360);
     });
   }, []);
 
