@@ -8,14 +8,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -71,7 +77,7 @@ class ReservaReminderServiceTest {
         reservaDto.setId(reservaId);
         reservaDto.setUsuarioEmail(usuarioTest.getEmail());
 
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
@@ -159,6 +165,44 @@ class ReservaReminderServiceTest {
         // Then
         assertEquals(0, resultado);
         verify(emailService).enviarEmailRecordatorioReserva(anyString(), any(ReservaResponseDto.class), eq(horasAntes));
+    }
+
+    @Test
+    @DisplayName("El cron de enviarRecordatoriosProgramados dispara a las 00:00")
+    void cronProgramadoEsMedianoche() {
+        CronExpression cron = CronExpression.parse("0 0 0 * * ?");
+        ZonedDateTime base = ZonedDateTime.of(2026, 5, 26, 14, 30, 0, 0, ZoneOffset.UTC);
+        ZonedDateTime next = cron.next(base);
+        assertNotNull(next);
+        assertEquals(LocalTime.MIDNIGHT, next.toLocalTime());
+    }
+
+    @Test
+    @DisplayName("El job programado barre 24h desde (ahora + hours-before)")
+    void programadoUsaVentanaDe24Horas() {
+        ReflectionTestUtils.setField(reminderService, "horasAntesRecordatorio", 24);
+        when(reservaRepository.findReservasAprobadasEnRango(
+                eq(Reserva.EstadoReserva.APROBADO), any(Instant.class), any(Instant.class)))
+                .thenReturn(Collections.emptyList());
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        Instant antes = Instant.now();
+        reminderService.enviarRecordatoriosProgramados();
+        Instant despues = Instant.now();
+
+        ArgumentCaptor<Instant> desdeCap = ArgumentCaptor.forClass(Instant.class);
+        ArgumentCaptor<Instant> hastaCap = ArgumentCaptor.forClass(Instant.class);
+        verify(reservaRepository).findReservasAprobadasEnRango(
+                eq(Reserva.EstadoReserva.APROBADO), desdeCap.capture(), hastaCap.capture());
+
+        Instant desde = desdeCap.getValue();
+        Instant hasta = hastaCap.getValue();
+        Duration toleranciaSuperior = Duration.between(antes, despues).plusSeconds(1);
+        assertTrue(!desde.isBefore(antes.plus(Duration.ofHours(24))),
+                "desde debería ser >= ahora+24h");
+        assertTrue(!desde.isAfter(despues.plus(Duration.ofHours(24)).plus(toleranciaSuperior)),
+                "desde no debería superar ahora+24h por mucho");
+        assertEquals(Duration.ofHours(24), Duration.between(desde, hasta));
     }
 
     @Test

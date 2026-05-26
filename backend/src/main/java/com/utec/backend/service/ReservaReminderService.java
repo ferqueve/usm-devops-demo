@@ -42,10 +42,11 @@ public class ReservaReminderService {
     private boolean recordatoriosHabilitados;
 
     /**
-     * Tarea programada que se ejecuta cada hora para enviar recordatorios
-     * Busca reservas aprobadas que inician en las próximas X horas y envía recordatorios
+     * Tarea programada que se ejecuta una vez al día a las 00:00 para enviar recordatorios.
+     * Busca reservas aprobadas que inician en las próximas X horas y envía recordatorios.
+     * El dedup por Redis (REMINDER_TTL=48h) evita reenvíos si la ventana cubre más de 24h.
      */
-    @Scheduled(cron = "0 0 * * * ?") // Cada hora en el minuto 0
+    @Scheduled(cron = "0 0 0 * * ?") // Diario a las 00:00
     @Transactional(readOnly = true)
     public void enviarRecordatoriosProgramados() {
         if (!recordatoriosHabilitados) {
@@ -56,7 +57,9 @@ public class ReservaReminderService {
         try {
             Instant ahora = Instant.now();
             Instant inicioDesde = ahora.plusSeconds((long) horasAntesRecordatorio * 3600);
-            Instant inicioHasta = inicioDesde.plusSeconds(3600); // Ventana de 1 hora
+            // Ventana de 24h: el scheduler corre 1×/día a las 00:00, así que
+            // cubre todas las reservas del día siguiente. Redis deduplica reenvíos.
+            Instant inicioHasta = inicioDesde.plusSeconds(86400L);
             
             log.info("Buscando reservas para recordatorio entre {} y {}", inicioDesde, inicioHasta);
             
