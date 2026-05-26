@@ -11,17 +11,17 @@ interface EstadoConfig {
 const ESTADO_CONFIGS: Record<string, EstadoConfig> = {
   DISPONIBLE: {
     label: 'Disponible',
-    color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    color: 'bg-utec-green text-white border-utec-green',
     icon: CheckCircle,
   },
   MANTENIMIENTO: {
     label: 'Mantenimiento',
-    color: 'bg-amber-50 text-amber-700 border-amber-200',
+    color: 'bg-utec-yellow text-utec-dark border-utec-yellow',
     icon: Wrench,
   },
   DANADO: {
     label: 'Dañado',
-    color: 'bg-red-50 text-red-700 border-red-200',
+    color: 'bg-utec-red text-white border-utec-red',
     icon: AlertCircle,
   },
 };

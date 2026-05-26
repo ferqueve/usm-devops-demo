@@ -1,14 +1,24 @@
-import { Loader2, BarChart3, Settings, Globe, Database } from 'lucide-react';
+import { Loader2, BarChart3, Activity, AlertTriangle, Database } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSystemMetrics } from '@/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
 import { lazy, Suspense, useState } from 'react';
 
-// Lazy loading para tabs pesados
 const OverviewTab = lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab })));
 const PerformanceTab = lazy(() => import('./tabs/PerformanceTab').then(m => ({ default: m.PerformanceTab })));
-const ActivityTab = lazy(() => import('./tabs/ActivityTab').then(m => ({ default: m.ActivityTab })));
+const ErrorsTab = lazy(() => import('./tabs/ErrorsTab').then(m => ({ default: m.ErrorsTab })));
 const DatabaseLogsTab = lazy(() => import('./tabs/DatabaseLogsTab').then(m => ({ default: m.DatabaseLogsTab })));
+
+function TabFallback({ label }: { readonly label: string }) {
+  return (
+    <div className="flex items-center justify-center py-8">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+        <p className="text-muted-foreground">Cargando {label}...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function System() {
   const {
@@ -27,7 +37,6 @@ export default function System() {
     gcMetrics,
     memoryMaxMetrics,
     httpTrace,
-    mappings,
     liquibase,
     loggers,
     logFile,
@@ -40,13 +49,10 @@ export default function System() {
     fetchLiquibase,
   } = useSystemMetrics();
 
-  // Recordamos qué tabs ya gatillaron su fetch lazy para no repetirlo en
-  // cada cambio de tab (la dedupe del API client igual lo cubriría, pero
-  // así evitamos el round-trip).
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['overview']));
   const handleTabChange = (value: string) => {
     if (loadedTabs.has(value)) return;
-    if (value === 'activity') fetchActivityData();
+    if (value === 'errors') fetchActivityData();
     if (value === 'database-logs') {
       fetchLogsData();
       fetchLiquibase();
@@ -77,45 +83,26 @@ export default function System() {
 
       <Tabs defaultValue="overview" className="w-full" onValueChange={handleTabChange}>
         <TabsList className="flex w-full mb-6 gap-1 lg:grid lg:grid-cols-4">
-          <TabsTrigger 
-            value="overview" 
-            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
-          >
+          <TabsTrigger value="overview" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
             <BarChart3 className="h-4 w-4 flex-shrink-0" />
             <span className="hidden lg:inline">Resumen</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="performance" 
-            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
-          >
-            <Settings className="h-4 w-4 flex-shrink-0" />
+          <TabsTrigger value="performance" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
+            <Activity className="h-4 w-4 flex-shrink-0" />
             <span className="hidden lg:inline">Rendimiento</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="activity" 
-            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
-          >
-            <Globe className="h-4 w-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Actividad</span>
+          <TabsTrigger value="errors" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Errores</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="database-logs" 
-            className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none"
-          >
+          <TabsTrigger value="database-logs" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
             <Database className="h-4 w-4 flex-shrink-0" />
             <span className="hidden lg:inline">Base de Datos y Logs</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-0">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-muted-foreground">Cargando Overview...</p>
-              </div>
-            </div>
-          }>
+          <Suspense fallback={<TabFallback label="Resumen" />}>
             <OverviewTab
               health={health}
               memoryMetrics={memoryMetrics}
@@ -124,20 +111,12 @@ export default function System() {
               uptimeMetrics={uptimeMetrics}
               info={info}
               activeUsers={activeUsers}
-              metricsHistory={metricsHistory}
             />
           </Suspense>
         </TabsContent>
 
         <TabsContent value="performance" className="mt-0">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-muted-foreground">Cargando Performance...</p>
-              </div>
-            </div>
-          }>
+          <Suspense fallback={<TabFallback label="Rendimiento" />}>
             <PerformanceTab
               memoryMetrics={memoryMetrics}
               memoryMaxMetrics={memoryMaxMetrics}
@@ -151,31 +130,14 @@ export default function System() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="activity" className="mt-0">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-muted-foreground">Cargando Activity...</p>
-              </div>
-            </div>
-          }>
-            <ActivityTab
-              httpTrace={httpTrace}
-              mappings={mappings}
-            />
+        <TabsContent value="errors" className="mt-0">
+          <Suspense fallback={<TabFallback label="Errores" />}>
+            <ErrorsTab httpTrace={httpTrace} />
           </Suspense>
         </TabsContent>
 
         <TabsContent value="database-logs" className="mt-0">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-muted-foreground">Cargando Database & Logs...</p>
-              </div>
-            </div>
-          }>
+          <Suspense fallback={<TabFallback label="Base de Datos y Logs" />}>
             <DatabaseLogsTab
               health={health}
               liquibase={liquibase}

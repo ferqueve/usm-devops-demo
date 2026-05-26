@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { CheckCircle2, AlertCircle, HardDrive, Cpu, Clock } from 'lucide-react';
-import { MetricCard } from '@/components/ui/metric-card';
+import type { LucideIcon } from 'lucide-react';
 import { formatBytes, formatUptime } from '@/lib/utils/formatters';
 import type { HealthInfo, MetricInfo, MetricMeasurement } from '@/lib/types/actuator';
 
@@ -12,6 +12,35 @@ interface MetricsCardsProps {
   uptimeMetrics: MetricInfo | null | undefined;
 }
 
+interface SysStatProps {
+  label: string;
+  value: string;
+  hint?: string;
+  icon: LucideIcon;
+  progress?: number;
+}
+
+function SysStat({ label, value, hint, icon: Icon, progress }: Readonly<SysStatProps>) {
+  return (
+    <div className="rounded-xl p-4 min-w-0 bg-utec-dark">
+      <div className="flex items-center gap-1.5 text-xs mb-1 text-white/70">
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{label}</span>
+      </div>
+      <div className="text-2xl font-semibold tabular-nums text-white">{value}</div>
+      {hint && <div className="text-[11px] mt-0.5 truncate text-white/60">{hint}</div>}
+      {progress !== undefined && (
+        <div className="h-1.5 mt-2 rounded-full bg-white/15 overflow-hidden">
+          <div
+            className="h-full bg-utec-green transition-all duration-500"
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const MetricsCards = memo(function MetricsCards({
   health,
   memoryMetrics,
@@ -21,7 +50,7 @@ export const MetricsCards = memo(function MetricsCards({
 }: MetricsCardsProps) {
   const healthStatus = health?.status || 'UNKNOWN';
   const isHealthy = healthStatus === 'UP';
-  
+
   const findStatistic = (metric: MetricInfo | null | undefined, stat: string): number =>
     metric?.measurements?.find((m: MetricMeasurement) => m.statistic === stat)?.value ?? 0;
 
@@ -32,52 +61,33 @@ export const MetricsCards = memo(function MetricsCards({
   const cpuUsage = findStatistic(cpuMetrics, 'VALUE');
   const uptimeSeconds = findStatistic(uptimeMetrics, 'VALUE');
 
-  const memoryVariant: 'error' | 'warning' | 'success' = (() => {
-    if (memoryUsagePercent > 90) return 'error';
-    if (memoryUsagePercent > 70) return 'warning';
-    return 'success';
-  })();
-
-  const cpuVariant: 'error' | 'warning' | 'info' = (() => {
-    if (cpuUsage > 0.9) return 'error';
-    if (cpuUsage > 0.7) return 'warning';
-    return 'info';
-  })();
-
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-      <MetricCard
-        title="Estado de Salud"
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <SysStat
+        label="Estado de Salud"
         value={healthStatus}
+        hint={isHealthy ? 'Sistema operativo' : 'Verificar componentes'}
         icon={isHealthy ? CheckCircle2 : AlertCircle}
-        description={isHealthy ? 'Sistema operativo' : 'Verificar componentes'}
-        variant={isHealthy ? 'success' : 'error'}
       />
-
-      <MetricCard
-        title="Memoria JVM"
+      <SysStat
+        label="Memoria JVM"
         value={formatBytes(memoryUsed)}
+        hint={`${memoryUsagePercent.toFixed(1)}% de ${formatBytes(memoryMax)}`}
         icon={HardDrive}
-        description={`${memoryUsagePercent.toFixed(1)}% de ${formatBytes(memoryMax)}`}
         progress={memoryUsagePercent}
-        variant={memoryVariant}
       />
-
-      <MetricCard
-        title="Uso de CPU"
+      <SysStat
+        label="Uso de CPU"
         value={`${(cpuUsage * 100).toFixed(1)}%`}
+        hint="Procesamiento del sistema"
         icon={Cpu}
-        description="Procesamiento del sistema"
         progress={cpuUsage * 100}
-        variant={cpuVariant}
       />
-
-      <MetricCard
-        title="Tiempo Activo"
+      <SysStat
+        label="Tiempo Activo"
         value={formatUptime(uptimeSeconds * 1000)}
+        hint="Desde el último reinicio"
         icon={Clock}
-        description="Desde el último reinicio"
-        variant="warning"
       />
     </div>
   );

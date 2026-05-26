@@ -526,14 +526,14 @@ export default function InventoryRequestsManagement() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-b-0">
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">ID</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Reserva</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Solicitante</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Elemento</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Cantidad</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Estado</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Creada</TableHead>
-                    <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] text-right">Acciones</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">ID</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">Reserva</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">Solicitante</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">Elemento</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">Cantidad</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">Estado</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70">Creada</TableHead>
+                    <TableHead className="h-10 bg-utec-dark text-white/70 text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -2,7 +2,6 @@ import { useState, useMemo, memo, useCallback } from 'react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { LucideIcon } from 'lucide-react';
 
@@ -45,36 +44,32 @@ function MetricsChartHeader({
   onYAxisModeChange,
 }: Readonly<MetricsChartHeaderProps>) {
   return (
-    <CardHeader>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-        <CardTitle className="flex items-center gap-2 text-sm sm:text-base flex-shrink-0">
-          {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color }} />}
-          <span className="truncate">{title}</span>
-        </CardTitle>
-        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
-          <Select value={timeRange.toString()} onValueChange={(val) => onTimeRangeChange(Number(val))}>
-            <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10 pts</SelectItem>
-              <SelectItem value="20">20 pts</SelectItem>
-              <SelectItem value="30">30 pts</SelectItem>
-              <SelectItem value="50">50 pts</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => onYAxisModeChange(val)}>
-            <SelectTrigger className="w-[85px] sm:w-[100px] h-7 sm:h-8 text-[10px] sm:text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto">Auto Y</SelectItem>
-              <SelectItem value="fixed">Fijo Y</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </CardHeader>
+    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+      <span className="w-1 h-4 rounded-sm shrink-0" style={{ backgroundColor: color }} aria-hidden />
+      {Icon && <Icon className="h-3.5 w-3.5 text-white/70 shrink-0" />}
+      <h3 className="text-sm font-semibold tracking-tight truncate flex-1">{title}</h3>
+      <Select value={timeRange.toString()} onValueChange={(val) => onTimeRangeChange(Number(val))}>
+        <SelectTrigger className="w-[85px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="6">1 min</SelectItem>
+          <SelectItem value="30">5 min</SelectItem>
+          <SelectItem value="90">15 min</SelectItem>
+          <SelectItem value="180">30 min</SelectItem>
+          <SelectItem value="360">1 hora</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => onYAxisModeChange(val)}>
+        <SelectTrigger className="w-[85px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="auto">Auto Y</SelectItem>
+          <SelectItem value="fixed">Fijo Y</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -89,7 +84,7 @@ export const MetricsChart = memo(function MetricsChart({
   height = 300,
   isPaused = false
 }: MetricsChartProps) {
-  const [timeRange, setTimeRange] = useState<number>(20);
+  const [timeRange, setTimeRange] = useState<number>(30);
   const [yAxisMode, setYAxisMode] = useState<'auto' | 'fixed'>('auto');
 
   // Filtrar datos según el rango de tiempo y optimizar para mejor rendimiento
@@ -124,12 +119,12 @@ export const MetricsChart = memo(function MetricsChart({
       const payloadObj = first.payload as MetricsChartDataPoint | undefined;
       const ts = payloadObj?.timestamp;
       return (
-        <div className="bg-white border rounded-lg shadow-lg p-3">
-          <p className="text-sm font-medium text-gray-900">
+        <div className="bg-utec-dark border border-white/20 text-white rounded-md shadow-lg px-2.5 py-1.5 text-xs">
+          <p className="font-semibold tabular-nums">
             {numericValue.toFixed(2)}{unit}
           </p>
           {ts !== undefined && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-white/60">
               {new Date(ts).toLocaleTimeString()}
             </p>
           )}
@@ -154,24 +149,24 @@ export const MetricsChart = memo(function MetricsChart({
   // Si está pausado, mostrar versión estática optimizada
   if (isPaused) {
     return (
-      <Card className="shadow-card">
+      <div className="rounded-xl border border-white/10 bg-utec-dark overflow-hidden">
         {header}
-        <CardContent>
-          <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+        <div className="p-4">
+          <div className="flex items-center justify-center h-[180px] text-white/50">
             <div className="text-center">
-              <div className="text-sm opacity-50">Gráfico pausado</div>
+              <div className="text-sm">Gráfico pausado</div>
               <div className="text-xs mt-1">Para optimizar rendimiento</div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="shadow-card hover-lift">
+    <div className="rounded-xl border border-white/10 bg-utec-dark overflow-hidden">
       {header}
-      <CardContent>
+      <div className="p-4">
         <ResponsiveContainer width="100%" height={height}>
           {type === 'area' ? (
             <AreaChart data={displayData}>
@@ -181,17 +176,18 @@ export const MetricsChart = memo(function MetricsChart({
                   <stop offset="95%" stopColor={color} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.18)" />
               <XAxis
                 dataKey="time"
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
+                stroke="rgba(255,255,255,0.6)"
+                tick={{ fill: 'rgba(255,255,255,0.85)', fontSize: 11 }}
               />
               <YAxis
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
+                stroke="rgba(255,255,255,0.6)"
+                tick={{ fill: 'rgba(255,255,255,0.85)', fontSize: 11 }}
                 tickFormatter={(value) => `${value.toFixed(0)}${unit}`}
                 domain={yAxisDomain as [number | string, number | string]}
+                width={52}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area
@@ -206,17 +202,18 @@ export const MetricsChart = memo(function MetricsChart({
             </AreaChart>
           ) : (
             <LineChart data={displayData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.18)" />
               <XAxis
                 dataKey="time"
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
+                stroke="rgba(255,255,255,0.6)"
+                tick={{ fill: 'rgba(255,255,255,0.85)', fontSize: 11 }}
               />
               <YAxis
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
+                stroke="rgba(255,255,255,0.6)"
+                tick={{ fill: 'rgba(255,255,255,0.85)', fontSize: 11 }}
                 tickFormatter={(value) => `${value.toFixed(0)}${unit}`}
                 domain={yAxisDomain as [number | string, number | string]}
+                width={52}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line
@@ -231,7 +228,7 @@ export const MetricsChart = memo(function MetricsChart({
             </LineChart>
           )}
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });

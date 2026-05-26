@@ -1,14 +1,151 @@
 import { useState, useEffect } from 'react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { usuariosApi } from '@/lib/api/users';
-import { ROLE_LABELS } from '@/lib/config/constants';
-import type { UserStats } from '@/lib/types/users';
-import { 
-  Users, 
-  UserCheck, 
-  Shield, 
-  MailX
-} from 'lucide-react';
+import { ROLE_LABELS, ROLES } from '@/lib/config/constants';
+import type { UserRole, UserStats } from '@/lib/types/users';
+import { Users, UserCheck, MailX, Shield, Monitor, Chrome } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
+
+type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
+
+const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string }> = {
+  blue:   { bg: 'bg-utec-blue',   text: 'text-white',     subtle: 'text-white/70' },
+  yellow: { bg: 'bg-utec-yellow', text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
+  green:  { bg: 'bg-utec-green',  text: 'text-white',     subtle: 'text-white/80' },
+  orange: { bg: 'bg-utec-orange', text: 'text-white',     subtle: 'text-white/80' },
+  red:    { bg: 'bg-utec-red',    text: 'text-white',     subtle: 'text-white/80' },
+  cyan:   { bg: 'bg-utec-cyan',   text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
+  dark:   { bg: 'bg-utec-dark',   text: 'text-white',     subtle: 'text-white/60' },
+};
+
+interface ColoredStatProps {
+  label: string;
+  value: string | number;
+  hint?: string;
+  icon: LucideIcon;
+  bg: UtecBg;
+}
+
+function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredStatProps>) {
+  const c = bgClasses[bg];
+  return (
+    <div className={`rounded-xl p-4 min-w-0 ${c.bg}`}>
+      <div className={`flex items-center gap-1.5 text-xs mb-1 ${c.subtle}`}>
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{label}</span>
+      </div>
+      <div className={`text-2xl font-semibold tabular-nums ${c.text}`}>{value}</div>
+      {hint && <div className={`text-[11px] mt-0.5 truncate ${c.subtle}`}>{hint}</div>}
+    </div>
+  );
+}
+
+const ROLE_COLOR: Record<UserRole, string> = {
+  [ROLES.ADMIN]: '#DF2B31',
+  [ROLES.ANALISTA]: '#184897',
+  [ROLES.DOCENTE]: '#00c7ff',
+  [ROLES.ESTUDIANTE]: '#86bb4c',
+  [ROLES.EXTERNO]: '#F6CA21',
+  [ROLES.MANTENIMIENTO]: '#DE7A27',
+};
+
+interface TooltipPayload {
+  name?: string;
+  value?: number;
+  color?: string;
+  payload?: { color?: string; fill?: string };
+}
+
+function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-utec-dark text-white border border-utec-dark/40 rounded-md shadow-lg px-2.5 py-1.5 text-xs">
+        {payload.map((entry, index) => {
+          const p = entry as TooltipPayload;
+          const color = p.color ?? p.payload?.fill;
+          return (
+            <p key={`${p.name ?? 'entry'}-${index}`} className="tabular-nums">
+              <span style={{ color }}>●</span>{' '}
+              <span className="text-white/70">{p.name}:</span>{' '}
+              <span className="font-semibold">{p.value}</span>
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+  return null;
+}
+
+interface RolesDonutProps {
+  stats: UserStats;
+}
+
+function RolesDonut({ stats }: Readonly<RolesDonutProps>) {
+  const rolesData = (Object.entries(stats.usuariosPorRol) as Array<[UserRole, number]>)
+    .filter(([, count]) => count > 0)
+    .map(([rol, count]) => ({
+      name: ROLE_LABELS[rol],
+      value: count,
+      color: ROLE_COLOR[rol],
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden h-full flex flex-col">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+        <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
+        <Shield className="h-3.5 w-3.5 text-white/70 shrink-0" />
+        <h3 className="text-sm font-semibold tracking-tight truncate">Distribución por rol</h3>
+      </div>
+      <div className="p-3 flex-1 flex items-center gap-3">
+        <div className="w-[55%] shrink-0">
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie
+                data={rolesData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                innerRadius={42}
+                outerRadius={72}
+                paddingAngle={2}
+                dataKey="value"
+                stroke="none"
+              >
+                {rolesData.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<ChartTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <ul className="flex-1 flex flex-col gap-1.5 text-xs min-w-0">
+          {rolesData.map((d) => {
+            const pct = stats.totalUsuarios === 0 ? 0 : Math.round((d.value / stats.totalUsuarios) * 100);
+            return (
+              <li key={d.name} className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: d.color }} />
+                <span className="text-muted-foreground truncate flex-1">{d.name}</span>
+                <span className="font-semibold tabular-nums shrink-0">{d.value}</span>
+                <span className="text-muted-foreground tabular-nums shrink-0 w-9 text-right">{pct}%</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 export function UserStatsCards() {
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -22,7 +159,6 @@ export function UserStatsCards() {
     try {
       setLoading(true);
       const response = await usuariosApi.obtenerEstadisticas();
-      // El backend devuelve los datos directamente, no envueltos en .data
       setStats(response || null);
     } catch (error: unknown) {
       console.error('Error al cargar estadísticas:', error);
@@ -36,15 +172,11 @@ export function UserStatsCards() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {Array.from({ length: 4 }, (_, i) => `user-stat-skeleton-${i}`).map((skeletonKey) => (
-          <div key={skeletonKey} className="bg-white rounded-lg border p-5 animate-pulse">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-3 bg-gray-200 rounded w-16"></div>
-              <div className="h-4 w-4 bg-gray-200 rounded"></div>
-            </div>
-            <div className="h-6 bg-gray-200 rounded w-8 mb-1"></div>
-            <div className="h-2 bg-gray-200 rounded w-12"></div>
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="rounded-xl bg-muted p-4 animate-pulse">
+            <div className="h-3 w-16 bg-foreground/10 rounded mb-2" />
+            <div className="h-6 w-12 bg-foreground/20 rounded" />
           </div>
         ))}
       </div>
@@ -53,94 +185,30 @@ export function UserStatsCards() {
 
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <div className="col-span-1 sm:col-span-2 lg:col-span-4 bg-white rounded-lg border p-5 text-center text-muted-foreground">
-          Error al cargar estadísticas
-        </div>
+      <div className="rounded-xl bg-muted p-4 text-center text-muted-foreground">
+        Error al cargar estadísticas
       </div>
     );
   }
 
-  const porcentajeVerificados = stats.totalUsuarios > 0 
-    ? Math.round((stats.totalVerificados / stats.totalUsuarios) * 100) 
+  const porcentajeVerificados = stats.totalUsuarios > 0
+    ? Math.round((stats.totalVerificados / stats.totalUsuarios) * 100)
     : 0;
 
-
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-      {/* Total Usuarios */}
-      <div className="bg-white border rounded-lg p-5">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-600">Total Usuarios</span>
-          <Users className="h-5 w-5 text-gray-400" />
-        </div>
-        <div className="text-2xl font-bold text-gray-900">{stats.totalUsuarios}</div>
-        <div className="text-xs text-gray-500 mt-1">
-          {stats.totalActivos} activos, {stats.totalInactivos} inactivos
-        </div>
+    <div className="grid gap-4 lg:grid-cols-2">
+      {/* Izquierda: 6 stat cards de colores en grid 2x3 / 3x2 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <ColoredStat label="Total usuarios" value={stats.totalUsuarios} hint={`${stats.totalActivos} activos · ${stats.totalInactivos} inactivos`} icon={Users} bg="dark" />
+        <ColoredStat label="Verificados" value={stats.totalVerificados} hint={`${porcentajeVerificados}% del total`} icon={UserCheck} bg="dark" />
+        <ColoredStat label="Sin verificar" value={stats.totalNoVerificados} hint={`${100 - porcentajeVerificados}% del total`} icon={MailX} bg="dark" />
+        <ColoredStat label="Activos" value={stats.totalActivos} hint={`${stats.totalInactivos} inactivos`} icon={Shield} bg="dark" />
+        <ColoredStat label="Local" value={stats.usuariosPorProveedor.LOCAL || 0} hint="auth interna" icon={Monitor} bg="dark" />
+        <ColoredStat label="Google" value={stats.usuariosPorProveedor.GOOGLE || 0} hint="OAuth Google" icon={Chrome} bg="dark" />
       </div>
 
-      {/* Usuarios Verificados */}
-      <div className="bg-white border rounded-lg p-5">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-600">Verificados</span>
-          <UserCheck className="h-5 w-5 text-gray-400" />
-        </div>
-        <div className="text-2xl font-bold text-gray-900">{stats.totalVerificados}</div>
-        <div className="text-xs text-gray-500 mt-1">
-          {porcentajeVerificados}% del total
-        </div>
-      </div>
-
-      {/* Usuarios no verificados */}
-      <div className="bg-white border rounded-lg p-5">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-600">Sin Verificar</span>
-          <MailX className="h-5 w-5 text-gray-400" />
-        </div>
-        <div className="text-2xl font-bold text-gray-900">{stats.totalNoVerificados}</div>
-        <div className="text-xs text-gray-500 mt-1">
-          {100 - porcentajeVerificados}% del total
-        </div>
-      </div>
-
-      {/* Distribución por Proveedor */}
-      <div className="bg-white border rounded-lg p-5">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-600">Proveedores</span>
-          <Shield className="h-5 w-5 text-gray-400" />
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Local</span>
-            <span className="text-sm font-semibold text-gray-900">{stats.usuariosPorProveedor.LOCAL || 0}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Google</span>
-            <span className="text-sm font-semibold text-gray-900">{stats.usuariosPorProveedor.GOOGLE || 0}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Distribución por Rol */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-        <div className="bg-white border rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <Shield className="h-5 w-5 text-gray-400" />
-            <span className="text-sm font-medium text-gray-600">Distribución por Rol</span>
-          </div>
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-            {Object.entries(stats.usuariosPorRol).map(([rol, count]) => (
-              <div key={rol} className="text-center">
-                <div className="text-xl font-bold text-gray-900">{count}</div>
-                <div className="text-xs text-gray-600">
-                  {ROLE_LABELS[rol as keyof typeof ROLE_LABELS] || rol}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Derecha: donut de distribución por rol */}
+      <RolesDonut stats={stats} />
     </div>
   );
 }

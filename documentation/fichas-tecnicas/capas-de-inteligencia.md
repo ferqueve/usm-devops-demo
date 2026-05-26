@@ -8,7 +8,7 @@ UTEC Space Manager incorpora **tres capas progresivas de inteligencia**, cada un
 |---|---|---|---|
 | **1. Recomendaciones heurísticas** | Reglas explícitas + scoring determinístico | Operativa | [`sistema-de-recomendaciones.md`](./sistema-de-recomendaciones.md) |
 | **2. Machine Learning** | Modelo estadístico aprendido (Prophet) | Operativa | [`pipeline-de-ml.md`](./pipeline-de-ml.md) |
-| **3. Inteligencia Artificial generativa** | Modelos de lenguaje (LLM) | Planificada | (pendiente — ver sección 5) |
+| **3. Inteligencia Artificial generativa** | Modelos de lenguaje (LLM) | Operativa | [`capa-ia-generativa.md`](./capa-ia-generativa.md) |
 
 La existencia de esta progresión es una **decisión arquitectónica deliberada**, no un accidente histórico. Cada capa aporta un tipo de valor distinto que las otras no pueden cubrir bien, y las tres juntas trazan una narrativa coherente sobre cómo un sistema de gestión universitaria moderno puede incorporar inteligencia computacional sin caer en la trampa de aplicar la herramienta más sofisticada a problemas que no la necesitan.
 
@@ -88,21 +88,23 @@ Cuando el problema involucra **patrones temporales no triviales** que serían te
 
 Modelos de lenguaje grande (Large Language Models, LLMs) que **comprenden y generan texto en lenguaje natural**. A diferencia de las capas anteriores, el LLM no resuelve un problema acotado con una respuesta numérica, sino que **opera sobre lenguaje libre**, lo que abre un espacio de aplicaciones cualitativamente distinto: conversación, generación de contenido, comprensión semántica de pedidos abiertos, asistencia conversacional.
 
-### Qué resolvería en este sistema
+### Qué resuelve en este sistema
 
-Casos de uso identificados como candidatos para esta capa:
+La capa está implementada con cinco funcionalidades, cada una integrada en la pantalla donde resulta naturalmente útil:
 
-- **Asistente conversacional**: que un usuario pueda escribir "necesito un aula para 40 personas el jueves a la tarde, preferiblemente cerca del laboratorio de mecatrónica" y el sistema interprete el pedido, consulte disponibilidad real (vía herramientas/tools) y proponga opciones.
-- **Generación automática de descripciones**: títulos sugeridos para reservas, descripciones de espacios, mensajes pre-formateados al analista cuando se rechaza una solicitud.
-- **Resumen ejecutivo en lenguaje natural** de los reportes estadísticos: "esta semana las reservas aumentaron un 18 % respecto a la anterior, con concentración en el edificio E entre las 14 y las 18 horas".
-- **Búsqueda semántica** sobre el historial de auditoría: que un administrador pueda preguntar "¿quién canceló reservas con menos de dos horas de antelación el mes pasado?" sin tener que armar el filtro manualmente.
-- **Validación inteligente de pedidos**: detectar inconsistencias o ambigüedades en motivos de reserva mal redactados antes de que lleguen al analista.
+- **Resumen automático de estadísticas**: interpretación en lenguaje natural del estado del sistema, presentada como un banner en la pantalla de Estadísticas.
+- **Explicación de recomendaciones**: humaniza la salida del recomendador heurístico (capa 1), disponible como un botón dentro de cada tarjeta de recomendación.
+- **Análisis del forecast**: síntesis accionable de las predicciones del modelo de demanda (capa 2), con identificación de tendencias, picos y sugerencias operativas. Aparece dentro del propio bloque de predicción de demanda en Estadísticas.
+- **Búsqueda semántica de espacios**: consulta en lenguaje natural sobre el catálogo de espacios, resuelta por similitud de embeddings vectoriales almacenados en pgvector. Disponible como botón "Buscar con IA" en la pantalla de Espacios.
+- **Asistente conversacional**: agente que consulta la base de datos a través de un conjunto acotado de herramientas de sólo lectura. Disponible como widget flotante en toda pantalla autenticada.
 
-### Cómo se implementaría (planificado)
+### Cómo está implementada
 
-La arquitectura natural replica el patrón ya establecido por la capa de ML: un **servicio independiente** en el lenguaje más adecuado al dominio (probablemente Python para reutilizar el ecosistema LangChain / LlamaIndex / Anthropic SDK), que el backend Java consume cuando el usuario lo invoca explícitamente. Las salidas pueden persistirse en una tabla para auditoría y eventual reutilización.
+Microservicio Python independiente `ai-svc` (FastAPI + LangChain), proxy-eado por el backend Spring vía `/api/v1/ai/...`. El proveedor de LLM se abstrae con LangChain y se configura como una cadena con fallback automático: Gemini 2.5 Flash como primario y Llama 3.3 70B (vía Groq) como respaldo. Si el primario rechaza una solicitud, el servicio reintenta con el secundario sin que el usuario lo perciba. Los embeddings dependen exclusivamente de `gemini-embedding-001` (3.072 dimensiones).
 
-La interacción con el LLM debe ser **acotada por tools** (tool use, function calling): el modelo no inventa disponibilidad de espacios; consulta los endpoints reales del backend y solo formatea la respuesta. Este patrón —LLM como interfaz, sistema deterministico como fuente de verdad— es el estándar para aplicaciones empresariales de IA generativa.
+La interacción del chatbot con el LLM es **acotada por tools** (tool use, function calling): el modelo no inventa disponibilidad de espacios; consulta los endpoints reales del backend y sólo formatea la respuesta. Patrón estándar de LLM como interfaz, sistema determinístico como fuente de verdad. La identidad del usuario se inyecta desde el JWT del backend, no desde el prompt, para que el agente no pueda acceder a datos de otros usuarios aunque se lo pida explícitamente.
+
+Detalle técnico en [`capa-ia-generativa.md`](./capa-ia-generativa.md).
 
 ### Características y limitaciones esperadas
 
@@ -141,21 +143,21 @@ Las tres capas no compiten; resuelven problemas distintos. La elección entre el
 |---|---|---|---|
 | 1 · Heurística | Java | Spring Boot, JPA, Redis | dentro del `utec-backend` |
 | 2 · ML | Python | FastAPI, Prophet, pandas, SQLAlchemy | `ml-svc` (proceso separado) |
-| 3 · IA generativa (planificado) | Python | LangChain, Anthropic / OpenAI SDK, vector store | (a definir, probablemente `ai-svc`) |
+| 3 · IA generativa | Python | FastAPI, LangChain, Google Generative AI SDK, pgvector | `ai-svc` (proceso separado, siempre activo) |
 
 La incorporación progresiva de lenguajes (Java → Java + Python → Java + Python + Python) refleja un principio guía del proyecto: **cada capa usa el lenguaje y el ecosistema más adecuado a su dominio**, en lugar de forzar una única tecnología para problemas heterogéneos.
 
 ---
 
-## 7. Plan de evolución
+## 7. Estado actual y direcciones de evolución
 
-El sistema está diseñado para que la incorporación de la capa 3 no requiera modificaciones estructurales del resto. Específicamente:
+Las tres capas están operativas e integradas en las pantallas correspondientes. Las direcciones de evolución que se identifican como naturales son:
 
-- **El patrón de servicio independiente con base de datos compartida** ya está validado por la capa 2.
-- **El backend Java actúa como orquestador**: invoca a los servicios especializados solo cuando el flujo lo requiere, sin acoplarse a su disponibilidad en los caminos transaccionales.
-- **La UI ya tiene primitivos** para distinguir resultados generados por inteligencia computacional (badges, paneles de metadata) de resultados determinísticos, lo que permite incorporar respuestas de LLM manteniendo la transparencia con el usuario.
+- **Capa 1**: enriquecer las heurísticas combinando señales adicionales del histórico ya disponible.
+- **Capa 2**: explorar modelos por espacio individual cuando el volumen lo justifique, e incorporar predicción de cancelaciones.
+- **Capa 3**: profundizar la abstracción multi-proveedor incorporando alternativas adicionales (por ejemplo OpenAI o Anthropic para escenarios productivos con plan de pago) y evaluar memoria persistente entre sesiones para el asistente conversacional.
 
-Las próximas decisiones a tomar antes de implementar la capa 3 son: (a) selección del proveedor de modelo (Anthropic, OpenAI, modelo open-source autohospedado), (b) política de privacidad sobre los datos enviados al LLM (anonimización, qué información se incluye en los prompts), (c) presupuesto operativo y mecanismos de control de costo por usuario.
+La abstracción vía LangChain permite intercambiar o encadenar proveedores de LLM modificando variables de entorno, lo que reduce la exposición a cambios en las políticas de nivel gratuito de un único proveedor.
 
 ---
 

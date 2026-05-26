@@ -59,6 +59,11 @@ frontend/out/
 dist/
 dist-ssr/
 
+# Coverage reports (Vitest / Jest / JaCoCo)
+frontend/coverage/
+backend/target/site/jacoco/
+coverage/
+
 # ===== LOGS =====
 *.log
 *.log.*.gz

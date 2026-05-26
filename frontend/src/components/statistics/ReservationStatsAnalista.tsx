@@ -34,6 +34,7 @@ import {
 import { exportReservationStatsToPDF } from '@/lib/utils/pdf-export';
 import ReservationCharts from './ReservationCharts';
 import EstadisticasAvanzadas from './EstadisticasAvanzadas';
+import { AiStatsBanner } from './AiStatsBanner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -349,6 +350,9 @@ export default function ReservationStatsAnalista() {
       {actionsSlot
         ? createPortal(actions, actionsSlot)
         : <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
+
+      {/* Resumen IA del estado actual de las reservas */}
+      <AiStatsBanner stats={stats} />
 
       {/* Strip principal con colores institucionales UTEC */}
       <StatStrip

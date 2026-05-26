@@ -9,7 +9,7 @@ interface JvmChartsProps {
 
 export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = false }: JvmChartsProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+    <div className="space-y-4">
       <MetricsChart
         title="Memoria"
         data={metricsHistory}
@@ -18,7 +18,7 @@ export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = fa
         color="#0066CC"
         unit=" MB"
         type="area"
-        height={280}
+        height={180}
         isPaused={isPaused}
       />
       <MetricsChart
@@ -29,7 +29,7 @@ export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = fa
         color="#86bb4c"
         unit="%"
         type="area"
-        height={280}
+        height={180}
         isPaused={isPaused}
       />
       <MetricsChart
@@ -40,7 +40,7 @@ export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = fa
         color="#F6CA21"
         unit=""
         type="line"
-        height={280}
+        height={180}
         isPaused={isPaused}
       />
     </div>

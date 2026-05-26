@@ -1,9 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Database, CheckCircle2 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { Database, CheckCircle2, CheckCircle, XCircle } from 'lucide-react';
 import type {
   HealthInfo,
   LiquibaseBean,
@@ -48,6 +45,43 @@ function extractChangeSets(data: LiquibaseInfo | null | undefined): LiquibaseCha
   return [];
 }
 
+function TitleBar({
+  dbStatus,
+  dbDetails,
+  count,
+}: Readonly<{
+  dbStatus: string;
+  dbDetails: Record<string, unknown> | undefined;
+  count?: number;
+}>) {
+  const isUp = dbStatus === 'UP';
+  return (
+    <div className="bg-utec-dark text-white border-b border-white/10">
+      <div className="flex items-center gap-2 px-4 py-2.5">
+        <Database className="h-4 w-4 text-utec-blue shrink-0" />
+        <h3 className="text-sm font-semibold flex-1">Base de Datos</h3>
+        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${isUp ? 'text-utec-green' : 'text-utec-red'}`}>
+          {isUp ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+          {dbStatus}
+        </span>
+        {typeof count === 'number' && (
+          <span className="text-xs text-white/70 tabular-nums">{count} migraciones</span>
+        )}
+      </div>
+      {dbDetails && Object.keys(dbDetails).length > 0 && (
+        <div className="px-4 py-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-white/60 border-t border-white/10">
+          {Object.entries(dbDetails).map(([key, value]) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <span>{key.replaceAll(/([A-Z])/g, ' $1').trim()}:</span>
+              <span className="text-white/90 font-medium">{String(value)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelineProps>) {
   const changeSets = extractChangeSets(data);
   const dbStatus = health?.components?.db?.status || 'UNKNOWN';
@@ -55,138 +89,72 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
 
   if (!changeSets.length) {
     return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5 text-utec-blue" />
-            Base de Datos
-            <StatusBadge 
-              status={dbStatus === 'UP' ? 'success' : 'error'}
-              label={dbStatus}
-              icon={false}
-              className="ml-auto"
-            />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Detalles de DB */}
-          {dbDetails && (
-            <div className="mb-4 pb-3 border-b">
-              <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                {Object.entries(dbDetails).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      {key.replaceAll(/([A-Z])/g, ' $1').trim()}:
-                    </span>
-                    <span className="font-medium">
-                      {String(value)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          <div className="text-center py-8 space-y-2">
-            <p className="text-muted-foreground">
-              No hay información de migraciones Liquibase disponible.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Verifica que el endpoint <code className="bg-gray-100 px-2 py-1 rounded">actuator/liquibase</code> esté habilitado.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="border rounded-lg overflow-hidden shadow-card">
+        <TitleBar dbStatus={dbStatus} dbDetails={dbDetails} />
+        <div className="text-center py-8 space-y-2 bg-card">
+          <p className="text-muted-foreground">
+            No hay información de migraciones Liquibase disponible.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Verifica que el endpoint <code className="bg-gray-100 px-2 py-1 rounded">actuator/liquibase</code> esté habilitado.
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="shadow-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Database className="h-5 w-5 text-utec-blue" />
-          Base de Datos
-          <StatusBadge 
-            status={dbStatus === 'UP' ? 'success' : 'error'}
-            label={dbStatus}
-            icon={false}
-            className="ml-2"
-          />
-          <Badge variant="secondary" className="ml-auto">
-            {changeSets.length} migraciones
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Detalles de DB */}
-        {dbDetails && (
-          <div className="mb-4 pb-3 border-b">
-            <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-              {Object.entries(dbDetails).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <span className="text-muted-foreground">
-                    {key.replaceAll(/([A-Z])/g, ' $1').trim()}:
-                  </span>
-                  <span className="font-medium">
-                    {String(value)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Tabla de migraciones */}
-        <ScrollArea className="h-[400px] border rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-b-0">
-                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[60px]">#</TableHead>
-                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[120px]">ID</TableHead>
-                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db]">Descripción</TableHead>
-                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[100px]">Autor</TableHead>
-                <TableHead style={{ backgroundColor: '#525961' }} className="h-10 text-[#d1d5db] w-[150px]">Fecha</TableHead>
+    <div className="border rounded-lg overflow-hidden shadow-card">
+      <TitleBar dbStatus={dbStatus} dbDetails={dbDetails} count={changeSets.length} />
+      <ScrollArea className="h-[400px]">
+        <Table>
+          <TableHeader className="bg-utec-dark">
+            <TableRow className="hover:bg-transparent border-b border-white/10">
+              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[60px]">#</TableHead>
+              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[120px]">ID</TableHead>
+              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Descripción</TableHead>
+              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[100px]">Autor</TableHead>
+              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[150px]">Fecha</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {changeSets.map((changeSet, index) => (
+              <TableRow key={`${changeSet.id}-${index}`}>
+                <TableCell className="font-medium text-xs text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 text-green-600" />
+                    {changeSet.orderExecuted || index + 1}
+                  </div>
+                </TableCell>
+                <TableCell className="font-mono text-xs">{changeSet.id}</TableCell>
+                <TableCell className="text-xs">
+                  <div className="max-w-[300px]">
+                    <p className="truncate">{changeSet.description || '-'}</p>
+                    {changeSet.changeLog && (
+                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                        {changeSet.changeLog}
+                      </p>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="text-xs">{changeSet.author}</TableCell>
+                <TableCell className="text-xs">
+                  {changeSet.dateExecuted
+                    ? new Date(changeSet.dateExecuted).toLocaleDateString('es', {
+                        year: '2-digit',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : '-'}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {changeSets.map((changeSet, index) => (
-                <TableRow key={`${changeSet.id}-${index}`}>
-                  <TableCell className="font-medium text-xs text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <CheckCircle2 className="h-3 w-3 text-green-600" />
-                      {changeSet.orderExecuted || index + 1}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">{changeSet.id}</TableCell>
-                  <TableCell className="text-xs">
-                    <div className="max-w-[300px]">
-                      <p className="truncate">{changeSet.description || '-'}</p>
-                      {changeSet.changeLog && (
-                        <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                          {changeSet.changeLog}
-                        </p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs">{changeSet.author}</TableCell>
-                  <TableCell className="text-xs">
-                    {changeSet.dateExecuted 
-                      ? new Date(changeSet.dateExecuted).toLocaleDateString('es', {
-                          year: '2-digit',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
-                      : '-'}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+            ))}
+          </TableBody>
+        </Table>
+      </ScrollArea>
+    </div>
   );
 }
 
