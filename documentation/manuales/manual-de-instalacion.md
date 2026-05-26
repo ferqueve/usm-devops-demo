@@ -1305,7 +1305,10 @@ FRONTEND_URL=http://localhost:5173
 #### Variables de Reservas (Recordatorios)
 
 ```env
-# Horas antes de la reserva para enviar recordatorio (por defecto: 24)
+# Cuánto antes del inicio de la reserva se envía el aviso (por defecto: 24 h).
+# El sistema revisa una vez al día (00:00) y barre una ventana de 24 horas desde
+# (ahora + este valor), por lo que envía un único aviso por reserva con
+# deduplicación. Con 24 h se anuncian las reservas del día siguiente.
 RESERVAS_REMINDER_HOURS_BEFORE=24
 
 # Habilitar/deshabilitar recordatorios automáticos
@@ -1809,7 +1812,7 @@ Los permisos se configuran en el código del backend. Para modificar:
 En `backend/.env`:
 
 ```env
-# Horas antes de enviar recordatorio
+# Cuánto antes del inicio de la reserva se envía el aviso (horas)
 RESERVAS_REMINDER_HOURS_BEFORE=24
 
 # Habilitar/deshabilitar
