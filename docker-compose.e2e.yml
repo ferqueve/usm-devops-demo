@@ -4,7 +4,9 @@
 
 services:
   e2e-db:
-    image: postgres:15
+    # Debe incluir pgvector: la migración 023 hace `CREATE EXTENSION vector`.
+    # Alineada con la base de desarrollo (docker-compose.yml).
+    image: pgvector/pgvector:pg15
     container_name: utec_e2e_db
     environment:
       POSTGRES_DB: utec_e2e
