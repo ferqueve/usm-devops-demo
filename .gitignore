@@ -64,6 +64,10 @@ frontend/coverage/
 backend/target/site/jacoco/
 coverage/
 
+# Playwright E2E artifacts
+frontend/test-results/
+frontend/playwright-report/
+
 # ===== LOGS =====
 *.log
 *.log.*.gz
