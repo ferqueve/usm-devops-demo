@@ -548,3 +548,23 @@ body {
 .dark .text-blue-600 { color: #93c5fd; }
 
 /* Header oscuro del dashboard: ya es oscuro en ambos modos (no se toca). */
+
+/* ============================================================
+   Panel lateral del login (AuthSidePanel) — formas flotantes
+   ============================================================ */
+@keyframes auth-float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10px, -22px) scale(1.05); }
+}
+@keyframes auth-float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-16px, 14px) scale(0.95); }
+}
+@keyframes auth-float-c {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(14px, 16px) rotate(8deg); }
+}
+@keyframes auth-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
