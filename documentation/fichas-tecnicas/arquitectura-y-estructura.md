@@ -4,7 +4,9 @@
 
 UTEC Space Manager es una aplicación web cliente-servidor compuesta por un backend Spring Boot que expone una API REST y un frontend en React + Vite. El sistema utiliza PostgreSQL como base de datos principal, Redis para caché de cómputos costosos, y MinIO (opcional) como almacenamiento S3-compatible para archivos. Toda la pila está dockerizable mediante Docker Compose y soporta tanto despliegue manual como con imágenes pre-construidas.
 
-La estructura del repositorio separa claramente los dos componentes (`backend/` y `frontend/`), mantiene las migraciones de base de datos versionadas con Liquibase y centraliza la documentación en `documentation/`. Los archivos sensibles se manejan vía variables de entorno y los `.env.example` documentan qué variables son necesarias para cada servicio.
+Además del cliente web existe un **cliente mobile** (`mobile/`, Expo / React Native) que consume la misma API REST sin lógica de negocio propia. Su detalle vive en la ficha `cliente-mobile.md`.
+
+La estructura del repositorio separa claramente los componentes (`backend/`, `frontend/`, `mobile/`), mantiene las migraciones de base de datos versionadas con Liquibase y centraliza la documentación en `documentation/`. Los archivos sensibles se manejan vía variables de entorno y los `.env.example` documentan qué variables son necesarias para cada servicio.
 
 ---
 
@@ -29,6 +31,7 @@ Casos de uso típicos:
 USM_UTEC/
 ├── backend/                           Backend Spring Boot
 ├── frontend/                          Frontend React + Vite
+├── mobile/                            Cliente mobile Expo / React Native
 ├── documentation/                     Documentación markdown (manuales + fichas técnicas)
 ├── scripts/                           Scripts utilitarios para entornos locales
 │   └── e2e.sh                         Orquestador de pruebas extremo a extremo

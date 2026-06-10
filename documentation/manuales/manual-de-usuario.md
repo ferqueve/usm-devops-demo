@@ -839,6 +839,7 @@ Ubicado en la parte superior de la pantalla, contiene:
 - **Botón de menú**: Para mostrar/ocultar el sidebar en móviles
 - **Título de la página actual**: Muestra en qué sección está
 - **Información adicional**: Badges, hora actual
+- **Botón de tema**: Alterna entre modo claro y modo oscuro (icono de sol/luna). La preferencia se recuerda para próximas visitas.
 - **Menú de usuario**: Avatar, nombre y opciones de usuario
 
 **Características:**
@@ -1744,11 +1745,15 @@ Para ver información detallada de un espacio:
 ### Información Mostrada en Detalles
 
 - **Información general**: Nombre, tipo, capacidad, estado
-- **Imagen/Plano**: Visualización del espacio
+- **Imagen/Plano**: Visualización del espacio (ver "Vista 360°" más abajo)
 - **Inventario asignado**: Lista de items de inventario en el espacio
 - **Reservas**: Próximas reservas del espacio
 - **Estadísticas**: Uso del espacio, ocupación promedio
 - **Acciones**: Editar, eliminar, agregar inventario
+
+### Vista 360°
+
+Si la foto del espacio es una imagen panorámica de 360°, el sistema lo detecta automáticamente y muestra un botón **"360°"** sobre la imagen. Al pulsarlo se abre una vista interactiva a pantalla completa donde puede mirar alrededor del espacio: arrastre con el mouse (o el dedo) para girar la vista, use los controles para acercar o alejar y ver el espacio en pantalla completa. Para cerrar la vista, pulse la **X** de la esquina superior o la tecla **Esc**. Si la foto es una imagen común, simplemente se muestra como hasta ahora.
 
 ### Página de Detalles (`/rooms/:id`)
 
