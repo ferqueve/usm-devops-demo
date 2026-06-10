@@ -3,6 +3,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar-context";
 import { Clock, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -74,7 +75,9 @@ export const DashboardHeader = memo(function DashboardHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Toggle de tema claro/oscuro */}
+          <ThemeToggle />
           {/* Badge con hora actual */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm">
             <Clock className="h-4 w-4" style={{ color: '#d1d5db' }} />

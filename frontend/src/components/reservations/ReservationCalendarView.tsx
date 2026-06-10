@@ -926,7 +926,7 @@ export default function ReservationCalendarView({
                </div>
 
                                {/* Área de timeline - scrollable */}
-                <div className={`flex-1 relative bg-white ${isFullScreen ? '' : 'overflow-y-auto'}`} style={{ minHeight: `${alturaMinima}px`, backgroundColor: '#ffffff' }}>
+                <div className={`flex-1 relative bg-white ${isFullScreen ? '' : 'overflow-y-auto'}`} style={{ minHeight: `${alturaMinima}px`, backgroundColor: 'var(--background)' }}>
                   {/* Sección colapsada antes */}
                   {mostrarColapsadoAntes && (
                     <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center border-b border-gray-300 bg-gray-50/30">
@@ -994,9 +994,9 @@ export default function ReservationCalendarView({
                             left: `calc(${leftEfectivo}% + 3px)`,
                             width: `calc(${widthEfectivo}% - 6px)`,
                             height: `${Math.max(2, alturaPx - 6)}px`,
-                            backgroundColor: esPasada ? '#f9fafb' : '#ffffff',
+                            backgroundColor: esPasada ? 'var(--muted)' : 'var(--card)',
                             borderLeft: `4px solid ${tipoColor}`,
-                            border: `1px solid ${esPasada ? '#e5e7eb' : '#e5e7eb'}`,
+                            border: `1px solid var(--border)`,
                             borderLeftWidth: '4px',
                             borderLeftColor: tipoColor,
                             opacity: esPasada ? 0.85 : 1,
