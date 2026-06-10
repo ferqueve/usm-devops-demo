@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SpaceImage } from "./SpaceImage";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SpaceFormDialog } from './SpaceFormDialog';
 import { DeleteSpaceDialog } from './DeleteSpaceDialog';
@@ -366,11 +367,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
           {/* Imagen / placeholder compacto */}
           <div className="rounded-xl border bg-card overflow-hidden">
             {espacio.imagenUrl ? (
-              <img
-                src={espacio.imagenUrl}
-                alt={espacio.nombre}
-                className="w-full aspect-video object-cover"
-              />
+              <SpaceImage src={espacio.imagenUrl} alt={espacio.nombre} />
             ) : (
               <div className="aspect-[16/7] bg-utec-dark flex flex-col items-center justify-center gap-2">
                 <Building2 className="h-10 w-10 text-white/30" />
