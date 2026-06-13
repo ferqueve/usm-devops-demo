@@ -67,7 +67,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
   const errors: RecentError[] = data?.top ?? [];
 
   return (
-    <div className="border rounded-lg overflow-hidden shadow-card">
+    <div className="border rounded-lg overflow-hidden shadow-card bg-card">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
         <AlertTriangle className="h-4 w-4 text-utec-red shrink-0" />
         <h3 className="text-sm font-semibold flex-1">

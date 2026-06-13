@@ -550,6 +550,22 @@ body {
 /* Header oscuro del dashboard: ya es oscuro en ambos modos (no se toca). */
 
 /* ============================================================
+   Patrón de puntos del fondo de página (detrás de las cards)
+   ------------------------------------------------------------
+   Se superpone al background-color del <main> (no lo reemplaza),
+   así que convive con bg-gray-50 (claro) y var(--muted) (dark).
+   Muy sutil: da textura/profundidad sin tocar el contenido.
+   ============================================================ */
+.page-dots {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.4px, transparent 1.6px);
+  background-size: 22px 22px;
+  background-position: center;
+}
+.dark .page-dots {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.11) 1.4px, transparent 1.6px);
+}
+
+/* ============================================================
    Panel lateral del login (AuthSidePanel) — formas flotantes
    ============================================================ */
 @keyframes auth-float-a {

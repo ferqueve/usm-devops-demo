@@ -4,6 +4,7 @@ import { useSidebar } from "@/components/ui/sidebar-context";
 import { Clock, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { HeaderNodeNetwork } from "./HeaderNodeNetwork";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -59,8 +60,9 @@ export const DashboardHeader = memo(function DashboardHeader({
 
   return (
     <>
-      <header className="flex h-16 items-center justify-between gap-4 border-b px-4 lg:px-6 shadow-sm" style={{ backgroundColor: '#525961' }}>
-        <div className="flex items-center gap-4">
+      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b px-4 lg:px-6 shadow-sm" style={{ backgroundColor: '#525961' }}>
+        <HeaderNodeNetwork />
+        <div className="relative z-10 flex items-center gap-4">
           <div ref={triggerWrapperRef}>
             <SidebarTrigger 
               style={{ color: '#d1d5db' }} 
@@ -75,7 +77,7 @@ export const DashboardHeader = memo(function DashboardHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="relative z-10 flex items-center gap-2">
           {/* Toggle de tema claro/oscuro */}
           <ThemeToggle />
           {/* Badge con hora actual */}
