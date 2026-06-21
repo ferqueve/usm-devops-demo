@@ -89,8 +89,14 @@ jobs:
             body=$(curl -sS "$SONAR_HOST_URL/api/system/status" || true)
             echo "body=$body"
             if echo "$body" | grep -q '"status":"UP"'; then
-              echo "SonarQube listo."
-              exit 0
+              # status:UP no alcanza: durante el boot la API real responde 404 (safemode).
+              # Confirmamos que la API operativa responda 200 antes de scanear.
+              code=$(curl -sS -o /dev/null -w '%{http_code}' "$SONAR_HOST_URL/api/server/version" || echo 000)
+              echo "api/server/version -> HTTP $code"
+              if [ "$code" = "200" ]; then
+                echo "SonarQube operativo."
+                exit 0
+              fi
             fi
             if echo "$body" | grep -q '"status":"DB_MIGRATION_NEEDED"' && [ $migration_triggered -eq 0 ]; then
               echo "Disparando migración de DB..."
