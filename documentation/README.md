@@ -15,6 +15,7 @@ documentation/
     ├── roles-y-permisos.md
     ├── arquitectura-y-estructura.md
     ├── sistema-de-diseno-ui.md
+    ├── cliente-mobile.md
     └── analisis-de-codigo.md
 ```
 
@@ -45,7 +46,8 @@ Documentos de profundización por subsistema. Siguen un patrón estándar de **5
 | [`fichas-tecnicas/sistema-de-recomendaciones.md`](fichas-tecnicas/sistema-de-recomendaciones.md) | Subsistema de recomendaciones inteligentes: algoritmos, scoring, jobs, caché. |
 | [`fichas-tecnicas/roles-y-permisos.md`](fichas-tecnicas/roles-y-permisos.md) | Modelo de roles, mapa de permisos por rol, integración con Spring Security. |
 | [`fichas-tecnicas/arquitectura-y-estructura.md`](fichas-tecnicas/arquitectura-y-estructura.md) | Organización del proyecto, stack tecnológico, módulos backend y frontend, migraciones. |
-| [`fichas-tecnicas/sistema-de-diseno-ui.md`](fichas-tecnicas/sistema-de-diseno-ui.md) | Paleta UTEC, componentes UI propios, tokens de diseño, convenciones de frontend. |
+| [`fichas-tecnicas/sistema-de-diseno-ui.md`](fichas-tecnicas/sistema-de-diseno-ui.md) | Paleta UTEC, componentes UI propios, tokens de diseño, modo oscuro, convenciones de frontend. |
+| [`fichas-tecnicas/cliente-mobile.md`](fichas-tecnicas/cliente-mobile.md) | Cliente mobile Expo / React Native: stack, reuso de la API REST, pantallas, navegación por rol, tema. |
 | [`fichas-tecnicas/analisis-de-codigo.md`](fichas-tecnicas/analisis-de-codigo.md) | Snapshot de calidad de código del backend según SonarQube + JaCoCo: cobertura, bugs, vulnerabilidades, code smells, deuda técnica. |
 
 ## Tono y nivel técnico

@@ -1,19 +1,36 @@
-name: Build and Push Docker Images
+name: Build and Deploy (GHCR + Railway)
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 env:
-  REGISTRY: docker.io
-  IMAGE_NAME_BACKEND: mathiaspena/utec-backend
-  IMAGE_NAME_FRONTEND: mathiaspena/utec-frontend
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/mathiaspena
 
 jobs:
-  build-backend:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            context: ./backend
+            image: utec-backend
+          - name: frontend
+            context: ./frontend
+            image: utec-frontend
+          - name: ml
+            context: ./ml
+            image: utec-ml
+          - name: ai
+            context: ./ai
+            image: utec-ai
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -21,75 +38,63 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
-        id: meta-backend
+        id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME_BACKEND }}
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push backend
+      - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
           push: true
-          tags: ${{ steps.meta-backend.outputs.tags }}
-          labels: ${{ steps.meta-backend.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             VCS_REF=${{ github.sha }}
 
-  build-frontend:
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            service_id: d7de254b-cef9-4842-9a4e-0caf45257d3e
+          - name: frontend
+            service_id: 5f4d6a22-7ba8-4ce9-93b1-affa8a897a01
+          - name: ml
+            service_id: 67c394fd-824f-4d4f-bed2-3427b30fa4d3
+          - name: ai
+            service_id: 4be5c775-62d5-4248-a702-987084dca140
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      ENVIRONMENT_ID: b6d12208-5f50-4b7c-bb84-49b2a6878891
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta-frontend
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_NAME_FRONTEND }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
-            VCS_REF=${{ github.sha }}
+      - name: Trigger Railway redeploy (${{ matrix.name }})
+        run: |
+          set -e
+          resp=$(curl -sS -X POST https://backboard.railway.com/graphql/v2 \
+            -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"mutation { serviceInstanceRedeploy(environmentId: \\\"$ENVIRONMENT_ID\\\", serviceId: \\\"${{ matrix.service_id }}\\\") }\"}")
+          echo "$resp"
+          echo "$resp" | grep -q '"errors"' && { echo "Redeploy fallido"; exit 1; } || echo "Redeploy disparado para ${{ matrix.name }}"

@@ -52,7 +52,7 @@ export function AiStatsBanner({ stats, periodo = 'últimos 30 días' }: Readonly
   }
 
   return (
-    <div className="rounded-xl border bg-gradient-to-br from-utec-blue/5 via-white to-utec-cyan/5 overflow-hidden">
+    <div className="rounded-xl border bg-gradient-to-br from-utec-blue/5 via-card to-utec-cyan/5 overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-utec-dark text-white">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="w-1 h-4 rounded-sm bg-utec-yellow shrink-0" aria-hidden />

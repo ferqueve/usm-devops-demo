@@ -1,0 +1,11 @@
+export * as authApi from './auth';
+export * as spacesApi from './spaces';
+export * as reservationsApi from './reservations';
+export * as dashboardApi from './dashboard';
+export * as inventoryApi from './inventory';
+export * as usersApi from './users';
+export * as auditApi from './audit';
+export * as statsApi from './stats';
+export * as systemApi from './system';
+export * as aiApi from './ai';
+export * as carrerasApi from './carreras';

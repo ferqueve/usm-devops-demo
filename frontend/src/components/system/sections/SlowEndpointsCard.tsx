@@ -55,7 +55,7 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
   const max = endpoints.length > 0 ? Math.max(...endpoints.map(e => e.p95)) : 1;
 
   return (
-    <div className="border rounded-lg overflow-hidden shadow-card">
+    <div className="border rounded-lg overflow-hidden shadow-card bg-card">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
         <Gauge className="h-4 w-4 text-utec-orange shrink-0" />
         <h3 className="text-sm font-semibold flex-1">Endpoints más lentos (p95)</h3>

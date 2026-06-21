@@ -35,7 +35,9 @@ Convenciones:
 | `@tailwindcss/vite` | ^4.1.12 | Plugin oficial de Tailwind v4 para Vite. |
 | `tw-animate-css` | ^1.3.7 (dev) | Animaciones extra ya integradas con Tailwind. |
 | `lucide-react` | ^0.542.0 | Iconografía. |
-| `next-themes` | ^0.4.6 | Soporte de modo oscuro. |
+| `next-themes` | ^0.4.6 | Modo oscuro (ver §3.10). |
+| `@photo-sphere-viewer/core` | ^5.14.1 | Visor de imágenes 360° equirectangulares (ver §3.11). |
+| `three` | ^0.184.0 | Motor WebGL que usa el visor 360° (dependencia transitiva de photo-sphere-viewer). |
 | `class-variance-authority`, `clsx`, `tailwind-merge` | (vía shadcn) | Helpers para variantes y combinación de clases. |
 
 `frontend/components.json` configura shadcn/ui con `style: "new-york"` y aliases.
@@ -133,7 +135,10 @@ El panel de Sistema es uno de los lugares con más concentración de UI personal
 - `frontend/src/components/layouts/DashboardLayout/`:
   - `DashboardLayout.tsx` — contenedor principal autenticado.
   - `DashboardSidebar.tsx` — navegación lateral.
-  - `DashboardHeader.tsx` — header superior.
+  - `DashboardHeader.tsx` — header superior. Aloja el toggle de tema (ver §3.10).
+- `frontend/src/components/layouts/AuthLayout/`:
+  - `AuthSidePanel.tsx` — panel lateral de la pantalla de login. Fondo oscuro de marca con formas geométricas planas en los colores UTEC (§3.3) que flotan solas y reaccionan al mouse con parallax por capas; el título usa la fuente corporativa UTEC (`.font-utec`).
+  - `NodeNetwork.tsx` — red de nodos animada (constelación) dibujada en `<canvas>` detrás de las formas: los nodos derivan, se enlazan entre sí y hacia el cursor. Respeta `prefers-reduced-motion`.
 
 ### 3.8 Ejemplos de uso
 
@@ -169,6 +174,32 @@ Breakpoints estándar de Tailwind:
 | `1024–1536px` | Desktop | Sidebar fijo, tablas completas, todos los filtros visibles. |
 | `> 1536px` | XL | Sidebar expandido, máximo aprovechamiento de espacio. |
 
+### 3.10 Modo oscuro
+
+El tema lo gestiona **next-themes**, montado en `frontend/src/main.tsx` mediante un wrapper propio `frontend/src/components/theme-provider.tsx` con `attribute="class"`, `defaultTheme="light"`, `enableSystem={false}` y `storageKey="utec-theme"` (la preferencia se persiste en `localStorage`). El toggle (sol/luna) es `frontend/src/components/ui/theme-toggle.tsx` y se ubica en el `DashboardHeader`.
+
+next-themes alterna la clase `.dark` en `<html>`. A partir de ahí, el modo oscuro se resuelve en dos niveles dentro de `index.css`:
+
+1. **Tokens shadcn**: el bloque `.dark { ... }` ya redefine las variables OKLCH (`--background`, `--card`, `--foreground`, etc.). Todo componente que use clases de token (`bg-background`, `text-foreground`, `bg-card`…) se adapta solo.
+2. **Utilidades hardcodeadas**: buena parte de la app se construyó con grises y blancos literales (`bg-white`, `bg-gray-50/100/200`, `text-gray-900/700/500`, `border-gray-*`, y los azules del heatmap `bg-blue-50…400`). Para no editar decenas de componentes uno por uno, `index.css` incluye un bloque de overrides `.dark .bg-white { … }`, `.dark .bg-gray-100 { … }`, etc., que remapea esas utilidades a los tokens del tema (o a colores explícitos en el caso del heatmap, que debe seguir siendo azul y no gris en oscuro). Incluye también variantes con opacidad (`.dark .bg-gray-50\/50`).
+
+Casos puntuales con color inline (no por clase, por lo que el override CSS no los alcanza) se corrigieron en el componente usando variables CSS: la vista de día/semana del calendario (`ReservationCalendarView.tsx`) usa `var(--background)`, `var(--card)`, `var(--muted)` y `var(--border)` en lugar de hex fijos.
+
+### 3.11 Imágenes 360° de espacios
+
+El detalle de espacio (`SpaceDetails.tsx`) muestra la imagen mediante `frontend/src/components/spaces/SpaceImage.tsx`, que:
+
+- Renderiza siempre la foto normal (`<img>`).
+- **Detecta panorámicas equirectangulares** por la relación de aspecto: carga la imagen en memoria y la considera 360° si el ratio ancho/alto está entre 1.9 y 2.2 (las equirectangulares son ~2:1). No requiere metadato ni flag en el backend.
+- Si es 360°, superpone un botón **"360°"** (icono `Rotate3d`) que abre un visor panorámico interactivo a pantalla completa.
+
+El visor es `frontend/src/components/spaces/Panorama360Viewer.tsx`, basado en `@photo-sphere-viewer/core` (sobre `three`). Se carga **lazy** (`React.lazy`) para no incluir `three` en el bundle salvo que el usuario abra una 360.
+
+Dos decisiones de implementación quedan documentadas por ser no obvias:
+
+- El overlay es **propio** (`fixed inset-0`), no un `Dialog` de Radix: el `FocusScope` del Dialog monta un `MutationObserver` que choca con el visor (que reescribe el DOM del canvas).
+- La instancia del `Viewer` se crea diferida un tick (`setTimeout(…, 0)`): así se evita el doble-montaje de React StrictMode (crear → destruir → crear), que dejaba la carga de la textura colgada.
+
 ---
 
 ## 4. Métricas / evidencia
@@ -177,7 +208,7 @@ Breakpoints estándar de Tailwind:
 - **Tokens de paleta UTEC**: 8 colores principales con sus utilidades de texto/fondo/borde.
 - **Animaciones propias**: 7 (sin contar las que provee `tw-animate-css`).
 - **Sin `tailwind.config.*`**: la configuración entera del tema vive en `frontend/src/index.css` aprovechando la directiva `@theme` de Tailwind v4.
-- **Modo oscuro**: soportado vía `next-themes`, con bloque `.dark { ... }` en `index.css`.
+- **Modo oscuro**: activo. `ThemeProvider` (next-themes) montado en `main.tsx` + toggle en el header; resuelto en `index.css` con el bloque `.dark { ... }` de tokens shadcn más overrides de las utilidades hardcodeadas (`bg-white`, `bg-gray-*`, `text-gray-*`, heatmap `bg-blue-*`). Ver §3.10.
 
 ---
 

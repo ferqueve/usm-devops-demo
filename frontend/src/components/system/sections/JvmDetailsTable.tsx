@@ -45,7 +45,7 @@ export const JvmDetailsTable = memo(function JvmDetailsTable({
   const httpCount = findStatistic(httpMetrics, 'COUNT');
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-hidden bg-card">
       <Table>
           <TableHeader className="bg-utec-dark">
             <TableRow className="hover:bg-transparent border-b-0">

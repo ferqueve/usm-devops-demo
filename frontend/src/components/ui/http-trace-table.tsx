@@ -117,7 +117,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
 
   if (!traces.length) {
     return (
-      <div className="border rounded-lg overflow-hidden shadow-card">
+      <div className="border rounded-lg overflow-hidden shadow-card bg-card">
         <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
           <Network className="h-4 w-4 text-utec-blue shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Actividad HTTP Reciente</h3>
@@ -130,7 +130,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden shadow-card">
+    <div className="border rounded-lg overflow-hidden shadow-card bg-card">
       <div className="bg-utec-dark text-white">
         {/* Fila 1: título + Ocultar Actuator + Mostrar N */}
         <div className="flex items-center gap-3 px-4 py-2.5">
