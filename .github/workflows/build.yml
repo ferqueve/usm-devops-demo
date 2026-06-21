@@ -83,6 +83,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           set -e
+          # Gracia: deja que Railway cambie a la instancia nueva antes de sondear,
+          # para no leer un "UP" de la instancia vieja que se está reemplazando.
+          echo "Gracia inicial de 40s..."
+          sleep 40
           deadline=$(( $(date +%s) + 600 ))
           migration_triggered=0
           while [ $(date +%s) -lt $deadline ]; do
