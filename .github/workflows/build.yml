@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - dev
+  workflow_dispatch:
+
+env:
+  RAILWAY_API: https://backboard.railway.com/graphql/v2
+  RAILWAY_ENV_ID: b6d12208-5f50-4b7c-bb84-49b2a6878891
+  RAILWAY_PROJECT_ID: a68b9507-cb34-4cd3-8d90-6ffa95e45741
+  SONARQUBE_SERVICE_ID: 134bd473-dc50-44d3-829f-d7000bc2b29d
+  SONAR_DB_SERVICE_ID: a0d7991f-2930-4c9e-a485-cd24d212821a
 
 jobs:
   analyze:
@@ -48,14 +56,34 @@ jobs:
         run: npm run test:coverage
         continue-on-error: true
 
-      # Despierta Sonar (serverless en Railway) antes del scan.
+      # SonarQube se apaga (deploymentStop) cuando no se usa, para no pagar
+      # ~$25/mes de RAM 24/7. Acá lo encendemos solo para este scan.
+      # Primero la DB, después el server (que necesita la DB arriba al bootear).
+      - name: Start SonarQube on Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          set -e
+          redeploy() {
+            curl -sS -X POST "$RAILWAY_API" \
+              -H "Project-Access-Token: $RAILWAY_TOKEN" -H "Content-Type: application/json" \
+              -d "{\"query\":\"mutation(\$e:String!,\$s:String!){serviceInstanceRedeploy(environmentId:\$e,serviceId:\$s)}\",\"variables\":{\"e\":\"$RAILWAY_ENV_ID\",\"s\":\"$1\"}}"
+            echo ""
+          }
+          echo "Arrancando Postgres-Sonar..."
+          redeploy "$SONAR_DB_SERVICE_ID"
+          sleep 25
+          echo "Arrancando sonarqube..."
+          redeploy "$SONARQUBE_SERVICE_ID"
+
+      # Espera a que Sonar esté UP (boot en frío de Sonar + Elasticsearch es lento).
       # Si reporta DB_MIGRATION_NEEDED, dispara la migración automáticamente.
-      - name: Wake SonarQube and wait for UP
+      - name: Wait for SonarQube UP
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           set -e
-          deadline=$(( $(date +%s) + 360 ))
+          deadline=$(( $(date +%s) + 600 ))
           migration_triggered=0
           while [ $(date +%s) -lt $deadline ]; do
             body=$(curl -sS "$SONAR_HOST_URL/api/system/status" || true)
@@ -71,7 +99,7 @@ jobs:
             fi
             sleep 10
           done
-          echo "Timeout esperando a SonarQube (>6 min)."
+          echo "Timeout esperando a SonarQube (>10 min)."
           exit 1
 
       - name: SonarQube Scan
@@ -79,3 +107,24 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Apaga Sonar y su DB pase lo que pase con el scan, para volver a $0 de runtime.
+      - name: Stop SonarQube on Railway
+        if: always()
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          stop() {
+            id=$(curl -sS -X POST "$RAILWAY_API" \
+              -H "Project-Access-Token: $RAILWAY_TOKEN" -H "Content-Type: application/json" \
+              -d "{\"query\":\"query{deployments(first:1,input:{projectId:\\\"$RAILWAY_PROJECT_ID\\\",environmentId:\\\"$RAILWAY_ENV_ID\\\",serviceId:\\\"$1\\\"}){edges{node{id status}}}}\"}" \
+              | python3 -c "import sys,json;e=json.load(sys.stdin)['data']['deployments']['edges'];print(e[0]['node']['id'] if e else '')")
+            if [ -z "$id" ]; then echo "No hay deployment para $1"; return; fi
+            echo "Deteniendo $1 (deployment $id)"
+            curl -sS -X POST "$RAILWAY_API" \
+              -H "Project-Access-Token: $RAILWAY_TOKEN" -H "Content-Type: application/json" \
+              -d "{\"query\":\"mutation(\$id:String!){deploymentStop(id:\$id)}\",\"variables\":{\"id\":\"$id\"}}"
+            echo ""
+          }
+          stop "$SONARQUBE_SERVICE_ID"
+          stop "$SONAR_DB_SERVICE_ID"
