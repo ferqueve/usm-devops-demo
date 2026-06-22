@@ -98,7 +98,8 @@ jobs:
               code=$(curl -sS -o /dev/null -w '%{http_code}' "$SONAR_HOST_URL/api/server/version" || echo 000)
               echo "api/server/version -> HTTP $code"
               if [ "$code" = "200" ]; then
-                echo "SonarQube operativo."
+                echo "SonarQube operativo. Warm-up 60s para que Elasticsearch estabilice..."
+                sleep 60
                 exit 0
               fi
             fi
@@ -113,6 +114,34 @@ jobs:
           exit 1
 
       - name: SonarQube Scan
+        id: scan
+        continue-on-error: true
+        uses: SonarSource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Si el primer scan murió (p.ej. ES recuperándose), esperamos que vuelva a estar UP.
+      - name: Wait for SonarQube recovery
+        if: steps.scan.outcome == 'failure'
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          echo "Primer scan fallo. Esperando que SonarQube se recupere..."
+          deadline=$(( $(date +%s) + 300 ))
+          while [ $(date +%s) -lt $deadline ]; do
+            st=$(curl -sS "$SONAR_HOST_URL/api/system/status" || true)
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "$SONAR_HOST_URL/api/server/version" || echo 000)
+            echo "status=$st version=$code"
+            if echo "$st" | grep -q '"status":"UP"' && [ "$code" = "200" ]; then
+              echo "Recuperado. Warm-up 45s..."; sleep 45; exit 0
+            fi
+            sleep 10
+          done
+          echo "No se recupero a tiempo."; exit 1
+
+      - name: SonarQube Scan (retry)
+        if: steps.scan.outcome == 'failure'
         uses: SonarSource/sonarqube-scan-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
