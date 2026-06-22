@@ -58,23 +58,18 @@ jobs:
 
       # SonarQube se apaga (deploymentStop) cuando no se usa, para no pagar
       # ~$25/mes de RAM 24/7. Acá lo encendemos solo para este scan.
-      # Primero la DB, después el server (que necesita la DB arriba al bootear).
+      # Postgres-Sonar queda SIEMPRE prendida (~$1/mes): si la DB no esta lista
+      # al bootear, SonarQube aborta el init (EOFException) y crashea.
       - name: Start SonarQube on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           set -e
-          redeploy() {
-            curl -sS -X POST "$RAILWAY_API" \
-              -H "Project-Access-Token: $RAILWAY_TOKEN" -H "Content-Type: application/json" \
-              -d "{\"query\":\"mutation(\$e:String!,\$s:String!){serviceInstanceRedeploy(environmentId:\$e,serviceId:\$s)}\",\"variables\":{\"e\":\"$RAILWAY_ENV_ID\",\"s\":\"$1\"}}"
-            echo ""
-          }
-          echo "Arrancando Postgres-Sonar..."
-          redeploy "$SONAR_DB_SERVICE_ID"
-          sleep 25
           echo "Arrancando sonarqube..."
-          redeploy "$SONARQUBE_SERVICE_ID"
+          curl -sS -X POST "$RAILWAY_API" \
+            -H "Project-Access-Token: $RAILWAY_TOKEN" -H "Content-Type: application/json" \
+            -d "{\"query\":\"mutation(\$e:String!,\$s:String!){serviceInstanceRedeploy(environmentId:\$e,serviceId:\$s)}\",\"variables\":{\"e\":\"$RAILWAY_ENV_ID\",\"s\":\"$SONARQUBE_SERVICE_ID\"}}"
+          echo ""
 
       # Espera a que Sonar esté UP (boot en frío de Sonar + Elasticsearch es lento).
       # Si reporta DB_MIGRATION_NEEDED, dispara la migración automáticamente.
@@ -166,4 +161,3 @@ jobs:
             echo ""
           }
           stop "$SONARQUBE_SERVICE_ID"
-          stop "$SONAR_DB_SERVICE_ID"
