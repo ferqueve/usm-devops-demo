@@ -7,7 +7,11 @@ import {
   Users,
   Server,
   FileText,
-  Sparkles
+  Sparkles,
+  GraduationCap,
+  CalendarClock,
+  Megaphone,
+  Leaf
 } from "lucide-react";
 import type { SidebarMenuItem } from '../types/ui';
 import type { UserRole } from '../types/users';
@@ -71,6 +75,30 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Auditoría",
     icon: FileText,
     href: "/audit"
+  },
+  {
+    id: "materias",
+    label: "Materias",
+    icon: GraduationCap,
+    href: "/materias"
+  },
+  {
+    id: "tutorias",
+    label: "Tutorías",
+    icon: CalendarClock,
+    href: "/tutorias"
+  },
+  {
+    id: "eventos",
+    label: "Eventos",
+    icon: Megaphone,
+    href: "/eventos"
+  },
+  {
+    id: "sostenibilidad",
+    label: "Sostenibilidad",
+    icon: Leaf,
+    href: "/sostenibilidad"
   }
 ];
 
@@ -107,7 +135,11 @@ export const ROLE_PERMISSIONS = {
       '/statistics',
       '/asistente',
       '/system',
-      '/audit'
+      '/audit',
+      '/materias',
+      '/tutorias',
+      '/eventos',
+      '/sostenibilidad'
     ],
     sidebarItems: [
       'dashboard',
@@ -120,7 +152,11 @@ export const ROLE_PERMISSIONS = {
       'asistente',
       'Users',
       'system',
-      'audit'
+      'audit',
+      'materias',
+      'tutorias',
+      'eventos',
+      'sostenibilidad'
     ],
   },
   [ROLES.ANALISTA]: {
@@ -135,7 +171,9 @@ export const ROLE_PERMISSIONS = {
       '/calendar',
       '/inventory',
       '/statistics',
-      '/asistente'
+      '/asistente',
+      '/materias',
+      '/eventos'
     ],
     sidebarItems: [
       'dashboard',
@@ -144,46 +182,62 @@ export const ROLE_PERMISSIONS = {
       'calendar',
       'inventory',
       'statistics',
-      'asistente'
+      'asistente',
+      'materias',
+      'eventos'
     ],
   },
   [ROLES.DOCENTE]: {
     name: 'Docente',
-    description: 'Acceso a reservas y eventos externos',
+    description: 'Gestiona sus materias, recursos y tutorías',
     routes: [
       '/dashboard',
       '/reservations',
       '/reservations/create',
-      '/calendar'
+      '/calendar',
+      '/materias',
+      '/tutorias',
+      '/eventos'
     ],
     sidebarItems: [
       'dashboard',
       'reservations',
-      'calendar'
+      'calendar',
+      'materias',
+      'tutorias',
+      'eventos'
     ],
   },
   [ROLES.ESTUDIANTE]: {
     name: 'Estudiante',
-    description: 'Acceso limitado a visualización',
+    description: 'Materias, recursos, tutorías y eventos',
     routes: [
       '/dashboard',
-      '/calendar'
+      '/calendar',
+      '/materias',
+      '/tutorias',
+      '/eventos'
     ],
     sidebarItems: [
       'dashboard',
-      'calendar'
+      'calendar',
+      'materias',
+      'tutorias',
+      'eventos'
     ],
   },
   [ROLES.EXTERNO]: {
     name: 'Externo',
-    description: 'Acceso a eventos externos únicamente',
+    description: 'Oferta abierta de eventos y cursos',
     routes: [
       '/dashboard',
-      '/calendar'
+      '/calendar',
+      '/eventos'
     ],
     sidebarItems: [
       'dashboard',
-      'calendar'
+      'calendar',
+      'eventos'
     ],
   },
   [ROLES.MANTENIMIENTO]: {
@@ -196,14 +250,16 @@ export const ROLE_PERMISSIONS = {
       '/calendar',
       '/inventory',
       '/inventory/requests',
-      '/statistics'
+      '/statistics',
+      '/sostenibilidad'
     ],
     sidebarItems: [
       'dashboard',
       'rooms',
       'calendar',
       'inventory',
-      'statistics'
+      'statistics',
+      'sostenibilidad'
     ],
   }
 } as const;

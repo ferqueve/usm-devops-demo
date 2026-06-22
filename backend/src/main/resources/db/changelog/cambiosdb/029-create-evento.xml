@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Eventos / cursos de oferta abierta -->
+    <changeSet id="001" author="Mathias">
+        <createTable tableName="evento">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="titulo" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="TEXT"/>
+            <column name="tipo" type="VARCHAR(20)" defaultValue="EVENTO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inicio" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fin" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="cupo" type="INTEGER"/>
+            <column name="es_publico" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="espacio_id" type="BIGINT"/>
+            <column name="organizador_id" type="BIGINT"/>
+            <column name="estado" type="VARCHAR(20)" defaultValue="PUBLICADO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <addForeignKeyConstraint
+                baseTableName="evento" baseColumnNames="espacio_id"
+                referencedTableName="espacio" referencedColumnNames="id"
+                constraintName="fk_evento_espacio"
+                onDelete="SET NULL" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint
+                baseTableName="evento" baseColumnNames="organizador_id"
+                referencedTableName="usuario" referencedColumnNames="id"
+                constraintName="fk_evento_organizador"
+                onDelete="SET NULL" onUpdate="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="003" author="Mathias">
+        <createIndex indexName="idx_evento_estado" tableName="evento">
+            <column name="estado"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
