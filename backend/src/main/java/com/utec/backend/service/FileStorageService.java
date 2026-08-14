@@ -50,6 +50,9 @@ public class FileStorageService {
     @Value("${minio.allowed-mime-types:image/jpeg,image/jpg,image/png,image/webp,image/gif}")
     private String allowedMimeTypes;
 
+    @Value("${minio.allowed-doc-mime-types:application/pdf,image/,application/msword,application/vnd.openxmlformats-officedocument.,application/vnd.ms-excel,application/vnd.ms-powerpoint,text/plain}")
+    private String allowedDocMimeTypes;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(java.time.ZoneOffset.UTC);
 
     /**
@@ -101,6 +104,52 @@ public class FileStorageService {
         } catch (MinioException | InvalidKeyException | NoSuchAlgorithmException e) {
             log.error("Error al subir imagen a MinIO para espacio {}", espacioId, e);
             throw new IOException("Error al subir la imagen: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Sube un documento (PDF, imagen, archivo office, etc.) asociado a una materia.
+     * A diferencia de {@link #uploadImage}, no restringe a imágenes: valida contra
+     * el conjunto configurado en {@code minio.allowed-doc-mime-types} y sube al
+     * prefijo {@code materias/{materiaId}/...}.
+     *
+     * @param file      Archivo a subir
+     * @param materiaId ID de la materia
+     * @return Ruta del objeto en MinIO (objectName, para almacenar en BD)
+     * @throws IOException Si hay error al leer el archivo
+     */
+    public String uploadDocumento(MultipartFile file, Long materiaId) throws IOException {
+        if (!isAvailable()) {
+            log.warn("Cannot upload documento: MinIO is not available");
+            throw new IOException("MinIO is not available. File storage is disabled.");
+        }
+
+        // Validar archivo contra los tipos de documento permitidos
+        validateDocumento(file);
+
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String extension = getFileExtension(originalFilename);
+            String timestamp = Instant.now().atZone(java.time.ZoneOffset.UTC).format(DATE_FORMATTER);
+            String uniqueFilename = String.format("%s-%s%s", timestamp, UUID.randomUUID().toString().substring(0, 8), extension);
+
+            // Prefijo de la materia
+            String objectName = String.format("materias/%d/%s", materiaId, uniqueFilename);
+
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .stream(file.getInputStream(), file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build()
+            );
+
+            log.info("Documento subido exitosamente: {} para materia {}", objectName, materiaId);
+            return objectName;
+        } catch (MinioException | InvalidKeyException | NoSuchAlgorithmException e) {
+            log.error("Error al subir documento a MinIO para materia {}", materiaId, e);
+            throw new IOException("Error al subir el documento: " + e.getMessage(), e);
         }
     }
 
@@ -210,6 +259,43 @@ public class FileStorageService {
             throw new IllegalArgumentException(
                     String.format("Tipo de archivo no permitido: %s. Tipos permitidos: %s",
                             contentType, allowedMimeTypes)
+            );
+        }
+    }
+
+    /**
+     * Valida que el documento cumpla con los requisitos (tamaño y tipo MIME de documento).
+     * Reutiliza el mismo límite de tamaño que las imágenes, pero valida contra el
+     * conjunto de tipos de documento permitidos.
+     *
+     * @param file Archivo a validar
+     * @throws IllegalArgumentException Si el archivo no es válido
+     */
+    private void validateDocumento(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("El archivo no puede estar vacío");
+        }
+
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException(
+                    String.format("El archivo excede el tamaño máximo permitido de %d bytes (%.2f MB)",
+                            maxFileSize, maxFileSize / (1024.0 * 1024.0))
+            );
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new IllegalArgumentException("No se pudo determinar el tipo de archivo");
+        }
+
+        List<String> allowedTypes = Arrays.asList(allowedDocMimeTypes.split(","));
+        boolean isAllowed = allowedTypes.stream()
+                .anyMatch(type -> contentType.toLowerCase().startsWith(type.trim().toLowerCase()));
+
+        if (!isAllowed) {
+            throw new IllegalArgumentException(
+                    String.format("Tipo de archivo no permitido: %s. Tipos permitidos: %s",
+                            contentType, allowedDocMimeTypes)
             );
         }
     }

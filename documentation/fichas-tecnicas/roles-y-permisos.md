@@ -16,12 +16,12 @@ A grandes rasgos:
 
 | Rol | Resumen de capacidades |
 |---|---|
-| **ADMIN** | Acceso total al sistema. Único rol que puede gestionar usuarios y acceder a Auditoría y Sistema. |
-| **ANALISTA** | Foco en gestión de reservas: crea, aprueba, edita, cancela. Ve espacios, inventario, estadísticas y carreras. Puede subir archivos y consultar recomendaciones. |
-| **MANTENIMIENTO** | Foco en infraestructura: gestiona espacios, inventario y tipos (alta, baja, modificación). Aprueba solicitudes de inventario, gestiona el estado de las recomendaciones de mantenimiento, accede a recomendaciones de compras. |
-| **DOCENTE** | Crea reservas (que entran como solicitudes pendientes de aprobación), ve sus reservas y las del sistema, ve espacios, recibe recomendaciones. |
-| **ESTUDIANTE** | Solo lectura: ve reservas, espacios, tipos, carreras y estadísticas básicas. |
-| **EXTERNO** | Similar a DOCENTE pero más limitado: puede solicitar reservas y ver las propias y las públicas. No accede a recomendaciones. |
+| **ADMIN** | Acceso total al sistema. Único rol que puede gestionar usuarios y acceder a Auditoría y Sistema. En lo académico, gestiona todo: materias, tutorías, eventos y sostenibilidad. |
+| **ANALISTA** | Foco en gestión de reservas: crea, aprueba, edita, cancela. Ve espacios, inventario, estadísticas y carreras. Puede subir archivos y consultar recomendaciones. En lo académico, gestiona materias y eventos (CRUD + inscriptos) y ve sostenibilidad. |
+| **MANTENIMIENTO** | Foco en infraestructura: gestiona espacios, inventario y tipos (alta, baja, modificación). Aprueba solicitudes de inventario, gestiona el estado de las recomendaciones de mantenimiento, accede a recomendaciones de compras. Sin acceso a la capa académica. |
+| **DOCENTE** | Crea reservas (que entran como solicitudes pendientes de aprobación), ve sus reservas y las del sistema, ve espacios, recibe recomendaciones. En lo académico: dicta materias (edita las suyas, sube recursos, ve inscriptos) y crea/gestiona sus tutorías. |
+| **ESTUDIANTE** | Solo lectura en reservas/espacios/estadísticas. En lo académico: se inscribe a materias, consulta recursos, agenda tutorías y se anota a eventos. |
+| **EXTERNO** | Similar a DOCENTE pero más limitado: puede solicitar reservas y ver las propias y las públicas. No accede a recomendaciones. En lo académico, solo ve e inscribe a eventos públicos. |
 
 ### Cómo se aplica el control en la práctica
 
@@ -189,6 +189,29 @@ Resumen de qué roles tienen cada permiso. ADMIN aparece en todos por su comodí
 | `archivo:subir` | ✓ | ✓ | | | |
 | `archivo:ver` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `auditoria:ver` | (solo ADMIN) | | | | |
+
+### 3.7 Permisos de la capa académica
+
+La capa académica (Materias, Recursos, Tutorías, Eventos) y el dashboard de Sostenibilidad agregan permisos propios. **ADMIN tiene todos.** MANTENIMIENTO no tiene ninguno. Tabla por el resto de los roles:
+
+| Permiso | ANALISTA | DOCENTE | ESTUDIANTE | EXTERNO |
+|---|---|---|---|---|
+| `materia:ver` | ✓ | ✓ | ✓ | |
+| `materia:crear` / `:eliminar` | ✓ | | | |
+| `materia:editar` / `:ver_inscriptos` | ✓ | ✓ | | |
+| `inscripcion:crear` | ✓ | | ✓ | |
+| `inscripcion:ver_propias` | | | ✓ | |
+| `inscripcion:cancelar` | ✓ | | ✓ | |
+| `recurso:ver` | ✓ | ✓ | ✓ | |
+| `recurso:crear` / `:eliminar` | | ✓ | | |
+| `tutoria:ver` | ✓ | ✓ | ✓ | |
+| `tutoria:crear` / `:editar` | | ✓ | | |
+| `tutoria:agendar` / `:cancelar_reserva` | | | ✓ | |
+| `evento:ver` / `:inscribir` | ✓ | ✓ | ✓ | ✓ |
+| `evento:crear` / `:editar` / `:eliminar` / `:ver_inscriptos` | ✓ | | | |
+| `sostenibilidad:ver` | ✓ | | | |
+
+> Nota de **propiedad**: editar/eliminar **tutorías** está permitido al docente dueño **o** a admin/analista (relajado en `TutoriaService`). En **eventos**, la lista de espera (`ESPERA`) y el check-in (`ASISTIO`) reutilizan el estado de la inscripción y no requieren permisos nuevos (usan `evento:inscribir` y `evento:ver_inscriptos`).
 
 ---
 

@@ -76,3 +76,28 @@ export async function postChat(payload: ChatRequest): Promise<ApiResponse<ChatRe
     body: JSON.stringify(payload),
   });
 }
+
+export interface GenerarEventoRequest {
+  idea: string;
+  tipo?: string;
+}
+
+export interface GenerarEventoResponse {
+  titulo: string;
+  descripcion: string;
+  tags: string;
+}
+
+export async function postGenerarEvento(payload: GenerarEventoRequest): Promise<ApiResponse<GenerarEventoResponse>> {
+  return apiRequest(`${base}/insights/generar-evento`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function postResumenTemario(payload: { materia?: string; temarios: string[] }): Promise<ApiResponse<{ resumen: string }>> {
+  return apiRequest(`${base}/insights/resumen-temario`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}

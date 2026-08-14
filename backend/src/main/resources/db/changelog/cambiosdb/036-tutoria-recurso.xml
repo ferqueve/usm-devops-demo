@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Material/recursos que el docente adjunta a una tutoría -->
+    <changeSet id="001" author="Mathias">
+        <createTable tableName="tutoria_recurso">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tutoria_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="titulo" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <addForeignKeyConstraint
+                baseTableName="tutoria_recurso" baseColumnNames="tutoria_id"
+                referencedTableName="tutoria" referencedColumnNames="id"
+                constraintName="fk_tutoria_recurso_tutoria"
+                onDelete="CASCADE" onUpdate="CASCADE"/>
+        <createIndex indexName="idx_tutoria_recurso_tutoria_id" tableName="tutoria_recurso">
+            <column name="tutoria_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

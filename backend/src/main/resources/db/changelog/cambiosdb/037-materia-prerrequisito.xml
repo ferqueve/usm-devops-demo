@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Correlativas: una materia (materia_id) requiere haber aprobado otra (prerrequisito_id) -->
+    <changeSet id="001" author="Mathias">
+        <createTable tableName="materia_prerrequisito">
+            <column name="materia_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prerrequisito_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="materia_prerrequisito" columnNames="materia_id,prerrequisito_id"
+                       constraintName="pk_materia_prerrequisito"/>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <addForeignKeyConstraint
+                baseTableName="materia_prerrequisito" baseColumnNames="materia_id"
+                referencedTableName="materia" referencedColumnNames="id"
+                constraintName="fk_materia_prerrequisito_materia"
+                onDelete="CASCADE" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint
+                baseTableName="materia_prerrequisito" baseColumnNames="prerrequisito_id"
+                referencedTableName="materia" referencedColumnNames="id"
+                constraintName="fk_materia_prerrequisito_prereq"
+                onDelete="CASCADE" onUpdate="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="003" author="Mathias">
+        <createIndex indexName="idx_materia_prerrequisito_materia" tableName="materia_prerrequisito">
+            <column name="materia_id"/>
+        </createIndex>
+        <createIndex indexName="idx_materia_prerrequisito_prereq" tableName="materia_prerrequisito">
+            <column name="prerrequisito_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

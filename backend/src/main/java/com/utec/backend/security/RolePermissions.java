@@ -76,6 +76,41 @@ public final class RolePermissions {
     // ===== Permisos: auditoría =====
     public static final String AUDITORIA_VER = "auditoria:ver";
 
+    // ===== Permisos: materias =====
+    public static final String MATERIA_VER = "materia:ver";
+    public static final String MATERIA_CREAR = "materia:crear";
+    public static final String MATERIA_EDITAR = "materia:editar";
+    public static final String MATERIA_ELIMINAR = "materia:eliminar";
+    public static final String MATERIA_VER_INSCRIPTOS = "materia:ver_inscriptos";
+
+    // ===== Permisos: inscripciones a materias =====
+    public static final String INSCRIPCION_CREAR = "inscripcion:crear";
+    public static final String INSCRIPCION_VER_PROPIAS = "inscripcion:ver_propias";
+    public static final String INSCRIPCION_CANCELAR = "inscripcion:cancelar";
+
+    // ===== Permisos: recursos académicos =====
+    public static final String RECURSO_VER = "recurso:ver";
+    public static final String RECURSO_CREAR = "recurso:crear";
+    public static final String RECURSO_ELIMINAR = "recurso:eliminar";
+
+    // ===== Permisos: tutorías =====
+    public static final String TUTORIA_VER = "tutoria:ver";
+    public static final String TUTORIA_CREAR = "tutoria:crear";
+    public static final String TUTORIA_EDITAR = "tutoria:editar";
+    public static final String TUTORIA_AGENDAR = "tutoria:agendar";
+    public static final String TUTORIA_CANCELAR_RESERVA = "tutoria:cancelar_reserva";
+
+    // ===== Permisos: eventos / oferta abierta =====
+    public static final String EVENTO_VER = "evento:ver";
+    public static final String EVENTO_CREAR = "evento:crear";
+    public static final String EVENTO_EDITAR = "evento:editar";
+    public static final String EVENTO_ELIMINAR = "evento:eliminar";
+    public static final String EVENTO_INSCRIBIR = "evento:inscribir";
+    public static final String EVENTO_VER_INSCRIPTOS = "evento:ver_inscriptos";
+
+    // ===== Permisos: sostenibilidad =====
+    public static final String SOSTENIBILIDAD_VER = "sostenibilidad:ver";
+
     // ===== Wildcard ADMIN =====
     public static final String WILDCARD = "*";
 
@@ -128,7 +163,14 @@ public final class RolePermissions {
 
             // Archivos
             ARCHIVO_SUBIR,
-            ARCHIVO_VER
+            ARCHIVO_VER,
+
+            // Capa académica - gestión global de materias y eventos
+            MATERIA_VER, MATERIA_CREAR, MATERIA_EDITAR, MATERIA_ELIMINAR, MATERIA_VER_INSCRIPTOS,
+            INSCRIPCION_CREAR, INSCRIPCION_CANCELAR,
+            RECURSO_VER,
+            TUTORIA_VER,
+            EVENTO_VER, EVENTO_CREAR, EVENTO_EDITAR, EVENTO_ELIMINAR, EVENTO_INSCRIBIR, EVENTO_VER_INSCRIPTOS
         ));
 
         // ===== MANTENIMIENTO =====
@@ -172,7 +214,10 @@ public final class RolePermissions {
 
             // Archivos
             ARCHIVO_SUBIR,
-            ARCHIVO_VER
+            ARCHIVO_VER,
+
+            // Sostenibilidad (infraestructura)
+            SOSTENIBILIDAD_VER
         ));
 
         // ===== DOCENTE =====
@@ -201,7 +246,13 @@ public final class RolePermissions {
             USUARIO_VER_ANALISTAS,
 
             // Archivos - Solo lectura
-            ARCHIVO_VER
+            ARCHIVO_VER,
+
+            // Capa académica - dicta materias, recursos, tutorías
+            MATERIA_VER, MATERIA_EDITAR, MATERIA_VER_INSCRIPTOS,
+            RECURSO_VER, RECURSO_CREAR, RECURSO_ELIMINAR,
+            TUTORIA_VER, TUTORIA_CREAR, TUTORIA_EDITAR,
+            EVENTO_VER, EVENTO_INSCRIBIR
         ));
 
         // ===== ESTUDIANTE =====
@@ -223,7 +274,14 @@ public final class RolePermissions {
             ESTADISTICAS_VER,
 
             // Archivos - Solo lectura
-            ARCHIVO_VER
+            ARCHIVO_VER,
+
+            // Capa académica - se inscribe a materias, consume recursos, agenda tutorías
+            MATERIA_VER,
+            INSCRIPCION_CREAR, INSCRIPCION_VER_PROPIAS, INSCRIPCION_CANCELAR,
+            RECURSO_VER,
+            TUTORIA_VER, TUTORIA_AGENDAR, TUTORIA_CANCELAR_RESERVA,
+            EVENTO_VER, EVENTO_INSCRIBIR
         ));
 
         // ===== EXTERNO =====
@@ -245,7 +303,10 @@ public final class RolePermissions {
             CARRERA_VER,
 
             // Archivos - Solo lectura
-            ARCHIVO_VER
+            ARCHIVO_VER,
+
+            // Oferta abierta - ve e inscribe a eventos públicos
+            EVENTO_VER, EVENTO_INSCRIBIR
         ));
 
         ROLE_PERMISSION_MAP = Collections.unmodifiableMap(map);

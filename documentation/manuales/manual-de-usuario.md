@@ -143,6 +143,11 @@
 21. [Preguntas Frecuentes (FAQ)](#21-preguntas-frecuentes-faq)
 22. [Glosario](#22-glosario)
 23. [Anexos](#23-anexos)
+24. [Materias, Tutorías y Eventos](#24-materias-tutorías-y-eventos)
+    - [24.1 Materias](#241-materias)
+    - [24.2 Tutorías](#242-tutorías)
+    - [24.3 Eventos](#243-eventos)
+25. [Sostenibilidad](#25-sostenibilidad)
 
 ---
 
@@ -4375,6 +4380,46 @@ Pizarra,1,DISPONIBLE,Aula 101,Pizarra blanca
 
 ---
 
+# 24. MATERIAS, TUTORÍAS Y EVENTOS
+
+El sistema incluye una **capa académica** con cuatro secciones del menú lateral: **Materias**, **Tutorías**, **Eventos** y **Sostenibilidad**. Lo que ve cada persona depende de su rol.
+
+## 24.1 Materias
+
+Las **Materias** son las asignaturas de las carreras. Cada una tiene su página de detalle (al hacer clic en una fila o en "Ver detalle") con cuatro bloques: **Información**, **Inscriptos**, **Recursos académicos** y **Tutorías** de esa materia.
+
+- **Administrador / Analista:** ve la lista completa con indicadores arriba (total, inscriptos, créditos, etc.), puede **buscar y filtrar** (por carrera y semestre), **crear, editar y eliminar** materias, **inscribir o quitar estudiantes** a mano y **notificar** por email a los inscriptos.
+- **Docente:** ve "Mis materias" (las que dicta). Entra al detalle para **subir recursos** (archivos o enlaces), ver inscriptos y crear **tutorías**.
+- **Estudiante:** ve sus materias inscriptas y las disponibles. Se **inscribe o desinscribe**, y entra al detalle para **descargar los recursos**.
+
+## 24.2 Tutorías
+
+Las **Tutorías** son franjas horarias que un docente ofrece para una materia, con un **cupo** limitado. El estudiante reserva un lugar.
+
+- **Administrador / Analista:** ve **todas** las tutorías con indicadores (abiertas, próximas, ocupación) y filtros (por fecha y estado). Cada tutoría tiene su detalle con la **lista de agendados**, un **medidor de ocupación** y la posibilidad de **abrir/cerrar/cancelar**.
+- **Docente:** crea y gestiona **sus** franjas (horario, cupo y aula), y ve quién se agendó.
+- **Estudiante:** explora las tutorías disponibles y **se agenda** en una (ocupa una plaza); puede cancelar.
+
+## 24.3 Eventos
+
+Los **Eventos** son eventos y cursos de **oferta abierta** (charlas, talleres, cursos), públicos o internos, con estados Borrador → Publicado → Finalizado/Cancelado.
+
+- **Administrador / Analista:** **crea, publica, edita, cancela y elimina** eventos, ve los **inscriptos**, hace **check-in de asistencia**, **duplica** un evento y **notifica** por email. Dispone de **tres vistas** (grilla, **cartelera** de afiches y **calendario** mensual), un **mapa de calor de demanda** y un **modo cartelera a pantalla completa** (ideal para los TV del campus) que rota los eventos con un **QR** para anotarse.
+- En el detalle de un evento puede: ver la **cuenta regresiva**, **agregarlo a su calendario** (.ics o Google Calendar), **generar un afiche** descargable con el QR, descargar **certificados de asistencia** (en cursos) y compartir el link.
+- **Estudiante / Externo:** ve el catálogo de eventos publicados y **se inscribe**. Si el cupo está lleno, queda en **lista de espera**.
+
+---
+
+# 25. SOSTENIBILIDAD
+
+El panel de **Sostenibilidad** (visible para Administrador y Analista) muestra el **impacto ambiental estimado** de la digitalización: cada archivo que se sube a una materia evita que los estudiantes impriman copias, y con eso se estiman **hojas, papel, CO₂ y agua ahorrados**, además de equivalencias (árboles salvados, km en auto, duchas, etc.).
+
+Incluye: un tablero con los indicadores principales, un **índice de sostenibilidad** (0-100), un **"bosque" que crece** con los árboles salvados, **equivalencias** que rotan, una **gráfica de evolución con proyección**, una **meta anual** con logros, y un **ranking** de carreras y docentes que más digitalizan. Desde la barra superior se puede **exportar un PDF**, **compartir** el link o entrar en **modo presentación** (pantalla completa).
+
+> Los números son **estimaciones** con factores de referencia, no mediciones reales. El botón **"Cómo funciona"** explica la metodología completa.
+
+---
+
 **FIN DEL MANUAL**
 
 ---
@@ -4387,5 +4432,5 @@ Pizarra,1,DISPONIBLE,Aula 101,Pizarra blanca
 
 **Nota Final**: Este manual está diseñado para ser una guía completa del sistema UTEC Space Manager. Si tiene preguntas o necesita ayuda adicional, contacte al administrador del sistema.
 
-**Última Actualización**: Mayo 2026  
+**Última Actualización**: Junio 2026 (capa académica y sostenibilidad)  
 

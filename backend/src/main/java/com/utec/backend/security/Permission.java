@@ -57,7 +57,42 @@ public enum Permission {
     // ===== PERMISOS DE SISTEMA =====
     SISTEMA_ACCEDER("sistema:acceder"),
     SISTEMA_CONFIGURAR("sistema:configurar"),
-    SISTEMA_LOGS("sistema:logs");
+    SISTEMA_LOGS("sistema:logs"),
+
+    // ===== PERMISOS DE MATERIAS =====
+    MATERIA_VER("materia:ver"),
+    MATERIA_CREAR("materia:crear"),
+    MATERIA_EDITAR("materia:editar"),
+    MATERIA_ELIMINAR("materia:eliminar"),
+    MATERIA_VER_INSCRIPTOS("materia:ver_inscriptos"),
+
+    // ===== PERMISOS DE INSCRIPCIONES =====
+    INSCRIPCION_CREAR("inscripcion:crear"),
+    INSCRIPCION_VER_PROPIAS("inscripcion:ver_propias"),
+    INSCRIPCION_CANCELAR("inscripcion:cancelar"),
+
+    // ===== PERMISOS DE RECURSOS ACADÉMICOS =====
+    RECURSO_VER("recurso:ver"),
+    RECURSO_CREAR("recurso:crear"),
+    RECURSO_ELIMINAR("recurso:eliminar"),
+
+    // ===== PERMISOS DE TUTORÍAS =====
+    TUTORIA_VER("tutoria:ver"),
+    TUTORIA_CREAR("tutoria:crear"),
+    TUTORIA_EDITAR("tutoria:editar"),
+    TUTORIA_AGENDAR("tutoria:agendar"),
+    TUTORIA_CANCELAR_RESERVA("tutoria:cancelar_reserva"),
+
+    // ===== PERMISOS DE EVENTOS =====
+    EVENTO_VER("evento:ver"),
+    EVENTO_CREAR("evento:crear"),
+    EVENTO_EDITAR("evento:editar"),
+    EVENTO_ELIMINAR("evento:eliminar"),
+    EVENTO_INSCRIBIR("evento:inscribir"),
+    EVENTO_VER_INSCRIPTOS("evento:ver_inscriptos"),
+
+    // ===== PERMISOS DE SOSTENIBILIDAD =====
+    SOSTENIBILIDAD_VER("sostenibilidad:ver");
 
     private final String value;
 

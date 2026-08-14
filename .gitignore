@@ -132,3 +132,7 @@ CLAUDE.md
 # ===== SONARLINT / SCANNER =====
 .sonarlint/
 .scannerwork/
+
+# ===== PLAYWRIGHT / SCREENSHOTS =====
+.playwright-mcp/
+cap-*.png

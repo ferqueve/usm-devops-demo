@@ -483,6 +483,52 @@ body {
 }
 
 /* ============================================================
+   Scrollbar global estilo shadcn — aplica a TODA la app
+   ------------------------------------------------------------
+   Estiliza el scrollbar NATIVO (no hace falta envolver cada
+   contenedor en <ScrollArea>): fino, redondeado y semitransparente.
+   El color del thumb se adapta a claro/oscuro. El componente
+   ScrollArea de Radix (sidebar) oculta su barra nativa con un
+   selector más específico, así que no genera barras dobles.
+   ============================================================ */
+:root {
+  --scrollbar-thumb: oklch(0.556 0 0 / 35%);
+  --scrollbar-thumb-hover: oklch(0.556 0 0 / 55%);
+}
+.dark {
+  --scrollbar-thumb: oklch(1 0 0 / 22%);
+  --scrollbar-thumb-hover: oklch(1 0 0 / 42%);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* WebKit / Chromium */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  /* borde transparente + clip = thumb más fino (~4px) dentro del track */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ============================================================
    Modo oscuro — remapeo de utilidades hardcodeadas
    ------------------------------------------------------------
    Gran parte de la app se construyó con grises/blancos fijos
@@ -583,4 +629,84 @@ body {
 @keyframes auth-spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Patrones de fondo reutilizables (catálogo de eventos)
+   ============================================================ */
+@keyframes aurora-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes grid-pan {
+  from { background-position: 0 0; }
+  to { background-position: 36px 36px; }
+}
+@keyframes wave-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes diag-pan {
+  from { background-position: 0 0; }
+  to { background-position: 56px 56px; }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+@keyframes shooting-star {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  6% { opacity: 1; }
+  24% { transform: translate3d(460px, 280px, 0); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes circuit-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -44; }
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(-40%) rotate(0deg); }
+  100% { transform: translateY(1600%) rotate(560deg); }
+}
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+@keyframes bg-shimmer {
+  from { transform: translateX(-60%) skewX(-12deg); }
+  to { transform: translateX(180%) skewX(-12deg); }
+}
+@keyframes topo-drift {
+  from { background-position: 0 0; }
+  to { background-position: 90px 50px; }
+}
+@keyframes plasma-spin {
+  from { transform: rotate(0deg) scale(1.5); }
+  to { transform: rotate(360deg) scale(1.5); }
+}
+@keyframes bubble-rise {
+  0% { transform: translateY(10%) scale(0.9); opacity: 0; }
+  15% { opacity: 0.85; }
+  100% { transform: translateY(-220%) scale(1.1); opacity: 0; }
+}
+
+/* Patrones de fondo: respetar prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .bg-anim, .bg-anim * { animation: none !important; }
+}
+
+/* Confeti que llueve (podio de sostenibilidad) */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-24px) rotate(0deg);   opacity: 0; }
+  8%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(240px) rotate(340deg); opacity: 0; }
+}
+.confetti-piece {
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece { animation: none !important; opacity: 0.55 !important; }
 }

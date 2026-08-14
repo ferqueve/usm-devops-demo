@@ -24,6 +24,14 @@ import SystemPage from './app/system/page';
 import InventoryPage from './app/inventory/page';
 import InventoryRequestsPage from './app/inventory/requests/page';
 import AuditPage from './app/audit/page';
+import MateriasPage from './app/materias/page';
+import MateriasMapaPage from './app/materias/mapa/page';
+import MateriaDetailPage from './app/materias/[id]/page';
+import TutoriasPage from './app/tutorias/page';
+import TutoriaDetailPage from './app/tutorias/[id]/page';
+import EventosPage from './app/eventos/page';
+import EventoDetailPage from './app/eventos/[id]/page';
+import SostenibilidadPage from './app/sostenibilidad/page';
 
 
 // Componente principal de rutas
@@ -191,15 +199,88 @@ function AppRoutes() {
         }
       />
       
-      <Route 
-        path="/audit" 
+      <Route
+        path="/audit"
         element={
           <RoleGuard requiredRole={ROLES.ADMIN}>
             <AuditPage />
           </RoleGuard>
-        } 
+        }
       />
-      
+
+      {/* Capa académica */}
+      <Route
+        path="/materias"
+        element={
+          <RoleProtectedRoute>
+            <MateriasPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/materias/mapa"
+        element={
+          <RoleProtectedRoute>
+            <MateriasMapaPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/materias/:id"
+        element={
+          <RoleProtectedRoute>
+            <MateriaDetailPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/tutorias"
+        element={
+          <RoleProtectedRoute>
+            <TutoriasPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/tutorias/:id"
+        element={
+          <RoleProtectedRoute>
+            <TutoriaDetailPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/eventos"
+        element={
+          <RoleProtectedRoute>
+            <EventosPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/eventos/:id"
+        element={
+          <RoleProtectedRoute>
+            <EventoDetailPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/sostenibilidad"
+        element={
+          <RoleProtectedRoute>
+            <SostenibilidadPage />
+          </RoleProtectedRoute>
+        }
+      />
+
       {/* Ruta raíz - redirección inteligente */}
       <Route 
         path="/" 
