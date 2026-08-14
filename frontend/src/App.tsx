@@ -27,7 +27,6 @@ import AuditPage from './app/audit/page';
 import MateriasPage from './app/materias/page';
 import MateriasMapaPage from './app/materias/mapa/page';
 import MateriaDetailPage from './app/materias/[id]/page';
-import TutoriasPage from './app/tutorias/page';
 import TutoriaDetailPage from './app/tutorias/[id]/page';
 import EventosPage from './app/eventos/page';
 import EventoDetailPage from './app/eventos/[id]/page';
@@ -236,14 +235,12 @@ function AppRoutes() {
         }
       />
 
-      <Route
-        path="/tutorias"
-        element={
-          <RoleProtectedRoute>
-            <TutoriasPage />
-          </RoleProtectedRoute>
-        }
-      />
+      {/*
+        Tutorías dejó de ser sección propia: ahora es una pestaña dentro de Materias,
+        porque una tutoría siempre cuelga de una materia. La ruta vieja se mantiene
+        redirigiendo para no romper links guardados ni el historial de nadie.
+      */}
+      <Route path="/tutorias" element={<Navigate to="/materias?tab=tutorias" replace />} />
 
       <Route
         path="/tutorias/:id"

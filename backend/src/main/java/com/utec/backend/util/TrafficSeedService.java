@@ -77,7 +77,7 @@ public class TrafficSeedService {
     private final ReservaItemSolicitadoRepository reservaItemSolicitadoRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.dev-seed-password:UtecDevSeed2026!}")
+    @Value("${app.dev-seed-password:password}")
     private String devSeedPassword;
 
     @Transactional

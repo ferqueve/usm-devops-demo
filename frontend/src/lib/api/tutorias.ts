@@ -42,9 +42,14 @@ export const tutoriasApi = {
     });
   },
 
-  // Tutorías del usuario autenticado (docente: sus franjas / estudiante: las agendadas)
-  async misTutorias(): Promise<ApiResponse<Tutoria[]>> {
-    return apiRequest<Tutoria[]>('/tutorias/mias', { method: 'GET' });
+  // Franjas de tutoría que dicta el usuario autenticado
+  async tutoriasQueDicto(): Promise<ApiResponse<Tutoria[]>> {
+    return apiRequest<Tutoria[]>('/tutorias/dictadas', { method: 'GET' });
+  },
+
+  // Tutorías que el usuario autenticado tiene agendadas como estudiante
+  async tutoriasAgendadas(): Promise<ApiResponse<Tutoria[]>> {
+    return apiRequest<Tutoria[]>('/tutorias/agendadas', { method: 'GET' });
   },
 
   // Crear una franja de tutoría (el docente es el usuario autenticado)

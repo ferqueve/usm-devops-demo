@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, CheckCircle2, XCircle, Hourglass, Loader2 } from 'lucide-react';
+import { Clock, MapPin, ChevronLeft, ChevronRight, Moon, Loader2 } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
-import { getEstadoConfig, formatTime } from './reservationUtils';
+import { formatTime } from './reservationUtils';
 import ReservationFilters from './ReservationFilters';
 import { FullScreenToggle, ViewModeToggle } from './_shared/ReservationListChrome';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, isToday, isSameMonth } from 'date-fns';
@@ -754,8 +753,7 @@ export default function ReservationCalendarView({
   onViewModeChange,
   onClearFilters,
   onViewDetails,
-  onCancelReserva,
-  isFullScreen: isFullScreenProp,
+    isFullScreen: isFullScreenProp,
   onToggleFullScreen: onToggleFullScreenProp,
   loading = false,
   readOnly = false,

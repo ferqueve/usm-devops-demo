@@ -50,8 +50,17 @@ public class AiServiceHealthIndicator implements HealthIndicator {
             log.debug("ai-svc health check falló: {}", e.getMessage());
             return Health.down()
                     .withDetail("url", aiServiceUrl)
-                    .withDetail("error", e.getMessage())
+                    // getMessage() puede ser null (p. ej. ConnectException). withDetail no
+                    // acepta null: tiraba IllegalArgumentException y hacia fallar
+                    // /actuator/health entero, no solo este componente.
+                    .withDetail("error", descripcionDe(e))
                     .build();
         }
+    }
+
+    /** Descripción no nula del error, para que withDetail nunca reciba null. */
+    private static String descripcionDe(Exception e) {
+        String msg = e.getMessage();
+        return (msg != null && !msg.isBlank()) ? msg : e.getClass().getSimpleName();
     }
 }

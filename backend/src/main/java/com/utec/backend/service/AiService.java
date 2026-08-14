@@ -55,10 +55,15 @@ public class AiService {
             }
             return MAPPER.readValue(response.body(), new TypeReference<>() {});
         } catch (Exception ex) {
-            log.error("Fallo al contactar ai-svc en {}: {}", path, ex.getMessage());
+            // getMessage() es null en varias excepciones de red (ConnectException entre
+            // otras), y el mensaje quedaba en "…: null", que no le sirve a nadie.
+            String motivo = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                    ? ex.getMessage()
+                    : ex.getClass().getSimpleName();
+            log.error("Fallo al contactar ai-svc en {}: {}", path, motivo);
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("status", "error");
-            err.put("error", "No se pudo contactar al servicio de IA: " + ex.getMessage());
+            err.put("error", "No se pudo contactar al servicio de IA (" + motivo + ")");
             err.put("aiServiceUrl", aiServiceUrl);
             err.put("path", path);
             return err;

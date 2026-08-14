@@ -102,15 +102,15 @@ export function useMaterias() {
 }
 
 /**
- * Hook para obtener las materias del usuario autenticado.
- * - DOCENTE: materias que dicta
- * - ESTUDIANTE: materias de sus inscripciones activas
+ * Hook para obtener las materias del usuario autenticado, según el vínculo pedido.
  *
- * No usa caché global porque depende del usuario actual.
+ * Antes esto era un solo endpoint que el backend resolvía mirando el rol; ahora la
+ * vista dice cuál quiere, porque ya lo sabe.
  *
+ * @param vinculo 'dicto' (docente) o 'curso' (estudiante)
  * @returns {object} { materias, loading, error, refresh }
  */
-export function useMisMaterias() {
+export function useMisMaterias(vinculo: 'dicto' | 'curso') {
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -119,7 +119,9 @@ export function useMisMaterias() {
     setLoading(true);
     setError(null);
     try {
-      const response = await materiasApi.obtenerMisMaterias();
+      const response = vinculo === 'dicto'
+        ? await materiasApi.obtenerMateriasQueDicto()
+        : await materiasApi.obtenerMateriasQueCurso();
       setMaterias(response.data ?? []);
       return response.data ?? [];
     } catch (err) {
@@ -130,7 +132,7 @@ export function useMisMaterias() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [vinculo]);
 
   useEffect(() => {
     fetchMisMaterias().catch(() => {

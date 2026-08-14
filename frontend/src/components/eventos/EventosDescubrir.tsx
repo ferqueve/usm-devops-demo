@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Evento } from '@/lib/types/eventos';
-import { estaEnVivo } from './eventoUtils';
+import { estaEnVivo } from '@/lib/agenda/tiempo';
 import { EventoCardDescubrir } from './EventoCardDescubrir';
 
 interface EventosDescubrirProps {
@@ -61,7 +61,13 @@ export function EventosDescubrir(props: Readonly<EventosDescubrirProps>) {
     const cursos: Evento[] = [];
 
     for (const e of eventos) {
-      if (e.tipo === 'CURSO' && e.estado !== 'FINALIZADO' && e.estado !== 'CANCELADO') cursos.push(e);
+      // Un curso va sólo a "Cursos abiertos": es una oferta aparte, no un evento
+      // suelto de la agenda. Antes caía también en el balde por fecha y aparecía
+      // dos veces en la misma pantalla.
+      if (e.tipo === 'CURSO' && e.estado !== 'FINALIZADO' && e.estado !== 'CANCELADO') {
+        cursos.push(e);
+        continue;
+      }
       const start = new Date(e.inicio).getTime();
       if (Number.isNaN(start)) continue;
       if (estaEnVivo(e.inicio, e.fin)) { vivo.push(e); continue; }
@@ -116,8 +122,16 @@ export function EventosDescubrir(props: Readonly<EventosDescubrirProps>) {
     );
   }
 
-  const Rail = ({ children }: Readonly<{ children: ReactNode }>) => (
-    <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-3 [scrollbar-width:thin]">
+  /*
+    Antes cada sección era un riel horizontal con tarjetas de 280px fijos, y
+    "Próximos" + "Cursos abiertos" iban 50/50 sin importar cuántos ítems tenía
+    cada uno: con 4 próximos y 1 curso, los próximos necesitaban 1169px dentro de
+    614px y la mitad quedaba escondida tras un scroll sin flecha ni degradado,
+    mientras al lado sobraba espacio. Ahora todas las secciones usan la misma
+    grilla que fluye que ya usaba el camino con filtros.
+  */
+  const Grilla = ({ children }: Readonly<{ children: ReactNode }>) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {children}
     </div>
   );
@@ -133,30 +147,23 @@ export function EventosDescubrir(props: Readonly<EventosDescubrirProps>) {
   const renderSeccion = (b: Bucket) => (
     <section key={b.id} className="space-y-3">
       <Header icon={b.icon} accent={b.accent} titulo={b.titulo} count={b.eventos.length} />
-      <Rail>
-        {b.eventos.map((e) => cardFor(e, 'w-[280px] shrink-0 snap-start'))}
-      </Rail>
+      <Grilla>
+        {b.eventos.map((e) => cardFor(e, 'w-full'))}
+      </Grilla>
     </section>
   );
-
-  // "Próximos" y "Cursos abiertos" van 50/50 en la misma fila; el resto full-width.
-  const fullWidth = buckets.filter((b) => b.id !== 'proximos' && b.id !== 'cursos');
-  const pareja = buckets.filter((b) => b.id === 'proximos' || b.id === 'cursos');
 
   return (
     <div className="space-y-6">
       {hayInscripciones && (
         <section className="space-y-3">
           <Header icon={Ticket} accent="bg-utec-cyan/15 text-utec-cyan" titulo="Mis inscripciones" count={misInscripciones.length} />
-          <Rail>
-            {misInscripciones.map((e) => cardFor(e, 'w-[280px] shrink-0 snap-start'))}
-          </Rail>
+          <Grilla>
+            {misInscripciones.map((e) => cardFor(e, 'w-full'))}
+          </Grilla>
         </section>
       )}
-      {fullWidth.map(renderSeccion)}
-      {pareja.length === 2
-        ? <div className="grid gap-6 lg:grid-cols-2">{pareja.map(renderSeccion)}</div>
-        : pareja.map(renderSeccion)}
+      {buckets.map(renderSeccion)}
     </div>
   );
 }

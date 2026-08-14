@@ -74,7 +74,7 @@ public class DevDataInitializer implements CommandLineRunner {
      * Se lee desde la variable de entorno DEV_SEED_PASSWORD; si no está definida
      * se aplica un valor de transición que debe rotarse en el primer login.
      */
-    @Value("${app.dev-seed-password:UtecDevSeed2026!}")
+    @Value("${app.dev-seed-password:password}")
     private String devSeedPassword;
 
     @Override

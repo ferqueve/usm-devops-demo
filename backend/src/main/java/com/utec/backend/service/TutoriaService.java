@@ -10,6 +10,8 @@ import com.utec.backend.dto.tutoria.TutoriaFeedbackResumenDto;
 import com.utec.backend.dto.tutoria.TutoriaRecursoDto;
 import com.utec.backend.dto.tutoria.TutoriaResponseDto;
 import com.utec.backend.dto.tutoria.TutoriaUpdateDto;
+import com.utec.backend.exception.RecursoNoEncontradoException;
+import com.utec.backend.exception.AccesoDenegadoException;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Materia;
 import com.utec.backend.model.Tutoria;
@@ -59,6 +61,7 @@ public class TutoriaService {
     private static final int MAX_REPETICIONES = 52;
     private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
+    private final OcupacionEspacioService ocupacionEspacioService;
     private final TutoriaRepository tutoriaRepository;
     private final TutoriaReservaRepository tutoriaReservaRepository;
     private final TutoriaFeedbackRepository feedbackRepository;
@@ -70,6 +73,20 @@ public class TutoriaService {
 
     private boolean esAdminOAnalista(Usuario u) {
         return u.getRolApp() == Usuario.RolApp.ADMIN || u.getRolApp() == Usuario.RolApp.ANALISTA;
+    }
+
+    /**
+     * Exige que el usuario sea el docente dueño de la tutoría, o admin/analista.
+     *
+     * @param accion qué se estaba intentando hacer, para el mensaje de error
+     * @throws AccesoDenegadoException si no lo es
+     */
+    private void exigirDuenoOGestor(Tutoria tutoria, Usuario usuario, String accion) {
+        boolean esDueno = tutoria.getDocente() != null
+                && tutoria.getDocente().getId().equals(usuario.getId());
+        if (!esAdminOAnalista(usuario) && !esDueno) {
+            throw new AccesoDenegadoException("No tienes permiso para " + accion);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -100,10 +117,7 @@ public class TutoriaService {
     public void eliminar(Long id, String email) {
         Tutoria t = findActiva(id);
         Usuario u = resolveUsuario(email);
-        boolean esDueno = t.getDocente() != null && t.getDocente().getId().equals(u.getId());
-        if (!esAdminOAnalista(u) && !esDueno) {
-            throw new IllegalStateException("No tienes permiso para eliminar esta tutoría");
-        }
+        exigirDuenoOGestor(t, u, "eliminar esta tutoría");
         t.setEstado(ESTADO_CANCELADA);
         t.setDeletedAt(Instant.now());
         tutoriaRepository.save(t);
@@ -135,7 +149,7 @@ public class TutoriaService {
     public TutoriaResponseDto crear(TutoriaCreateDto dto, String emailDocente) {
         Usuario docente = resolveUsuario(emailDocente);
         Materia materia = materiaRepository.findById(dto.getMateriaId())
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + dto.getMateriaId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + dto.getMateriaId()));
         Espacio espacio = resolveEspacio(dto.getEspacioId());
 
         if (dto.getFin().isBefore(dto.getInicio()) || dto.getFin().equals(dto.getInicio())) {
@@ -143,6 +157,18 @@ public class TutoriaService {
         }
 
         int ocurrencias = calcularOcurrencias(dto.getRecurrencia(), dto.getRepeticiones());
+        Long espacioId = espacio != null ? espacio.getId() : null;
+
+        // Se validan todas las ocurrencias antes de guardar ninguna: si la tercera semana
+        // choca, no queremos dejar creadas las dos primeras.
+        for (int i = 0; i < ocurrencias; i++) {
+            ocupacionEspacioService.validarLibre(
+                    espacioId,
+                    desplazar(dto.getInicio(), dto.getRecurrencia(), i),
+                    desplazar(dto.getFin(), dto.getRecurrencia(), i),
+                    OcupacionEspacioService.TipoActividad.TUTORIA, null);
+        }
+
         Tutoria primera = null;
         for (int i = 0; i < ocurrencias; i++) {
             Tutoria tutoria = new Tutoria();
@@ -173,13 +199,20 @@ public class TutoriaService {
         return mapToResponseDtos(tutorias);
     }
 
+    /** Franjas de tutoría que dicta el usuario. Vacío si no dicta ninguna. */
     @Transactional(readOnly = true)
-    public List<TutoriaResponseDto> misTutorias(String email) {
+    public List<TutoriaResponseDto> tutoriasQueDicta(String email) {
         Usuario usuario = resolveUsuario(email);
+        return mapToResponseDtos(tutoriaRepository.findByDocenteIdAndDeletedAtIsNull(usuario.getId()));
+    }
 
-        if (usuario.getRolApp() == Usuario.RolApp.DOCENTE) {
-            return mapToResponseDtos(tutoriaRepository.findByDocenteIdAndDeletedAtIsNull(usuario.getId()));
-        }
+    /**
+     * Tutorías que el usuario tiene agendadas como estudiante, con los datos de su
+     * propia reserva (id, estado, si confirmó, temario) pegados al dto.
+     */
+    @Transactional(readOnly = true)
+    public List<TutoriaResponseDto> tutoriasAgendadas(String email) {
+        Usuario usuario = resolveUsuario(email);
 
         List<TutoriaReserva> reservas = tutoriaReservaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId()).stream()
                 .filter(r -> !ESTADO_CANCELADA.equals(r.getEstado())
@@ -208,17 +241,14 @@ public class TutoriaService {
     public TutoriaResponseDto editar(Long id, TutoriaUpdateDto dto, String email) {
         Tutoria tutoria = findActiva(id);
         Usuario usuario = resolveUsuario(email);
-        boolean esDueno = tutoria.getDocente() != null && tutoria.getDocente().getId().equals(usuario.getId());
-        if (!esAdminOAnalista(usuario) && !esDueno) {
-            throw new IllegalStateException("No tienes permiso para editar esta tutoría");
-        }
+        exigirDuenoOGestor(tutoria, usuario, "editar esta tutoría");
 
         Integer cupoAnterior = tutoria.getCupo();
         Instant inicioAnterior = tutoria.getInicio();
 
         if (dto.getMateriaId() != null) {
             tutoria.setMateria(materiaRepository.findById(dto.getMateriaId())
-                    .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + dto.getMateriaId())));
+                    .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + dto.getMateriaId())));
         }
         if (dto.getEspacioId() != null) {
             tutoria.setEspacio(resolveEspacio(dto.getEspacioId()));
@@ -255,6 +285,15 @@ public class TutoriaService {
             throw new IllegalArgumentException("La fecha/hora de fin debe ser posterior a la de inicio");
         }
 
+        // Se valida con los valores ya aplicados y excluyendo la propia tutoría, para que
+        // reeditar sin mover el horario no choque consigo misma.
+        if (!ESTADO_CANCELADA.equals(tutoria.getEstado())) {
+            ocupacionEspacioService.validarLibre(
+                    tutoria.getEspacio() != null ? tutoria.getEspacio().getId() : null,
+                    tutoria.getInicio(), tutoria.getFin(),
+                    OcupacionEspacioService.TipoActividad.TUTORIA, tutoria.getId());
+        }
+
         // Si se reprogramó el inicio, rehabilitar el recordatorio para que vuelva a enviarse.
         if (tutoria.getInicio() != null && !tutoria.getInicio().equals(inicioAnterior)) {
             tutoria.setRecordatorioEnviado(false);
@@ -275,10 +314,7 @@ public class TutoriaService {
     public TutoriaResponseDto toggleEnVivo(Long id, String email, boolean activo) {
         Tutoria tutoria = findActiva(id);
         Usuario usuario = resolveUsuario(email);
-        boolean esDueno = tutoria.getDocente() != null && tutoria.getDocente().getId().equals(usuario.getId());
-        if (!esAdminOAnalista(usuario) && !esDueno) {
-            throw new IllegalStateException("No tienes permiso para esta tutoría");
-        }
+        exigirDuenoOGestor(tutoria, usuario, "modificar esta tutoría");
         tutoria.setEnVivo(activo);
         return mapToResponseDto(tutoriaRepository.save(tutoria));
     }
@@ -325,10 +361,7 @@ public class TutoriaService {
         TutoriaReserva reserva = findReservaActiva(reservaId);
         Usuario usuario = resolveUsuario(email);
         Tutoria tutoria = reserva.getTutoria();
-        boolean esDocente = tutoria.getDocente() != null && tutoria.getDocente().getId().equals(usuario.getId());
-        if (!esAdminOAnalista(usuario) && !esDocente) {
-            throw new IllegalStateException("No tienes permiso para marcar asistencia");
-        }
+        exigirDuenoOGestor(tutoria, usuario, "marcar asistencia en esta tutoría");
         reserva.setEstado(asistio ? ESTADO_ASISTIO : ESTADO_AGENDADA);
         tutoriaReservaRepository.save(reserva);
     }
@@ -341,7 +374,7 @@ public class TutoriaService {
         boolean esDocenteDeTutoria = reserva.getTutoria().getDocente() != null
                 && reserva.getTutoria().getDocente().getId().equals(usuario.getId());
         if (!esEstudianteDueno && !esDocenteDeTutoria) {
-            throw new IllegalStateException("No tienes permiso para cancelar esta reserva");
+            throw new AccesoDenegadoException("No tienes permiso para cancelar esta reserva");
         }
 
         boolean eraConfirmada = !ESTADO_ESPERA.equals(reserva.getEstado());
@@ -424,14 +457,9 @@ public class TutoriaService {
         Long usuarioId = resolveUsuarioId(email);
         List<TutoriaFeedback> lista = feedbackRepository.findByTutoriaIdAndDeletedAtIsNullOrderByCreatedAtDesc(tutoriaId);
         long total = lista.size();
-        double promedio = total == 0 ? 0.0
-                : Math.round(lista.stream().mapToInt(TutoriaFeedback::getRating).average().orElse(0) * 10) / 10.0;
-
-        List<Long> distribucion = new ArrayList<>(List.of(0L, 0L, 0L, 0L, 0L));
-        for (TutoriaFeedback f : lista) {
-            int idx = Math.min(5, Math.max(1, f.getRating())) - 1;
-            distribucion.set(idx, distribucion.get(idx) + 1);
-        }
+        List<Integer> ratings = lista.stream().map(TutoriaFeedback::getRating).toList();
+        double promedio = ValoracionAgregada.promedio(ratings);
+        List<Long> distribucion = ValoracionAgregada.distribucion(ratings);
 
         Integer miRating = null;
         if (usuarioId != null) {
@@ -586,10 +614,7 @@ public class TutoriaService {
     public TutoriaRecursoDto agregarRecurso(Long tutoriaId, String email, TutoriaRecursoDto dto) {
         Tutoria tutoria = findActiva(tutoriaId);
         Usuario usuario = resolveUsuario(email);
-        boolean esDueno = tutoria.getDocente() != null && tutoria.getDocente().getId().equals(usuario.getId());
-        if (!esAdminOAnalista(usuario) && !esDueno) {
-            throw new IllegalStateException("No tienes permiso para agregar recursos a esta tutoría");
-        }
+        exigirDuenoOGestor(tutoria, usuario, "agregar recursos a esta tutoría");
         TutoriaRecurso recurso = new TutoriaRecurso();
         recurso.setTutoria(tutoria);
         recurso.setTitulo(dto.titulo().trim());
@@ -604,10 +629,7 @@ public class TutoriaService {
                 .orElseThrow(() -> new IllegalArgumentException("Recurso no encontrado: " + recursoId));
         Usuario usuario = resolveUsuario(email);
         Tutoria tutoria = recurso.getTutoria();
-        boolean esDueno = tutoria.getDocente() != null && tutoria.getDocente().getId().equals(usuario.getId());
-        if (!esAdminOAnalista(usuario) && !esDueno) {
-            throw new IllegalStateException("No tienes permiso para eliminar este recurso");
-        }
+        exigirDuenoOGestor(tutoria, usuario, "eliminar este recurso");
         recurso.setDeletedAt(Instant.now());
         recursoRepository.save(recurso);
     }
@@ -662,18 +684,18 @@ public class TutoriaService {
     private Tutoria findActiva(Long id) {
         return tutoriaRepository.findById(id)
                 .filter(t -> t.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException(TUTORIA_NO_ENCONTRADA_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(TUTORIA_NO_ENCONTRADA_MSG + id));
     }
 
     private TutoriaReserva findReservaActiva(Long id) {
         return tutoriaReservaRepository.findById(id)
                 .filter(r -> r.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException(RESERVA_NO_ENCONTRADA_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(RESERVA_NO_ENCONTRADA_MSG + id));
     }
 
     private Usuario resolveUsuario(String email) {
         return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
     }
 
     private Long resolveUsuarioId(String email) {
@@ -688,7 +710,7 @@ public class TutoriaService {
             return null;
         }
         return espacioRepository.findById(espacioId)
-                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
     }
 
     /** Mapea una tutoría individual (agregados con conteos puntuales; usar para 1 elemento). */

@@ -37,7 +37,8 @@ import { ProximaTutoriaHero } from './ProximaTutoriaHero';
 import { RankingTutores } from './RankingTutores';
 import { RachaBadges } from './RachaBadges';
 import { AgendarTutoriaDialog } from './AgendarTutoriaDialog';
-import { TutoriasCalendario } from './TutoriasCalendario';
+import { AgendaCalendario } from '@/components/agenda/AgendaCalendario';
+import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { TutoriasAgenda } from './TutoriasAgenda';
 import { TutoriaCard } from './TutoriaCard';
 import { DisponibilidadSemanal } from './DisponibilidadSemanal';
@@ -45,16 +46,20 @@ import { CheckinScanner } from './CheckinScanner';
 
 const DOCENTE_ROLES = ['DOCENTE', 'ADMIN', 'ANALISTA'];
 
-export default function TutoriasManagement() {
+/**
+ * @param embedded true cuando se renderiza como pestaña dentro de Materias, donde
+ *   el encabezado y el subtítulo ya los pone la página contenedora.
+ */
+export default function TutoriasManagement({ embedded = false }: Readonly<{ embedded?: boolean }> = {}) {
   const { user } = useAuth();
   const rol = user?.rol ?? '';
   const isDocente = DOCENTE_ROLES.includes(rol);
 
   if (isDocente) {
     const adminView = rol === 'ADMIN' || rol === 'ANALISTA';
-    return <DocenteView scope={adminView ? 'todas' : 'mias'} adminView={adminView} />;
+    return <DocenteView scope={adminView ? 'todas' : 'dictadas'} adminView={adminView} embedded={embedded} />;
   }
-  return <EstudianteView />;
+  return <EstudianteView embedded={embedded} />;
 }
 
 /** Encabezado de sección reutilizable (título con acento e ícono). */
@@ -74,7 +79,7 @@ function SectionHeader({
 }
 
 // ----- Vista DOCENTE / ADMIN: gestiona franjas de tutoría -----
-function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; adminView: boolean }>) {
+function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas' | 'todas'; adminView: boolean; embedded?: boolean }>) {
   const { tutorias, loading, refresh } = useTutorias({ scope });
   const [createDialog, setCreateDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
@@ -104,7 +109,7 @@ function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; a
 
   // Rating agregado del docente (solo cuando ve "sus" franjas).
   const miRating = useMemo(() => {
-    if (scope !== 'mias') return null;
+    if (scope !== 'dictadas') return null;
     let totalVal = 0;
     let suma = 0;
     let estudiantes = 0;
@@ -151,9 +156,9 @@ function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; a
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{tutorias.length}</span> tutorías · {adminView
+          <span className="font-medium text-foreground">{tutorias.length}</span> tutorías{embedded ? '' : ` · ${adminView
             ? 'todas las franjas del sistema y su cupo agendado.'
-            : 'gestioná tus franjas de tutoría y revisá el cupo agendado.'}
+            : 'gestioná tus franjas de tutoría y revisá el cupo agendado.'}`}
         </p>
         <div className="flex items-center gap-2">
           <PermissionGuard requiredPermission="tutoria:editar">
@@ -240,7 +245,7 @@ function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; a
             </div>
           );
         }
-        if (vista === 'calendario') return <TutoriasCalendario tutorias={filtered} />;
+        if (vista === 'calendario') return <AgendaCalendario items={filtered.map(tutoriaToAgendable)} />;
         if (vista === 'agenda') return <TutoriasAgenda tutorias={filtered} />;
         if (filtered.length === 0) {
           return <div className="text-center py-16"><Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" /><p className="text-muted-foreground">Ninguna tutoría coincide con los filtros.</p></div>;
@@ -266,11 +271,11 @@ function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; a
 }
 
 // ----- Vista ESTUDIANTE: hub de ayuda académica agrupado por materia -----
-function EstudianteView() {
+function EstudianteView({ embedded }: Readonly<{ embedded?: boolean }>) {
   const { tutorias: disponibles, loading: loadingDisponibles, refresh: refreshDisponibles } =
     useTutorias({ scope: 'todas' });
   const { tutorias: agendadas, loading: loadingAgendadas, refresh: refreshAgendadas } =
-    useTutorias({ scope: 'mias' });
+    useTutorias({ scope: 'agendadas' });
 
   const [accion, setAccion] = useState<number | null>(null);
   const [agendarTarget, setAgendarTarget] = useState<Tutoria | null>(null);
@@ -401,7 +406,9 @@ function EstudianteView() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">Tu hub de ayuda académica: agendá tutorías, sumá racha y llegá listo a los finales.</p>
+      {!embedded && (
+        <p className="text-sm text-muted-foreground">Tu hub de ayuda académica: agendá tutorías, sumá racha y llegá listo a los finales.</p>
+      )}
 
       <ProximaTutoriaHero tutorias={agendadas} modo="estudiante" />
 

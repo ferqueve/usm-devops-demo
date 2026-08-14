@@ -26,15 +26,16 @@ import { EventoFormDialog } from './EventoFormDialog';
 import { DeleteEventoDialog } from './DeleteEventoDialog';
 import { InscriptosEventoDialog } from './InscriptosEventoDialog';
 import { ProximoEventoHero } from './ProximoEventoHero';
-import { EventosCalendario } from './EventosCalendario';
+import { AgendaCalendario } from '@/components/agenda/AgendaCalendario';
+import { eventoToAgendable } from '@/lib/agenda/types';
 import { CarteleraKiosko } from './CarteleraKiosko';
 import { EventosDescubrir } from './EventosDescubrir';
 import { EstadoBadge, parseTags } from './EventoCardDescubrir';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
-import { relativoInicio } from './eventoUtils';
+import { relativoInicio } from '@/lib/agenda/tiempo';
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
-type VistaEventos = 'descubrir' | 'cartelera' | 'metricas';
+type VistaEventos = 'descubrir' | 'calendario' | 'todos' | 'metricas';
 
 function formatFecha(iso?: string): string {
   if (!iso) return '';
@@ -110,9 +111,14 @@ function KpiTile({ icon: Icon, label, value, hint, variant, delta }: Readonly<{ 
 }
 
 interface ToggleDef { v: VistaEventos; icon: LucideIcon; label: string; adminOnly?: boolean }
+/*
+  "Cartelera" nombraba dos cosas distintas en la misma barra: una de estas vistas
+  y el botón de pantalla completa de al lado. Ahora cada nombre es de una sola.
+*/
 const VISTAS: ToggleDef[] = [
   { v: 'descubrir', icon: Sparkles, label: 'Descubrir' },
-  { v: 'cartelera', icon: Newspaper, label: 'Cartelera' },
+  { v: 'calendario', icon: CalendarDays, label: 'Calendario' },
+  { v: 'todos', icon: Newspaper, label: 'Todos' },
   { v: 'metricas', icon: BarChart3, label: 'Métricas', adminOnly: true },
 ];
 
@@ -291,10 +297,13 @@ export default function EventosManagement() {
       );
     }
 
+    if (vista === 'calendario') {
+      return <AgendaCalendario items={eventosFiltrados.map(eventoToAgendable)} />;
+    }
+
     if (vista === 'descubrir') {
       return (
         <div className="space-y-6">
-          <EventosCalendario eventos={eventosFiltrados} />
           <EventosDescubrir
             eventos={eventosFiltrados}
             misInscripciones={misInscripciones}
@@ -412,7 +421,7 @@ export default function EventosManagement() {
       return <div className="text-center py-16"><Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" /><p className="text-muted-foreground">Ningún evento coincide con los filtros.</p></div>;
     }
 
-    if (vista === 'cartelera') {
+    if (vista === 'todos') {
       return (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {eventosFiltrados.map((evento) => {
@@ -487,7 +496,7 @@ export default function EventosManagement() {
             <Select value={tagFilter} onValueChange={setTagFilter}>
               <SelectTrigger className="w-[140px] h-9"><Tag className="h-3.5 w-3.5 mr-1 text-muted-foreground" /><SelectValue placeholder="Tag" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los tags</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {allTags.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -507,7 +516,7 @@ export default function EventosManagement() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" className="h-9" onClick={() => setKioskoOpen(true)} title="Cartelera pantalla completa"><Tv className="h-4 w-4 mr-1.5" />Cartelera</Button>
+          <Button variant="outline" size="sm" className="h-9" onClick={() => setKioskoOpen(true)} title="Mostrar la cartelera a pantalla completa"><Tv className="h-4 w-4 mr-1.5" />Pantalla completa</Button>
         </div>
       )}
 

@@ -14,7 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Award, BookOpen, Building2, CalendarClock, CalendarPlus, Check, CheckCircle, ChevronRight, Clock, Download, Edit,
-  GraduationCap, Hourglass, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Radio, Send, Sparkles,
+  GraduationCap, Hourglass, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Radio, Send,
   Trash2, UserCheck, Users, Video, XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -28,13 +28,14 @@ import type { Materia } from '@/lib/types/materias';
 import type { Espacio } from '@/lib/types/spaces';
 import { TutoriaFormDialog } from './TutoriaFormDialog';
 import { TutoriaFeedbackPanel } from './TutoriaFeedbackPanel';
+import { TemariosPanel } from './TemariosPanel';
 import { TutoriaRecursosPanel } from './TutoriaRecursosPanel';
 import { EventoPatternBg, EVENTO_PATRONES } from '@/components/ui/backgrounds/eventPatterns';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { useCountdown } from '@/components/eventos/eventoUtils';
-import { downloadICS, googleCalUrl } from './tutoriaCalendar';
+import { useCountdown } from '@/lib/agenda/tiempo';
+import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
+import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { CheckinScanner, ReservaQR } from './CheckinScanner';
-import { postResumenTemario } from '@/lib/api/ai';
 import { useAuth } from '@/hooks/useAuth';
 
 interface TutoriaDetailProps { tutoriaId: number }
@@ -73,22 +74,6 @@ function relativo(iso: string): string {
   return `Hace ${Math.abs(dias)} días`;
 }
 
-type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'purple';
-const TILE_CLS: Record<TileVariant, string> = {
-  blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-utec-dark',
-  cyan: 'bg-utec-cyan text-utec-dark', green: 'bg-utec-green text-white', purple: 'bg-utec-blue text-white',
-};
-function StatTile({ icon: Icon, label, value, variant }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode; variant: TileVariant }>) {
-  return (
-    <div className={`relative overflow-hidden rounded-2xl p-4 ${TILE_CLS[variant]}`}>
-      <Icon className="absolute -right-3 -bottom-3 h-16 w-16 opacity-15" />
-      <div className="relative">
-        <div className="text-3xl font-bold tabular-nums leading-none">{value}</div>
-        <div className="text-xs font-medium opacity-80 mt-1.5">{label}</div>
-      </div>
-    </div>
-  );
-}
 function Panel({ title, icon, accent, action, children }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode }>) {
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
@@ -98,19 +83,6 @@ function Panel({ title, icon, accent, action, children }: Readonly<{ title: stri
         {action && <div className="ml-auto">{action}</div>}
       </div>
       <div className="p-4">{children}</div>
-    </div>
-  );
-}
-function Donut({ value }: Readonly<{ value: number }>) {
-  const r = 26; const circ = 2 * Math.PI * r;
-  const off = circ * (1 - Math.min(100, Math.max(0, value)) / 100);
-  return (
-    <div className="relative h-16 w-16 shrink-0">
-      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
-        <circle cx="32" cy="32" r={r} fill="none" strokeWidth="8" className="stroke-muted" />
-        <circle cx="32" cy="32" r={r} fill="none" strokeWidth="8" strokeLinecap="round" className="stroke-utec-blue" strokeDasharray={circ} strokeDashoffset={off} />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums">{value}%</div>
     </div>
   );
 }
@@ -167,8 +139,6 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   const [editOpen, setEditOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [savingEstado, setSavingEstado] = useState(false);
-  const [resumenIA, setResumenIA] = useState<string | null>(null);
-  const [resumenLoading, setResumenLoading] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const cd = useCountdown(tutoria?.inicio);
 
@@ -217,7 +187,8 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
     try {
       await tutoriasApi.eliminar(tutoriaId);
       toast.success('Tutoría eliminada');
-      navigate('/tutorias');
+      // Se vuelve a la materia de la que colgaba; si no se llegó a cargar, al listado.
+      navigate(tutoria ? `/materias/${tutoria.materiaId}` : '/materias?tab=tutorias');
     } catch (e: unknown) {
       toast.error('No se pudo eliminar', { description: e instanceof Error ? e.message : 'Error' });
     }
@@ -245,18 +216,6 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
       toast.success('Asistencia registrada', { description: a?.nombre ?? `Reserva #${reservaId}` });
       fetchAgendados(); fetchTutoria();
     } catch (e: unknown) { toast.error('No se pudo registrar', { description: e instanceof Error ? e.message : 'Error' }); }
-  };
-  const resumirTemarios = async () => {
-    const temas = agendados.map((a) => a.temario).filter(Boolean) as string[];
-    if (temas.length === 0) { toast.info('Todavía nadie anotó qué quiere repasar'); return; }
-    try {
-      setResumenLoading(true);
-      const r = await postResumenTemario({ materia: tutoria?.materiaNombre, temarios: temas });
-      const txt = (r.data as { resumen?: string } | undefined)?.resumen;
-      if (txt) setResumenIA(txt);
-      else toast.error('La IA no está disponible', { description: 'Verificá que ai-svc esté arriba.' });
-    } catch (e: unknown) { toast.error('No se pudo resumir', { description: e instanceof Error ? e.message : 'Error' }); }
-    finally { setResumenLoading(false); }
   };
 
   const copyLink = () => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copiado')).catch(() => {});
@@ -286,7 +245,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   if (notFound || !tutoria) {
     return (
       <div className="space-y-6">
-        <button type="button" onClick={() => navigate('/tutorias')} className="text-sm text-muted-foreground hover:text-foreground">← Tutorías</button>
+        <button type="button" onClick={() => navigate('/materias?tab=tutorias')} className="text-sm text-muted-foreground hover:text-foreground">← Tutorías</button>
         <EmptyState icon={CalendarClock} title="Tutoría no encontrada" description="La tutoría no existe o fue eliminada." />
       </div>
     );
@@ -295,29 +254,60 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   const badge = TUTORIA_BADGE[tutoria.estado];
   const BadgeIcon = badge.icon;
   const ocupados = Math.max(0, tutoria.cupo - tutoria.plazasDisponibles);
+  const enEspera = agendados.filter((a) => a.estado === 'ESPERA').length;
 
   return (
     <div className="space-y-4">
       {/* Breadcrumb + acciones */}
       <div className="flex items-center justify-between gap-3">
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
-          <button type="button" onClick={() => navigate('/tutorias')} className="hover:text-foreground">Tutorías</button>
+          <button type="button" onClick={() => navigate('/materias')} className="hover:text-foreground transition-colors shrink-0">Materias</button>
           <ChevronRight className="h-4 w-4 shrink-0" />
-          <span className="text-foreground font-medium truncate">{tutoria.materiaNombre}</span>
+          <button
+            type="button"
+            onClick={() => navigate(`/materias/${tutoria.materiaId}`)}
+            className="hover:text-foreground transition-colors truncate"
+          >
+            {tutoria.materiaNombre}
+          </button>
+          <ChevronRight className="h-4 w-4 shrink-0" />
+          <span className="text-foreground font-medium shrink-0">Tutoría</span>
         </nav>
+        {/*
+          Antes eran ocho íconos seguidos sin una sola etiqueta: no había forma de
+          saber qué hacía cada uno sin pasar el mouse por los ocho. Ahora las
+          acciones principales dicen su nombre, las de compartir quedan agrupadas
+          como íconos (glifos reconocibles) y la destructiva va separada al final.
+        */}
         <div className="flex items-center gap-1 shrink-0">
           <PermissionGuard requiredPermission="tutoria:editar">
-            <Button variant={tutoria.enVivo ? 'default' : 'ghost'} size="sm" onClick={toggleEnVivo} title="Disponible en vivo (walk-in)" className={tutoria.enVivo ? 'bg-utec-green hover:bg-utec-green/90' : ''}>
-              <Radio className="h-4 w-4" />{tutoria.enVivo && <span className="ml-1 text-xs">En vivo</span>}
+            <Button variant={tutoria.enVivo ? 'default' : 'ghost'} size="sm" onClick={toggleEnVivo} title="Marcar la tutoría como disponible ahora, sin agenda previa" className={tutoria.enVivo ? 'bg-utec-green hover:bg-utec-green/90' : ''}>
+              <Radio className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">{tutoria.enVivo ? 'En vivo' : 'Walk-in'}</span>
             </Button>
           </PermissionGuard>
-          <Button variant="ghost" size="sm" onClick={() => downloadICS(tutoria)} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" asChild title="Agregar a Google Calendar"><a href={googleCalUrl(tutoria)} target="_blank" rel="noopener noreferrer"><CalendarClock className="h-4 w-4" /></a></Button>
-          <Button variant="ghost" size="sm" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
-          <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={() => setScanOpen(true)} title="Check-in por QR"><QrCode className="h-4 w-4" /></Button></PermissionGuard>
-          <Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)} title="Notificar agendados"><Mail className="h-4 w-4" /></Button>
-          <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={() => setEditOpen(true)} title="Editar"><Edit className="h-4 w-4" /></Button></PermissionGuard>
-          <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={eliminar} title="Eliminar" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></PermissionGuard>
+
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => downloadICS(tutoriaToAgendable(tutoria))} title="Descargar .ics"><CalendarPlus className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Agregar a Google Calendar"><a href={googleCalUrl(tutoriaToAgendable(tutoria))} target="_blank" rel="noopener noreferrer"><CalendarClock className="h-4 w-4" /></a></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
+          <PermissionGuard requiredPermission="tutoria:editar">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setScanOpen(true)} title="Check-in por QR"><QrCode className="h-4 w-4" /></Button>
+          </PermissionGuard>
+
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+
+          <Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)}>
+            <Mail className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">Notificar</span>
+          </Button>
+          <PermissionGuard requiredPermission="tutoria:editar">
+            <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)}>
+              <Edit className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">Editar</span>
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission="tutoria:editar">
+            <Button variant="ghost" size="icon" className="h-8 w-8 ml-1 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={eliminar} title="Eliminar tutoría"><Trash2 className="h-4 w-4" /></Button>
+          </PermissionGuard>
         </div>
       </div>
 
@@ -361,63 +351,111 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
         </div>
       )}
 
-      {/* Identidad + tiles */}
-      <div className="grid gap-4 lg:grid-cols-3 items-stretch">
-        <div className="rounded-2xl border bg-card p-5 flex flex-col">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-utec-blue/10 text-utec-blue mb-3"><CalendarClock className="h-6 w-6" /></div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold leading-tight">{tutoria.materiaNombre}</h1>
-            <Badge className={`${badge.color} border font-medium text-xs`}><BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1.5"><GraduationCap className="h-4 w-4" />{tutoria.docenteNombre}</p>
-          <div className="mt-3 space-y-1.5 text-sm">
-            <p className="flex items-center gap-1.5"><CalendarClock className="h-4 w-4 text-utec-blue" />{formatFecha(tutoria.inicio)}</p>
-            <p className="flex items-center gap-1.5 text-muted-foreground"><Clock className="h-4 w-4" />{formatHora(tutoria.inicio)}–{formatHora(tutoria.fin)} · {duracion(tutoria.inicio, tutoria.fin)} · <span className="font-medium text-foreground">{relativo(tutoria.inicio)}</span></p>
-            {tutoria.modalidad === 'VIRTUAL'
-              ? <p className="flex items-center gap-1.5"><Video className="h-4 w-4 text-utec-cyan" />Virtual{tutoria.enlace && <a href={tutoria.enlace} target="_blank" rel="noopener noreferrer" className="text-utec-cyan hover:underline">· unirse</a>}</p>
-              : tutoria.espacioNombre && <p className="flex items-center gap-1.5 text-muted-foreground"><MapPin className="h-4 w-4" />{tutoria.espacioNombre}</p>}
-            <p className="flex items-center gap-1.5 text-muted-foreground text-xs">{tutoria.tipo === 'INDIVIDUAL' ? 'Tutoría individual (1 a 1)' : 'Tutoría grupal'}</p>
-          </div>
-          {tutoria.tags && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {tutoria.tags.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">{t.toLowerCase() === 'mate' ? '🧉 mate' : t}</span>
-              ))}
+      {/*
+        Un solo encabezado. Antes eran dos tarjetas: la identidad a la izquierda y
+        cuatro tiles —Cupo, Agendados, Disponibles, Ocupación— que decían el mismo
+        dato cuatro veces. Ahora la ocupación es una barra dentro del mismo bloque.
+      */}
+      <div className="rounded-2xl border bg-card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold leading-tight">{tutoria.materiaNombre}</h1>
+              <Badge className={`${badge.color} border font-medium text-xs`}>
+                <BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}
+              </Badge>
             </div>
-          )}
-        </div>
-        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-          <StatTile icon={Users} label="Cupo" value={tutoria.cupo} variant="purple" />
-          <StatTile icon={CheckCircle} label="Agendados" value={ocupados} variant="blue" />
-          <StatTile icon={Users} label="Disponibles" value={tutoria.plazasDisponibles} variant="green" />
-          <StatTile icon={CalendarClock} label="Ocupación" value={`${ocupacion}%`} variant="cyan" />
+
+            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <GraduationCap className="h-4 w-4" />{tutoria.docenteNombre}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CalendarClock className="h-4 w-4" />{formatFecha(tutoria.inicio)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4" />
+                {formatHora(tutoria.inicio)}–{formatHora(tutoria.fin)} · {duracion(tutoria.inicio, tutoria.fin)}
+              </span>
+              {tutoria.modalidad === 'VIRTUAL' ? (
+                <span className="flex items-center gap-1.5 text-utec-cyan">
+                  <Video className="h-4 w-4" />Virtual
+                  {tutoria.enlace && (
+                    <a href={tutoria.enlace} target="_blank" rel="noopener noreferrer" className="hover:underline">· unirse</a>
+                  )}
+                </span>
+              ) : tutoria.espacioNombre && (
+                <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{tutoria.espacioNombre}</span>
+              )}
+            </p>
+
+            <p className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium">{relativo(tutoria.inicio)}</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">
+                {tutoria.tipo === 'INDIVIDUAL' ? 'Tutoría individual (1 a 1)' : 'Tutoría grupal'}
+              </span>
+              {tutoria.tags?.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
+                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">
+                  {t.toLowerCase() === 'mate' ? '🧉 mate' : t}
+                </span>
+              ))}
+            </p>
+          </div>
+
+          {/* Ocupación: una barra en vez de cuatro tiles. */}
+          <div className="w-full sm:w-64 shrink-0">
+            <div className="flex items-baseline justify-between gap-3 mb-1.5">
+              <p className="text-sm">
+                <span className="text-2xl font-bold tabular-nums leading-none">{ocupados}</span>
+                <span className="text-muted-foreground"> de {tutoria.cupo} lugares</span>
+              </p>
+              <span className={`text-sm font-semibold tabular-nums ${tutoria.plazasDisponibles > 0 ? 'text-utec-green' : 'text-utec-orange'}`}>
+                {tutoria.plazasDisponibles > 0
+                  ? `${tutoria.plazasDisponibles} libre${tutoria.plazasDisponibles === 1 ? '' : 's'}`
+                  : 'Completo'}
+              </span>
+            </div>
+            <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-utec-blue transition-all"
+                style={{ width: `${ocupacion}%` }}
+                role="progressbar"
+                aria-valuenow={ocupacion}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Ocupación de la tutoría"
+              />
+            </div>
+            {enEspera > 0 && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-utec-orange">
+                <Users className="h-3.5 w-3.5" />{enEspera} en lista de espera
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Agendados + estado */}
       <div className="grid gap-4 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2 space-y-4">
+          {puedeGestionar && (
+            <TemariosPanel
+              tutoriaId={tutoriaId}
+              materiaNombre={tutoria.materiaNombre}
+              refreshKey={agendados.length}
+            />
+          )}
           <Panel
             title={`Agendados · ${agendados.filter((a) => a.estado !== 'ESPERA').length}`}
             icon={<Users className="h-4 w-4 text-utec-blue" />}
             accent="bg-utec-blue/10"
             action={(
-              <div className="flex items-center gap-1">
-                {agendados.some((a) => a.temario) && (
-                  <Button variant="ghost" size="sm" className="h-7" onClick={resumirTemarios} disabled={resumenLoading} title="Resumir temas con IA">
-                    {resumenLoading ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5 text-utec-orange" />}Resumir IA
-                  </Button>
-                )}
-                {agendados.length > 0 && <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button>}
-              </div>
+              agendados.length > 0
+                ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button>
+                : null
             )}
           >
-            {resumenIA && (
-              <div className="mb-3 rounded-lg border border-utec-orange/30 bg-utec-orange/5 p-3 text-sm">
-                <p className="flex items-center gap-1.5 font-medium text-utec-orange mb-1"><Sparkles className="h-3.5 w-3.5" />Resumen de temas (IA)</p>
-                <p className="text-muted-foreground leading-relaxed">{resumenIA}</p>
-              </div>
-            )}
             {agendados.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">Nadie se agendó todavía.</p>
             ) : (() => {
@@ -498,12 +536,8 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           )}
         </div>
         <div className="space-y-4">
-          <Panel title="Ocupación" icon={<CalendarClock className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10">
-            <div className="flex items-center gap-3">
-              <Donut value={ocupacion} />
-              <div className="text-sm"><p className="font-medium">{ocupados}/{tutoria.cupo} plazas</p><p className="text-muted-foreground text-xs">{tutoria.plazasDisponibles} disponibles</p></div>
-            </div>
-          </Panel>
+          {/* La dona de ocupación vivía acá y repetía por quinta vez el mismo dato
+              que ya cuenta la barra del encabezado. */}
           <PermissionGuard requiredPermission="tutoria:editar">
             <Panel title="Estado" icon={<Lock className="h-4 w-4 text-utec-orange" />} accent="bg-utec-orange/10">
               <Select value={tutoria.estado} onValueChange={(v) => cambiarEstado(v as TutoriaEstado)} disabled={savingEstado}>

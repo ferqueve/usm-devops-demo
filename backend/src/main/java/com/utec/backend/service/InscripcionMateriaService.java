@@ -1,6 +1,8 @@
 package com.utec.backend.service;
 
 import com.utec.backend.dto.inscripcion.InscripcionResponseDto;
+import com.utec.backend.exception.RecursoNoEncontradoException;
+import com.utec.backend.exception.AccesoDenegadoException;
 import com.utec.backend.model.InscripcionMateria;
 import com.utec.backend.model.Materia;
 import com.utec.backend.model.Usuario;
@@ -40,7 +42,7 @@ public class InscripcionMateriaService {
      */
     public InscripcionResponseDto inscribirEstudiante(Long materiaId, Long estudianteId) {
         Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + materiaId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + materiaId));
         if (materia.getDeletedAt() != null) {
             throw new IllegalStateException("La materia no está disponible");
         }
@@ -63,7 +65,7 @@ public class InscripcionMateriaService {
      */
     public void eliminarInscripcion(Long inscripcionId) {
         InscripcionMateria inscripcion = inscripcionMateriaRepository.findById(inscripcionId)
-                .orElseThrow(() -> new IllegalArgumentException(INSCRIPCION_NO_ENCONTRADA_MSG + inscripcionId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(INSCRIPCION_NO_ENCONTRADA_MSG + inscripcionId));
         inscripcion.setEstado("CANCELADA");
         inscripcion.setDeletedAt(Instant.now());
         inscripcion.setUpdatedAt(Instant.now());
@@ -77,7 +79,7 @@ public class InscripcionMateriaService {
     @Transactional(readOnly = true)
     public Map<String, Object> notificarInscriptos(Long materiaId, String asunto, String mensaje) {
         Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + materiaId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + materiaId));
         List<InscripcionMateria> inscripciones = inscripcionMateriaRepository.findByMateriaIdAndDeletedAtIsNull(materiaId);
         String asuntoFinal = (asunto == null || asunto.isBlank()) ? ("Aviso · " + materia.getNombre()) : asunto;
         int enviados = 0;
@@ -101,14 +103,14 @@ public class InscripcionMateriaService {
      */
     public InscripcionResponseDto inscribir(Long materiaId, String email) {
         Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + materiaId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + materiaId));
 
         if (materia.getDeletedAt() != null) {
             throw new IllegalStateException("La materia no está disponible");
         }
 
         Usuario estudiante = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         if (inscripcionMateriaRepository.existsByMateriaIdAndEstudianteIdAndDeletedAtIsNull(materiaId, estudiante.getId())) {
             throw new IllegalStateException("Ya estás inscripto en esta materia");
@@ -140,7 +142,7 @@ public class InscripcionMateriaService {
     @Transactional(readOnly = true)
     public List<InscripcionResponseDto> getMisInscripciones(String email) {
         Usuario estudiante = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         return inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(estudiante.getId()).stream()
                 .map(this::mapToResponseDto)
@@ -153,13 +155,13 @@ public class InscripcionMateriaService {
      */
     public void cancelarInscripcion(Long inscripcionId, String email) {
         InscripcionMateria inscripcion = inscripcionMateriaRepository.findById(inscripcionId)
-                .orElseThrow(() -> new IllegalArgumentException(INSCRIPCION_NO_ENCONTRADA_MSG + inscripcionId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(INSCRIPCION_NO_ENCONTRADA_MSG + inscripcionId));
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         if (inscripcion.getEstudiante() == null || !inscripcion.getEstudiante().getId().equals(usuario.getId())) {
-            throw new IllegalStateException("No tienes permiso para cancelar esta inscripción");
+            throw new AccesoDenegadoException("No tienes permiso para cancelar esta inscripción");
         }
 
         inscripcion.setEstado("CANCELADA");
@@ -179,19 +181,19 @@ public class InscripcionMateriaService {
             throw new IllegalArgumentException("Estado inválido: usá ACTIVA o APROBADA");
         }
         InscripcionMateria inscripcion = inscripcionMateriaRepository.findById(inscripcionId)
-                .orElseThrow(() -> new IllegalArgumentException(INSCRIPCION_NO_ENCONTRADA_MSG + inscripcionId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(INSCRIPCION_NO_ENCONTRADA_MSG + inscripcionId));
         if (inscripcion.getDeletedAt() != null) {
             throw new IllegalStateException("La inscripción no está activa");
         }
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
         String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : "";
         boolean esAdminOAnalista = ROLE_ADMIN.equals(rol) || ROLE_ANALISTA.equals(rol);
         Materia materia = inscripcion.getMateria();
         boolean esDocenteDeMateria = materia != null && materia.getDocente() != null
                 && materia.getDocente().getId().equals(usuario.getId());
         if (!esAdminOAnalista && !esDocenteDeMateria) {
-            throw new IllegalStateException("No tenés permiso para cambiar el estado de esta inscripción");
+            throw new AccesoDenegadoException("No tenés permiso para cambiar el estado de esta inscripción");
         }
         inscripcion.setEstado(nuevo);
         inscripcion.setUpdatedAt(Instant.now());

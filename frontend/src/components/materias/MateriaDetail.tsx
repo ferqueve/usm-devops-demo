@@ -47,10 +47,11 @@ const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon:
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
-type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green';
+type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'purple';
 const TILE_CLS: Record<TileVariant, string> = {
   blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-utec-dark',
   cyan: 'bg-utec-cyan text-utec-dark', green: 'bg-utec-green text-white',
+  purple: 'bg-utec-purple text-white',
 };
 function StatTile({ icon: Icon, label, value, variant }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode; variant: TileVariant }>) {
   return (
@@ -103,12 +104,19 @@ function exportInscriptosCSV(materia: Materia, inscriptos: Inscripcion[]) {
 }
 
 function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
+  const navigate = useNavigate();
   const badge = TUTORIA_BADGE[tutoria.estado];
   const Icon = badge.icon;
   const ocupados = Math.max(0, tutoria.cupo - tutoria.plazasDisponibles);
   const pct = tutoria.cupo > 0 ? Math.round((ocupados / tutoria.cupo) * 100) : 0;
+  const libre = tutoria.plazasDisponibles > 0;
   return (
-    <li className="rounded-lg border p-3 text-sm">
+    <li>
+      <button
+        type="button"
+        onClick={() => navigate(`/tutorias/${tutoria.id}`)}
+        className="w-full rounded-lg border p-3 text-left text-sm transition-all hover:border-utec-purple/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-utec-purple/40"
+      >
       <div className="flex items-center justify-between gap-2 mb-1">
         <span className="flex items-center gap-1.5 font-medium"><CalendarClock className="h-4 w-4 text-utec-purple shrink-0" />{formatFecha(tutoria.inicio)}</span>
         <Badge className={`${badge.color} border font-medium text-xs shrink-0`}><Icon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
@@ -118,9 +126,15 @@ function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
         {tutoria.espacioNombre && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{tutoria.espacioNombre}</span>}
       </p>
       <div className="mt-2">
-        <div className="flex justify-between text-[11px] text-muted-foreground mb-1"><span>Cupo</span><span className="tabular-nums">{ocupados}/{tutoria.cupo} · {tutoria.plazasDisponibles} libres</span></div>
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-utec-purple" style={{ width: `${pct}%` }} /></div>
+        <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+          <span>Cupo</span>
+          <span className={`tabular-nums ${libre ? 'text-utec-green font-medium' : ''}`}>
+            {ocupados}/{tutoria.cupo} · {tutoria.plazasDisponibles} libres
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-utec-purple transition-all" style={{ width: `${pct}%` }} /></div>
       </div>
+      </button>
     </li>
   );
 }
@@ -292,13 +306,13 @@ function TutoriasPanel({ materiaId, tutorias, loading, onRefresh }: Readonly<{ m
             {proximas.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Próximas</p>
-                <ul className="space-y-2">{proximas.map((t) => <TutoriaRow key={t.id} tutoria={t} />)}</ul>
+                <ul className="grid gap-2 sm:grid-cols-2">{proximas.map((t) => <TutoriaRow key={t.id} tutoria={t} />)}</ul>
               </div>
             )}
             {pasadas.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Pasadas</p>
-                <ul className="space-y-2 opacity-70">{pasadas.map((t) => <TutoriaRow key={t.id} tutoria={t} />)}</ul>
+                <ul className="grid gap-2 opacity-70 sm:grid-cols-2">{pasadas.map((t) => <TutoriaRow key={t.id} tutoria={t} />)}</ul>
               </div>
             )}
           </div>
@@ -437,7 +451,7 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
           <StatTile icon={Users} label="Inscriptos" value={inscriptos.length} variant="blue" />
           <StatTile icon={Award} label="Créditos" value={materia.creditos ?? '—'} variant="yellow" />
           <StatTile icon={Layers} label="Semestre" value={materia.semestre ?? '—'} variant="cyan" />
-          <StatTile icon={FolderOpen} label="Recursos" value={recursos.length} variant="green" />
+          <StatTile icon={CalendarClock} label="Tutorías" value={tutorias.length} variant="purple" />
         </div>
       </div>
 
@@ -445,11 +459,13 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
       <div className="grid gap-4 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2 space-y-4">
           <RecursosPanel materiaId={materia.id} />
+          {/* Las tutorías de la materia viven acá, en la columna principal: son la razón
+              por la que un estudiante entra al detalle, no un dato al costado. */}
+          <TutoriasPanel materiaId={materia.id} tutorias={tutorias} loading={loadingTut} onRefresh={refreshTut} />
           <ActividadPanel recursos={recursos} inscriptos={inscriptos} tutorias={tutorias} />
         </div>
         <div className="space-y-4">
           <InscriptosPanel materia={materia} inscriptos={inscriptos} loading={loadingInsc} onRefresh={refreshInscriptos} canManage={canManage} />
-          <TutoriasPanel materiaId={materia.id} tutorias={tutorias} loading={loadingTut} onRefresh={refreshTut} />
           <MateriaAsistente materia={materia} recursos={recursos} />
         </div>
       </div>

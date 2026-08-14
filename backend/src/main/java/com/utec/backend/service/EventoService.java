@@ -6,6 +6,7 @@ import com.utec.backend.dto.evento.EventoFeedbackCreateDto;
 import com.utec.backend.dto.evento.EventoFeedbackResumenDto;
 import com.utec.backend.dto.evento.EventoResponseDto;
 import com.utec.backend.dto.evento.EventoUpdateDto;
+import com.utec.backend.exception.RecursoNoEncontradoException;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Evento;
 import com.utec.backend.model.EventoFeedback;
@@ -43,12 +44,14 @@ public class EventoService {
     private static final String ESTADO_BORRADOR = "BORRADOR";
     private static final String ESTADO_PUBLICADO = "PUBLICADO";
     private static final String ESTADO_FINALIZADO = "FINALIZADO";
+    private static final String ESTADO_CANCELADO = "CANCELADO";
     private static final String ESTADO_INSCRITO = "INSCRITO";
     private static final String ESTADO_ESPERA = "ESPERA";
     private static final String ESTADO_ASISTIO = "ASISTIO";
     private static final int MAX_REPETICIONES = 52;
     private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
+    private final OcupacionEspacioService ocupacionEspacioService;
     private final EventoRepository eventoRepository;
     private final EventoInscripcionRepository inscripcionRepository;
     private final EventoFeedbackRepository feedbackRepository;
@@ -85,6 +88,17 @@ public class EventoService {
         // Cantidad de ocurrencias: si hay recurrencia, se generan N eventos
         // desplazando inicio/fin. Sin recurrencia, una sola ocurrencia.
         int ocurrencias = calcularOcurrencias(createDto.getRecurrencia(), createDto.getRepeticiones());
+
+        // Se validan todas las ocurrencias antes de guardar ninguna: si la tercera semana
+        // choca, no queremos dejar creadas las dos primeras.
+        Long espacioId = espacio != null ? espacio.getId() : null;
+        for (int i = 0; i < ocurrencias; i++) {
+            ocupacionEspacioService.validarLibre(
+                    espacioId,
+                    desplazar(createDto.getInicio(), createDto.getRecurrencia(), i),
+                    desplazar(createDto.getFin(), createDto.getRecurrencia(), i),
+                    OcupacionEspacioService.TipoActividad.EVENTO, null);
+        }
 
         Evento primero = null;
         for (int i = 0; i < ocurrencias; i++) {
@@ -209,6 +223,15 @@ public class EventoService {
             evento.setEspacio(resolveEspacio(updateDto.getEspacioId()));
         }
 
+        // Se valida con los valores ya aplicados y excluyendo el propio evento, para que
+        // reeditar sin mover el horario no choque consigo mismo.
+        if (!ESTADO_CANCELADO.equals(evento.getEstado()) && !ESTADO_FINALIZADO.equals(evento.getEstado())) {
+            ocupacionEspacioService.validarLibre(
+                    evento.getEspacio() != null ? evento.getEspacio().getId() : null,
+                    evento.getInicio(), evento.getFin(),
+                    OcupacionEspacioService.TipoActividad.EVENTO, evento.getId());
+        }
+
         // Si se reprogramó el inicio, rehabilitar el recordatorio para que vuelva a enviarse.
         if (evento.getInicio() != null && !evento.getInicio().equals(inicioAnterior)) {
             evento.setRecordatorioEnviado(false);
@@ -237,7 +260,7 @@ public class EventoService {
     public EventoResponseDto inscribir(Long eventoId, String email) {
         Evento evento = findActivo(eventoId);
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         if (inscripcionRepository.existsByEventoIdAndUsuarioIdAndDeletedAtIsNull(eventoId, usuario.getId())) {
             throw new IllegalStateException("Ya estás inscrito en este evento");
@@ -276,7 +299,7 @@ public class EventoService {
     public void cancelarInscripcion(Long eventoId, String email) {
         Evento evento = findActivo(eventoId);
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         EventoInscripcion inscripcion = inscripcionRepository.findByEventoIdAndDeletedAtIsNull(eventoId).stream()
                 .filter(i -> i.getUsuario() != null && usuario.getId().equals(i.getUsuario().getId()))
@@ -334,7 +357,7 @@ public class EventoService {
     public EventoFeedbackResumenDto dejarFeedback(Long eventoId, String email, EventoFeedbackCreateDto dto) {
         Evento evento = findActivo(eventoId);
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         if (!puedeValorar(evento, usuario.getId())) {
             throw new IllegalStateException("Solo podés valorar un evento finalizado al que asististe.");
@@ -363,15 +386,9 @@ public class EventoService {
 
         List<EventoFeedback> lista = feedbackRepository.findByEventoIdAndDeletedAtIsNullOrderByCreatedAtDesc(eventoId);
         long total = lista.size();
-        double promedio = total == 0 ? 0.0
-                : Math.round(lista.stream().mapToInt(EventoFeedback::getRating).average().orElse(0) * 10) / 10.0;
-
-        // distribucion[0] = #1★ ... distribucion[4] = #5★
-        List<Long> distribucion = new ArrayList<>(List.of(0L, 0L, 0L, 0L, 0L));
-        for (EventoFeedback f : lista) {
-            int idx = Math.min(5, Math.max(1, f.getRating())) - 1;
-            distribucion.set(idx, distribucion.get(idx) + 1);
-        }
+        List<Integer> ratings = lista.stream().map(EventoFeedback::getRating).toList();
+        double promedio = ValoracionAgregada.promedio(ratings);
+        List<Long> distribucion = ValoracionAgregada.distribucion(ratings);
 
         Integer miRating = null;
         if (usuarioId != null) {
@@ -406,7 +423,7 @@ public class EventoService {
     @Transactional(readOnly = true)
     public List<EventoResponseDto> misInscripciones(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         List<Evento> eventos = inscripcionRepository.findByUsuarioIdAndDeletedAtIsNull(usuario.getId()).stream()
                 .map(EventoInscripcion::getEvento)
@@ -434,16 +451,16 @@ public class EventoService {
 
     private Evento findActivo(Long id) {
         Evento evento = eventoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(EVENTO_NO_ENCONTRADO_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(EVENTO_NO_ENCONTRADO_MSG + id));
         if (evento.getDeletedAt() != null) {
-            throw new IllegalArgumentException(EVENTO_NO_ENCONTRADO_MSG + id);
+            throw new RecursoNoEncontradoException(EVENTO_NO_ENCONTRADO_MSG + id);
         }
         return evento;
     }
 
     private Espacio resolveEspacio(Long espacioId) {
         return espacioRepository.findById(espacioId)
-                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
     }
 
     private Long resolveUsuarioId(String email) {

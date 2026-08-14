@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import type { Evento } from '@/lib/types/eventos';
-import { relativoInicio, estaEnVivo } from './eventoUtils';
+import { relativoInicio, estaEnVivo } from '@/lib/agenda/tiempo';
 
 // --- helpers compartidos con EventosManagement ---
 export function parseTags(csv?: string): string[] {
