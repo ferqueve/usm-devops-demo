@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import type { Permission } from '@/lib/config/permissions';
 
 export interface TipoCrudItem {
   id: number;
@@ -35,9 +36,9 @@ interface TipoCrudShellProps<T extends TipoCrudItem> {
   onDelete: (item: T) => void;
   /** Permission tags. */
   permissions?: {
-    crear?: string;
-    editar?: string;
-    eliminar?: string;
+    crear?: Permission;
+    editar?: Permission;
+    eliminar?: Permission;
   };
 }
 

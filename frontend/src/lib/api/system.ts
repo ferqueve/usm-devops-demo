@@ -1,4 +1,8 @@
 import { actuatorRequest } from './client';
+import type {
+  ActuatorEndpoints, AppInfo, HealthInfo, HttpTraceInfo, LiquibaseInfo,
+  LoggersInfo, MappingsInfo, MetricInfo,
+} from '@/lib/types/actuator';
 
 // Constante para la URL base de la API
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
@@ -6,8 +10,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/
 // API de sistema/actuator
 export const actuatorApi = {
   // Health check
-  async getHealth(): Promise<unknown> {
-    return actuatorRequest('/actuator/health');
+  async getHealth(): Promise<HealthInfo> {
+    return actuatorRequest<HealthInfo>('/actuator/health');
   },
 
   // Métricas del sistema
@@ -16,28 +20,28 @@ export const actuatorApi = {
   },
 
   // Métrica específica
-  async getMetric(metricName: string): Promise<unknown> {
-    return actuatorRequest(`/actuator/metrics/${metricName}`);
+  async getMetric(metricName: string): Promise<MetricInfo> {
+    return actuatorRequest<MetricInfo>(`/actuator/metrics/${metricName}`);
   },
 
   // Información de la aplicación
-  async getInfo(): Promise<unknown> {
-    return actuatorRequest('/actuator/info');
+  async getInfo(): Promise<AppInfo> {
+    return actuatorRequest<AppInfo>('/actuator/info');
   },
 
   // Endpoints disponibles
-  async getEndpoints(): Promise<unknown> {
-    return actuatorRequest('/actuator');
+  async getEndpoints(): Promise<ActuatorEndpoints> {
+    return actuatorRequest<ActuatorEndpoints>('/actuator');
   },
 
   // Trazas HTTP
-  async getHttpTrace(): Promise<unknown> {
-    return actuatorRequest('/actuator/httpexchanges');
+  async getHttpTrace(): Promise<HttpTraceInfo> {
+    return actuatorRequest<HttpTraceInfo>('/actuator/httpexchanges');
   },
 
   // Mapeos de endpoints
-  async getMappings(): Promise<unknown> {
-    return actuatorRequest('/actuator/mappings');
+  async getMappings(): Promise<MappingsInfo> {
+    return actuatorRequest<MappingsInfo>('/actuator/mappings');
   },
 
   // Documentación OpenAPI
@@ -46,13 +50,13 @@ export const actuatorApi = {
   },
 
   // Estado de Liquibase
-  async getLiquibase(): Promise<unknown> {
-    return actuatorRequest('/actuator/liquibase');
+  async getLiquibase(): Promise<LiquibaseInfo> {
+    return actuatorRequest<LiquibaseInfo>('/actuator/liquibase');
   },
 
   // Loggers disponibles
-  async getLoggers(): Promise<unknown> {
-    return actuatorRequest('/actuator/loggers');
+  async getLoggers(): Promise<LoggersInfo> {
+    return actuatorRequest<LoggersInfo>('/actuator/loggers');
   },
 
   // Cambiar nivel de logger
@@ -85,7 +89,7 @@ export const actuatorApi = {
   },
 
   // Obtener archivo de logs
-  async getLogFile(): Promise<unknown> {
-    return actuatorRequest('/actuator/logfile');
+  async getLogFile(): Promise<string> {
+    return actuatorRequest<string>('/actuator/logfile');
   },
 };

@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
@@ -942,7 +941,6 @@ export default function SpacesManagement() {
                 <SpaceCard
                   key={espacio.id}
                   espacio={espacio}
-                  canEdit={canEdit}
                   onEdit={handleEdit}
                   enCurso={espaciosOcupados.has(espacio.id)}
                 />

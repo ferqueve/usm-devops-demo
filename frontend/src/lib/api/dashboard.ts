@@ -59,12 +59,19 @@ function settledValue<T>(result: PromiseSettledResult<T> | undefined): T | null 
   return result?.status === 'fulfilled' ? result.value : null;
 }
 
-function dataOrFallback<T>(result: PromiseSettledResult<ApiResponse<T>> | undefined, fallback: T): T {
+// Acepta el resultado nullable porque varias llamadas usan .catch(() => null)
+// para degradar en vez de tumbar el dashboard entero.
+function dataOrFallback<T>(
+  result: PromiseSettledResult<ApiResponse<T> | null> | undefined,
+  fallback: T,
+): T {
   const data = settledValue(result)?.data;
   return data !== undefined && data !== null ? data : fallback;
 }
 
-function extractReservas(result: PromiseSettledResult<ApiResponse<Reserva[]>> | undefined): Reserva[] {
+function extractReservas(
+  result: PromiseSettledResult<ApiResponse<Reserva[]> | null> | undefined,
+): Reserva[] {
   return dataOrFallback(result, [] as Reserva[]);
 }
 
@@ -101,11 +108,11 @@ function extractReservaStats(
   return value?.data ?? null;
 }
 
+// /stats/active-users no viene envuelto en ApiResponse: el valor settled ya es el DTO.
 function extractActiveUsers(
-  result: PromiseSettledResult<ApiResponse<{ totalActiveUsers: number }> | null> | undefined,
+  result: PromiseSettledResult<{ totalActiveUsers: number } | null> | undefined,
 ): { totalActiveUsers: number } | null {
-  const value = settledValue(result);
-  return value?.data ?? null;
+  return settledValue(result) ?? null;
 }
 
 // =====================================================================
@@ -166,15 +173,6 @@ function rangoHoy(): { hoy: Date; finHoy: Date } {
   const finHoy = new Date();
   finHoy.setHours(23, 59, 59, 999);
   return { hoy, finHoy };
-}
-
-// Devuelve "ahora" snappeado al inicio del minuto: dos llamadas en rápida
-// sucesión (StrictMode, montajes hermanos) generan exactamente el mismo
-// Date y por lo tanto la misma URL → el dedupe del API client las colapsa.
-function ahoraSnappeado(): Date {
-  const d = new Date();
-  d.setSeconds(0, 0);
-  return d;
 }
 
 function calcularPromedioReservasPorEspacio(reservasAprobadas: number, totalEspacios: number): number {

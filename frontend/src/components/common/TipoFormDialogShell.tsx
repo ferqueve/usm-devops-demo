@@ -14,6 +14,7 @@ import {
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import type { Permission } from '@/lib/config/permissions';
 
 export interface TipoFormBaseValues {
   nombre: string;
@@ -47,7 +48,7 @@ interface TipoFormDialogShellProps<TValues extends TipoFormBaseValues, TEntity> 
     loading: boolean,
   ) => React.ReactNode;
   /** Permission keys for the save button (defaults to "tipo:editar" / "tipo:crear"). */
-  permissions?: { crear?: string; editar?: string };
+  permissions?: { crear?: Permission; editar?: Permission };
 }
 
 /**

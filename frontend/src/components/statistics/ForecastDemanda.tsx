@@ -27,22 +27,6 @@ import {
 import { postAnalyzeForecast } from '@/lib/api/ai';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 
-interface SectionHeaderProps {
-  title: string;
-  accent: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-function SectionHeader({ title, accent, icon: Icon }: Readonly<SectionHeaderProps>) {
-  return (
-    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
-      <span className="w-1 h-4 rounded-sm shrink-0" style={{ backgroundColor: accent }} aria-hidden />
-      <Icon className="h-3.5 w-3.5 text-white/70 shrink-0" />
-      <h3 className="text-sm font-semibold tracking-tight truncate">{title}</h3>
-    </div>
-  );
-}
-
 interface TooltipPayload { name?: string; value?: number; color?: string; payload?: Record<string, unknown>; }
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -8,7 +8,6 @@ import {
   EnumFilterSection,
   ClearFiltersButton,
 } from "@/components/ui/compact-filter";
-import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { espaciosApi } from '@/lib/api/spaces';
 import { inventarioApi } from '@/lib/api/inventory';
@@ -22,9 +21,7 @@ import {
   MapPin,
   Boxes,
   BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Filter,
+      Filter,
   RefreshCw,
   Building2,
   Layers,
@@ -37,21 +34,11 @@ import {
   Target,
   Shield,
   ShieldAlert,
-  Info,
-  FileText,
+    FileText,
   Tag,
   XCircle,
 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { exportInventoryStatsToPDF } from '@/lib/utils/pdf-export';
-import InventoryCharts from './InventoryCharts';
-import { StatCard } from './StatCard';
 import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
 import EstadisticasAvanzadasInventario from './EstadisticasAvanzadasInventario';
 
