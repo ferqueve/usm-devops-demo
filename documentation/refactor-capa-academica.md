@@ -1,6 +1,6 @@
 # Refactor capa académica — Materias / Tutorías / Eventos
 
-Estado: **en curso**. Arrancado el 2026-08-14 sobre `feat/capa-academica`.
+Estado: **las 5 fases hechas**. Arrancado y completado el 2026-08-14 sobre `feat/capa-academica`.
 
 ## Por qué
 
@@ -140,7 +140,7 @@ y audiencia externa).
 | 2 | Authz → 403 en vez de 409, chequeo de dueño extraído | no | **hecha** |
 | 3 | Unificar tripa tutoría/evento (calendario, ICS, helpers de tiempo, recordatorios) | no (borra duplicado) | **parcial** |
 | 4 | Partir `/mias` por rol; emparejar la forma de las rutas | no | **hecha** |
-| 5 | Tutorías como pestaña dentro del detalle de materia | **sí** | pendiente |
+| 5 | Tutorías dentro de Materias; sidebar de 3 ítems a 2 | **sí** | **hecha** |
 
 Lo visual va último a propósito: si se mueve la navegación antes de unificar la tripa, queda
 el mismo código duplicado repartido en dos secciones — peor de mantener.
@@ -197,18 +197,33 @@ unificación de participación.
 `npx tsc -p tsconfig.app.json --noEmit`. Con eso el repo tiene 61 errores preexistentes
 (imports sin usar, `Permission` vs `string`, etc.) en módulos ajenos a la capa académica.
 
-### Resultado visual (fase 5)
+### Lo que hizo la fase 5
 
 Sidebar: de `Materias / Tutorías / Eventos` a `Materias / Eventos`.
-El detalle de materia gana una pestaña:
 
-```
-Info   Correlativas   Recursos   Tutorías
-```
+**Tutorías no se eliminó como superficie, se mudó.** El detalle de materia ya tenía un
+`TutoriasPanel`, pero como tarjeta angosta en la columna lateral, tercera abajo de
+Inscriptos. Y `/tutorias` cargaba cosas que ninguna materia sola puede mostrar: el
+progreso y las medallas del estudiante, y el ranking/racha agregado del docente sobre
+**todas** sus materias. Borrar la página habría perdido eso.
 
-**A reubicar, no perder:** el panel de "mi ranking / mi racha / mis estudiantes" del docente
-vive hoy en `/tutorias` y agrega sobre **todas** sus materias — no entra en la ficha de una
-materia sola. Va al dashboard del docente.
+Quedó en dos niveles:
+
+1. **`/materias?tab=tutorias`** — tercera pestaña, junto a Mapa y Listado. Adentro va
+   `TutoriasManagement` completo (con `embedded`, para no repetir el encabezado que ya
+   pone la página). Ahí sobreviven el ranking del docente y la gamificación del estudiante.
+2. **Detalle de materia** — el `TutoriasPanel` sube a la columna principal, debajo de
+   Recursos: es la razón por la que un estudiante entra al detalle, no un dato al costado.
+   Las filas pasan a ser navegables al detalle de la tutoría, se muestran en grilla de dos
+   columnas y el cupo libre se resalta en verde. El tile de "Recursos" del encabezado se
+   reemplaza por uno de "Tutorías".
+
+La ruta `/tutorias` redirige a `/materias?tab=tutorias` para no romper links guardados.
+`/tutorias/:id` sigue existiendo: es el detalle, al que ahora se llega desde la materia.
+El breadcrumb de ese detalle pasa de `Tutorías › {materia}` a
+`Materias › {materia} › Tutoría`, y borrar una tutoría vuelve a su materia.
+
+La pestaña activa vive en la query string, así que el link es compartible.
 
 ## Después del refactor: dar peso a los tres roles
 

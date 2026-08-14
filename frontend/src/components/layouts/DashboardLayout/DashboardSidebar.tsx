@@ -63,15 +63,12 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                    location.pathname === '/inventory';
       }
 
-      // Materias debe quedar activo también en el detalle /materias/:id
+      // Materias queda activo en su detalle /materias/:id y también en el de una
+      // tutoría, que ya no tiene ítem propio: vive como pestaña dentro de Materias.
       if (item.id === 'materias') {
         isActive = location.pathname === '/materias' ||
-                   location.pathname.startsWith('/materias/');
-      }
-
-      // Tutorías activo también en el detalle /tutorias/:id
-      if (item.id === 'tutorias') {
-        isActive = location.pathname === '/tutorias' ||
+                   location.pathname.startsWith('/materias/') ||
+                   location.pathname === '/tutorias' ||
                    location.pathname.startsWith('/tutorias/');
       }
 

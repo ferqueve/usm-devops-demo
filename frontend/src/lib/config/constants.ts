@@ -9,7 +9,6 @@ import {
   FileText,
   Sparkles,
   GraduationCap,
-  CalendarClock,
   Megaphone,
   Leaf
 } from "lucide-react";
@@ -82,12 +81,9 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     icon: GraduationCap,
     href: "/materias"
   },
-  {
-    id: "tutorias",
-    label: "Tutorías",
-    icon: CalendarClock,
-    href: "/tutorias"
-  },
+  // Tutorías no tiene ítem propio: cuelga de una materia, así que vive como pestaña
+  // dentro de Materias (/materias?tab=tutorias). Eventos sí queda aparte: es la
+  // superficie del rol EXTERNO y no depende de ninguna materia.
   {
     id: "eventos",
     label: "Eventos",
@@ -157,7 +153,6 @@ export const ROLE_PERMISSIONS = {
       'system',
       'audit',
       'materias',
-      'tutorias',
       'eventos',
       'sostenibilidad'
     ],
@@ -212,7 +207,6 @@ export const ROLE_PERMISSIONS = {
       'reservations',
       'calendar',
       'materias',
-      'tutorias',
       'eventos'
     ],
   },
@@ -233,7 +227,6 @@ export const ROLE_PERMISSIONS = {
       'dashboard',
       'calendar',
       'materias',
-      'tutorias',
       'eventos'
     ],
   },

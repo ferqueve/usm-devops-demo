@@ -24,6 +24,7 @@ import {
   ArrowUp,
   ArrowUpDown,
   Award,
+  CalendarClock,
   BookOpen,
   CheckCircle,
   Edit,
@@ -53,17 +54,29 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { MateriaFormDialog } from './MateriaFormDialog';
 import { DeleteMateriaDialog } from './DeleteMateriaDialog';
 import { MapaCorrelativas } from './MapaCorrelativas';
-import { useNavigate } from 'react-router-dom';
+import TutoriasManagement from '@/components/tutorias/TutoriasManagement';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const ROLE_ANALISTA = 'ANALISTA';
 const ROLE_ADMIN = 'ADMIN';
 const ROLE_DOCENTE = 'DOCENTE';
 const ROLE_ESTUDIANTE = 'ESTUDIANTE';
 
+type MateriasTab = 'mapa' | 'listado' | 'tutorias';
+const TABS_VALIDOS: MateriasTab[] = ['mapa', 'listado', 'tutorias'];
+
 export default function MateriasManagement() {
   const { user } = useAuth();
   const rol = user?.rol ?? '';
-  const [tab, setTab] = useState<'mapa' | 'listado'>('mapa');
+
+  // La pestaña vive en la URL para que el link sea compartible y para que
+  // /tutorias pueda redirigir acá sin perder a dónde iba.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as MateriasTab | null;
+  const tab: MateriasTab = tabParam && TABS_VALIDOS.includes(tabParam) ? tabParam : 'mapa';
+  const setTab = (t: MateriasTab) => {
+    setSearchParams(t === 'mapa' ? {} : { tab: t }, { replace: true });
+  };
 
   let view: ReactNode = null;
   if (rol === ROLE_ANALISTA || rol === ROLE_ADMIN) {
@@ -92,21 +105,30 @@ export default function MateriasManagement() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Materias</h1>
-          <p className="text-sm text-muted-foreground">
-            {tab === 'mapa'
-              ? 'El plan de estudios como un mapa: materias, correlativas y tu avance.'
-              : 'Listado completo con indicadores, filtros y gestión.'}
-          </p>
+          <p className="text-sm text-muted-foreground">{SUBTITULO[tab]}</p>
         </div>
         <div className="inline-flex rounded-xl border bg-muted/40 p-1">
           <SegBtn active={tab === 'mapa'} onClick={() => setTab('mapa')} icon={Network} label="Mapa" />
           <SegBtn active={tab === 'listado'} onClick={() => setTab('listado')} icon={LayoutList} label="Listado" />
+          <SegBtn active={tab === 'tutorias'} onClick={() => setTab('tutorias')} icon={CalendarClock} label="Tutorías" />
         </div>
       </div>
 
-      {tab === 'mapa' ? <MapaCorrelativas embedded withList /> : view}
+      {renderTab(tab, view)}
     </div>
   );
+}
+
+const SUBTITULO: Record<MateriasTab, string> = {
+  mapa: 'El plan de estudios como un mapa: materias, correlativas y tu avance.',
+  listado: 'Listado completo con indicadores, filtros y gestión.',
+  tutorias: 'Las tutorías de todas tus materias, en un solo lugar.',
+};
+
+function renderTab(tab: MateriasTab, listado: ReactNode): ReactNode {
+  if (tab === 'mapa') return <MapaCorrelativas embedded withList />;
+  if (tab === 'tutorias') return <TutoriasManagement embedded />;
+  return listado;
 }
 
 function SegBtn({ active, onClick, icon: Icon, label }: Readonly<{

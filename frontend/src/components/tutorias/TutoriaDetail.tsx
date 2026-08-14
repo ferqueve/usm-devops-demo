@@ -218,7 +218,8 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
     try {
       await tutoriasApi.eliminar(tutoriaId);
       toast.success('Tutoría eliminada');
-      navigate('/tutorias');
+      // Se vuelve a la materia de la que colgaba; si no se llegó a cargar, al listado.
+      navigate(tutoria ? `/materias/${tutoria.materiaId}` : '/materias?tab=tutorias');
     } catch (e: unknown) {
       toast.error('No se pudo eliminar', { description: e instanceof Error ? e.message : 'Error' });
     }
@@ -287,7 +288,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   if (notFound || !tutoria) {
     return (
       <div className="space-y-6">
-        <button type="button" onClick={() => navigate('/tutorias')} className="text-sm text-muted-foreground hover:text-foreground">← Tutorías</button>
+        <button type="button" onClick={() => navigate('/materias?tab=tutorias')} className="text-sm text-muted-foreground hover:text-foreground">← Tutorías</button>
         <EmptyState icon={CalendarClock} title="Tutoría no encontrada" description="La tutoría no existe o fue eliminada." />
       </div>
     );
@@ -302,9 +303,17 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
       {/* Breadcrumb + acciones */}
       <div className="flex items-center justify-between gap-3">
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
-          <button type="button" onClick={() => navigate('/tutorias')} className="hover:text-foreground">Tutorías</button>
+          <button type="button" onClick={() => navigate('/materias')} className="hover:text-foreground transition-colors shrink-0">Materias</button>
           <ChevronRight className="h-4 w-4 shrink-0" />
-          <span className="text-foreground font-medium truncate">{tutoria.materiaNombre}</span>
+          <button
+            type="button"
+            onClick={() => navigate(`/materias/${tutoria.materiaId}`)}
+            className="hover:text-foreground transition-colors truncate"
+          >
+            {tutoria.materiaNombre}
+          </button>
+          <ChevronRight className="h-4 w-4 shrink-0" />
+          <span className="text-foreground font-medium shrink-0">Tutoría</span>
         </nav>
         <div className="flex items-center gap-1 shrink-0">
           <PermissionGuard requiredPermission="tutoria:editar">
