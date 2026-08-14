@@ -104,12 +104,12 @@ export default function MateriasManagement() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Materias</h1>
-          <p className="text-sm text-muted-foreground">{SUBTITULO[tab]}</p>
+          <h1 className="text-2xl font-bold tracking-tight">{ENCABEZADO[tab].titulo}</h1>
+          <p className="text-sm text-muted-foreground">{ENCABEZADO[tab].bajada}</p>
         </div>
         <div className="inline-flex rounded-xl border bg-muted/40 p-1">
-          <SegBtn active={tab === 'mapa'} onClick={() => setTab('mapa')} icon={Network} label="Mapa" />
-          <SegBtn active={tab === 'listado'} onClick={() => setTab('listado')} icon={LayoutList} label="Listado" />
+          <SegBtn active={tab === 'mapa'} onClick={() => setTab('mapa')} icon={Network} label="Plan" />
+          <SegBtn active={tab === 'listado'} onClick={() => setTab('listado')} icon={LayoutList} label="Catálogo" />
           <SegBtn active={tab === 'tutorias'} onClick={() => setTab('tutorias')} icon={CalendarClock} label="Tutorías" />
         </div>
       </div>
@@ -119,10 +119,27 @@ export default function MateriasManagement() {
   );
 }
 
-const SUBTITULO: Record<MateriasTab, string> = {
-  mapa: 'El plan de estudios como un mapa: materias, correlativas y tu avance.',
-  listado: 'Listado completo con indicadores, filtros y gestión.',
-  tutorias: 'Las tutorías de todas tus materias, en un solo lugar.',
+/*
+  Cada pestaña es una tarea distinta, así que cada una trae su propio título.
+  Antes el H1 decía "Materias" aunque estuvieras mirando 144 tutorías.
+
+  Las tres se quedan: el mapa recorre UNA carrera, el catálogo son las 252 de las
+  18 carreras con sus filtros y la gestión, y tutorías es la agenda. La lista
+  lateral del mapa no reemplaza al catálogo — está acotada a la carrera elegida.
+*/
+const ENCABEZADO: Record<MateriasTab, { titulo: string; bajada: string }> = {
+  mapa: {
+    titulo: 'Plan de estudios',
+    bajada: 'El plan como un mapa: materias, correlativas y tu avance.',
+  },
+  listado: {
+    titulo: 'Catálogo de materias',
+    bajada: 'Todas las carreras, con filtros y gestión.',
+  },
+  tutorias: {
+    titulo: 'Tutorías',
+    bajada: 'Las tutorías de todas tus materias, en un solo lugar.',
+  },
 };
 
 function renderTab(tab: MateriasTab, listado: ReactNode): ReactNode {
@@ -296,14 +313,20 @@ function AdminMateriasView() {
   const activas = useMemo(() => materias.filter((m) => !m.deletedAt), [materias]);
 
   const kpis: StatItem[] = useMemo(() => {
-    const conDocente = activas.filter((m) => m.docenteId != null).length;
+    const sinDocente = activas.filter((m) => m.docenteId == null).length;
+    /*
+      "Con docente" y "Sin docente" eran el mismo dato y su complemento, y con el
+      plan completo daban 252 y 0: dos tiles para decir "no falta ninguno". Queda
+      sólo el que pide acción, y sólo cuando hay algo que hacer.
+    */
     return [
       { label: 'Materias', value: activas.length, icon: BookOpen, bg: 'dark' },
       { label: 'Inscriptos', value: sum(activas, (m) => m.totalInscriptos), icon: Users, bg: 'blue' },
-      { label: 'Con docente', value: conDocente, icon: UserCheck, bg: 'green' },
-      { label: 'Sin docente', value: activas.length - conDocente, icon: UserX, bg: 'orange' },
       { label: 'Carreras', value: distinctCarreras(activas).length, icon: Library, bg: 'cyan' },
       { label: 'Créditos', value: sum(activas, (m) => m.creditos), hint: 'Totales', icon: Award, bg: 'yellow' },
+      ...(sinDocente > 0
+        ? [{ label: 'Sin docente', value: sinDocente, hint: 'Requieren asignación', icon: UserX, bg: 'orange' } as StatItem]
+        : []),
     ];
   }, [activas]);
 

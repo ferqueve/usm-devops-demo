@@ -406,10 +406,17 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
             <ArrowLeft className="h-4 w-4" /> Materias
           </Button>
         )}
-        <div className="flex items-center gap-2">
-          <RouteIcon className="h-5 w-5 text-utec-green" />
-          <h1 className="text-base font-semibold">{embedded ? 'Plan de estudios' : 'Mapa de la carrera'}</h1>
-        </div>
+        {/*
+          Embebido dentro de Materias, la página ya pone el título "Plan de
+          estudios" arriba: repetirlo acá era decirlo dos veces seguidas. Suelto
+          en /materias/mapa sí lo necesita, porque no hay otro encabezado.
+        */}
+        {!embedded && (
+          <div className="flex items-center gap-2">
+            <RouteIcon className="h-5 w-5 text-utec-green" />
+            <h1 className="text-base font-semibold">Mapa de la carrera</h1>
+          </div>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <Select value={carreraId != null ? String(carreraId) : undefined} onValueChange={(v) => setCarreraId(Number(v))}>
             <SelectTrigger className="w-[240px] h-9"><SelectValue placeholder="Elegí una carrera" /></SelectTrigger>
