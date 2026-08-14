@@ -75,6 +75,28 @@ public class AcademicDataInitializer implements CommandLineRunner {
 
     private final Random rnd = new Random(42);
 
+
+    /**
+     * Pedidos que un estudiante anota al agendar ("qué quiero repasar").
+     *
+     * <p>Se repiten a propósito varios temas de la misma familia: el panel de temarios
+     * agrupa por frecuencia, y con pedidos todos distintos no se vería para qué sirve.
+     */
+    private static final String[] TEMARIOS = {
+            "No entiendo integrales por partes",
+            "Integrales por partes, sobre todo cuando hay que aplicarla dos veces",
+            "Repasar integrales por partes",
+            "Sustitución trigonométrica",
+            "Ejercicios de sustitución trigonométrica del práctico 3",
+            "Límites indeterminados",
+            "Repasar límites y continuidad",
+            "Dudas con el parcial pasado",
+            "Ejercicios del práctico 2",
+            "No me sale el ejercicio 4 del práctico",
+            "Quiero repasar todo antes del final",
+            "Derivadas implícitas",
+    };
+
     /** Cuántos espacios probar al azar antes de rendirse y dejar la actividad sin espacio. */
     private static final int INTENTOS_ESPACIO = 8;
 
@@ -301,6 +323,7 @@ public class AcademicDataInitializer implements CommandLineRunner {
             t.setRecordatorioEnviado(false);
             Tutoria saved = tutoriaRepository.save(t);
 
+            String temaDominante = TEMARIOS[rnd.nextInt(TEMARIOS.length)];
             int n = Math.min(estudiantes.size(), 2 + rnd.nextInt(5));
             for (Usuario est : muestra(estudiantes, n)) {
                 TutoriaReserva r = new TutoriaReserva();
@@ -308,6 +331,13 @@ public class AcademicDataInitializer implements CommandLineRunner {
                 r.setEstudiante(est);
                 r.setEstado(pasada ? "ASISTIO" : "AGENDADA");
                 r.setConfirmada(pasada);
+                // 3 de cada 4 escriben qué quieren ver; el resto agenda sin decir nada.
+                // La mitad de los que escriben pide el tema dominante de esa tutoría:
+                // en una tutoría real varios vienen por lo mismo, y es justo eso lo que
+                // el panel de temarios agrupa y ordena.
+                if (rnd.nextInt(4) > 0) {
+                    r.setTemario(rnd.nextBoolean() ? temaDominante : TEMARIOS[rnd.nextInt(TEMARIOS.length)]);
+                }
                 reservas.add(r);
                 if (pasada) {
                     TutoriaFeedback f = new TutoriaFeedback();

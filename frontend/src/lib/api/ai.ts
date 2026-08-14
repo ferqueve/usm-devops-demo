@@ -95,9 +95,27 @@ export async function postGenerarEvento(payload: GenerarEventoRequest): Promise<
   });
 }
 
-export async function postResumenTemario(payload: { materia?: string; temarios: string[] }): Promise<ApiResponse<{ resumen: string }>> {
-  return apiRequest(`${base}/insights/resumen-temario`, {
+/**
+ * Cuando el servicio de IA no responde, el backend degrada en vez de tumbar la
+ * request: contesta 200 con `{status:"error", error:"..."}` dentro de `data`.
+ * Esta forma se convierte en un throw para que quien llama no tenga que
+ * distinguir entre "no hay resumen" y "la IA está caída".
+ */
+function desempaquetarIA<T>(data: T | undefined): T {
+  const posibleError = data as { status?: string; error?: string } | undefined;
+  if (posibleError?.status === 'error') {
+    throw new Error(posibleError.error ?? 'El servicio de IA no está disponible');
+  }
+  if (!data) {
+    throw new Error('El servicio de IA no devolvió respuesta');
+  }
+  return data;
+}
+
+export async function postResumenTemario(payload: { materia?: string; temarios: string[] }): Promise<{ resumen: string }> {
+  const r = await apiRequest<{ resumen: string }>(`${base}/insights/resumen-temario`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+  return desempaquetarIA(r.data);
 }
