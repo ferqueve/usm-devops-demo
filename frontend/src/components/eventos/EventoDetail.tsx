@@ -256,13 +256,30 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
           <span className="text-foreground font-medium truncate">{evento.titulo}</span>
         </nav>
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="sm" onClick={() => setAficheOpen(true)} title="Generar afiche"><ImageIcon className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => downloadICS(eventoToAgendable(evento))} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
-          <PermissionGuard requiredPermission="evento:ver_inscriptos"><Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)} title="Notificar inscriptos"><Mail className="h-4 w-4" /></Button></PermissionGuard>
-          <PermissionGuard requiredPermission="evento:crear"><Button variant="ghost" size="sm" onClick={duplicar} title="Duplicar evento"><Copy className="h-4 w-4" /></Button></PermissionGuard>
-          <PermissionGuard requiredPermission="evento:editar"><Button variant="ghost" size="sm" onClick={() => setEditOpen(true)} title="Editar"><Edit className="h-4 w-4" /></Button></PermissionGuard>
-          <PermissionGuard requiredPermission="evento:eliminar"><Button variant="ghost" size="sm" onClick={eliminar} title="Eliminar" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></PermissionGuard>
+          {/* Mismo criterio que en el detalle de tutoría: las principales con
+              etiqueta, las de compartir agrupadas como íconos, la destructiva aparte. */}
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAficheOpen(true)} title="Generar afiche"><ImageIcon className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => downloadICS(eventoToAgendable(evento))} title="Descargar .ics"><CalendarPlus className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
+          <PermissionGuard requiredPermission="evento:crear">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={duplicar} title="Duplicar evento"><Copy className="h-4 w-4" /></Button>
+          </PermissionGuard>
+
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+
+          <PermissionGuard requiredPermission="evento:ver_inscriptos">
+            <Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)}>
+              <Mail className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">Notificar</span>
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission="evento:editar">
+            <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)}>
+              <Edit className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">Editar</span>
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission="evento:eliminar">
+            <Button variant="ghost" size="icon" className="h-8 w-8 ml-1 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={eliminar} title="Eliminar evento"><Trash2 className="h-4 w-4" /></Button>
+          </PermissionGuard>
         </div>
       </div>
 

@@ -496,7 +496,7 @@ export default function EventosManagement() {
             <Select value={tagFilter} onValueChange={setTagFilter}>
               <SelectTrigger className="w-[140px] h-9"><Tag className="h-3.5 w-3.5 mr-1 text-muted-foreground" /><SelectValue placeholder="Tag" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los tags</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {allTags.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>

@@ -273,19 +273,41 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           <ChevronRight className="h-4 w-4 shrink-0" />
           <span className="text-foreground font-medium shrink-0">Tutoría</span>
         </nav>
+        {/*
+          Antes eran ocho íconos seguidos sin una sola etiqueta: no había forma de
+          saber qué hacía cada uno sin pasar el mouse por los ocho. Ahora las
+          acciones principales dicen su nombre, las de compartir quedan agrupadas
+          como íconos (glifos reconocibles) y la destructiva va separada al final.
+        */}
         <div className="flex items-center gap-1 shrink-0">
           <PermissionGuard requiredPermission="tutoria:editar">
-            <Button variant={tutoria.enVivo ? 'default' : 'ghost'} size="sm" onClick={toggleEnVivo} title="Disponible en vivo (walk-in)" className={tutoria.enVivo ? 'bg-utec-green hover:bg-utec-green/90' : ''}>
-              <Radio className="h-4 w-4" />{tutoria.enVivo && <span className="ml-1 text-xs">En vivo</span>}
+            <Button variant={tutoria.enVivo ? 'default' : 'ghost'} size="sm" onClick={toggleEnVivo} title="Marcar la tutoría como disponible ahora, sin agenda previa" className={tutoria.enVivo ? 'bg-utec-green hover:bg-utec-green/90' : ''}>
+              <Radio className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">{tutoria.enVivo ? 'En vivo' : 'Walk-in'}</span>
             </Button>
           </PermissionGuard>
-          <Button variant="ghost" size="sm" onClick={() => downloadICS(tutoriaToAgendable(tutoria))} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" asChild title="Agregar a Google Calendar"><a href={googleCalUrl(tutoriaToAgendable(tutoria))} target="_blank" rel="noopener noreferrer"><CalendarClock className="h-4 w-4" /></a></Button>
-          <Button variant="ghost" size="sm" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
-          <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={() => setScanOpen(true)} title="Check-in por QR"><QrCode className="h-4 w-4" /></Button></PermissionGuard>
-          <Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)} title="Notificar agendados"><Mail className="h-4 w-4" /></Button>
-          <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={() => setEditOpen(true)} title="Editar"><Edit className="h-4 w-4" /></Button></PermissionGuard>
-          <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={eliminar} title="Eliminar" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></PermissionGuard>
+
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => downloadICS(tutoriaToAgendable(tutoria))} title="Descargar .ics"><CalendarPlus className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Agregar a Google Calendar"><a href={googleCalUrl(tutoriaToAgendable(tutoria))} target="_blank" rel="noopener noreferrer"><CalendarClock className="h-4 w-4" /></a></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
+          <PermissionGuard requiredPermission="tutoria:editar">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setScanOpen(true)} title="Check-in por QR"><QrCode className="h-4 w-4" /></Button>
+          </PermissionGuard>
+
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+
+          <Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)}>
+            <Mail className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">Notificar</span>
+          </Button>
+          <PermissionGuard requiredPermission="tutoria:editar">
+            <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)}>
+              <Edit className="h-4 w-4" /><span className="ml-1.5 hidden sm:inline">Editar</span>
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard requiredPermission="tutoria:editar">
+            <Button variant="ghost" size="icon" className="h-8 w-8 ml-1 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={eliminar} title="Eliminar tutoría"><Trash2 className="h-4 w-4" /></Button>
+          </PermissionGuard>
         </div>
       </div>
 
