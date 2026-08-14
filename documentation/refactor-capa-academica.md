@@ -41,13 +41,21 @@ renombrado (~6 líneas de diferencia real normalizando nombres). `buildICS` / `d
 4 call sites). `TutoriaService` y `EventoService` **nunca la llaman**. Hay tres calendarios
 ciegos entre sí sobre el mismo recurso físico.
 
-Verificado contra la DB de dev:
+Verificado contra la DB de dev (178 en la primera medición, 114 filtrando canceladas
+y reservas no aprobadas):
 
 ```
-tutoria-vs-reserva | 178
-evento-vs-reserva  |  10
+tutoria-vs-reserva | 114
+evento-vs-reserva  |   2
 tutoria-vs-evento  |   0
 ```
+
+**Resuelto.** La causa era `AcademicDataInitializer`, que elegía espacio al azar sin mirar
+la agenda; ahora usa `OcupacionEspacioService.buscarConflictos` (ver `espacioLibre`). Los
+datos viejos se limpiaron re-sembrando con `scripts/reseed-capa-academica.sql` + reinicio.
+Después del re-seed: **0 colisiones** en las cuatro combinaciones (tutoría-reserva,
+evento-reserva, tutoría-evento, tutoría-tutoría), con 138 de 144 tutorías y 9 de 10 eventos
+consiguiendo espacio; el resto cae al fallback sin espacio.
 
 ### 1-bis. Los controllers anulan el GlobalExceptionHandler
 
