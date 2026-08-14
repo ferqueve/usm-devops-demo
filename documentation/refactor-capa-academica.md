@@ -1,6 +1,7 @@
 # Refactor capa académica — Materias / Tutorías / Eventos
 
-Estado: **las 5 fases hechas**. Arrancado y completado el 2026-08-14 sobre `feat/capa-academica`.
+Estado: **cerrado**. Las 5 fases del refactor más una pasada de rediseño visual,
+el 2026-08-14 sobre `feat/capa-academica`.
 
 ## Por qué
 
@@ -279,3 +280,86 @@ Falta conectar el resumen:
 **Las features nuevas van después del refactor**, no antes: el forecast y las recomendaciones
 necesitan que tutoría/evento/reserva compartan el concepto de ocupación de espacio. Si se hacen
 antes, hay que escribir el forecast tres veces, uno por cada calendario ciego.
+
+---
+
+## Pasada de rediseño visual
+
+Con el refactor hecho, las tres pantallas seguían sintiéndose raras. El diagnóstico:
+**no estaban vacías, estaban llenas del mismo dato**. En el detalle de tutoría,
+«Cupo 7 · Agendados 6 · Disponibles 1 · Ocupación 86%» eran cuatro tiles para un número,
+más una dona lateral que lo repetía por quinta vez.
+
+El criterio fue **menos elementos, más información distinta**.
+
+### Detalles de tutoría y evento
+
+Eran la misma página con las palabras cambiadas: mismo hero con countdown, mismos 4 tiles,
+misma lista con check-in, mismo panel de Estado. En los dos, los tiles se reemplazan por
+**una barra de ocupación** con la misma forma, para que se lean igual.
+
+Lo que los distingue pasa a ser el **contenido**, no el color:
+
+- **Tutoría** lidera con `TemariosPanel`: lo que cada estudiante anotó al agendar, agrupado
+  por palabras clave y ordenado por frecuencia («Repasar integrales por partes ×5» en vez
+  de cinco líneas iguales). El dato se mostraba, pero disperso: una línea por persona, así
+  que no se veía qué se repetía.
+- **Evento** lidera con la difusión: el QR, el afiche y el link al calendario estaban al
+  fondo de la barra lateral, debajo de Estado y Espacio.
+
+También se sacaron: la dona lateral de la tutoría y la barra de cupo dentro del panel de
+Inscriptos del evento, que tras el cambio contaba la ocupación por tercera vez.
+
+### Eventos
+
+El calendario mensual ocupaba ~600 px casi vacíos **como vista por defecto** para 10
+eventos, y abajo aparecían los mismos 10 otra vez como tarjetas. El calendario pasa a ser
+una vista más y la portada es la cartelera.
+
+Las secciones eran rieles horizontales con tarjetas de 280 px fijos, y «Próximos» +
+«Cursos abiertos» iban 50/50 sin importar cuántos ítems tenía cada uno: con 4 próximos y
+1 curso, los próximos necesitaban 1169 px dentro de 614 px y **la mitad quedaba escondida**
+tras un scroll sin flecha ni degradado. Todas las secciones pasan a la grilla que fluye que
+ya usaba el camino con filtros en ese mismo archivo.
+
+Un CURSO caía en dos baldes a la vez y se veía dos veces. Y «Cartelera» nombraba dos cosas
+en la misma barra: ahora las vistas son Descubrir / Calendario / Todos / Métricas, y el
+botón de al lado es «Pantalla completa».
+
+### Materias
+
+**Las tres pestañas se quedan.** La idea de fusionar Mapa y Listado estaba mal: la lista
+lateral del mapa está acotada a la carrera del selector, mientras que el listado son las
+252 materias de las 18 carreras con sus filtros, el alta y baja del admin y el flujo de
+inscripción del estudiante.
+
+Lo que estaba mal era el marco: el H1 decía siempre «Materias» aunque estuvieras mirando
+144 tutorías. Ahora cada pestaña trae su título y su bajada, y las etiquetas pasan a
+**Plan / Catálogo / Tutorías**, que nombran la tarea en vez del formato — «Mapa» y
+«Listado» describían la forma, y por eso el toggle prometía «la misma info de otra manera»
+cuando en realidad cada pestaña es otra tarea.
+
+### Bugs que aparecieron en el camino
+
+- `AiService` armaba el mensaje de error con `ex.getMessage()`, que es null en una
+  `ConnectException`: el error terminaba siendo «No se pudo contactar al servicio de IA:
+  null». Mismo bug que tenían los health indicators de ai-svc y ml-svc, donde además
+  `withDetail(clave, null)` tiraba excepción y volteaba `/actuator/health` **entero**.
+- Cuando la IA no responde, el backend devuelve 200 con `success: true` y un
+  `{status:"error"}` escondido en `data`. Los 8 endpoints pasan ahora por `verificarIA`,
+  que lo convierte en un throw con el motivo real.
+- El seeder no cargaba ni un temario, así que el panel no se podía ni ver. Ahora 3 de cada
+  4 reservas anotan uno, y la mitad de esos pide el tema dominante de esa tutoría: sin
+  repetición, el agrupado no muestra para qué sirve.
+- Los detalles tenían ocho íconos seguidos sin etiqueta. Las acciones principales ahora
+  dicen su nombre y la destructiva va separada.
+
+### Lo que queda pendiente
+
+- `/tutorias/reservas/{id}` sigue usando «reserva», que choca con las `Reserva` de espacios.
+- 15 `IllegalArgumentException` de «no encontrado» en `CarreraService`, `EspacioService`,
+  `TipoElementoService` y `TipoEspacioService`: sus controllers todavía tienen los catch-all
+  que anulan el `GlobalExceptionHandler`. La fase 2 se acotó a la capa académica a propósito.
+- Las ideas para darle peso a los tres roles (docente: cerrar el círculo de feedback;
+  estudiante: recomendaciones por correlativas; externo: organizar eventos en el espacio que
+  reserva) siguen sin empezar.
