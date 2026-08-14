@@ -1,6 +1,7 @@
 package com.utec.backend.service;
 
 import com.utec.backend.dto.recurso.RecursoResponseDto;
+import com.utec.backend.exception.RecursoNoEncontradoException;
 import com.utec.backend.model.Materia;
 import com.utec.backend.model.RecursoAcademico;
 import com.utec.backend.model.Usuario;
@@ -91,7 +92,7 @@ public class RecursoAcademicoService {
     public void eliminar(Long id, String emailUsuario) {
         RecursoAcademico recurso = recursoRepository.findById(id)
                 .filter(r -> r.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException(RECURSO_NO_ENCONTRADO_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(RECURSO_NO_ENCONTRADO_MSG + id));
 
         Usuario usuario = obtenerUsuario(emailUsuario);
 
@@ -108,7 +109,7 @@ public class RecursoAcademicoService {
 
     private Usuario obtenerUsuario(String emailUsuario) {
         return usuarioRepository.findByEmail(emailUsuario)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + emailUsuario));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + emailUsuario));
     }
 
     /**

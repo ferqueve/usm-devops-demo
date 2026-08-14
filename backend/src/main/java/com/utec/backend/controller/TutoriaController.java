@@ -11,7 +11,6 @@ import com.utec.backend.dto.tutoria.TutoriaFeedbackResumenDto;
 import com.utec.backend.dto.tutoria.TutoriaRecursoDto;
 import com.utec.backend.dto.tutoria.TutoriaResponseDto;
 import com.utec.backend.dto.tutoria.TutoriaUpdateDto;
-import com.utec.backend.exception.EspacioOcupadoException;
 import com.utec.backend.service.TutoriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +37,8 @@ public class TutoriaController {
     @PreAuthorize("hasPermission(null, 'tutoria:ver')")
     public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> listar(
             @RequestParam(required = false) Long materiaId) {
-        try {
-            List<TutoriaResponseDto> tutorias = tutoriaService.listar(materiaId);
-            return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías obtenidas exitosamente"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener tutorías: " + e.getMessage()));
-        }
+        List<TutoriaResponseDto> tutorias = tutoriaService.listar(materiaId);
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías obtenidas exitosamente"));
     }
 
     /**
@@ -55,14 +49,9 @@ public class TutoriaController {
     @PreAuthorize("hasPermission(null, 'tutoria:ver')")
     public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> misTutorias(
             Authentication authentication) {
-        try {
-            String email = authentication.getName();
-            List<TutoriaResponseDto> tutorias = tutoriaService.misTutorias(email);
-            return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías obtenidas exitosamente"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener tutorías: " + e.getMessage()));
-        }
+        String email = authentication.getName();
+        List<TutoriaResponseDto> tutorias = tutoriaService.misTutorias(email);
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías obtenidas exitosamente"));
     }
 
     /**
@@ -73,17 +62,10 @@ public class TutoriaController {
     public ResponseEntity<ApiResponse<TutoriaResponseDto>> crear(
             @Valid @RequestBody TutoriaCreateDto createDto,
             Authentication authentication) {
-        try {
-            String email = authentication.getName();
-            TutoriaResponseDto tutoria = tutoriaService.crear(createDto, email);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(tutoria, "Tutoría creada exitosamente"));
-        } catch (EspacioOcupadoException e) {
-            throw e; // que el GlobalExceptionHandler lo devuelva como 409, no como 400
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Error al crear tutoría: " + e.getMessage()));
-        }
+        String email = authentication.getName();
+        TutoriaResponseDto tutoria = tutoriaService.crear(createDto, email);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(tutoria, "Tutoría creada exitosamente"));
     }
 
     /**
@@ -92,11 +74,7 @@ public class TutoriaController {
     @GetMapping("/{id}")
     @PreAuthorize("hasPermission(null, 'tutoria:ver')")
     public ResponseEntity<ApiResponse<TutoriaResponseDto>> getById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(ApiResponse.success(tutoriaService.getById(id), "Tutoría obtenida"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.getById(id), "Tutoría obtenida"));
     }
 
     /**
@@ -105,11 +83,7 @@ public class TutoriaController {
     @GetMapping("/{id}/agendados")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
     public ResponseEntity<ApiResponse<List<TutoriaAgendadoDto>>> getAgendados(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(ApiResponse.success(tutoriaService.getAgendados(id), "Agendados obtenidos"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.getAgendados(id), "Agendados obtenidos"));
     }
 
     /**
@@ -118,12 +92,8 @@ public class TutoriaController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
     public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable Long id, Authentication authentication) {
-        try {
-            tutoriaService.eliminar(id, authentication.getName());
-            return ResponseEntity.ok(ApiResponse.success(null, "Tutoría eliminada"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        tutoriaService.eliminar(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Tutoría eliminada"));
     }
 
     /**
@@ -133,13 +103,9 @@ public class TutoriaController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
     public ResponseEntity<ApiResponse<NotificacionResultadoDto>> notificar(
             @PathVariable Long id, @RequestBody Map<String, Object> body) {
-        try {
-            String asunto = body.get("asunto") != null ? body.get("asunto").toString() : null;
-            String mensaje = body.get("mensaje") != null ? body.get("mensaje").toString() : "";
-            return ResponseEntity.ok(ApiResponse.success(tutoriaService.notificarAgendados(id, asunto, mensaje), "Notificación procesada"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        String asunto = body.get("asunto") != null ? body.get("asunto").toString() : null;
+        String mensaje = body.get("mensaje") != null ? body.get("mensaje").toString() : "";
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.notificarAgendados(id, asunto, mensaje), "Notificación procesada"));
     }
 
     /**
@@ -151,16 +117,9 @@ public class TutoriaController {
             @PathVariable Long id,
             @Valid @RequestBody TutoriaUpdateDto updateDto,
             Authentication authentication) {
-        try {
-            String email = authentication.getName();
-            TutoriaResponseDto tutoria = tutoriaService.editar(id, updateDto, email);
-            return ResponseEntity.ok(ApiResponse.success(tutoria, "Tutoría actualizada exitosamente"));
-        } catch (EspacioOcupadoException e) {
-            throw e; // que el GlobalExceptionHandler lo devuelva como 409, no como 400
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Error al actualizar tutoría: " + e.getMessage()));
-        }
+        String email = authentication.getName();
+        TutoriaResponseDto tutoria = tutoriaService.editar(id, updateDto, email);
+        return ResponseEntity.ok(ApiResponse.success(tutoria, "Tutoría actualizada exitosamente"));
     }
 
     /**
@@ -172,27 +131,18 @@ public class TutoriaController {
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, Object> body,
             Authentication authentication) {
-        try {
-            String email = authentication.getName();
-            String temario = (body != null && body.get("temario") != null) ? body.get("temario").toString() : null;
-            TutoriaResponseDto tutoria = tutoriaService.agendar(id, email, temario);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(tutoria, "Tutoría agendada exitosamente"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Error al agendar tutoría: " + e.getMessage()));
-        }
+        String email = authentication.getName();
+        String temario = (body != null && body.get("temario") != null) ? body.get("temario").toString() : null;
+        TutoriaResponseDto tutoria = tutoriaService.agendar(id, email, temario);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(tutoria, "Tutoría agendada exitosamente"));
     }
 
     @PutMapping("/reservas/{id}/confirmar")
     @PreAuthorize("hasPermission(null, 'tutoria:agendar')")
     public ResponseEntity<ApiResponse<Void>> confirmarReserva(@PathVariable Long id, Authentication authentication) {
-        try {
-            tutoriaService.confirmarReserva(id, authentication.getName());
-            return ResponseEntity.ok(ApiResponse.success(null, "Asistencia confirmada"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        tutoriaService.confirmarReserva(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Asistencia confirmada"));
     }
 
     @PutMapping("/reservas/{id}/asistencia")
@@ -201,12 +151,8 @@ public class TutoriaController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "true") boolean asistio,
             Authentication authentication) {
-        try {
-            tutoriaService.marcarAsistencia(id, asistio, authentication.getName());
-            return ResponseEntity.ok(ApiResponse.success(null, "Asistencia actualizada"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        tutoriaService.marcarAsistencia(id, asistio, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Asistencia actualizada"));
     }
 
     @PutMapping("/{id}/en-vivo")
@@ -215,24 +161,16 @@ public class TutoriaController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "true") boolean activo,
             Authentication authentication) {
-        try {
-            return ResponseEntity.ok(ApiResponse.success(
-                    tutoriaService.toggleEnVivo(id, authentication.getName(), activo), "Estado actualizado"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(
+                tutoriaService.toggleEnVivo(id, authentication.getName(), activo), "Estado actualizado"));
     }
 
     @GetMapping("/{id}/feedback")
     @PreAuthorize("hasPermission(null, 'tutoria:ver')")
     public ResponseEntity<ApiResponse<TutoriaFeedbackResumenDto>> feedback(
             @PathVariable Long id, Authentication authentication) {
-        try {
-            return ResponseEntity.ok(ApiResponse.success(
-                    tutoriaService.getFeedbackResumen(id, authentication.getName()), "Feedback obtenido"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(
+                tutoriaService.getFeedbackResumen(id, authentication.getName()), "Feedback obtenido"));
     }
 
     @PostMapping("/{id}/feedback")
@@ -241,12 +179,8 @@ public class TutoriaController {
             @PathVariable Long id,
             @Valid @RequestBody TutoriaFeedbackCreateDto dto,
             Authentication authentication) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
-                    tutoriaService.dejarFeedback(id, authentication.getName(), dto), "¡Gracias por tu valoración!"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Error al valorar: " + e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                tutoriaService.dejarFeedback(id, authentication.getName(), dto), "¡Gracias por tu valoración!"));
     }
 
     @GetMapping("/ranking/tutores")
@@ -273,33 +207,21 @@ public class TutoriaController {
             @PathVariable Long id,
             @Valid @RequestBody TutoriaRecursoDto dto,
             Authentication authentication) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
-                    tutoriaService.agregarRecurso(id, authentication.getName(), dto), "Recurso agregado"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                tutoriaService.agregarRecurso(id, authentication.getName(), dto), "Recurso agregado"));
     }
 
     @DeleteMapping("/recursos/{id}")
     @PreAuthorize("hasPermission(null, 'tutoria:editar')")
     public ResponseEntity<ApiResponse<Void>> eliminarRecurso(@PathVariable Long id, Authentication authentication) {
-        try {
-            tutoriaService.eliminarRecurso(id, authentication.getName());
-            return ResponseEntity.ok(ApiResponse.success(null, "Recurso eliminado"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        tutoriaService.eliminarRecurso(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Recurso eliminado"));
     }
 
     @GetMapping("/{id}/temarios")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
     public ResponseEntity<ApiResponse<List<String>>> temarios(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(ApiResponse.success(tutoriaService.temariosPedidos(id), "Temarios obtenidos"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.temariosPedidos(id), "Temarios obtenidos"));
     }
 
     /**
@@ -310,13 +232,8 @@ public class TutoriaController {
     public ResponseEntity<ApiResponse<Void>> cancelarReserva(
             @PathVariable Long id,
             Authentication authentication) {
-        try {
-            String email = authentication.getName();
-            tutoriaService.cancelarReserva(id, email);
-            return ResponseEntity.ok(ApiResponse.success(null, "Reserva cancelada exitosamente"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Error al cancelar reserva: " + e.getMessage()));
-        }
+        String email = authentication.getName();
+        tutoriaService.cancelarReserva(id, email);
+        return ResponseEntity.ok(ApiResponse.success(null, "Reserva cancelada exitosamente"));
     }
 }

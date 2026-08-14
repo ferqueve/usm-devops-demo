@@ -6,6 +6,7 @@ import com.utec.backend.dto.evento.EventoFeedbackCreateDto;
 import com.utec.backend.dto.evento.EventoFeedbackResumenDto;
 import com.utec.backend.dto.evento.EventoResponseDto;
 import com.utec.backend.dto.evento.EventoUpdateDto;
+import com.utec.backend.exception.RecursoNoEncontradoException;
 import com.utec.backend.model.Espacio;
 import com.utec.backend.model.Evento;
 import com.utec.backend.model.EventoFeedback;
@@ -259,7 +260,7 @@ public class EventoService {
     public EventoResponseDto inscribir(Long eventoId, String email) {
         Evento evento = findActivo(eventoId);
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         if (inscripcionRepository.existsByEventoIdAndUsuarioIdAndDeletedAtIsNull(eventoId, usuario.getId())) {
             throw new IllegalStateException("Ya estás inscrito en este evento");
@@ -298,7 +299,7 @@ public class EventoService {
     public void cancelarInscripcion(Long eventoId, String email) {
         Evento evento = findActivo(eventoId);
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         EventoInscripcion inscripcion = inscripcionRepository.findByEventoIdAndDeletedAtIsNull(eventoId).stream()
                 .filter(i -> i.getUsuario() != null && usuario.getId().equals(i.getUsuario().getId()))
@@ -356,7 +357,7 @@ public class EventoService {
     public EventoFeedbackResumenDto dejarFeedback(Long eventoId, String email, EventoFeedbackCreateDto dto) {
         Evento evento = findActivo(eventoId);
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         if (!puedeValorar(evento, usuario.getId())) {
             throw new IllegalStateException("Solo podés valorar un evento finalizado al que asististe.");
@@ -428,7 +429,7 @@ public class EventoService {
     @Transactional(readOnly = true)
     public List<EventoResponseDto> misInscripciones(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         List<Evento> eventos = inscripcionRepository.findByUsuarioIdAndDeletedAtIsNull(usuario.getId()).stream()
                 .map(EventoInscripcion::getEvento)
@@ -456,16 +457,16 @@ public class EventoService {
 
     private Evento findActivo(Long id) {
         Evento evento = eventoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(EVENTO_NO_ENCONTRADO_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(EVENTO_NO_ENCONTRADO_MSG + id));
         if (evento.getDeletedAt() != null) {
-            throw new IllegalArgumentException(EVENTO_NO_ENCONTRADO_MSG + id);
+            throw new RecursoNoEncontradoException(EVENTO_NO_ENCONTRADO_MSG + id);
         }
         return evento;
     }
 
     private Espacio resolveEspacio(Long espacioId) {
         return espacioRepository.findById(espacioId)
-                .orElseThrow(() -> new IllegalArgumentException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(ESPACIO_NO_ENCONTRADO_MSG + espacioId));
     }
 
     private Long resolveUsuarioId(String email) {

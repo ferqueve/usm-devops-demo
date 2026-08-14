@@ -59,7 +59,20 @@ cualquier `RuntimeException`.
 
 Por eso el 403 de la fase 2 no alcanza solo con cambiar la excepción: hay que sacar los
 catch-all. En la fase 1 se hizo solo el parche mínimo (re-lanzar `EspacioOcupadoException`
-en los 4 handlers de crear/editar tutoría y evento).
+en los 4 handlers de crear/editar tutoría y evento); en la fase 2 se sacaron los 47
+try/catch de los tres controllers y el status lo decide el `GlobalExceptionHandler` según
+el tipo de excepción.
+
+**Contrato de errores resultante** (para replicar en el resto de la app):
+
+| Excepción | Status | Cuándo |
+|---|---|---|
+| `AccesoDenegadoException` | 403 | no sos el dueño ni gestor |
+| `RecursoNoEncontradoException` | 404 | no existe o está borrado |
+| `IllegalArgumentException` | 400 | lo que mandaste está mal |
+| `EspacioOcupadoException` | 409 | el aula ya está tomada |
+| `IllegalStateException` | 409 | conflicto de estado (cupo lleno, ya inscripto) |
+| `MissingServletRequestParameterException` | 400 | falta un query param requerido |
 
 ### 2. Authz devuelve el código equivocado
 
@@ -124,7 +137,7 @@ y audiencia externa).
 | # | Qué | Visible | Estado |
 |---|-----|---------|--------|
 | 1 | Chequeo de espacio ocupado en tutorías y eventos | no (arregla bug) | **hecha** |
-| 2 | Authz → 403 en vez de 409, chequeo de dueño extraído | no | pendiente |
+| 2 | Authz → 403 en vez de 409, chequeo de dueño extraído | no | **hecha** |
 | 3 | Unificar tripa tutoría/evento (participación, feedback, recordatorios, calendario, ICS) | no (borra duplicado) | pendiente |
 | 4 | Normalizar API a un vocabulario; partir `/mias` en dos rutas | no | pendiente |
 | 5 | Tutorías como pestaña dentro del detalle de materia | **sí** | pendiente |

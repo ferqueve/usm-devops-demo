@@ -4,6 +4,8 @@ import com.utec.backend.dto.materia.MapaCarreraDto;
 import com.utec.backend.dto.materia.MateriaCreateDto;
 import com.utec.backend.dto.materia.MateriaResponseDto;
 import com.utec.backend.dto.materia.MateriaUpdateDto;
+import com.utec.backend.exception.RecursoNoEncontradoException;
+import com.utec.backend.exception.AccesoDenegadoException;
 import com.utec.backend.model.Carrera;
 import com.utec.backend.model.InscripcionMateria;
 import com.utec.backend.model.Materia;
@@ -47,7 +49,7 @@ public class MateriaService {
 
     public MateriaResponseDto createMateria(MateriaCreateDto createDto) {
         Carrera carrera = carreraRepository.findById(createDto.getCarreraId())
-                .orElseThrow(() -> new IllegalArgumentException(CARRERA_NO_ENCONTRADA_MSG + createDto.getCarreraId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException(CARRERA_NO_ENCONTRADA_MSG + createDto.getCarreraId()));
 
         Materia materia = new Materia();
         materia.setNombre(createDto.getNombre());
@@ -61,7 +63,7 @@ public class MateriaService {
 
         if (createDto.getDocenteId() != null) {
             Usuario docente = usuarioRepository.findById(createDto.getDocenteId())
-                    .orElseThrow(() -> new IllegalArgumentException(DOCENTE_NO_ENCONTRADO_MSG + createDto.getDocenteId()));
+                    .orElseThrow(() -> new RecursoNoEncontradoException(DOCENTE_NO_ENCONTRADO_MSG + createDto.getDocenteId()));
             materia.setDocente(docente);
         }
 
@@ -86,7 +88,7 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public MateriaResponseDto getMateriaById(Long id) {
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + id));
         MateriaResponseDto dto = mapToResponseDto(materia);
         dto.setPrerrequisitoIds(prereqIds(materia));
         return dto;
@@ -108,7 +110,7 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public List<MateriaResponseDto> getMateriasDelUsuario(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : "";
 
@@ -133,17 +135,17 @@ public class MateriaService {
      */
     public MateriaResponseDto updateMateria(Long id, MateriaUpdateDto updateDto, String email) {
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + id));
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO_MSG + email));
+                .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
 
         String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : "";
 
         // Ownership: un DOCENTE solo puede editar las materias que dicta
         if (ROLE_DOCENTE.equals(rol)
                 && (materia.getDocente() == null || !materia.getDocente().getId().equals(usuario.getId()))) {
-            throw new IllegalStateException("No tienes permiso para editar esta materia");
+            throw new AccesoDenegadoException("No tienes permiso para editar esta materia");
         }
 
         if (updateDto.getNombre() != null) {
@@ -160,13 +162,13 @@ public class MateriaService {
 
         if (updateDto.getCarreraId() != null) {
             Carrera carrera = carreraRepository.findById(updateDto.getCarreraId())
-                    .orElseThrow(() -> new IllegalArgumentException(CARRERA_NO_ENCONTRADA_MSG + updateDto.getCarreraId()));
+                    .orElseThrow(() -> new RecursoNoEncontradoException(CARRERA_NO_ENCONTRADA_MSG + updateDto.getCarreraId()));
             materia.setCarrera(carrera);
         }
 
         if (updateDto.getDocenteId() != null) {
             Usuario docente = usuarioRepository.findById(updateDto.getDocenteId())
-                    .orElseThrow(() -> new IllegalArgumentException(DOCENTE_NO_ENCONTRADO_MSG + updateDto.getDocenteId()));
+                    .orElseThrow(() -> new RecursoNoEncontradoException(DOCENTE_NO_ENCONTRADO_MSG + updateDto.getDocenteId()));
             materia.setDocente(docente);
         }
 
@@ -196,7 +198,7 @@ public class MateriaService {
 
     public void deleteMateria(Long id) {
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(MATERIA_NO_ENCONTRADA_MSG + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + id));
 
         // Soft delete: marcar como eliminada
         materia.setDeletedAt(Instant.now());
@@ -224,7 +226,7 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public MapaCarreraDto getMapaCarrera(Long carreraId, String email) {
         Carrera carrera = carreraRepository.findById(carreraId)
-                .orElseThrow(() -> new IllegalArgumentException(CARRERA_NO_ENCONTRADA_MSG + carreraId));
+                .orElseThrow(() -> new RecursoNoEncontradoException(CARRERA_NO_ENCONTRADA_MSG + carreraId));
 
         List<Materia> materias = materiaRepository.findByCarreraIdConPrerrequisitos(carreraId);
         Set<Long> idsActivas = materias.stream().map(Materia::getId).collect(Collectors.toSet());
