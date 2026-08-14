@@ -60,22 +60,6 @@ function relativo(iso?: string): string {
   return dias > 1 ? `En ${dias} días` : `Hace ${Math.abs(dias)} días`;
 }
 
-type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'orange';
-const TILE_CLS: Record<TileVariant, string> = {
-  blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-utec-dark',
-  cyan: 'bg-utec-cyan text-utec-dark', green: 'bg-utec-green text-white', orange: 'bg-utec-cyan text-utec-dark',
-};
-function StatTile({ icon: Icon, label, value, variant }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode; variant: TileVariant }>) {
-  return (
-    <div className={`relative overflow-hidden rounded-xl px-4 py-2.5 flex items-center gap-3 ${TILE_CLS[variant]}`}>
-      <Icon className="h-6 w-6 shrink-0 opacity-90" />
-      <div className="min-w-0">
-        <div className="text-xl font-bold tabular-nums leading-none">{value}</div>
-        <div className="text-[11px] font-medium opacity-80 mt-0.5">{label}</div>
-      </div>
-    </div>
-  );
-}
 function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode }>) {
   return (
     <div className="flex items-start gap-2.5 rounded-xl border bg-muted/30 p-3">
@@ -355,13 +339,67 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
               {evento.espacioNombre && <MetaItem icon={MapPin} label="Lugar" value={evento.espacioNombre} />}
               {evento.organizadorNombre && <MetaItem icon={User} label="Organiza" value={evento.organizadorNombre} />}
             </div>
+
+            {/*
+              Antes acá al lado había cuatro tiles —Inscriptos, Cupo, Disponibles,
+              Ocupación— que son el mismo dato dicho de cuatro formas, igual que en
+              el detalle de tutoría. Una barra los reemplaza, y el lugar que ocupaban
+              pasa a la difusión, que es para lo que existe un evento.
+            */}
+            <div className="mt-auto pt-4">
+              <div className="flex items-baseline justify-between gap-3 mb-1.5">
+                <p className="text-sm">
+                  <span className="text-2xl font-bold tabular-nums leading-none">{evento.inscriptosCount}</span>
+                  <span className="text-muted-foreground"> {conCupo ? `de ${evento.cupo} inscriptos` : 'inscriptos · sin cupo'}</span>
+                </p>
+                {conCupo && (
+                  <span className={`text-sm font-semibold tabular-nums ${(evento.plazasDisponibles ?? 0) > 0 ? 'text-utec-green' : 'text-utec-orange'}`}>
+                    {(evento.plazasDisponibles ?? 0) > 0
+                      ? `${evento.plazasDisponibles} libre${evento.plazasDisponibles === 1 ? '' : 's'}`
+                      : 'Completo'}
+                  </span>
+                )}
+              </div>
+              {conCupo && (
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-utec-blue transition-all"
+                    style={{ width: `${ocupacion}%` }}
+                    role="progressbar"
+                    aria-valuenow={ocupacion}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Ocupación del evento"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="lg:col-span-1 grid grid-cols-1 gap-4">
-          <StatTile icon={Users} label="Inscriptos" value={evento.inscriptosCount} variant="blue" />
-          <StatTile icon={Users} label="Cupo" value={conCupo ? evento.cupo : '∞'} variant="orange" />
-          <StatTile icon={CheckCircle} label="Disponibles" value={conCupo ? (evento.plazasDisponibles ?? 0) : '—'} variant="green" />
-          <StatTile icon={CalendarClock} label="Ocupación" value={conCupo ? `${ocupacion}%` : '—'} variant="cyan" />
+        <div className="lg:col-span-1">
+          <Panel title="Difundir" icon={<QrCode className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10" className="h-full">
+            <div className="flex h-full flex-col">
+              <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+                {qrUrl
+                  ? <img src={qrUrl} alt="QR del evento" className="h-32 w-32 rounded-lg border" />
+                  : <div className="h-32 w-32 rounded-lg border flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
+                <p className="text-sm text-muted-foreground">Escaneá para abrir el evento e inscribirte desde el celular.</p>
+              </div>
+              <div className="mt-4 flex flex-col gap-2 border-t pt-4">
+                <Button variant="outline" size="sm" className="justify-start" onClick={() => setAficheOpen(true)}>
+                  <ImageIcon className="h-4 w-4 mr-2" />Generar afiche
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start" asChild>
+                  <a href={googleCalUrl(eventoToAgendable(evento))} target="_blank" rel="noopener noreferrer">
+                    <CalendarPlus className="h-4 w-4 mr-2" />Agregar a Google Calendar
+                  </a>
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start" onClick={() => downloadICS(eventoToAgendable(evento))}>
+                  <Download className="h-4 w-4 mr-2" />Descargar .ics
+                </Button>
+              </div>
+            </div>
+          </Panel>
         </div>
       </div>
 
@@ -381,10 +419,6 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
               const espera = inscriptos.filter((i) => i.estado === 'ESPERA');
               const asistieron = confirmados.filter((i) => i.estado === 'ASISTIO').length;
               const tasa = confirmados.length ? Math.round((asistieron / confirmados.length) * 100) : 0;
-              const cupoNum = evento.cupo ?? 0;
-              const libres = conCupo ? Math.max(0, cupoNum - confirmados.length) : 0;
-              const pctIns = conCupo && cupoNum ? Math.min(100, (confirmados.length / cupoNum) * 100) : 0;
-              const pctEsp = conCupo && cupoNum ? Math.min(100 - pctIns, (espera.length / cupoNum) * 100) : 0;
               const PAGE = 8;
               const totalPag = Math.max(1, Math.ceil(confirmados.length / PAGE));
               const pag = Math.min(inscPage, totalPag - 1);
@@ -424,19 +458,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                     </div>
                     <span className="text-sm text-muted-foreground"><b className="text-foreground">{confirmados.length}</b> inscripto{confirmados.length === 1 ? '' : 's'}{espera.length > 0 ? ` · ${espera.length} en espera` : ''}</span>
                   </div>
-                  {/* Barra de cupo segmentada */}
-                  {conCupo && (
-                    <div>
-                      <div className="mb-1 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">{confirmados.length}/{cupoNum} plazas</span>
-                        <span className={libres === 0 ? 'font-semibold text-utec-red' : 'text-muted-foreground'}>{libres === 0 ? '¡Completo!' : `${libres} libres`}</span>
-                      </div>
-                      <div className="flex h-2.5 overflow-hidden rounded-full bg-muted">
-                        <div className="bg-utec-blue" style={{ width: `${pctIns}%` }} title="Inscriptos" />
-                        <div className="bg-utec-yellow" style={{ width: `${pctEsp}%` }} title="En espera" />
-                      </div>
-                    </div>
-                  )}
+                  {/* La ocupación la cuenta la barra del encabezado; acá sería la tercera vez. */}
                   {/* Barra de asistencia */}
                   {confirmados.length > 0 && (
                     <div className="flex items-center gap-3 text-sm">
@@ -503,22 +525,6 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             </Panel>
           )}
 
-          {/* Compartir y difundir (QR + calendario + afiche) */}
-          <Panel title="Compartir y difundir" icon={<QrCode className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10" className="flex-1">
-            <div className="flex h-full flex-col">
-              <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-                {qrUrl ? <img src={qrUrl} alt="QR del evento" className="h-32 w-32 rounded-lg border" /> : <div className="h-32 w-32 rounded-lg border flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
-                <p className="text-sm text-muted-foreground">Escaneá para abrir el evento e<br />inscribirte desde el celular.</p>
-              </div>
-              <div className="mt-4 flex flex-col gap-2 border-t pt-4">
-                <Button variant="outline" size="sm" className="justify-start" asChild>
-                  <a href={googleCalUrl(eventoToAgendable(evento))} target="_blank" rel="noopener noreferrer"><CalendarPlus className="h-4 w-4 mr-2" />Agregar a Google Calendar</a>
-                </Button>
-                <Button variant="outline" size="sm" className="justify-start" onClick={() => downloadICS(eventoToAgendable(evento))}><Download className="h-4 w-4 mr-2" />Descargar .ics</Button>
-                <Button variant="outline" size="sm" className="justify-start" onClick={() => setAficheOpen(true)}><ImageIcon className="h-4 w-4 mr-2" />Generar afiche</Button>
-              </div>
-            </div>
-          </Panel>
         </div>
       </div>
 
