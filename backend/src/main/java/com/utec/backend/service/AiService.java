@@ -89,4 +89,12 @@ public class AiService {
     public Map<String, Object> chat(Map<String, Object> payload) {
         return proxy("POST", "/chat", payload);
     }
+
+    public Map<String, Object> generarEvento(Map<String, Object> payload) {
+        return proxy("POST", "/insights/generar-evento", payload);
+    }
+
+    public Map<String, Object> resumenTemario(Map<String, Object> payload) {
+        return proxy("POST", "/insights/resumen-temario", payload);
+    }
 }

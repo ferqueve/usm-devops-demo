@@ -137,8 +137,11 @@ export const ROLE_PERMISSIONS = {
       '/system',
       '/audit',
       '/materias',
+      '/materias/:id',
       '/tutorias',
+      '/tutorias/:id',
       '/eventos',
+      '/eventos/:id',
       '/sostenibilidad'
     ],
     sidebarItems: [
@@ -173,7 +176,9 @@ export const ROLE_PERMISSIONS = {
       '/statistics',
       '/asistente',
       '/materias',
-      '/eventos'
+      '/materias/:id',
+      '/eventos',
+      '/eventos/:id'
     ],
     sidebarItems: [
       'dashboard',
@@ -196,8 +201,11 @@ export const ROLE_PERMISSIONS = {
       '/reservations/create',
       '/calendar',
       '/materias',
+      '/materias/:id',
       '/tutorias',
-      '/eventos'
+      '/tutorias/:id',
+      '/eventos',
+      '/eventos/:id'
     ],
     sidebarItems: [
       'dashboard',
@@ -215,8 +223,11 @@ export const ROLE_PERMISSIONS = {
       '/dashboard',
       '/calendar',
       '/materias',
+      '/materias/:id',
       '/tutorias',
-      '/eventos'
+      '/tutorias/:id',
+      '/eventos',
+      '/eventos/:id'
     ],
     sidebarItems: [
       'dashboard',
@@ -232,7 +243,8 @@ export const ROLE_PERMISSIONS = {
     routes: [
       '/dashboard',
       '/calendar',
-      '/eventos'
+      '/eventos',
+      '/eventos/:id'
     ],
     sidebarItems: [
       'dashboard',

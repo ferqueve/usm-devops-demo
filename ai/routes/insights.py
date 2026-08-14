@@ -88,6 +88,65 @@ class AnalyzeForecastRequest(BaseModel):
     mape: float | None = None
 
 
+# --------- 1.4 Generación de copy de evento ---------
+
+class GenerarEventoRequest(BaseModel):
+    idea: str
+    tipo: str | None = None  # EVENTO | CURSO
+
+
+@router.post("/generar-evento")
+def generar_evento(body: GenerarEventoRequest) -> dict:
+    system = (
+        "Sos el community manager de UTEC (Universidad Tecnológica del Uruguay). "
+        "A partir de una idea breve para un evento o curso, generás el copy de difusión. "
+        "Devolvé EXCLUSIVAMENTE un objeto JSON válido (sin markdown, sin ```), con esta forma: "
+        '{\"titulo\": str, \"descripcion\": str, \"tags\": [str, ...]}. '
+        "El título: atractivo, máximo 80 caracteres, sin comillas. "
+        "La descripción: 2 a 4 oraciones en español, tono cercano y profesional, sin emojis excesivos. "
+        "Los tags: 2 a 5 categorías cortas en singular (ej: 'IA', 'Workshop', 'Gratuito'). "
+        "No inventes fecha, lugar ni cupo: eso lo completa el organizador aparte."
+    )
+    payload = {"idea": body.idea, "tipo": body.tipo or "EVENTO"}
+    texto = _invoke(system, payload, "generar_evento")
+    cleaned = texto.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        data = json.loads(cleaned)
+    except json.JSONDecodeError:
+        # Fallback: si el modelo no devolvió JSON limpio, usamos el texto como descripción.
+        data = {"titulo": body.idea[:80], "descripcion": cleaned, "tags": []}
+    tags = data.get("tags") or []
+    if isinstance(tags, list):
+        tags = ",".join(str(t).strip() for t in tags if str(t).strip())
+    return {
+        "titulo": (data.get("titulo") or "").strip(),
+        "descripcion": (data.get("descripcion") or "").strip(),
+        "tags": tags,
+    }
+
+
+# --------- 1.5 Resumen de temarios de tutoría ---------
+
+class ResumenTemarioRequest(BaseModel):
+    materia: str | None = None
+    temarios: list[str]
+
+
+@router.post("/resumen-temario")
+def resumen_temario(body: ResumenTemarioRequest) -> dict:
+    system = (
+        "Sos asistente de un docente de UTEC que va a dar una tutoría. "
+        "Te paso la lista de lo que cada estudiante anotó que quiere repasar. "
+        "Agrupá los pedidos por tema, ordenados del más pedido al menos pedido, y devolvé "
+        "un resumen breve (2 a 4 oraciones, español rioplatense, tono práctico) que le sirva al "
+        "docente para preparar la clase: qué temas priorizar y si hay dudas recurrentes. "
+        "No inventes temas que no estén en la lista."
+    )
+    payload = {"materia": body.materia or "", "pedidos": body.temarios}
+    texto = _invoke(system, payload, "resumen_temario")
+    return {"resumen": texto.strip()}
+
+
 @router.post("/analyze-forecast")
 def analyze_forecast(body: AnalyzeForecastRequest) -> dict:
     system = (

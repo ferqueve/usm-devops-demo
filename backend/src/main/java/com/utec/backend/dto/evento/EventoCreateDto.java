@@ -18,6 +18,9 @@ public class EventoCreateDto {
 
     private String descripcion;
 
+    /** Categorías libres separadas por coma (CSV). */
+    private String tags;
+
     /** EVENTO | CURSO */
     private String tipo;
 
@@ -31,4 +34,10 @@ public class EventoCreateDto {
     private Boolean esPublico;
 
     private Long espacioId;
+
+    /** Recurrencia opcional: NONE | DIARIA | SEMANAL | MENSUAL. Por defecto NONE. */
+    private String recurrencia;
+
+    /** Cantidad total de ocurrencias a generar cuando hay recurrencia (incluye la primera). */
+    private Integer repeticiones;
 }

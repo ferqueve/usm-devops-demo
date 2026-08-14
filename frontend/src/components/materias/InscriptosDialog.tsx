@@ -47,7 +47,12 @@ export function InscriptosDialog({ materia, open, onOpenChange }: Readonly<Inscr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Inscriptos {materia ? `- ${materia.nombre}` : ''}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue">
+              <Users className="h-4 w-4" />
+            </div>
+            Inscriptos {materia ? `- ${materia.nombre}` : ''}
+          </DialogTitle>
           <DialogDescription>
             Estudiantes inscriptos activamente en la materia.
           </DialogDescription>

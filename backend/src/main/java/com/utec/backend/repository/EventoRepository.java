@@ -1,6 +1,7 @@
 package com.utec.backend.repository;
 
 import com.utec.backend.model.Evento;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,9 +10,13 @@ import java.util.List;
 @Repository
 public interface EventoRepository extends JpaRepository<Evento, Long> {
 
+    @EntityGraph(attributePaths = {"espacio", "organizador"})
     List<Evento> findByDeletedAtIsNull();
 
+    @EntityGraph(attributePaths = {"espacio", "organizador"})
     List<Evento> findByEsPublicoTrueAndDeletedAtIsNull();
 
     List<Evento> findByEstadoAndDeletedAtIsNull(String estado);
+
+    List<Evento> findByEstadoAndRecordatorioEnviadoFalseAndDeletedAtIsNull(String estado);
 }

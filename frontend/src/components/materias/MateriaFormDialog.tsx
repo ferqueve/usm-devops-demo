@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Save, X } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BookOpen, Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { materiasApi } from '@/lib/api/materias';
@@ -47,6 +48,9 @@ export function MateriaFormDialog({
   const [carreraId, setCarreraId] = useState('');
   const [semestre, setSemestre] = useState('');
   const [creditos, setCreditos] = useState('');
+  const [prerrequisitoIds, setPrerrequisitoIds] = useState<number[]>([]);
+  const [materiasCarrera, setMateriasCarrera] = useState<Materia[]>([]);
+  const [loadingCorrelativas, setLoadingCorrelativas] = useState(false);
 
   const carrerasActivas = carreras.filter((c) => !c.deletedAt);
 
@@ -58,8 +62,44 @@ export function MateriaFormDialog({
       setCarreraId(materia?.carreraId != null ? String(materia.carreraId) : '');
       setSemestre(materia?.semestre != null ? String(materia.semestre) : '');
       setCreditos(materia?.creditos != null ? String(materia.creditos) : '');
+      // Prefill de correlativas: usar las del objeto o, si no vienen, buscarlas por id.
+      if (materia?.prerrequisitoIds != null) {
+        setPrerrequisitoIds(materia.prerrequisitoIds);
+      } else if (materia) {
+        setPrerrequisitoIds([]);
+        materiasApi.obtenerMateria(materia.id)
+          .then((r) => setPrerrequisitoIds(r.data?.prerrequisitoIds ?? []))
+          .catch(() => setPrerrequisitoIds([]));
+      } else {
+        setPrerrequisitoIds([]);
+      }
     }
   }, [open, materia]);
+
+  // Al elegir carrera, traer sus materias como candidatas a correlativas.
+  useEffect(() => {
+    if (!open || !carreraId) {
+      setMateriasCarrera([]);
+      return;
+    }
+    setLoadingCorrelativas(true);
+    materiasApi.obtenerMateriasPorCarrera(Number(carreraId))
+      .then((r) => {
+        const list = (r.data ?? []).filter((m) => m.id !== materia?.id);
+        setMateriasCarrera(list);
+        // Descartar prerrequisitos que ya no pertenezcan a la carrera elegida.
+        setPrerrequisitoIds((prev) => prev.filter((id) => list.some((m) => m.id === id)));
+      })
+      .catch(() => {
+        toast.error('No se pudieron cargar las correlativas');
+        setMateriasCarrera([]);
+      })
+      .finally(() => setLoadingCorrelativas(false));
+  }, [open, carreraId, materia?.id]);
+
+  const togglePrerrequisito = (id: number, checked: boolean) => {
+    setPrerrequisitoIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +120,7 @@ export function MateriaFormDialog({
         carreraId: Number(carreraId),
         semestre: semestre ? Number(semestre) : undefined,
         creditos: creditos ? Number(creditos) : undefined,
+        prerrequisitoIds,
       };
       const response = isEditing && materia
         ? await materiasApi.actualizarMateria(materia.id, data)
@@ -101,7 +142,12 @@ export function MateriaFormDialog({
     <Dialog open={open} onOpenChange={(value) => (loading ? undefined : onOpenChange(value))}>
       <DialogContent className="sm:max-w-[560px] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar Materia' : 'Crear Nueva Materia'}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue">
+              <BookOpen className="h-4 w-4" />
+            </div>
+            {isEditing ? 'Editar Materia' : 'Crear Nueva Materia'}
+          </DialogTitle>
           <DialogDescription>
             {isEditing
               ? 'Modifica los datos de la materia seleccionada.'
@@ -187,6 +233,61 @@ export function MateriaFormDialog({
               disabled={loading}
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Correlativas (prerrequisitos)</Label>
+            {(() => {
+              if (!carreraId) {
+                return (
+                  <p className="text-sm text-muted-foreground rounded-md border border-dashed px-3 py-2">
+                    Elegí una carrera primero.
+                  </p>
+                );
+              }
+              if (loadingCorrelativas) {
+                return (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground rounded-md border px-3 py-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Cargando materias…
+                  </div>
+                );
+              }
+              if (materiasCarrera.length === 0) {
+                return (
+                  <p className="text-sm text-muted-foreground rounded-md border border-dashed px-3 py-2">
+                    No hay otras materias en esta carrera.
+                  </p>
+                );
+              }
+              return (
+                <div className="max-h-48 overflow-y-auto rounded-md border divide-y">
+                  {materiasCarrera.map((m) => (
+                    <label
+                      key={m.id}
+                      className="flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
+                    >
+                      <Checkbox
+                        checked={prerrequisitoIds.includes(m.id)}
+                        disabled={loading}
+                        onCheckedChange={(value) => togglePrerrequisito(m.id, value === true)}
+                      />
+                      <span className="flex-1 min-w-0 truncate">
+                        {m.codigo && (
+                          <span className="font-mono text-xs text-muted-foreground mr-1.5">{m.codigo}</span>
+                        )}
+                        {m.nombre}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              );
+            })()}
+            {prerrequisitoIds.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {prerrequisitoIds.length} correlativa{prerrequisitoIds.length === 1 ? '' : 's'} seleccionada{prerrequisitoIds.length === 1 ? '' : 's'}.
+              </p>
+            )}
           </div>
         </form>
 

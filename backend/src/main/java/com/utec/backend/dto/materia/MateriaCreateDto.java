@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,4 +31,7 @@ public class MateriaCreateDto {
     private Integer semestre;
 
     private Integer creditos;
+
+    /** IDs de materias correlativas (prerrequisitos) de la misma carrera. */
+    private List<Long> prerrequisitoIds;
 }

@@ -51,7 +51,12 @@ export function InscriptosEventoDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Inscriptos</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan">
+              <Users className="h-4 w-4" />
+            </span>
+            Inscriptos
+          </DialogTitle>
           <DialogDescription>
             {evento ? `Personas inscriptas en "${evento.titulo}".` : 'Listado de inscriptos.'}
           </DialogDescription>

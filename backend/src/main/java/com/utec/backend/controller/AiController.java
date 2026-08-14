@@ -47,6 +47,22 @@ public class AiController {
         return ResponseEntity.ok(ApiResponse.success(aiService.explainRecomendacion(payload), "ok"));
     }
 
+    @Operation(summary = "Genera título, descripción y tags de un evento con IA")
+    @PostMapping("/insights/generar-evento")
+    @PreAuthorize("hasPermission(null, 'evento:crear')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> generarEvento(
+            @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(ApiResponse.success(aiService.generarEvento(payload), "ok"));
+    }
+
+    @Operation(summary = "Resume y agrupa los temas que pidieron los estudiantes de una tutoría")
+    @PostMapping("/insights/resumen-temario")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> resumenTemario(
+            @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(ApiResponse.success(aiService.resumenTemario(payload), "ok"));
+    }
+
     @Operation(summary = "Análisis natural del forecast Prophet")
     @PostMapping("/insights/analyze-forecast")
     @PreAuthorize("hasPermission(null, 'estadisticas:ver_reservas')")

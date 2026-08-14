@@ -1,6 +1,7 @@
 package com.utec.backend.controller;
 
 import com.utec.backend.common.ApiResponse;
+import com.utec.backend.dto.sostenibilidad.SostenibilidadRankingDto;
 import com.utec.backend.dto.sostenibilidad.SostenibilidadStatsDto;
 import com.utec.backend.service.SostenibilidadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,20 @@ public class SostenibilidadController {
             log.error("Error al obtener estadísticas de sostenibilidad", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener estadísticas de sostenibilidad: " + e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Ranking de sostenibilidad",
+               description = "Carreras y docentes que más digitalizan, y comparativa mensual.")
+    @GetMapping("/sostenibilidad/ranking")
+    @PreAuthorize("hasPermission(null, 'sostenibilidad:ver')")
+    public ResponseEntity<ApiResponse<SostenibilidadRankingDto>> getRanking() {
+        try {
+            return ResponseEntity.ok(ApiResponse.success(sostenibilidadService.getRanking(), "Ranking obtenido"));
+        } catch (Exception e) {
+            log.error("Error al obtener ranking de sostenibilidad", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error: " + e.getMessage()));
         }
     }
 }

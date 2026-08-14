@@ -28,4 +28,22 @@ public class TutoriaCreateDto {
     @NotNull(message = "El cupo es obligatorio")
     @Positive(message = "El cupo debe ser mayor que cero")
     private Integer cupo;
+
+    /** PRESENCIAL | VIRTUAL */
+    private String modalidad;
+
+    /** Enlace de videollamada (modalidad VIRTUAL). */
+    private String enlace;
+
+    /** INDIVIDUAL | GRUPAL */
+    private String tipo;
+
+    /** Temas/tags separados por coma. */
+    private String tags;
+
+    /** Recurrencia opcional: NONE | DIARIA | SEMANAL | MENSUAL. */
+    private String recurrencia;
+
+    /** Cantidad de ocurrencias a generar (incluye la primera). */
+    private Integer repeticiones;
 }

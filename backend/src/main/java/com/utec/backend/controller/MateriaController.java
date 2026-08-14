@@ -2,6 +2,7 @@ package com.utec.backend.controller;
 
 import com.utec.backend.common.ApiResponse;
 import com.utec.backend.dto.inscripcion.InscripcionResponseDto;
+import com.utec.backend.dto.materia.MapaCarreraDto;
 import com.utec.backend.dto.materia.MateriaCreateDto;
 import com.utec.backend.dto.materia.MateriaResponseDto;
 import com.utec.backend.dto.materia.MateriaUpdateDto;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/materias")
@@ -48,6 +50,23 @@ public class MateriaController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener materias: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Mapa de correlativas de una carrera con el avance del estudiante autenticado.
+     */
+    @GetMapping("/mapa")
+    @PreAuthorize("hasPermission(null, 'materia:ver')")
+    public ResponseEntity<ApiResponse<MapaCarreraDto>> getMapa(
+            @RequestParam Long carreraId,
+            Authentication authentication) {
+        try {
+            String email = authentication != null ? authentication.getName() : null;
+            return ResponseEntity.ok(ApiResponse.success(
+                    materiaService.getMapaCarrera(carreraId, email), "Mapa de carrera obtenido"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -187,6 +206,84 @@ public class MateriaController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al cancelar inscripción: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Inscribe a un estudiante específico en la materia (admin/analista).
+     */
+    @PostMapping("/{id}/inscripciones/admin")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    public ResponseEntity<ApiResponse<InscripcionResponseDto>> inscribirEstudiante(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Object raw = body.get("usuarioId");
+            if (raw == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("usuarioId es requerido"));
+            }
+            Long usuarioId = Long.valueOf(raw.toString());
+            InscripcionResponseDto inscripcion = inscripcionMateriaService.inscribirEstudiante(id, usuarioId);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(inscripcion, "Estudiante inscripto exitosamente"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Error al inscribir: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Elimina cualquier inscripción de la materia (admin/analista).
+     */
+    @DeleteMapping("/inscripciones/{inscripcionId}/admin")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA')")
+    public ResponseEntity<ApiResponse<Void>> eliminarInscripcion(@PathVariable Long inscripcionId) {
+        try {
+            inscripcionMateriaService.eliminarInscripcion(inscripcionId);
+            return ResponseEntity.ok(ApiResponse.success(null, "Inscripción eliminada exitosamente"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Error al eliminar inscripción: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Cambia el estado de una inscripción (ACTIVA / APROBADA). Admin/analista o docente de la materia.
+     * Alimenta el progreso del mapa de correlativas.
+     */
+    @PutMapping("/inscripciones/{inscripcionId}/estado")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<InscripcionResponseDto>> cambiarEstadoInscripcion(
+            @PathVariable Long inscripcionId,
+            @RequestParam String valor,
+            Authentication authentication) {
+        try {
+            InscripcionResponseDto dto = inscripcionMateriaService.marcarEstado(
+                    inscripcionId, valor, authentication.getName());
+            return ResponseEntity.ok(ApiResponse.success(dto, "Estado de inscripción actualizado"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Error al actualizar estado: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Notifica por email a todos los inscriptos de la materia.
+     */
+    @PostMapping("/{id}/notificar")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> notificarInscriptos(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            String asunto = body.get("asunto") != null ? body.get("asunto").toString() : null;
+            String mensaje = body.get("mensaje") != null ? body.get("mensaje").toString() : "";
+            Map<String, Object> resultado = inscripcionMateriaService.notificarInscriptos(id, asunto, mensaje);
+            return ResponseEntity.ok(ApiResponse.success(resultado, "Notificación procesada"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Error al notificar: " + e.getMessage()));
         }
     }
 }

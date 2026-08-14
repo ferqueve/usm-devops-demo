@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +22,7 @@ public class MateriaResponseDto {
     private Integer semestre;
     private Integer creditos;
     private Long totalInscriptos; // Opcional
+    private List<Long> prerrequisitoIds; // Correlativas (IDs)
     private Instant createdAt;
     private Instant updatedAt;
     private Instant deletedAt;

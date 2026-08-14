@@ -25,8 +25,12 @@ import InventoryPage from './app/inventory/page';
 import InventoryRequestsPage from './app/inventory/requests/page';
 import AuditPage from './app/audit/page';
 import MateriasPage from './app/materias/page';
+import MateriasMapaPage from './app/materias/mapa/page';
+import MateriaDetailPage from './app/materias/[id]/page';
 import TutoriasPage from './app/tutorias/page';
+import TutoriaDetailPage from './app/tutorias/[id]/page';
 import EventosPage from './app/eventos/page';
+import EventoDetailPage from './app/eventos/[id]/page';
 import SostenibilidadPage from './app/sostenibilidad/page';
 
 
@@ -215,6 +219,24 @@ function AppRoutes() {
       />
 
       <Route
+        path="/materias/mapa"
+        element={
+          <RoleProtectedRoute>
+            <MateriasMapaPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/materias/:id"
+        element={
+          <RoleProtectedRoute>
+            <MateriaDetailPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
         path="/tutorias"
         element={
           <RoleProtectedRoute>
@@ -224,10 +246,28 @@ function AppRoutes() {
       />
 
       <Route
+        path="/tutorias/:id"
+        element={
+          <RoleProtectedRoute>
+            <TutoriaDetailPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
         path="/eventos"
         element={
           <RoleProtectedRoute>
             <EventosPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/eventos/:id"
+        element={
+          <RoleProtectedRoute>
+            <EventoDetailPage />
           </RoleProtectedRoute>
         }
       />

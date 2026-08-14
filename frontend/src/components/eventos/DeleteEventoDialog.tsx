@@ -54,7 +54,9 @@ export function DeleteEventoDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span className="p-1.5 rounded-md bg-utec-red/10 text-utec-red">
+              <AlertTriangle className="h-4 w-4" />
+            </span>
             Eliminar Evento
           </AlertDialogTitle>
           <AlertDialogDescription>

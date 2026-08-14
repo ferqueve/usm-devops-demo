@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save, X, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { recursosApi } from '@/lib/api/recursos';
 
@@ -112,7 +112,12 @@ export function RecursoUploadDialog({
     <Dialog open={open} onOpenChange={(value) => (loading ? undefined : onOpenChange(value))}>
       <DialogContent className="sm:max-w-[500px] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Agregar recurso</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan">
+              <FolderPlus className="h-4 w-4" />
+            </span>
+            Agregar recurso
+          </DialogTitle>
           <DialogDescription>
             Sube un archivo o comparte un enlace para esta materia.
           </DialogDescription>

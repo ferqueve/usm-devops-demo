@@ -1,5 +1,5 @@
 import { apiRequest, type ApiResponse } from './client';
-import type { Materia, Inscripcion } from '../types/materias';
+import type { Materia, Inscripcion, MapaCarrera } from '../types/materias';
 
 export const materiasApi = {
   // Obtener todas las materias activas
@@ -32,6 +32,7 @@ export const materiasApi = {
     docenteId?: number;
     semestre?: number;
     creditos?: number;
+    prerrequisitoIds?: number[];
   }): Promise<ApiResponse<Materia>> {
     return apiRequest<Materia>('/materias', {
       method: 'POST',
@@ -48,11 +49,28 @@ export const materiasApi = {
     docenteId?: number;
     semestre?: number;
     creditos?: number;
+    prerrequisitoIds?: number[];
   }): Promise<ApiResponse<Materia>> {
     return apiRequest<Materia>(`/materias/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
+  },
+
+  // Mapa de correlativas de una carrera (con el avance del estudiante)
+  async obtenerMapa(carreraId: number): Promise<ApiResponse<MapaCarrera>> {
+    return apiRequest<MapaCarrera>(`/materias/mapa?carreraId=${carreraId}`, { method: 'GET' });
+  },
+
+  // (Docente/Admin) Cambiar estado de una inscripción: ACTIVA (cursando) / APROBADA (cursada)
+  async cambiarEstadoInscripcion(
+    inscripcionId: number,
+    valor: 'ACTIVA' | 'APROBADA',
+  ): Promise<ApiResponse<Inscripcion>> {
+    return apiRequest<Inscripcion>(
+      `/materias/inscripciones/${inscripcionId}/estado?valor=${valor}`,
+      { method: 'PUT' },
+    );
   },
 
   // Eliminar una materia (soft delete)
@@ -80,5 +98,29 @@ export const materiasApi = {
   // Cancelar una inscripción
   async cancelarInscripcion(id: number): Promise<ApiResponse<void>> {
     return apiRequest<void>(`/materias/inscripciones/${id}`, { method: 'DELETE' });
+  },
+
+  // (Admin) Inscribir a un estudiante específico
+  async inscribirEstudiante(materiaId: number, usuarioId: number): Promise<ApiResponse<Inscripcion>> {
+    return apiRequest<Inscripcion>(`/materias/${materiaId}/inscripciones/admin`, {
+      method: 'POST',
+      body: JSON.stringify({ usuarioId }),
+    });
+  },
+
+  // (Admin) Eliminar cualquier inscripción
+  async eliminarInscripcionAdmin(inscripcionId: number): Promise<ApiResponse<void>> {
+    return apiRequest<void>(`/materias/inscripciones/${inscripcionId}/admin`, { method: 'DELETE' });
+  },
+
+  // Notificar por email a los inscriptos
+  async notificarInscriptos(
+    materiaId: number,
+    data: { asunto: string; mensaje: string },
+  ): Promise<ApiResponse<{ total: number; enviados: number }>> {
+    return apiRequest<{ total: number; enviados: number }>(`/materias/${materiaId}/notificar`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };

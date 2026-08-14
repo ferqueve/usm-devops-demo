@@ -45,4 +45,32 @@ public class Tutoria extends BaseAuditableEntity {
     /** ABIERTA | CERRADA | CANCELADA */
     @Column(name = "estado", nullable = false, length = 20)
     private String estado = "ABIERTA";
+
+    /** PRESENCIAL | VIRTUAL */
+    @Column(name = "modalidad", nullable = false, length = 20)
+    private String modalidad = "PRESENCIAL";
+
+    /** Enlace de videollamada cuando la modalidad es VIRTUAL. */
+    @Column(name = "enlace", length = 500)
+    private String enlace;
+
+    /** INDIVIDUAL | GRUPAL */
+    @Column(name = "tipo", nullable = false, length = 20)
+    private String tipo = "GRUPAL";
+
+    /** Temas/tags separados por coma (CSV). Incluye flags lúdicos tipo "mate". */
+    @Column(name = "tags", length = 500)
+    private String tags;
+
+    /** Walk-in: el docente está disponible para consultas en vivo ahora. */
+    @Column(name = "en_vivo", nullable = false)
+    private Boolean enVivo = false;
+
+    /** Patrón de fondo del banner (catálogo del front). */
+    @Column(name = "patron", length = 30)
+    private String patron;
+
+    /** Marca anti-reenvío del recordatorio automático por email. */
+    @Column(name = "recordatorio_enviado", nullable = false)
+    private Boolean recordatorioEnviado = false;
 }

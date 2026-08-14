@@ -171,6 +171,19 @@ public class EmailService {
     }
 
     /**
+     * Envía una notificación HTML simple (texto libre) envuelta en el layout base.
+     * Devuelve false si Gmail no está disponible o si falla el envío.
+     */
+    public boolean enviarNotificacionSimple(String to, String asunto, String mensaje) {
+        String safe = (mensaje == null ? "" : mensaje)
+                .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\n", "<br/>");
+        String html = "<p>" + safe + "</p>";
+        String body = emailTemplateService.wrapInBaseTemplate(html, asunto, backendUrl);
+        return sendHtmlEmailSafe(to, asunto, body);
+    }
+
+    /**
      * Verifica la configuración de email enviando un email de prueba
      *
      * @param to Email del destinatario para la prueba

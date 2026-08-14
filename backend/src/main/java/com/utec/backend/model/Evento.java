@@ -27,6 +27,10 @@ public class Evento extends BaseAuditableEntity {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
+    /** Categorías libres separadas por coma (CSV). Ej: "IA,Workshop,Gratuito". */
+    @Column(name = "tags", length = 500)
+    private String tags;
+
     /** EVENTO | CURSO */
     @Column(name = "tipo", nullable = false, length = 20)
     private String tipo = "EVENTO";
@@ -54,4 +58,12 @@ public class Evento extends BaseAuditableEntity {
     /** BORRADOR | PUBLICADO | FINALIZADO | CANCELADO */
     @Column(name = "estado", nullable = false, length = 20)
     private String estado = "PUBLICADO";
+
+    /** Marca anti-reenvío del recordatorio automático por email. */
+    @Column(name = "recordatorio_enviado", nullable = false)
+    private Boolean recordatorioEnviado = false;
+
+    /** Patrón de fondo del banner (catálogo en el front). null = patrón por defecto. */
+    @Column(name = "patron", length = 30)
+    private String patron;
 }

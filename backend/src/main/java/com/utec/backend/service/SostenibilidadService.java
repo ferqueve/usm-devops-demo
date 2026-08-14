@@ -1,6 +1,8 @@
 package com.utec.backend.service;
 
+import com.utec.backend.dto.sostenibilidad.SostenibilidadRankingDto;
 import com.utec.backend.dto.sostenibilidad.SostenibilidadStatsDto;
+import com.utec.backend.model.Materia;
 import com.utec.backend.model.RecursoAcademico;
 import com.utec.backend.repository.InscripcionMateriaRepository;
 import com.utec.backend.repository.RecursoAcademicoRepository;
@@ -10,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Calcula métricas DERIVADAS de sostenibilidad a partir de los recursos
@@ -41,13 +45,14 @@ public class SostenibilidadService {
     // Si no hay paginasEstimadas, aproximamos por tamaño: ~50 KB por hoja.
     private static final double BYTES_POR_HOJA = 50000.0;
 
-    private static final ZoneId ZONA = ZoneId.systemDefault();
+    private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
     private final RecursoAcademicoRepository recursoAcademicoRepository;
     private final InscripcionMateriaRepository inscripcionMateriaRepository;
 
     public SostenibilidadStatsDto getStats() {
         List<RecursoAcademico> recursos = recursoAcademicoRepository.findAllByDeletedAtIsNull();
+        Map<Long, Long> inscriptosPorMateria = inscriptosPorMateria();
 
         long hojasEvitadas = 0L;
         long recursosArchivo = 0L;
@@ -68,7 +73,7 @@ public class SostenibilidadService {
             recursosArchivo++;
 
             long hojas = calcularHojas(recurso);
-            long copiasEvitadas = calcularCopiasEvitadas(recurso);
+            long copiasEvitadas = calcularCopiasEvitadas(recurso, inscriptosPorMateria);
             long hojasRecurso = hojas * copiasEvitadas;
 
             hojasEvitadas += hojasRecurso;
@@ -96,6 +101,79 @@ public class SostenibilidadService {
                 .build();
     }
 
+    /** Ranking de carreras y docentes por impacto (hojas evitadas) + comparativa mensual. */
+    public SostenibilidadRankingDto getRanking() {
+        List<RecursoAcademico> recursos = recursoAcademicoRepository.findAllByDeletedAtIsNull();
+        Map<Long, Long> inscriptosPorMateria = inscriptosPorMateria();
+        // Acumuladores por grupo: [hojasTotal, recursos, hojasMesActual, hojasMesAnterior]
+        Map<String, long[]> porCarrera = new HashMap<>();
+        Map<String, long[]> porDocente = new HashMap<>();
+        Map<String, Long> hojasPorMes = new TreeMap<>();
+
+        String mesActual = YearMonth.now(ZONA).toString();
+        String mesAnterior = YearMonth.now(ZONA).minusMonths(1).toString();
+
+        for (RecursoAcademico r : recursos) {
+            if (!TIPO_ARCHIVO.equals(r.getTipo())) {
+                continue;
+            }
+            long hojasRecurso = calcularHojas(r) * calcularCopiasEvitadas(r, inscriptosPorMateria);
+            String mes = mesDe(r);
+            int idxMes = mesActual.equals(mes) ? 2 : (mesAnterior.equals(mes) ? 3 : -1);
+            Materia m = r.getMateria();
+            if (m != null) {
+                String carrera = (m.getCarrera() != null && m.getCarrera().getNombre() != null) ? m.getCarrera().getNombre() : "Sin carrera";
+                long[] c = porCarrera.computeIfAbsent(carrera, k -> new long[4]);
+                c[0] += hojasRecurso;
+                c[1] += 1;
+                if (idxMes >= 0) {
+                    c[idxMes] += hojasRecurso;
+                }
+                String docente = (m.getDocente() != null && m.getDocente().getNombre() != null) ? m.getDocente().getNombre() : "Sin docente";
+                long[] d = porDocente.computeIfAbsent(docente, k -> new long[4]);
+                d[0] += hojasRecurso;
+                d[1] += 1;
+                if (idxMes >= 0) {
+                    d[idxMes] += hojasRecurso;
+                }
+            }
+            hojasPorMes.merge(mes, hojasRecurso, Long::sum);
+        }
+
+        long actual = hojasPorMes.getOrDefault(mesActual, 0L);
+        long anterior = hojasPorMes.getOrDefault(mesAnterior, 0L);
+        double deltaPct = anterior > 0 ? ((actual - anterior) * 100.0 / anterior) : (actual > 0 ? 100.0 : 0.0);
+
+        SostenibilidadRankingDto.Comparativa comparativa =
+                new SostenibilidadRankingDto.Comparativa(actual, anterior, redondear1(deltaPct));
+        return new SostenibilidadRankingDto(toRankList(porCarrera), toRankList(porDocente), comparativa);
+    }
+
+    private List<SostenibilidadRankingDto.Item> toRankList(Map<String, long[]> data) {
+        return data.entrySet().stream()
+                .map(e -> {
+                    long[] v = e.getValue();
+                    long hojas = v[0];
+                    long mesAct = v[2];
+                    long mesAnt = v[3];
+                    double delta = mesAnt > 0 ? ((mesAct - mesAnt) * 100.0 / mesAnt) : (mesAct > 0 ? 100.0 : 0.0);
+                    return new SostenibilidadRankingDto.Item(
+                            e.getKey(),
+                            hojas,
+                            v[1],
+                            redondear1(hojas * GRAMOS_PAPEL_POR_HOJA / 1000.0),
+                            redondear1(hojas * CO2_GR_POR_HOJA / 1000.0),
+                            redondear1(delta));
+                })
+                .sorted((a, b) -> Long.compare(b.hojas(), a.hojas()))
+                .limit(10)
+                .toList();
+    }
+
+    private static double redondear1(double v) {
+        return Math.round(v * 10) / 10.0;
+    }
+
     private long calcularHojas(RecursoAcademico recurso) {
         if (recurso.getPaginasEstimadas() != null) {
             return Math.max(0, recurso.getPaginasEstimadas());
@@ -106,12 +184,19 @@ public class SostenibilidadService {
         return 1L;
     }
 
-    private long calcularCopiasEvitadas(RecursoAcademico recurso) {
+    /** Inscriptos activos por materia, precargados en una sola query (evita el N+1 por recurso). */
+    private Map<Long, Long> inscriptosPorMateria() {
+        return inscripcionMateriaRepository.contarInscriptosPorMateria().stream()
+                .collect(Collectors.toMap(
+                        InscripcionMateriaRepository.MateriaConteo::getMateriaId,
+                        InscripcionMateriaRepository.MateriaConteo::getTotal));
+    }
+
+    private long calcularCopiasEvitadas(RecursoAcademico recurso, Map<Long, Long> inscriptosPorMateria) {
         if (recurso.getMateria() == null || recurso.getMateria().getId() == null) {
             return 1L;
         }
-        long inscriptos = inscripcionMateriaRepository
-                .countByMateriaIdAndDeletedAtIsNull(recurso.getMateria().getId());
+        long inscriptos = inscriptosPorMateria.getOrDefault(recurso.getMateria().getId(), 0L);
         return Math.max(1L, inscriptos);
     }
 

@@ -27,7 +27,15 @@ public class TutoriaReserva extends BaseAuditableEntity {
     @JoinColumn(name = "estudiante_id", nullable = false)
     private Usuario estudiante;
 
-    /** AGENDADA | CANCELADA | ASISTIO */
+    /** AGENDADA | ESPERA | CANCELADA | ASISTIO */
     @Column(name = "estado", nullable = false, length = 20)
     private String estado = "AGENDADA";
+
+    /** Qué quiere repasar el estudiante en esta tutoría. */
+    @Column(name = "temario", columnDefinition = "TEXT")
+    private String temario;
+
+    /** El estudiante confirmó que va a asistir (anti no-show). */
+    @Column(name = "confirmada", nullable = false)
+    private Boolean confirmada = false;
 }

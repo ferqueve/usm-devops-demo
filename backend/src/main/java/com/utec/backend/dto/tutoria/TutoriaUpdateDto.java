@@ -25,4 +25,17 @@ public class TutoriaUpdateDto {
 
     /** ABIERTA | CERRADA | CANCELADA */
     private String estado;
+
+    /** PRESENCIAL | VIRTUAL */
+    private String modalidad;
+
+    private String enlace;
+
+    /** INDIVIDUAL | GRUPAL */
+    private String tipo;
+
+    private String tags;
+
+    /** Patrón de fondo del banner (catálogo del front). */
+    private String patron;
 }

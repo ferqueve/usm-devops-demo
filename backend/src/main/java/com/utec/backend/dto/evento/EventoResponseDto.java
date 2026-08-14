@@ -13,6 +13,7 @@ public class EventoResponseDto {
     private Long id;
     private String titulo;
     private String descripcion;
+    private String tags;
     private String tipo;
     private Instant inicio;
     private Instant fin;
@@ -23,6 +24,7 @@ public class EventoResponseDto {
     private String espacioNombre;
     private String organizadorNombre;
     private String estado;
+    private String patron;
     private long inscriptosCount;
     private boolean yaInscrito;
     private Instant createdAt;

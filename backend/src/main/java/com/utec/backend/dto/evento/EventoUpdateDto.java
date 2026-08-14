@@ -15,6 +15,9 @@ public class EventoUpdateDto {
 
     private String descripcion;
 
+    /** Categorías libres separadas por coma (CSV). */
+    private String tags;
+
     /** EVENTO | CURSO */
     private String tipo;
 
@@ -30,4 +33,7 @@ public class EventoUpdateDto {
 
     /** BORRADOR | PUBLICADO | FINALIZADO | CANCELADO */
     private String estado;
+
+    /** Patrón de fondo del banner (id del catálogo del front). */
+    private String patron;
 }

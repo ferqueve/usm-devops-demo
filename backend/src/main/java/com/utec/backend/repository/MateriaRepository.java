@@ -23,6 +23,11 @@ public interface MateriaRepository extends JpaRepository<Materia, Long> {
     @Query("SELECT m FROM Materia m WHERE m.carrera.id = :carreraId AND m.deletedAt IS NULL")
     List<Materia> findByCarreraId(@Param("carreraId") Long carreraId);
 
+    // Materias activas de una carrera con sus correlativas y docente ya cargados (para el mapa)
+    @Query("SELECT DISTINCT m FROM Materia m LEFT JOIN FETCH m.prerrequisitos LEFT JOIN FETCH m.docente "
+            + "WHERE m.carrera.id = :carreraId AND m.deletedAt IS NULL")
+    List<Materia> findByCarreraIdConPrerrequisitos(@Param("carreraId") Long carreraId);
+
     // Buscar por nombre (case insensitive, solo activas)
     @Query("SELECT m FROM Materia m WHERE LOWER(m.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) AND m.deletedAt IS NULL")
     List<Materia> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
