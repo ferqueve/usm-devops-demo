@@ -11,6 +11,7 @@ import com.utec.backend.dto.tutoria.TutoriaFeedbackResumenDto;
 import com.utec.backend.dto.tutoria.TutoriaRecursoDto;
 import com.utec.backend.dto.tutoria.TutoriaResponseDto;
 import com.utec.backend.dto.tutoria.TutoriaUpdateDto;
+import com.utec.backend.exception.EspacioOcupadoException;
 import com.utec.backend.service.TutoriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +78,8 @@ public class TutoriaController {
             TutoriaResponseDto tutoria = tutoriaService.crear(createDto, email);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(tutoria, "Tutoría creada exitosamente"));
+        } catch (EspacioOcupadoException e) {
+            throw e; // que el GlobalExceptionHandler lo devuelva como 409, no como 400
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Error al crear tutoría: " + e.getMessage()));
@@ -152,6 +155,8 @@ public class TutoriaController {
             String email = authentication.getName();
             TutoriaResponseDto tutoria = tutoriaService.editar(id, updateDto, email);
             return ResponseEntity.ok(ApiResponse.success(tutoria, "Tutoría actualizada exitosamente"));
+        } catch (EspacioOcupadoException e) {
+            throw e; // que el GlobalExceptionHandler lo devuelva como 409, no como 400
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Error al actualizar tutoría: " + e.getMessage()));

@@ -7,6 +7,7 @@ import com.utec.backend.dto.evento.EventoFeedbackCreateDto;
 import com.utec.backend.dto.evento.EventoFeedbackResumenDto;
 import com.utec.backend.dto.evento.EventoResponseDto;
 import com.utec.backend.dto.evento.EventoUpdateDto;
+import com.utec.backend.exception.EspacioOcupadoException;
 import com.utec.backend.service.EventoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +78,8 @@ public class EventoController {
             EventoResponseDto evento = eventoService.createEvento(createDto, authentication.getName());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(evento, "Evento creado exitosamente"));
+        } catch (EspacioOcupadoException e) {
+            throw e; // que el GlobalExceptionHandler lo devuelva como 409, no como 400
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Error al crear evento: " + e.getMessage()));
@@ -91,6 +94,8 @@ public class EventoController {
         try {
             EventoResponseDto evento = eventoService.updateEvento(id, updateDto);
             return ResponseEntity.ok(ApiResponse.success(evento, "Evento actualizado exitosamente"));
+        } catch (EspacioOcupadoException e) {
+            throw e; // que el GlobalExceptionHandler lo devuelva como 409, no como 404
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error(e.getMessage()));

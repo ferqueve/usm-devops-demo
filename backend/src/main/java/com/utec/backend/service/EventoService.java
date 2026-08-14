@@ -43,12 +43,14 @@ public class EventoService {
     private static final String ESTADO_BORRADOR = "BORRADOR";
     private static final String ESTADO_PUBLICADO = "PUBLICADO";
     private static final String ESTADO_FINALIZADO = "FINALIZADO";
+    private static final String ESTADO_CANCELADO = "CANCELADO";
     private static final String ESTADO_INSCRITO = "INSCRITO";
     private static final String ESTADO_ESPERA = "ESPERA";
     private static final String ESTADO_ASISTIO = "ASISTIO";
     private static final int MAX_REPETICIONES = 52;
     private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
+    private final OcupacionEspacioService ocupacionEspacioService;
     private final EventoRepository eventoRepository;
     private final EventoInscripcionRepository inscripcionRepository;
     private final EventoFeedbackRepository feedbackRepository;
@@ -85,6 +87,17 @@ public class EventoService {
         // Cantidad de ocurrencias: si hay recurrencia, se generan N eventos
         // desplazando inicio/fin. Sin recurrencia, una sola ocurrencia.
         int ocurrencias = calcularOcurrencias(createDto.getRecurrencia(), createDto.getRepeticiones());
+
+        // Se validan todas las ocurrencias antes de guardar ninguna: si la tercera semana
+        // choca, no queremos dejar creadas las dos primeras.
+        Long espacioId = espacio != null ? espacio.getId() : null;
+        for (int i = 0; i < ocurrencias; i++) {
+            ocupacionEspacioService.validarLibre(
+                    espacioId,
+                    desplazar(createDto.getInicio(), createDto.getRecurrencia(), i),
+                    desplazar(createDto.getFin(), createDto.getRecurrencia(), i),
+                    OcupacionEspacioService.TipoActividad.EVENTO, null);
+        }
 
         Evento primero = null;
         for (int i = 0; i < ocurrencias; i++) {
@@ -207,6 +220,15 @@ public class EventoService {
         }
         if (updateDto.getEspacioId() != null) {
             evento.setEspacio(resolveEspacio(updateDto.getEspacioId()));
+        }
+
+        // Se valida con los valores ya aplicados y excluyendo el propio evento, para que
+        // reeditar sin mover el horario no choque consigo mismo.
+        if (!ESTADO_CANCELADO.equals(evento.getEstado()) && !ESTADO_FINALIZADO.equals(evento.getEstado())) {
+            ocupacionEspacioService.validarLibre(
+                    evento.getEspacio() != null ? evento.getEspacio().getId() : null,
+                    evento.getInicio(), evento.getFin(),
+                    OcupacionEspacioService.TipoActividad.EVENTO, evento.getId());
         }
 
         // Si se reprogramó el inicio, rehabilitar el recordatorio para que vuelva a enviarse.

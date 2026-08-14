@@ -59,6 +59,7 @@ public class TutoriaService {
     private static final int MAX_REPETICIONES = 52;
     private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
+    private final OcupacionEspacioService ocupacionEspacioService;
     private final TutoriaRepository tutoriaRepository;
     private final TutoriaReservaRepository tutoriaReservaRepository;
     private final TutoriaFeedbackRepository feedbackRepository;
@@ -143,6 +144,18 @@ public class TutoriaService {
         }
 
         int ocurrencias = calcularOcurrencias(dto.getRecurrencia(), dto.getRepeticiones());
+        Long espacioId = espacio != null ? espacio.getId() : null;
+
+        // Se validan todas las ocurrencias antes de guardar ninguna: si la tercera semana
+        // choca, no queremos dejar creadas las dos primeras.
+        for (int i = 0; i < ocurrencias; i++) {
+            ocupacionEspacioService.validarLibre(
+                    espacioId,
+                    desplazar(dto.getInicio(), dto.getRecurrencia(), i),
+                    desplazar(dto.getFin(), dto.getRecurrencia(), i),
+                    OcupacionEspacioService.TipoActividad.TUTORIA, null);
+        }
+
         Tutoria primera = null;
         for (int i = 0; i < ocurrencias; i++) {
             Tutoria tutoria = new Tutoria();
@@ -253,6 +266,15 @@ public class TutoriaService {
 
         if (tutoria.getFin().isBefore(tutoria.getInicio()) || tutoria.getFin().equals(tutoria.getInicio())) {
             throw new IllegalArgumentException("La fecha/hora de fin debe ser posterior a la de inicio");
+        }
+
+        // Se valida con los valores ya aplicados y excluyendo la propia tutoría, para que
+        // reeditar sin mover el horario no choque consigo misma.
+        if (!ESTADO_CANCELADA.equals(tutoria.getEstado())) {
+            ocupacionEspacioService.validarLibre(
+                    tutoria.getEspacio() != null ? tutoria.getEspacio().getId() : null,
+                    tutoria.getInicio(), tutoria.getFin(),
+                    OcupacionEspacioService.TipoActividad.TUTORIA, tutoria.getId());
         }
 
         // Si se reprogramó el inicio, rehabilitar el recordatorio para que vuelva a enviarse.

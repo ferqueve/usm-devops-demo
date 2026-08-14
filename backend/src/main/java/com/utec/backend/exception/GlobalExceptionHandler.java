@@ -88,6 +88,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(EspacioOcupadoException.class)
+    public ResponseEntity<ApiResponse<String>> handleEspacioOcupadoException(EspacioOcupadoException ex) {
+        log.warn("Espacio ocupado: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<ApiResponse<String>> handleFileStorageException(FileStorageException ex) {
         log.error("Error de almacenamiento de archivos: {}", ex.getMessage(), ex);

@@ -47,5 +47,5 @@
 ## Punteros técnicos
 - Backend: `backend/src/main/java/com/utec/backend/{controller,service}/Evento*.java`, repo `EventoInscripcionRepository`.
 - Frontend: `frontend/src/components/eventos/*`, API `frontend/src/lib/api/eventos.ts`, tipos `frontend/src/lib/types/eventos.ts`.
-- Login dev para probar: `admin@utec.edu.uy` / `UtecDevSeed2026!` (backend en :8082, front en :3001).
+- Login dev para probar: `admin@utec.edu.uy` / `password` (backend en :8082, front en :3001).
 - Permisos de eventos en `frontend/src/lib/config/permissions.ts` (`evento:*`).
