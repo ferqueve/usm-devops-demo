@@ -386,15 +386,9 @@ public class EventoService {
 
         List<EventoFeedback> lista = feedbackRepository.findByEventoIdAndDeletedAtIsNullOrderByCreatedAtDesc(eventoId);
         long total = lista.size();
-        double promedio = total == 0 ? 0.0
-                : Math.round(lista.stream().mapToInt(EventoFeedback::getRating).average().orElse(0) * 10) / 10.0;
-
-        // distribucion[0] = #1★ ... distribucion[4] = #5★
-        List<Long> distribucion = new ArrayList<>(List.of(0L, 0L, 0L, 0L, 0L));
-        for (EventoFeedback f : lista) {
-            int idx = Math.min(5, Math.max(1, f.getRating())) - 1;
-            distribucion.set(idx, distribucion.get(idx) + 1);
-        }
+        List<Integer> ratings = lista.stream().map(EventoFeedback::getRating).toList();
+        double promedio = ValoracionAgregada.promedio(ratings);
+        List<Long> distribucion = ValoracionAgregada.distribucion(ratings);
 
         Integer miRating = null;
         if (usuarioId != null) {

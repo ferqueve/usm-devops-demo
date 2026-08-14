@@ -14,6 +14,7 @@ import com.utec.backend.model.TutoriaReserva;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.CarreraRepository;
 import com.utec.backend.repository.EspacioRepository;
+import com.utec.backend.service.OcupacionEspacioService;
 import com.utec.backend.repository.EventoFeedbackRepository;
 import com.utec.backend.repository.EventoInscripcionRepository;
 import com.utec.backend.repository.EventoRepository;
@@ -70,8 +71,12 @@ public class AcademicDataInitializer implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final CarreraRepository carreraRepository;
     private final EspacioRepository espacioRepository;
+    private final OcupacionEspacioService ocupacionEspacioService;
 
     private final Random rnd = new Random(42);
+
+    /** Cuántos espacios probar al azar antes de rendirse y dejar la actividad sin espacio. */
+    private static final int INTENTOS_ESPACIO = 8;
 
     /** Plantilla de materias (nombre, código-sufijo, semestre, créditos) aplicada a cada carrera. */
     private record Slot(String nombre, String suf, int sem, int cred) {}
@@ -244,6 +249,28 @@ public class AcademicDataInitializer implements CommandLineRunner {
 
     // ------------------------------------------------------------------ Tutorías
 
+
+    /**
+     * Elige un espacio que esté libre en el rango, probando al azar unos cuantos.
+     *
+     * <p>Antes el seeder tomaba un espacio cualquiera sin mirar la agenda, y generaba
+     * datos que la propia app rechaza: 114 tutorías y eventos pisando reservas aprobadas.
+     * Si no encuentra hueco devuelve null, y la actividad queda sin espacio (virtual).
+     */
+    private Espacio espacioLibre(List<Espacio> espacios, Instant inicio, Instant fin,
+                                 OcupacionEspacioService.TipoActividad tipo) {
+        if (espacios.isEmpty()) {
+            return null;
+        }
+        for (int i = 0; i < INTENTOS_ESPACIO; i++) {
+            Espacio candidato = espacios.get(rnd.nextInt(espacios.size()));
+            if (ocupacionEspacioService.buscarConflictos(candidato.getId(), inicio, fin, tipo, null).isEmpty()) {
+                return candidato;
+            }
+        }
+        return null;
+    }
+
     private void sembrarTutorias(List<Materia> materias, List<Usuario> estudiantes, List<Espacio> espacios) {
         List<TutoriaReserva> reservas = new ArrayList<>();
         List<TutoriaFeedback> feedbacks = new ArrayList<>();
@@ -257,12 +284,14 @@ public class AcademicDataInitializer implements CommandLineRunner {
                     .plus(pasada ? -(2 + rnd.nextInt(18)) : (2 + rnd.nextInt(18)), ChronoUnit.DAYS)
                     .truncatedTo(ChronoUnit.HOURS);
 
+            Instant fin = inicio.plus(1, ChronoUnit.HOURS);
+
             Tutoria t = new Tutoria();
             t.setMateria(m);
             t.setDocente(m.getDocente());
-            t.setEspacio(espacios.isEmpty() ? null : espacios.get(rnd.nextInt(espacios.size())));
+            t.setEspacio(espacioLibre(espacios, inicio, fin, OcupacionEspacioService.TipoActividad.TUTORIA));
             t.setInicio(inicio);
-            t.setFin(inicio.plus(1, ChronoUnit.HOURS));
+            t.setFin(fin);
             t.setCupo(4 + rnd.nextInt(6));
             t.setEstado(pasada ? "CERRADA" : "ABIERTA");
             t.setModalidad(rnd.nextInt(3) == 0 ? "VIRTUAL" : "PRESENCIAL");
@@ -320,15 +349,17 @@ public class AcademicDataInitializer implements CommandLineRunner {
         for (EventoSpec spec : EVENTOS) {
             boolean pasado = spec.dias() < 0;
             Instant inicio = Instant.now().plus(spec.dias(), ChronoUnit.DAYS).truncatedTo(ChronoUnit.HOURS);
+            Instant fin = inicio.plus(2, ChronoUnit.HOURS);
+
             Evento e = new Evento();
             e.setTitulo(spec.titulo());
             e.setDescripcion(spec.descr());
             e.setTipo(spec.tipo());
             e.setInicio(inicio);
-            e.setFin(inicio.plus(2, ChronoUnit.HOURS));
+            e.setFin(fin);
             e.setCupo(spec.cupo());
             e.setEsPublico(true);
-            e.setEspacio(espacios.isEmpty() ? null : espacios.get(rnd.nextInt(espacios.size())));
+            e.setEspacio(espacioLibre(espacios, inicio, fin, OcupacionEspacioService.TipoActividad.EVENTO));
             e.setOrganizador(organizador);
             e.setEstado(pasado ? "FINALIZADO" : "PUBLICADO");
             e.setTags(spec.tags());

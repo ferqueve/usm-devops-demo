@@ -138,7 +138,7 @@ y audiencia externa).
 |---|-----|---------|--------|
 | 1 | Chequeo de espacio ocupado en tutorías y eventos | no (arregla bug) | **hecha** |
 | 2 | Authz → 403 en vez de 409, chequeo de dueño extraído | no | **hecha** |
-| 3 | Unificar tripa tutoría/evento (calendario, ICS, helpers de tiempo, recordatorios) | no (borra duplicado) | **parcial** |
+| 3 | Unificar tripa tutoría/evento (calendario, ICS, helpers de tiempo, recordatorios, valoraciones) | no (borra duplicado) | **hecha** |
 | 4 | Partir `/mias` por rol; emparejar la forma de las rutas | no | **hecha** |
 | 5 | Tutorías dentro de Materias; sidebar de 3 ítems a 2 | **sí** | **hecha** |
 
@@ -158,9 +158,12 @@ La pieza clave es `lib/agenda/types.ts`: el tipo `Agendable` con `tutoriaToAgend
 `eventoToAgendable`. Todo lo que sólo necesita "pasa en un rango, en un lugar" se escribe
 contra ese tipo y no contra la entidad.
 
-**Falta de la fase 3** (se puede hacer aparte): unificar participación
-(`TutoriaReserva` / `EventoInscripcion`) y feedback (`TutoriaFeedback` /
-`EventoFeedback`), que son duplicación de modelo y tocan la DB.
+**Sobre unificar participación y feedback.** Se evaluó fusionar `TutoriaReserva` con
+`EventoInscripcion` y `TutoriaFeedback` con `EventoFeedback`, y **se decidió no hacerlo**:
+cada uno tiene una FK real a su entidad, y una tabla polimórfica cambiaría esa integridad
+referencial por nada. Lo que sí estaba duplicado era el **cálculo**: el promedio y la
+distribución de estrellas estaban escritos dos veces, idénticos. Eso se extrajo a
+`ValoracionAgregada`, sin tocar la base.
 
 ### Lo que hizo la fase 4
 
