@@ -4,16 +4,18 @@ import { tutoriasApi } from '@/lib/api/tutorias';
 import type { Tutoria } from '@/lib/types/tutorias';
 
 interface UseTutoriasOptions {
-  // 'mias' -> /tutorias/mias ; 'todas' -> /tutorias (opcionalmente por materia)
-  scope?: 'mias' | 'todas';
+  /**
+   * Qué listado traer. Antes había un solo 'mias' que el backend resolvía según el
+   * rol de quien preguntaba; ahora la vista dice explícitamente cuál quiere.
+   * - 'dictadas': las franjas que da el docente.
+   * - 'agendadas': las que el estudiante tiene reservadas.
+   * - 'todas': listado general (opcionalmente filtrado por materia).
+   */
+  scope?: 'dictadas' | 'agendadas' | 'todas';
   materiaId?: number;
 }
 
-/**
- * Hook para obtener tutorías.
- * - scope 'mias': franjas del docente o tutorías agendadas del estudiante.
- * - scope 'todas': listado general (opcionalmente filtrado por materia).
- */
+/** Hook para obtener tutorías según el scope pedido. */
 export function useTutorias({ scope = 'todas', materiaId }: UseTutoriasOptions = {}) {
   const [tutorias, setTutorias] = useState<Tutoria[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -23,9 +25,14 @@ export function useTutorias({ scope = 'todas', materiaId }: UseTutoriasOptions =
     setLoading(true);
     setError(null);
     try {
-      const response = scope === 'mias'
-        ? await tutoriasApi.misTutorias()
-        : await tutoriasApi.listar(materiaId);
+      let response;
+      if (scope === 'dictadas') {
+        response = await tutoriasApi.tutoriasQueDicto();
+      } else if (scope === 'agendadas') {
+        response = await tutoriasApi.tutoriasAgendadas();
+      } else {
+        response = await tutoriasApi.listar(materiaId);
+      }
       setTutorias(response.data ?? []);
       return response.data ?? [];
     } catch (err) {

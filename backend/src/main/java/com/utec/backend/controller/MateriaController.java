@@ -34,13 +34,29 @@ public class MateriaController {
         return ResponseEntity.ok(ApiResponse.success(materias, "Materias obtenidas exitosamente"));
     }
 
-    @GetMapping("/mias")
+    /**
+     * Materias que dicta el usuario autenticado.
+     *
+     * <p>Antes esto y {@link #getMateriasQueCurso} eran un solo {@code /mias} que devolvía
+     * una cosa u otra según el rol de quien preguntaba — y lista vacía, sin avisar, para
+     * los roles que no eran ni docente ni estudiante. El front ya sabe desde qué vista
+     * llama, así que ahora lo dice.
+     */
+    @GetMapping("/dictadas")
     @PreAuthorize("hasPermission(null, 'materia:ver')")
-    public ResponseEntity<ApiResponse<List<MateriaResponseDto>>> getMisMaterias(
+    public ResponseEntity<ApiResponse<List<MateriaResponseDto>>> getMateriasQueDicto(
             Authentication authentication) {
-        String userEmail = authentication.getName();
-        List<MateriaResponseDto> materias = materiaService.getMateriasDelUsuario(userEmail);
-        return ResponseEntity.ok(ApiResponse.success(materias, "Materias obtenidas exitosamente"));
+        List<MateriaResponseDto> materias = materiaService.getMateriasQueDicta(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(materias, "Materias dictadas obtenidas exitosamente"));
+    }
+
+    /** Materias en las que el usuario autenticado está inscripto. */
+    @GetMapping("/cursando")
+    @PreAuthorize("hasPermission(null, 'materia:ver')")
+    public ResponseEntity<ApiResponse<List<MateriaResponseDto>>> getMateriasQueCurso(
+            Authentication authentication) {
+        List<MateriaResponseDto> materias = materiaService.getMateriasQueCursa(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(materias, "Materias en curso obtenidas exitosamente"));
     }
 
     /**

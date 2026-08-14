@@ -199,13 +199,20 @@ public class TutoriaService {
         return mapToResponseDtos(tutorias);
     }
 
+    /** Franjas de tutoría que dicta el usuario. Vacío si no dicta ninguna. */
     @Transactional(readOnly = true)
-    public List<TutoriaResponseDto> misTutorias(String email) {
+    public List<TutoriaResponseDto> tutoriasQueDicta(String email) {
         Usuario usuario = resolveUsuario(email);
+        return mapToResponseDtos(tutoriaRepository.findByDocenteIdAndDeletedAtIsNull(usuario.getId()));
+    }
 
-        if (usuario.getRolApp() == Usuario.RolApp.DOCENTE) {
-            return mapToResponseDtos(tutoriaRepository.findByDocenteIdAndDeletedAtIsNull(usuario.getId()));
-        }
+    /**
+     * Tutorías que el usuario tiene agendadas como estudiante, con los datos de su
+     * propia reserva (id, estado, si confirmó, temario) pegados al dto.
+     */
+    @Transactional(readOnly = true)
+    public List<TutoriaResponseDto> tutoriasAgendadas(String email) {
+        Usuario usuario = resolveUsuario(email);
 
         List<TutoriaReserva> reservas = tutoriaReservaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId()).stream()
                 .filter(r -> !ESTADO_CANCELADA.equals(r.getEstado())

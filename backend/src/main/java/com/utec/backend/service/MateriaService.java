@@ -107,26 +107,31 @@ public class MateriaService {
      * - ESTUDIANTE: materias de sus inscripciones activas
      * - Otros roles: lista vacía
      */
+    /**
+     * Materias que dicta el usuario. Vacío si no dicta ninguna.
+     */
     @Transactional(readOnly = true)
-    public List<MateriaResponseDto> getMateriasDelUsuario(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+    public List<MateriaResponseDto> getMateriasQueDicta(String email) {
+        Usuario usuario = resolveUsuario(email);
+        return materiaRepository.findByDocenteId(usuario.getId()).stream()
+                .map(this::mapToResponseDto)
+                .toList();
+    }
+
+    /**
+     * Materias en las que el usuario está inscripto. Vacío si no cursa ninguna.
+     */
+    @Transactional(readOnly = true)
+    public List<MateriaResponseDto> getMateriasQueCursa(String email) {
+        Usuario usuario = resolveUsuario(email);
+        return inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId()).stream()
+                .map(inscripcion -> mapToResponseDto(inscripcion.getMateria()))
+                .toList();
+    }
+
+    private Usuario resolveUsuario(String email) {
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RecursoNoEncontradoException(USUARIO_NO_ENCONTRADO_MSG + email));
-
-        String rol = usuario.getRolApp() != null ? usuario.getRolApp().name() : "";
-
-        if (ROLE_DOCENTE.equals(rol)) {
-            return materiaRepository.findByDocenteId(usuario.getId()).stream()
-                    .map(this::mapToResponseDto)
-                    .toList();
-        }
-
-        if (ROLE_ESTUDIANTE.equals(rol)) {
-            return inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId()).stream()
-                    .map(inscripcion -> mapToResponseDto(inscripcion.getMateria()))
-                    .toList();
-        }
-
-        return List.of();
     }
 
     /**

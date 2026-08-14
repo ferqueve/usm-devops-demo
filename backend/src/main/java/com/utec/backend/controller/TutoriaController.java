@@ -42,16 +42,27 @@ public class TutoriaController {
     }
 
     /**
-     * Tutorías del usuario autenticado.
-     * DOCENTE -> sus franjas; ESTUDIANTE -> las que agendó.
+     * Franjas de tutoría que dicta el usuario autenticado.
+     *
+     * <p>Antes esto y {@link #tutoriasAgendadas} eran un solo {@code /mias} que devolvía
+     * una cosa u otra según el rol. El front ya sabe desde qué vista llama, así que ahora
+     * lo dice en la ruta.
      */
-    @GetMapping("/mias")
+    @GetMapping("/dictadas")
     @PreAuthorize("hasPermission(null, 'tutoria:ver')")
-    public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> misTutorias(
+    public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> tutoriasDictadas(
             Authentication authentication) {
-        String email = authentication.getName();
-        List<TutoriaResponseDto> tutorias = tutoriaService.misTutorias(email);
-        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías obtenidas exitosamente"));
+        List<TutoriaResponseDto> tutorias = tutoriaService.tutoriasQueDicta(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías dictadas obtenidas exitosamente"));
+    }
+
+    /** Tutorías que el usuario autenticado tiene agendadas como estudiante. */
+    @GetMapping("/agendadas")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> tutoriasAgendadas(
+            Authentication authentication) {
+        List<TutoriaResponseDto> tutorias = tutoriaService.tutoriasAgendadas(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías agendadas obtenidas exitosamente"));
     }
 
     /**

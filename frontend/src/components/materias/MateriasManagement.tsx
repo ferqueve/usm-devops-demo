@@ -511,7 +511,7 @@ function AdminMateriasView() {
 // Vista DOCENTE - sus materias con KPIs, detalle y edición
 // ============================================================================
 function DocenteMateriasView() {
-  const { materias, loading, refresh } = useMisMaterias();
+  const { materias, loading, refresh } = useMisMaterias('dicto');
   const [editDialog, setEditDialog] = useState(false);
   const [selected, setSelected] = useState<Materia | null>(null);
   const navigate = useNavigate();
@@ -583,7 +583,7 @@ function DocenteMateriasView() {
 // ============================================================================
 function EstudianteMateriasView() {
   const { hasPermission } = useRolePermissions();
-  const { materias: misMaterias, loading: loadingMias, refresh: refreshMias } = useMisMaterias();
+  const { materias: misMaterias, loading: loadingMias, refresh: refreshMias } = useMisMaterias('curso');
   const { materias: todas, loading: loadingTodas, refresh: refreshTodas } = useMaterias();
   const [actionId, setActionId] = useState<number | null>(null);
   const navigate = useNavigate();

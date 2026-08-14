@@ -139,7 +139,7 @@ y audiencia externa).
 | 1 | Chequeo de espacio ocupado en tutorías y eventos | no (arregla bug) | **hecha** |
 | 2 | Authz → 403 en vez de 409, chequeo de dueño extraído | no | **hecha** |
 | 3 | Unificar tripa tutoría/evento (calendario, ICS, helpers de tiempo, recordatorios) | no (borra duplicado) | **parcial** |
-| 4 | Normalizar API a un vocabulario; partir `/mias` en dos rutas | no | pendiente |
+| 4 | Partir `/mias` por rol; emparejar la forma de las rutas | no | **hecha** |
 | 5 | Tutorías como pestaña dentro del detalle de materia | **sí** | pendiente |
 
 Lo visual va último a propósito: si se mueve la navegación antes de unificar la tripa, queda
@@ -161,6 +161,41 @@ contra ese tipo y no contra la entidad.
 **Falta de la fase 3** (se puede hacer aparte): unificar participación
 (`TutoriaReserva` / `EventoInscripcion`) y feedback (`TutoriaFeedback` /
 `EventoFeedback`), que son duplicación de modelo y tocan la DB.
+
+### Lo que hizo la fase 4
+
+**Se descartó la idea de "un solo vocabulario".** Para una tutoría *agendás* un horario;
+a una materia te *inscribís* por semestre. Son verbos distintos porque son cosas distintas
+— unificarlos habría perdido significado. Lo que sí estaba mal era la **forma** de las
+rutas y el `/mias` polimórfico.
+
+`/materias/mias` y `/tutorias/mias` devolvían una cosa u otra **según el rol de quien
+preguntaba**, y lista vacía sin avisar para los roles que no eran ni docente ni estudiante.
+El front ya sabía desde qué vista llamaba (`DocenteMateriasView` vs `EstudianteMateriasView`
+usaban el mismo hook), o sea que la información estaba y el backend la estaba adivinando.
+
+| Antes | Ahora |
+|---|---|
+| `GET /materias/mias` (según rol) | `GET /materias/dictadas` + `GET /materias/cursando` |
+| `GET /tutorias/mias` (según rol) | `GET /tutorias/dictadas` + `GET /tutorias/agendadas` |
+| `GET /eventos/mias/inscripciones` | `GET /eventos/inscripciones/mias` (igual que materias) |
+| `DELETE /eventos/{id}/inscripciones` | `DELETE /eventos/{id}/inscripciones/mia` |
+
+En el front, `useMisMaterias()` pasa a `useMisMaterias('dicto' \| 'curso')` y el scope de
+`useTutorias` pasa de `'mias' \| 'todas'` a `'dictadas' \| 'agendadas' \| 'todas'`.
+
+**Queda pendiente** (no se hizo para no romper el modelo a mitad de camino):
+`/tutorias/reservas/{id}` usa la palabra "reserva", que choca con las `Reserva` de espacios
+— sobre todo ahora que la fase 1 los hizo interactuar. Renombrar solo la ruta dejaría la
+ruta y el modelo `TutoriaReserva` con nombres distintos, así que va junto con la
+unificación de participación.
+
+### Ojo con el typecheck del front
+
+`npx tsc --noEmit` sobre `tsconfig.json` **no chequea nada**: el config raíz tiene
+`"files": []` y usa project references. Hay que correr
+`npx tsc -p tsconfig.app.json --noEmit`. Con eso el repo tiene 61 errores preexistentes
+(imports sin usar, `Permission` vs `string`, etc.) en módulos ajenos a la capa académica.
 
 ### Resultado visual (fase 5)
 

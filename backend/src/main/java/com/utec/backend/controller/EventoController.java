@@ -91,14 +91,14 @@ public class EventoController {
                 .body(ApiResponse.success(evento, "Inscripción realizada exitosamente"));
     }
 
-    @GetMapping("/mias/inscripciones")
+    @GetMapping("/inscripciones/mias")
     @PreAuthorize("hasPermission(null, 'evento:ver')")
     public ResponseEntity<ApiResponse<List<EventoResponseDto>>> misInscripciones(Authentication authentication) {
         List<EventoResponseDto> eventos = eventoService.misInscripciones(authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(eventos, "Inscripciones obtenidas exitosamente"));
     }
 
-    @DeleteMapping("/{id}/inscripciones")
+    @DeleteMapping("/{id}/inscripciones/mia")
     @PreAuthorize("hasPermission(null, 'evento:inscribir')")
     public ResponseEntity<ApiResponse<Void>> cancelarInscripcion(
             @PathVariable Long id,

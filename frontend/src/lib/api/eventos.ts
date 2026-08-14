@@ -46,7 +46,7 @@ export const eventosApi = {
 
   // Cancelar la propia inscripción (auto-promueve la lista de espera)
   async cancelarInscripcion(id: number): Promise<ApiResponse<void>> {
-    return apiRequest<void>(`/eventos/${id}/inscripciones`, { method: 'DELETE' });
+    return apiRequest<void>(`/eventos/${id}/inscripciones/mia`, { method: 'DELETE' });
   },
 
   // Resumen de feedback / satisfacción del evento
@@ -64,7 +64,7 @@ export const eventosApi = {
 
   // Eventos en los que el usuario actual está inscrito
   async misInscripciones(): Promise<ApiResponse<Evento[]>> {
-    return apiRequest<Evento[]>('/eventos/mias/inscripciones', { method: 'GET' });
+    return apiRequest<Evento[]>('/eventos/inscripciones/mias', { method: 'GET' });
   },
 
   // Listar inscriptos de un evento

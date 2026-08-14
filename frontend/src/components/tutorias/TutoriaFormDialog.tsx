@@ -120,7 +120,7 @@ export function TutoriaFormDialog({
     let active = true;
     setLoadingMaterias(true);
     const base = user?.rol === 'DOCENTE'
-      ? materiasApi.obtenerMisMaterias()
+      ? materiasApi.obtenerMateriasQueDicto()
       : materiasApi.obtenerMaterias();
     base
       .then(async (res) => {

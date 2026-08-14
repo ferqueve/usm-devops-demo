@@ -53,7 +53,7 @@ export default function TutoriasManagement() {
 
   if (isDocente) {
     const adminView = rol === 'ADMIN' || rol === 'ANALISTA';
-    return <DocenteView scope={adminView ? 'todas' : 'mias'} adminView={adminView} />;
+    return <DocenteView scope={adminView ? 'todas' : 'dictadas'} adminView={adminView} />;
   }
   return <EstudianteView />;
 }
@@ -75,7 +75,7 @@ function SectionHeader({
 }
 
 // ----- Vista DOCENTE / ADMIN: gestiona franjas de tutoría -----
-function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; adminView: boolean }>) {
+function DocenteView({ scope, adminView }: Readonly<{ scope: 'dictadas' | 'todas'; adminView: boolean }>) {
   const { tutorias, loading, refresh } = useTutorias({ scope });
   const [createDialog, setCreateDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
@@ -105,7 +105,7 @@ function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; a
 
   // Rating agregado del docente (solo cuando ve "sus" franjas).
   const miRating = useMemo(() => {
-    if (scope !== 'mias') return null;
+    if (scope !== 'dictadas') return null;
     let totalVal = 0;
     let suma = 0;
     let estudiantes = 0;
@@ -271,7 +271,7 @@ function EstudianteView() {
   const { tutorias: disponibles, loading: loadingDisponibles, refresh: refreshDisponibles } =
     useTutorias({ scope: 'todas' });
   const { tutorias: agendadas, loading: loadingAgendadas, refresh: refreshAgendadas } =
-    useTutorias({ scope: 'mias' });
+    useTutorias({ scope: 'agendadas' });
 
   const [accion, setAccion] = useState<number | null>(null);
   const [agendarTarget, setAgendarTarget] = useState<Tutoria | null>(null);

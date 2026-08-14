@@ -7,10 +7,14 @@ export const materiasApi = {
     return apiRequest<Materia[]>('/materias', { method: 'GET' });
   },
 
-  // Obtener las materias relacionadas al usuario autenticado
-  // (docente: las que dicta; estudiante: las inscriptas)
-  async obtenerMisMaterias(): Promise<ApiResponse<Materia[]>> {
-    return apiRequest<Materia[]>('/materias/mias', { method: 'GET' });
+  // Materias que dicta el usuario autenticado
+  async obtenerMateriasQueDicto(): Promise<ApiResponse<Materia[]>> {
+    return apiRequest<Materia[]>('/materias/dictadas', { method: 'GET' });
+  },
+
+  // Materias en las que el usuario autenticado está inscripto
+  async obtenerMateriasQueCurso(): Promise<ApiResponse<Materia[]>> {
+    return apiRequest<Materia[]>('/materias/cursando', { method: 'GET' });
   },
 
   // Obtener una materia por ID
