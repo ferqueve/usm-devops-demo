@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import type { Evento } from '@/lib/types/eventos';
-import { useCountdown } from './eventoUtils';
+import { useCountdown } from '@/lib/agenda/tiempo';
 
 interface ProximoEventoHeroProps {
   eventos: Evento[];

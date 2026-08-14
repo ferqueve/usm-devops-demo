@@ -138,12 +138,29 @@ y audiencia externa).
 |---|-----|---------|--------|
 | 1 | Chequeo de espacio ocupado en tutorías y eventos | no (arregla bug) | **hecha** |
 | 2 | Authz → 403 en vez de 409, chequeo de dueño extraído | no | **hecha** |
-| 3 | Unificar tripa tutoría/evento (participación, feedback, recordatorios, calendario, ICS) | no (borra duplicado) | pendiente |
+| 3 | Unificar tripa tutoría/evento (calendario, ICS, helpers de tiempo, recordatorios) | no (borra duplicado) | **parcial** |
 | 4 | Normalizar API a un vocabulario; partir `/mias` en dos rutas | no | pendiente |
 | 5 | Tutorías como pestaña dentro del detalle de materia | **sí** | pendiente |
 
 Lo visual va último a propósito: si se mueve la navegación antes de unificar la tripa, queda
 el mismo código duplicado repartido en dos secciones — peor de mantener.
+
+### Lo que la fase 3 dejó compartido
+
+| Antes (duplicado) | Ahora (compartido) |
+|---|---|
+| `tutoriaCalendar.ts` + mitad de `eventoUtils.ts` | `lib/agenda/ics.ts` |
+| `TutoriasCalendario.tsx` + `EventosCalendario.tsx` | `components/agenda/AgendaCalendario.tsx` |
+| helpers de tiempo en `eventoUtils.ts` (que tutorías ya importaba) | `lib/agenda/tiempo.ts` |
+| esqueleto de los dos schedulers | `RecordatorioAgendaService` |
+
+La pieza clave es `lib/agenda/types.ts`: el tipo `Agendable` con `tutoriaToAgendable` /
+`eventoToAgendable`. Todo lo que sólo necesita "pasa en un rango, en un lugar" se escribe
+contra ese tipo y no contra la entidad.
+
+**Falta de la fase 3** (se puede hacer aparte): unificar participación
+(`TutoriaReserva` / `EventoInscripcion`) y feedback (`TutoriaFeedback` /
+`EventoFeedback`), que son duplicación de modelo y tocan la DB.
 
 ### Resultado visual (fase 5)
 

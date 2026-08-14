@@ -3,7 +3,7 @@ import { ArrowRight, GraduationCap, MapPin, Video } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
-import { useCountdown } from '@/components/eventos/eventoUtils';
+import { useCountdown } from '@/lib/agenda/tiempo';
 import type { Tutoria } from '@/lib/types/tutorias';
 
 function fmt(iso: string): string {

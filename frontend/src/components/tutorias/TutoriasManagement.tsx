@@ -37,7 +37,8 @@ import { ProximaTutoriaHero } from './ProximaTutoriaHero';
 import { RankingTutores } from './RankingTutores';
 import { RachaBadges } from './RachaBadges';
 import { AgendarTutoriaDialog } from './AgendarTutoriaDialog';
-import { TutoriasCalendario } from './TutoriasCalendario';
+import { AgendaCalendario } from '@/components/agenda/AgendaCalendario';
+import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { TutoriasAgenda } from './TutoriasAgenda';
 import { TutoriaCard } from './TutoriaCard';
 import { DisponibilidadSemanal } from './DisponibilidadSemanal';
@@ -240,7 +241,7 @@ function DocenteView({ scope, adminView }: Readonly<{ scope: 'mias' | 'todas'; a
             </div>
           );
         }
-        if (vista === 'calendario') return <TutoriasCalendario tutorias={filtered} />;
+        if (vista === 'calendario') return <AgendaCalendario items={filtered.map(tutoriaToAgendable)} />;
         if (vista === 'agenda') return <TutoriasAgenda tutorias={filtered} />;
         if (filtered.length === 0) {
           return <div className="text-center py-16"><Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" /><p className="text-muted-foreground">Ninguna tutoría coincide con los filtros.</p></div>;

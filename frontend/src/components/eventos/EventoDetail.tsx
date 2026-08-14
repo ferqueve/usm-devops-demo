@@ -30,7 +30,9 @@ import { AfichePoster } from './AfichePoster';
 import { FeedbackEventoPanel } from './FeedbackEventoPanel';
 import { EventoPatternBg, EVENTO_PATRONES } from '@/components/ui/backgrounds/eventPatterns';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { downloadICS, googleCalUrl, useCountdown } from './eventoUtils';
+import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
+import { useCountdown } from '@/lib/agenda/tiempo';
+import { eventoToAgendable } from '@/lib/agenda/types';
 
 interface EventoDetailProps { eventoId: number }
 
@@ -271,7 +273,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
         </nav>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="sm" onClick={() => setAficheOpen(true)} title="Generar afiche"><ImageIcon className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => downloadICS(evento)} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => downloadICS(eventoToAgendable(evento))} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
           <Button variant="ghost" size="sm" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
           <PermissionGuard requiredPermission="evento:ver_inscriptos"><Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)} title="Notificar inscriptos"><Mail className="h-4 w-4" /></Button></PermissionGuard>
           <PermissionGuard requiredPermission="evento:crear"><Button variant="ghost" size="sm" onClick={duplicar} title="Duplicar evento"><Copy className="h-4 w-4" /></Button></PermissionGuard>
@@ -510,9 +512,9 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
               </div>
               <div className="mt-4 flex flex-col gap-2 border-t pt-4">
                 <Button variant="outline" size="sm" className="justify-start" asChild>
-                  <a href={googleCalUrl(evento)} target="_blank" rel="noopener noreferrer"><CalendarPlus className="h-4 w-4 mr-2" />Agregar a Google Calendar</a>
+                  <a href={googleCalUrl(eventoToAgendable(evento))} target="_blank" rel="noopener noreferrer"><CalendarPlus className="h-4 w-4 mr-2" />Agregar a Google Calendar</a>
                 </Button>
-                <Button variant="outline" size="sm" className="justify-start" onClick={() => downloadICS(evento)}><Download className="h-4 w-4 mr-2" />Descargar .ics</Button>
+                <Button variant="outline" size="sm" className="justify-start" onClick={() => downloadICS(eventoToAgendable(evento))}><Download className="h-4 w-4 mr-2" />Descargar .ics</Button>
                 <Button variant="outline" size="sm" className="justify-start" onClick={() => setAficheOpen(true)}><ImageIcon className="h-4 w-4 mr-2" />Generar afiche</Button>
               </div>
             </div>

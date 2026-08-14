@@ -31,8 +31,9 @@ import { TutoriaFeedbackPanel } from './TutoriaFeedbackPanel';
 import { TutoriaRecursosPanel } from './TutoriaRecursosPanel';
 import { EventoPatternBg, EVENTO_PATRONES } from '@/components/ui/backgrounds/eventPatterns';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { useCountdown } from '@/components/eventos/eventoUtils';
-import { downloadICS, googleCalUrl } from './tutoriaCalendar';
+import { useCountdown } from '@/lib/agenda/tiempo';
+import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
+import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { CheckinScanner, ReservaQR } from './CheckinScanner';
 import { postResumenTemario } from '@/lib/api/ai';
 import { useAuth } from '@/hooks/useAuth';
@@ -311,8 +312,8 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
               <Radio className="h-4 w-4" />{tutoria.enVivo && <span className="ml-1 text-xs">En vivo</span>}
             </Button>
           </PermissionGuard>
-          <Button variant="ghost" size="sm" onClick={() => downloadICS(tutoria)} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" asChild title="Agregar a Google Calendar"><a href={googleCalUrl(tutoria)} target="_blank" rel="noopener noreferrer"><CalendarClock className="h-4 w-4" /></a></Button>
+          <Button variant="ghost" size="sm" onClick={() => downloadICS(tutoriaToAgendable(tutoria))} title="Agregar a calendario (.ics)"><CalendarPlus className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="sm" asChild title="Agregar a Google Calendar"><a href={googleCalUrl(tutoriaToAgendable(tutoria))} target="_blank" rel="noopener noreferrer"><CalendarClock className="h-4 w-4" /></a></Button>
           <Button variant="ghost" size="sm" onClick={copyLink} title="Copiar link"><Link2 className="h-4 w-4" /></Button>
           <PermissionGuard requiredPermission="tutoria:editar"><Button variant="ghost" size="sm" onClick={() => setScanOpen(true)} title="Check-in por QR"><QrCode className="h-4 w-4" /></Button></PermissionGuard>
           <Button variant="ghost" size="sm" onClick={() => setNotifyOpen(true)} title="Notificar agendados"><Mail className="h-4 w-4" /></Button>

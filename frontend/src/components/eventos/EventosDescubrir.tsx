@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Evento } from '@/lib/types/eventos';
-import { estaEnVivo } from './eventoUtils';
+import { estaEnVivo } from '@/lib/agenda/tiempo';
 import { EventoCardDescubrir } from './EventoCardDescubrir';
 
 interface EventosDescubrirProps {

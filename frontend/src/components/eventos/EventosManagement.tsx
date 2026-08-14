@@ -26,12 +26,13 @@ import { EventoFormDialog } from './EventoFormDialog';
 import { DeleteEventoDialog } from './DeleteEventoDialog';
 import { InscriptosEventoDialog } from './InscriptosEventoDialog';
 import { ProximoEventoHero } from './ProximoEventoHero';
-import { EventosCalendario } from './EventosCalendario';
+import { AgendaCalendario } from '@/components/agenda/AgendaCalendario';
+import { eventoToAgendable } from '@/lib/agenda/types';
 import { CarteleraKiosko } from './CarteleraKiosko';
 import { EventosDescubrir } from './EventosDescubrir';
 import { EstadoBadge, parseTags } from './EventoCardDescubrir';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
-import { relativoInicio } from './eventoUtils';
+import { relativoInicio } from '@/lib/agenda/tiempo';
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 type VistaEventos = 'descubrir' | 'cartelera' | 'metricas';
@@ -294,7 +295,7 @@ export default function EventosManagement() {
     if (vista === 'descubrir') {
       return (
         <div className="space-y-6">
-          <EventosCalendario eventos={eventosFiltrados} />
+          <AgendaCalendario items={eventosFiltrados.map(eventoToAgendable)} />
           <EventosDescubrir
             eventos={eventosFiltrados}
             misInscripciones={misInscripciones}
