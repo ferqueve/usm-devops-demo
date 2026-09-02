@@ -1,0 +1,122 @@
+name: SonarQube
+
+# Análisis de calidad contra la instancia de SonarQube que corre en la máquina
+# de desarrollo (sonarqube/docker-compose.yml), alcanzable por Tailscale.
+#
+# Antes esto vivía dentro de build.yml y ocupaba la mitad del pipeline:
+# encender el servicio en Railway, esperar el arranque en frío de Elasticsearch,
+# escanear, reintentar si se caía, y apagarlo. Todo eso desapareció.
+#
+# Si la máquina está apagada o faltan los secrets, el job se salta con un aviso
+# en vez de romper la corrida: el análisis es informativo, la puerta que bloquea
+# es ci.yml.
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: Análisis de código
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comprobar configuración
+        id: config
+        env:
+          TS_CLIENT: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          if [ -z "$TS_CLIENT" ] || [ -z "$SONAR_HOST_URL" ]; then
+            echo "Faltan los secrets de Tailscale o SONAR_HOST_URL: se omite el análisis."
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.config.outputs.listo == 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Conectar a la tailnet
+        if: steps.config.outputs.listo == 'true'
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Comprobar que SonarQube responde
+        id: alcanzable
+        if: steps.config.outputs.listo == 'true'
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          if curl -sS --max-time 15 "$SONAR_HOST_URL/api/system/status" | grep -q '"status":"UP"'; then
+            echo "arriba=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "SonarQube no responde (¿la máquina está apagada?): se omite el análisis."
+            echo "arriba=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 21
+        if: steps.alcanzable.outputs.arriba == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: zulu
+          cache: maven
+
+      - name: Set up pnpm
+        if: steps.alcanzable.outputs.arriba == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        if: steps.alcanzable.outputs.arriba == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      # Sonar necesita los reportes de cobertura, así que hay que generarlos.
+      - name: Cobertura del backend
+        if: steps.alcanzable.outputs.arriba == 'true'
+        run: mvn -B verify -f backend/pom.xml
+
+      - name: Cobertura del frontend
+        if: steps.alcanzable.outputs.arriba == 'true'
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test:coverage
+
+      - name: Cache de SonarQube
+        if: steps.alcanzable.outputs.arriba == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Escanear
+        if: steps.alcanzable.outputs.arriba == 'true'
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # El scan por sí solo no reprueba nada: esto lee el quality gate del
+      # proyecto y falla el job si está en rojo.
+      - name: Quality gate
+        if: steps.alcanzable.outputs.arriba == 'true'
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
