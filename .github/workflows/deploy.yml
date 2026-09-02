@@ -19,46 +19,93 @@ permissions:
   contents: read
   pull-requests: read
 
+env:
+  REGISTRY: ghcr.io
+  # El namespace va en minúsculas: los nombres de imagen no admiten mayúsculas.
+  NAMESPACE: mathiaspena
+
 jobs:
-  # Puerta: si la verificación falla, no se despliega nada.
+  # Puerta: si la verificación falla, no se construye ni se despliega nada.
   verificar:
     uses: ./.github/workflows/ci.yml
 
-  deploy:
+  # Construye la imagen una sola vez y la publica. Lo que se despliega después
+  # es exactamente este artefacto, no una reconstrucción desde el código.
+  build:
     needs: verificar
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
         include:
           - dir: backend
-            service: utec-backend
+            image: usm-utec-backend
+            build_args: ""
           - dir: frontend
-            service: utec-frontend
+            image: usm-utec-frontend
+            # Vite hornea estas variables en el bundle, así que tienen que
+            # existir en el build. Antes las inyectaba Railway; ahora que la
+            # imagen se construye acá, las provee el repositorio.
+            build_args: |
+              VITE_API_URL=${{ vars.VITE_API_URL }}
+              VITE_FRONTEND_URL=${{ vars.VITE_FRONTEND_URL }}
           - dir: ml
-            service: ml-svc
+            image: usm-utec-ml
+            build_args: ""
           - dir: ai
-            service: ai-svc
+            image: usm-utec-ai
+            build_args: ""
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Autenticarse en GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Dos tags: el sha permite volver a una versión exacta, y latest es el que
+      # Railway vuelve a bajar en cada despliegue.
+      - name: Construir y publicar ${{ matrix.image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.dir }}
+          platforms: linux/amd64
+          push: true
+          build-args: ${{ matrix.build_args }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:latest
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [utec-backend, utec-frontend, ml-svc, ai-svc]
+    steps:
       - name: Install Railway CLI
         run: npm i -g @railway/cli
 
-      # El mensaje deja el commit visible en el historial de deploys de Railway:
-      # antes las imágenes se construían con VCS_REF=unknown y no había forma de
-      # saber qué código estaba corriendo.
-      - name: Deploy ${{ matrix.service }}
-        working-directory: ${{ matrix.dir }}
+      # --from-source vuelve a bajar la imagen de :latest en vez de reactivar el
+      # despliegue anterior. Railway no construye nada: corre el artefacto ya
+      # publicado y verificado.
+      - name: Desplegar ${{ matrix.service }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway up --service ${{ matrix.service }} --ci \
-            --message "${GITHUB_SHA::7} · ${GITHUB_REF_NAME} · run ${GITHUB_RUN_NUMBER}"
+        run: railway redeploy --service ${{ matrix.service }} --from-source --yes
 
-  # Antes el workflow terminaba en verde apenas subía el código, sin saber si la
-  # aplicación levantaba. Esto espera a que responda de verdad.
+  # Railway ya valida el healthcheck antes de mandar tráfico; esto deja la
+  # confirmación escrita en el log de la corrida.
   verificar-despliegue:
     needs: deploy
     runs-on: ubuntu-latest
