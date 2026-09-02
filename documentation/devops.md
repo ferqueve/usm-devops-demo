@@ -63,6 +63,22 @@ el despliegue:
 El sondeo posterior que hace `deploy.yml` se mantuvo aunque Railway ya valide antes:
 deja la confirmación escrita en el log de la corrida.
 
+## El puerto del dominio
+
+Cada dominio de Railway apunta a un **puerto destino** del contenedor, y esa
+configuración vive en el servicio, no en el repositorio. Al pasar el frontend del
+servidor de Vite a nginx, el contenedor pasó a escuchar en 8080 pero el dominio
+seguía apuntando al 5173, así que el sitio devolvía 502 con nginx corriendo
+perfectamente.
+
+| Servicio | Puerto del contenedor | Puerto del dominio |
+|---|---|---|
+| `utec-frontend` | 8080 (nginx) | 8080 |
+| `utec-backend` | 8080 | 8080 |
+
+Si alguna vez se cambia el puerto que expone un contenedor, hay que actualizar el
+puerto destino del dominio en la configuración del servicio (*Settings → Networking*).
+
 ## Secrets necesarios
 
 | Secret | Para qué | ¿Configurado? |
