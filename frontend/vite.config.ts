@@ -25,9 +25,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       host: false,
+      // Producción ya no usa este servidor: la sirve nginx desde el build
+      // estático (ver frontend/Dockerfile), así que acá sólo van hosts de dev.
       allowedHosts: [
         'localhost',
-        'usm-utec.up.railway.app',
         ...extraHosts,
       ],
     },

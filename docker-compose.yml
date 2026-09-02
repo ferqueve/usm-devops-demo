@@ -69,6 +69,8 @@ services:
   frontend:
     build: 
       context: ./frontend
+      # `runtime` (nginx) es lo que va a Railway; en local queremos el dev server.
+      target: dev
     container_name: react_frontend
     ports:
       - "5173:5173"
