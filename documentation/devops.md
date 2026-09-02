@@ -15,6 +15,54 @@ funcione.
 Nada tiene `continue-on-error` ni `-Dmaven.test.failure.ignore`. Si un test se
 cae, la corrida es roja.
 
+## Por qué el despliegue vive en GitHub Actions y no en la integración nativa
+
+Railway ofrece autodeploy conectando el repositorio: despliega solo al pushear, y
+con el flag **Wait for CI** espera a que las Actions terminen en verde antes de
+desplegar. Sería menos código: `deploy.yml` desaparecería entero, junto con el CLI,
+el `RAILWAY_TOKEN` y la matriz de cuatro servicios.
+
+Se eligió igual el despliegue explícito desde Actions por dos razones:
+
+1. **El pipeline es parte de lo que se entrega.** Este es un proyecto académico: un
+   workflow versionado, revisable y con sus puertas visibles muestra el trabajo de
+   integración continua; conectar un repositorio y activar un interruptor no deja
+   nada que revisar.
+2. **Railway no necesita acceso permanente al repositorio.** Con `railway up` recibe
+   un tarball en cada despliegue; con la integración nativa habría que instalar su
+   GitHub App con lectura sobre el repo privado, incluidos historial y otras ramas.
+
+Lo que sí se tomó de la plataforma es el **healthcheck**, porque ahí la integración
+nativa era mejor: es una configuración del servicio y se aplica a cualquier
+despliegue, venga de donde venga.
+
+## Healthchecks
+
+Cada servicio tiene configurado un path que Railway consulta **antes** de mandarle
+tráfico a la versión nueva. Hasta que responda 200, la versión anterior sigue
+sirviendo; si nunca responde, el despliegue se marca como fallido y no hay caída.
+
+| Servicio | Path | Timeout |
+|---|---|---|
+| `utec-backend` | `/actuator/health/railway` | 420 s |
+| `utec-frontend` | `/healthz` | 180 s |
+
+Dos detalles que costaron encontrarse, y por los que el primer intento habría roto
+el despliegue:
+
+- **`/actuator/**` exigía `ROLE_ADMIN`.** La sonda de Railway va sin credenciales, así
+  que recibía 403 y el despliegue habría quedado marcado como fallido para siempre.
+  Ahora `/actuator/health` y sus grupos son públicos, pero con
+  `show-details=when_authorized`: anónimo ve sólo `{"status":"UP"}` y el detalle por
+  componente sigue siendo sólo para ADMIN.
+- **`/actuator/health` completo agrega `ai-svc` y `ml-svc`**, que duermen por
+  inactividad, así que devolvía `DOWN` aunque el backend estuviera perfecto. Por eso
+  la sonda usa el grupo `railway`, que incluye únicamente la aplicación y la base de
+  datos: que una dependencia esté dormida no debe impedir desplegar el backend.
+
+El sondeo posterior que hace `deploy.yml` se mantuvo aunque Railway ya valide antes:
+deja la confirmación escrita en el log de la corrida.
+
 ## Secrets necesarios
 
 | Secret | Para qué | ¿Configurado? |

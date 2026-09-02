@@ -56,12 +56,15 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
+      # /actuator/health completo agrega ai-svc y ml-svc, que duermen por
+      # inactividad: daria DOWN aunque el backend este perfecto. El grupo
+      # `railway` incluye solo la app y la base, y es publico para la sonda.
       - name: Esperar a que el backend responda sano
         run: |
           set -u
           deadline=$(( $(date +%s) + 420 ))
           until [ $(date +%s) -ge $deadline ]; do
-            estado=$(curl -sS --max-time 20 https://usm-bnd.up.railway.app/actuator/health || true)
+            estado=$(curl -sS --max-time 20 https://usm-bnd.up.railway.app/actuator/health/railway || true)
             echo "health=$estado"
             case "$estado" in
               *'"status":"UP"'*) echo "Backend sano."; exit 0 ;;
