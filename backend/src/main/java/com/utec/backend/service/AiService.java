@@ -51,10 +51,15 @@ public class AiService {
             }
             HttpResponse<String> response = HTTP.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
-                throw new RuntimeException("HTTP " + response.statusCode() + ": " + response.body());
+                throw new AiUpstreamException("HTTP " + response.statusCode() + ": " + response.body());
             }
             return MAPPER.readValue(response.body(), new TypeReference<>() {});
         } catch (Exception ex) {
+            // HttpClient.send lanza InterruptedException: si la tragamos sin
+            // re-interrumpir, el hilo pierde la señal de cancelación.
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             // getMessage() es null en varias excepciones de red (ConnectException entre
             // otras), y el mensaje quedaba en "…: null", que no le sirve a nadie.
             String motivo = (ex.getMessage() != null && !ex.getMessage().isBlank())
@@ -67,6 +72,16 @@ public class AiService {
             err.put("aiServiceUrl", aiServiceUrl);
             err.put("path", path);
             return err;
+        }
+    }
+
+    /**
+     * Señal interna de que el ai-svc respondió con un código de error. Se captura
+     * en el mismo {@code proxy(...)} que la lanza; nunca sale de esta clase.
+     */
+    private static class AiUpstreamException extends RuntimeException {
+        AiUpstreamException(String message) {
+            super(message);
         }
     }
 

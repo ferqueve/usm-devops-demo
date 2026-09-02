@@ -47,6 +47,11 @@ public class MlServiceHealthIndicator implements HealthIndicator {
                     .withDetail("statusCode", resp.statusCode())
                     .build();
         } catch (Exception e) {
+            // HttpClient.send lanza InterruptedException: si la tragamos sin
+            // re-interrumpir, el hilo pierde la señal de cancelación.
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.debug("ml-svc health check falló: {}", e.getMessage());
             return Health.down()
                     .withDetail("url", mlServiceUrl)

@@ -54,7 +54,7 @@ public class InscripcionMateriaService {
         InscripcionMateria inscripcion = new InscripcionMateria();
         inscripcion.setMateria(materia);
         inscripcion.setEstudiante(estudiante);
-        inscripcion.setEstado("ACTIVA");
+        inscripcion.setEstado(ESTADO_ACTIVA);
         inscripcion.setDeletedAt(null);
         return mapToResponseDto(inscripcionMateriaRepository.save(inscripcion));
     }
@@ -119,7 +119,7 @@ public class InscripcionMateriaService {
         InscripcionMateria inscripcion = new InscripcionMateria();
         inscripcion.setMateria(materia);
         inscripcion.setEstudiante(estudiante);
-        inscripcion.setEstado("ACTIVA");
+        inscripcion.setEstado(ESTADO_ACTIVA);
         inscripcion.setDeletedAt(null);
 
         InscripcionMateria saved = inscripcionMateriaRepository.save(inscripcion);

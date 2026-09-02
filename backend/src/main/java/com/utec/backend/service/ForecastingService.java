@@ -15,6 +15,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,12 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class ForecastingService {
 
+    // El servidor corre en UTC: sin zona explícita, "hoy" cambia tres horas
+    // antes que en Uruguay.
+    private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
+
+    private static final String K_MODELO_ID = "modeloId";
+
     private static final String SCOPE_GLOBAL = "global";
 
     private final ModeloForecastRepository modeloRepository;
@@ -44,7 +51,7 @@ public class ForecastingService {
         Map<String, Object> resultado = new LinkedHashMap<>();
         modeloRepository.findActivoByScope(SCOPE_GLOBAL).ifPresentOrElse(
                 modelo -> {
-                    resultado.put("modeloId", modelo.getId());
+                    resultado.put(K_MODELO_ID, modelo.getId());
                     resultado.put("algoritmo", modelo.getAlgoritmo());
                     resultado.put("trainedAt", modelo.getTrainedAt());
                     resultado.put("sampleSize", modelo.getSampleSize());
@@ -53,7 +60,7 @@ public class ForecastingService {
                     resultado.put("mae", modelo.getMae());
                     resultado.put("notas", modelo.getNotas());
                 },
-                () -> resultado.put("modeloId", null));
+                () -> resultado.put(K_MODELO_ID, null));
         return resultado;
     }
 
@@ -61,7 +68,7 @@ public class ForecastingService {
         Map<String, Object> resultado = new LinkedHashMap<>();
         var modeloOpt = modeloRepository.findActivoByScope(SCOPE_GLOBAL);
         if (modeloOpt.isEmpty()) {
-            resultado.put("modeloId", null);
+            resultado.put(K_MODELO_ID, null);
             resultado.put("historico", List.of());
             resultado.put("predicciones", List.of());
             return resultado;
@@ -86,10 +93,10 @@ public class ForecastingService {
         // Histórico relevante para contexto del gráfico.
         int ventana = diasHistorico == null || diasHistorico <= 0 ? 90 : diasHistorico;
         LocalDate desdeHist = preds.isEmpty()
-                ? LocalDate.now().minusDays(ventana)
+                ? LocalDate.now(ZONA).minusDays(ventana)
                 : preds.get(0).getFechaObjetivo().minusDays(ventana);
         LocalDate hastaHist = preds.isEmpty()
-                ? LocalDate.now()
+                ? LocalDate.now(ZONA)
                 : preds.get(0).getFechaObjetivo().minusDays(1);
 
         List<Map<String, Object>> historicoJson = hechosReservaRepository
@@ -109,7 +116,7 @@ public class ForecastingService {
                 })
                 .toList();
 
-        resultado.put("modeloId", modelo.getId());
+        resultado.put(K_MODELO_ID, modelo.getId());
         resultado.put("trainedAt", modelo.getTrainedAt());
         resultado.put("mape", modelo.getMape());
         resultado.put("historico", historicoJson);

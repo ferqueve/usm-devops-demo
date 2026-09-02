@@ -102,12 +102,6 @@ public class MateriaService {
     }
 
     /**
-     * Materias relacionadas al usuario autenticado:
-     * - DOCENTE: materias que dicta
-     * - ESTUDIANTE: materias de sus inscripciones activas
-     * - Otros roles: lista vacía
-     */
-    /**
      * Materias que dicta el usuario. Vacío si no dicta ninguna.
      */
     @Transactional(readOnly = true)
@@ -245,14 +239,9 @@ public class MateriaService {
         String rol = (usuario != null && usuario.getRolApp() != null) ? usuario.getRolApp().name() : "";
         boolean esEstudiante = ROLE_ESTUDIANTE.equals(rol);
 
-        Map<Long, String> estadoInscripcion = new HashMap<>();
-        if (esEstudiante) {
-            for (InscripcionMateria i : inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId())) {
-                if (i.getMateria() != null && idsActivas.contains(i.getMateria().getId())) {
-                    estadoInscripcion.put(i.getMateria().getId(), i.getEstado());
-                }
-            }
-        }
+        Map<Long, String> estadoInscripcion = esEstudiante
+                ? estadoDeInscripciones(usuario.getId(), idsActivas)
+                : Map.of();
         Set<Long> aprobadas = estadoInscripcion.entrySet().stream()
                 .filter(e -> ESTADO_APROBADA.equals(e.getValue()))
                 .map(Map.Entry::getKey)
@@ -269,21 +258,13 @@ public class MateriaService {
                     .sorted()
                     .toList();
 
-            String estado = null;
-            if (esEstudiante) {
-                String ins = estadoInscripcion.get(m.getId());
-                if (ESTADO_APROBADA.equals(ins)) {
-                    estado = "APROBADA";
-                } else if (ins != null) {
-                    estado = "CURSANDO";
-                } else {
-                    estado = prereqIds.stream().allMatch(aprobadas::contains) ? "DISPONIBLE" : "BLOQUEADA";
-                }
-            }
+            String estado = esEstudiante
+                    ? estadoDeMateria(estadoInscripcion.get(m.getId()), prereqIds, aprobadas)
+                    : null;
 
             int cred = m.getCreditos() != null ? m.getCreditos() : 0;
             totalCreditos += cred;
-            if ("APROBADA".equals(estado)) {
+            if (ESTADO_APROBADA.equals(estado)) {
                 materiasAprobadas++;
                 creditosAprobados += cred;
             }
@@ -298,6 +279,31 @@ public class MateriaService {
 
         return new MapaCarreraDto(carrera.getId(), carrera.getNombre(), nodos,
                 materias.size(), materiasAprobadas, totalCreditos, creditosAprobados, esEstudiante);
+    }
+
+    /** Estado de cada inscripción del estudiante, limitado a las materias activas. */
+    private Map<Long, String> estadoDeInscripciones(Long estudianteId, Set<Long> idsActivas) {
+        Map<Long, String> estados = new HashMap<>();
+        for (InscripcionMateria i : inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(estudianteId)) {
+            if (i.getMateria() != null && idsActivas.contains(i.getMateria().getId())) {
+                estados.put(i.getMateria().getId(), i.getEstado());
+            }
+        }
+        return estados;
+    }
+
+    /**
+     * Estado de una materia en el mapa: la aprobó, la está cursando, o —si no la
+     * cursó— si tiene las correlativas aprobadas para poder anotarse.
+     */
+    private static String estadoDeMateria(String inscripcion, List<Long> prerrequisitos, Set<Long> aprobadas) {
+        if (ESTADO_APROBADA.equals(inscripcion)) {
+            return ESTADO_APROBADA;
+        }
+        if (inscripcion != null) {
+            return "CURSANDO";
+        }
+        return prerrequisitos.stream().allMatch(aprobadas::contains) ? "DISPONIBLE" : "BLOQUEADA";
     }
 
     /** Resuelve IDs a materias correlativas válidas (activas, misma carrera, no la propia). */

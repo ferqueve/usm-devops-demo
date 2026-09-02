@@ -128,7 +128,7 @@ public class EventoService {
             return 1;
         }
         int n = repeticiones != null ? repeticiones : 1;
-        return Math.min(Math.max(1, n), MAX_REPETICIONES);
+        return Math.clamp(n, 1, MAX_REPETICIONES);
     }
 
     /** Desplaza una fecha según la recurrencia y el índice de ocurrencia (0 = la original). */
@@ -183,12 +183,8 @@ public class EventoService {
         return mapToResponseDto(evento, resolveUsuarioId(email));
     }
 
-    public EventoResponseDto updateEvento(Long id, EventoUpdateDto updateDto) {
-        Evento evento = findActivo(id);
-
-        Integer cupoAnterior = evento.getCupo();
-        Instant inicioAnterior = evento.getInicio();
-
+    /** Aplica sobre el evento sólo los campos que vienen en el parche. */
+    private void aplicarCambios(Evento evento, EventoUpdateDto updateDto) {
         if (updateDto.getTitulo() != null) {
             evento.setTitulo(updateDto.getTitulo());
         }
@@ -222,6 +218,15 @@ public class EventoService {
         if (updateDto.getEspacioId() != null) {
             evento.setEspacio(resolveEspacio(updateDto.getEspacioId()));
         }
+    }
+
+    public EventoResponseDto updateEvento(Long id, EventoUpdateDto updateDto) {
+        Evento evento = findActivo(id);
+
+        Integer cupoAnterior = evento.getCupo();
+        Instant inicioAnterior = evento.getInicio();
+
+        aplicarCambios(evento, updateDto);
 
         // Se valida con los valores ya aplicados y excluyendo el propio evento, para que
         // reeditar sin mover el horario no choque consigo mismo.

@@ -52,6 +52,7 @@ import java.util.List;
 public class E2EDataSeeder implements CommandLineRunner {
 
     public static final String SEED_PASSWORD = "Test1234!";
+    private static final String ESTADO_DISPONIBLE = "DISPONIBLE";
 
     private final UsuarioRepository usuarioRepository;
     private final EdificioRepository edificioRepository;
@@ -135,14 +136,14 @@ public class E2EDataSeeder implements CommandLineRunner {
         Espacio s1 = new Espacio();
         s1.setNombre("Sala 101");
         s1.setCapacidad(30);
-        s1.setEstado("DISPONIBLE");
+        s1.setEstado(ESTADO_DISPONIBLE);
         s1.setEdificioId(edificio.getId());
         s1.setTipoEspacioId(tipo.getId());
 
         Espacio s2 = new Espacio();
         s2.setNombre("Sala 202");
         s2.setCapacidad(20);
-        s2.setEstado("DISPONIBLE");
+        s2.setEstado(ESTADO_DISPONIBLE);
         s2.setEdificioId(edificio.getId());
         s2.setTipoEspacioId(tipo.getId());
 
@@ -180,7 +181,7 @@ public class E2EDataSeeder implements CommandLineRunner {
         disponibleEnSala101.setEspacio(espacios.get(0));
         disponibleEnSala101.setTipoElemento(proyector);
         disponibleEnSala101.setCantidad(2);
-        disponibleEnSala101.setEstado("DISPONIBLE");
+        disponibleEnSala101.setEstado(ESTADO_DISPONIBLE);
         disponibleEnSala101.setActivo(true);
 
         // Ítem en MANTENIMIENTO para tests de filtro por estado y de edición.
@@ -198,7 +199,7 @@ public class E2EDataSeeder implements CommandLineRunner {
         sinAsignar.setEspacio(null);
         sinAsignar.setTipoElemento(proyector);
         sinAsignar.setCantidad(1);
-        sinAsignar.setEstado("DISPONIBLE");
+        sinAsignar.setEstado(ESTADO_DISPONIBLE);
         sinAsignar.setActivo(true);
 
         // Ítem de tipo secundario para el flujo de eliminación.
@@ -206,7 +207,7 @@ public class E2EDataSeeder implements CommandLineRunner {
         notebookItem.setEspacio(espacios.get(0));
         notebookItem.setTipoElemento(notebook);
         notebookItem.setCantidad(4);
-        notebookItem.setEstado("DISPONIBLE");
+        notebookItem.setEstado(ESTADO_DISPONIBLE);
         notebookItem.setActivo(true);
 
         // Dos ítems descartables solo para `bulk-actions.spec.ts`. Se siembran
@@ -217,7 +218,7 @@ public class E2EDataSeeder implements CommandLineRunner {
         bulkTarget1.setEspacio(espacios.get(0));
         bulkTarget1.setTipoElemento(proyector);
         bulkTarget1.setCantidad(1);
-        bulkTarget1.setEstado("DISPONIBLE");
+        bulkTarget1.setEstado(ESTADO_DISPONIBLE);
         bulkTarget1.setActivo(true);
         bulkTarget1.setObservaciones("Bulk target 1 E2E");
 
@@ -225,7 +226,7 @@ public class E2EDataSeeder implements CommandLineRunner {
         bulkTarget2.setEspacio(espacios.get(1));
         bulkTarget2.setTipoElemento(proyector);
         bulkTarget2.setCantidad(1);
-        bulkTarget2.setEstado("DISPONIBLE");
+        bulkTarget2.setEstado(ESTADO_DISPONIBLE);
         bulkTarget2.setActivo(true);
         bulkTarget2.setObservaciones("Bulk target 2 E2E");
 

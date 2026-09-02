@@ -37,7 +37,7 @@ public final class ValoracionAgregada {
     public static List<Long> distribucion(List<Integer> ratings) {
         List<Long> conteo = new ArrayList<>(List.of(0L, 0L, 0L, 0L, 0L));
         for (Integer rating : ratings) {
-            int idx = Math.min(NIVELES, Math.max(1, rating)) - 1;
+            int idx = Math.clamp(rating, 1, NIVELES) - 1;
             conteo.set(idx, conteo.get(idx) + 1);
         }
         return conteo;

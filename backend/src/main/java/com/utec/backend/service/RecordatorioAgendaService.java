@@ -27,7 +27,7 @@ public class RecordatorioAgendaService {
 
     /** Formato de fecha usado en los mails: "jueves 21 de agosto a las 14:00". */
     public static final DateTimeFormatter FMT = DateTimeFormatter
-            .ofPattern("EEEE d 'de' MMMM 'a las' HH:mm", new Locale("es", "UY"))
+            .ofPattern("EEEE d 'de' MMMM 'a las' HH:mm", Locale.of("es", "UY"))
             .withZone(ZoneId.of("America/Montevideo"));
 
     private final EmailService emailService;

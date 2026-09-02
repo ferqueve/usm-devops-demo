@@ -54,14 +54,14 @@ public class SystemController {
             String key = ev.getLevel() + "|" + ev.getMessage();
             AggregatedError agg = aggregated.computeIfAbsent(key, k -> new AggregatedError(
                     ev.getLevel(), ev.getMessage(), ev.getLogger(), ev.getException()));
-            agg.count++;
-            if (agg.lastTimestamp == null || ts.isAfter(Instant.parse(agg.lastTimestamp))) {
-                agg.lastTimestamp = ev.getTimestamp();
+            agg.incrementCount();
+            if (agg.getLastTimestamp() == null || ts.isAfter(Instant.parse(agg.getLastTimestamp()))) {
+                agg.setLastTimestamp(ev.getTimestamp());
             }
         }
 
         List<AggregatedError> topErrors = aggregated.values().stream()
-                .sorted(Comparator.comparingInt((AggregatedError e) -> e.count).reversed())
+                .sorted(Comparator.comparingInt(AggregatedError::getCount).reversed())
                 .limit(top)
                 .toList();
 
@@ -78,11 +78,11 @@ public class SystemController {
     public Map<String, Object> getSlowEndpoints(@RequestParam(defaultValue = "10") int top) {
         List<SlowEndpoint> endpoints = meterRegistry.getMeters().stream()
                 .filter(m -> "http.server.requests".equals(m.getId().getName()))
-                .filter(m -> m instanceof Timer)
+                .filter(Timer.class::isInstance)
                 .map(m -> (Timer) m)
                 .filter(t -> t.count() > 0)
                 .map(this::toSlowEndpoint)
-                .sorted(Comparator.comparingDouble((SlowEndpoint s) -> s.p95).reversed())
+                .sorted(Comparator.comparingDouble(SlowEndpoint::p95).reversed())
                 .limit(top)
                 .toList();
 
@@ -99,7 +99,8 @@ public class SystemController {
         String status = id.getTag("status");
 
         HistogramSnapshot snapshot = t.takeSnapshot();
-        double p95 = 0, p99 = 0;
+        double p95 = 0;
+        double p99 = 0;
         for (ValueAtPercentile vap : snapshot.percentileValues()) {
             double pct = vap.percentile();
             double valueMs = vap.value(TimeUnit.MILLISECONDS);
@@ -107,25 +108,28 @@ public class SystemController {
             else if (Math.abs(pct - 0.99) < 0.001) p99 = valueMs;
         }
 
-        SlowEndpoint s = new SlowEndpoint();
-        s.uri = uri != null ? uri : "(unknown)";
-        s.method = method != null ? method : "";
-        s.status = status != null ? status : "";
-        s.count = t.count();
-        s.meanMs = t.mean(TimeUnit.MILLISECONDS);
-        s.maxMs = t.max(TimeUnit.MILLISECONDS);
-        s.p95 = p95;
-        s.p99 = p99;
-        return s;
+        return new SlowEndpoint(
+                uri != null ? uri : "(unknown)",
+                method != null ? method : "",
+                status != null ? status : "",
+                t.count(),
+                t.mean(TimeUnit.MILLISECONDS),
+                t.max(TimeUnit.MILLISECONDS),
+                p95,
+                p99);
     }
 
+    /**
+     * Grupo de errores idénticos. Los getters definen el JSON que consume el
+     * frontend, así que sus nombres no pueden cambiar.
+     */
     public static class AggregatedError {
-        public final String level;
-        public final String message;
-        public final String logger;
-        public final String exception;
-        public int count = 0;
-        public String lastTimestamp;
+        private final String level;
+        private final String message;
+        private final String logger;
+        private final String exception;
+        private int count = 0;
+        private String lastTimestamp;
 
         public AggregatedError(String level, String message, String logger, String exception) {
             this.level = level;
@@ -133,16 +137,30 @@ public class SystemController {
             this.logger = logger;
             this.exception = exception;
         }
+
+        public String getLevel() { return level; }
+        public String getMessage() { return message; }
+        public String getLogger() { return logger; }
+        public String getException() { return exception; }
+        public int getCount() { return count; }
+        public String getLastTimestamp() { return lastTimestamp; }
+
+        public void incrementCount() { count++; }
+        public void setLastTimestamp(String lastTimestamp) { this.lastTimestamp = lastTimestamp; }
     }
 
-    public static class SlowEndpoint {
-        public String uri;
-        public String method;
-        public String status;
-        public long count;
-        public double meanMs;
-        public double maxMs;
-        public double p95;
-        public double p99;
+    /**
+     * Un endpoint con sus latencias. Los nombres de los componentes son los del
+     * JSON que consume el frontend.
+     */
+    public record SlowEndpoint(
+            String uri,
+            String method,
+            String status,
+            long count,
+            double meanMs,
+            double maxMs,
+            double p95,
+            double p99) {
     }
 }

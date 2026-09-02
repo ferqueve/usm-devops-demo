@@ -131,19 +131,24 @@ public class TutoriaService {
         int total = 0;
         int enviados = 0;
         for (TutoriaReserva r : tutoriaReservaRepository.findByTutoriaIdAndDeletedAtIsNull(tutoriaId)) {
-            if (ESTADO_CANCELADA.equals(r.getEstado()) || ESTADO_ESPERA.equals(r.getEstado())) {
-                continue;
-            }
-            Usuario e = r.getEstudiante();
-            if (e == null || e.getEmail() == null) {
-                continue;
-            }
-            total++;
-            if (emailService.enviarNotificacionSimple(e.getEmail(), asuntoFinal, mensaje)) {
-                enviados++;
+            if (esNotificable(r)) {
+                total++;
+                if (emailService.enviarNotificacionSimple(
+                        r.getEstudiante().getEmail(), asuntoFinal, mensaje)) {
+                    enviados++;
+                }
             }
         }
         return new NotificacionResultadoDto(total, enviados);
+    }
+
+    /** Sólo se notifica a inscriptos vigentes que tengan email. */
+    private static boolean esNotificable(TutoriaReserva r) {
+        if (ESTADO_CANCELADA.equals(r.getEstado()) || ESTADO_ESPERA.equals(r.getEstado())) {
+            return false;
+        }
+        Usuario estudiante = r.getEstudiante();
+        return estudiante != null && estudiante.getEmail() != null;
     }
 
     public TutoriaResponseDto crear(TutoriaCreateDto dto, String emailDocente) {
@@ -238,14 +243,14 @@ public class TutoriaService {
         return result;
     }
 
-    public TutoriaResponseDto editar(Long id, TutoriaUpdateDto dto, String email) {
-        Tutoria tutoria = findActiva(id);
-        Usuario usuario = resolveUsuario(email);
-        exigirDuenoOGestor(tutoria, usuario, "editar esta tutoría");
+    /** Aplica sobre la tutoría sólo los campos que vienen en el parche. */
+    private void aplicarCambios(Tutoria tutoria, TutoriaUpdateDto dto) {
+        aplicarAgenda(tutoria, dto);
+        aplicarDetalles(tutoria, dto);
+    }
 
-        Integer cupoAnterior = tutoria.getCupo();
-        Instant inicioAnterior = tutoria.getInicio();
-
+    /** Dónde y cuándo: materia, espacio, horario y cupo. */
+    private void aplicarAgenda(Tutoria tutoria, TutoriaUpdateDto dto) {
         if (dto.getMateriaId() != null) {
             tutoria.setMateria(materiaRepository.findById(dto.getMateriaId())
                     .orElseThrow(() -> new RecursoNoEncontradoException(MATERIA_NO_ENCONTRADA_MSG + dto.getMateriaId())));
@@ -262,6 +267,10 @@ public class TutoriaService {
         if (dto.getCupo() != null) {
             tutoria.setCupo(dto.getCupo());
         }
+    }
+
+    /** Cómo se dicta: estado, modalidad, enlace, tipo, etiquetas y recurrencia. */
+    private void aplicarDetalles(Tutoria tutoria, TutoriaUpdateDto dto) {
         if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
             tutoria.setEstado(dto.getEstado());
         }
@@ -280,6 +289,17 @@ public class TutoriaService {
         if (dto.getPatron() != null) {
             tutoria.setPatron(dto.getPatron().isBlank() ? null : dto.getPatron());
         }
+    }
+
+    public TutoriaResponseDto editar(Long id, TutoriaUpdateDto dto, String email) {
+        Tutoria tutoria = findActiva(id);
+        Usuario usuario = resolveUsuario(email);
+        exigirDuenoOGestor(tutoria, usuario, "editar esta tutoría");
+
+        Integer cupoAnterior = tutoria.getCupo();
+        Instant inicioAnterior = tutoria.getInicio();
+
+        aplicarCambios(tutoria, dto);
 
         if (tutoria.getFin().isBefore(tutoria.getInicio()) || tutoria.getFin().equals(tutoria.getInicio())) {
             throw new IllegalArgumentException("La fecha/hora de fin debe ser posterior a la de inicio");
@@ -518,12 +538,13 @@ public class TutoriaService {
                         Function.identity()));
 
         List<TutorRankingDto> ranking = new ArrayList<>();
-        for (Long docId : nombres.keySet()) {
+        for (Map.Entry<Long, String> entrada : nombres.entrySet()) {
+            Long docId = entrada.getKey();
             TutoriaFeedbackRepository.DocenteRatingAgg agg = ratingPorDocente.get(docId);
             long totalValoraciones = agg != null ? agg.getTotal() : 0L;
             double promedio = (agg != null && agg.getPromedio() != null) ? redondear1(agg.getPromedio()) : 0.0;
             long totalEstudiantes = estudiantesPorDocente.getOrDefault(docId, 0L);
-            ranking.add(new TutorRankingDto(docId, nombres.get(docId), promedio,
+            ranking.add(new TutorRankingDto(docId, entrada.getValue(), promedio,
                     totalValoraciones, totalTutorias.getOrDefault(docId, 0L), totalEstudiantes, null));
         }
         ranking.sort(Comparator
@@ -653,7 +674,7 @@ public class TutoriaService {
             return 1;
         }
         int n = repeticiones != null ? repeticiones : 1;
-        return Math.min(Math.max(1, n), MAX_REPETICIONES);
+        return Math.clamp(n, 1, MAX_REPETICIONES);
     }
 
     private Instant desplazar(Instant base, String recurrencia, int i) {

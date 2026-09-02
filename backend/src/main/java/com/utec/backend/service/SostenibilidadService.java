@@ -64,20 +64,16 @@ public class SostenibilidadService {
         for (RecursoAcademico recurso : recursos) {
             if (TIPO_ENLACE.equals(recurso.getTipo())) {
                 recursosEnlace++;
-                continue;
+            } else if (TIPO_ARCHIVO.equals(recurso.getTipo())) {
+                recursosArchivo++;
+
+                long hojas = calcularHojas(recurso);
+                long copiasEvitadas = calcularCopiasEvitadas(recurso, inscriptosPorMateria);
+                long hojasRecurso = hojas * copiasEvitadas;
+
+                hojasEvitadas += hojasRecurso;
+                hojasPorMes.merge(mesDe(recurso), hojasRecurso, Long::sum);
             }
-            if (!TIPO_ARCHIVO.equals(recurso.getTipo())) {
-                continue;
-            }
-
-            recursosArchivo++;
-
-            long hojas = calcularHojas(recurso);
-            long copiasEvitadas = calcularCopiasEvitadas(recurso, inscriptosPorMateria);
-            long hojasRecurso = hojas * copiasEvitadas;
-
-            hojasEvitadas += hojasRecurso;
-            hojasPorMes.merge(mesDe(recurso), hojasRecurso, Long::sum);
         }
 
         double papelAhorradoKg = hojasEvitadas * GRAMOS_PAPEL_POR_HOJA / 1000.0;
@@ -92,7 +88,7 @@ public class SostenibilidadService {
                 .papelAhorradoKg(papelAhorradoKg)
                 .co2EvitadoKg(co2EvitadoKg)
                 .aguaAhorradaL(aguaAhorradaL)
-                .recursosDigitalesTotales((long) recursos.size())
+                .recursosDigitalesTotales(recursos.size())
                 .recursosArchivo(recursosArchivo)
                 .recursosEnlace(recursosEnlace)
                 .arbolesSalvados(arbolesSalvados)
@@ -119,34 +115,66 @@ public class SostenibilidadService {
             }
             long hojasRecurso = calcularHojas(r) * calcularCopiasEvitadas(r, inscriptosPorMateria);
             String mes = mesDe(r);
-            int idxMes = mesActual.equals(mes) ? 2 : (mesAnterior.equals(mes) ? 3 : -1);
+            int idxMes = indiceDeMes(mes, mesActual, mesAnterior);
             Materia m = r.getMateria();
             if (m != null) {
-                String carrera = (m.getCarrera() != null && m.getCarrera().getNombre() != null) ? m.getCarrera().getNombre() : "Sin carrera";
-                long[] c = porCarrera.computeIfAbsent(carrera, k -> new long[4]);
-                c[0] += hojasRecurso;
-                c[1] += 1;
-                if (idxMes >= 0) {
-                    c[idxMes] += hojasRecurso;
-                }
-                String docente = (m.getDocente() != null && m.getDocente().getNombre() != null) ? m.getDocente().getNombre() : "Sin docente";
-                long[] d = porDocente.computeIfAbsent(docente, k -> new long[4]);
-                d[0] += hojasRecurso;
-                d[1] += 1;
-                if (idxMes >= 0) {
-                    d[idxMes] += hojasRecurso;
-                }
+                acumular(porCarrera, nombreDeCarrera(m), hojasRecurso, idxMes);
+                acumular(porDocente, nombreDeDocente(m), hojasRecurso, idxMes);
             }
             hojasPorMes.merge(mes, hojasRecurso, Long::sum);
         }
 
         long actual = hojasPorMes.getOrDefault(mesActual, 0L);
         long anterior = hojasPorMes.getOrDefault(mesAnterior, 0L);
-        double deltaPct = anterior > 0 ? ((actual - anterior) * 100.0 / anterior) : (actual > 0 ? 100.0 : 0.0);
+        double deltaPct = variacionPorcentual(actual, anterior);
 
         SostenibilidadRankingDto.Comparativa comparativa =
                 new SostenibilidadRankingDto.Comparativa(actual, anterior, redondear1(deltaPct));
         return new SostenibilidadRankingDto(toRankList(porCarrera), toRankList(porDocente), comparativa);
+    }
+
+    /**
+     * Posición del mes dentro del acumulador de 4 casillas:
+     * 2 = mes en curso, 3 = mes anterior, -1 = fuera de la ventana comparada.
+     */
+    private static int indiceDeMes(String mes, String mesActual, String mesAnterior) {
+        if (mesActual.equals(mes)) {
+            return 2;
+        }
+        if (mesAnterior.equals(mes)) {
+            return 3;
+        }
+        return -1;
+    }
+
+    /** Variación porcentual entre dos períodos; 100 % si antes no había nada y ahora sí. */
+    private static double variacionPorcentual(long actual, long anterior) {
+        if (anterior > 0) {
+            return (actual - anterior) * 100.0 / anterior;
+        }
+        return actual > 0 ? 100.0 : 0.0;
+    }
+
+    private static String nombreDeCarrera(Materia m) {
+        return (m.getCarrera() != null && m.getCarrera().getNombre() != null)
+                ? m.getCarrera().getNombre()
+                : "Sin carrera";
+    }
+
+    private static String nombreDeDocente(Materia m) {
+        return (m.getDocente() != null && m.getDocente().getNombre() != null)
+                ? m.getDocente().getNombre()
+                : "Sin docente";
+    }
+
+    /** Suma un recurso al acumulador [hojasTotal, recursos, hojasMesActual, hojasMesAnterior]. */
+    private static void acumular(Map<String, long[]> destino, String clave, long hojas, int idxMes) {
+        long[] acc = destino.computeIfAbsent(clave, k -> new long[4]);
+        acc[0] += hojas;
+        acc[1] += 1;
+        if (idxMes >= 0) {
+            acc[idxMes] += hojas;
+        }
     }
 
     private List<SostenibilidadRankingDto.Item> toRankList(Map<String, long[]> data) {
@@ -156,7 +184,7 @@ public class SostenibilidadService {
                     long hojas = v[0];
                     long mesAct = v[2];
                     long mesAnt = v[3];
-                    double delta = mesAnt > 0 ? ((mesAct - mesAnt) * 100.0 / mesAnt) : (mesAct > 0 ? 100.0 : 0.0);
+                    double delta = variacionPorcentual(mesAct, mesAnt);
                     return new SostenibilidadRankingDto.Item(
                             e.getKey(),
                             hojas,

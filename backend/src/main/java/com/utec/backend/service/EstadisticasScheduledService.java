@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 /**
  * Scheduler de la capa analítica: pobla las tablas de hechos diarias.
@@ -21,6 +22,10 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Slf4j
 public class EstadisticasScheduledService {
+
+    // El servidor corre en UTC: sin zona explícita, "hoy" cambia tres horas
+    // antes que en Uruguay.
+    private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
     private static final int VENTANA_RECOMPUTE_RESERVAS_DIAS = 7;
 
@@ -35,7 +40,7 @@ public class EstadisticasScheduledService {
     @Scheduled(cron = "0 0 3 * * ?")
     @Transactional
     public void recalcularHechosReservaDiario() {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = LocalDate.now(ZONA);
         LocalDate desde = hoy.minusDays(VENTANA_RECOMPUTE_RESERVAS_DIAS);
         log.info("Recomputando hechos_reserva_diario en rango {} a {}", desde, hoy);
         backfillReservas(desde, hoy);
@@ -48,7 +53,7 @@ public class EstadisticasScheduledService {
     @Scheduled(cron = "0 15 3 * * ?")
     @Transactional
     public void recalcularHechosInventarioDiario() {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = LocalDate.now(ZONA);
         log.info("Tomando snapshot de hechos_inventario_diario para {}", hoy);
         backfillInventario(hoy, hoy);
     }

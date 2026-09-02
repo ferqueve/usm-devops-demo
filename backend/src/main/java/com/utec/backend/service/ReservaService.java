@@ -430,7 +430,7 @@ public class ReservaService {
         List<Instant> fechas = new ArrayList<>();
         ZonedDateTime fechaActual = createDto.getInicio().atZone(ZoneOffset.UTC);
         // El frontend envía fechaFinRecurrencia como fin de día en la zona del
-        // usuario (`toFinDeDiaISO`), por lo que ya cubre todo el día elegido.
+        // usuario (`toFinDeDiaISO`), por lo que ya cubre el día elegido entero.
         // Se usa directamente como cota superior inclusiva.
         ZonedDateTime fechaFinAjustada = createDto.getFechaFinRecurrencia().atZone(ZoneOffset.UTC);
 

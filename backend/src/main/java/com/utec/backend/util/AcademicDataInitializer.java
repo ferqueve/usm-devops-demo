@@ -59,6 +59,8 @@ import java.util.Random;
 @Order(2)
 public class AcademicDataInitializer implements CommandLineRunner {
 
+    private static final String TIPO_EVENTO = "EVENTO";
+
     private final MateriaRepository materiaRepository;
     private final InscripcionMateriaRepository inscripcionMateriaRepository;
     private final RecursoAcademicoRepository recursoAcademicoRepository;
@@ -293,60 +295,75 @@ public class AcademicDataInitializer implements CommandLineRunner {
         return null;
     }
 
+    /** Sólo se siembran tutorías para materias con docente y de semestres 2 a 4. */
+    private static boolean tieneTutoria(Materia m) {
+        Integer sem = m.getSemestre();
+        return m.getDocente() != null && sem != null && sem >= 2 && sem <= 4;
+    }
+
+    private Tutoria armarTutoria(Materia m, List<Espacio> espacios, boolean pasada) {
+        Instant inicio = Instant.now()
+                .plus(pasada ? -(2 + rnd.nextInt(18)) : (2 + rnd.nextInt(18)), ChronoUnit.DAYS)
+                .truncatedTo(ChronoUnit.HOURS);
+        Instant fin = inicio.plus(1, ChronoUnit.HOURS);
+
+        Tutoria t = new Tutoria();
+        t.setMateria(m);
+        t.setDocente(m.getDocente());
+        t.setEspacio(espacioLibre(espacios, inicio, fin, OcupacionEspacioService.TipoActividad.TUTORIA));
+        t.setInicio(inicio);
+        t.setFin(fin);
+        t.setCupo(4 + rnd.nextInt(6));
+        t.setEstado(pasada ? "CERRADA" : "ABIERTA");
+        t.setModalidad(rnd.nextInt(3) == 0 ? "VIRTUAL" : "PRESENCIAL");
+        t.setTipo(rnd.nextBoolean() ? "GRUPAL" : "INDIVIDUAL");
+        t.setTags(rnd.nextInt(4) == 0 ? "mate,repaso" : "consulta");
+        t.setEnVivo(false);
+        t.setRecordatorioEnviado(false);
+        return t;
+    }
+
+    /**
+     * Agenda estudiantes en la tutoría y, si ya pasó, les deja una valoración.
+     *
+     * <p>3 de cada 4 escriben qué quieren ver; el resto agenda sin decir nada. La
+     * mitad de los que escriben pide el tema dominante de esa tutoría: en una
+     * tutoría real varios vienen por lo mismo, y es justo eso lo que el panel de
+     * temarios agrupa y ordena.</p>
+     */
+    private void sembrarInscriptos(Tutoria tutoria, List<Usuario> estudiantes, boolean pasada,
+                                   List<TutoriaReserva> reservas, List<TutoriaFeedback> feedbacks) {
+        String temaDominante = TEMARIOS[rnd.nextInt(TEMARIOS.length)];
+        int n = Math.min(estudiantes.size(), 2 + rnd.nextInt(5));
+        for (Usuario est : muestra(estudiantes, n)) {
+            TutoriaReserva r = new TutoriaReserva();
+            r.setTutoria(tutoria);
+            r.setEstudiante(est);
+            r.setEstado(pasada ? "ASISTIO" : "AGENDADA");
+            r.setConfirmada(pasada);
+            if (rnd.nextInt(4) > 0) {
+                r.setTemario(rnd.nextBoolean() ? temaDominante : TEMARIOS[rnd.nextInt(TEMARIOS.length)]);
+            }
+            reservas.add(r);
+            if (pasada) {
+                TutoriaFeedback f = new TutoriaFeedback();
+                f.setTutoria(tutoria);
+                f.setEstudiante(est);
+                f.setRating(3 + rnd.nextInt(3));
+                f.setComentario(COMENTARIOS_TUTORIA[rnd.nextInt(COMENTARIOS_TUTORIA.length)]);
+                feedbacks.add(f);
+            }
+        }
+    }
+
     private void sembrarTutorias(List<Materia> materias, List<Usuario> estudiantes, List<Espacio> espacios) {
         List<TutoriaReserva> reservas = new ArrayList<>();
         List<TutoriaFeedback> feedbacks = new ArrayList<>();
         for (Materia m : materias) {
-            Integer sem = m.getSemestre();
-            if (m.getDocente() == null || sem == null || sem < 2 || sem > 4) {
-                continue;
-            }
-            boolean pasada = rnd.nextBoolean();
-            Instant inicio = Instant.now()
-                    .plus(pasada ? -(2 + rnd.nextInt(18)) : (2 + rnd.nextInt(18)), ChronoUnit.DAYS)
-                    .truncatedTo(ChronoUnit.HOURS);
-
-            Instant fin = inicio.plus(1, ChronoUnit.HOURS);
-
-            Tutoria t = new Tutoria();
-            t.setMateria(m);
-            t.setDocente(m.getDocente());
-            t.setEspacio(espacioLibre(espacios, inicio, fin, OcupacionEspacioService.TipoActividad.TUTORIA));
-            t.setInicio(inicio);
-            t.setFin(fin);
-            t.setCupo(4 + rnd.nextInt(6));
-            t.setEstado(pasada ? "CERRADA" : "ABIERTA");
-            t.setModalidad(rnd.nextInt(3) == 0 ? "VIRTUAL" : "PRESENCIAL");
-            t.setTipo(rnd.nextBoolean() ? "GRUPAL" : "INDIVIDUAL");
-            t.setTags(rnd.nextInt(4) == 0 ? "mate,repaso" : "consulta");
-            t.setEnVivo(false);
-            t.setRecordatorioEnviado(false);
-            Tutoria saved = tutoriaRepository.save(t);
-
-            String temaDominante = TEMARIOS[rnd.nextInt(TEMARIOS.length)];
-            int n = Math.min(estudiantes.size(), 2 + rnd.nextInt(5));
-            for (Usuario est : muestra(estudiantes, n)) {
-                TutoriaReserva r = new TutoriaReserva();
-                r.setTutoria(saved);
-                r.setEstudiante(est);
-                r.setEstado(pasada ? "ASISTIO" : "AGENDADA");
-                r.setConfirmada(pasada);
-                // 3 de cada 4 escriben qué quieren ver; el resto agenda sin decir nada.
-                // La mitad de los que escriben pide el tema dominante de esa tutoría:
-                // en una tutoría real varios vienen por lo mismo, y es justo eso lo que
-                // el panel de temarios agrupa y ordena.
-                if (rnd.nextInt(4) > 0) {
-                    r.setTemario(rnd.nextBoolean() ? temaDominante : TEMARIOS[rnd.nextInt(TEMARIOS.length)]);
-                }
-                reservas.add(r);
-                if (pasada) {
-                    TutoriaFeedback f = new TutoriaFeedback();
-                    f.setTutoria(saved);
-                    f.setEstudiante(est);
-                    f.setRating(3 + rnd.nextInt(3));
-                    f.setComentario(COMENTARIOS_TUTORIA[rnd.nextInt(COMENTARIOS_TUTORIA.length)]);
-                    feedbacks.add(f);
-                }
+            if (tieneTutoria(m)) {
+                boolean pasada = rnd.nextBoolean();
+                Tutoria saved = tutoriaRepository.save(armarTutoria(m, espacios, pasada));
+                sembrarInscriptos(saved, estudiantes, pasada, reservas, feedbacks);
             }
         }
         tutoriaReservaRepository.saveAll(reservas);
@@ -358,16 +375,16 @@ public class AcademicDataInitializer implements CommandLineRunner {
     private record EventoSpec(String titulo, String descr, String tipo, int dias, int cupo, String tags) {}
 
     private static final List<EventoSpec> EVENTOS = List.of(
-            new EventoSpec("Hackathon UTEC", "48 horas de código y creatividad.", "EVENTO", 12, 120, "tech,concurso"),
-            new EventoSpec("Charla: Ética en IA", "Panel abierto con referentes.", "EVENTO", 5, 90, "ia,charla"),
+            new EventoSpec("Hackathon UTEC", "48 horas de código y creatividad.", TIPO_EVENTO, 12, 120, "tech,concurso"),
+            new EventoSpec("Charla: Ética en IA", "Panel abierto con referentes.", TIPO_EVENTO, 5, 90, "ia,charla"),
             new EventoSpec("Curso de Robótica", "Introducción práctica, 4 clases.", "CURSO", 20, 30, "robotica,curso"),
-            new EventoSpec("Feria de Sostenibilidad", "Proyectos verdes de estudiantes.", "EVENTO", 9, 200, "sostenibilidad"),
+            new EventoSpec("Feria de Sostenibilidad", "Proyectos verdes de estudiantes.", TIPO_EVENTO, 9, 200, "sostenibilidad"),
             new EventoSpec("Taller de Datos", "Pandas y visualización.", "TALLER", 3, 25, "datos,taller"),
-            new EventoSpec("Jornada de Egresados", "Historias y networking.", "EVENTO", -10, 150, "networking"),
+            new EventoSpec("Jornada de Egresados", "Historias y networking.", TIPO_EVENTO, -10, 150, "networking"),
             new EventoSpec("Seminario de Energías", "Renovables y futuro.", "CURSO", -20, 40, "energia"),
-            new EventoSpec("Concierto de Jazz", "Ensamble de la LJMC.", "EVENTO", -5, 180, "musica"),
+            new EventoSpec("Concierto de Jazz", "Ensamble de la LJMC.", TIPO_EVENTO, -5, 180, "musica"),
             new EventoSpec("Workshop de Impresión 3D", "Diseño y prototipado.", "TALLER", 15, 20, "maker"),
-            new EventoSpec("Congreso de Biomédica", "Avances y ponencias.", "EVENTO", -30, 220, "biomedica"));
+            new EventoSpec("Congreso de Biomédica", "Avances y ponencias.", TIPO_EVENTO, -30, 220, "biomedica"));
 
     private void sembrarEventos(List<Espacio> espacios, Usuario organizador,
                                 List<Usuario> estudiantes, List<Usuario> externos) {
