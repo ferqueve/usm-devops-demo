@@ -12,6 +12,13 @@ concurrency:
   group: deploy-produccion
   cancel-in-progress: false
 
+# ci.yml se invoca como workflow reutilizable y uno de sus jobs pide
+# pull-requests: read. Un workflow llamado no puede pedir mas permisos que el
+# que lo llama, asi que hay que concederlos aca o la corrida falla al arrancar.
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   # Puerta: si la verificación falla, no se despliega nada.
   verificar:
