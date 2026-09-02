@@ -9,13 +9,11 @@ encajan con el volumen real esperado en una universidad de tamaño medio.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import timedelta
 from typing import Any
 
 import numpy as np
 import pandas as pd
 from prophet import Prophet
-
 
 HOLDOUT_DIAS_DEFAULT = 28
 HORIZONTE_DIAS_DEFAULT = 30

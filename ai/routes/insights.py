@@ -29,7 +29,7 @@ def _invoke(system: str, user_payload: Any, label: str) -> str:
             log_label=f"insights.{label}",
         )
         return texto
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.exception("Toda la cadena LLM falló en %s", label)
         raise HTTPException(status_code=502, detail=f"LLM error: {exc}") from exc
 

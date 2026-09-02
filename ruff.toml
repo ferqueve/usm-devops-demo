@@ -1,0 +1,31 @@
+# Configuración de lint para los servicios Python (ml/ y ai/).
+#
+# El conjunto de reglas se declara explícito a propósito: si se dejara el
+# default, cada actualización de ruff podría agregar reglas nuevas y poner la CI
+# en rojo sin que nadie haya tocado el código.
+
+target-version = "py311"
+line-length = 120
+
+exclude = [".venv", "venv", "__pycache__", ".pytest_cache"]
+
+[lint]
+select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "I",   # orden de imports
+  "UP",  # modismos obsoletos de Python
+  "B",   # bugbear: errores frecuentes
+  "RUF", # reglas propias de ruff
+]
+
+[lint.per-file-ignores]
+# El prompt de sistema del asistente es prosa larga en una sola cadena. Partirlo
+# por longitud de línea cambiaría el texto que recibe el modelo, así que ahí no
+# aplicamos el límite.
+"ai/routes/chat.py" = ["E501"]
+
+[lint.isort]
+# ml/ y ai/ se ejecutan con su carpeta como raíz, así que estos módulos son
+# locales aunque se importen sin paquete.
+known-first-party = ["db", "llm", "tools", "forecaster", "routes", "main", "bridge_llm"]

@@ -37,7 +37,7 @@ def reindex_espacios() -> dict:
 
     try:
         vectores = embeddings.embed_documents(textos)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.exception("Falló embedding batch")
         raise HTTPException(status_code=502, detail=f"Embeddings error: {exc}") from exc
 

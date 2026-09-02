@@ -7,7 +7,8 @@ escribe sólo sobre la tabla `ai_embedding_espacio` (embeddings vectoriales).
 from __future__ import annotations
 
 import os
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine

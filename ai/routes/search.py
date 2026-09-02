@@ -21,7 +21,7 @@ def buscar_espacios(
     embeddings = get_embeddings()
     try:
         vector = embeddings.embed_query(q)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.exception("Falló embedding de la query")
         raise HTTPException(status_code=502, detail=f"Embeddings error: {exc}") from exc
 
