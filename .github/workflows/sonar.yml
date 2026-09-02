@@ -66,7 +66,7 @@ jobs:
 
       - name: Set up JDK 21
         if: steps.alcanzable.outputs.arriba == 'true'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 21
           distribution: zulu
@@ -75,6 +75,8 @@ jobs:
       - name: Set up pnpm
         if: steps.alcanzable.outputs.arriba == 'true'
         uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
 
       - name: Set up Node.js
         if: steps.alcanzable.outputs.arriba == 'true'
