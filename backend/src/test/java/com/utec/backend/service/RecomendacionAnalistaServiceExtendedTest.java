@@ -309,18 +309,19 @@ class RecomendacionAnalistaServiceExtendedTest {
         assertEquals(3, resultado.size());
 
         // Ordenar por puntaje para verificar
-        resultado.sort((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()));
+        List<RecomendacionAnalistaDto> ordenado = new ArrayList<>(resultado);
+        ordenado.sort((a, b) -> b.getPuntaje().compareTo(a.getPuntaje()));
 
         // Ana debe ser la primera (mejor puntaje)
-        assertEquals(analistaAna.getId(), resultado.get(0).getAnalistaId(),
+        assertEquals(analistaAna.getId(), ordenado.get(0).getAnalistaId(),
             "Ana debe tener el mejor puntaje (historial + baja carga + alta tasa)");
 
         // Luis debe ser segundo
-        assertEquals(analistaLuis.getId(), resultado.get(1).getAnalistaId(),
+        assertEquals(analistaLuis.getId(), ordenado.get(1).getAnalistaId(),
             "Luis debe ser segundo (sin historial pero carga media y tasa media)");
 
         // Carlos debe ser tercero (peor opción)
-        assertEquals(analistaCarlos.getId(), resultado.get(2).getAnalistaId(),
+        assertEquals(analistaCarlos.getId(), ordenado.get(2).getAnalistaId(),
             "Carlos debe ser tercero (sin historial + alta carga + baja tasa)");
 
         // Verificar puntajes esperados aproximados:
@@ -409,7 +410,9 @@ class RecomendacionAnalistaServiceExtendedTest {
             Instant.now().minus(1, ChronoUnit.DAYS), // Creada hace 1 día
             inicioLejano);
 
-        when(reservaRepository.findAll()).thenReturn(Arrays.asList(reservaUrgente, reservaNormal));
+        when(reservaRepository.findByAnalistaAsignadoAndEstado(
+                analistaAna.getId(), Reserva.EstadoReserva.PENDIENTE))
+            .thenReturn(Arrays.asList(reservaUrgente, reservaNormal));
 
         // When
         List<RecomendacionAnalistaDto> resultado = recomendacionAnalistaService.obtenerReservasPrioritarias(
@@ -444,7 +447,9 @@ class RecomendacionAnalistaServiceExtendedTest {
             Instant.now().minus(1, ChronoUnit.HOURS), // Creada hace 1 hora
             Instant.now().plus(30, ChronoUnit.DAYS));
 
-        when(reservaRepository.findAll()).thenReturn(Arrays.asList(reservaVieja, reservaNueva));
+        when(reservaRepository.findByAnalistaAsignadoAndEstado(
+                analistaAna.getId(), Reserva.EstadoReserva.PENDIENTE))
+            .thenReturn(Arrays.asList(reservaVieja, reservaNueva));
 
         // When
         List<RecomendacionAnalistaDto> resultado = recomendacionAnalistaService.obtenerReservasPrioritarias(

@@ -1,17 +1,27 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { HealthInfo, LiquibaseInfo, LoggersInfo } from '@/lib/types/actuator';
+
+const databaseSpy = vi.fn();
+const logsSpy = vi.fn();
 
 vi.mock('@/components/system/sections/DatabaseSection', () => ({
-  DatabaseSection: () => <div data-testid="db" />,
+  DatabaseSection: (props: { health: unknown; liquibase: unknown }) => {
+    databaseSpy(props);
+    return <div data-testid="db" />;
+  },
 }));
 vi.mock('@/components/system/sections/LogsSection', () => ({
-  LogsSection: () => <div data-testid="logs" />,
+  LogsSection: (props: { loggers: unknown; logFile: string }) => {
+    logsSpy(props);
+    return <div data-testid="logs" />;
+  },
 }));
 
 import { DatabaseLogsTab } from '@/components/system/tabs/DatabaseLogsTab';
 
 describe('DatabaseLogsTab', () => {
-  it('renderiza secciones', () => {
+  it('renderiza la sección de base de datos y la de logs', () => {
     render(
       <DatabaseLogsTab
         health={null}
@@ -23,7 +33,27 @@ describe('DatabaseLogsTab', () => {
     );
     expect(screen.getByTestId('db')).toBeInTheDocument();
     expect(screen.getByTestId('logs')).toBeInTheDocument();
-    expect(screen.getByText('Base de Datos')).toBeInTheDocument();
-    expect(screen.getByText('Logs del Sistema')).toBeInTheDocument();
+  });
+
+  it('reparte los datos del actuator entre las dos secciones', () => {
+    const health = { status: 'UP' } as HealthInfo;
+    const liquibase = { contexts: {} } as unknown as LiquibaseInfo;
+    const loggers = { levels: [], loggers: {} } as unknown as LoggersInfo;
+    const onLoggerUpdate = vi.fn(async () => {});
+
+    render(
+      <DatabaseLogsTab
+        health={health}
+        liquibase={liquibase}
+        loggers={loggers}
+        logFile="app.log"
+        onLoggerUpdate={onLoggerUpdate}
+      />
+    );
+
+    expect(databaseSpy).toHaveBeenCalledWith(expect.objectContaining({ health, liquibase }));
+    expect(logsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ loggers, logFile: 'app.log', onLoggerUpdate })
+    );
   });
 });

@@ -297,6 +297,7 @@ export function ClearFiltersButton({ onClear, visible }: Readonly<ClearFiltersBu
       <TooltipTrigger asChild>
         <button
           onClick={onClear}
+          aria-label="Limpiar filtros"
           className="p-1.5 rounded transition-colors bg-red-500 text-white hover:bg-red-600"
         >
           <BrushCleaning className="h-3.5 w-3.5" />

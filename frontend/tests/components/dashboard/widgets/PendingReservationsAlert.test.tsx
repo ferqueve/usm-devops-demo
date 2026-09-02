@@ -6,32 +6,35 @@ vi.mock('react-router-dom', () => ({
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
 }));
 
-const reservas = [{ id: 1 }, { id: 2 }] as never;
-
 describe('PendingReservationsAlert', () => {
-  it('no renderiza nada si loading', () => {
+  it('no renderiza nada mientras carga', () => {
     const { container } = render(
-      <PendingReservationsAlert reservasPendientes={reservas} loading canApprove />
+      <PendingReservationsAlert count={2} loading canApprove />
     );
     expect(container.firstChild).toBeNull();
   });
 
-  it('no renderiza nada si lista vacia', () => {
+  it('no renderiza nada si no hay pendientes', () => {
     const { container } = render(
-      <PendingReservationsAlert reservasPendientes={[]} loading={false} canApprove />
+      <PendingReservationsAlert count={0} loading={false} canApprove />
     );
     expect(container.firstChild).toBeNull();
   });
 
-  it('mensaje canApprove con boton', () => {
-    render(<PendingReservationsAlert reservasPendientes={reservas} loading={false} canApprove />);
-    expect(screen.getByText(/Tienes 2 reservas pendientes/)).toBeInTheDocument();
+  it('con permiso de aprobar muestra el mensaje y el botón', () => {
+    render(<PendingReservationsAlert count={2} loading={false} canApprove />);
+    expect(screen.getByText(/Tienes 2 reservas pendientes de aprobación/)).toBeInTheDocument();
     expect(screen.getByText('Revisar ahora')).toBeInTheDocument();
   });
 
-  it('mensaje sin canApprove sin boton', () => {
-    render(<PendingReservationsAlert reservasPendientes={reservas} loading={false} canApprove={false} />);
-    expect(screen.getByText(/Tienes 2 solicitudes pendientes/)).toBeInTheDocument();
+  it('sin permiso de aprobar habla de solicitudes y no ofrece botón', () => {
+    render(<PendingReservationsAlert count={2} loading={false} canApprove={false} />);
+    expect(screen.getByText(/Tienes 2 solicitudes pendientes de aprobación/)).toBeInTheDocument();
     expect(screen.queryByText('Revisar ahora')).not.toBeInTheDocument();
+  });
+
+  it('usa singular cuando hay una sola pendiente', () => {
+    render(<PendingReservationsAlert count={1} loading={false} canApprove />);
+    expect(screen.getByText('Tienes 1 reserva pendiente de aprobación')).toBeInTheDocument();
   });
 });

@@ -40,6 +40,9 @@ class InventarioItemServiceTest {
     @Mock
     private TipoElementoRepository tipoElementoRepository;
 
+    @Mock
+    private com.utec.backend.repository.ReservaItemSolicitadoRepository reservaItemSolicitadoRepository;
+
     @InjectMocks
     private InventarioItemService inventarioItemService;
 
@@ -51,6 +54,8 @@ class InventarioItemServiceTest {
 
     @BeforeEach
     void setUp() {
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                inventarioItemService, "self", inventarioItemService);
         espacioTest = new Espacio();
         espacioTest.setId(1L);
         espacioTest.setNombre("Aula 101");

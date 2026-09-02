@@ -96,7 +96,7 @@ function Donut({ value }: Readonly<{ value: number }>) {
 function exportInscriptosCSV(materia: Materia, inscriptos: Inscripcion[]) {
   const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
   const rows = inscriptos.map((i) => [esc(i.estudianteNombre), esc(i.estado), esc(formatFecha(i.createdAt))].join(',')).join('\n');
-  const blob = new Blob([`﻿Estudiante,Estado,Fecha\n${rows}`], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob([`\uFEFFEstudiante,Estado,Fecha\n${rows}`], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `inscriptos-${materia.codigo ?? materia.id}.csv`; a.click();

@@ -12,9 +12,6 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn() },
 }));
 
-vi.mock('@/lib/config/constants', () => ({
-  ROLE_LABELS: { ADMIN: 'Administrador', USUARIO: 'Usuario' },
-}));
 
 import { UserStatsCards } from '@/components/users/UserStatsCards';
 
@@ -29,12 +26,15 @@ describe('UserStatsCards', () => {
       totalVerificados: 7,
       totalNoVerificados: 3,
       usuariosPorProveedor: { LOCAL: 6, GOOGLE: 4 },
-      usuariosPorRol: { ADMIN: 1, USUARIO: 9 },
+      usuariosPorRol: { ADMIN: 1, ESTUDIANTE: 9 },
     });
     render(<UserStatsCards />);
     await waitFor(() => expect(screen.getByText('10')).toBeInTheDocument());
-    expect(screen.getByText('8 activos, 2 inactivos')).toBeInTheDocument();
-    expect(screen.getByText('Administrador')).toBeInTheDocument();
+    expect(screen.getByText('8 activos · 2 inactivos')).toBeInTheDocument();
+    expect(screen.getByText('Total usuarios')).toBeInTheDocument();
+    // La leyenda del donut usa ROLE_LABELS, no el nombre crudo del rol.
+    expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.getByText('Estudiante')).toBeInTheDocument();
   });
 
   it('muestra estado de error cuando el fetch falla', async () => {

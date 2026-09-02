@@ -40,6 +40,9 @@ class UsuarioConfiguracionServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Auto-inyección @Lazy: en el test apuntamos self a la instancia real.
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                configuracionService, "self", configuracionService);
         usuarioTest = new Usuario();
         usuarioTest.setId(1L);
         usuarioTest.setEmail(userEmail);

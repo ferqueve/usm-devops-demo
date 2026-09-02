@@ -10,6 +10,7 @@ vi.mock('@/lib/api/inventory', () => ({
 vi.mock('@/lib/api/reservations', () => ({
   reservationsApi: {
     obtenerTodasLasReservas: vi.fn(),
+    obtenerTodasReservasPaged: vi.fn(),
     obtenerMisReservas: vi.fn(),
     obtenerEstadisticasPersonales: vi.fn(),
   },
@@ -33,6 +34,7 @@ const mockApiRequest = vi.mocked(apiRequest);
 const mockObtenerEspacios = vi.mocked(espaciosApi.obtenerEspacios);
 const mockInventarioStats = vi.mocked(inventarioApi.obtenerEstadisticasInventario);
 const mockTodasReservas = vi.mocked(reservationsApi.obtenerTodasLasReservas);
+const mockReservasPaged = vi.mocked(reservationsApi.obtenerTodasReservasPaged);
 const mockMisReservas = vi.mocked(reservationsApi.obtenerMisReservas);
 const mockReservaStats = vi.mocked(reservationsApi.obtenerEstadisticasPersonales);
 const mockUserStats = vi.mocked(usuariosApi.obtenerEstadisticas);
@@ -58,10 +60,20 @@ function setupDefaultMocks() {
       { id: 2, estado: 'PENDIENTE', inicio: new Date().toISOString() },
     ] as never,
   });
+  mockReservasPaged.mockResolvedValue({
+    success: true,
+    data: {
+      content: [
+        { id: 1, estado: 'APROBADO', inicio: new Date(Date.now() + 3600_000).toISOString() },
+      ],
+      totalElements: 1,
+    } as never,
+  });
   mockMisReservas.mockResolvedValue({ success: true, data: [] as never });
   mockReservaStats.mockResolvedValue({ success: true, data: { total: 0 } as never });
   mockUserStats.mockResolvedValue({ totalUsuarios: 10 } as never);
-  mockActiveUsers.mockResolvedValue({ success: true, data: { totalActiveUsers: 3 } as never });
+  // getActiveUsers devuelve el objeto pelado, no envuelto en ApiResponse.
+  mockActiveUsers.mockResolvedValue({ totalActiveUsers: 3 } as never);
 }
 
 describe('dashboardApi', () => {

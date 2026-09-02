@@ -56,6 +56,9 @@ class AuthenticationServiceTest {
     @Mock
     private EmailService emailService;
 
+    @Mock
+    private AuditService auditService;
+
     @InjectMocks
     private AuthService authenticationService;
 
@@ -163,6 +166,8 @@ class AuthenticationServiceTest {
         nuevoUsuario.setId(2L);
         nuevoUsuario.setEmail("nuevo@utec.edu.uy");
         nuevoUsuario.setNombre("Juan Pérez");
+        // El registro audita el rol del usuario guardado: sin esto el stub devuelve null.
+        nuevoUsuario.setRolApp(Usuario.RolApp.ESTUDIANTE);
 
         when(usuarioRepository.findByEmail("nuevo@utec.edu.uy")).thenReturn(Optional.empty());
         when(passwordEncoder.encode(testPassword)).thenReturn("encodedPassword");

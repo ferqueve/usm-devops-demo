@@ -57,6 +57,11 @@ class EmailServiceTest {
         org.springframework.test.util.ReflectionTestUtils.setField(emailService, "backendUrl",
                 "http://localhost:8080");
 
+        // EmailService ahora corta el envío si la Gmail API no está disponible
+        // (sendHtmlEmailSafe -> isEmailAvailable). Lenient porque no todos los
+        // tests llegan a enviar.
+        lenient().when(gmailApiService.isAvailable()).thenReturn(true);
+
         // Configurar mocks lenient para EmailTemplateService
         lenient().when(emailTemplateService.loadTemplate(anyString(), anyMap())).thenReturn("<html>Test</html>");
         lenient().when(emailTemplateService.wrapInBaseTemplate(anyString(), anyString(), anyString()))

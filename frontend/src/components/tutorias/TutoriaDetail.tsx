@@ -223,7 +223,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   const exportCSV = () => {
     const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
     const rows = agendados.map((a) => [esc(a.nombre ?? ''), esc(a.email ?? ''), esc(formatFecha(a.createdAt))].join(',')).join('\n');
-    const blob = new Blob([`﻿Estudiante,Email,Agendado\n${rows}`], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([`\uFEFFEstudiante,Email,Agendado\n${rows}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `agendados-tutoria-${tutoriaId}.csv`; a.click(); URL.revokeObjectURL(url);
   };

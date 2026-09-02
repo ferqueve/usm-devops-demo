@@ -92,7 +92,10 @@ export function useCarreras() {
   }, []);
 
   useEffect(() => {
-    fetchCarreras();
+    // fetchCarreras relanza el error para quien llame a refresh(); en la carga
+    // inicial nadie lo espera, y sin este catch queda como unhandled rejection.
+    // El error ya quedó guardado en el estado del hook.
+    fetchCarreras().catch(() => {});
   }, [fetchCarreras]);
 
   /**

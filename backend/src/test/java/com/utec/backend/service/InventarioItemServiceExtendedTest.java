@@ -37,6 +37,9 @@ class InventarioItemServiceExtendedTest {
     @Mock
     private TipoElementoRepository tipoElementoRepository;
 
+    @Mock
+    private com.utec.backend.repository.ReservaItemSolicitadoRepository reservaItemSolicitadoRepository;
+
     @InjectMocks
     private InventarioItemService inventarioItemService;
 
@@ -49,6 +52,8 @@ class InventarioItemServiceExtendedTest {
 
     @BeforeEach
     void setUp() {
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                inventarioItemService, "self", inventarioItemService);
 
         // Espacios
         espacioAula101 = new Espacio();

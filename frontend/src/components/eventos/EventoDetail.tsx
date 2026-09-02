@@ -214,7 +214,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   const exportCSV = () => {
     const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
     const rows = inscriptos.map((i) => [esc(i.nombre ?? ''), esc(i.email ?? ''), esc(formatFecha(i.createdAt))].join(',')).join('\n');
-    const blob = new Blob([`﻿Nombre,Email,Inscripto\n${rows}`], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([`\uFEFFNombre,Email,Inscripto\n${rows}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `inscriptos-evento-${eventoId}.csv`; a.click(); URL.revokeObjectURL(url);
   };
