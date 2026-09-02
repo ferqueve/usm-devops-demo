@@ -7,6 +7,8 @@ Esta carpeta contiene la documentación del proyecto en formato Markdown. Está 
 ```
 documentation/
 ├── README.md                          ← este archivo
+├── devops.md                          ← integración continua y despliegue
+├── saneamiento-pipeline-2026-09-02.md ← registro del saneamiento del pipeline
 ├── manuales/                          ← lectores: usuarios y TI
 │   ├── manual-de-usuario.md
 │   └── manual-de-instalacion.md
