@@ -96,6 +96,12 @@ jobs:
   seguridad:
     name: Fuga de secretos
     runs-on: ubuntu-latest
+    # En eventos de pull_request, gitleaks lista los commits del PR por la API.
+    # El GITHUB_TOKEN por defecto no trae ese permiso y el paso muere con
+    # "Resource not accessible by integration" antes de escanear nada.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v5
         with:
