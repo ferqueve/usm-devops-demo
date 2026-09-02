@@ -2,8 +2,8 @@
 
 import json
 import os
+from collections.abc import Iterable
 from datetime import date
-from typing import Iterable
 
 import pandas as pd
 from sqlalchemy import create_engine, text

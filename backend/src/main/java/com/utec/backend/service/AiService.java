@@ -51,17 +51,37 @@ public class AiService {
             }
             HttpResponse<String> response = HTTP.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
-                throw new RuntimeException("HTTP " + response.statusCode() + ": " + response.body());
+                throw new AiUpstreamException("HTTP " + response.statusCode() + ": " + response.body());
             }
             return MAPPER.readValue(response.body(), new TypeReference<>() {});
         } catch (Exception ex) {
-            log.error("Fallo al contactar ai-svc en {}: {}", path, ex.getMessage());
+            // HttpClient.send lanza InterruptedException: si la tragamos sin
+            // re-interrumpir, el hilo pierde la señal de cancelación.
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            // getMessage() es null en varias excepciones de red (ConnectException entre
+            // otras), y el mensaje quedaba en "…: null", que no le sirve a nadie.
+            String motivo = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                    ? ex.getMessage()
+                    : ex.getClass().getSimpleName();
+            log.error("Fallo al contactar ai-svc en {}: {}", path, motivo);
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("status", "error");
-            err.put("error", "No se pudo contactar al servicio de IA: " + ex.getMessage());
+            err.put("error", "No se pudo contactar al servicio de IA (" + motivo + ")");
             err.put("aiServiceUrl", aiServiceUrl);
             err.put("path", path);
             return err;
+        }
+    }
+
+    /**
+     * Señal interna de que el ai-svc respondió con un código de error. Se captura
+     * en el mismo {@code proxy(...)} que la lanza; nunca sale de esta clase.
+     */
+    private static class AiUpstreamException extends RuntimeException {
+        AiUpstreamException(String message) {
+            super(message);
         }
     }
 
@@ -88,5 +108,13 @@ public class AiService {
 
     public Map<String, Object> chat(Map<String, Object> payload) {
         return proxy("POST", "/chat", payload);
+    }
+
+    public Map<String, Object> generarEvento(Map<String, Object> payload) {
+        return proxy("POST", "/insights/generar-evento", payload);
+    }
+
+    public Map<String, Object> resumenTemario(Map<String, Object> payload) {
+        return proxy("POST", "/insights/resumen-temario", payload);
     }
 }

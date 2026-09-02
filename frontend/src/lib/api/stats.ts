@@ -128,8 +128,11 @@ const buildRangeQuery = ({ desde, hasta }: RangoFechas) =>
   `?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
 
 export const statsApi = {
-  async getActiveUsers(): Promise<ApiResponse<ActiveUsersStats>> {
-    return apiRequest<ActiveUsersStats>('/stats/active-users', { method: 'GET' });
+  // OJO: a diferencia del resto de la API, /stats/active-users devuelve el DTO pelado,
+  // sin el envelope {success, data}. El tipo lo refleja para que nadie busque un .data
+  // que no existe (era la razón por la que el contador de usuarios activos daba 0).
+  async getActiveUsers(): Promise<ActiveUsersStats> {
+    return apiRequest<ActiveUsersStats>('/stats/active-users', { method: 'GET' }) as unknown as Promise<ActiveUsersStats>;
   },
 
   async ocupacionPorEspacio(rango: RangoFechas): Promise<ApiResponse<OcupacionEspacio[]>> {

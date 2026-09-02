@@ -123,13 +123,13 @@ def chat(body: ChatRequest) -> dict[str, Any]:
                 )
                 provider_usado = provider
                 break
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 log.warning("Provider %s falló (%s); probando siguiente.", provider, exc)
                 last_exc = exc
 
         if result is None:
             raise last_exc or RuntimeError("Sin providers disponibles.")
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.exception("Chat falló en toda la cadena")
         raise HTTPException(status_code=502, detail=f"Chat error: {exc}") from exc
     finally:
@@ -141,7 +141,7 @@ def chat(body: ChatRequest) -> dict[str, Any]:
     for paso in pasos:
         try:
             tools_invocados.append(paso[0].tool)
-        except Exception:  # noqa: BLE001
+        except Exception:
             continue
 
     return {

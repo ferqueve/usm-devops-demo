@@ -53,7 +53,14 @@ public class SecurityConfig {
                         // Rutas públicas
                         .requestMatchers("/api/v1/auth/**", "/api/v1/oauth2/**", "/error").permitAll()
 
-                        // Actuator y Swagger SOLO para ADMIN
+                        // Sonda de vida: Railway consulta este endpoint sin credenciales antes
+                        // de mandarle tráfico a un despliegue nuevo. Sin esto devolvía 403 y el
+                        // deploy quedaba marcado como fallido. Anónimo ve sólo {"status":"UP"};
+                        // el detalle por componente sigue siendo sólo para ADMIN
+                        // (management.endpoint.health.show-details=when_authorized).
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+
+                        // El resto de actuator y Swagger, SOLO para ADMIN
                         .requestMatchers("/actuator/**").hasRole(ROLE_ADMIN)
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").hasRole(ROLE_ADMIN)
 
@@ -68,6 +75,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
                         // Permitir estadísticas de inventario a ADMIN, ANALISTA y MANTENIMIENTO
                         .requestMatchers("/api/v1/stats/inventario/detailed").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
+                        // Dashboard de sostenibilidad: ADMIN y MANTENIMIENTO (infraestructura)
+                        .requestMatchers("/api/v1/stats/sostenibilidad").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
                         // Resto de estadísticas solo para ADMIN
                         .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
                         .requestMatchers("/api/v1/audit/**").hasRole(ROLE_ADMIN)

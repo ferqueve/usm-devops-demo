@@ -92,7 +92,10 @@ export function useEspacios() {
   }, []);
 
   useEffect(() => {
-    fetchEspacios();
+    // fetchEspacios relanza el error para quien llame a refresh(); en la carga
+    // inicial nadie lo espera, y sin este catch queda como unhandled rejection.
+    // El error ya quedó guardado en el estado del hook.
+    fetchEspacios().catch(() => {});
   }, [fetchEspacios]);
 
   /**

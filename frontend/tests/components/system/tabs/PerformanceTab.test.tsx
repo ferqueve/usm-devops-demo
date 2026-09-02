@@ -7,6 +7,14 @@ vi.mock('@/hooks/useSidebarTransition', () => ({
   useSidebarTransition: () => ({ isTransitioning: false }),
 }));
 
+// PerformanceTab monta SlowEndpointsCard, que consulta el actuator al montarse.
+// Sin este mock el test hace una petición de red real.
+vi.mock('@/lib/api/stats', () => ({
+  statsApi: {
+    getSlowEndpoints: vi.fn().mockResolvedValue({ top: [] }),
+  },
+}));
+
 import { PerformanceTab } from '@/components/system/tabs/PerformanceTab';
 
 describe('PerformanceTab', () => {

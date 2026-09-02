@@ -1,7 +1,6 @@
 import { useCallback, useMemo, memo, useState } from 'react';
 import {
   Sidebar,
-  SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
@@ -11,6 +10,7 @@ import {
 import { LogOut, User, Settings } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { formatEmailForDisplay, formatNameForSidebar } from "@/lib/utils/text-formatters";
 import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/ui";
@@ -58,18 +58,33 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
       
       // Lógica especial para Espacios: debe estar activo en /rooms, /rooms/:id e /inventory
       if (item.id === 'rooms') {
-        isActive = location.pathname === '/rooms' || 
-                   location.pathname.startsWith('/rooms/') || 
+        isActive = location.pathname === '/rooms' ||
+                   location.pathname.startsWith('/rooms/') ||
                    location.pathname === '/inventory';
       }
-      
+
+      // Materias queda activo en su detalle /materias/:id y también en el de una
+      // tutoría, que ya no tiene ítem propio: vive como pestaña dentro de Materias.
+      if (item.id === 'materias') {
+        isActive = location.pathname === '/materias' ||
+                   location.pathname.startsWith('/materias/') ||
+                   location.pathname === '/tutorias' ||
+                   location.pathname.startsWith('/tutorias/');
+      }
+
+      // Eventos activo también en el detalle /eventos/:id
+      if (item.id === 'eventos') {
+        isActive = location.pathname === '/eventos' ||
+                   location.pathname.startsWith('/eventos/');
+      }
+
       return (
-        <SidebarMenuItem key={item.id}>
-          <SidebarMenuButton 
-            asChild 
+        <SidebarMenuItem key={item.id} className="shrink-0">
+          <SidebarMenuButton
+            asChild
             isActive={isActive}
             onClick={() => handleMenuItemClick(item)}
-            className={`sidebar-menu-item transition-smooth ${isActive ? 'active active-indicator' : ''}`}
+            className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
           >
             <Link to={item.href || "#"} className="flex items-center gap-3 relative">
               <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
@@ -103,15 +118,19 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="pt-6 bg-utec-dark px-1">
-        <SidebarMenu className="bg-utec-dark space-y-1">
+      {/* Menú scrollable con la ScrollArea de shadcn (en vez del scroll nativo).
+          flex-1 min-h-0 acota la altura para que el viewport interno scrollee.
+          El thumb se aclara para que se vea sobre el fondo oscuro. */}
+      <ScrollArea className="flex-1 min-h-0 bg-utec-dark [&_[data-slot=scroll-area-thumb]]:bg-white/25">
+        <SidebarMenu className="bg-utec-dark gap-0.5 shrink-0 pt-6 px-1 pr-2.5">
           {menuItems}
         </SidebarMenu>
-      </SidebarContent>
-      
-      {/* Perfil del usuario */}
+      </ScrollArea>
+
+      {/* Perfil del usuario: fijo (fuera del área scrollable). shrink-0 para que
+          no se comprima cuando la pantalla es baja; solo el menú hace scroll. */}
       {user && (
-        <div className="bg-utec-dark px-1 py-4">
+        <div className="bg-utec-dark px-1 py-4 shrink-0 border-t border-white/10">
           <SidebarMenu className="bg-utec-dark">
             <SidebarMenuItem>
               <div className="flex flex-col gap-1 px-1 py-2">
@@ -180,8 +199,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           </SidebarMenu>
         </div>
       )}
-      
-      <SidebarFooter className="border-t border-white/10 bg-utec-dark px-1 py-4">
+
+      <SidebarFooter className="border-t border-white/10 bg-utec-dark px-1 py-4 shrink-0">
         <SidebarMenu className="bg-utec-dark">
           <SidebarMenuItem>
             <SidebarMenuButton 

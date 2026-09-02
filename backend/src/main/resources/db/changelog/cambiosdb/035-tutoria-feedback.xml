@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Valoración del estudiante sobre una tutoría / docente -->
+    <changeSet id="001" author="Mathias">
+        <createTable tableName="tutoria_feedback">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tutoria_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="estudiante_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rating" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comentario" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <addForeignKeyConstraint
+                baseTableName="tutoria_feedback" baseColumnNames="tutoria_id"
+                referencedTableName="tutoria" referencedColumnNames="id"
+                constraintName="fk_tutoria_feedback_tutoria"
+                onDelete="CASCADE" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint
+                baseTableName="tutoria_feedback" baseColumnNames="estudiante_id"
+                referencedTableName="usuario" referencedColumnNames="id"
+                constraintName="fk_tutoria_feedback_estudiante"
+                onDelete="CASCADE" onUpdate="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="003" author="Mathias">
+        <sql>CREATE UNIQUE INDEX uk_tutoria_feedback_estudiante ON tutoria_feedback(tutoria_id, estudiante_id) WHERE deleted_at IS NULL;</sql>
+        <createIndex indexName="idx_tutoria_feedback_tutoria_id" tableName="tutoria_feedback">
+            <column name="tutoria_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

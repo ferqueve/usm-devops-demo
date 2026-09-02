@@ -2,24 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { actuatorApi } from '@/lib/api/system';
 import { statsApi } from '@/lib/api/stats';
 import { toast } from 'sonner';
+import type {
+  AppInfo, HealthInfo, HttpTraceInfo, LiquibaseInfo, LoggersInfo,
+  MappingsInfo, MetricInfo,
+} from '@/lib/types/actuator';
+import type { ActiveUsersStats } from '@/lib/types/system';
 
-interface MetricsHistory {
+// Alias (no interface) para que sea asignable a MetricsChartDataPoint, que es un
+// Record indexado: las interfaces no aportan index signature implícita.
+type MetricsHistory = {
   time: string;
   timestamp: number;
   memory: number;
   cpu: number;
   threads: number;
-}
-
-interface MetricMeasurement {
-  statistic: string;
-  value: number;
-}
-
-interface MetricData {
-  measurements?: MetricMeasurement[];
-  [key: string]: unknown;
-}
+};
 
 export const useSystemMetrics = () => {
   const [loading, setLoading] = useState(true);
@@ -28,23 +25,23 @@ export const useSystemMetrics = () => {
   const [hasConnectionError, setHasConnectionError] = useState(false);
   
   // Estados para los datos básicos de Actuator
-  const [health, setHealth] = useState<unknown>(null);
-  const [info, setInfo] = useState<unknown>(null);
-  const [memoryMetrics, setMemoryMetrics] = useState<MetricData | null>(null);
-  const [cpuMetrics, setCpuMetrics] = useState<MetricData | null>(null);
-  const [threadsMetrics, setThreadsMetrics] = useState<MetricData | null>(null);
-  const [httpMetrics, setHttpMetrics] = useState<unknown>(null);
-  const [uptimeMetrics, setUptimeMetrics] = useState<unknown>(null);
-  const [gcMetrics, setGcMetrics] = useState<unknown>(null);
-  const [memoryMaxMetrics, setMemoryMaxMetrics] = useState<unknown>(null);
+  const [health, setHealth] = useState<HealthInfo | null>(null);
+  const [info, setInfo] = useState<AppInfo | null>(null);
+  const [memoryMetrics, setMemoryMetrics] = useState<MetricInfo | null>(null);
+  const [cpuMetrics, setCpuMetrics] = useState<MetricInfo | null>(null);
+  const [threadsMetrics, setThreadsMetrics] = useState<MetricInfo | null>(null);
+  const [httpMetrics, setHttpMetrics] = useState<MetricInfo | null>(null);
+  const [uptimeMetrics, setUptimeMetrics] = useState<MetricInfo | null>(null);
+  const [gcMetrics, setGcMetrics] = useState<MetricInfo | null>(null);
+  const [memoryMaxMetrics, setMemoryMaxMetrics] = useState<MetricInfo | null>(null);
   
   // Estados para los nuevos endpoints
-  const [httpTrace, setHttpTrace] = useState<unknown>(null);
-  const [mappings, setMappings] = useState<unknown>(null);
-  const [liquibase, setLiquibase] = useState<unknown>(null);
-  const [loggers, setLoggers] = useState<unknown>(null);
+  const [httpTrace, setHttpTrace] = useState<HttpTraceInfo | null>(null);
+  const [mappings, setMappings] = useState<MappingsInfo | null>(null);
+  const [liquibase, setLiquibase] = useState<LiquibaseInfo | null>(null);
+  const [loggers, setLoggers] = useState<LoggersInfo | null>(null);
   const [logFile, setLogFile] = useState<string>('');
-  const [activeUsers, setActiveUsers] = useState<unknown>(null);
+  const [activeUsers, setActiveUsers] = useState<ActiveUsersStats | null>(null);
   
   // Historial de métricas para gráficos en tiempo real
   const [metricsHistory, setMetricsHistory] = useState<MetricsHistory[]>([]);
@@ -81,8 +78,7 @@ export const useSystemMetrics = () => {
   // Fetch de usuarios activos (separado para control de frecuencia)
   const fetchActiveUsers = useCallback(async () => {
     try {
-      const data = await statsApi.getActiveUsers();
-      setActiveUsers(data);
+      setActiveUsers(await statsApi.getActiveUsers());
     } catch (error) {
       console.error('Error al obtener usuarios activos:', error);
     }
@@ -120,19 +116,19 @@ export const useSystemMetrics = () => {
   }, []);
 
   const updateBasicMetrics = useCallback((results: {
-    healthData: PromiseSettledResult<unknown>;
-    memoryData: PromiseSettledResult<unknown>;
-    cpuData: PromiseSettledResult<unknown>;
-    threadsData: PromiseSettledResult<unknown>;
-    httpData: PromiseSettledResult<unknown>;
-    uptimeData: PromiseSettledResult<unknown>;
-    gcData: PromiseSettledResult<unknown>;
-    memoryMaxData: PromiseSettledResult<unknown>;
+    healthData: PromiseSettledResult<HealthInfo>;
+    memoryData: PromiseSettledResult<MetricInfo>;
+    cpuData: PromiseSettledResult<MetricInfo>;
+    threadsData: PromiseSettledResult<MetricInfo>;
+    httpData: PromiseSettledResult<MetricInfo>;
+    uptimeData: PromiseSettledResult<MetricInfo>;
+    gcData: PromiseSettledResult<MetricInfo>;
+    memoryMaxData: PromiseSettledResult<MetricInfo>;
   }) => {
     if (results.healthData.status === 'fulfilled') setHealth(results.healthData.value);
-    if (results.memoryData.status === 'fulfilled') setMemoryMetrics(results.memoryData.value as MetricData);
-    if (results.cpuData.status === 'fulfilled') setCpuMetrics(results.cpuData.value as MetricData);
-    if (results.threadsData.status === 'fulfilled') setThreadsMetrics(results.threadsData.value as MetricData);
+    if (results.memoryData.status === 'fulfilled') setMemoryMetrics(results.memoryData.value);
+    if (results.cpuData.status === 'fulfilled') setCpuMetrics(results.cpuData.value);
+    if (results.threadsData.status === 'fulfilled') setThreadsMetrics(results.threadsData.value);
     if (results.httpData.status === 'fulfilled') setHttpMetrics(results.httpData.value);
     if (results.uptimeData.status === 'fulfilled') setUptimeMetrics(results.uptimeData.value);
     if (results.gcData.status === 'fulfilled') setGcMetrics(results.gcData.value);
@@ -140,10 +136,10 @@ export const useSystemMetrics = () => {
   }, []);
 
   const updateAdditionalMetrics = useCallback((
-    httpTraceData: PromiseSettledResult<unknown>,
-    mappingsData: PromiseSettledResult<unknown>,
-    loggersData: PromiseSettledResult<unknown>,
-    logFileData: PromiseSettledResult<unknown>
+    httpTraceData: PromiseSettledResult<HttpTraceInfo>,
+    mappingsData: PromiseSettledResult<MappingsInfo>,
+    loggersData: PromiseSettledResult<LoggersInfo>,
+    logFileData: PromiseSettledResult<string>
   ) => {
     if (httpTraceData.status === 'fulfilled') setHttpTrace(httpTraceData.value);
     if (mappingsData.status === 'fulfilled') setMappings(mappingsData.value);
@@ -155,18 +151,17 @@ export const useSystemMetrics = () => {
   }, []);
 
   const updateMetricsChart = useCallback((
-    memoryData: PromiseSettledResult<unknown>,
-    cpuData: PromiseSettledResult<unknown>,
-    threadsData: PromiseSettledResult<unknown>
+    memoryData: PromiseSettledResult<MetricInfo>,
+    cpuData: PromiseSettledResult<MetricInfo>,
+    threadsData: PromiseSettledResult<MetricInfo>
   ) => {
     if (memoryData.status === 'fulfilled' && cpuData.status === 'fulfilled' && threadsData.status === 'fulfilled') {
-      const memData = memoryData.value as MetricData;
-      const cpuDataValue = cpuData.value as MetricData;
-      const threadsDataValue = threadsData.value as MetricData;
-      
-      const memValue = memData?.measurements?.find((m) => m.statistic === 'VALUE')?.value || 0;
-      const cpuValue = cpuDataValue?.measurements?.find((m) => m.statistic === 'VALUE')?.value || 0;
-      const threadsValue = threadsDataValue?.measurements?.find((m) => m.statistic === 'VALUE')?.value || 0;
+      const valorDe = (m: MetricInfo) =>
+        m?.measurements?.find((x) => x.statistic === 'VALUE')?.value ?? 0;
+
+      const memValue = valorDe(memoryData.value);
+      const cpuValue = valorDe(cpuData.value);
+      const threadsValue = valorDe(threadsData.value);
       updateMetricsHistory(memValue, cpuValue, threadsValue);
     }
   }, [updateMetricsHistory]);
@@ -243,8 +238,8 @@ export const useSystemMetrics = () => {
     updateAdditionalMetrics(
       httpTraceData,
       mappingsData,
-      { status: 'rejected', reason: 'not-loaded' } as PromiseSettledResult<unknown>,
-      { status: 'rejected', reason: 'not-loaded' } as PromiseSettledResult<unknown>,
+      { status: 'rejected', reason: 'not-loaded' },
+      { status: 'rejected', reason: 'not-loaded' },
     );
   }, [updateAdditionalMetrics]);
 

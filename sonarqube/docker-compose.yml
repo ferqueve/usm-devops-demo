@@ -1,0 +1,61 @@
+# SonarQube local, reemplaza a la instancia que vivía en Railway.
+#
+# Se levanta sólo cuando se va a escanear:
+#   docker compose -f sonarqube/docker-compose.yml up -d
+#   docker compose -f sonarqube/docker-compose.yml down     (apagar)
+#
+# La imagen está pinneada al mismo digest que corría en Railway, para que la base
+# de datos no dispare una migración cada vez que sale una versión nueva.
+
+services:
+  sonar-db:
+    image: postgres:16-alpine
+    container_name: sonar_db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  sonarqube:
+    image: sonarqube@sha256:4671314254b0892186ebf46350e8a3a99e2505212bb6fa68bc4dc71ef3ac9c66
+    container_name: sonarqube
+    depends_on:
+      sonar-db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+      # Elasticsearch se queja si el heap es muy chico; con esto entra cómodo.
+      SONAR_SEARCH_JAVAOPTS: -Xms512m -Xmx512m
+      SONAR_WEB_JAVAOPTS: -Xms512m -Xmx1g
+    ports:
+      # 0.0.0.0 a propósito: el runner de GitHub llega por Tailscale.
+      - "9000:9000"
+    volumes:
+      - sonar-data:/opt/sonarqube/data
+      - sonar-extensions:/opt/sonarqube/extensions
+      - sonar-logs:/opt/sonarqube/logs
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 90s
+
+volumes:
+  sonar-pgdata:
+  sonar-data:
+  sonar-extensions:
+  sonar-logs:

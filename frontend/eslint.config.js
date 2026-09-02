@@ -19,5 +19,11 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Sólo afecta al hot reload en desarrollo (un archivo que exporta un
+      // componente y además una constante fuerza un refresh completo). No es un
+      // defecto del código, así que avisa pero no rompe el build.
+      'react-refresh/only-export-components': 'warn',
+    },
   },
 ])

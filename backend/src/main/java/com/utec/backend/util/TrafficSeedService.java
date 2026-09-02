@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.Set;
 import java.util.UUID;
 
@@ -77,13 +78,15 @@ public class TrafficSeedService {
     private final ReservaItemSolicitadoRepository reservaItemSolicitadoRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.dev-seed-password:UtecDevSeed2026!}")
+    @Value("${app.dev-seed-password:password}")
     private String devSeedPassword;
 
     @Transactional
     public Map<String, Object> generarTrafico(double multiplier) {
         long t0 = System.currentTimeMillis();
-        Random rnd = new Random();
+        // ThreadLocalRandom en vez de `new Random()` por invocación: sin instancia
+        // nueva y sin contención si dos seeds corren a la vez.
+        Random rnd = ThreadLocalRandom.current();
 
         UsuariosPool pool = asegurarPoolUsuarios();
         List<Espacio> espacios = espacioRepository.findAll().stream()
@@ -96,7 +99,6 @@ public class TrafficSeedService {
         Map<Long, List<InventarioItem>> inventarioPorEspacio = indexarInventarioPorEspacio();
         Set<SlotKey> slotsOcupados = cargarSlotsExistentes();
 
-        Instant now = Instant.now();
         List<Bucket> buckets = List.of(
                 new Bucket("pasado-lejano", -90, -30, (int) (2400 * multiplier), 95, 0, 5),
                 new Bucket("pasado-reciente", -30, -1, (int) (1600 * multiplier), 88, 4, 8),
@@ -110,9 +112,11 @@ public class TrafficSeedService {
         int reservasDescartadas = 0;
         int itemsInsertados = 0;
 
+        SeedContext ctx = new SeedContext(espacios, carreras, tipos, inventarioPorEspacio,
+                slotsOcupados, pool, rnd);
+
         for (Bucket bucket : buckets) {
-            BucketResult result = generarBucket(bucket, now, espacios, carreras, tipos,
-                    inventarioPorEspacio, slotsOcupados, pool, rnd);
+            BucketResult result = generarBucket(bucket, ctx);
             summary.put(bucket.nombre, Map.of(
                     "reservas", result.reservas,
                     "items", result.items,
@@ -200,66 +204,32 @@ public class TrafficSeedService {
 
     // ===================== BUCKETS =====================
 
-    private BucketResult generarBucket(Bucket bucket, Instant now,
-                                       List<Espacio> espacios, List<Carrera> carreras,
-                                       List<TipoElemento> tipos,
-                                       Map<Long, List<InventarioItem>> inventarioPorEspacio,
-                                       Set<SlotKey> slotsOcupados,
-                                       UsuariosPool pool, Random rnd) {
-        BucketResult result = new BucketResult();
-        int objetivo = bucket.cantidad;
+    /**
+     * Contexto con cuanto necesita el generador para armar reservas. Se pasa
+     * junto para no arrastrar siete parámetros por cada método.
+     */
+    private record SeedContext(List<Espacio> espacios,
+                               List<Carrera> carreras,
+                               List<TipoElemento> tipos,
+                               Map<Long, List<InventarioItem>> inventarioPorEspacio,
+                               Set<SlotKey> slotsOcupados,
+                               UsuariosPool pool,
+                               Random rnd) {
+    }
 
-        for (int i = 0; i < objetivo; i++) {
+    private BucketResult generarBucket(Bucket bucket, SeedContext ctx) {
+        BucketResult result = new BucketResult();
+
+        for (int i = 0; i < bucket.cantidad; i++) {
             boolean creada = false;
             for (int intento = 0; intento < MAX_ATTEMPTS_PER_RESERVA && !creada; intento++) {
                 result.intentos++;
-                Espacio esp = espacios.get(rnd.nextInt(espacios.size()));
-                Slot slot = elegirSlot(bucket, now, rnd);
-                SlotKey key = new SlotKey(esp.getId(), slot.inicio, slot.fin);
-                if (slotsOcupados.contains(key) || haySolapamiento(slotsOcupados, esp.getId(), slot)) {
-                    continue;
-                }
-                Usuario solicitante = elegirSolicitante(pool, rnd);
-                if (solicitante == null) {
+                Boolean exito = intentarCrearReserva(bucket, ctx, result);
+                if (exito == null) {
+                    // Se agotó el pool de solicitantes: no tiene sentido seguir.
                     return result;
                 }
-                Usuario analista = pool.pickRandom(Usuario.RolApp.ANALISTA, rnd);
-                Carrera carrera = elegirCarreraSegunRol(carreras, solicitante.getRolApp(), rnd);
-                Reserva.EstadoReserva estado = elegirEstado(bucket, rnd);
-
-                Reserva r = new Reserva();
-                r.setEspacio(esp);
-                r.setUsuario(solicitante);
-                r.setCarrera(carrera);
-                r.setAnalistaAsignado(analista);
-                r.setInicio(slot.inicio);
-                r.setFin(slot.fin);
-                r.setEstado(estado);
-                r.setEsPublica(solicitante.getRolApp() == Usuario.RolApp.EXTERNO || rnd.nextDouble() < 0.15);
-                r.setTitulo(generarTitulo(solicitante, esp, rnd));
-                if (solicitante.getRolApp() == Usuario.RolApp.DOCENTE
-                        || solicitante.getRolApp() == Usuario.RolApp.EXTERNO) {
-                    r.setMotivoSolicitud(generarMotivo(solicitante, rnd));
-                }
-                if (estado == Reserva.EstadoReserva.CANCELADO) {
-                    r.setMensajeAnalista("Cancelada automáticamente por seed.");
-                }
-                try {
-                    reservaRepository.save(r);
-                } catch (RuntimeException e) {
-                    // Hubo violación de unicidad u otra colisión; saltamos.
-                    continue;
-                }
-                slotsOcupados.add(key);
-                creada = true;
-                result.reservas++;
-                result.porEstado.merge(estado, 1, Integer::sum);
-
-                // Solicitudes de inventario: ~35% de reservas.
-                if (estado != Reserva.EstadoReserva.CANCELADO && rnd.nextDouble() < 0.35) {
-                    int items = generarItemsSolicitados(r, bucket, tipos, inventarioPorEspacio, rnd);
-                    result.items += items;
-                }
+                creada = exito;
             }
             if (!creada) {
                 result.descartadas++;
@@ -268,7 +238,72 @@ public class TrafficSeedService {
         return result;
     }
 
-    private Slot elegirSlot(Bucket bucket, Instant now, Random rnd) {
+    /**
+     * Intenta crear una reserva.
+     *
+     * @return {@code true} si la creó, {@code false} si el slot estaba tomado o
+     *         la inserción chocó, y {@code null} si ya no hay solicitantes
+     *         disponibles y hay que abandonar el bucket.
+     */
+    private Boolean intentarCrearReserva(Bucket bucket, SeedContext ctx, BucketResult result) {
+        Random rnd = ctx.rnd();
+        Espacio esp = ctx.espacios().get(rnd.nextInt(ctx.espacios().size()));
+        Slot slot = elegirSlot(bucket, rnd);
+        SlotKey key = new SlotKey(esp.getId(), slot.inicio, slot.fin);
+        if (ctx.slotsOcupados().contains(key) || haySolapamiento(ctx.slotsOcupados(), esp.getId(), slot)) {
+            return false;
+        }
+
+        Usuario solicitante = elegirSolicitante(ctx.pool(), rnd);
+        if (solicitante == null) {
+            return null;
+        }
+
+        Reserva.EstadoReserva estado = elegirEstado(bucket, rnd);
+        Reserva r = armarReserva(esp, solicitante, slot, estado, ctx);
+
+        try {
+            reservaRepository.save(r);
+        } catch (RuntimeException e) {
+            // Violación de unicidad u otra colisión: este intento se descarta.
+            return false;
+        }
+
+        ctx.slotsOcupados().add(key);
+        result.reservas++;
+        result.porEstado.merge(estado, 1, Integer::sum);
+
+        // Solicitudes de inventario: ~35% de las reservas.
+        if (estado != Reserva.EstadoReserva.CANCELADO && rnd.nextDouble() < 0.35) {
+            result.items += generarItemsSolicitados(r, bucket, ctx.tipos(), ctx.inventarioPorEspacio(), rnd);
+        }
+        return true;
+    }
+
+    private Reserva armarReserva(Espacio esp, Usuario solicitante, Slot slot,
+                                 Reserva.EstadoReserva estado, SeedContext ctx) {
+        Random rnd = ctx.rnd();
+        Reserva r = new Reserva();
+        r.setEspacio(esp);
+        r.setUsuario(solicitante);
+        r.setCarrera(elegirCarreraSegunRol(ctx.carreras(), solicitante.getRolApp(), rnd));
+        r.setAnalistaAsignado(ctx.pool().pickRandom(Usuario.RolApp.ANALISTA, rnd));
+        r.setInicio(slot.inicio);
+        r.setFin(slot.fin);
+        r.setEstado(estado);
+        r.setEsPublica(solicitante.getRolApp() == Usuario.RolApp.EXTERNO || rnd.nextDouble() < 0.15);
+        r.setTitulo(generarTitulo(rnd));
+        if (solicitante.getRolApp() == Usuario.RolApp.DOCENTE
+                || solicitante.getRolApp() == Usuario.RolApp.EXTERNO) {
+            r.setMotivoSolicitud(generarMotivo(rnd));
+        }
+        if (estado == Reserva.EstadoReserva.CANCELADO) {
+            r.setMensajeAnalista("Cancelada automáticamente por seed.");
+        }
+        return r;
+    }
+
+    private Slot elegirSlot(Bucket bucket, Random rnd) {
         LocalDate base = LocalDate.now(ZONE);
         int diaOffset = bucket.diaInicio + rnd.nextInt(bucket.diaFin - bucket.diaInicio + 1);
         LocalDate dia = base.plusDays(diaOffset);
@@ -360,7 +395,7 @@ public class TrafficSeedService {
         return rnd.nextDouble() < prob ? carreras.get(rnd.nextInt(carreras.size())) : null;
     }
 
-    private String generarTitulo(Usuario u, Espacio esp, Random rnd) {
+    private String generarTitulo(Random rnd) {
         String[] motivos = {
                 "Clase de %s", "Reunión de equipo", "Taller práctico",
                 "Examen parcial", "Defensa de tesis", "Charla invitada",
@@ -375,7 +410,7 @@ public class TrafficSeedService {
         return titulo + " #" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.ROOT);
     }
 
-    private String generarMotivo(Usuario u, Random rnd) {
+    private String generarMotivo(Random rnd) {
         String[] motivos = {
                 "Necesito un aula con proyector para la clase",
                 "Voy a recibir alumnos visitantes",
@@ -400,46 +435,67 @@ public class TrafficSeedService {
                 reserva.getEspacio().getId(), Collections.emptyList());
         for (int i = 0; i < cantidadItems; i++) {
             TipoElemento tipo = tipos.get(rnd.nextInt(tipos.size()));
-            if (!tiposUsados.add(tipo.getId())) continue;
-            ReservaItemSolicitado item = new ReservaItemSolicitado();
-            item.setReserva(reserva);
-            item.setTipoElemento(tipo);
-            item.setCantidadSolicitada(1 + rnd.nextInt(3));
-            ReservaItemSolicitado.EstadoSolicitud estadoSolicitud =
-                    elegirEstadoSolicitud(bucket, reserva.getEstado(), rnd);
-            item.setEstado(estadoSolicitud);
-            if (estadoSolicitud == ReservaItemSolicitado.EstadoSolicitud.APROBADO
-                    || estadoSolicitud == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO) {
-                InventarioItem disp = inventarioEspacio.stream()
-                        .filter(ii -> Boolean.TRUE.equals(ii.getActivo())
-                                && "DISPONIBLE".equalsIgnoreCase(ii.getEstado())
-                                && ii.getTipoElemento() != null
-                                && ii.getTipoElemento().getId().equals(tipo.getId()))
-                        .findFirst()
-                        .orElse(null);
-                if (disp != null) {
-                    item.setInventarioItem(disp);
-                } else if (estadoSolicitud == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO) {
-                    // Sin item disponible: degradar a APROBADO sin item? No, ENTREGADO requiere item,
-                    // así que la dejamos APROBADO si no hay item disponible (consistente con validación).
-                    item.setEstado(ReservaItemSolicitado.EstadoSolicitud.APROBADO);
+            if (tiposUsados.add(tipo.getId())) {
+                ReservaItemSolicitado item = armarSolicitud(reserva, bucket, tipo, inventarioEspacio, rnd);
+                try {
+                    reservaItemSolicitadoRepository.save(item);
+                    insertados++;
+                } catch (RuntimeException e) {
+                    // Fallo puntual de inserción: se ignora y se sigue con el resto.
                 }
-                if (item.getInventarioItem() == null
-                        && item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.APROBADO) {
-                    item.setEstado(ReservaItemSolicitado.EstadoSolicitud.PENDIENTE);
-                }
-            }
-            if (rnd.nextDouble() < 0.25) {
-                item.setObservaciones("Observaciones de prueba para item " + tipo.getNombre());
-            }
-            try {
-                reservaItemSolicitadoRepository.save(item);
-                insertados++;
-            } catch (RuntimeException e) {
-                // ignore individual failures
             }
         }
         return insertados;
+    }
+
+    private ReservaItemSolicitado armarSolicitud(Reserva reserva, Bucket bucket, TipoElemento tipo,
+                                                 List<InventarioItem> inventarioEspacio, Random rnd) {
+        ReservaItemSolicitado item = new ReservaItemSolicitado();
+        item.setReserva(reserva);
+        item.setTipoElemento(tipo);
+        item.setCantidadSolicitada(1 + rnd.nextInt(3));
+
+        ReservaItemSolicitado.EstadoSolicitud estadoSolicitud =
+                elegirEstadoSolicitud(bucket, reserva.getEstado(), rnd);
+        item.setEstado(estadoSolicitud);
+
+        if (estadoSolicitud == ReservaItemSolicitado.EstadoSolicitud.APROBADO
+                || estadoSolicitud == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO) {
+            asignarItemDisponible(item, inventarioEspacio, tipo, estadoSolicitud);
+        }
+        if (rnd.nextDouble() < 0.25) {
+            item.setObservaciones("Observaciones de prueba para item " + tipo.getNombre());
+        }
+        return item;
+    }
+
+    /**
+     * Engancha un item físico disponible a la solicitud. Si no hay ninguno, baja el
+     * estado: ENTREGADO exige item, y APROBADO sin item tampoco es consistente con
+     * la validación, así que queda PENDIENTE.
+     */
+    private void asignarItemDisponible(ReservaItemSolicitado item,
+                                       List<InventarioItem> inventarioEspacio,
+                                       TipoElemento tipo,
+                                       ReservaItemSolicitado.EstadoSolicitud estadoSolicitud) {
+        InventarioItem disp = inventarioEspacio.stream()
+                .filter(ii -> Boolean.TRUE.equals(ii.getActivo())
+                        && "DISPONIBLE".equalsIgnoreCase(ii.getEstado())
+                        && ii.getTipoElemento() != null
+                        && ii.getTipoElemento().getId().equals(tipo.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (disp != null) {
+            item.setInventarioItem(disp);
+            return;
+        }
+        if (estadoSolicitud == ReservaItemSolicitado.EstadoSolicitud.ENTREGADO) {
+            item.setEstado(ReservaItemSolicitado.EstadoSolicitud.APROBADO);
+        }
+        if (item.getEstado() == ReservaItemSolicitado.EstadoSolicitud.APROBADO) {
+            item.setEstado(ReservaItemSolicitado.EstadoSolicitud.PENDIENTE);
+        }
     }
 
     private ReservaItemSolicitado.EstadoSolicitud elegirEstadoSolicitud(Bucket bucket,

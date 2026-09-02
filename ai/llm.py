@@ -97,7 +97,7 @@ def get_chat_models_chain() -> list[tuple[str, BaseChatModel]]:
     for p in chain:
         try:
             out.append((p, _build_one(p)))
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             log.warning("Saltando provider %s (no inicializa): %s", p, exc)
     if not out:
         raise ValueError("Ningún LLM provider inicializable en LLM_PROVIDERS.")
@@ -124,7 +124,7 @@ def invoke_with_fallback(messages, log_label: str = "llm") -> tuple[str, str]:
             result = llm.invoke(messages)
             text = getattr(result, "content", None) or str(result)
             return text, provider
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             log.warning("%s: provider %s falló (%s); probando siguiente.",
                         log_label, provider, exc)
             last_exc = exc

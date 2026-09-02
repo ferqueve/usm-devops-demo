@@ -110,6 +110,17 @@ temp/
 # ===== DOCKER =====
 docker-compose.override.yml
 
+# ===== PYTHON (ml/ y ai/) =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Cola del provider bridge (ai/bridge_llm.py)
+.bridge/
+
 # ===== JAVA =====
 
 # BlueJ files
@@ -132,3 +143,7 @@ CLAUDE.md
 # ===== SONARLINT / SCANNER =====
 .sonarlint/
 .scannerwork/
+
+# ===== PLAYWRIGHT / SCREENSHOTS =====
+.playwright-mcp/
+cap-*.png

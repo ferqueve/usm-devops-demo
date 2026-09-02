@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { reservationsApi } from '@/lib/api/reservations';
 import { espaciosApi } from '@/lib/api/spaces';

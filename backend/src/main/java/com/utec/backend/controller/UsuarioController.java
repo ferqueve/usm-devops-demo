@@ -23,6 +23,7 @@ import com.utec.backend.util.CsvExportUtil;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -31,6 +32,10 @@ import java.util.List;
 @RequestMapping("/api/v1/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
+
+    // El servidor corre en UTC: sin zona explícita, "hoy" cambia tres horas
+    // antes que en Uruguay.
+    private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
     private final UsuarioService usuarioService;
     private final CsvExportUtil csvExportUtil;
@@ -116,7 +121,7 @@ public class UsuarioController {
         List<UsuarioResponseDto> usuarios = usuarioService.obtenerUsuariosParaExport(filters);
 
         String csvContent = csvExportUtil.generateUsersCsv(usuarios);
-        String fileName = "usuarios_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".csv";
+        String fileName = "usuarios_" + LocalDate.now(ZONA).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".csv";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv"));

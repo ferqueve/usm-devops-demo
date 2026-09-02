@@ -1,0 +1,250 @@
+package com.utec.backend.controller;
+
+import com.utec.backend.common.ApiResponse;
+import com.utec.backend.dto.NotificacionResultadoDto;
+import com.utec.backend.dto.tutoria.RachaDto;
+import com.utec.backend.dto.tutoria.TutorRankingDto;
+import com.utec.backend.dto.tutoria.TutoriaAgendadoDto;
+import com.utec.backend.dto.tutoria.TutoriaCreateDto;
+import com.utec.backend.dto.tutoria.TutoriaFeedbackCreateDto;
+import com.utec.backend.dto.tutoria.TutoriaFeedbackResumenDto;
+import com.utec.backend.dto.tutoria.TutoriaRecursoDto;
+import com.utec.backend.dto.tutoria.TutoriaResponseDto;
+import com.utec.backend.dto.tutoria.TutoriaUpdateDto;
+import com.utec.backend.service.TutoriaService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/tutorias")
+@RequiredArgsConstructor
+public class TutoriaController {
+
+    private final TutoriaService tutoriaService;
+
+    /**
+     * Listar tutorías. Opcionalmente filtrar por materia.
+     */
+    @GetMapping
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> listar(
+            @RequestParam(required = false) Long materiaId) {
+        List<TutoriaResponseDto> tutorias = tutoriaService.listar(materiaId);
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías obtenidas exitosamente"));
+    }
+
+    /**
+     * Franjas de tutoría que dicta el usuario autenticado.
+     *
+     * <p>Antes esto y {@link #tutoriasAgendadas} eran un solo {@code /mias} que devolvía
+     * una cosa u otra según el rol. El front ya sabe desde qué vista llama, así que ahora
+     * lo dice en la ruta.
+     */
+    @GetMapping("/dictadas")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> tutoriasDictadas(
+            Authentication authentication) {
+        List<TutoriaResponseDto> tutorias = tutoriaService.tutoriasQueDicta(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías dictadas obtenidas exitosamente"));
+    }
+
+    /** Tutorías que el usuario autenticado tiene agendadas como estudiante. */
+    @GetMapping("/agendadas")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<List<TutoriaResponseDto>>> tutoriasAgendadas(
+            Authentication authentication) {
+        List<TutoriaResponseDto> tutorias = tutoriaService.tutoriasAgendadas(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(tutorias, "Tutorías agendadas obtenidas exitosamente"));
+    }
+
+    /**
+     * Crear una franja de tutoría (el docente es el usuario autenticado).
+     */
+    @PostMapping
+    @PreAuthorize("hasPermission(null, 'tutoria:crear')")
+    public ResponseEntity<ApiResponse<TutoriaResponseDto>> crear(
+            @Valid @RequestBody TutoriaCreateDto createDto,
+            Authentication authentication) {
+        String email = authentication.getName();
+        TutoriaResponseDto tutoria = tutoriaService.crear(createDto, email);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(tutoria, "Tutoría creada exitosamente"));
+    }
+
+    /**
+     * Detalle de una tutoría.
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<TutoriaResponseDto>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.getById(id), "Tutoría obtenida"));
+    }
+
+    /**
+     * Estudiantes agendados en una tutoría.
+     */
+    @GetMapping("/{id}/agendados")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<List<TutoriaAgendadoDto>>> getAgendados(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.getAgendados(id), "Agendados obtenidos"));
+    }
+
+    /**
+     * Eliminar una tutoría (admin/analista o el docente dueño).
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable Long id, Authentication authentication) {
+        tutoriaService.eliminar(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Tutoría eliminada"));
+    }
+
+    /**
+     * Notificar por email a los agendados de una tutoría.
+     */
+    @PostMapping("/{id}/notificar")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<NotificacionResultadoDto>> notificar(
+            @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        String asunto = body.get("asunto") != null ? body.get("asunto").toString() : null;
+        String mensaje = body.get("mensaje") != null ? body.get("mensaje").toString() : "";
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.notificarAgendados(id, asunto, mensaje), "Notificación procesada"));
+    }
+
+    /**
+     * Editar una franja de tutoría (docente dueño o admin/analista).
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'tutoria:editar')")
+    public ResponseEntity<ApiResponse<TutoriaResponseDto>> editar(
+            @PathVariable Long id,
+            @Valid @RequestBody TutoriaUpdateDto updateDto,
+            Authentication authentication) {
+        String email = authentication.getName();
+        TutoriaResponseDto tutoria = tutoriaService.editar(id, updateDto, email);
+        return ResponseEntity.ok(ApiResponse.success(tutoria, "Tutoría actualizada exitosamente"));
+    }
+
+    /**
+     * Agendar (reservar) una tutoría como estudiante autenticado.
+     */
+    @PostMapping("/{id}/agendar")
+    @PreAuthorize("hasPermission(null, 'tutoria:agendar')")
+    public ResponseEntity<ApiResponse<TutoriaResponseDto>> agendar(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> body,
+            Authentication authentication) {
+        String email = authentication.getName();
+        String temario = (body != null && body.get("temario") != null) ? body.get("temario").toString() : null;
+        TutoriaResponseDto tutoria = tutoriaService.agendar(id, email, temario);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(tutoria, "Tutoría agendada exitosamente"));
+    }
+
+    @PutMapping("/reservas/{id}/confirmar")
+    @PreAuthorize("hasPermission(null, 'tutoria:agendar')")
+    public ResponseEntity<ApiResponse<Void>> confirmarReserva(@PathVariable Long id, Authentication authentication) {
+        tutoriaService.confirmarReserva(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Asistencia confirmada"));
+    }
+
+    @PutMapping("/reservas/{id}/asistencia")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<Void>> marcarAsistencia(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "true") boolean asistio,
+            Authentication authentication) {
+        tutoriaService.marcarAsistencia(id, asistio, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Asistencia actualizada"));
+    }
+
+    @PutMapping("/{id}/en-vivo")
+    @PreAuthorize("hasPermission(null, 'tutoria:editar')")
+    public ResponseEntity<ApiResponse<TutoriaResponseDto>> toggleEnVivo(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "true") boolean activo,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                tutoriaService.toggleEnVivo(id, authentication.getName(), activo), "Estado actualizado"));
+    }
+
+    @GetMapping("/{id}/feedback")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<TutoriaFeedbackResumenDto>> feedback(
+            @PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                tutoriaService.getFeedbackResumen(id, authentication.getName()), "Feedback obtenido"));
+    }
+
+    @PostMapping("/{id}/feedback")
+    @PreAuthorize("hasPermission(null, 'tutoria:agendar')")
+    public ResponseEntity<ApiResponse<TutoriaFeedbackResumenDto>> dejarFeedback(
+            @PathVariable Long id,
+            @Valid @RequestBody TutoriaFeedbackCreateDto dto,
+            Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                tutoriaService.dejarFeedback(id, authentication.getName(), dto), "¡Gracias por tu valoración!"));
+    }
+
+    @GetMapping("/ranking/tutores")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<List<TutorRankingDto>>> rankingTutores() {
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.rankingTutores(), "Ranking obtenido"));
+    }
+
+    @GetMapping("/mias/racha")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<RachaDto>> racha(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.racha(authentication.getName()), "Racha obtenida"));
+    }
+
+    @GetMapping("/{id}/recursos")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver')")
+    public ResponseEntity<ApiResponse<List<TutoriaRecursoDto>>> listarRecursos(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.listarRecursos(id), "Recursos obtenidos"));
+    }
+
+    @PostMapping("/{id}/recursos")
+    @PreAuthorize("hasPermission(null, 'tutoria:editar')")
+    public ResponseEntity<ApiResponse<TutoriaRecursoDto>> agregarRecurso(
+            @PathVariable Long id,
+            @Valid @RequestBody TutoriaRecursoDto dto,
+            Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                tutoriaService.agregarRecurso(id, authentication.getName(), dto), "Recurso agregado"));
+    }
+
+    @DeleteMapping("/recursos/{id}")
+    @PreAuthorize("hasPermission(null, 'tutoria:editar')")
+    public ResponseEntity<ApiResponse<Void>> eliminarRecurso(@PathVariable Long id, Authentication authentication) {
+        tutoriaService.eliminarRecurso(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(null, "Recurso eliminado"));
+    }
+
+    @GetMapping("/{id}/temarios")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    public ResponseEntity<ApiResponse<List<String>>> temarios(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(tutoriaService.temariosPedidos(id), "Temarios obtenidos"));
+    }
+
+    /**
+     * Cancelar una reserva de tutoría.
+     */
+    @DeleteMapping("/reservas/{id}")
+    @PreAuthorize("hasPermission(null, 'tutoria:cancelar_reserva')")
+    public ResponseEntity<ApiResponse<Void>> cancelarReserva(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String email = authentication.getName();
+        tutoriaService.cancelarReserva(id, email);
+        return ResponseEntity.ok(ApiResponse.success(null, "Reserva cancelada exitosamente"));
+    }
+}

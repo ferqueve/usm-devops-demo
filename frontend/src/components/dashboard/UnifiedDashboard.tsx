@@ -32,9 +32,17 @@ interface DashboardPermissions {
   canManageInventory: boolean;
   canCreateReservations: boolean;
   canViewReservationStats: boolean;
+  /** Rol del usuario: ADMIN se resuelve por rol, no por permiso. */
+  rol?: string;
 }
 
 async function loadDashboardForRole(perms: DashboardPermissions): Promise<DashboardData | null> {
+  // ADMIN va primero y por rol: comparte permisos con ANALISTA (aprueba reservas),
+  // así que caía en su branch y veía el dataset del analista — entre otras cosas
+  // sin usuarios activos, por eso ese contador quedaba siempre en 0.
+  if (perms.rol === ROLES.ADMIN) {
+    return dashboardApi.obtenerDatosDashboardAdmin();
+  }
   if (perms.canApproveReservations) {
     return dashboardApi.obtenerDatosDashboardAnalista();
   }
@@ -129,6 +137,7 @@ export default function UnifiedDashboard() {
 
   useEffect(() => {
     const perms: DashboardPermissions = {
+      rol: user?.rol,
       canApproveReservations,
       canViewRecommendations,
       canManageInventory,

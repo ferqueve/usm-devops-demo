@@ -12,7 +12,7 @@ import { useEspacios } from '@/hooks/useEspacios';
 import type { InventarioItem, ReservaItemSolicitado, ReservaItemSolicitadoEstado } from '@/lib/types/spaces';
 import { Button } from '@/components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,

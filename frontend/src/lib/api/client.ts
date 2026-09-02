@@ -313,11 +313,13 @@ function getStatusTextInSpanish(status: number): string {
   return statusMessages[status] || `Error ${status}`;
 }
 
-// Helper para hacer requests de Actuator con manejo de token refresh
-export async function actuatorRequest(endpoint: string, isRetry: boolean = false): Promise<unknown> {
+// Helper para hacer requests de Actuator con manejo de token refresh.
+// El tipo es una aserción sobre la respuesta del actuator, igual que en apiRequest<T>:
+// no hay validación en runtime.
+export async function actuatorRequest<T = unknown>(endpoint: string, isRetry: boolean = false): Promise<T> {
   const url = `${API_BASE_URL.replace('/api/v1', '')}${endpoint}`;
-  if (isRetry) return executeActuatorRequest(endpoint, url, true);
-  return withDedupe<unknown>(dedupeKey(url, 'GET', null), () => executeActuatorRequest(endpoint, url, false));
+  if (isRetry) return executeActuatorRequest(endpoint, url, true) as Promise<T>;
+  return withDedupe<T>(dedupeKey(url, 'GET', null), () => executeActuatorRequest(endpoint, url, false) as Promise<T>);
 }
 
 async function executeActuatorRequest(endpoint: string, url: string, isRetry: boolean): Promise<unknown> {
@@ -330,7 +332,12 @@ async function executeActuatorRequest(endpoint: string, url: string, isRetry: bo
     return attemptActuatorTokenRefresh(endpoint);
   }
 
-  if (!response.ok) {
+  // /actuator/health responde 503 cuando algún componente está DOWN, pero el cuerpo
+  // es la respuesta buena: dice qué componente cayó. Tratarlo como error dejaba la
+  // pantalla de Sistema en "UNKNOWN" justo cuando más importa saber qué pasa.
+  const esHealthDegradado = response.status === 503 && endpoint.startsWith('/actuator/health');
+
+  if (!response.ok && !esHealthDegradado) {
     throw new Error(`Error ${response.status}: ${getStatusTextInSpanish(response.status)}`);
   }
 

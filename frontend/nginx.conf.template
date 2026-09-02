@@ -1,0 +1,40 @@
+# Plantilla de nginx para el frontend ya compilado.
+# El entrypoint de la imagen oficial reemplaza ${PORT} (y sólo las variables de
+# entorno definidas) antes de arrancar; $uri y demás variables de nginx quedan
+# intactas porque no son variables de entorno.
+
+server {
+    listen       ${PORT};
+    server_name  _;
+
+    root  /usr/share/nginx/html;
+    index index.html;
+
+    # Health check del contenedor y de Railway.
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Vite versiona los assets con hash en el nombre: se pueden cachear para siempre.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files  $uri =404;
+    }
+
+    # index.html nunca se cachea: es quien apunta a los assets nuevos tras un deploy.
+    location = /index.html {
+        add_header Cache-Control "no-cache, must-revalidate";
+    }
+
+    # SPA: cualquier ruta desconocida la resuelve el router de React.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    gzip             on;
+    gzip_vary        on;
+    gzip_min_length  1024;
+    gzip_types       text/plain text/css application/javascript application/json image/svg+xml;
+}

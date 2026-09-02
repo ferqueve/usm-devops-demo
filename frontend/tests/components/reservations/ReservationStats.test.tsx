@@ -80,13 +80,28 @@ describe('ReservationStats', () => {
     });
   });
 
-  it('renderiza modo horizontal con la métrica Total', async () => {
+  it('en modo horizontal muestra las seis métricas propias de ese layout', async () => {
     vi.mocked(reservationsApi.obtenerEstadisticasPersonales).mockResolvedValue({
       data: sampleStats,
     } as never);
     render(<ReservationStats horizontal />);
+    // "Pendientes" aparece dos veces: la tile y la leyenda del donut.
     await waitFor(() => {
-      expect(screen.getByText('Total Reservas')).toBeInTheDocument();
+      expect(screen.getAllByText('Pendientes').length).toBeGreaterThan(0);
+    });
+    for (const label of ['Activas ahora', 'Este mes', 'Aprobación', 'Espacios usados', 'Duración total']) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+  });
+
+  it('en modo horizontal compara el mes contra el anterior', async () => {
+    vi.mocked(reservationsApi.obtenerEstadisticasPersonales).mockResolvedValue({
+      data: sampleStats,
+    } as never);
+    render(<ReservationStats horizontal />);
+    // sampleStats trae diferenciaMesAnterior: -1
+    await waitFor(() => {
+      expect(screen.getByText('-1 vs anterior')).toBeInTheDocument();
     });
   });
 });

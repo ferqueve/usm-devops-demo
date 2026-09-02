@@ -3,47 +3,42 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SystemHeader } from '@/components/system/SystemHeader';
 
+const props = {
+  hasConnectionError: false,
+  autoRefresh: false,
+  setAutoRefresh: vi.fn(),
+  isRefreshing: false,
+  handleRefresh: vi.fn(),
+};
+
 describe('SystemHeader', () => {
-  it('muestra titulo y badge cuando hay error de conexion', () => {
-    render(
-      <SystemHeader
-        hasConnectionError
-        autoRefresh={false}
-        setAutoRefresh={vi.fn()}
-        isRefreshing={false}
-        handleRefresh={vi.fn()}
-      />
-    );
-    expect(screen.getByText('Estado del Sistema')).toBeInTheDocument();
+  it('muestra la descripción y, si hay error, el badge de sin conexión', () => {
+    render(<SystemHeader {...props} hasConnectionError />);
+    expect(screen.getByText('Monitoreo en tiempo real del servidor')).toBeInTheDocument();
     expect(screen.getByText('Sin conexión')).toBeInTheDocument();
   });
 
-  it('handleRefresh se ejecuta al hacer click si no esta refreshing', async () => {
+  it('no muestra el badge cuando la conexión está bien', () => {
+    render(<SystemHeader {...props} />);
+    expect(screen.queryByText('Sin conexión')).not.toBeInTheDocument();
+  });
+
+  it('ejecuta handleRefresh al hacer click en Actualizar', async () => {
     const handleRefresh = vi.fn();
-    render(
-      <SystemHeader
-        hasConnectionError={false}
-        autoRefresh={false}
-        setAutoRefresh={vi.fn()}
-        isRefreshing={false}
-        handleRefresh={handleRefresh}
-      />
-    );
-    await userEvent.click(screen.getByText('Actualizar'));
+    render(<SystemHeader {...props} handleRefresh={handleRefresh} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Actualizar' }));
     expect(handleRefresh).toHaveBeenCalled();
   });
 
-  it('boton actualizar deshabilitado si isRefreshing', () => {
-    render(
-      <SystemHeader
-        hasConnectionError={false}
-        autoRefresh={false}
-        setAutoRefresh={vi.fn()}
-        isRefreshing
-        handleRefresh={vi.fn()}
-      />
-    );
-    const btn = screen.getByText('Actualizar').closest('button');
-    expect(btn).toBeDisabled();
+  it('deshabilita Actualizar mientras está refrescando', () => {
+    render(<SystemHeader {...props} isRefreshing />);
+    expect(screen.getByRole('button', { name: 'Actualizar' })).toBeDisabled();
+  });
+
+  it('propaga el cambio del switch de auto-refresh', async () => {
+    const setAutoRefresh = vi.fn();
+    render(<SystemHeader {...props} setAutoRefresh={setAutoRefresh} />);
+    await userEvent.click(screen.getByLabelText('Auto-refresh'));
+    expect(setAutoRefresh).toHaveBeenCalledWith(true);
   });
 });

@@ -59,7 +59,36 @@ export type Permission =
   // Sistema
   | 'sistema:acceder'
   // Auditoría
-  | 'auditoria:ver';
+  | 'auditoria:ver'
+  // Capa académica - Materias
+  | 'materia:ver'
+  | 'materia:crear'
+  | 'materia:editar'
+  | 'materia:eliminar'
+  | 'materia:ver_inscriptos'
+  // Inscripciones a materias
+  | 'inscripcion:crear'
+  | 'inscripcion:ver_propias'
+  | 'inscripcion:cancelar'
+  // Recursos académicos
+  | 'recurso:ver'
+  | 'recurso:crear'
+  | 'recurso:eliminar'
+  // Tutorías
+  | 'tutoria:ver'
+  | 'tutoria:crear'
+  | 'tutoria:editar'
+  | 'tutoria:agendar'
+  | 'tutoria:cancelar_reserva'
+  // Eventos / oferta abierta
+  | 'evento:ver'
+  | 'evento:crear'
+  | 'evento:editar'
+  | 'evento:eliminar'
+  | 'evento:inscribir'
+  | 'evento:ver_inscriptos'
+  // Sostenibilidad
+  | 'sostenibilidad:ver';
 
 /**
  * Mapeo de permisos por rol
@@ -133,6 +162,14 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
 
     // Auditoría - Acceso completo
     'auditoria:ver',
+
+    // Capa académica - Acceso completo
+    'materia:ver', 'materia:crear', 'materia:editar', 'materia:eliminar', 'materia:ver_inscriptos',
+    'inscripcion:crear', 'inscripcion:ver_propias', 'inscripcion:cancelar',
+    'recurso:ver', 'recurso:crear', 'recurso:eliminar',
+    'tutoria:ver', 'tutoria:crear', 'tutoria:editar', 'tutoria:agendar', 'tutoria:cancelar_reserva',
+    'evento:ver', 'evento:crear', 'evento:editar', 'evento:eliminar', 'evento:inscribir', 'evento:ver_inscriptos',
+    'sostenibilidad:ver',
   ],
 
   [ROLES.ANALISTA]: [
@@ -173,6 +210,13 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     // Archivos
     'archivo:ver',
     'archivo:subir',
+
+    // Capa académica - gestión global de materias y eventos
+    'materia:ver', 'materia:crear', 'materia:editar', 'materia:eliminar', 'materia:ver_inscriptos',
+    'inscripcion:crear', 'inscripcion:cancelar',
+    'recurso:ver',
+    'tutoria:ver',
+    'evento:ver', 'evento:crear', 'evento:editar', 'evento:eliminar', 'evento:inscribir', 'evento:ver_inscriptos',
   ],
 
   [ROLES.MANTENIMIENTO]: [
@@ -215,6 +259,9 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     // Archivos
     'archivo:ver',
     'archivo:subir',
+
+    // Sostenibilidad (infraestructura)
+    'sostenibilidad:ver',
   ],
 
   [ROLES.DOCENTE]: [
@@ -242,6 +289,12 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
 
     // Archivos - Solo lectura
     'archivo:ver',
+
+    // Capa académica - dicta materias, recursos, tutorías
+    'materia:ver', 'materia:editar', 'materia:ver_inscriptos',
+    'recurso:ver', 'recurso:crear', 'recurso:eliminar',
+    'tutoria:ver', 'tutoria:crear', 'tutoria:editar',
+    'evento:ver', 'evento:inscribir',
   ],
 
   [ROLES.ESTUDIANTE]: [
@@ -262,6 +315,13 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
 
     // Archivos - Solo lectura
     'archivo:ver',
+
+    // Capa académica - se inscribe a materias, consume recursos, agenda tutorías
+    'materia:ver',
+    'inscripcion:crear', 'inscripcion:ver_propias', 'inscripcion:cancelar',
+    'recurso:ver',
+    'tutoria:ver', 'tutoria:agendar', 'tutoria:cancelar_reserva',
+    'evento:ver', 'evento:inscribir',
   ],
 
   [ROLES.EXTERNO]: [
@@ -282,6 +342,9 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
 
     // Archivos - Solo lectura
     'archivo:ver',
+
+    // Oferta abierta - ve e inscribe a eventos públicos
+    'evento:ver', 'evento:inscribir',
   ],
 };
 
@@ -333,7 +396,13 @@ export type Resource =
   | 'usuario'
   | 'archivo'
   | 'sistema'
-  | 'auditoria';
+  | 'auditoria'
+  | 'materia'
+  | 'inscripcion'
+  | 'recurso'
+  | 'tutoria'
+  | 'evento'
+  | 'sostenibilidad';
 
 /**
  * Funciones de conveniencia para verificar permisos por recurso

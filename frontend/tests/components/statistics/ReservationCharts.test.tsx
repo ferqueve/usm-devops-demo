@@ -43,6 +43,21 @@ describe('ReservationCharts', () => {
         distribucionPorEstadoData={[{ name: 'A', value: 1, color: '#000' }]}
       />
     );
-    expect(screen.getByText('Distribución por Estado')).toBeInTheDocument();
+    expect(screen.getByText('Distribución por estado')).toBeInTheDocument();
+    expect(screen.queryByText('Tendencia mensual')).not.toBeInTheDocument();
+  });
+
+  it('renderiza cada sección sólo si su serie tiene datos', () => {
+    render(
+      <ReservationCharts
+        reservasPorMesData={[{ name: 'Ene', reservas: 3 }] as never}
+        reservasPorDiaSemanaData={[{ name: 'Lunes', reservas: 2 }] as never}
+        reservasPorEspacioData={[]}
+        distribucionPorEstadoData={[]}
+      />
+    );
+    expect(screen.getByText('Tendencia mensual')).toBeInTheDocument();
+    expect(screen.getByText('Reservas por día de semana')).toBeInTheDocument();
+    expect(screen.queryByText('Distribución por estado')).not.toBeInTheDocument();
   });
 });

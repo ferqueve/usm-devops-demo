@@ -39,6 +39,12 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
       try {
         const res = await statsApi.getSlowEndpoints(10);
         if (!cancelled) setData(res ?? null);
+      } catch (err) {
+        // Sin este catch el rechazo se escapa de load(), que nadie espera, y
+        // queda como unhandled rejection. La tarjeta simplemente se muestra
+        // vacía si el actuator no responde.
+        console.error('Error al cargar los endpoints lentos:', err);
+        if (!cancelled) setData(null);
       } finally {
         if (!cancelled) setLoading(false);
       }

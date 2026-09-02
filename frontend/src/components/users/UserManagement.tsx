@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -55,7 +55,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FiltersPanel, type FilterField } from "@/components/common/FiltersPanel";
 import { usuariosApi } from '@/lib/api/users';
 import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS, ROLES } from '@/lib/config/constants';
 import type { User, UserRole, UserFilters } from '@/lib/types/users';
@@ -175,78 +174,6 @@ const updateUserRole = (newRole: UserRole) => (u: User): User => ({ ...u, rolApp
 const updateUserActivo = (activo: boolean) => (u: User): User => ({ ...u, activo });
 
 // Convierte un filtro booleano opcional al string que usa el control select.
-function boolFilterValue(value: boolean | undefined): string {
-  if (value === undefined) return 'all';
-  return value ? 'true' : 'false';
-}
-
-interface UserFilterFieldHandlers {
-  onRol: (value: string) => void;
-  onVerificado: (value: string) => void;
-  onActivo: (value: string) => void;
-  onFechaDesde: (value: string) => void;
-  onFechaHasta: (value: string) => void;
-}
-
-// Construye los campos para el FiltersPanel de UserManagement.
-// Extraído del cuerpo del componente para reducir la complejidad cognitiva (S3776).
-function buildUserFilterFields(
-  filters: UserFilters,
-  handlers: UserFilterFieldHandlers,
-): FilterField[] {
-  return [
-    {
-      id: 'role-filter',
-      label: 'Rol',
-      type: 'select',
-      value: filters.rol || 'all',
-      options: [
-        { value: 'all', label: 'Todos los roles' },
-        ...USER_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] })),
-      ],
-      onChange: handlers.onRol,
-    },
-    {
-      id: 'verified-filter',
-      label: 'Verificación',
-      type: 'select',
-      value: boolFilterValue(filters.verificado),
-      options: [
-        { value: 'all', label: 'Todos' },
-        { value: 'true', label: 'Verificados' },
-        { value: 'false', label: 'Sin verificar' },
-      ],
-      onChange: handlers.onVerificado,
-    },
-    {
-      id: 'active-filter',
-      label: 'Estado',
-      type: 'select',
-      value: boolFilterValue(filters.activo),
-      options: [
-        { value: 'all', label: 'Todos' },
-        { value: 'true', label: 'Activos' },
-        { value: 'false', label: 'Inactivos' },
-      ],
-      onChange: handlers.onActivo,
-    },
-    {
-      id: 'fecha-desde',
-      label: 'Fecha desde',
-      type: 'date',
-      value: filters.fechaDesde,
-      onChange: handlers.onFechaDesde,
-    },
-    {
-      id: 'fecha-hasta',
-      label: 'Fecha hasta',
-      type: 'date',
-      value: filters.fechaHasta,
-      onChange: handlers.onFechaHasta,
-    },
-  ];
-}
-
 // Reemplaza un usuario por id en la lista, manteniendo la posición original
 function replaceUserById(prevUsers: User[], userId: number, updater: (u: User) => User): User[] {
   const index = prevUsers.findIndex(u => u.id === userId);
@@ -295,7 +222,6 @@ export default function UserManagement() {
   // Filtros
   const [filters, setFilters] = useState<UserFilters>({});
   const [searchInput, setSearchInput] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   
   // Modal de gestión de carreras
   const [carrerasDialog, setCarrerasDialog] = useState(false);
@@ -512,14 +438,6 @@ export default function UserManagement() {
     [filters]
   );
 
-  // Campos del panel de filtros (extraídos para reducir la complejidad del render).
-  const filterFields: FilterField[] = buildUserFilterFields(filters, {
-    onRol: handleRoleFilter,
-    onVerificado: handleVerificadoFilter,
-    onActivo: handleActivoFilter,
-    onFechaDesde: handleFechaDesdeFilter,
-    onFechaHasta: handleFechaHastaFilter,
-  });
 
   if (loading && users.length === 0) {
     return (

@@ -31,7 +31,6 @@ from db import (
 )
 from forecaster import entrenar_y_predecir
 
-
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
@@ -97,6 +96,6 @@ def train() -> dict:
     except ValueError as exc:
         log.warning("Entrenamiento abortado: %s", exc)
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.exception("Entrenamiento falló inesperadamente")
         raise HTTPException(status_code=500, detail=f"Error interno: {exc}") from exc

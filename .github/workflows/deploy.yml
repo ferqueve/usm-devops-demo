@@ -5,8 +5,20 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Dos pushes seguidos a main ya no se pisan: el segundo espera al primero.
+# No se cancela en curso, porque abortar a mitad de deploy deja servicios
+# desparejos entre sí.
+concurrency:
+  group: deploy-produccion
+  cancel-in-progress: false
+
 jobs:
+  # Puerta: si la verificación falla, no se despliega nada.
+  verificar:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: verificar
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -22,13 +34,56 @@ jobs:
             service: ai-svc
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Railway CLI
         run: npm i -g @railway/cli
 
+      # El mensaje deja el commit visible en el historial de deploys de Railway:
+      # antes las imágenes se construían con VCS_REF=unknown y no había forma de
+      # saber qué código estaba corriendo.
       - name: Deploy ${{ matrix.service }}
         working-directory: ${{ matrix.dir }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service ${{ matrix.service }} --ci
+        run: |
+          railway up --service ${{ matrix.service }} --ci \
+            --message "${GITHUB_SHA::7} · ${GITHUB_REF_NAME} · run ${GITHUB_RUN_NUMBER}"
+
+  # Antes el workflow terminaba en verde apenas subía el código, sin saber si la
+  # aplicación levantaba. Esto espera a que responda de verdad.
+  verificar-despliegue:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      # /actuator/health completo agrega ai-svc y ml-svc, que duermen por
+      # inactividad: daria DOWN aunque el backend este perfecto. El grupo
+      # `railway` incluye solo la app y la base, y es publico para la sonda.
+      - name: Esperar a que el backend responda sano
+        run: |
+          set -u
+          deadline=$(( $(date +%s) + 420 ))
+          until [ $(date +%s) -ge $deadline ]; do
+            estado=$(curl -sS --max-time 20 https://usm-bnd.up.railway.app/actuator/health/railway || true)
+            echo "health=$estado"
+            case "$estado" in
+              *'"status":"UP"'*) echo "Backend sano."; exit 0 ;;
+            esac
+            sleep 15
+          done
+          echo "El backend no llegó a estado UP en 7 minutos."
+          exit 1
+
+      - name: Esperar a que el frontend responda
+        run: |
+          set -u
+          deadline=$(( $(date +%s) + 300 ))
+          until [ $(date +%s) -ge $deadline ]; do
+            codigo=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
+              https://usm-utec.up.railway.app/ || echo 000)
+            echo "http=$codigo"
+            if [ "$codigo" = "200" ]; then echo "Frontend sirviendo."; exit 0; fi
+            sleep 10
+          done
+          echo "El frontend no respondió 200 en 5 minutos."
+          exit 1

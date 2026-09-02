@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils/helpers";
 
 interface SpaceCardProps {
   espacio: Espacio;
-  canEdit: boolean;
   onEdit: (espacio: Espacio) => void;
   enCurso?: boolean;
 }
@@ -32,7 +31,7 @@ function getEstadoIcon(estado: string) {
   }
 }
 
-export function SpaceCard({ espacio, canEdit, onEdit, enCurso = false }: Readonly<SpaceCardProps>) {
+export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCardProps>) {
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
 

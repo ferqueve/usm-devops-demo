@@ -1,6 +1,7 @@
 package com.utec.backend.service;
 
 import com.utec.backend.dto.recomendacion.RecomendacionAnalistaDto;
+import com.utec.backend.model.Reserva;
 import com.utec.backend.model.Usuario;
 import com.utec.backend.repository.ReservaRepository;
 import com.utec.backend.repository.UsuarioRepository;
@@ -54,14 +55,17 @@ class RecomendacionAnalistaServiceTest {
     @DisplayName("Debe obtener reservas prioritarias")
     void debeObtenerReservasPrioritarias() {
         // Given
-        when(reservaRepository.findAll()).thenReturn(Collections.emptyList());
+        when(reservaRepository.findByAnalistaAsignadoAndEstado(
+                anyLong(), eq(Reserva.EstadoReserva.PENDIENTE)))
+            .thenReturn(Collections.emptyList());
 
         // When
         List<RecomendacionAnalistaDto> resultado = recomendacionAnalistaService.obtenerReservasPrioritarias(analistaId);
 
         // Then
         assertNotNull(resultado);
-        verify(reservaRepository).findAll();
+        verify(reservaRepository).findByAnalistaAsignadoAndEstado(
+                anyLong(), eq(Reserva.EstadoReserva.PENDIENTE));
     }
 }
 

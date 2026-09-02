@@ -26,6 +26,13 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class EstadisticasInventarioService {
 
+    // Claves del mapa que se serializa al frontend.
+    private static final String K_ESPACIO_ID = "espacioId";
+    private static final String K_ITEMS_INICIO = "itemsInicio";
+    private static final String K_ITEMS_FIN = "itemsFin";
+    private static final String K_UNIDADES_INICIO = "unidadesInicio";
+    private static final String K_UNIDADES_FIN = "unidadesFin";
+
     private static final String ESTADO_DISPONIBLE = "DISPONIBLE";
     private static final String ESTADO_MANTENIMIENTO = "MANTENIMIENTO";
     private static final String ESTADO_DANADO = "DANADO";
@@ -87,30 +94,30 @@ public class EstadisticasInventarioService {
 
             Map<String, Object> bucket = porEspacio.computeIfAbsent(espacioId, k -> {
                 Map<String, Object> nuevo = new LinkedHashMap<>();
-                nuevo.put("espacioId", espacioId);
+                nuevo.put(K_ESPACIO_ID, espacioId);
                 nuevo.put("espacioNombre", espacioNombre == null ? "Sin asignar" : espacioNombre);
-                nuevo.put("itemsInicio", 0);
-                nuevo.put("itemsFin", 0);
-                nuevo.put("unidadesInicio", 0);
-                nuevo.put("unidadesFin", 0);
+                nuevo.put(K_ITEMS_INICIO, 0);
+                nuevo.put(K_ITEMS_FIN, 0);
+                nuevo.put(K_UNIDADES_INICIO, 0);
+                nuevo.put(K_UNIDADES_FIN, 0);
                 return nuevo;
             });
             if (fecha.equals(fechaInicio)) {
-                bucket.put("itemsInicio", items);
-                bucket.put("unidadesInicio", unidades);
+                bucket.put(K_ITEMS_INICIO, items);
+                bucket.put(K_UNIDADES_INICIO, unidades);
             }
             if (fecha.equals(fechaFin)) {
-                bucket.put("itemsFin", items);
-                bucket.put("unidadesFin", unidades);
+                bucket.put(K_ITEMS_FIN, items);
+                bucket.put(K_UNIDADES_FIN, unidades);
             }
         }
 
         List<Map<String, Object>> filas = new ArrayList<>();
         for (Map<String, Object> bucket : porEspacio.values()) {
-            int itemsInicio = (int) bucket.get("itemsInicio");
-            int itemsFin = (int) bucket.get("itemsFin");
+            int itemsInicio = (int) bucket.get(K_ITEMS_INICIO);
+            int itemsFin = (int) bucket.get(K_ITEMS_FIN);
             bucket.put("deltaItems", itemsFin - itemsInicio);
-            bucket.put("deltaUnidades", (int) bucket.get("unidadesFin") - (int) bucket.get("unidadesInicio"));
+            bucket.put("deltaUnidades", (int) bucket.get(K_UNIDADES_FIN) - (int) bucket.get(K_UNIDADES_INICIO));
             filas.add(bucket);
         }
         filas.sort(Comparator.comparingInt((Map<String, Object> m) -> Math.abs((int) m.get("deltaItems"))).reversed());
@@ -139,14 +146,14 @@ public class EstadisticasInventarioService {
             int total = ((Number) row[4]).intValue();
 
             espacios.computeIfAbsent(espacioId, k -> Map.of(
-                    "espacioId", espacioId,
+                    K_ESPACIO_ID, espacioId,
                     "espacioNombre", espacioNombre == null ? "Sin asignar" : espacioNombre));
             tipos.computeIfAbsent(tipoId, k -> Map.of(
                     "tipoId", tipoId,
                     "tipoNombre", tipoNombre == null ? "—" : tipoNombre));
 
             Map<String, Object> celda = new LinkedHashMap<>();
-            celda.put("espacioId", espacioId);
+            celda.put(K_ESPACIO_ID, espacioId);
             celda.put("tipoId", tipoId);
             celda.put("total", total);
             celdas.add(celda);

@@ -1,0 +1,36 @@
+# Actualizaciones de dependencias. Antes no había ninguna: las acciones seguían
+# en Node 20 (ya deprecado por GitHub) sin que nadie se enterara.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: maven
+    directory: /backend
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      # Radix publica muchos paquetes chicos a la vez; agrupados es un PR y no quince.
+      radix:
+        patterns: ["@radix-ui/*"]
+
+  - package-ecosystem: pip
+    directories: ["/ml", "/ai"]
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directories: ["/backend", "/frontend", "/ml", "/ai"]
+    schedule:
+      interval: monthly

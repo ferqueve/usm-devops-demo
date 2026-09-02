@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { apiRequest, refreshToken, actuatorRequest } from '@/lib/api/client';
+import { apiRequest, refreshToken, actuatorRequest, clearApiCache } from '@/lib/api/client';
 
 const ORIGINAL_FETCH = globalThis.fetch;
 
@@ -40,6 +40,7 @@ function makeResponse(init: MockResponseInit = {}): Response {
 describe('apiRequest', () => {
   beforeEach(() => {
     localStorage.clear();
+    clearApiCache();
     globalThis.fetch = vi.fn() as unknown as typeof fetch;
   });
 
@@ -154,6 +155,7 @@ describe('apiRequest', () => {
 describe('refreshToken', () => {
   beforeEach(() => {
     localStorage.clear();
+    clearApiCache();
     globalThis.fetch = vi.fn() as unknown as typeof fetch;
   });
 
@@ -191,6 +193,7 @@ describe('refreshToken', () => {
 describe('actuatorRequest', () => {
   beforeEach(() => {
     localStorage.clear();
+    clearApiCache();
     globalThis.fetch = vi.fn() as unknown as typeof fetch;
   });
 
