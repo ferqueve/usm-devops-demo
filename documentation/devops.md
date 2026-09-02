@@ -15,6 +15,46 @@ funcione.
 Nada tiene `continue-on-error` ni `-Dmaven.test.failure.ignore`. Si un test se
 cae, la corrida es roja.
 
+## Imágenes: se construyen una vez y se publican
+
+El pipeline construye cada imagen **una sola vez**, en Actions, y la publica en
+GitHub Container Registry. Railway no construye nada: baja ese artefacto y lo
+corre. Es el patrón *build once, deploy the artifact*: lo que se verificó es
+exactamente lo que corre en producción.
+
+| Servicio | Imagen |
+|---|---|
+| `utec-backend` | `ghcr.io/mathiaspena/usm-utec-backend` |
+| `utec-frontend` | `ghcr.io/mathiaspena/usm-utec-frontend` |
+| `ml-svc` | `ghcr.io/mathiaspena/usm-utec-ml` |
+| `ai-svc` | `ghcr.io/mathiaspena/usm-utec-ai` |
+
+Cada build publica dos tags: el **SHA del commit**, que permite volver a una
+versión exacta, y **`latest`**, que es el que Railway vuelve a bajar en cada
+despliegue (`railway redeploy --from-source`).
+
+### Las imágenes son públicas, y es una decisión consciente
+
+Railway sólo admite credenciales de registry privado en el plan Pro; con imágenes
+públicas funciona en cualquier plan. Como este es un proyecto académico sin
+explotación comercial, se optó por publicarlas: el repositorio sigue siendo
+privado, pero el contenido de las imágenes (el `.jar` del backend y el código
+Python de `ml` y `ai`) es visible para cualquiera.
+
+Antes de publicarlas se verificó que no hubiera credenciales dentro: todos los
+valores sensibles se leen de variables de entorno con default **vacío**
+(`${JWT_SECRET:}`, `${GMAIL_CLIENT_SECRET:}`, …), `.env` está excluido en los
+cuatro `.dockerignore`, y no hay claves duras en `ml/` ni en `ai/`. El único
+literal es el `jwt.secret` de `application-e2e.properties`, que es el fixture de
+Playwright y sólo se carga con el perfil `e2e`.
+
+### Las variables del frontend
+
+Vite hornea las `VITE_*` en el bundle, así que tienen que existir **en el build**.
+Cuando construía Railway, las tomaba de las variables del servicio; ahora las
+provee el repositorio como *variables* (no secrets, porque terminan dentro del
+bundle igual): `VITE_API_URL` y `VITE_FRONTEND_URL`.
+
 ## Por qué el despliegue vive en GitHub Actions y no en la integración nativa
 
 Railway ofrece autodeploy conectando el repositorio: despliega solo al pushear, y
