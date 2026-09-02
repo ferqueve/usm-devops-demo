@@ -72,31 +72,10 @@ jobs:
           distribution: zulu
           cache: maven
 
-      - name: Set up pnpm
-        if: steps.alcanzable.outputs.arriba == 'true'
-        uses: pnpm/action-setup@v4
-        with:
-          package_json_file: frontend/package.json
-
-      - name: Set up Node.js
-        if: steps.alcanzable.outputs.arriba == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
-
-      # Sonar necesita los reportes de cobertura, así que hay que generarlos.
-      - name: Cobertura del backend
+      # Sonar sólo analiza el backend, así que basta con su cobertura.
+      - name: Compilar y generar cobertura
         if: steps.alcanzable.outputs.arriba == 'true'
         run: mvn -B verify -f backend/pom.xml
-
-      - name: Cobertura del frontend
-        if: steps.alcanzable.outputs.arriba == 'true'
-        working-directory: frontend
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm test:coverage
 
       - name: Cache de SonarQube
         if: steps.alcanzable.outputs.arriba == 'true'
