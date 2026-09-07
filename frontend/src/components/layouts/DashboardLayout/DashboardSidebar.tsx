@@ -2,6 +2,9 @@ import { useCallback, useMemo, memo, useState } from 'react';
 import {
   Sidebar,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -9,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { LogOut, User, Settings } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { sidebarMenuItems, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
+import { sidebarMenuItems, sidebarSections, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { formatEmailForDisplay, formatNameForSidebar } from "@/lib/utils/text-formatters";
@@ -51,49 +54,87 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
     );
   }, [user?.rol]);
 
-  // Memoizar los items del menú para evitar re-renders
-  const menuItems = useMemo(() => 
-    filteredMenuItems.map((item) => {
-      let isActive = location.pathname === item.href;
-      
-      // Lógica especial para Espacios: debe estar activo en /rooms, /rooms/:id e /inventory
-      if (item.id === 'rooms') {
-        isActive = location.pathname === '/rooms' ||
-                   location.pathname.startsWith('/rooms/') ||
-                   location.pathname === '/inventory';
-      }
+  // Marca activo un ítem del menú. Varias rutas hijas no tienen ítem propio y
+  // deben iluminar el ítem padre.
+  const isItemActive = useCallback((item: SidebarMenuItemType) => {
+    // Espacios: activo en /rooms, /rooms/:id e /inventory
+    if (item.id === 'rooms') {
+      return location.pathname === '/rooms' ||
+             location.pathname.startsWith('/rooms/') ||
+             location.pathname === '/inventory';
+    }
 
-      // Materias queda activo en su detalle /materias/:id y también en el de una
-      // tutoría, que ya no tiene ítem propio: vive como pestaña dentro de Materias.
-      if (item.id === 'materias') {
-        isActive = location.pathname === '/materias' ||
-                   location.pathname.startsWith('/materias/') ||
-                   location.pathname === '/tutorias' ||
-                   location.pathname.startsWith('/tutorias/');
-      }
+    // Materias queda activo en su detalle /materias/:id y también en el de una
+    // tutoría, que ya no tiene ítem propio: vive como pestaña dentro de Materias.
+    if (item.id === 'materias') {
+      return location.pathname === '/materias' ||
+             location.pathname.startsWith('/materias/') ||
+             location.pathname === '/tutorias' ||
+             location.pathname.startsWith('/tutorias/');
+    }
 
-      // Eventos activo también en el detalle /eventos/:id
-      if (item.id === 'eventos') {
-        isActive = location.pathname === '/eventos' ||
-                   location.pathname.startsWith('/eventos/');
-      }
+    // Eventos activo también en el detalle /eventos/:id
+    if (item.id === 'eventos') {
+      return location.pathname === '/eventos' ||
+             location.pathname.startsWith('/eventos/');
+    }
 
-      return (
-        <SidebarMenuItem key={item.id} className="shrink-0">
-          <SidebarMenuButton
-            asChild
-            isActive={isActive}
-            onClick={() => handleMenuItemClick(item)}
-            className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
-          >
-            <Link to={item.href || "#"} className="flex items-center gap-3 relative">
-              <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      );
-    }), [filteredMenuItems, location.pathname, handleMenuItemClick]);
+    return location.pathname === item.href;
+  }, [location.pathname]);
+
+  // Agrupar los ítems visibles por sección, en el orden de sidebarSections.
+  // Las secciones que quedan vacías tras el filtro por rol se descartan: así un
+  // ESTUDIANTE nunca ve un título como "Administración" sin ítems debajo.
+  const menuSections = useMemo(() =>
+    sidebarSections
+      .map((section) => ({
+        ...section,
+        items: filteredMenuItems.filter((item) => item.section === section.id),
+      }))
+      .filter((section) => section.items.length > 0)
+  , [filteredMenuItems]);
+
+  // Memoizar los grupos del menú para evitar re-renders
+  const menuGroups = useMemo(() =>
+    menuSections.map((section, index) => (
+      <SidebarGroup
+        key={section.id}
+        className={`p-0 ${index === 0 ? '' : 'mt-5'}`}
+      >
+        {section.label && (
+          <>
+            {/* Hairline que se desvanece: separa sin rayar el panel oscuro */}
+            <div className="mb-2 h-px bg-gradient-to-r from-white/10 to-transparent" />
+            <SidebarGroupLabel className="h-auto px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/40">
+              {section.label}
+            </SidebarGroupLabel>
+          </>
+        )}
+        <SidebarGroupContent>
+          <SidebarMenu className="bg-utec-dark gap-0.5 shrink-0">
+            {section.items.map((item) => {
+              const isActive = isItemActive(item);
+
+              return (
+                <SidebarMenuItem key={item.id} className="shrink-0">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    onClick={() => handleMenuItemClick(item)}
+                    className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                  >
+                    <Link to={item.href || "#"} className="flex items-center gap-3 relative">
+                      <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    )), [menuSections, isItemActive, handleMenuItemClick]);
 
   return (
     <Sidebar variant="inset" className="bg-utec-dark shadow-inner-subtle">
@@ -122,9 +163,9 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           flex-1 min-h-0 acota la altura para que el viewport interno scrollee.
           El thumb se aclara para que se vea sobre el fondo oscuro. */}
       <ScrollArea className="flex-1 min-h-0 bg-utec-dark [&_[data-slot=scroll-area-thumb]]:bg-white/25">
-        <SidebarMenu className="bg-utec-dark gap-0.5 shrink-0 pt-6 px-1 pr-2.5">
-          {menuItems}
-        </SidebarMenu>
+        <div className="bg-utec-dark pt-6 pb-2 px-1 pr-2.5">
+          {menuGroups}
+        </div>
       </ScrollArea>
 
       {/* Perfil del usuario: fijo (fuera del área scrollable). shrink-0 para que

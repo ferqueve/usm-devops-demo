@@ -12,12 +12,23 @@ import {
   Megaphone,
   Leaf
 } from "lucide-react";
-import type { SidebarMenuItem } from '../types/ui';
+import type { SidebarMenuItem, SidebarSection } from '../types/ui';
 import type { UserRole } from '../types/users';
 
 // ============================================================================
 // Configuración de Navegación
 // ============================================================================
+
+// Orden de las secciones en el sidebar. Este array manda: agregar una pantalla
+// es sumarle `section` a su ítem, no tocar el layout. La sección "general" no
+// lleva título; el resto se rotula.
+export const sidebarSections: SidebarSection[] = [
+  { id: "general", label: null },
+  { id: "espacios", label: "Espacios" },
+  { id: "academico", label: "Académico" },
+  { id: "analisis", label: "Análisis" },
+  { id: "administracion", label: "Administración" }
+];
 
 export const sidebarMenuItems: SidebarMenuItem[] = [
   {
@@ -25,61 +36,36 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Inicio",
     icon: Home,
     href: "/dashboard",
+    section: "general",
     isActive: true
   },
   {
     id: "calendar",
     label: "Calendario",
     icon: Calendar,
-    href: "/calendar"
+    href: "/calendar",
+    section: "general"
   },
   {
     id: "reservations",
     label: "Reservas",
     icon: BookOpen,
-    href: "/reservations"
+    href: "/reservations",
+    section: "espacios"
   },
   {
     id: "rooms",
     label: "Espacios",
     icon: Building2,
-    href: "/rooms"
-  },
-  {
-    id: "statistics",
-    label: "Estadísticas",
-    icon: BarChart3,
-    href: "/statistics"
-  },
-  {
-    id: "asistente",
-    label: "Asistente IA",
-    icon: Sparkles,
-    href: "/asistente"
-  },
-  {
-    id: "users",
-    label: "Usuarios",
-    icon: Users,
-    href: "/users"
-  },
-  {
-    id: "system",
-    label: "Sistema",
-    icon: Server,
-    href: "/system"
-  },
-  {
-    id: "audit",
-    label: "Auditoría",
-    icon: FileText,
-    href: "/audit"
+    href: "/rooms",
+    section: "espacios"
   },
   {
     id: "materias",
     label: "Materias",
     icon: GraduationCap,
-    href: "/materias"
+    href: "/materias",
+    section: "academico"
   },
   // Tutorías no tiene ítem propio: cuelga de una materia, así que vive como pestaña
   // dentro de Materias (/materias?tab=tutorias). Eventos sí queda aparte: es la
@@ -88,13 +74,50 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     id: "eventos",
     label: "Eventos",
     icon: Megaphone,
-    href: "/eventos"
+    href: "/eventos",
+    section: "academico"
+  },
+  {
+    id: "statistics",
+    label: "Estadísticas",
+    icon: BarChart3,
+    href: "/statistics",
+    section: "analisis"
+  },
+  {
+    id: "asistente",
+    label: "Asistente IA",
+    icon: Sparkles,
+    href: "/asistente",
+    section: "analisis"
   },
   {
     id: "sostenibilidad",
     label: "Sostenibilidad",
     icon: Leaf,
-    href: "/sostenibilidad"
+    href: "/sostenibilidad",
+    section: "analisis"
+  },
+  {
+    id: "users",
+    label: "Usuarios",
+    icon: Users,
+    href: "/users",
+    section: "administracion"
+  },
+  {
+    id: "audit",
+    label: "Auditoría",
+    icon: FileText,
+    href: "/audit",
+    section: "administracion"
+  },
+  {
+    id: "system",
+    label: "Sistema",
+    icon: Server,
+    href: "/system",
+    section: "administracion"
   }
 ];
 
