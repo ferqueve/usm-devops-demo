@@ -51,22 +51,24 @@ export function PageHeader({
   }, []);
 
   const heading = (
-    <div className="flex min-w-0 items-stretch gap-2.5">
+    <div className="flex min-w-0 items-stretch gap-3">
       <span
         className="w-1 shrink-0 self-stretch rounded-sm"
         style={{ backgroundColor: accentColor }}
         aria-hidden
       />
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <h1 className="truncate text-sm font-semibold leading-5 tracking-tight text-white">
+        {/* items-baseline: la cuenta es mas chica que el titulo y centrada
+            quedaba flotando por encima de su linea de base. */}
+        <div className="flex items-baseline gap-1.5">
+          <h1 className="truncate text-sm font-semibold leading-[1.35] tracking-tight text-white">
             {title}
           </h1>
           {count !== undefined && (
-            <span className="shrink-0 text-xs leading-5 text-white/60 tabular-nums">{count}</span>
+            <span className="shrink-0 text-xs leading-[1.35] text-white/55 tabular-nums">{count}</span>
           )}
         </div>
-        <span className="mt-0.5 block truncate text-xs leading-4 text-white/45">
+        <span className="block truncate text-xs leading-[1.35] text-white/45">
           {description}
         </span>
       </div>
