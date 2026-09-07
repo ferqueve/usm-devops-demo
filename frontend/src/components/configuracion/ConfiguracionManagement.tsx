@@ -18,7 +18,7 @@ export default function ConfiguracionManagement() {
 
       {/* Los dos catálogos de tipos van a la par: son listas cortas de nombres
           de una palabra, cada una sobra en media pantalla. */}
-      <div className="grid gap-4 lg:grid-cols-2 items-start">
+      <div className="grid gap-4 lg:grid-cols-2">
         <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
           <TipoEspacioManagement />
         </PermissionGuard>

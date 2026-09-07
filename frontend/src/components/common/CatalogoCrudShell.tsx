@@ -199,7 +199,10 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
   };
 
   return (
-    <section className="rounded-xl border bg-card text-card-foreground shadow-card overflow-hidden">
+    // flex-col + la lista en flex-1: puesta en una grilla, la tarjeta corta se
+    // estira hasta el alto de la otra y el sobrante se lo come la lista, en vez
+    // de quedar un hueco entre la tarjeta y el borde. Suelta, mantiene su alto.
+    <section className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-card overflow-hidden">
       <header className="flex flex-row items-center justify-between gap-4 border-b bg-muted/30 px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground">
@@ -240,7 +243,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
         </div>
       )}
 
-      {renderBody()}
+      <div className="flex-1">{renderBody()}</div>
 
       {filtered.length > pageSize && (
         <div className="flex items-center justify-between border-t px-4 py-2.5">
