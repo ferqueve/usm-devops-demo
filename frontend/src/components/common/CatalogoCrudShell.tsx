@@ -208,22 +208,26 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
     <section className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-card overflow-hidden">
       {/* Mismo header que los paneles del dashboard: fondo institucional, barra
           de acento y la acción como botón sutil sobre el oscuro. */}
-      <header className="flex items-start justify-between gap-3 bg-utec-dark px-4 py-3 text-white">
-        <div className="flex min-w-0 items-start gap-2.5">
+      {/* Dos líneas fijas: título arriba, descripción abajo. Antes la
+          descripción entraba al lado del título y bajaba sola cuando no
+          entraba, así que la altura del header cambiaba de tarjeta en tarjeta.
+          Con la estructura fija, las tres se ven iguales y todo queda centrado
+          contra la barra de acento. */}
+      <header className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-2.5 text-white">
+        <div className="flex min-w-0 items-center gap-2.5">
           <span
-            className="mt-1 h-4 w-1 shrink-0 rounded-sm"
+            className="h-8 w-1 shrink-0 rounded-sm"
             style={{ backgroundColor: accentColor }}
             aria-hidden
           />
-          {/* La barra de acento queda fuera de esta columna: si la descripción no
-              entra al lado del título, baja entera y arranca bajo el título, no
-              bajo el color. */}
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-0.5">
-            <h2 className="shrink-0 text-sm font-semibold tracking-tight whitespace-nowrap">{title}</h2>
-            {!loading && (
-              <span className="shrink-0 text-xs text-white/60 tabular-nums">{items.length}</span>
-            )}
-            <span className="text-xs text-white/40">· {description}</span>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-sm font-semibold tracking-tight truncate">{title}</h2>
+              {!loading && (
+                <span className="shrink-0 text-xs text-white/60 tabular-nums">{items.length}</span>
+              )}
+            </div>
+            <p className="truncate text-xs text-white/40">{description}</p>
           </div>
         </div>
 
@@ -231,7 +235,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
           <button
             type="button"
             onClick={onCreate}
-            className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+            className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           >
             <Plus className="h-3.5 w-3.5" />
             {createLabel}
