@@ -48,8 +48,6 @@ import {
   RefreshCw,
   Building2,
   Download,
-  Package,
-  ClipboardList,
   X,
   LayoutGrid,
   LayoutList,
@@ -614,16 +612,6 @@ export default function SpacesManagement() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate('/inventory')}>
-                <Package className="h-4 w-4 mr-2" />
-                Gestionar Inventario
-              </DropdownMenuItem>
-              <PermissionGuard requiredPermission="solicitud_inventario:ver">
-                <DropdownMenuItem onClick={() => navigate('/inventory/requests')}>
-                  <ClipboardList className="h-4 w-4 mr-2" />
-                  Solicitudes de Inventario
-                </DropdownMenuItem>
-              </PermissionGuard>
               <PermissionGuard requiredPermissions={['espacio:crear', 'tipo:crear']} requireAll={false}>
                 <DropdownMenuItem onClick={() => setShowTiposManagement(true)}>
                   <Building2 className="h-4 w-4 mr-2" />
