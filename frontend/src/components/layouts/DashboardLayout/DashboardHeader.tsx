@@ -5,6 +5,7 @@ import { Clock, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { HeaderNodeNetwork } from "./HeaderNodeNetwork";
+import { PAGE_ACTIONS_SLOT, PAGE_HEADER_SLOT } from "@/components/layouts/PageHeader";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -63,28 +64,32 @@ export const DashboardHeader = memo(function DashboardHeader({
 
   return (
     <>
-      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b px-4 lg:px-6 shadow-sm" style={{ backgroundColor: '#525961' }}>
+      {/* Esta barra es el header de la pantalla, no una franja decorativa: las
+          pantallas con PageHeader le mandan su titulo, su bajada y sus acciones
+          a los huecos de abajo. El fondo es el mismo utec-dark del sidebar. */}
+      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-utec-dark px-4 lg:px-6 shadow-sm">
         <HeaderNodeNetwork />
-        <div className="relative z-10 flex items-center gap-4">
+        <div className="relative z-10 flex min-w-0 items-center gap-4">
           <div ref={triggerWrapperRef}>
             <SidebarTrigger 
               style={{ color: '#d1d5db' }} 
               className="hover:bg-white/10 transition-all hover:scale-105 rounded-md p-2" 
             />
           </div>
+          <div className="h-6 w-px bg-white/20"></div>
           {!hideTitle && (
-            <>
-              <div className="h-6 w-px bg-white/20"></div>
-              <div className="flex items-center gap-3 h-16">
-                <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
-                  {title}
-                </h1>
-              </div>
-            </>
+            <div className="flex items-center gap-3 h-16">
+              <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
+                {title}
+              </h1>
+            </div>
           )}
+          <div id={PAGE_HEADER_SLOT} className="flex min-w-0 items-center" />
         </div>
 
-        <div className="relative z-10 flex items-center gap-2">
+        <div className="relative z-10 flex shrink-0 items-center gap-2">
+          <div id={PAGE_ACTIONS_SLOT} className="flex items-center" />
+          <div className="h-6 w-px bg-white/20"></div>
           {/* Toggle de tema claro/oscuro */}
           <ThemeToggle />
           {/* Badge con hora actual */}
@@ -105,7 +110,7 @@ export const DashboardHeader = memo(function DashboardHeader({
           onClick={toggleSidebar}
           className="fixed top-6 left-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
           style={{ 
-            backgroundColor: '#525961',
+            backgroundColor: '#343a40',
             color: '#d1d5db',
             border: 'none'
           }}
