@@ -215,10 +215,15 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
             style={{ backgroundColor: accentColor }}
             aria-hidden
           />
-          <h2 className="text-sm font-semibold tracking-tight truncate">{title}</h2>
+          {/* El título y la cuenta no ceden ancho: si algo se corta, que sea la
+              descripción, que es la que sobra. */}
+          <h2 className="shrink-0 text-sm font-semibold tracking-tight whitespace-nowrap">{title}</h2>
           {!loading && (
             <span className="text-xs text-white/60 tabular-nums shrink-0">{items.length}</span>
           )}
+          <span className="hidden truncate text-xs text-white/40 sm:inline">
+            · {description}
+          </span>
         </div>
 
         <PermissionGuard requiredPermission={crearPerm}>
@@ -232,10 +237,6 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
           </button>
         </PermissionGuard>
       </header>
-
-      <p className="border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-        {description}
-      </p>
 
       {items.length > SEARCH_THRESHOLD && !loading && (
         <div className="border-b px-4 py-2.5">
