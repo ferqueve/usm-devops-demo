@@ -56,6 +56,7 @@ export function TipoElementoManagement({
         title="Tipos de inventario"
         description="Clasifican los elementos de inventario: proyector, silla, notebook."
         Icon={Package}
+        accentColor="#F6CA21"
         loading={loading}
         items={tiposElemento}
         emptyLabel="Todavía no hay tipos de inventario"

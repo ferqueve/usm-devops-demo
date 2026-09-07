@@ -39,6 +39,7 @@ export function CarrerasManagement() {
         title="Carreras"
         description="Se asocian a las reservas. La baja es lógica."
         Icon={GraduationCap}
+        accentColor="#9333ea"
         loading={loading}
         items={activas}
         emptyLabel="Todavía no hay carreras registradas"

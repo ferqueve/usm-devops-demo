@@ -21,8 +21,10 @@ const SEARCH_THRESHOLD = 8;
 interface CatalogoCrudShellProps<T extends CatalogoItem> {
   title: string;
   description: string;
-  /** Ícono de la sección; también encabeza el estado vacío. */
+  /** Ícono del catálogo: encabeza las filas sin swatch propio y el estado vacío. */
   Icon: React.ComponentType<{ className?: string }>;
+  /** Hex de acento institucional UTEC para la barra del header (#184897, #F6CA21, …). */
+  accentColor?: string;
   loading: boolean;
   items: T[];
   emptyLabel: string;
@@ -56,6 +58,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
   title,
   description,
   Icon,
+  accentColor = '#F6CA21',
   loading,
   items,
   emptyLabel,
@@ -203,31 +206,36 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
     // estira hasta el alto de la otra y el sobrante se lo come la lista, en vez
     // de quedar un hueco entre la tarjeta y el borde. Suelta, mantiene su alto.
     <section className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-card overflow-hidden">
-      <header className="flex flex-row items-center justify-between gap-4 border-b bg-muted/30 px-4 py-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground">
-            <Icon className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold truncate">{title}</h2>
-              {!loading && (
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {items.length}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground truncate">{description}</p>
-          </div>
+      {/* Mismo header que los paneles del dashboard: fondo institucional, barra
+          de acento y la acción como botón sutil sobre el oscuro. */}
+      <header className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-3 text-white">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span
+            className="w-1 h-4 rounded-sm shrink-0"
+            style={{ backgroundColor: accentColor }}
+            aria-hidden
+          />
+          <h2 className="text-sm font-semibold tracking-tight truncate">{title}</h2>
+          {!loading && (
+            <span className="text-xs text-white/60 tabular-nums shrink-0">{items.length}</span>
+          )}
         </div>
 
         <PermissionGuard requiredPermission={crearPerm}>
-          <Button size="sm" onClick={onCreate} className="flex-shrink-0 h-8">
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+          >
+            <Plus className="h-3.5 w-3.5" />
             {createLabel}
-          </Button>
+          </button>
         </PermissionGuard>
       </header>
+
+      <p className="border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+        {description}
+      </p>
 
       {items.length > SEARCH_THRESHOLD && !loading && (
         <div className="border-b px-4 py-2.5">
