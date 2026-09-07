@@ -13,8 +13,8 @@ export interface CatalogoItem {
   activo?: boolean;
 }
 
-/** Filas por página. Los catálogos son cortos: con esto entran sin scroll. */
-const PAGE_SIZE = 6;
+/** Filas por página por defecto. Los catálogos son cortos: entran sin scroll. */
+const DEFAULT_PAGE_SIZE = 6;
 /** Debajo de esto el buscador estorba más de lo que ayuda. */
 const SEARCH_THRESHOLD = 8;
 
@@ -31,6 +31,9 @@ interface CatalogoCrudShellProps<T extends CatalogoItem> {
   /** Detalle extra a la derecha del nombre (el código de una carrera, por ejemplo). */
   renderRowMeta?: (item: T) => React.ReactNode;
   createLabel: string;
+  /** 2 reparte las filas en dos columnas: para una tarjeta a todo el ancho. */
+  columns?: 1 | 2;
+  pageSize?: number;
   onCreate: () => void;
   onEdit: (item: T) => void;
   onDelete: (item: T) => void;
@@ -59,6 +62,8 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
   renderRowLeading,
   renderRowMeta,
   createLabel,
+  columns = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
   onCreate,
   onEdit,
   onDelete,
@@ -81,10 +86,10 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
     );
   }, [items, query]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   // Al filtrar, la página en la que estabas puede dejar de existir.
   const currentPage = Math.min(page, totalPages - 1);
-  const visible = filtered.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
+  const visible = filtered.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
 
   const handleSearch = (value: string) => {
     setQuery(value);
@@ -124,8 +129,15 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
       );
     }
 
+    // En dos columnas los bordes no pueden salir de divide-y: cada fila se
+    // dibuja el suyo, y la de la izquierda suma el separador vertical.
+    const rowsClassName =
+      columns === 2
+        ? 'grid sm:grid-cols-2 [&>*]:border-b sm:[&>*:nth-child(odd)]:border-r'
+        : 'divide-y divide-border';
+
     return (
-      <div className="divide-y divide-border">
+      <div className={rowsClassName}>
         {visible.map((item) => (
           <div
             key={item.id}
@@ -190,7 +202,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
     <section className="rounded-xl border bg-card text-card-foreground shadow-card overflow-hidden">
       <header className="flex flex-row items-center justify-between gap-4 border-b bg-muted/30 px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-utec-blue/15 to-utec-purple/15 text-utec-blue">
+          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground">
             <Icon className="h-4 w-4" />
           </span>
           <div className="min-w-0">
@@ -230,10 +242,10 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
 
       {renderBody()}
 
-      {filtered.length > PAGE_SIZE && (
+      {filtered.length > pageSize && (
         <div className="flex items-center justify-between border-t px-4 py-2.5">
           <span className="text-xs text-muted-foreground tabular-nums">
-            {currentPage * PAGE_SIZE + 1}–{currentPage * PAGE_SIZE + visible.length} de {filtered.length}
+            {currentPage * pageSize + 1}–{currentPage * pageSize + visible.length} de {filtered.length}
           </span>
           <div className="flex items-center gap-1">
             <Button

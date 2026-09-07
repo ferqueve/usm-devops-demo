@@ -11,21 +11,25 @@ import { TipoEspacioManagement } from '@/components/spaces/TipoEspacioManagement
  */
 export default function ConfiguracionManagement() {
   return (
-    // Columna acotada: son listas de nombres cortos, estirarlas a todo el ancho
-    // deja las acciones a media pantalla del texto que modifican.
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
         Catálogos que definen las opciones disponibles en el resto del sistema.
       </p>
 
-      <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
-        <TipoEspacioManagement />
-      </PermissionGuard>
+      {/* Los dos catálogos de tipos van a la par: son listas cortas de nombres
+          de una palabra, cada una sobra en media pantalla. */}
+      <div className="grid gap-4 lg:grid-cols-2 items-start">
+        <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
+          <TipoEspacioManagement />
+        </PermissionGuard>
 
-      <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
-        <TipoElementoManagement />
-      </PermissionGuard>
+        <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
+          <TipoElementoManagement />
+        </PermissionGuard>
+      </div>
 
+      {/* Carreras se lleva el ancho completo: son bastantes y con nombres largos
+          ("Licenciatura en Análisis Alimentario") que en media fila se cortan. */}
       <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>
         <CarrerasManagement />
       </PermissionGuard>

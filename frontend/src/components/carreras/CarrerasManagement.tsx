@@ -43,6 +43,8 @@ export function CarrerasManagement() {
         items={activas}
         emptyLabel="Todavía no hay carreras registradas"
         createLabel="Crear carrera"
+        columns={2}
+        pageSize={10}
         renderRowMeta={(carrera) =>
           carrera.codigo && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
