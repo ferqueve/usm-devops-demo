@@ -208,29 +208,27 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
     <section className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-card overflow-hidden">
       {/* Mismo header que los paneles del dashboard: fondo institucional, barra
           de acento y la acción como botón sutil sobre el oscuro. */}
-      <header className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-3 text-white">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <header className="flex items-start justify-between gap-3 bg-utec-dark px-4 py-3 text-white">
+        {/* Envuelve en vez de truncar: si la descripción no entra al lado del
+            título, baja entera a una segunda línea. */}
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0">
           <span
             className="w-1 h-4 rounded-sm shrink-0"
             style={{ backgroundColor: accentColor }}
             aria-hidden
           />
-          {/* El título y la cuenta no ceden ancho: si algo se corta, que sea la
-              descripción, que es la que sobra. */}
           <h2 className="shrink-0 text-sm font-semibold tracking-tight whitespace-nowrap">{title}</h2>
           {!loading && (
-            <span className="text-xs text-white/60 tabular-nums shrink-0">{items.length}</span>
+            <span className="shrink-0 text-xs text-white/60 tabular-nums">{items.length}</span>
           )}
-          <span className="hidden truncate text-xs text-white/40 sm:inline">
-            · {description}
-          </span>
+          <span className="text-xs text-white/40">· {description}</span>
         </div>
 
         <PermissionGuard requiredPermission={crearPerm}>
           <button
             type="button"
             onClick={onCreate}
-            className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+            className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           >
             <Plus className="h-3.5 w-3.5" />
             {createLabel}
