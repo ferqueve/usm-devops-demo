@@ -44,6 +44,7 @@ import {
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
   CREATE: { label: 'Crear', badge: 'bg-utec-green text-white border-utec-green', dot: 'bg-utec-green' },

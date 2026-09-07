@@ -55,6 +55,7 @@ import {
 import { InventoryRequestFilters } from '@/components/inventory/InventoryRequestFilters';
 import InventoryRequestsCardView from '@/components/inventory/InventoryRequestsCardView';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 const ESTADO_OPTIONS: Array<{
   value: ReservaItemSolicitadoEstado;

@@ -14,7 +14,7 @@ const props = {
 describe('SystemHeader', () => {
   it('muestra la descripción y, si hay error, el badge de sin conexión', () => {
     render(<SystemHeader {...props} hasConnectionError />);
-    expect(screen.getByText('Monitoreo en tiempo real del servidor')).toBeInTheDocument();
+    expect(screen.getByText('Monitoreo en tiempo real del servidor.')).toBeInTheDocument();
     expect(screen.getByText('Sin conexión')).toBeInTheDocument();
   });
 

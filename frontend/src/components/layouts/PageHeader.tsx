@@ -49,13 +49,12 @@ export function PageHeader({
   actions,
   nav,
 }: Readonly<PageHeaderProps>) {
-  const [slots, setSlots] = useState<{ head: HTMLElement | null; actions: HTMLElement | null }>({
-    head: null,
-    actions: null,
-  });
+  // null = todavia no miramos si existen los huecos. Distinguirlo de "no hay"
+  // evita dos cosas: pintar el header en el contenido por un frame antes de
+  // portalizarlo, y renderizar nada cuando de verdad no hay barra donde meterlo
+  // (un test que monta la pantalla sola, por ejemplo).
+  const [slots, setSlots] = useState<{ head: HTMLElement | null; actions: HTMLElement | null } | null>(null);
 
-  // Los huecos los pinta DashboardHeader, que ya está montado cuando la
-  // pantalla corre sus efectos.
   useEffect(() => {
     setSlots({
       head: document.getElementById(PAGE_HEADER_SLOT),
@@ -90,9 +89,24 @@ export function PageHeader({
     </div>
   );
 
+  if (!slots) return null;
+
+  // Sin barra donde portalizar, el header se dibuja donde esta.
+  if (!slots.head) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-utec-dark px-4 py-2.5">
+          {heading}
+          {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
+        </div>
+        {nav && <div className="flex flex-wrap items-center gap-2">{nav}</div>}
+      </div>
+    );
+  }
+
   return (
     <>
-      {slots.head && createPortal(heading, slots.head)}
+      {createPortal(heading, slots.head)}
       {slots.actions && actions && createPortal(
         <div className="flex items-center gap-1">{actions}</div>,
         slots.actions
