@@ -8,10 +8,13 @@ import { HeaderNodeNetwork } from "./HeaderNodeNetwork";
 
 interface DashboardHeaderProps {
   title?: string;
+  /** Las pantallas que ya llevan PageHeader ocultan el título de acá: uno solo por pantalla. */
+  hideTitle?: boolean;
 }
 
 export const DashboardHeader = memo(function DashboardHeader({ 
-  title = "Dashboard"
+  title = "Dashboard",
+  hideTitle = false
 }: DashboardHeaderProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isTriggerVisible, setIsTriggerVisible] = useState(true);
@@ -69,12 +72,16 @@ export const DashboardHeader = memo(function DashboardHeader({
               className="hover:bg-white/10 transition-all hover:scale-105 rounded-md p-2" 
             />
           </div>
-          <div className="h-6 w-px bg-white/20"></div>
-          <div className="flex items-center gap-3 h-16">
-            <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
-              {title}
-            </h1>
-          </div>
+          {!hideTitle && (
+            <>
+              <div className="h-6 w-px bg-white/20"></div>
+              <div className="flex items-center gap-3 h-16">
+                <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
+                  {title}
+                </h1>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="relative z-10 flex items-center gap-2">

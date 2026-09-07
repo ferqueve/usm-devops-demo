@@ -14,11 +14,13 @@ import type { ReactNode } from 'react';
 interface DashboardLayoutProps {
   children: ReactNode;
   title?: string; // Título opcional para sobrescribir el título automático
+  /** La pantalla ya muestra su propio PageHeader: no repetir el título arriba. */
+  hideTitle?: boolean;
   onLogout?: () => void;
 }
 
 // Layout reutilizable para todas las páginas del dashboard
-export const DashboardLayout = memo(function DashboardLayout({ children, title, onLogout }: DashboardLayoutProps) {
+export const DashboardLayout = memo(function DashboardLayout({ children, title, hideTitle, onLogout }: DashboardLayoutProps) {
   const location = useLocation();
   const { logout } = useAuth();
 
@@ -88,7 +90,7 @@ export const DashboardLayout = memo(function DashboardLayout({ children, title, 
       />
       <SidebarInset>
         <div className="flex flex-col h-full max-w-full overflow-hidden">
-          <DashboardHeader title={pageTitle} />
+          <DashboardHeader title={pageTitle} hideTitle={hideTitle} />
           <main className="flex-1 overflow-hidden p-2 md:p-3 lg:p-4 bg-gray-50 page-dots flex flex-col">
             <div className="mx-auto max-w-[1920px] min-w-0 w-full px-0 flex-1 flex flex-col min-h-full">
               {children}
