@@ -19,12 +19,22 @@ export interface SidebarSection {
   label: string | null;
 }
 
+/** Vista de una pantalla, colgada de su ítem en el sidebar. */
+export interface SidebarSubItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  href: string;
+}
+
 export interface SidebarMenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
   href: string;
   section: SidebarSectionId;
+  /** Vistas de la pantalla: el ítem se vuelve colapsable. */
+  children?: SidebarSubItem[];
   isActive?: boolean;
 }
 

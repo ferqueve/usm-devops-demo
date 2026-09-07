@@ -8,16 +8,21 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LogOut, Moon, Settings, Sun } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronRight, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems, sidebarSections, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
-import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/ui";
+import type { SidebarMenuItem as SidebarMenuItemType, SidebarSubItem } from "@/lib/types/ui";
 import PreferencesModal from "@/components/preferences/PreferencesModal";
 
 // Tipos para las props del sidebar
@@ -92,6 +97,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
     return location.pathname === item.href;
   }, [location.pathname]);
 
+  // Una vista está activa si su URL coincide con la actual. La primera vista de
+  // cada ítem cubre además la ruta pelada, que es la que se abre por defecto.
+  const isSubItemActive = useCallback((item: SidebarMenuItemType, sub: SidebarSubItem) => {
+    const actual = `${location.pathname}${location.search}`;
+    if (actual === sub.href) return true;
+    return location.pathname === item.href && !location.search && item.children?.[0]?.id === sub.id;
+  }, [location.pathname, location.search]);
+
   // Agrupar los ítems visibles por sección, en el orden de sidebarSections.
   // Las secciones que quedan vacías tras el filtro por rol se descartan: así un
   // ESTUDIANTE nunca ve un título como "Administración" sin ítems debajo.
@@ -125,26 +138,70 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
             {section.items.map((item) => {
               const isActive = isItemActive(item);
 
+              const boton = (
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  onClick={() => handleMenuItemClick(item)}
+                  className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                >
+                  <Link to={item.href || "#"} className="flex items-center gap-3 relative">
+                    <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              );
+
+              if (!item.children?.length) {
+                return (
+                  <SidebarMenuItem key={item.id} className="shrink-0">
+                    {boton}
+                  </SidebarMenuItem>
+                );
+              }
+
+              // El ítem sigue navegando a su pantalla; el chevron abre las vistas.
               return (
-                <SidebarMenuItem key={item.id} className="shrink-0">
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    onClick={() => handleMenuItemClick(item)}
-                    className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
-                  >
-                    <Link to={item.href || "#"} className="flex items-center gap-3 relative">
-                      <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <Collapsible key={item.id} asChild defaultOpen={isActive}>
+                  <SidebarMenuItem className="shrink-0">
+                    {boton}
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuAction
+                        className="top-1.5 text-white/40 transition-transform hover:bg-white/10 hover:text-white data-[state=open]:rotate-90"
+                        aria-label={`Ver las vistas de ${item.label}`}
+                      >
+                        <ChevronRight className="size-4" />
+                      </SidebarMenuAction>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub className="mr-0 border-white/10 pr-0">
+                        {item.children.map((sub) => {
+                          const subActivo = isSubItemActive(item, sub);
+                          return (
+                            <SidebarMenuSubItem key={sub.id}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={subActivo}
+                                className={`h-8 text-white/60 hover:bg-white/10 hover:text-white ${subActivo ? 'bg-white/10 text-white' : ''}`}
+                              >
+                                <Link to={sub.href} className="flex items-center gap-2.5">
+                                  <sub.icon className="size-3.5" />
+                                  <span>{sub.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
               );
             })}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
-    )), [menuSections, isItemActive, handleMenuItemClick]);
+    )), [menuSections, isItemActive, isSubItemActive, handleMenuItemClick]);
 
   return (
     <Sidebar variant="inset" className="bg-utec-dark shadow-inner-subtle">

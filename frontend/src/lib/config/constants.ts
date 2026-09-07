@@ -11,6 +11,9 @@ import {
   GraduationCap,
   Megaphone,
   Leaf,
+  Network,
+  LayoutList,
+  CalendarClock,
   Boxes,
   ClipboardList,
   SlidersHorizontal
@@ -82,7 +85,14 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Materias",
     icon: GraduationCap,
     href: "/materias",
-    section: "academico"
+    section: "academico",
+    // Las tres vistas de Materias viven en el sidebar y no en un segmented
+    // adentro de la pantalla: son destinos, y como tales se navegan por URL.
+    children: [
+      { id: "materias-plan", label: "Plan", icon: Network, href: "/materias?tab=mapa" },
+      { id: "materias-catalogo", label: "Catálogo", icon: LayoutList, href: "/materias?tab=listado" },
+      { id: "materias-tutorias", label: "Tutorías", icon: CalendarClock, href: "/materias?tab=tutorias" }
+    ]
   },
   // Tutorías no tiene ítem propio: cuelga de una materia, así que vive como pestaña
   // dentro de Materias (/materias?tab=tutorias). Eventos sí queda aparte: es la
