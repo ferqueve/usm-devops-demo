@@ -1,13 +1,45 @@
-import { Loader2, BarChart3, Activity, AlertTriangle, Database } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, ClipboardCopy, Download, FileDown } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSystemMetrics } from '@/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
-import { lazy, Suspense, useState } from 'react';
+import { HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
+import { buildAndDownloadCsv, csvEscape, downloadBlob, todayIsoDate } from '@/lib/utils/export-helpers';
+import { lazy, Suspense, useEffect, useMemo } from 'react';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab })));
 const PerformanceTab = lazy(() => import('./tabs/PerformanceTab').then(m => ({ default: m.PerformanceTab })));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab').then(m => ({ default: m.ErrorsTab })));
 const DatabaseLogsTab = lazy(() => import('./tabs/DatabaseLogsTab').then(m => ({ default: m.DatabaseLogsTab })));
+
+/** Vistas de Sistema. Cada una cuelga de Sistema en el sidebar. */
+const VISTAS = ['resumen', 'rendimiento', 'errores', 'datos'] as const;
+type VistaSistema = (typeof VISTAS)[number];
+
+const ENCABEZADO: Record<VistaSistema, { titulo: string; bajada: string; acento: string }> = {
+  resumen: {
+    titulo: 'Sistema',
+    bajada: 'Estado del servidor: salud, memoria, CPU y quién está conectado.',
+    acento: '#00c7ff',
+  },
+  rendimiento: {
+    titulo: 'Rendimiento',
+    bajada: 'Memoria, CPU, hilos y recolección de basura a lo largo del tiempo.',
+    acento: '#86bb4c',
+  },
+  errores: {
+    titulo: 'Errores',
+    bajada: 'Las últimas peticiones HTTP que atendió el servidor, con su código y su demora.',
+    acento: '#DF2B31',
+  },
+  datos: {
+    titulo: 'Base de datos y logs',
+    bajada: 'Migraciones aplicadas, niveles de log y el archivo de log del servidor.',
+    acento: '#F6CA21',
+  },
+};
 
 function TabFallback({ label }: { readonly label: string }) {
   return (
@@ -49,16 +81,110 @@ export default function System() {
     fetchLiquibase,
   } = useSystemMetrics();
 
-  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['overview']));
-  const handleTabChange = (value: string) => {
-    if (loadedTabs.has(value)) return;
-    if (value === 'errors') fetchActivityData();
-    if (value === 'database-logs') {
+  const [searchParams] = useSearchParams();
+  const param = searchParams.get('tab') as VistaSistema | null;
+  const vista: VistaSistema = param && VISTAS.includes(param) ? param : 'resumen';
+
+  // Cada vista trae sus propios datos, y solo la primera vez que se abre.
+  useEffect(() => {
+    if (vista === 'errores') fetchActivityData();
+    if (vista === 'datos') {
       fetchLogsData();
       fetchLiquibase();
     }
-    setLoadedTabs(prev => new Set(prev).add(value));
+  }, [vista, fetchActivityData, fetchLogsData, fetchLiquibase]);
+
+  /** Resumen: el estado entero al portapapeles, para pegarlo en un ticket. */
+  const copiarDiagnostico = async () => {
+    const diagnostico = {
+      generado: new Date().toISOString(),
+      estado: health?.status ?? 'desconocido',
+      app: info?.build?.name ?? info?.app?.name,
+      version: info?.build?.version ?? info?.app?.version,
+      uptimeSegundos: uptimeMetrics?.measurements?.[0]?.value,
+      memoriaUsadaBytes: memoryMetrics?.measurements?.[0]?.value,
+      memoriaMaximaBytes: memoryMaxMetrics?.measurements?.[0]?.value,
+      cpuProceso: cpuMetrics?.measurements?.[0]?.value,
+      usuariosActivos: activeUsers?.totalActiveUsers,
+    };
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(diagnostico, null, 2));
+      toast.success('Diagnóstico copiado al portapapeles');
+    } catch {
+      toast.error('No se pudo copiar. Revisá los permisos del navegador.');
+    }
   };
+
+  /** Rendimiento: la serie que se ve en los gráficos, para analizarla afuera. */
+  const exportarMetricasCsv = () => {
+    if (metricsHistory.length === 0) {
+      toast.error('Todavía no hay historial para exportar. Dejá la pantalla abierta un rato.');
+      return;
+    }
+    buildAndDownloadCsv(
+      ['Hora', 'Memoria (%)', 'CPU (%)', 'Hilos'],
+      metricsHistory.map((m) => [csvEscape(m.time), m.memory, m.cpu, m.threads]),
+      `metricas-sistema-${todayIsoDate()}.csv`,
+    );
+    toast.success(`${metricsHistory.length} muestras exportadas`);
+  };
+
+  /** Errores: el trace HTTP tal cual, con código y demora por petición. */
+  const exportarTraceCsv = () => {
+    const exchanges = httpTrace?.exchanges ?? [];
+    if (exchanges.length === 0) {
+      toast.error('No hay peticiones registradas para exportar');
+      return;
+    }
+    buildAndDownloadCsv(
+      ['Fecha', 'Método', 'URI', 'Estado', 'Demora', 'Usuario'],
+      exchanges.map((e) => [
+        csvEscape(e.timestamp),
+        csvEscape(e.request?.method),
+        csvEscape(e.request?.uri),
+        e.response?.status ?? '',
+        csvEscape(e.timeTaken),
+        csvEscape(e.principal?.name),
+      ]),
+      `peticiones-http-${todayIsoDate()}.csv`,
+    );
+    toast.success(`${exchanges.length} peticiones exportadas`);
+  };
+
+  /** Datos: el log del servidor a un archivo, que es como se lee de verdad. */
+  const descargarLog = () => {
+    if (!logFile) {
+      toast.error('El archivo de log todavía no está disponible');
+      return;
+    }
+    downloadBlob(new Blob([logFile], { type: 'text/plain;charset=utf-8;' }), `servidor-${todayIsoDate()}.log`);
+    toast.success('Log descargado');
+  };
+
+  const accionesDeVista = useMemo(() => {
+    const boton = (etiqueta: string, Icono: typeof Download, onClick: () => void) => (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClick}
+            aria-label={etiqueta}
+            className={HEADER_ACTION_ICON}
+          >
+            <Icono className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{etiqueta}</TooltipContent>
+      </Tooltip>
+    );
+
+    if (vista === 'resumen') return boton('Copiar diagnóstico', ClipboardCopy, copiarDiagnostico);
+    if (vista === 'rendimiento') return boton('Exportar métricas CSV', FileDown, exportarMetricasCsv);
+    if (vista === 'errores') return boton('Exportar peticiones CSV', FileDown, exportarTraceCsv);
+    return boton('Descargar log', Download, descargarLog);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vista, health, info, uptimeMetrics, memoryMetrics, memoryMaxMetrics, cpuMetrics, activeUsers, metricsHistory, httpTrace, logFile]);
 
   if (loading) {
     return (
@@ -71,9 +197,15 @@ export default function System() {
     );
   }
 
+  const encabezado = ENCABEZADO[vista];
+
   return (
     <div data-page="system" className="space-y-6 max-w-full overflow-x-hidden" style={{ boxSizing: 'border-box' }}>
       <SystemHeader
+        title={encabezado.titulo}
+        description={encabezado.bajada}
+        accentColor={encabezado.acento}
+        extraActions={accionesDeVista}
         hasConnectionError={hasConnectionError}
         autoRefresh={autoRefresh}
         setAutoRefresh={setAutoRefresh}
@@ -81,73 +213,52 @@ export default function System() {
         handleRefresh={handleRefresh}
       />
 
-      <Tabs defaultValue="overview" className="w-full" onValueChange={handleTabChange}>
-        <TabsList className="flex w-full mb-6 gap-1 lg:grid lg:grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
-            <BarChart3 className="h-4 w-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Resumen</span>
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
-            <Activity className="h-4 w-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Rendimiento</span>
-          </TabsTrigger>
-          <TabsTrigger value="errors" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Errores</span>
-          </TabsTrigger>
-          <TabsTrigger value="database-logs" className="flex items-center justify-center gap-1 lg:gap-2 px-1 lg:px-3 py-2 text-sm flex-1 lg:flex-none">
-            <Database className="h-4 w-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Base de Datos y Logs</span>
-          </TabsTrigger>
-        </TabsList>
+      {vista === 'resumen' && (
+        <Suspense fallback={<TabFallback label="Resumen" />}>
+          <OverviewTab
+            health={health}
+            memoryMetrics={memoryMetrics}
+            memoryMaxMetrics={memoryMaxMetrics}
+            cpuMetrics={cpuMetrics}
+            uptimeMetrics={uptimeMetrics}
+            info={info}
+            activeUsers={activeUsers}
+          />
+        </Suspense>
+      )}
 
-        <TabsContent value="overview" className="mt-0">
-          <Suspense fallback={<TabFallback label="Resumen" />}>
-            <OverviewTab
-              health={health}
-              memoryMetrics={memoryMetrics}
-              memoryMaxMetrics={memoryMaxMetrics}
-              cpuMetrics={cpuMetrics}
-              uptimeMetrics={uptimeMetrics}
-              info={info}
-              activeUsers={activeUsers}
-            />
-          </Suspense>
-        </TabsContent>
+      {vista === 'rendimiento' && (
+        <Suspense fallback={<TabFallback label="Rendimiento" />}>
+          <PerformanceTab
+            memoryMetrics={memoryMetrics}
+            memoryMaxMetrics={memoryMaxMetrics}
+            cpuMetrics={cpuMetrics}
+            threadsMetrics={threadsMetrics}
+            gcMetrics={gcMetrics}
+            uptimeMetrics={uptimeMetrics}
+            httpMetrics={httpMetrics}
+            metricsHistory={metricsHistory}
+          />
+        </Suspense>
+      )}
 
-        <TabsContent value="performance" className="mt-0">
-          <Suspense fallback={<TabFallback label="Rendimiento" />}>
-            <PerformanceTab
-              memoryMetrics={memoryMetrics}
-              memoryMaxMetrics={memoryMaxMetrics}
-              cpuMetrics={cpuMetrics}
-              threadsMetrics={threadsMetrics}
-              gcMetrics={gcMetrics}
-              uptimeMetrics={uptimeMetrics}
-              httpMetrics={httpMetrics}
-              metricsHistory={metricsHistory}
-            />
-          </Suspense>
-        </TabsContent>
+      {vista === 'errores' && (
+        <Suspense fallback={<TabFallback label="Errores" />}>
+          <ErrorsTab httpTrace={httpTrace} />
+        </Suspense>
+      )}
 
-        <TabsContent value="errors" className="mt-0">
-          <Suspense fallback={<TabFallback label="Errores" />}>
-            <ErrorsTab httpTrace={httpTrace} />
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="database-logs" className="mt-0">
-          <Suspense fallback={<TabFallback label="Base de Datos y Logs" />}>
-            <DatabaseLogsTab
-              health={health}
-              liquibase={liquibase}
-              loggers={loggers}
-              logFile={logFile}
-              onLoggerUpdate={handleLoggerUpdate}
-            />
-          </Suspense>
-        </TabsContent>
-      </Tabs>
+      {vista === 'datos' && (
+        <Suspense fallback={<TabFallback label="Base de Datos y Logs" />}>
+          <DatabaseLogsTab
+            health={health}
+            liquibase={liquibase}
+            loggers={loggers}
+            logFile={logFile}
+            onLoggerUpdate={handleLoggerUpdate}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

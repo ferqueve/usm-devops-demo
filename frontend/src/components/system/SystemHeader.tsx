@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/Button";
@@ -8,6 +8,12 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 interface SystemHeaderProps {
+  /** Título y bajada de la vista actual; por defecto, los de la pantalla. */
+  title?: string;
+  description?: string;
+  accentColor?: string;
+  /** Acciones propias de la vista, antes de las comunes. */
+  extraActions?: ReactNode;
   hasConnectionError: boolean;
   autoRefresh: boolean;
   setAutoRefresh: (value: boolean) => void;
@@ -16,6 +22,10 @@ interface SystemHeaderProps {
 }
 
 export const SystemHeader = memo(function SystemHeader({
+  title = 'Sistema',
+  description = 'Monitoreo en tiempo real del servidor.',
+  accentColor = '#00c7ff',
+  extraActions,
   hasConnectionError,
   autoRefresh,
   setAutoRefresh,
@@ -24,11 +34,13 @@ export const SystemHeader = memo(function SystemHeader({
 }: SystemHeaderProps) {
   return (
     <PageHeader
-      title="Sistema"
-      description="Monitoreo en tiempo real del servidor."
-      accentColor="#00c7ff"
+      title={title}
+      description={description}
+      accentColor={accentColor}
       actions={
         <>
+          {extraActions}
+
           {hasConnectionError && (
             <div className="mr-2">
               <StatusBadge status="error" label="Sin conexión" pulse />

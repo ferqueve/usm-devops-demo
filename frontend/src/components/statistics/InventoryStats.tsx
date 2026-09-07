@@ -41,6 +41,7 @@ import {
 import { exportInventoryStatsToPDF } from '@/lib/utils/pdf-export';
 import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
 import EstadisticasAvanzadasInventario from './EstadisticasAvanzadasInventario';
+import { PAGE_ACTIONS_SLOT, HEADER_ACTION_ICON, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 
 // Tipos: la forma completa de InventoryStats vive en `@/lib/types/spaces`.
 // Acá la importamos como `InventoryStatsData` para no chocar con el nombre del componente.
@@ -194,8 +195,9 @@ export default function InventoryStats() {
     );
   }
 
+  // Las acciones van a la barra superior, con el título de la pantalla.
   const actionsSlot = typeof document !== 'undefined'
-    ? document.getElementById('stats-actions-slot')
+    ? document.getElementById(PAGE_ACTIONS_SLOT)
     : null;
   const actions = (
     <>
@@ -206,7 +208,7 @@ export default function InventoryStats() {
             size="icon"
             onClick={handleRefresh}
             aria-label="Actualizar"
-            className="h-9 w-9"
+            className={HEADER_ACTION_ICON}
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -214,8 +216,8 @@ export default function InventoryStats() {
         <TooltipContent>Actualizar</TooltipContent>
       </Tooltip>
       <PermissionGuard requiredPermission="estadisticas:ver_inventario">
-        <Button onClick={handleExport} className="h-9">
-          <FileDown className="h-4 w-4 mr-1.5" />
+        <Button onClick={handleExport} className={HEADER_PRIMARY}>
+          <FileDown className="mr-1.5 h-3.5 w-3.5" />
           Exportar
         </Button>
       </PermissionGuard>

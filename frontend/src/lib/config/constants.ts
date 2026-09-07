@@ -15,6 +15,9 @@ import {
   LayoutList,
   CalendarClock,
   Boxes,
+  Activity,
+  AlertTriangle,
+  Database,
   ClipboardList,
   SlidersHorizontal
 } from "lucide-react";
@@ -109,7 +112,11 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Estadísticas",
     icon: BarChart3,
     href: "/statistics",
-    section: "analisis"
+    section: "analisis",
+    children: [
+      { id: "statistics-reservas", label: "Reservas", icon: BarChart3, href: "/statistics?tab=reservas" },
+      { id: "statistics-inventario", label: "Inventario", icon: Boxes, href: "/statistics?tab=inventario" }
+    ]
   },
   {
     id: "asistente",
@@ -144,7 +151,13 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Sistema",
     icon: Server,
     href: "/system",
-    section: "administracion"
+    section: "administracion",
+    children: [
+      { id: "system-resumen", label: "Resumen", icon: BarChart3, href: "/system?tab=resumen" },
+      { id: "system-rendimiento", label: "Rendimiento", icon: Activity, href: "/system?tab=rendimiento" },
+      { id: "system-errores", label: "Errores", icon: AlertTriangle, href: "/system?tab=errores" },
+      { id: "system-datos", label: "Base de datos", icon: Database, href: "/system?tab=datos" }
+    ]
   },
   {
     id: "configuracion",

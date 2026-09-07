@@ -36,6 +36,7 @@ import EstadisticasAvanzadas from './EstadisticasAvanzadas';
 import { AiStatsBanner } from './AiStatsBanner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PAGE_ACTIONS_SLOT, HEADER_ACTION, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 export default function ReservationStatsAnalista() {
   const [loading, setLoading] = useState(true);
@@ -300,8 +301,9 @@ export default function ReservationStatsAnalista() {
     ? ((stats.totalCanceladas / stats.totalReservas) * 100).toFixed(1)
     : '0';
 
+  // Las acciones van a la barra superior, con el título de la pantalla.
   const actionsSlot = typeof document !== 'undefined'
-    ? document.getElementById('stats-actions-slot')
+    ? document.getElementById(PAGE_ACTIONS_SLOT)
     : null;
   const actions = (
     <>
@@ -312,7 +314,7 @@ export default function ReservationStatsAnalista() {
             size="icon"
             onClick={() => globalThis.location.reload()}
             aria-label="Actualizar"
-            className="h-9 w-9"
+            className={HEADER_ACTION_ICON}
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -322,10 +324,10 @@ export default function ReservationStatsAnalista() {
       <PermissionGuard requiredPermission="estadisticas:ver_reservas">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-9">
-              <FileDown className="h-4 w-4 mr-1.5" />
+            <Button variant="ghost" className={HEADER_ACTION}>
+              <FileDown className="mr-1.5 h-3.5 w-3.5" />
               Exportar
-              <ChevronDown className="h-4 w-4 ml-1" />
+              <ChevronDown className="ml-1 h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -345,7 +347,6 @@ export default function ReservationStatsAnalista() {
 
   return (
     <div className="space-y-6">
-      {/* Si existe el slot en el header de tabs (vista admin), portalizar; si no, renderizar inline. */}
       {actionsSlot
         ? createPortal(actions, actionsSlot)
         : <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
