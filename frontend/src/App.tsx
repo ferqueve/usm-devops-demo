@@ -23,6 +23,7 @@ import UsersPage from './app/users/page';
 import SystemPage from './app/system/page';
 import InventoryPage from './app/inventory/page';
 import InventoryRequestsPage from './app/inventory/requests/page';
+import ConfiguracionPage from './app/configuracion/page';
 import AuditPage from './app/audit/page';
 import MateriasPage from './app/materias/page';
 import MateriasMapaPage from './app/materias/mapa/page';
@@ -198,6 +199,15 @@ function AppRoutes() {
         }
       />
       
+      <Route
+        path="/configuracion"
+        element={
+          <RoleProtectedRoute>
+            <ConfiguracionPage />
+          </RoleProtectedRoute>
+        }
+      />
+
       <Route
         path="/audit"
         element={

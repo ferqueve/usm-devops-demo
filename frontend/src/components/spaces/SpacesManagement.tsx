@@ -15,7 +15,6 @@ import { SpaceCardSkeleton } from './SpaceCardSkeleton';
 import { SpaceTable } from './SpaceTable';
 import { SpaceFormDialog } from './SpaceFormDialog';
 import { DeleteSpaceDialog } from './DeleteSpaceDialog';
-import { TipoEspacioManagement } from './TipoEspacioManagement';
 import { FilterBar } from "@/components/ui/filter-bar";
 import type { FilterItem } from "@/components/ui/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -25,12 +24,6 @@ import {
   EnumFilterSection,
   ClearFiltersButton,
 } from "@/components/ui/compact-filter";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { espaciosApi } from '@/lib/api/spaces';
 import { reservationsApi } from '@/lib/api/reservations';
@@ -43,7 +36,6 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Loader2,
   RefreshCw,
   Building2,
@@ -113,7 +105,6 @@ export default function SpacesManagement() {
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<Espacio | null>(null);
-  const [showTiposManagement, setShowTiposManagement] = useState(false);
   const [espaciosOcupados, setEspaciosOcupados] = useState<Set<number>>(new Set());
 
   // Cargar reservas aprobadas que están en curso ahora mismo
@@ -603,24 +594,6 @@ export default function SpacesManagement() {
             </Tooltip>
           </PermissionGuard>
 
-          {/* Acciones secundarias en dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9">
-                Gestionar
-                <ChevronDown className="h-4 w-4 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <PermissionGuard requiredPermissions={['espacio:crear', 'tipo:crear']} requireAll={false}>
-                <DropdownMenuItem onClick={() => setShowTiposManagement(true)}>
-                  <Building2 className="h-4 w-4 mr-2" />
-                  Tipos de Espacios
-                </DropdownMenuItem>
-              </PermissionGuard>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {/* Acción principal */}
           <PermissionGuard requiredPermission="espacio:crear">
             <Button onClick={() => setCreateDialog(true)} className="h-9">
@@ -1004,13 +977,6 @@ export default function SpacesManagement() {
         onSuccess={handleDeleteSuccess}
       />
 
-      <TipoEspacioManagement
-        open={showTiposManagement}
-        onOpenChange={setShowTiposManagement}
-        onSuccess={() => {
-          fetchTiposEspacio(); // Recargar tipos cuando cambian
-        }}
-      />
     </div>
   );
 }

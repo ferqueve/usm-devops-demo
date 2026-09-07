@@ -12,7 +12,8 @@ import {
   Megaphone,
   Leaf,
   Boxes,
-  ClipboardList
+  ClipboardList,
+  SlidersHorizontal
 } from "lucide-react";
 import type { SidebarMenuItem, SidebarSection } from '../types/ui';
 import type { UserRole } from '../types/users';
@@ -134,6 +135,13 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     icon: Server,
     href: "/system",
     section: "administracion"
+  },
+  {
+    id: "configuracion",
+    label: "Configuración",
+    icon: SlidersHorizontal,
+    href: "/configuracion",
+    section: "administracion"
   }
 ];
 
@@ -177,7 +185,8 @@ export const ROLE_PERMISSIONS = {
       '/tutorias/:id',
       '/eventos',
       '/eventos/:id',
-      '/sostenibilidad'
+      '/sostenibilidad',
+      '/configuracion'
     ],
     sidebarItems: [
       'dashboard',
@@ -192,6 +201,7 @@ export const ROLE_PERMISSIONS = {
       'Users',
       'system',
       'audit',
+      'configuracion',
       'materias',
       'eventos',
       'sostenibilidad'
@@ -296,7 +306,8 @@ export const ROLE_PERMISSIONS = {
       '/inventory',
       '/inventory/requests',
       '/statistics',
-      '/sostenibilidad'
+      '/sostenibilidad',
+      '/configuracion'
     ],
     sidebarItems: [
       'dashboard',
@@ -305,7 +316,8 @@ export const ROLE_PERMISSIONS = {
       'inventory',
       'inventory-requests',
       'statistics',
-      'sostenibilidad'
+      'sostenibilidad',
+      'configuracion'
     ],
   }
 } as const;
