@@ -212,20 +212,26 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
           Con la estructura fija, las tres se ven iguales y todo queda centrado
           contra la barra de acento. */}
       <header className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-2.5 text-white">
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 items-stretch gap-2.5">
+          {/* self-stretch: la barra mide exactamente lo que el bloque de texto,
+              sin depender de una altura fija que haya que retocar a mano. */}
           <span
-            className="h-8 w-1 shrink-0 rounded-sm"
+            className="w-1 shrink-0 self-stretch rounded-sm"
             style={{ backgroundColor: accentColor }}
             aria-hidden
           />
           <div className="min-w-0">
-            <div className="flex items-baseline gap-2">
-              <h2 className="text-sm font-semibold tracking-tight truncate">{title}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="truncate text-sm font-semibold leading-5 tracking-tight">{title}</h2>
               {!loading && (
-                <span className="shrink-0 text-xs text-white/60 tabular-nums">{items.length}</span>
+                <span className="shrink-0 text-xs leading-5 text-white/60 tabular-nums">{items.length}</span>
               )}
             </div>
-            <p className="truncate text-xs text-white/40">{description}</p>
+            {/* span y no p: el p de la hoja base arrastra un margin-bottom que
+                desbalanceaba el header. */}
+            <span className="mt-0.5 block truncate text-xs leading-4 text-white/40">
+              {description}
+            </span>
           </div>
         </div>
 
