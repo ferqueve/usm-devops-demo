@@ -4,7 +4,7 @@ import ConfiguracionManagement from '@/components/configuracion';
 // Página de configuración: catálogos del sistema (tipos de espacio, etc.)
 export default function ConfiguracionPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <ConfiguracionManagement />
     </DashboardLayout>
   );

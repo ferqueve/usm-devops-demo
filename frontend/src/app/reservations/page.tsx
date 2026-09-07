@@ -4,7 +4,7 @@ import Reservations from '@/components/reservations/index';
 // Página de reservas
 export default function ReservationsPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <Reservations />
     </DashboardLayout>
   );

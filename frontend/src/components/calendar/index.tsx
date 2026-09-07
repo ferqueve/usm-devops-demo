@@ -11,6 +11,7 @@ import ReservationCalendarView from '@/components/reservations/ReservationCalend
 import ReservationDetailsDialog from '@/components/reservations/ReservationDetailsDialog';
 import ReservationFormDialog from '@/components/reservations/ReservationFormDialog';
 import { Button } from '@/components/ui/Button';
+import { PageHeader, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { Plus } from 'lucide-react';
 
 interface EspacioOption {
@@ -178,18 +179,19 @@ export default function Calendar() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Acciones de página */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          {isExterno ? 'Visualiza las reservas públicas del sistema' : 'Visualiza todas las reservas del sistema'}
-        </p>
-        {isExterno && (
-          <Button onClick={handleCreateReserva} className="h-9">
-            <Plus className="h-4 w-4 mr-1.5" />
-            Solicitar Reserva
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Calendario"
+        description={isExterno ? 'Las reservas públicas del sistema.' : 'Todas las reservas del sistema, por día y por espacio.'}
+        accentColor="#184897"
+        actions={
+          isExterno ? (
+            <Button onClick={handleCreateReserva} className={HEADER_PRIMARY}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Solicitar reserva
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Vista de calendario */}
       <ReservationCalendarView

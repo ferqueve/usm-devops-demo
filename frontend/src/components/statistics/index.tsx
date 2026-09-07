@@ -3,6 +3,7 @@ import InventoryStats from './InventoryStats';
 import ReservationStatsAnalista from './ReservationStatsAnalista';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Package } from 'lucide-react';
+import { PageHeader } from '@/components/layouts/PageHeader';
 
 export default function Statistics() {
   const { hasPermission } = useRolePermissions();
@@ -16,24 +17,29 @@ export default function Statistics() {
   if (canManageInventory && canViewReservationStats) {
     return (
       <div className="space-y-6">
-        <p className="text-sm text-muted-foreground">
-          Visualiza las estadísticas de reservas e inventario
-        </p>
         <Tabs defaultValue="reservas" className="w-full">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <TabsList>
-              <TabsTrigger value="reservas">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Reservas
-              </TabsTrigger>
-              <TabsTrigger value="inventario">
-                <Package className="h-4 w-4 mr-2" />
-                Inventario
-              </TabsTrigger>
-            </TabsList>
-            {/* Las acciones de cada tab se portalizan dentro de este slot. */}
-            <div id="stats-actions-slot" className="flex items-center gap-2" />
-          </div>
+          <PageHeader
+            title="Estadísticas"
+            description="Reservas e inventario, con el detalle por espacio y por período."
+            accentColor="#184897"
+            nav={
+              <div className="flex w-full flex-wrap items-center justify-between gap-3">
+                <TabsList>
+                  <TabsTrigger value="reservas">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Reservas
+                  </TabsTrigger>
+                  <TabsTrigger value="inventario">
+                    <Package className="h-4 w-4 mr-2" />
+                    Inventario
+                  </TabsTrigger>
+                </TabsList>
+                {/* Cada tab portaliza sus acciones acá: quedan con la pestaña que
+                    las manda, no en la barra, que es de la pantalla entera. */}
+                <div id="stats-actions-slot" className="flex items-center gap-2" />
+              </div>
+            }
+          />
           <TabsContent value="reservas" className="space-y-6">
             <ReservationStatsAnalista />
           </TabsContent>
@@ -49,6 +55,11 @@ export default function Statistics() {
   if (canViewReservationStats && !canManageInventory) {
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Estadísticas"
+          description="Reservas, con el detalle por espacio y por período."
+          accentColor="#184897"
+        />
         <ReservationStatsAnalista />
       </div>
     );
@@ -58,6 +69,11 @@ export default function Statistics() {
   if (canViewInventoryStats && !canViewReservationStats) {
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Estadísticas"
+          description="Inventario: stock, estado y asignación por espacio."
+          accentColor="#F6CA21"
+        />
         <InventoryStats />
       </div>
     );

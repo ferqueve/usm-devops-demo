@@ -1,4 +1,5 @@
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader } from '@/components/layouts/PageHeader';
 import { CarrerasManagement } from '@/components/carreras/CarrerasManagement';
 import { TipoElementoManagement } from '@/components/inventory/TipoElementoManagement';
 import { TipoEspacioManagement } from '@/components/spaces/TipoEspacioManagement';
@@ -12,9 +13,11 @@ import { TipoEspacioManagement } from '@/components/spaces/TipoEspacioManagement
 export default function ConfiguracionManagement() {
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Catálogos que definen las opciones disponibles en el resto del sistema.
-      </p>
+      <PageHeader
+        title="Configuración"
+        description="Catálogos que definen las opciones disponibles en el resto del sistema."
+        accentColor="#00c7ff"
+      />
 
       {/* Los dos catálogos de tipos van a la par: son listas cortas de nombres
           de una palabra, cada una sobra en media pantalla. */}

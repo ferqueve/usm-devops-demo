@@ -3,7 +3,7 @@ import InventoryRequestsManagement from '@/components/inventory/InventoryRequest
 
 export default function InventoryRequestsPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <InventoryRequestsManagement />
     </DashboardLayout>
   );

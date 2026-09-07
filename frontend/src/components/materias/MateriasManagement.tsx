@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/layouts/PageHeader';
 import { StatStrip, type StatItem } from '@/components/dashboard/views/_components/StatStrip';
 import {
   ArrowDown,
@@ -102,17 +103,18 @@ export default function MateriasManagement() {
   // Una sola superficie: header con toggle Mapa/Listado. El mapa es la vista por defecto.
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{ENCABEZADO[tab].titulo}</h1>
-          <p className="text-sm text-muted-foreground">{ENCABEZADO[tab].bajada}</p>
-        </div>
-        <div className="inline-flex rounded-xl border bg-muted/40 p-1">
-          <SegBtn active={tab === 'mapa'} onClick={() => setTab('mapa')} icon={Network} label="Plan" />
-          <SegBtn active={tab === 'listado'} onClick={() => setTab('listado')} icon={LayoutList} label="Catálogo" />
-          <SegBtn active={tab === 'tutorias'} onClick={() => setTab('tutorias')} icon={CalendarClock} label="Tutorías" />
-        </div>
-      </div>
+      <PageHeader
+        title={ENCABEZADO[tab].titulo}
+        description={ENCABEZADO[tab].bajada}
+        accentColor="#9333ea"
+        nav={
+          <div className="inline-flex rounded-xl border bg-muted/40 p-1">
+            <SegBtn active={tab === 'mapa'} onClick={() => setTab('mapa')} icon={Network} label="Plan" />
+            <SegBtn active={tab === 'listado'} onClick={() => setTab('listado')} icon={LayoutList} label="Catálogo" />
+            <SegBtn active={tab === 'tutorias'} onClick={() => setTab('tutorias')} icon={CalendarClock} label="Tutorías" />
+          </div>
+        }
+      />
 
       {renderTab(tab, view)}
     </div>

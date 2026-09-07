@@ -9,6 +9,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { toast } from 'sonner';
+import { PageHeader, HEADER_ACTION } from '@/components/layouts/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -463,17 +464,25 @@ export default function SostenibilidadDashboard() {
 
   return (
     <div ref={rootRef} className="space-y-4 [&:fullscreen]:bg-background [&:fullscreen]:overflow-auto [&:fullscreen]:p-5">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <LiveCounter base={stats.hojasEvitadas} />
-        <div className="flex items-center gap-1.5">
-          <MateriaAI stats={stats} />
-          <Button variant="outline" size="sm" onClick={() => setInfoOpen(true)}><Info className="h-4 w-4 mr-1.5" />Cómo funciona</Button>
-          <Button variant="outline" size="sm" onClick={compartir}><Share2 className="h-4 w-4 mr-1.5" />Compartir</Button>
-          <Button variant="outline" size="sm" onClick={exportarPDF}><Download className="h-4 w-4 mr-1.5" />PDF</Button>
-          <Button variant="outline" size="sm" onClick={toggleFullscreen}><Maximize2 className="h-4 w-4 mr-1.5" />Presentación</Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Sostenibilidad"
+        description="Lo que la reserva digital le ahorra al campus: papel, agua y CO₂."
+        accentColor="#86bb4c"
+        actions={
+          <>
+            <Button variant="ghost" size="sm" className={HEADER_ACTION} onClick={() => setInfoOpen(true)}><Info className="mr-1.5 h-3.5 w-3.5" />Cómo funciona</Button>
+            <Button variant="ghost" size="sm" className={HEADER_ACTION} onClick={compartir}><Share2 className="mr-1.5 h-3.5 w-3.5" />Compartir</Button>
+            <Button variant="ghost" size="sm" className={HEADER_ACTION} onClick={exportarPDF}><Download className="mr-1.5 h-3.5 w-3.5" />PDF</Button>
+            <Button variant="ghost" size="sm" className={HEADER_ACTION} onClick={toggleFullscreen}><Maximize2 className="mr-1.5 h-3.5 w-3.5" />Presentación</Button>
+          </>
+        }
+        nav={
+          <div className="flex w-full flex-wrap items-center justify-between gap-3">
+            <LiveCounter base={stats.hojasEvitadas} />
+            <MateriaAI stats={stats} />
+          </div>
+        }
+      />
 
       <ComoFuncionaDialog open={infoOpen} onOpenChange={setInfoOpen} />
 

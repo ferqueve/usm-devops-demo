@@ -52,6 +52,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { exportEspaciosToCSV } from '@/lib/utils/csv-export';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_ACTION_ICON, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { usePreferences } from '@/hooks/usePreferences';
 
@@ -553,56 +554,55 @@ export default function SpacesManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Acciones de página */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{totalElements}</span> espacios · administra los espacios disponibles
-        </p>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Acciones utilitarias */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={isRefreshing ? undefined : handleRefresh}
-                disabled={isRefreshing}
-                aria-label="Actualizar"
-                className="h-9 w-9"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Actualizar</TooltipContent>
-          </Tooltip>
-
-          <PermissionGuard requiredPermission="espacio:ver">
+      <PageHeader
+        title="Espacios"
+        count={totalElements}
+        description="Aulas, laboratorios y salas disponibles para reservar."
+        accentColor="#184897"
+        actions={
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handleExport}
-                  aria-label="Exportar CSV"
-                  className="h-9 w-9"
+                  onClick={isRefreshing ? undefined : handleRefresh}
+                  disabled={isRefreshing}
+                  aria-label="Actualizar"
+                  className={HEADER_ACTION_ICON}
                 >
-                  <Download className="h-4 w-4" />
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Exportar CSV</TooltipContent>
+              <TooltipContent>Actualizar</TooltipContent>
             </Tooltip>
-          </PermissionGuard>
 
-          {/* Acción principal */}
-          <PermissionGuard requiredPermission="espacio:crear">
-            <Button onClick={() => setCreateDialog(true)} className="h-9">
-              <Plus className="h-4 w-4 mr-1.5" />
-              Agregar Espacio
-            </Button>
-          </PermissionGuard>
-        </div>
-      </div>
+            <PermissionGuard requiredPermission="espacio:ver">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleExport}
+                    aria-label="Exportar CSV"
+                    className={HEADER_ACTION_ICON}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Exportar CSV</TooltipContent>
+              </Tooltip>
+            </PermissionGuard>
+
+            <PermissionGuard requiredPermission="espacio:crear">
+              <Button onClick={() => setCreateDialog(true)} className={HEADER_PRIMARY}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Agregar espacio
+              </Button>
+            </PermissionGuard>
+          </>
+        }
+      />
 
       {/* Espacios con filtros embebidos */}
       <div className="border rounded-lg shadow-card overflow-hidden bg-white">

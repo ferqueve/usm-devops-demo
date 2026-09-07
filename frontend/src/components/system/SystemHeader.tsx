@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { RefreshCw } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 interface SystemHeaderProps {
   hasConnectionError: boolean;
@@ -22,43 +23,47 @@ export const SystemHeader = memo(function SystemHeader({
   handleRefresh
 }: SystemHeaderProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <p className="text-sm text-muted-foreground">Monitoreo en tiempo real del servidor</p>
-        {hasConnectionError && (
-          <StatusBadge status="error" label="Sin conexión" pulse />
-        )}
-      </div>
+    <PageHeader
+      title="Sistema"
+      description="Monitoreo en tiempo real del servidor."
+      accentColor="#00c7ff"
+      actions={
+        <>
+          {hasConnectionError && (
+            <div className="mr-2">
+              <StatusBadge status="error" label="Sin conexión" pulse />
+            </div>
+          )}
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 h-9 px-3">
-          <Switch
-            id="auto-refresh"
-            checked={autoRefresh}
-            onCheckedChange={setAutoRefresh}
-          />
-          <Label htmlFor="auto-refresh" className="cursor-pointer text-sm">
-            Auto-refresh
-          </Label>
-        </div>
+          <div className="mr-1 flex items-center gap-2">
+            <Switch
+              id="auto-refresh"
+              checked={autoRefresh}
+              onCheckedChange={setAutoRefresh}
+            />
+            <Label htmlFor="auto-refresh" className="cursor-pointer text-xs text-white/70">
+              Auto-refresh
+            </Label>
+          </div>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={isRefreshing ? undefined : handleRefresh}
-              disabled={isRefreshing}
-              aria-label="Actualizar"
-              className="h-9 w-9"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Actualizar</TooltipContent>
-        </Tooltip>
-      </div>
-    </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={isRefreshing ? undefined : handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Actualizar"
+                className={HEADER_ACTION_ICON}
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Actualizar</TooltipContent>
+          </Tooltip>
+        </>
+      }
+    />
   );
 });
 
