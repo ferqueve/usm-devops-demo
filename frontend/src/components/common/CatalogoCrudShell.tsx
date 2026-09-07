@@ -15,8 +15,6 @@ export interface CatalogoItem {
 
 /** Filas por página por defecto. Los catálogos son cortos: entran sin scroll. */
 const DEFAULT_PAGE_SIZE = 6;
-/** Debajo de esto el buscador estorba más de lo que ayuda. */
-const SEARCH_THRESHOLD = 8;
 
 interface CatalogoCrudShellProps<T extends CatalogoItem> {
   title: string;
@@ -243,7 +241,10 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
         </PermissionGuard>
       </header>
 
-      {items.length > SEARCH_THRESHOLD && !loading && (
+      {/* El buscador va siempre, aunque el catálogo sea corto: si aparece solo
+          en algunas tarjetas, las filas de dos tarjetas vecinas arrancan a
+          distinta altura. */}
+      {!loading && (
         <div className="border-b px-4 py-2.5">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
