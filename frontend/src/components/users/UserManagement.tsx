@@ -3,17 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserStatsCards } from './UserStatsCards';
 import { EditUserDialog } from './EditUserDialog';
-import { CarrerasManagement } from '@/components/carreras/CarrerasManagement';
 import { exportUsersToCSV } from '@/lib/utils/csv-export';
 import { formatDate, formatRelativeTime } from '@/lib/utils/date-helpers';
 import {
@@ -62,7 +55,6 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { 
   Search, 
   ChevronLeft,
-  ChevronDown,
   ChevronRight, 
   Shield, 
   Mail, 
@@ -76,7 +68,6 @@ import {
   Edit,
   Mail as MailIcon,
   KeyRound,
-  GraduationCap,
   UserCog,
   CheckCircle2,
   XCircle,
@@ -223,8 +214,6 @@ export default function UserManagement() {
   const [filters, setFilters] = useState<UserFilters>({});
   const [searchInput, setSearchInput] = useState('');
   
-  // Modal de gestión de carreras
-  const [carrerasDialog, setCarrerasDialog] = useState(false);
 
   // Modal de cambio de rol
   const [changeRoleDialog, setChangeRoleDialog] = useState(false);
@@ -492,22 +481,6 @@ export default function UserManagement() {
             </Tooltip>
           </PermissionGuard>
 
-          <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-9">
-                  Gestionar
-                  <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setCarrerasDialog(true)}>
-                  <GraduationCap className="h-4 w-4 mr-2" />
-                  Gestionar Carreras
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </PermissionGuard>
         </div>
       </div>
 
@@ -1061,8 +1034,6 @@ export default function UserManagement() {
         onSuccess={handleEditSuccess}
       />
 
-      {/* Dialog de gestión de carreras */}
-      <CarrerasManagement open={carrerasDialog} onOpenChange={setCarrerasDialog} />
     </div>
   );
 }

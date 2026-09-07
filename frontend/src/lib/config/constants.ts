@@ -223,7 +223,8 @@ export const ROLE_PERMISSIONS = {
       '/materias',
       '/materias/:id',
       '/eventos',
-      '/eventos/:id'
+      '/eventos/:id',
+      '/configuracion'
     ],
     sidebarItems: [
       'dashboard',
@@ -234,7 +235,8 @@ export const ROLE_PERMISSIONS = {
       'statistics',
       'asistente',
       'materias',
-      'eventos'
+      'eventos',
+      'configuracion'
     ],
   },
   [ROLES.DOCENTE]: {

@@ -36,6 +36,9 @@ interface TipoCrudShellProps<T extends TipoCrudItem> {
   EmptyIcon: React.ComponentType<{ className?: string }>;
   /** Renders the leading icon/swatch for an item row. */
   renderRowLeading: (item: T) => React.ReactNode;
+  /** Renders extra detail under the item name (a code badge, for instance). */
+  renderRowMeta?: (item: T) => React.ReactNode;
+  createLabel?: string;
   onCreate: () => void;
   onEdit: (item: T) => void;
   onDelete: (item: T) => void;
@@ -67,6 +70,8 @@ export function TipoCrudShell<T extends TipoCrudItem>({
   emptyLabel,
   EmptyIcon,
   renderRowLeading,
+  renderRowMeta,
+  createLabel = 'Crear Tipo',
   onCreate,
   onEdit,
   onDelete,
@@ -80,7 +85,7 @@ export function TipoCrudShell<T extends TipoCrudItem>({
     <PermissionGuard requiredPermission={crearPerm}>
       <Button onClick={onCreate}>
         <Plus className="h-4 w-4 mr-2" />
-        Crear Tipo
+        {createLabel}
       </Button>
     </PermissionGuard>
   );
@@ -117,6 +122,7 @@ export function TipoCrudShell<T extends TipoCrudItem>({
                     {tipo.descripcion}
                   </p>
                 )}
+                {renderRowMeta?.(tipo)}
               </div>
               {tipo.activo === false && (
                 <Badge variant="secondary" className="text-xs">
