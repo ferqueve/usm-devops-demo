@@ -57,11 +57,11 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
   // Marca activo un ítem del menú. Varias rutas hijas no tienen ítem propio y
   // deben iluminar el ítem padre.
   const isItemActive = useCallback((item: SidebarMenuItemType) => {
-    // Espacios: activo en /rooms, /rooms/:id e /inventory
+    // Espacios: activo en /rooms y en el detalle /rooms/:id. Inventario ya no
+    // cuelga de aca: tiene su propio item en el sidebar.
     if (item.id === 'rooms') {
       return location.pathname === '/rooms' ||
-             location.pathname.startsWith('/rooms/') ||
-             location.pathname === '/inventory';
+             location.pathname.startsWith('/rooms/');
     }
 
     // Materias queda activo en su detalle /materias/:id y también en el de una

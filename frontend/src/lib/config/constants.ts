@@ -10,7 +10,9 @@ import {
   Sparkles,
   GraduationCap,
   Megaphone,
-  Leaf
+  Leaf,
+  Boxes,
+  ClipboardList
 } from "lucide-react";
 import type { SidebarMenuItem, SidebarSection } from '../types/ui';
 import type { UserRole } from '../types/users';
@@ -58,6 +60,20 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Espacios",
     icon: Building2,
     href: "/rooms",
+    section: "espacios"
+  },
+  {
+    id: "inventory",
+    label: "Inventario",
+    icon: Boxes,
+    href: "/inventory",
+    section: "espacios"
+  },
+  {
+    id: "inventory-requests",
+    label: "Solicitudes",
+    icon: ClipboardList,
+    href: "/inventory/requests",
     section: "espacios"
   },
   {
@@ -170,6 +186,7 @@ export const ROLE_PERMISSIONS = {
       'calendar',
       'users',
       'inventory',
+      'inventory-requests',
       'statistics',
       'asistente',
       'Users',
@@ -286,6 +303,7 @@ export const ROLE_PERMISSIONS = {
       'rooms',
       'calendar',
       'inventory',
+      'inventory-requests',
       'statistics',
       'sostenibilidad'
     ],
