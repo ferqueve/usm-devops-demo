@@ -11,7 +11,9 @@ import { TipoEspacioManagement } from '@/components/spaces/TipoEspacioManagement
  */
 export default function ConfiguracionManagement() {
   return (
-    <div className="space-y-6">
+    // Columna acotada: son listas de nombres cortos, estirarlas a todo el ancho
+    // deja las acciones a media pantalla del texto que modifican.
+    <div className="max-w-3xl space-y-4">
       <p className="text-sm text-muted-foreground">
         Catálogos que definen las opciones disponibles en el resto del sistema.
       </p>

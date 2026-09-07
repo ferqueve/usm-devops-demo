@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { GraduationCap } from 'lucide-react';
 import { useCarreras } from '@/hooks/useCarreras';
 import type { Carrera } from '@/lib/types/spaces';
-import { TipoCrudShell } from '@/components/common/TipoCrudShell';
+import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 import { CarreraFormDialog } from './CarreraFormDialog';
 import { DeleteCarreraDialog } from './DeleteCarreraDialog';
 
@@ -35,22 +35,17 @@ export function CarrerasManagement() {
 
   return (
     <>
-      <TipoCrudShell<Carrera>
-        variant="inline"
+      <CatalogoCrudShell<Carrera>
         title="Carreras"
-        description="Administra las carreras disponibles para asociar a las reservas. Soporta alta, edición y baja lógica."
+        description="Se asocian a las reservas. La baja es lógica."
+        Icon={GraduationCap}
         loading={loading}
         items={activas}
-        loadingLabel="Cargando carreras..."
-        emptyLabel="No hay carreras registradas"
-        EmptyIcon={GraduationCap}
-        createLabel="Crear Carrera"
-        renderRowLeading={() => (
-          <GraduationCap className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        )}
+        emptyLabel="Todavía no hay carreras registradas"
+        createLabel="Crear carrera"
         renderRowMeta={(carrera) =>
           carrera.codigo && (
-            <Badge variant="outline" className="mt-1 text-xs">
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
               {carrera.codigo}
             </Badge>
           )

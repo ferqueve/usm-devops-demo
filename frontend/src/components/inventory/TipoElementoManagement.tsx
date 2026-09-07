@@ -3,7 +3,7 @@ import { useTiposElemento } from '@/hooks/useTiposElemento';
 import { Package } from 'lucide-react';
 import { TipoElementoFormDialog } from './TipoElementoFormDialog';
 import { DeleteTipoElementoDialog } from './DeleteTipoElementoDialog';
-import { TipoCrudShell } from '@/components/common/TipoCrudShell';
+import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 import type { TipoElemento } from '@/lib/types/spaces';
 
 interface TipoElementoManagementProps {
@@ -52,18 +52,14 @@ export function TipoElementoManagement({
 
   return (
     <>
-      <TipoCrudShell<TipoElemento>
-        variant="inline"
+      <CatalogoCrudShell<TipoElemento>
         title="Tipos de inventario"
-        description="Administra los tipos de elementos de inventario disponibles. Puedes crear, editar y desactivar tipos."
+        description="Clasifican los elementos de inventario: proyector, silla, notebook."
+        Icon={Package}
         loading={loading}
         items={tiposElemento}
-        loadingLabel="Cargando tipos de inventario..."
-        emptyLabel="No hay tipos de inventario disponibles"
-        EmptyIcon={Package}
-        renderRowLeading={() => (
-          <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        )}
+        emptyLabel="Todavía no hay tipos de inventario"
+        createLabel="Crear tipo"
         onCreate={handleCreateClick}
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}

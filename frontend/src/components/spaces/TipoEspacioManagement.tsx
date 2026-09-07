@@ -5,7 +5,7 @@ import { Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { TipoEspacioFormDialog } from './TipoEspacioFormDialog';
 import { DeleteTipoEspacioDialog } from './DeleteTipoEspacioDialog';
-import { TipoCrudShell } from '@/components/common/TipoCrudShell';
+import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 
 interface TipoEspacioManagementProps {
   /** Se avisa al consumidor cuando el catálogo cambió, para que recargue lo suyo. */
@@ -71,15 +71,14 @@ export function TipoEspacioManagement({
 
   return (
     <>
-      <TipoCrudShell<TipoEspacio>
-        variant="inline"
+      <CatalogoCrudShell<TipoEspacio>
         title="Tipos de espacios"
-        description="Administra los tipos de espacios disponibles. Puedes crear, editar y desactivar tipos."
+        description="Clasifican los espacios: aula, laboratorio, sala de reunión."
+        Icon={Palette}
         loading={loading}
         items={tiposEspacio}
-        loadingLabel="Cargando tipos de espacios..."
-        emptyLabel="No hay tipos de espacios disponibles"
-        EmptyIcon={Palette}
+        emptyLabel="Todavía no hay tipos de espacio"
+        createLabel="Crear tipo"
         renderRowLeading={(tipo) => (
           <div
             className="w-4 h-4 rounded-full flex-shrink-0"
