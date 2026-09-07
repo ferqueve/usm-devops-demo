@@ -1,5 +1,6 @@
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { CarrerasManagement } from '@/components/carreras/CarrerasManagement';
+import { TipoElementoManagement } from '@/components/inventory/TipoElementoManagement';
 import { TipoEspacioManagement } from '@/components/spaces/TipoEspacioManagement';
 
 /**
@@ -17,6 +18,10 @@ export default function ConfiguracionManagement() {
 
       <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
         <TipoEspacioManagement />
+      </PermissionGuard>
+
+      <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
+        <TipoElementoManagement />
       </PermissionGuard>
 
       <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>

@@ -78,7 +78,6 @@ import { MantenimientoRecomendaciones } from '@/components/recomendaciones/Mante
 import { recomendacionesApi } from '@/lib/api/recomendaciones';
 import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
-import { TipoElementoManagement } from './TipoElementoManagement';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
 
@@ -93,7 +92,7 @@ export default function InventoryManagement() {
 
   // Usar hooks compartidos con caché
   const { espacios } = useEspacios();
-  const { tiposElemento, refresh: refreshTiposElemento } = useTiposElemento();
+  const { tiposElemento } = useTiposElemento();
 
   // Estados principales
   const [items, setItems] = useState<InventarioItem[]>([]);
@@ -146,7 +145,6 @@ export default function InventoryManagement() {
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [assignDialog, setAssignDialog] = useState(false);
   const [importDialog, setImportDialog] = useState(false);
-  const [showTiposManagement, setShowTiposManagement] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventarioItem | null>(null);
 
   // Cargar estadísticas y recomendaciones
@@ -652,12 +650,6 @@ export default function InventoryManagement() {
                   Importar CSV
                 </DropdownMenuItem>
               </PermissionGuard>
-              <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
-                <DropdownMenuItem onClick={() => setShowTiposManagement(true)}>
-                  <Package className="h-4 w-4 mr-2" />
-                  Gestionar Tipos
-                </DropdownMenuItem>
-              </PermissionGuard>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -1032,13 +1024,6 @@ export default function InventoryManagement() {
         </DialogContent>
       </Dialog>
 
-      <TipoElementoManagement
-        open={showTiposManagement}
-        onOpenChange={setShowTiposManagement}
-        onSuccess={() => {
-          refreshTiposElemento(); // Recargar tipos cuando cambian
-        }}
-      />
     </div>
   );
 }

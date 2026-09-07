@@ -7,14 +7,12 @@ import { TipoCrudShell } from '@/components/common/TipoCrudShell';
 import type { TipoElemento } from '@/lib/types/spaces';
 
 interface TipoElementoManagementProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  /** Se avisa al consumidor cuando el catálogo cambió, para que recargue lo suyo. */
+  onSuccess?: () => void;
 }
 
+/** Catálogo de tipos de elemento de inventario. Vive como sección de Configuración. */
 export function TipoElementoManagement({
-  open,
-  onOpenChange,
   onSuccess,
 }: Readonly<TipoElementoManagementProps>) {
   const { tiposElemento, loading, refresh: refreshTiposElemento } = useTiposElemento();
@@ -41,23 +39,22 @@ export function TipoElementoManagement({
 
   const handleFormSuccess = () => {
     refreshTiposElemento();
-    onSuccess();
+    onSuccess?.();
     setCreateDialog(false);
     setEditDialog(false);
   };
 
   const handleDeleteSuccess = () => {
     refreshTiposElemento();
-    onSuccess();
+    onSuccess?.();
     setDeleteDialog(false);
   };
 
   return (
     <>
       <TipoCrudShell<TipoElemento>
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Gestionar Tipos de Inventario"
+        variant="inline"
+        title="Tipos de inventario"
         description="Administra los tipos de elementos de inventario disponibles. Puedes crear, editar y desactivar tipos."
         loading={loading}
         items={tiposElemento}
