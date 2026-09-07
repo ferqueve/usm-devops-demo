@@ -209,19 +209,22 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
       {/* Mismo header que los paneles del dashboard: fondo institucional, barra
           de acento y la acción como botón sutil sobre el oscuro. */}
       <header className="flex items-start justify-between gap-3 bg-utec-dark px-4 py-3 text-white">
-        {/* Envuelve en vez de truncar: si la descripción no entra al lado del
-            título, baja entera a una segunda línea. */}
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0">
+        <div className="flex min-w-0 items-start gap-2.5">
           <span
-            className="w-1 h-4 rounded-sm shrink-0"
+            className="mt-1 h-4 w-1 shrink-0 rounded-sm"
             style={{ backgroundColor: accentColor }}
             aria-hidden
           />
-          <h2 className="shrink-0 text-sm font-semibold tracking-tight whitespace-nowrap">{title}</h2>
-          {!loading && (
-            <span className="shrink-0 text-xs text-white/60 tabular-nums">{items.length}</span>
-          )}
-          <span className="text-xs text-white/40">· {description}</span>
+          {/* La barra de acento queda fuera de esta columna: si la descripción no
+              entra al lado del título, baja entera y arranca bajo el título, no
+              bajo el color. */}
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-0.5">
+            <h2 className="shrink-0 text-sm font-semibold tracking-tight whitespace-nowrap">{title}</h2>
+            {!loading && (
+              <span className="shrink-0 text-xs text-white/60 tabular-nums">{items.length}</span>
+            )}
+            <span className="text-xs text-white/40">· {description}</span>
+          </div>
         </div>
 
         <PermissionGuard requiredPermission={crearPerm}>
