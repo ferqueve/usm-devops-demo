@@ -8,7 +8,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -16,7 +15,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { ChevronDown, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems, sidebarSections, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
@@ -160,21 +159,25 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                 );
               }
 
-              // El ítem sigue navegando a su pantalla; el chevron abre las vistas.
+              // Con vistas propias, el ítem no navega: abre y cierra la lista.
+              // Ir a "Materias" sin elegir vista no significa nada; la pantalla
+              // es alguna de las tres.
               return (
-                <Collapsible key={item.id} asChild defaultOpen={isActive}>
+                <Collapsible key={item.id} asChild defaultOpen={isActive} className="group/collapsible">
                   <SidebarMenuItem className="shrink-0">
-                    {boton}
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuAction
-                        className="top-1.5 text-white/40 transition-transform hover:bg-white/10 hover:text-white data-[state=open]:rotate-90"
-                        aria-label={`Ver las vistas de ${item.label}`}
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
                       >
-                        <ChevronRight className="size-4" />
-                      </SidebarMenuAction>
+                        <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
+                        <span className="font-medium">{item.label}</span>
+                        <ChevronDown className="ml-auto size-4 text-white/40 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                      </SidebarMenuButton>
                     </CollapsibleTrigger>
+
                     <CollapsibleContent>
-                      <SidebarMenuSub className="mr-0 border-white/10 pr-0">
+                      <SidebarMenuSub className="mx-0 mt-1.5 gap-1 border-l border-dashed border-white/15 px-0 py-0 pl-3 ml-4">
                         {item.children.map((sub) => {
                           const subActivo = isSubItemActive(item, sub);
                           return (
