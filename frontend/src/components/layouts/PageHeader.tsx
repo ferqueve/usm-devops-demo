@@ -1,6 +1,19 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
+/**
+ * Clases de las acciones que van en la barra oscura. Se exportan para que todas
+ * las pantallas usen las mismas y no cada una su interpretacion.
+ *
+ * El primario usa bg-[#ffffff] y no bg-white a proposito: index.css remapea
+ * `.dark .bg-white` al color de card, asi que en tema oscuro el boton blanco se
+ * volvia una plancha gris con el texto oscuro encima.
+ */
+export const HEADER_ACTION = 'h-8 px-2.5 text-xs font-medium text-white/75 hover:bg-white/10 hover:text-white';
+export const HEADER_ACTION_ICON = 'h-8 w-8 text-white/75 hover:bg-white/10 hover:text-white';
+export const HEADER_PRIMARY =
+  'ml-1 h-8 bg-[#ffffff] px-3 text-xs font-semibold text-[#343a40] shadow-none hover:bg-[#e9eaec]';
+
 /** Ids de los huecos que expone DashboardHeader en la barra superior. */
 export const PAGE_HEADER_SLOT = 'page-header-slot';
 export const PAGE_ACTIONS_SLOT = 'page-actions-slot';
@@ -51,24 +64,26 @@ export function PageHeader({
   }, []);
 
   const heading = (
-    <div className="flex min-w-0 items-stretch gap-3">
+    <div className="flex min-w-0 items-center gap-3">
       <span
-        className="w-1 shrink-0 self-stretch rounded-sm"
+        className="h-6 w-1 shrink-0 rounded-sm"
         style={{ backgroundColor: accentColor }}
         aria-hidden
       />
       <div className="min-w-0">
-        {/* items-baseline: la cuenta es mas chica que el titulo y centrada
-            quedaba flotando por encima de su linea de base. */}
-        <div className="flex items-baseline gap-1.5">
-          <h1 className="truncate text-sm font-semibold leading-[1.35] tracking-tight text-white">
+        {/* m-0 en el h1: la hoja base le pone margin-bottom 7px a los headings
+            y eso separaba la bajada. El recorte va en la fila y no en el h1
+            porque un elemento con overflow hidden alinea por su borde inferior
+            en vez de por su linea de base. */}
+        <div className="flex min-w-0 items-baseline gap-1.5 overflow-hidden leading-[1.15]">
+          <h1 className="m-0 whitespace-nowrap text-sm font-semibold leading-[1.15] tracking-tight text-white">
             {title}
           </h1>
           {count !== undefined && (
-            <span className="shrink-0 text-xs leading-[1.35] text-white/55 tabular-nums">{count}</span>
+            <span className="shrink-0 text-xs leading-[1.15] text-white/55 tabular-nums">{count}</span>
           )}
         </div>
-        <span className="block truncate text-xs leading-[1.35] text-white/45">
+        <span className="block truncate text-xs leading-[1.15] text-white/45">
           {description}
         </span>
       </div>

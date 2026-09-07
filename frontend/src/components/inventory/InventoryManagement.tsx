@@ -72,7 +72,7 @@ import AssignSpaceDialog from './AssignSpaceDialog';
 import ImportCSVDialog from './ImportCSVDialog';
 import BulkActionsBar from './BulkActionsBar';
 import PermissionGuard from '@/components/auth/PermissionGuard';
-import { PageHeader } from '@/components/layouts/PageHeader';
+import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { usePreferences } from '@/hooks/usePreferences';
 import { MantenimientoRecomendaciones } from '@/components/recomendaciones/MantenimientoRecomendaciones';
 import { recomendacionesApi } from '@/lib/api/recomendaciones';
@@ -600,7 +600,7 @@ export default function InventoryManagement() {
                   onClick={isRefreshing ? undefined : handleRefresh}
                   disabled={isRefreshing}
                   aria-label="Actualizar"
-                  className="h-8 w-8 text-white/70 hover:bg-white/10 hover:text-white"
+                  className={HEADER_ACTION_ICON}
                 >
                   <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
                 </Button>
@@ -616,7 +616,7 @@ export default function InventoryManagement() {
                     size="icon"
                     onClick={handleExport}
                     aria-label="Exportar CSV"
-                    className="h-8 w-8 text-white/70 hover:bg-white/10 hover:text-white"
+                    className={HEADER_ACTION_ICON}
                   >
                     <Download className="h-4 w-4" />
                   </Button>
@@ -630,7 +630,7 @@ export default function InventoryManagement() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="h-8 px-2.5 text-xs font-medium text-white/80 hover:bg-white/10 hover:text-white"
+                    className={HEADER_ACTION}
                   >
                     Importar
                     <ChevronDown className="ml-1 h-3.5 w-3.5" />
@@ -648,7 +648,7 @@ export default function InventoryManagement() {
             <PermissionGuard requiredPermission="inventario:crear">
               <Button
                 onClick={() => setCreateDialog(true)}
-                className="ml-1 h-8 bg-white px-3 text-xs font-semibold text-utec-dark hover:bg-white/90"
+                className={HEADER_PRIMARY}
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 Agregar item
