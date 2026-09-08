@@ -51,6 +51,20 @@ function Globo({ active, payload, label }: Readonly<TooltipProps<number, string>
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'];
 
+/**
+ * Numeros del eje en corto: 2000 -> 2k.
+ *
+ * Con los miles enteros el eje pedia mas ancho del que tenia y los digitos
+ * salian cortados ("00", "50").
+ */
+function corto(valor: number): string {
+  if (Math.abs(valor) >= 1000) {
+    const miles = valor / 1000;
+    return `${Number.isInteger(miles) ? miles : miles.toFixed(1)}k`;
+  }
+  return String(valor);
+}
+
 /** "2026-03" → "mar". El backend manda la clave así. */
 function nombreDeMes(clave: string): string {
   const mes = Number.parseInt(clave.slice(5, 7), 10);
@@ -85,7 +99,7 @@ export function Tendencia({ datos, color = UTEC.azul, alto = 150 }: Readonly<Ten
 
   return (
     <ResponsiveContainer width="100%" height={alto}>
-      <AreaChart data={serie} margin={{ top: 6, right: 4, bottom: 0, left: -22 }}>
+      <AreaChart data={serie} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id={`grad-${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity={0.35} />
@@ -93,7 +107,14 @@ export function Tendencia({ datos, color = UTEC.azul, alto = 150 }: Readonly<Ten
           </linearGradient>
         </defs>
         <XAxis dataKey="mes" tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} className="text-muted-foreground" />
-        <YAxis tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} width={44} className="text-muted-foreground" />
+        <YAxis
+          tick={{ fontSize: 11, fill: 'currentColor' }}
+          axisLine={false}
+          tickLine={false}
+          width={34}
+          tickFormatter={corto}
+          className="text-muted-foreground"
+        />
         <Tooltip content={<Globo />} cursor={{ stroke: color, strokeOpacity: 0.25 }} />
         <Area
           type="monotone"
@@ -187,18 +208,22 @@ interface BarrasProps {
 }
 
 /** Ranking en barras horizontales: nombres largos que se leen. */
-export function BarrasHorizontales({ datos, color = UTEC.azul, alto = 150, multicolor = false }: Readonly<BarrasProps>) {
+export function BarrasHorizontales({ datos, color = UTEC.azul, alto, multicolor = false }: Readonly<BarrasProps>) {
   if (datos.length === 0) {
     return <p className="py-8 text-center text-sm text-muted-foreground">Sin datos para graficar.</p>;
   }
+  // Recharts saltea etiquetas cuando no entran: el alto lo decide la cantidad
+  // de filas, no un numero fijo.
+  const altoUtil = alto ?? Math.max(90, datos.length * 26 + 16);
   return (
-    <ResponsiveContainer width="100%" height={alto}>
+    <ResponsiveContainer width="100%" height={altoUtil}>
       <BarChart data={datos} layout="vertical" margin={{ top: 2, right: 12, bottom: 2, left: 4 }}>
         <XAxis type="number" hide />
         <YAxis
           type="category"
           dataKey="nombre"
           width={104}
+          interval={0}
           tick={{ fontSize: 11, fill: 'currentColor' }}
           axisLine={false}
           tickLine={false}
@@ -238,9 +263,16 @@ export function RitmoSemanal({ datos, alto = 150 }: Readonly<{ datos: Record<str
 
   return (
     <ResponsiveContainer width="100%" height={alto}>
-      <BarChart data={serie} margin={{ top: 6, right: 4, bottom: 0, left: -22 }}>
+      <BarChart data={serie} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
         <XAxis dataKey="dia" tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} className="text-muted-foreground" />
-        <YAxis tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} width={44} className="text-muted-foreground" />
+        <YAxis
+          tick={{ fontSize: 11, fill: 'currentColor' }}
+          axisLine={false}
+          tickLine={false}
+          width={34}
+          tickFormatter={corto}
+          className="text-muted-foreground"
+        />
         <Tooltip content={<Globo />} cursor={{ fill: 'currentColor', fillOpacity: 0.06 }} />
         <Bar dataKey="cantidad" name="reservas" radius={[4, 4, 0, 0]} maxBarSize={34}>
           {serie.map((d) => (

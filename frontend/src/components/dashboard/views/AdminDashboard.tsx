@@ -190,7 +190,7 @@ export function AdminDashboard({
             {barrasUsuarios.length > 0 && (
               <div className="border-t pt-2">
                 <p className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
-                <BarrasHorizontales datos={barrasUsuarios} alto={118} multicolor />
+                <BarrasHorizontales datos={barrasUsuarios} multicolor />
               </div>
             )}
           </div>

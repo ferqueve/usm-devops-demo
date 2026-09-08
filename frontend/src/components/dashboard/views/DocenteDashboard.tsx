@@ -73,7 +73,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
           accentColor="#86bb4c"
           action={{ label: 'ver materias', to: '/materias?tab=listado' }}
         >
-          <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} alto={160} />
+          <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} />
         </Panel>
 
         <Panel

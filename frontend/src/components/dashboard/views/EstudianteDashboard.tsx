@@ -69,7 +69,7 @@ export function EstudianteDashboard({ data, loading, onViewDetails }: Readonly<E
           accentColor="#184897"
           action={{ label: 'plan', to: '/materias?tab=mapa' }}
         >
-          <BarrasHorizontales datos={creditosPorSemestre} alto={160} multicolor />
+          <BarrasHorizontales datos={creditosPorSemestre} multicolor />
         </Panel>
 
         <Panel title="Mis tutorías" count={`racha de ${stats?.racha ?? 0}`} accentColor="#86bb4c">
