@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.domain.Pageable;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -49,6 +51,22 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
      * numero de reservas de hoy: contarlo aca evita traer las filas.
      */
     long countByInicioBetween(Instant desde, Instant hasta);
+
+    /**
+     * Espacios con mas reservas esperando aprobacion, de mayor a menor.
+     * Le dice al analista donde se le esta acumulando la cola.
+     *
+     * @return filas [espacioId, nombre, pendientes]
+     */
+    @Query("SELECT e.id, e.nombre, COUNT(r) FROM Reserva r JOIN r.espacio e "
+         + "WHERE r.estado = com.utec.backend.model.Reserva.EstadoReserva.PENDIENTE "
+         + "GROUP BY e.id, e.nombre ORDER BY COUNT(r) DESC")
+    List<Object[]> contarPendientesPorEspacio(Pageable pageable);
+
+    /** Cuantas solicitudes dejo de estar pendientes en manos de este analista. */
+    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.analistaAsignado.id = :analistaId "
+         + "AND r.estado <> com.utec.backend.model.Reserva.EstadoReserva.PENDIENTE")
+    long contarResueltasPorAnalista(@Param("analistaId") Long analistaId);
     
     // Buscar reservas futuras de un espacio
     @Query("SELECT r FROM Reserva r WHERE r.espacio.id = :espacioId " +

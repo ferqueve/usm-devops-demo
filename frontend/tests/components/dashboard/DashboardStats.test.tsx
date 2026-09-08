@@ -21,6 +21,13 @@ const baseStats = {
   usuariosActivos: 8,
   usuariosNuevosHoy: 2,
   promedioReservasPorEspacio: 3.4,
+  materias: 0,
+  creditos: 0,
+  inscriptos: 0,
+  tutorias: 0,
+  racha: 0,
+  resueltasPorMi: 0,
+  eventosProximos: 0,
 };
 
 describe('DashboardStats', () => {

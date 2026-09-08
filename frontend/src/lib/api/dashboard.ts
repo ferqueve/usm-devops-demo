@@ -25,6 +25,88 @@ export interface DashboardStats {
 
   /** Razon, no porcentaje: aprobadas sobre espacios. */
   promedioReservasPorEspacio: number;
+
+  /** Materias que el usuario dicta o cursa, y los créditos que suman. */
+  materias: number;
+  creditos: number;
+  /** Inscriptos en las materias que dicta. */
+  inscriptos: number;
+  /** Franjas de tutoría propias y clases seguidas asistidas. */
+  tutorias: number;
+  racha: number;
+  /** Solicitudes que este analista ya resolvió. */
+  resueltasPorMi: number;
+  eventosProximos: number;
+}
+
+export interface MateriaBreve {
+  id: number;
+  nombre: string;
+  codigo?: string;
+  creditos?: number;
+  inscriptos?: number;
+  docenteNombre?: string;
+}
+
+export interface TutoriaBreve {
+  id: number;
+  materiaId?: number;
+  materiaNombre?: string;
+  inicio: string;
+  fin: string;
+  espacioNombre?: string;
+  docenteNombre?: string;
+  agendados: number;
+  cupo: number;
+}
+
+export interface EventoBreve {
+  id: number;
+  titulo: string;
+  inicio: string;
+  espacioNombre?: string;
+  inscriptos: number;
+  cupo?: number;
+  inscrito: boolean;
+}
+
+export interface ItemAtencion {
+  id: number;
+  titulo: string;
+  motivo?: string;
+  urgencia: number;
+}
+
+export interface EspacioBreve {
+  id: number;
+  nombre: string;
+  estado: string;
+  edificio?: string;
+}
+
+export interface Actividad {
+  cuando: string;
+  usuario?: string;
+  accion?: string;
+  entidad?: string;
+}
+
+export interface Salud {
+  estado: string;
+  componentes: number;
+  caidos: string[];
+}
+
+export interface Sostenibilidad {
+  hojasEvitadas: number;
+  arbolesSalvados: number;
+  co2EvitadoKg: number;
+}
+
+export interface EspacioPresion {
+  id: number;
+  nombre: string;
+  pendientes: number;
 }
 
 /**
@@ -43,6 +125,21 @@ export interface DashboardData {
   userStats?: UserStats;
   inventarioStats?: InventoryStats;
   solicitudesInventarioPendientes: number;
+
+  /** Materias que dicta (DOCENTE) o que cursa (ESTUDIANTE). */
+  misMaterias: MateriaBreve[];
+  /** Tutorías que dicta (DOCENTE) o que tiene agendadas (ESTUDIANTE). */
+  misTutorias: TutoriaBreve[];
+  eventos: EventoBreve[];
+  /** Ítems que piden reparación (MANTENIMIENTO). */
+  inventarioAtencion: ItemAtencion[];
+  espaciosFueraDeServicio: EspacioBreve[];
+  /** Últimos movimientos del sistema (ADMIN). */
+  actividadReciente: Actividad[];
+  salud?: Salud;
+  sostenibilidad?: Sostenibilidad;
+  /** Espacios con más solicitudes esperando (ANALISTA y ADMIN). */
+  espaciosConPresion: EspacioPresion[];
 }
 
 /** Lo que muestra el panel de mantenimiento sobre el parque de espacios. */
@@ -58,11 +155,19 @@ const VACIO: DashboardData = {
     totalReservas: 0, reservasHoy: 0, reservasPendientes: 0, reservasAprobadas: 0, reservasCanceladas: 0,
     totalEspacios: 0, espaciosDisponibles: 0, espaciosOcupados: 0, espaciosEnMantenimiento: 0, capacidadPromedio: 0,
     totalUsuarios: 0, usuariosActivos: 0, usuariosNuevosHoy: 0, promedioReservasPorEspacio: 0,
+    materias: 0, creditos: 0, inscriptos: 0, tutorias: 0, racha: 0, resueltasPorMi: 0, eventosProximos: 0,
   },
   proximasReservas: [],
   misReservas: [],
   reservasPendientes: [],
   solicitudesInventarioPendientes: 0,
+  misMaterias: [],
+  misTutorias: [],
+  eventos: [],
+  inventarioAtencion: [],
+  espaciosFueraDeServicio: [],
+  actividadReciente: [],
+  espaciosConPresion: [],
 };
 
 export const dashboardApi = {

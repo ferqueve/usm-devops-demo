@@ -116,6 +116,7 @@ export default function UnifiedDashboard() {
     if (rol === ROLES.MANTENIMIENTO) {
       return (
         <MantenimientoDashboard
+          data={data}
           loading={loading}
           inventarioStats={data?.inventarioStats ?? null}
           espaciosStats={espaciosStats}

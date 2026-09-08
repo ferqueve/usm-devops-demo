@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import { CalendarPlus, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { CalendarPlus, CheckCircle2, Clock, Megaphone, XCircle } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
-import { Section } from './_components/Section';
+import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
+import { EventoFila } from './_components/Filas';
 
 interface ExternoDashboardProps {
   data: DashboardData | null;
@@ -24,6 +25,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
   const eventosPublicosHoy = stats?.reservasHoy ?? 0;
   // El total tambien del agregado: la lista se corta en cincuenta.
   const totalSolicitudes = stats?.totalReservas ?? misReservas.length;
+  const eventos = data?.eventos ?? [];
 
   return (
     <div className="space-y-5">
@@ -44,41 +46,60 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
           { label: 'Aprobadas', value: aprobadas, hint: 'confirmadas', icon: CheckCircle2, bg: 'green', to: '/reservations' },
           { label: 'Rechazadas', value: canceladas, hint: 'no aprobadas', icon: XCircle, bg: 'red', to: '/reservations' },
           { label: 'Hoy en el campus', value: eventosPublicosHoy, hint: 'eventos públicos', bg: 'blue', to: '/calendar' },
+          { label: 'Eventos', value: stats?.eventosProximos ?? 0, hint: 'abiertos al público', icon: Megaphone, bg: 'cyan', to: '/eventos' },
         ]}
       />
 
-      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
-        <Section
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <Panel
           title="Mis solicitudes"
-          count={totalSolicitudes > 0 ? `${totalSolicitudes}` : undefined}
+          count={totalSolicitudes > 0 ? totalSolicitudes : undefined}
+          accentColor="#F6CA21"
           action={{ label: 'ver todas', to: '/reservations' }}
         >
           {misReservas.length > 0 ? (
             <div className="divide-y divide-border/60">
-              {misReservas.slice(0, 6).map((r) => (
+              {misReservas.slice(0, 8).map((r) => (
                 <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} showEstado showAvatar={false} />
               ))}
             </div>
           ) : (
             <EmptyState title="Sin solicitudes enviadas." />
           )}
-        </Section>
+        </Panel>
 
-        <Section
-          title="Eventos públicos"
-          action={{ label: 'calendario', to: '/calendar' }}
+        <Panel
+          title="Eventos abiertos"
+          count={eventos.length || undefined}
+          accentColor="#86bb4c"
+          action={{ label: 'ver todos', to: '/eventos' }}
         >
-          {data?.proximasReservas && data.proximasReservas.length > 0 ? (
+          {eventos.length > 0 ? (
             <div className="divide-y divide-border/60">
-              {data.proximasReservas.slice(0, 6).map((r) => (
-                <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
-              ))}
+              {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
             </div>
           ) : (
             <EmptyState title="Sin eventos próximos." />
           )}
-        </Section>
+        </Panel>
       </div>
+
+      <Panel
+        title="Esta semana en el campus"
+        count={data?.proximasReservas?.length || undefined}
+        accentColor="#184897"
+        action={{ label: 'calendario', to: '/calendar' }}
+      >
+        {data?.proximasReservas && data.proximasReservas.length > 0 ? (
+          <div className="divide-y divide-border/60">
+            {data.proximasReservas.slice(0, 6).map((r) => (
+              <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="Sin actividades públicas próximas." />
+        )}
+      </Panel>
     </div>
   );
 }

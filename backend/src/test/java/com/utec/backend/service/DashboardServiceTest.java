@@ -53,6 +53,14 @@ class DashboardServiceTest {
     @Mock private UsuarioRepository usuarioRepository;
     @Mock private InventarioItemService inventarioItemService;
     @Mock private UserActivityTrackingService activityTrackingService;
+    @Mock private MateriaService materiaService;
+    @Mock private TutoriaService tutoriaService;
+    @Mock private EventoService eventoService;
+    @Mock private com.utec.backend.repository.EspacioRepository espacioRepository;
+    @Mock private RecomendacionService recomendacionService;
+    @Mock private AuditService auditService;
+    @Mock private SostenibilidadService sostenibilidadService;
+    @Mock private org.springframework.boot.actuate.health.HealthEndpoint healthEndpoint;
 
     @InjectMocks private DashboardService service;
 
@@ -85,6 +93,27 @@ class DashboardServiceTest {
         when(activityTrackingService.getActiveUsers()).thenReturn(activos);
         when(inventarioItemService.getInventarioStatistics()).thenReturn(Map.of("danados", 2L));
         when(solicitudRepository.countByEstado(ReservaItemSolicitado.EstadoSolicitud.PENDIENTE)).thenReturn(6L);
+
+        when(materiaService.getMateriasQueDicta(anyString())).thenReturn(List.of());
+        when(materiaService.getMateriasQueCursa(anyString())).thenReturn(List.of());
+        when(tutoriaService.tutoriasQueDicta(anyString())).thenReturn(List.of());
+        when(tutoriaService.tutoriasAgendadas(anyString())).thenReturn(List.of());
+        when(tutoriaService.racha(anyString()))
+                .thenReturn(new com.utec.backend.dto.tutoria.RachaDto(0, 0, 0, List.of()));
+        when(eventoService.listar(anyString(), anyString())).thenReturn(List.of());
+        when(eventoService.misInscripciones(anyString())).thenReturn(List.of());
+        when(recomendacionService.obtenerItemsMantenimientoUrgente()).thenReturn(List.of());
+        when(espacioRepository.findAll()).thenReturn(List.of());
+        when(reservaRepository.contarPendientesPorEspacio(any())).thenReturn(List.of());
+        when(reservaRepository.contarResueltasPorAnalista(any())).thenReturn(0L);
+        when(auditService.buscarLogs(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(paginaVacia());
+    }
+
+    private com.utec.backend.dto.common.PagedResponseDto<com.utec.backend.dto.audit.AuditLogResponseDto> paginaVacia() {
+        var pagina = new com.utec.backend.dto.common.PagedResponseDto<com.utec.backend.dto.audit.AuditLogResponseDto>();
+        pagina.setContent(List.of());
+        return pagina;
     }
 
     private ReservaStatsDto stats() {
@@ -177,5 +206,93 @@ class DashboardServiceTest {
         verify(reservaEstadisticasService, never()).calcular(any());
         assertNull(dto.reservaStats());
         assertEquals(0L, dto.stats().totalReservas());
+    }
+
+    @Test
+    @DisplayName("el docente recibe sus materias, sus tutorias y cuantos inscriptos suman")
+    void docenteRecibeLoAcademico() {
+        com.utec.backend.dto.materia.MateriaResponseDto materia = new com.utec.backend.dto.materia.MateriaResponseDto();
+        materia.setId(4L);
+        materia.setNombre("Matemática I");
+        materia.setCreditos(8);
+        materia.setTotalInscriptos(23L);
+        when(materiaService.getMateriasQueDicta(EMAIL)).thenReturn(List.of(materia));
+
+        com.utec.backend.dto.tutoria.TutoriaResponseDto tutoria = new com.utec.backend.dto.tutoria.TutoriaResponseDto();
+        tutoria.setId(9L);
+        tutoria.setMateriaNombre("Matemática I");
+        tutoria.setInicio(java.time.Instant.now().plusSeconds(3600));
+        tutoria.setFin(java.time.Instant.now().plusSeconds(7200));
+        tutoria.setCupo(10);
+        tutoria.setPlazasDisponibles(4);
+        when(tutoriaService.tutoriasQueDicta(EMAIL)).thenReturn(List.of(tutoria));
+
+        DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.DOCENTE.name());
+
+        assertEquals(1, dto.misMaterias().size());
+        assertEquals(23L, dto.stats().inscriptos());
+        assertEquals(8L, dto.stats().creditos());
+        assertEquals(1, dto.misTutorias().size());
+        // Cupo 10 con 4 libres: seis agendados.
+        assertEquals(6L, dto.misTutorias().get(0).agendados());
+    }
+
+    @Test
+    @DisplayName("las tutorias que ya pasaron no se listan")
+    void tutoriasPasadasFuera() {
+        com.utec.backend.dto.tutoria.TutoriaResponseDto vieja = new com.utec.backend.dto.tutoria.TutoriaResponseDto();
+        vieja.setId(1L);
+        vieja.setInicio(java.time.Instant.now().minusSeconds(7200));
+        vieja.setFin(java.time.Instant.now().minusSeconds(3600));
+        when(tutoriaService.tutoriasAgendadas(EMAIL)).thenReturn(List.of(vieja));
+
+        DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.ESTUDIANTE.name());
+
+        assertTrue(dto.misTutorias().isEmpty());
+    }
+
+    @Test
+    @DisplayName("mantenimiento recibe los espacios que no estan operativos")
+    void mantenimientoRecibeEspaciosCaidos() {
+        com.utec.backend.model.Espacio caido = new com.utec.backend.model.Espacio();
+        caido.setId(3L);
+        caido.setNombre("Aula 9");
+        caido.setEstado("MANTENIMIENTO");
+        com.utec.backend.model.Espacio ok = new com.utec.backend.model.Espacio();
+        ok.setId(4L);
+        ok.setNombre("Aula 1");
+        ok.setEstado("DISPONIBLE");
+        when(espacioRepository.findAll()).thenReturn(List.of(caido, ok));
+
+        DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.MANTENIMIENTO.name());
+
+        assertEquals(1, dto.espaciosFueraDeServicio().size());
+        assertEquals("Aula 9", dto.espaciosFueraDeServicio().get(0).nombre());
+    }
+
+    @Test
+    @DisplayName("un ESTUDIANTE no recibe los bloques de quien administra")
+    void estudianteSinBloquesDeAdmin() {
+        DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.ESTUDIANTE.name());
+
+        assertNull(dto.salud());
+        assertNull(dto.sostenibilidad());
+        assertTrue(dto.actividadReciente().isEmpty());
+        assertTrue(dto.inventarioAtencion().isEmpty());
+        assertTrue(dto.espaciosConPresion().isEmpty());
+    }
+
+    @Test
+    @DisplayName("el analista ve donde se le acumula la cola y cuantas resolvio")
+    void analistaVeLaPresion() {
+        when(reservaRepository.contarPendientesPorEspacio(any()))
+                .thenReturn(List.<Object[]>of(new Object[]{7L, "Aula 5", 42L}));
+        when(reservaRepository.contarResueltasPorAnalista(3L)).thenReturn(88L);
+
+        DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.ANALISTA.name());
+
+        assertEquals(1, dto.espaciosConPresion().size());
+        assertEquals(42L, dto.espaciosConPresion().get(0).pendientes());
+        assertEquals(88L, dto.stats().resueltasPorMi());
     }
 }

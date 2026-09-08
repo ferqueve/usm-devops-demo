@@ -22,6 +22,25 @@ interface StatStripProps {
 }
 
 /**
+ * Columnas segun cuantas tarjetas hay.
+ *
+ * Estaba fijo en seis: con cuatro tarjetas quedaban dos huecos a la derecha y
+ * la tira no llegaba al borde.
+ */
+const columnas: Record<number, string> = {
+  1: 'lg:grid-cols-1',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+  5: 'lg:grid-cols-5',
+  6: 'lg:grid-cols-6',
+};
+
+function gridDe(cantidad: number): string {
+  return columnas[Math.min(cantidad, 6)] ?? 'lg:grid-cols-6';
+}
+
+/**
  * Mapeo de fondo UTEC → clases tailwind para bg + texto principal + texto
  * secundario. Los colores claros (yellow, cyan) usan texto oscuro; los
  * oscuros usan blanco.
@@ -55,7 +74,7 @@ export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) 
   }
 
   return (
-    <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+    <div className={`grid gap-3 grid-cols-2 sm:grid-cols-3 ${gridDe(items.length)}`}>
       {items.map((item) => {
         const Icon = item.icon;
         const c = bgClasses[item.bg ?? 'dark'];

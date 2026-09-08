@@ -22,6 +22,13 @@ const STATS: DashboardStats = {
   usuariosActivos: 4,
   usuariosNuevosHoy: 0,
   promedioReservasPorEspacio: 3,
+  materias: 0,
+  creditos: 0,
+  inscriptos: 0,
+  tutorias: 0,
+  racha: 0,
+  resueltasPorMi: 0,
+  eventosProximos: 0,
 };
 
 describe('dashboardApi', () => {

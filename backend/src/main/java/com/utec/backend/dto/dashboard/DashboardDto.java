@@ -4,6 +4,7 @@ import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
 import com.utec.backend.dto.usuario.UsuarioStatsDto;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -36,8 +37,70 @@ public record DashboardDto(
         ReservaStatsDto reservaStats,
         UsuarioStatsDto userStats,
         Map<String, Object> inventarioStats,
-        long solicitudesInventarioPendientes
+        long solicitudesInventarioPendientes,
+
+        /** Materias que dicta (DOCENTE) o que cursa (ESTUDIANTE). */
+        List<MateriaBreve> misMaterias,
+        /** Franjas de tutoria que dicta (DOCENTE) o que tiene agendadas (ESTUDIANTE). */
+        List<TutoriaBreve> misTutorias,
+        /** Proximos eventos que le tocan al rol. */
+        List<EventoBreve> eventos,
+        /** Items que piden reparacion (MANTENIMIENTO). */
+        List<ItemAtencion> inventarioAtencion,
+        /** Espacios que no estan operativos (MANTENIMIENTO). */
+        List<EspacioBreve> espaciosFueraDeServicio,
+        /** Ultimos movimientos del sistema (ADMIN). */
+        List<Actividad> actividadReciente,
+        /** Estado de los componentes (ADMIN). */
+        Salud salud,
+        /** Impacto acumulado de la digitalizacion (ADMIN y MANTENIMIENTO). */
+        Sostenibilidad sostenibilidad,
+        /** Espacios con mas solicitudes en cola (ANALISTA y ADMIN). */
+        List<EspacioPresion> espaciosConPresion
 ) {
+
+    /** Una materia, con lo justo para listarla. */
+    public record MateriaBreve(Long id, String nombre, String codigo, Integer creditos,
+                               Long inscriptos, String docenteNombre) {
+    }
+
+    /** Una franja de tutoria. */
+    public record TutoriaBreve(Long id, Long materiaId, String materiaNombre, Instant inicio, Instant fin,
+                               String espacioNombre, String docenteNombre, long agendados, int cupo) {
+    }
+
+    /** Un evento proximo. */
+    public record EventoBreve(Long id, String titulo, Instant inicio, String espacioNombre,
+                              long inscriptos, Integer cupo, boolean inscrito) {
+    }
+
+    /** Un item de inventario que pide atencion, con el motivo ya redactado. */
+    public record ItemAtencion(Long id, String titulo, String motivo, int urgencia) {
+    }
+
+    /** Un espacio que no esta operativo. */
+    public record EspacioBreve(Long id, String nombre, String estado, String edificio) {
+    }
+
+    /** Un movimiento del registro de auditoria. */
+    public record Actividad(Instant cuando, String usuario, String accion, String entidad) {
+    }
+
+    /**
+     * Salud del sistema.
+     *
+     * @param caidos nombres de los componentes que no estan UP
+     */
+    public record Salud(String estado, int componentes, List<String> caidos) {
+    }
+
+    /** Lo que ahorro la digitalizacion, en los tres numeros que se muestran. */
+    public record Sostenibilidad(long hojasEvitadas, double arbolesSalvados, double co2EvitadoKg) {
+    }
+
+    /** Un espacio y cuantas solicitudes tiene esperando. */
+    public record EspacioPresion(Long id, String nombre, long pendientes) {
+    }
 
     /**
      * Los numeros de la tira de tarjetas. Todos salen de agregados en la base:
@@ -59,7 +122,20 @@ public record DashboardDto(
             long totalUsuarios,
             long usuariosActivos,
             long usuariosNuevosHoy,
-            double promedioReservasPorEspacio
+            double promedioReservasPorEspacio,
+
+            /** Materias que el usuario dicta o cursa, y los creditos que suman. */
+            long materias,
+            long creditos,
+            /** Inscriptos en las materias que dicta (DOCENTE). */
+            long inscriptos,
+            /** Franjas de tutoria propias y clases seguidas asistidas (ESTUDIANTE). */
+            long tutorias,
+            long racha,
+            /** Solicitudes que este analista ya resolvio. */
+            long resueltasPorMi,
+            /** Eventos proximos que le tocan al rol. */
+            long eventosProximos
     ) {
     }
 }

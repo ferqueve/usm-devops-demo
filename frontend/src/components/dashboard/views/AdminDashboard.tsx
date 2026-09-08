@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Activity, Building2, CalendarClock, ClipboardCheck, Inbox, Users } from 'lucide-react';
+import { Activity, Building2, CalendarClock, ClipboardCheck, Inbox, Leaf, Users } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
@@ -7,6 +7,8 @@ import { StatStrip } from './_components/StatStrip';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
 import { DualPanel } from './_components/DualPanel';
+import { Panel } from './_components/Panel';
+import { ActividadFila, EventoFila, PresionFila } from './_components/Filas';
 
 interface AdminDashboardProps {
   data: DashboardData | null;
@@ -60,6 +62,16 @@ export function AdminDashboard({
   const espaciosLibres = stats?.espaciosDisponibles ?? 0;
   const enMantenimiento = stats?.espaciosEnMantenimiento ?? 0;
   const usuariosActivos = stats?.usuariosActivos ?? 0;
+  const salud = data?.salud;
+  const verde = data?.sostenibilidad;
+  const actividad = data?.actividadReciente ?? [];
+  const presion = data?.espaciosConPresion ?? [];
+  const maximaPresion = presion.length > 0 ? presion[0].pendientes : 0;
+  const eventos = data?.eventos ?? [];
+  const usuariosPorRol = Object.entries(data?.userStats?.usuariosPorRol ?? {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+
   const tasaAprobacion = (() => {
     const ap = data?.reservaStats?.totalAprobadas ?? 0;
     const ca = data?.reservaStats?.totalCanceladas ?? 0;
@@ -120,6 +132,95 @@ export function AdminDashboard({
           ),
         }}
       />
+
+      <div className="grid gap-4 lg:grid-cols-[2fr_3fr]">
+        <Panel
+          title="Estado del sistema"
+          count={salud ? `${salud.componentes} componentes` : undefined}
+          accentColor={salud && salud.estado !== 'UP' ? '#e2001a' : '#86bb4c'}
+          action={{ label: 'sistema', to: '/system' }}
+        >
+          <div className="space-y-3 py-1">
+            <div className="flex items-center gap-2">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${salud?.estado === 'UP' ? 'bg-utec-green' : 'bg-utec-red'}`}
+                aria-hidden
+              />
+              <span className="text-lg font-semibold">{salud?.estado ?? 'Sin datos'}</span>
+              <span className="text-sm text-muted-foreground">
+                {salud && salud.caidos.length > 0 ? `· ${salud.caidos.join(', ')} caído(s)` : '· todo al día'}
+              </span>
+            </div>
+            {verde && (
+              <div className="flex items-baseline gap-2 border-t pt-3 text-sm">
+                <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
+                <b className="tabular-nums">{verde.hojasEvitadas.toLocaleString('es-UY')}</b>
+                <span className="text-muted-foreground">hojas evitadas ·</span>
+                <b className="tabular-nums">{verde.arbolesSalvados.toFixed(1)}</b>
+                <span className="text-muted-foreground">árboles</span>
+              </div>
+            )}
+            {usuariosPorRol.length > 0 && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1 border-t pt-3 text-sm">
+                {usuariosPorRol.map(([rol, cantidad]) => (
+                  <span key={rol}>
+                    <b className="tabular-nums">{cantidad}</b>{' '}
+                    <span className="text-muted-foreground">{rol.toLowerCase()}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </Panel>
+
+        <Panel
+          title="Actividad reciente"
+          count={actividad.length || undefined}
+          accentColor="#00c7ff"
+          action={{ label: 'auditoría', to: '/audit' }}
+        >
+          {actividad.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {actividad.map((a) => (
+                <ActividadFila key={`${a.cuando}-${a.usuario}-${a.entidad}`} actividad={a} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Sin movimientos registrados." />
+          )}
+        </Panel>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel
+          title="Dónde se acumula la cola"
+          accentColor="#e8630a"
+          action={{ label: 'reservas', to: '/reservations' }}
+        >
+          {presion.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
+            </div>
+          ) : (
+            <EmptyState title="Nada esperando." />
+          )}
+        </Panel>
+
+        <Panel
+          title="Próximos eventos"
+          count={eventos.length || undefined}
+          accentColor="#184897"
+          action={{ label: 'ver todos', to: '/eventos' }}
+        >
+          {eventos.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
+            </div>
+          ) : (
+            <EmptyState title="Sin eventos próximos." />
+          )}
+        </Panel>
+      </div>
     </div>
   );
 }

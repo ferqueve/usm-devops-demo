@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
-import { CalendarClock, CheckCircle2, Flame, Inbox } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Flame, Inbox, Megaphone, Stamp } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 import { StatStrip } from './_components/StatStrip';
-import { Section } from './_components/Section';
+import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
+import { EventoFila, PresionFila } from './_components/Filas';
 
 interface AnalistaDashboardProps {
   data: DashboardData | null;
@@ -39,6 +40,9 @@ export function AnalistaDashboard({
   const totalPendientes = data?.reservaStats?.totalPendientes ?? stats?.reservasPendientes ?? 0;
   const totalAprobadas = data?.reservaStats?.totalAprobadas ?? stats?.reservasAprobadas ?? 0;
   const reservasHoyCount = stats?.reservasHoy ?? 0;
+  const presion = data?.espaciosConPresion ?? [];
+  const maximaPresion = presion.length > 0 ? presion[0].pendientes : 0;
+  const eventos = data?.eventos ?? [];
 
   const cola = useMemo(() => {
     const matched = emparejarPrioritarias(reservasPrioritarias, reservasPendientes);
@@ -55,49 +59,88 @@ export function AnalistaDashboard({
           { label: 'Urgentes', value: reservasPrioritarias.length, hint: loadingPrioritarias ? 'calculando…' : 'requieren atención', icon: Flame, bg: 'red', to: '/reservations' },
           { label: 'Aprobadas', value: totalAprobadas, hint: 'históricas', icon: CheckCircle2, bg: 'green', to: '/statistics' },
           { label: 'Hoy', value: reservasHoyCount, hint: 'reservas programadas', icon: CalendarClock, bg: 'blue', to: '/calendar' },
+          { label: 'Resueltas por mí', value: stats?.resueltasPorMi ?? 0, hint: 'aprobadas o rechazadas', icon: Stamp, bg: 'dark', to: '/reservations' },
+          { label: 'Eventos', value: stats?.eventosProximos ?? 0, hint: 'próximos', icon: Megaphone, bg: 'cyan', to: '/eventos' },
         ]}
       />
 
-      <Section
-        title="Cola"
-        count={loadingPrioritarias ? 'calculando…' : `${totalPendientes} pendiente${totalPendientes === 1 ? '' : 's'}`}
-        action={totalPendientes > cola.length ? { label: 'ver todas', to: '/reservations' } : undefined}
-      >
-        {cola.length > 0 ? (
-          <div className="divide-y divide-border/60">
-            {cola.map(({ reserva, urgencia, razon }) => (
-              <ReservaRow
-                key={reserva.id}
-                reserva={reserva}
-                onClick={onViewDetails}
-                accent={urgencia >= 7 ? 'urgent' : null}
-                rightSlot={urgencia >= 7 ? (
-                  <span className="text-[10px] uppercase tracking-wider text-red-600 font-medium" title={razon}>
-                    urgente
-                  </span>
-                ) : undefined}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState title="Cola al día." />
-        )}
-      </Section>
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <Panel
+          title="Cola"
+          count={loadingPrioritarias ? 'calculando…' : `${totalPendientes} pendiente${totalPendientes === 1 ? '' : 's'}`}
+          accentColor="#184897"
+          action={totalPendientes > cola.length ? { label: 'ver todas', to: '/reservations' } : undefined}
+        >
+          {cola.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {cola.map(({ reserva, urgencia, razon }) => (
+                <ReservaRow
+                  key={reserva.id}
+                  reserva={reserva}
+                  onClick={onViewDetails}
+                  accent={urgencia >= 7 ? 'urgent' : null}
+                  rightSlot={urgencia >= 7 ? (
+                    <span className="text-[10px] uppercase tracking-wider text-red-600 font-medium" title={razon}>
+                      urgente
+                    </span>
+                  ) : undefined}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Cola al día." />
+          )}
+        </Panel>
 
-      <Section
-        title="Próximas aprobadas"
-        action={{ label: 'calendario', to: '/calendar' }}
-      >
-        {data?.proximasReservas && data.proximasReservas.length > 0 ? (
-          <div className="divide-y divide-border/60">
-            {data.proximasReservas.slice(0, 6).map((r) => (
-              <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState title="Sin confirmadas próximas." />
-        )}
-      </Section>
+        <Panel
+          title="Dónde se acumula"
+          count={presion.length > 0 ? 'espacios con cola' : undefined}
+          accentColor="#e8630a"
+          action={{ label: 'reservas', to: '/reservations' }}
+        >
+          {presion.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
+            </div>
+          ) : (
+            <EmptyState title="Nada esperando." />
+          )}
+        </Panel>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel
+          title="Próximas aprobadas"
+          count={data?.proximasReservas?.length || undefined}
+          accentColor="#86bb4c"
+          action={{ label: 'calendario', to: '/calendar' }}
+        >
+          {data?.proximasReservas && data.proximasReservas.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {data.proximasReservas.slice(0, 6).map((r) => (
+                <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Sin confirmadas próximas." />
+          )}
+        </Panel>
+
+        <Panel
+          title="Próximos eventos"
+          count={eventos.length || undefined}
+          accentColor="#00c7ff"
+          action={{ label: 'ver todos', to: '/eventos' }}
+        >
+          {eventos.length > 0 ? (
+            <div className="divide-y divide-border/60">
+              {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
+            </div>
+          ) : (
+            <EmptyState title="Sin eventos próximos." />
+          )}
+        </Panel>
+      </div>
     </div>
   );
 }
