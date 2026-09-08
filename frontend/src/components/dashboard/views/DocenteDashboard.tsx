@@ -36,11 +36,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
   const materias = data?.misMaterias ?? [];
   const tutorias = data?.misTutorias ?? [];
   const eventos = data?.eventos ?? [];
-  // Las materias con más gente: es lo primero que quiere ver quien las dicta.
-  const inscriptosPorMateria = [...materias]
-    .filter((m) => (m.inscriptos ?? 0) > 0)
-    .sort((a, b) => (b.inscriptos ?? 0) - (a.inscriptos ?? 0))
-    .map((m) => ({ nombre: m.codigo ?? m.nombre, valor: m.inscriptos ?? 0 }));
+  const inscriptosPorMateria = data?.inscriptosPorMateria ?? [];
 
   return (
     <div className="space-y-5">

@@ -56,7 +56,14 @@ public record DashboardDto(
         /** Impacto acumulado de la digitalizacion (ADMIN y MANTENIMIENTO). */
         Sostenibilidad sostenibilidad,
         /** Espacios con mas solicitudes en cola (ANALISTA y ADMIN). */
-        List<EspacioPresion> espaciosConPresion
+        List<EspacioPresion> espaciosConPresion,
+        /**
+         * Para graficar: creditos por semestre (ESTUDIANTE) e inscriptos por
+         * materia (DOCENTE). Se calculan sobre todas sus materias, no sobre las
+         * que entran en el panel.
+         */
+        List<Serie> creditosPorSemestre,
+        List<Serie> inscriptosPorMateria
 ) {
 
     /** Una materia, con lo justo para listarla. */
@@ -100,6 +107,10 @@ public record DashboardDto(
 
     /** Un espacio y cuantas solicitudes tiene esperando. */
     public record EspacioPresion(Long id, String nombre, long pendientes) {
+    }
+
+    /** Un par etiqueta/valor, para los graficos de barras. */
+    public record Serie(String nombre, long valor) {
     }
 
     /**

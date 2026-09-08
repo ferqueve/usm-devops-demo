@@ -143,6 +143,12 @@ public class DashboardService {
                         .mapToLong(m -> m.getTotalInscriptos() == null ? 0 : m.getTotalInscriptos()).sum()
                 : 0;
         List<DashboardDto.MateriaBreve> misMaterias = materiasBreves(materiasCompletas);
+        // Los graficos van sobre la lista entera: sumar solo las que entran en
+        // el panel daba un total que no coincidia con el de la tarjeta.
+        List<DashboardDto.Serie> creditosPorSemestre = esEstudiante
+                ? creditosPorSemestre(materiasCompletas) : List.of();
+        List<DashboardDto.Serie> inscriptosPorMateria = esDocente
+                ? inscriptosPorMateria(materiasCompletas) : List.of();
         List<DashboardDto.TutoriaBreve> misTutorias = tutoriasBreves(tutoriasCompletas);
 
         List<EventoResponseDto> eventosCompletos = veEventos(rol) ? eventosVigentes(email, rol) : List.of();
@@ -183,7 +189,9 @@ public class DashboardService {
                 actividad,
                 salud,
                 sostenibilidad,
-                presion
+                presion,
+                creditosPorSemestre,
+                inscriptosPorMateria
         );
     }
 
@@ -265,6 +273,31 @@ public class DashboardService {
                             t.getInicio(), t.getFin(), t.getEspacioNombre(), t.getDocenteNombre(),
                             Math.max(0, cupo - libres), cupo);
                 })
+                .toList();
+    }
+
+    /** Cuantos creditos lleva por semestre, sobre todas sus materias. */
+    private List<DashboardDto.Serie> creditosPorSemestre(List<MateriaResponseDto> materias) {
+        Map<Integer, Long> porSemestre = new java.util.TreeMap<>();
+        for (MateriaResponseDto m : materias) {
+            if (m.getSemestre() == null) {
+                continue;
+            }
+            porSemestre.merge(m.getSemestre(), m.getCreditos() == null ? 0L : m.getCreditos(), Long::sum);
+        }
+        return porSemestre.entrySet().stream()
+                .map(e -> new DashboardDto.Serie("Sem " + e.getKey(), e.getValue()))
+                .toList();
+    }
+
+    /** Las materias con mas gente, que es lo que quiere ver quien las dicta. */
+    private List<DashboardDto.Serie> inscriptosPorMateria(List<MateriaResponseDto> materias) {
+        return materias.stream()
+                .filter(m -> m.getTotalInscriptos() != null && m.getTotalInscriptos() > 0)
+                .sorted(Comparator.comparingLong(MateriaResponseDto::getTotalInscriptos).reversed())
+                .limit(FILAS)
+                .map(m -> new DashboardDto.Serie(
+                        m.getCodigo() != null ? m.getCodigo() : m.getNombre(), m.getTotalInscriptos()))
                 .toList();
     }
 

@@ -106,6 +106,11 @@ export interface Sostenibilidad {
   co2EvitadoKg: number;
 }
 
+export interface Serie {
+  nombre: string;
+  valor: number;
+}
+
 export interface EspacioPresion {
   id: number;
   nombre: string;
@@ -143,6 +148,9 @@ export interface DashboardData {
   sostenibilidad?: Sostenibilidad;
   /** Espacios con más solicitudes esperando (ANALISTA y ADMIN). */
   espaciosConPresion: EspacioPresion[];
+  /** Para graficar, calculados sobre todas sus materias y no sobre las listadas. */
+  creditosPorSemestre: Serie[];
+  inscriptosPorMateria: Serie[];
 }
 
 /** Lo que muestra el panel de mantenimiento sobre el parque de espacios. */
@@ -171,6 +179,8 @@ const VACIO: DashboardData = {
   espaciosFueraDeServicio: [],
   actividadReciente: [],
   espaciosConPresion: [],
+  creditosPorSemestre: [],
+  inscriptosPorMateria: [],
 };
 
 export const dashboardApi = {

@@ -28,18 +28,7 @@ export function EstudianteDashboard({ data, loading, onViewDetails }: Readonly<E
   const tutorias = data?.misTutorias ?? [];
   const eventos = data?.eventos ?? [];
 
-  // Cuántos créditos lleva por semestre: es la forma de ver el avance de la
-  // carrera de un vistazo.
-  const creditosPorSemestre = (() => {
-    const suma = new Map<number, number>();
-    for (const m of materias) {
-      if (m.semestre == null) continue;
-      suma.set(m.semestre, (suma.get(m.semestre) ?? 0) + (m.creditos ?? 0));
-    }
-    return [...suma.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([semestre, creditos]) => ({ nombre: `Sem ${semestre}`, valor: creditos }));
-  })();
+  const creditosPorSemestre = data?.creditosPorSemestre ?? [];
 
   const asistidas = stats?.tutoriasAsistidas ?? 0;
   const agendadas = stats?.tutorias ?? 0;

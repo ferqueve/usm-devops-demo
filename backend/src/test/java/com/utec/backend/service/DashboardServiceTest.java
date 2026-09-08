@@ -306,6 +306,7 @@ class DashboardServiceTest {
             m.setId((long) i);
             m.setNombre("Materia " + i);
             m.setCreditos(4);
+            m.setSemestre(1 + (i % 4));
             muchas.add(m);
         }
         when(materiaService.getMateriasQueCursa(EMAIL)).thenReturn(muchas);
@@ -313,6 +314,8 @@ class DashboardServiceTest {
         DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.ESTUDIANTE.name());
 
         assertEquals(20L, dto.stats().materias(), "cuenta las veinte");
+        // El grafico suma las veinte, no las seis que entran en el panel.
+        assertEquals(80L, dto.creditosPorSemestre().stream().mapToLong(x -> x.valor()).sum());
         assertEquals(80L, dto.stats().creditos(), "y suma los creditos de las veinte");
         assertEquals(6, dto.misMaterias().size(), "pero solo lista una pantalla");
     }
