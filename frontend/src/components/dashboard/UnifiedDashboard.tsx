@@ -68,8 +68,15 @@ async function loadReservasForRole(canApprove: boolean): Promise<Reserva[]> {
       });
       return response.data?.content ?? [];
     }
-    const response = await reservationsApi.obtenerMisReservas();
-    return response.data ?? [];
+    // Paginado y de a 50: esto alimenta "mis proximas" y "mis pendientes", no
+    // el historial. Sin acotar traia todas las reservas del usuario -- medido en
+    // produccion, casi dos segundos.
+    const response = await reservationsApi.obtenerMisReservasPaged({
+      page: 0,
+      size: 50,
+      sort: 'inicio,desc',
+    });
+    return response.data?.content ?? [];
   } catch (error) {
     console.warn('No se pudieron cargar reservas:', error);
     return [];
