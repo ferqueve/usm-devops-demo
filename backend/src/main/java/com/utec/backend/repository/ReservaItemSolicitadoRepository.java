@@ -26,6 +26,10 @@ public interface ReservaItemSolicitadoRepository extends JpaRepository<ReservaIt
     // Buscar items solicitados por estado (no eliminados)
     @Query("SELECT ris FROM ReservaItemSolicitado ris WHERE ris.estado = :estado AND ris.deletedAt IS NULL")
     List<ReservaItemSolicitado> findByEstado(@Param("estado") ReservaItemSolicitado.EstadoSolicitud estado);
+
+    /** Cuantas solicitudes hay en un estado. El dashboard solo muestra el numero. */
+    @Query("SELECT COUNT(ris) FROM ReservaItemSolicitado ris WHERE ris.estado = :estado AND ris.deletedAt IS NULL")
+    long countByEstado(@Param("estado") ReservaItemSolicitado.EstadoSolicitud estado);
     
     // Buscar items solicitados de una reserva con relaciones cargadas (no eliminados)
     @Query("SELECT ris FROM ReservaItemSolicitado ris " +

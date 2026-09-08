@@ -986,6 +986,23 @@ public class ReservaService {
     }
 
     /**
+     * Igual que {@link #getTodasLasReservas}, pero paginado.
+     *
+     * El dashboard necesita las diez proximas y nada mas. Sin paginar, la
+     * consulta publica devuelve la tabla entera: medido en produccion, 6,7 MB
+     * para mostrar diez filas.
+     */
+    @Transactional(readOnly = true)
+    public Page<ReservaResponseDto> getReservasPublicasPaged(
+            Pageable pageable,
+            ReservaFilters filters,
+            String userEmail,
+            String userRole) {
+        Specification<Reserva> spec = buildSpecificationPublico(filters, userEmail, userRole);
+        return reservaRepository.findAll(spec, pageable).map(this::mapToResponseDto);
+    }
+
+    /**
      * Construir Specification para filtrar reservas públicas (sin filtrar por
      * usuario). Si el usuario es ANALISTA, solo muestra las reservas asignadas
      * a él. Si es EXTERNO, solo las marcadas como públicas.
