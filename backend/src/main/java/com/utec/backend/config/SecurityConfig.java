@@ -73,12 +73,12 @@ public class SecurityConfig {
                         .hasAnyRole(ROLE_DOCENTE, ROLE_ADMIN, ROLE_ANALISTA)
                         // Resto de usuarios: solo ADMIN
                         .requestMatchers("/api/v1/usuarios/**").hasRole(ROLE_ADMIN)
-                        // Permitir estadísticas de inventario a ADMIN, ANALISTA y MANTENIMIENTO
-                        .requestMatchers("/api/v1/stats/inventario/detailed").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
-                        // Dashboard de sostenibilidad: ADMIN y MANTENIMIENTO (infraestructura)
-                        .requestMatchers("/api/v1/stats/sostenibilidad").hasAnyRole(ROLE_ADMIN, ROLE_MANTENIMIENTO)
-                        // Resto de estadísticas solo para ADMIN
-                        .requestMatchers("/api/v1/stats/**").hasRole(ROLE_ADMIN)
+                        // Estadisticas: decide el @PreAuthorize de cada endpoint, que
+                        // distingue por permiso (reservas, inventario, sostenibilidad) y no
+                        // por rol. Esta regla decia ADMIN para todo /stats/** y, al ser de
+                        // URL, ganaba: un ANALISTA veia "Estadisticas" en el menu y la
+                        // pantalla entera le respondia 403.
+                        .requestMatchers("/api/v1/stats/**").authenticated()
                         .requestMatchers("/api/v1/audit/**").hasRole(ROLE_ADMIN)
 
                         // PERMITIR LECTURA (GET) de espacios, tipos y carreras a todos los autenticados

@@ -149,9 +149,10 @@ public final class RolePermissions {
             CARRERA_EDITAR,
             CARRERA_ELIMINAR,
 
-            // Estadísticas
+            // Estadísticas: tambien las de inventario, que consulta pero no administra
             ESTADISTICAS_VER,
             ESTADISTICAS_VER_RESERVAS,
+            ESTADISTICAS_VER_INVENTARIO,
 
             // Recomendaciones
             RECOMENDACION_VER,
