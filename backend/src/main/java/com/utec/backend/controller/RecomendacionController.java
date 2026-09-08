@@ -100,7 +100,7 @@ public class RecomendacionController {
      * Obtener items que necesitan mantenimiento urgente
      */
     @GetMapping("/inventario/mantenimiento")
-    @PreAuthorize("hasPermission(null, 'recomendacion:gestionar_estado')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerItemsMantenimiento(
             Authentication authentication) {
         try {
@@ -116,7 +116,7 @@ public class RecomendacionController {
      * Obtener espacios que requieren atención
      */
     @GetMapping("/inventario/espacios-atencion")
-    @PreAuthorize("hasPermission(null, 'recomendacion:gestionar_estado')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerEspaciosAtencion(
             Authentication authentication) {
         try {
@@ -132,7 +132,7 @@ public class RecomendacionController {
      * Obtener recomendaciones de reasignación de items
      */
     @GetMapping("/inventario/reasignaciones")
-    @PreAuthorize("hasPermission(null, 'recomendacion:ver_estadisticas')")
+    @PreAuthorize("hasPermission(null, 'inventario:ver')")
     public ResponseEntity<ApiResponse<List<RecomendacionInventarioDto>>> obtenerReasignaciones(
             Authentication authentication) {
         try {

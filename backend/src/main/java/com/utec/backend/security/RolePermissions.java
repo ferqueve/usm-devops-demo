@@ -199,6 +199,9 @@ public final class RolePermissions {
             TIPO_EDITAR,
             TIPO_ELIMINAR,
 
+            // Carreras - Solo lectura: el calendario filtra por carrera
+            CARRERA_VER,
+
             // Solicitudes de inventario
             SOLICITUD_INVENTARIO_VER,
             SOLICITUD_INVENTARIO_APROBAR,
