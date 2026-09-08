@@ -40,10 +40,17 @@ public class MiniaturasInitializer implements ApplicationRunner {
     private void generarFaltantes() {
         int generadas = 0;
         int yaEstaban = 0;
+        int sinImagen = 0;
+        int fuera = 0;
 
         for (var espacio : espacioRepository.findAll()) {
             String imagen = espacio.getImagenUrl();
-            if (imagen == null || imagen.isBlank() || fileStorageService.getMiniaturaObjectName(imagen) == null) {
+            if (imagen == null || imagen.isBlank()) {
+                sinImagen++;
+                continue;
+            }
+            if (fileStorageService.getMiniaturaObjectName(imagen) == null) {
+                fuera++;
                 continue;
             }
             if (fileStorageService.existeMiniatura(imagen)) {
@@ -53,8 +60,7 @@ public class MiniaturasInitializer implements ApplicationRunner {
             }
         }
 
-        if (generadas > 0 || yaEstaban > 0) {
-            log.info("Miniaturas de espacios: {} generadas, {} ya existian", generadas, yaEstaban);
-        }
+        log.info("Miniaturas de espacios: {} generadas, {} ya existian, {} sin imagen, {} fuera del bucket",
+                generadas, yaEstaban, sinImagen, fuera);
     }
 }
