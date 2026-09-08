@@ -10,7 +10,7 @@ const todayIsoDateMock = vi.fn(() => '2026-05-06');
 const formatDateOnlyMock = vi.fn((iso: string) => `D(${iso})`);
 const exportarUsuariosMock = vi.fn();
 
-vi.mock('@/lib/utils/export-helpers', () => ({
+vi.mock('@/lib/utils/csv-helpers', () => ({
   buildAndDownloadCsv: (...args: unknown[]) => buildAndDownloadCsvMock(...args),
   csvEscape: (v: string | null | undefined) => csvEscapeMock(v),
   downloadBlob: (...args: unknown[]) => downloadBlobMock(...args),
