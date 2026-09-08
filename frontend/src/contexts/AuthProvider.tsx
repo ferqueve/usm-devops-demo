@@ -41,54 +41,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     rol: string;
   } | null>(initialUser);
 
-  // Verificar estado de autenticación al cargar
+  // La sesion guardada se toma como valida y no se revalida contra el backend.
+  //
+  // Antes esto pedia /auth/verify en cada carga de la app -- unos 350 ms -- para
+  // preguntar algo que la primera peticion real ya responde: si el token esta
+  // vencido o revocado, cualquier endpoint devuelve 401, el cliente intenta
+  // refrescarlo y, si no puede, limpia el almacenamiento y emite "auth:logout",
+  // que es justo lo que este efecto hacia a mano.
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
 
-        if (!token) {
-          setUser(null);
-          setIsAuthenticated(false);
-          return;
-        }
+    if (!token || !userData) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      storage.remove(AUTH_STORAGE_KEY);
+      setUser(null);
+      setIsAuthenticated(false);
+    }
 
-        try {
-          const response = await authApi.verifyToken();
-
-          if (response.success && response.data) {
-            // Re-sincronizar con localStorage por si cambió.
-            const userData = localStorage.getItem('user');
-            if (userData) {
-              try { setUser(JSON.parse(userData)); } catch { /* keep optimistic */ }
-            }
-            setIsAuthenticated(true);
-          } else {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            storage.remove(AUTH_STORAGE_KEY);
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } catch {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          storage.remove(AUTH_STORAGE_KEY);
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (err) {
-        errors.log(err, 'AuthContext');
-        setError('Error al cargar el estado de autenticación');
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuthStatus();
+    setIsLoading(false);
   }, []);
 
   // Escuchar evento de logout automático desde apiRequest
