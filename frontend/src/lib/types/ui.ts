@@ -1,3 +1,4 @@
+import type { Permission } from '@/lib/config/permissions';
 // ============================================================================
 // Tipos para UI y componentes
 // ============================================================================
@@ -25,6 +26,8 @@ export interface SidebarSubItem {
   label: string;
   icon: LucideIcon;
   href: string;
+  /** Si esta, la sub-vista solo se lista para quien tenga ese permiso. */
+  permiso?: Permission;
 }
 
 export interface SidebarMenuItem {

@@ -114,8 +114,10 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     href: "/statistics",
     section: "analisis",
     children: [
-      { id: "statistics-reservas", label: "Reservas", icon: BarChart3, href: "/statistics?tab=reservas" },
-      { id: "statistics-inventario", label: "Inventario", icon: Boxes, href: "/statistics?tab=inventario" }
+      // Cada vista pide el permiso de sus propios endpoints: MANTENIMIENTO no
+      // ve las de reservas y ANALISTA veia la de inventario sin poder abrirla.
+      { id: "statistics-reservas", label: "Reservas", icon: BarChart3, href: "/statistics?tab=reservas", permiso: "estadisticas:ver_reservas" },
+      { id: "statistics-inventario", label: "Inventario", icon: Boxes, href: "/statistics?tab=inventario", permiso: "estadisticas:ver_inventario" }
     ]
   },
   {

@@ -20,6 +20,7 @@ import { useTheme } from "next-themes";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { sidebarMenuItems, sidebarSections, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { useAuth } from "@/hooks/useAuth";
 import type { SidebarMenuItem as SidebarMenuItemType, SidebarSubItem } from "@/lib/types/ui";
 import PreferencesModal from "@/components/preferences/PreferencesModal";
@@ -35,6 +36,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { hasPermission } = useRolePermissions();
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
@@ -59,14 +61,23 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
     onLogout?.();
   }, [onLogout]);
 
-  // Filtrar items del menú según el rol del usuario
+  // Filtrar items del menú según el rol del usuario. Las sub-vistas que declaran
+  // un permiso se filtran ademas por permiso: MANTENIMIENTO no ve la de reservas
+  // dentro de Estadisticas, y ANALISTA no ve la de inventario.
   const filteredMenuItems = useMemo(() => {
     if (!user?.rol) return [];
-    
-    return sidebarMenuItems.filter(item => 
-      canAccessSidebarItem(user.rol, item.id)
-    );
-  }, [user?.rol]);
+
+    return sidebarMenuItems
+      .filter((item) => canAccessSidebarItem(user.rol, item.id))
+      .map((item) => {
+        if (!item.children?.length) return item;
+        const children = item.children.filter((sub) => !sub.permiso || hasPermission(sub.permiso));
+        return { ...item, children };
+      })
+      // Un ítem que solo existe para desplegar vistas y se queda sin ninguna
+      // deja de tener sentido en el menú.
+      .filter((item) => !item.children || item.children.length > 0 || !item.href);
+  }, [user?.rol, hasPermission]);
 
   // Marca activo un ítem del menú. Varias rutas hijas no tienen ítem propio y
   // deben iluminar el ítem padre.
