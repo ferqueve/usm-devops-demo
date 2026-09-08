@@ -6,6 +6,7 @@ import com.utec.backend.dto.reserva.ReservaCreateDto;
 import com.utec.backend.dto.reserva.ReservaFilters;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
+import com.utec.backend.security.RolAutenticado;
 import com.utec.backend.service.ReservaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,6 @@ import static com.utec.backend.security.Constants.*;
 @RequiredArgsConstructor
 public class ReservaController {
 
-    private static final String ROLE_PREFIX = "ROLE_";
     private static final String MSG_RESERVAS_OBTENIDAS = "Reservas obtenidas exitosamente";
     private static final String MSG_ERROR_OBTENER_RESERVAS = "Error al obtener reservas: ";
 
@@ -49,14 +49,7 @@ public class ReservaController {
             Authentication authentication) {
         try {
             String userEmail = authentication.getName();
-            // Obtener el rol del usuario desde la autenticación
-            // Buscar específicamente la authority que empieza con "ROLE_" para evitar confusión con permisos
-            String userRole = authentication.getAuthorities().stream()
-                    .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
-                    .findFirst()
-                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
-                    .orElse("");
+            String userRole = RolAutenticado.de(authentication);
 
             ReservaResponseDto reserva = reservaService.createReserva(createDto, userEmail, userRole);
             String mensaje;
@@ -222,12 +215,7 @@ public class ReservaController {
             }
 
             String userEmail = authentication.getName();
-            String userRole = authentication.getAuthorities().stream()
-                    .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
-                    .findFirst()
-                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
-                    .orElse("");
+            String userRole = RolAutenticado.de(authentication);
 
             List<ReservaResponseDto> reservas = reservaService.getTodasLasReservas(
                     ReservaFilters.of(
@@ -252,20 +240,15 @@ public class ReservaController {
             Authentication authentication) {
         try {
             String userEmail = authentication.getName();
-            // Obtener el rol del usuario desde la autenticación
-            String userRole = authentication.getAuthorities().stream()
-                    .findFirst()
-                    .map(auth -> auth.getAuthority().replace(ROLE_PREFIX, ""))
-                    .orElse("");
+            String userRole = RolAutenticado.de(authentication);
 
-            ReservaStatsDto stats;
-            if (ROLE_DOCENTE.equals(userRole)) {
-                // DOCENTE: estadísticas personales
-                stats = reservaService.obtenerEstadisticasPersonales(userEmail);
-            } else {
-                // ANALISTA/ADMIN: estadísticas globales
-                stats = reservaService.obtenerEstadisticasGlobales();
-            }
+            // Globales solo para quien administra reservas de todos. Cualquier
+            // otro rol ve las suyas: antes solo se distinguia al DOCENTE, y un
+            // ESTUDIANTE o un EXTERNO recibia los numeros de todo el sistema.
+            boolean administraTodas = ROLE_ADMIN.equals(userRole) || ROLE_ANALISTA.equals(userRole);
+            ReservaStatsDto stats = administraTodas
+                    ? reservaService.obtenerEstadisticasGlobales()
+                    : reservaService.obtenerEstadisticasPersonales(userEmail);
             return ResponseEntity.ok(ApiResponse.success(stats, "Estadísticas obtenidas exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -294,12 +277,7 @@ public class ReservaController {
             @RequestParam(required = false) String search) {
         try {
             String userEmail = authentication.getName();
-            String userRole = authentication.getAuthorities().stream()
-                    .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
-                    .findFirst()
-                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
-                    .orElse("");
+            String userRole = RolAutenticado.de(authentication);
 
             var reservasPage = reservaService.getAllReservasPaged(
                     pageable,
@@ -338,12 +316,7 @@ public class ReservaController {
             String mensajeAnalista = requestBody.get("mensajeAnalista");
 
             String userEmail = authentication.getName();
-            String userRole = authentication.getAuthorities().stream()
-                    .map(auth -> auth.getAuthority())
-                    .filter(auth -> auth.startsWith(ROLE_PREFIX))
-                    .findFirst()
-                    .map(auth -> auth.replace(ROLE_PREFIX, ""))
-                    .orElse("");
+            String userRole = RolAutenticado.de(authentication);
 
             ReservaResponseDto reserva = reservaService.cambiarEstadoReserva(id, nuevoEstado, userEmail, userRole, mensajeAnalista);
             String mensaje = "APROBADO".equals(nuevoEstado)
