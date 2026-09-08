@@ -342,7 +342,7 @@ class InventarioItemServiceTest {
         // Given
         // La base devuelve una fila con los cinco agregados.
         when(inventarioItemRepository.resumenInventario())
-                .thenReturn(java.util.List.<Object[]>of(new Object[]{2L, 1L, 1L, 0L, 0L}));
+                .thenReturn(java.util.List.<Object[]>of(new Object[]{2L, 1L, 1L, 0L, 0L, 2L}));
 
         // When
         Map<String, Object> stats = inventarioItemService.getInventarioStatistics();

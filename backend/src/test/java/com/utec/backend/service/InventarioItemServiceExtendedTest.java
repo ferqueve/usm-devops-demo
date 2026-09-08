@@ -392,7 +392,7 @@ class InventarioItemServiceExtendedTest {
     @DisplayName("getInventarioStatistics mapea la fila agregada de la base")
     void estadisticasMapeanLaFilaAgregada() {
         when(inventarioItemRepository.resumenInventario())
-                .thenReturn(List.<Object[]>of(new Object[]{13L, 8L, 3L, 2L, 3L}));
+                .thenReturn(List.<Object[]>of(new Object[]{13L, 8L, 3L, 2L, 3L, 4L}));
 
         Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
 
@@ -401,6 +401,7 @@ class InventarioItemServiceExtendedTest {
         assertEquals(3L, stats.get("mantenimiento"));
         assertEquals(2L, stats.get("danados"));
         assertEquals(3L, stats.get("sinAsignar"));
+        assertEquals(4L, stats.get("tiposUnicos"));
     }
 
     @Test
@@ -408,7 +409,7 @@ class InventarioItemServiceExtendedTest {
     void estadisticasConInventarioVacio() {
         // SUM sobre cero filas devuelve null, no cero.
         when(inventarioItemRepository.resumenInventario())
-                .thenReturn(List.<Object[]>of(new Object[]{0L, null, null, null, null}));
+                .thenReturn(List.<Object[]>of(new Object[]{0L, null, null, null, null, 0L}));
 
         Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
 

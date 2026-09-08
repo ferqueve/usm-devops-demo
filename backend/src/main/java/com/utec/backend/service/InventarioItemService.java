@@ -233,7 +233,7 @@ public class InventarioItemService {
         // Una sola consulta agregada. Antes se traia todo el inventario y se
         // recorria la lista cinco veces para devolver cinco numeros.
         List<Object[]> filas = inventarioItemRepository.resumenInventario();
-        Object[] fila = filas.isEmpty() ? new Object[5] : filas.get(0);
+        Object[] fila = filas.isEmpty() ? new Object[6] : filas.get(0);
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalItems", conteo(fila[0]));
@@ -241,6 +241,7 @@ public class InventarioItemService {
         stats.put("mantenimiento", conteo(fila[2]));
         stats.put("danados", conteo(fila[3]));
         stats.put("sinAsignar", conteo(fila[4]));
+        stats.put("tiposUnicos", conteo(fila[5]));
         return stats;
     }
 

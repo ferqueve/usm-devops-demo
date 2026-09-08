@@ -22,14 +22,15 @@ public interface InventarioItemRepository extends JpaRepository<InventarioItem, 
      * metrica. Devuelve una sola fila; se declara como lista porque una
      * proyeccion de varias columnas vuelve envuelta.
      *
-     * @return [total, disponibles, mantenimiento, danados, sinAsignar]
+     * @return [total, disponibles, mantenimiento, danados, sinAsignar, tiposDistintos]
      */
     @Query("""
             SELECT COUNT(i),
                    SUM(CASE WHEN i.estado = 'DISPONIBLE' THEN 1 ELSE 0 END),
                    SUM(CASE WHEN i.estado = 'MANTENIMIENTO' THEN 1 ELSE 0 END),
                    SUM(CASE WHEN i.estado = 'DANADO' THEN 1 ELSE 0 END),
-                   SUM(CASE WHEN i.espacio IS NULL THEN 1 ELSE 0 END)
+                   SUM(CASE WHEN i.espacio IS NULL THEN 1 ELSE 0 END),
+                   COUNT(DISTINCT i.tipoElemento.id)
             FROM InventarioItem i
             WHERE i.activo = true
             """)

@@ -32,6 +32,12 @@ export function MantenimientoDashboard({
   const inv = inventarioStats;
   const esp = espaciosStats;
 
+  // El porcentaje sale de los dos numeros que ya tenemos: pedirselo al backend
+  // era una columna mas para una division.
+  const porcentajeDisponibles = inv && inv.totalItems > 0
+    ? Math.round((inv.disponibles / inv.totalItems) * 100)
+    : 0;
+
   const alertas: AlertaRow[] = [];
   if (pendingInventoryRequests > 0) {
     alertas.push({
@@ -64,7 +70,7 @@ export function MantenimientoDashboard({
         loading={loading}
         items={[
           { label: 'Items', value: inv?.totalItems ?? 0, hint: `${inv?.tiposUnicos ?? 0} tipos`, icon: Boxes, bg: 'blue', to: '/inventory' },
-          { label: 'Disponibles', value: inv?.disponibles ?? 0, hint: `${inv?.porcentajeDisponibles ?? 0}%`, bg: 'green', to: '/inventory' },
+          { label: 'Disponibles', value: inv?.disponibles ?? 0, hint: `${porcentajeDisponibles}% del parque`, bg: 'green', to: '/inventory' },
           { label: 'Mantenimiento', value: inv?.mantenimiento ?? 0, hint: 'requieren reparación', icon: Wrench, bg: 'orange', to: '/inventory' },
           { label: 'Dañados', value: inv?.danados ?? 0, hint: (inv?.danados ?? 0) > 0 ? 'fuera de uso' : 'sin novedad', bg: 'red', to: '/inventory' },
           { label: 'Sin asignar', value: inv?.sinAsignar ?? 0, hint: 'esperando ubicación', bg: 'yellow', to: '/inventory' },
