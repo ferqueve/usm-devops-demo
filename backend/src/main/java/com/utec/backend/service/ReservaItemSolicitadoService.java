@@ -29,6 +29,8 @@ import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -121,6 +123,23 @@ public class ReservaItemSolicitadoService {
                 .toList();
     }
     
+    /**
+     * Los items de varias reservas, agrupados por reserva.
+     *
+     * Al armar una lista de reservas, pedirlos de a una era una consulta por
+     * fila: el calendario de un mes son casi 1.600.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, List<ReservaItemSolicitadoResponseDto>> obtenerPorReservas(List<Long> reservaIds) {
+        if (reservaIds.isEmpty()) {
+            return Map.of();
+        }
+        return reservaItemSolicitadoRepository.findByReservaIds(reservaIds).stream()
+                .collect(Collectors.groupingBy(
+                        item -> item.getReserva().getId(),
+                        Collectors.mapping(this::mapToResponseDto, Collectors.toList())));
+    }
+
     /**
      * Obtener items solicitados por estado
      */

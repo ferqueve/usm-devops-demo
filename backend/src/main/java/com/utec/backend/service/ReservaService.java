@@ -1,6 +1,7 @@
 package com.utec.backend.service;
 
 import com.utec.backend.dto.reserva.ReservaCreateDto;
+import com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoResponseDto;
 import com.utec.backend.dto.reserva.ReservaFilters;
 import com.utec.backend.dto.reserva.ReservaResponseDto;
 import com.utec.backend.dto.reserva.ReservaStatsDto;
@@ -980,8 +981,7 @@ public class ReservaService {
 
         List<Reserva> reservas = reservaRepository.findAll(spec);
         boolean gestiona = ROLE_ADMIN.equals(userRole) || ROLE_ANALISTA.equals(userRole);
-        return reservas.stream()
-                .map(this::mapToResponseDto)
+        return mapearLista(reservas).stream()
                 .map(dto -> gestiona ? dto : sinMailAjeno(dto, userEmail))
                 .sorted((a, b) -> b.getInicio().compareTo(a.getInicio()))
                 .toList();
@@ -997,6 +997,13 @@ public class ReservaService {
     private ReservaResponseDto sinMailAjeno(ReservaResponseDto dto, String userEmail) {
         if (dto.getUsuarioEmail() != null && !dto.getUsuarioEmail().equals(userEmail)) {
             dto.setUsuarioEmail(null);
+        }
+        // Los items solicitados repiten el mail del solicitante: misma historia.
+        if (dto.getItemsSolicitados() != null) {
+            dto.getItemsSolicitados().stream()
+                    .filter(item -> item.getSolicitanteEmail() != null
+                            && !item.getSolicitanteEmail().equals(userEmail))
+                    .forEach(item -> item.setSolicitanteEmail(null));
         }
         return dto;
     }
@@ -1028,6 +1035,17 @@ public class ReservaService {
             String userEmail,
             String userRole) {
         return (root, query, cb) -> {
+            // Espacio, usuario y compañía son LAZY: sin traerlos en el mismo
+            // select, armar el DTO de cada fila dispara sus propias consultas.
+            // El count de una paginación no admite fetch, de ahí el chequeo.
+            if (query != null && !Long.class.equals(query.getResultType())) {
+                root.fetch(FIELD_ESPACIO, jakarta.persistence.criteria.JoinType.LEFT)
+                        .fetch("tipoEspacio", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch(FIELD_USUARIO, jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch("carrera", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch(FIELD_ANALISTA_ASIGNADO, jakarta.persistence.criteria.JoinType.LEFT);
+            }
+
             List<Predicate> predicates = new ArrayList<>();
 
             if (ROLE_EXTERNO.equals(userRole)) {
@@ -1064,7 +1082,34 @@ public class ReservaService {
     /**
      * Mapear entidad Reserva a DTO de respuesta
      */
+    /**
+     * Mapea una lista de reservas trayendo los items solicitados de una sola vez.
+     *
+     * Mapeadas de a una, cada reserva preguntaba por sus items: el calendario de
+     * un mes son casi 1.600 consultas, y tardaba trece segundos.
+     */
+    private List<ReservaResponseDto> mapearLista(List<Reserva> reservas) {
+        if (reservas.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, List<ReservaItemSolicitadoResponseDto>> itemsPorReserva =
+                reservaItemSolicitadoService.obtenerPorReservas(reservas.stream().map(Reserva::getId).toList());
+
+        return reservas.stream()
+                .map(reserva -> {
+                    ReservaResponseDto dto = mapToResponseDto(reserva, false);
+                    dto.setItemsSolicitados(itemsPorReserva.get(reserva.getId()));
+                    return dto;
+                })
+                .toList();
+    }
+
     public ReservaResponseDto mapToResponseDto(Reserva reserva) {
+        return mapToResponseDto(reserva, true);
+    }
+
+    /** @param conItems false cuando el llamador ya los trae en lote. */
+    private ReservaResponseDto mapToResponseDto(Reserva reserva, boolean conItems) {
         ReservaResponseDto dto = new ReservaResponseDto();
         dto.setId(reserva.getId());
         dto.setEspacioId(reserva.getEspacio().getId());
@@ -1108,7 +1153,7 @@ public class ReservaService {
         dto.setMotivoSolicitud(reserva.getMotivoSolicitud());
         dto.setMensajeAnalista(reserva.getMensajeAnalista());
         // Mapear items solicitados
-        if (reserva.getItemsSolicitados() != null && !reserva.getItemsSolicitados().isEmpty()) {
+        if (conItems && reserva.getItemsSolicitados() != null && !reserva.getItemsSolicitados().isEmpty()) {
             dto.setItemsSolicitados(reservaItemSolicitadoService.obtenerPorReserva(reserva.getId()));
         }
         dto.setCreatedAt(reserva.getCreatedAt());

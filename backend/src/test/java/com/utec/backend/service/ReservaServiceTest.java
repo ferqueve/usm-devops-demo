@@ -466,6 +466,12 @@ class ReservaServiceTest {
         when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any()))
                 .thenReturn(Arrays.asList(ajena, propia));
 
+        com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoResponseDto item =
+                new com.utec.backend.dto.reserva_item_solicitado.ReservaItemSolicitadoResponseDto();
+        item.setSolicitanteEmail("otro@utec.edu.uy");
+        when(reservaItemSolicitadoService.obtenerPorReservas(anyList()))
+                .thenReturn(java.util.Map.of(1L, java.util.List.of(item)));
+
         List<ReservaResponseDto> comoEstudiante = reservaService.getTodasLasReservas(
                 com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
                 usuarioTest.getEmail(), ROLE_ESTUDIANTE);
@@ -475,6 +481,8 @@ class ReservaServiceTest {
         assertNull(deOtro.getUsuarioEmail(), "no tiene que ver el mail de otro");
         assertEquals("Otro Usuario", deOtro.getUsuarioNombre(), "el nombre si, que es lo que muestra el calendario");
         assertEquals(usuarioTest.getEmail(), mia.getUsuarioEmail(), "el propio se mantiene");
+        // Los items solicitados repiten el mail del solicitante: tampoco por ahi.
+        assertNull(deOtro.getItemsSolicitados().get(0).getSolicitanteEmail());
 
         List<ReservaResponseDto> comoAnalista = reservaService.getTodasLasReservas(
                 com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),

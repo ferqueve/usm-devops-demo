@@ -38,6 +38,18 @@ public interface ReservaItemSolicitadoRepository extends JpaRepository<ReservaIt
            "WHERE ris.reserva.id = :reservaId AND ris.deletedAt IS NULL")
     List<ReservaItemSolicitado> findByReservaIdWithRelations(@Param("reservaId") Long reservaId);
 
+    /**
+     * Lo mismo, pero para muchas reservas de una vez.
+     *
+     * Al armar una lista, preguntar los items reserva por reserva era una
+     * consulta por fila: el calendario de un mes son casi 1.600.
+     */
+    @Query("SELECT ris FROM ReservaItemSolicitado ris " +
+           "LEFT JOIN FETCH ris.tipoElemento " +
+           "LEFT JOIN FETCH ris.inventarioItem " +
+           "WHERE ris.reserva.id IN :reservaIds AND ris.deletedAt IS NULL")
+    List<ReservaItemSolicitado> findByReservaIds(@Param("reservaIds") List<Long> reservaIds);
+
     // Cuenta solicitudes activas (PENDIENTE o APROBADO, no eliminadas) que usan el item dado.
     @Query("SELECT COUNT(ris) FROM ReservaItemSolicitado ris " +
            "WHERE ris.inventarioItem.id = :inventarioItemId " +
