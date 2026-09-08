@@ -22,6 +22,23 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          // Sin esto, el code splitting deja un chunk por cada icono de lucide
+          // y por cada primitiva de radix: una navegacion se llevaba 35
+          // pedidos de unos pocos KB cada uno, todos con su ida y vuelta.
+          // Agrupados por libreria, son cuatro pedidos que ademas quedan
+          // cacheados entre pantallas.
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-charts': ['recharts'],
+            'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
+            'vendor-iconos': ['lucide-react'],
+          },
+        },
+      },
+    },
     server: {
       port: 5173,
       host: false,
