@@ -5,8 +5,12 @@
     <link rel="icon" type="image/png" href="/logo-utec.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>USM UTEC Space Manager</title>
+  </head>
+  <body>
     <script>
-      // Prevent Radix UI from hiding scrollbar
+      // Evita que Radix esconda la barra de scroll al abrir un dialogo.
+      // Va en el body y no en el head: en el head document.body todavia es null,
+      // observe() tiraba TypeError y el bloque entero quedaba sin registrar.
       (function() {
         const observer = new MutationObserver(function(mutations) {
           mutations.forEach(function(mutation) {
@@ -28,8 +32,6 @@
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-scroll-locked'] });
       })();
     </script>
-  </head>
-  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
