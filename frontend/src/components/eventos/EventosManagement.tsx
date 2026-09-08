@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner';
 import type { LucideIcon } from 'lucide-react';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useEventos } from '@/hooks/useEventos';
 import { eventosApi } from '@/lib/api/eventos';
@@ -454,17 +455,20 @@ export default function EventosManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{eventos.length}</span> eventos · descubrí y participá de la oferta abierta.
-        </p>
-        <PermissionGuard requiredPermission="evento:crear">
-          <Button onClick={() => setCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Crear Evento
-          </Button>
-        </PermissionGuard>
-      </div>
+      <PageHeader
+        title="Eventos"
+        count={eventos.length}
+        description="Descubrí y participá de la oferta abierta."
+        accentColor="#DE7A27"
+        actions={
+          <PermissionGuard requiredPermission="evento:crear">
+            <Button onClick={() => setCreateDialog(true)} className={HEADER_PRIMARY}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Crear evento
+            </Button>
+          </PermissionGuard>
+        }
+      />
 
       {eventos.length > 0 && <ProximoEventoHero eventos={eventos} />}
 

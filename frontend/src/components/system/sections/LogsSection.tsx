@@ -6,9 +6,10 @@ interface LogsSectionProps {
   loggers: LoggersInfo | null | undefined;
   logFile: string;
   onLoggerUpdate: (name: string, level: string) => Promise<void>;
+  onRefreshLog?: () => void | Promise<void>;
 }
 
-export const LogsSection = memo(function LogsSection({ loggers, logFile, onLoggerUpdate }: LogsSectionProps) {
+export const LogsSection = memo(function LogsSection({ loggers, logFile, onLoggerUpdate, onRefreshLog }: LogsSectionProps) {
   return (
     <div>
       {/* Visor de logs con configuración integrada */}
@@ -17,6 +18,7 @@ export const LogsSection = memo(function LogsSection({ loggers, logFile, onLogge
         maxLines={200}
         loggers={loggers}
         onLoggerUpdate={onLoggerUpdate}
+        onRefresh={onRefreshLog}
       />
     </div>
   );

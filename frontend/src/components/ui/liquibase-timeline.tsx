@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Database, CheckCircle2, CheckCircle, XCircle } from 'lucide-react';
@@ -83,7 +84,12 @@ function TitleBar({
 }
 
 export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelineProps>) {
-  const changeSets = extractChangeSets(data);
+  const [verTodas, setVerTodas] = useState(false);
+  const changeSetsOriginal = extractChangeSets(data);
+  // Las últimas primero: de 134 migraciones, la que importa es la que se acaba
+  // de aplicar, no createTable de hace un año.
+  const changeSets = [...changeSetsOriginal].reverse();
+  const visibles = verTodas ? changeSets : changeSets.slice(0, 8);
   const dbStatus = health?.components?.db?.status || 'UNKNOWN';
   const dbDetails = health?.components?.db?.details;
 
@@ -106,7 +112,10 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
   return (
     <div className="border rounded-lg overflow-hidden shadow-card">
       <TitleBar dbStatus={dbStatus} dbDetails={dbDetails} count={changeSets.length} />
-      <ScrollArea className="h-[400px]">
+      <p className="border-b bg-muted/30 px-4 py-1.5 text-[11px] text-muted-foreground">
+        Las más recientes primero
+      </p>
+      <ScrollArea className={verTodas ? 'h-[400px]' : ''}>
         <Table>
           <TableHeader className="bg-utec-dark">
             <TableRow className="hover:bg-transparent border-b border-white/10">
@@ -118,7 +127,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
             </TableRow>
           </TableHeader>
           <TableBody>
-            {changeSets.map((changeSet, index) => (
+            {visibles.map((changeSet, index) => (
               <TableRow key={`${changeSet.id}-${index}`}>
                 <TableCell className="font-medium text-xs text-center">
                   <div className="flex items-center justify-center gap-1">
@@ -154,6 +163,17 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
           </TableBody>
         </Table>
       </ScrollArea>
+      {changeSets.length > 8 && (
+        <button
+          type="button"
+          onClick={() => setVerTodas(!verTodas)}
+          className="w-full border-t bg-card px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+        >
+          {verTodas
+            ? 'Mostrar solo las últimas 8'
+            : `Ver las ${changeSets.length} migraciones`}
+        </button>
+      )}
     </div>
   );
 }

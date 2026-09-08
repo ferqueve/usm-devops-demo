@@ -1,46 +1,35 @@
+import { useSearchParams } from 'react-router-dom';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import InventoryStats from './InventoryStats';
 import ReservationStatsAnalista from './ReservationStatsAnalista';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Package } from 'lucide-react';
+import { PageHeader } from '@/components/layouts/PageHeader';
 
 export default function Statistics() {
   const { hasPermission } = useRolePermissions();
+  const [searchParams] = useSearchParams();
+
+  // La vista viene de la URL: las dos cuelgan de Estadísticas en el sidebar.
+  const esInventario = searchParams.get('tab') === 'inventario';
 
   // Permission-based logic
   const canViewReservationStats = hasPermission('estadisticas:ver');
   const canManageInventory = hasPermission('inventario:editar');
   const canViewInventoryStats = hasPermission('inventario:ver');
 
-  // ADMIN (usuarios que pueden gestionar inventario Y ver estadísticas) ven ambos con tabs
+  // ADMIN (usuarios que pueden gestionar inventario Y ver estadísticas) ven ambas vistas
   if (canManageInventory && canViewReservationStats) {
     return (
       <div className="space-y-6">
-        <p className="text-sm text-muted-foreground">
-          Visualiza las estadísticas de reservas e inventario
-        </p>
-        <Tabs defaultValue="reservas" className="w-full">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <TabsList>
-              <TabsTrigger value="reservas">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Reservas
-              </TabsTrigger>
-              <TabsTrigger value="inventario">
-                <Package className="h-4 w-4 mr-2" />
-                Inventario
-              </TabsTrigger>
-            </TabsList>
-            {/* Las acciones de cada tab se portalizan dentro de este slot. */}
-            <div id="stats-actions-slot" className="flex items-center gap-2" />
-          </div>
-          <TabsContent value="reservas" className="space-y-6">
-            <ReservationStatsAnalista />
-          </TabsContent>
-          <TabsContent value="inventario" className="space-y-6">
-            <InventoryStats />
-          </TabsContent>
-        </Tabs>
+        <PageHeader
+          title="Estadísticas"
+          description={
+            esInventario
+              ? 'Inventario: stock, estado y asignación por espacio.'
+              : 'Reservas, con el detalle por espacio y por período.'
+          }
+          accentColor={esInventario ? '#F6CA21' : '#184897'}
+        />
+        {esInventario ? <InventoryStats /> : <ReservationStatsAnalista />}
       </div>
     );
   }
@@ -49,6 +38,11 @@ export default function Statistics() {
   if (canViewReservationStats && !canManageInventory) {
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Estadísticas"
+          description="Reservas, con el detalle por espacio y por período."
+          accentColor="#184897"
+        />
         <ReservationStatsAnalista />
       </div>
     );
@@ -58,6 +52,11 @@ export default function Statistics() {
   if (canViewInventoryStats && !canViewReservationStats) {
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Estadísticas"
+          description="Inventario: stock, estado y asignación por espacio."
+          accentColor="#F6CA21"
+        />
         <InventoryStats />
       </div>
     );

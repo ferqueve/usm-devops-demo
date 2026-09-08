@@ -1,4 +1,4 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, memo, Fragment } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -23,7 +23,36 @@ interface HttpTrace {
   response: {
     status: number;
   };
+  /** Milisegundos. El actuator lo manda como duración ISO-8601 ("PT0.021S"). */
   timeTaken?: number;
+  usuario?: string;
+  requestHeaders?: Record<string, string[]>;
+  responseHeaders?: Record<string, string[]>;
+}
+
+/**
+ * El actuator manda timeTaken como duración ISO-8601 ("PT0.021S", "PT1.5S").
+ * Number() sobre eso da NaN, y por eso la columna mostraba "-" en todas las
+ * filas.
+ */
+function parseDuracionMs(valor: unknown): number {
+  if (typeof valor === 'number') return valor;
+  if (typeof valor !== 'string' || valor.length === 0) return 0;
+  const iso = /^PT(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?$/.exec(valor);
+  if (iso) {
+    const minutos = Number(iso[1] ?? 0);
+    const segundos = Number(iso[2] ?? 0);
+    return (minutos * 60 + segundos) * 1000;
+  }
+  const plano = Number(valor);
+  return Number.isNaN(plano) ? 0 : plano;
+}
+
+function formatDuracion(ms: number): string {
+  if (ms <= 0) return '—';
+  if (ms < 1) return '<1 ms';
+  if (ms >= 1000) return `${(ms / 1000).toFixed(2)} s`;
+  return `${Math.round(ms)} ms`;
 }
 
 interface HttpTraceTableProps {
@@ -31,12 +60,32 @@ interface HttpTraceTableProps {
 }
 
 
+function ListaHeaders({ titulo, headers }: Readonly<{ titulo: string; headers?: Record<string, string[]> }>) {
+  const entradas = Object.entries(headers ?? {});
+  if (entradas.length === 0) return null;
+
+  return (
+    <div className="mt-2">
+      <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</div>
+      <dl className="grid gap-x-3 gap-y-0.5 font-mono text-[11px] sm:grid-cols-[auto_1fr]">
+        {entradas.map(([nombre, valores]) => (
+          <Fragment key={nombre}>
+            <dt className="text-muted-foreground">{nombre}</dt>
+            <dd className="break-all">{valores.join(', ')}</dd>
+          </Fragment>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [hideActuator, setHideActuator] = useState<boolean>(true);
   const [limit, setLimit] = useState<number>(10);
+  const [expandida, setExpandida] = useState<string | null>(null);
 
   // Extraer traces del formato de actuator (httpexchanges o httptrace)
   const traces: HttpTrace[] = useMemo(() => {
@@ -58,7 +107,10 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
           response: {
             status: res.status ?? 0
           },
-          timeTaken: typeof exchange.timeTaken === 'string' ? Number(exchange.timeTaken) || 0 : 0
+          timeTaken: parseDuracionMs(exchange.timeTaken),
+          usuario: exchange.principal?.name,
+          requestHeaders: req.headers,
+          responseHeaders: res.headers,
         };
       }
       // Si viene en formato httptrace (antiguo) sin request/response, descartar
@@ -81,11 +133,15 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
       
       const matchesSearch = trace.request.uri.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesMethod = methodFilter === 'all' || trace.request.method === methodFilter;
-      const matchesStatus = 
+      const status = trace.response.status;
+      const matchesStatus =
         statusFilter === 'all' ||
-        (statusFilter === 'success' && trace.response.status >= 200 && trace.response.status < 300) ||
-        (statusFilter === 'error' && trace.response.status >= 400);
-      
+        (statusFilter === 'success' && status >= 200 && status < 300) ||
+        (statusFilter === 'client' && status >= 400 && status < 500) ||
+        (statusFilter === 'server' && status >= 500) ||
+        (statusFilter === 'error' && status >= 400) ||
+        (statusFilter === 'slow' && (trace.timeTaken ?? 0) >= 500);
+
       return matchesSearch && matchesMethod && matchesStatus;
     });
     
@@ -94,6 +150,18 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
       totalFiltered: filtered.length
     };
   }, [traces, searchTerm, methodFilter, statusFilter, hideActuator, limit]);
+
+  // Resumen de lo que se está viendo: sin esto hay que contar filas a ojo.
+  const resumen = useMemo(() => {
+    const visibles = traces.filter((t) => !hideActuator || !t.request.uri.includes('/actuator'));
+    const errores = visibles.filter((t) => t.response.status >= 400).length;
+    const lentas = visibles.filter((t) => (t.timeTaken ?? 0) >= 500).length;
+    const conTiempo = visibles.filter((t) => (t.timeTaken ?? 0) > 0);
+    const demoraMedia = conTiempo.length > 0
+      ? conTiempo.reduce((acc, t) => acc + (t.timeTaken ?? 0), 0) / conTiempo.length
+      : 0;
+    return { total: visibles.length, errores, lentas, demoraMedia };
+  }, [traces, hideActuator]);
 
   // Badge de método
   const getMethodBadge = (method: string) => {
@@ -192,7 +260,10 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="success">Exitosos (2xx)</SelectItem>
-              <SelectItem value="error">Errores (4xx/5xx)</SelectItem>
+              <SelectItem value="client">Del cliente (4xx)</SelectItem>
+              <SelectItem value="server">Del servidor (5xx)</SelectItem>
+              <SelectItem value="error">Todos los errores</SelectItem>
+              <SelectItem value="slow">Lentas (500 ms o más)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -212,29 +283,75 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
           </TableHeader>
           <TableBody>
             {filteredTraces.length > 0 ? (
-              filteredTraces.map((trace, index) => (
-                <TableRow key={`${trace.timestamp}-${trace.request.uri}-${index}`} className="hover:bg-muted/60">
-                  <TableCell className="font-mono text-xs">
-                    {new Date(trace.timestamp).toLocaleTimeString()}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-md border ${getMethodBadge(trace.request.method)}`}>
-                      {trace.request.method}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs max-w-md truncate">
-                    {trace.request.uri}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-md border ${getStatusBadge(trace.response.status)}`}>
-                      {trace.response.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {trace.timeTaken ? `${trace.timeTaken}ms` : '-'}
-                  </TableCell>
-                </TableRow>
-              ))
+              filteredTraces.map((trace, index) => {
+                const id = `${trace.timestamp}-${trace.request.uri}-${index}`;
+                const esError = trace.response.status >= 400;
+                const esLenta = (trace.timeTaken ?? 0) >= 500;
+                const abierta = expandida === id;
+
+                return (
+                  <Fragment key={id}>
+                    <TableRow
+                      onClick={() => setExpandida(abierta ? null : id)}
+                      className={`cursor-pointer hover:bg-muted/60 ${esError ? 'bg-utec-red/10 hover:bg-utec-red/15' : ''}`}
+                    >
+                      <TableCell className="font-mono text-xs">
+                        {new Date(trace.timestamp).toLocaleTimeString()}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-md border ${getMethodBadge(trace.request.method)}`}>
+                          {trace.request.method}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs max-w-md truncate">
+                        {trace.request.uri}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-md border ${getStatusBadge(trace.response.status)}`}>
+                          {trace.response.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className={`text-xs tabular-nums ${esLenta ? 'font-semibold text-utec-orange' : 'text-muted-foreground'}`}>
+                        {formatDuracion(trace.timeTaken ?? 0)}
+                      </TableCell>
+                    </TableRow>
+
+                    {abierta && (
+                      <TableRow className="hover:bg-transparent">
+                        <TableCell colSpan={5} className="bg-muted/40 p-0">
+                          <div className="grid gap-4 px-4 py-3 text-xs md:grid-cols-2">
+                            <div className="min-w-0">
+                              <div className="mb-1 font-semibold uppercase tracking-wide text-muted-foreground">Petición</div>
+                              <p className="break-all font-mono">{trace.request.method} {trace.request.uri}</p>
+                              <p className="mt-1 text-muted-foreground">
+                                Usuario: <span className="font-medium text-foreground">{trace.usuario ?? 'anónimo'}</span>
+                              </p>
+                              <p className="text-muted-foreground">
+                                Fecha: <span className="font-medium text-foreground">{new Date(trace.timestamp).toLocaleString()}</span>
+                              </p>
+                              <ListaHeaders titulo="Headers de la petición" headers={trace.requestHeaders} />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="mb-1 font-semibold uppercase tracking-wide text-muted-foreground">Respuesta</div>
+                              <p>
+                                Estado <span className="font-semibold">{trace.response.status}</span> en{' '}
+                                <span className="font-semibold">{formatDuracion(trace.timeTaken ?? 0)}</span>
+                              </p>
+                              <ListaHeaders titulo="Headers de la respuesta" headers={trace.responseHeaders} />
+                              {!trace.requestHeaders && !trace.responseHeaders && (
+                                <p className="mt-2 text-[11px] text-muted-foreground">
+                                  El backend no está publicando los headers. Se habilitan con
+                                  <code className="mx-1 rounded bg-muted px-1 py-0.5">management.httpexchanges.recording.include</code>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
@@ -246,9 +363,19 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
         </Table>
       </div>
 
-      <p className="text-xs text-muted-foreground bg-card px-4 py-2">
-        Mostrando {filteredTraces.length} de {totalFiltered} peticiones filtradas ({traces.length} totales)
-      </p>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-card px-4 py-2 text-xs text-muted-foreground">
+        <span>
+          Mostrando {filteredTraces.length} de {totalFiltered} filtradas · {resumen.total} en la ventana
+        </span>
+        <span className={resumen.errores > 0 ? 'font-semibold text-utec-red' : ''}>
+          {resumen.errores} con error
+        </span>
+        <span className={resumen.lentas > 0 ? 'font-semibold text-utec-orange' : ''}>
+          {resumen.lentas} lentas
+        </span>
+        <span>demora media {formatDuracion(resumen.demoraMedia)}</span>
+        <span className="ml-auto">Tocá una fila para ver sus headers</span>
+      </div>
     </div>
   );
 });

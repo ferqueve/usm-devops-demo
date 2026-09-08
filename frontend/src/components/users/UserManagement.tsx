@@ -3,17 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserStatsCards } from './UserStatsCards';
 import { EditUserDialog } from './EditUserDialog';
-import { CarrerasManagement } from '@/components/carreras/CarrerasManagement';
 import { exportUsersToCSV } from '@/lib/utils/csv-export';
 import { formatDate, formatRelativeTime } from '@/lib/utils/date-helpers';
 import {
@@ -59,10 +52,10 @@ import { usuariosApi } from '@/lib/api/users';
 import { USER_ROLES, ROLE_LABELS, ROLE_BADGE_VARIANTS, ROLES } from '@/lib/config/constants';
 import type { User, UserRole, UserFilters } from '@/lib/types/users';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 import { 
   Search, 
   ChevronLeft,
-  ChevronDown,
   ChevronRight, 
   Shield, 
   Mail, 
@@ -76,7 +69,6 @@ import {
   Edit,
   Mail as MailIcon,
   KeyRound,
-  GraduationCap,
   UserCog,
   CheckCircle2,
   XCircle,
@@ -223,8 +215,6 @@ export default function UserManagement() {
   const [filters, setFilters] = useState<UserFilters>({});
   const [searchInput, setSearchInput] = useState('');
   
-  // Modal de gestión de carreras
-  const [carrerasDialog, setCarrerasDialog] = useState(false);
 
   // Modal de cambio de rol
   const [changeRoleDialog, setChangeRoleDialog] = useState(false);
@@ -452,64 +442,48 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Acciones de página */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{totalElements}</span> usuarios · administra los usuarios del sistema
-        </p>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={isRefreshing ? undefined : handleRefresh}
-                disabled={isRefreshing}
-                aria-label="Actualizar"
-                className="h-9 w-9"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Actualizar</TooltipContent>
-          </Tooltip>
-
-          <PermissionGuard requiredPermission="usuario:gestionar">
+      <PageHeader
+        title="Usuarios"
+        count={totalElements}
+        description="Cuentas del sistema, sus roles y su estado."
+        accentColor="#184897"
+        actions={
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handleExportCSV}
-                  aria-label="Exportar CSV"
-                  className="h-9 w-9"
+                  onClick={isRefreshing ? undefined : handleRefresh}
+                  disabled={isRefreshing}
+                  aria-label="Actualizar"
+                  className={HEADER_ACTION_ICON}
                 >
-                  <Download className="h-4 w-4" />
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Exportar CSV</TooltipContent>
+              <TooltipContent>Actualizar</TooltipContent>
             </Tooltip>
-          </PermissionGuard>
 
-          <PermissionGuard requiredPermissions={['carrera:crear', 'carrera:editar']} requireAll={false}>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-9">
-                  Gestionar
-                  <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setCarrerasDialog(true)}>
-                  <GraduationCap className="h-4 w-4 mr-2" />
-                  Gestionar Carreras
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </PermissionGuard>
-        </div>
-      </div>
+            <PermissionGuard requiredPermission="usuario:gestionar">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleExportCSV}
+                    aria-label="Exportar CSV"
+                    className={HEADER_ACTION_ICON}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Exportar CSV</TooltipContent>
+              </Tooltip>
+            </PermissionGuard>
+          </>
+        }
+      />
 
       {/* Estadísticas de usuarios */}
       <UserStatsCards />
@@ -1061,8 +1035,6 @@ export default function UserManagement() {
         onSuccess={handleEditSuccess}
       />
 
-      {/* Dialog de gestión de carreras */}
-      <CarrerasManagement open={carrerasDialog} onOpenChange={setCarrerasDialog} />
     </div>
   );
 }

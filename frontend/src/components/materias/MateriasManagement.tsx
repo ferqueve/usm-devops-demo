@@ -18,22 +18,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/layouts/PageHeader';
 import { StatStrip, type StatItem } from '@/components/dashboard/views/_components/StatStrip';
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
   Award,
-  CalendarClock,
   BookOpen,
   CheckCircle,
   Edit,
   Eye,
   GraduationCap,
-  LayoutList,
   Library,
   Loader2,
-  Network,
   Plus,
   Search,
   Trash2,
@@ -71,12 +69,9 @@ export default function MateriasManagement() {
 
   // La pestaña vive en la URL para que el link sea compartible y para que
   // /tutorias pueda redirigir acá sin perder a dónde iba.
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as MateriasTab | null;
   const tab: MateriasTab = tabParam && TABS_VALIDOS.includes(tabParam) ? tabParam : 'mapa';
-  const setTab = (t: MateriasTab) => {
-    setSearchParams(t === 'mapa' ? {} : { tab: t }, { replace: true });
-  };
 
   let view: ReactNode = null;
   if (rol === ROLE_ANALISTA || rol === ROLE_ADMIN) {
@@ -102,17 +97,11 @@ export default function MateriasManagement() {
   // Una sola superficie: header con toggle Mapa/Listado. El mapa es la vista por defecto.
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{ENCABEZADO[tab].titulo}</h1>
-          <p className="text-sm text-muted-foreground">{ENCABEZADO[tab].bajada}</p>
-        </div>
-        <div className="inline-flex rounded-xl border bg-muted/40 p-1">
-          <SegBtn active={tab === 'mapa'} onClick={() => setTab('mapa')} icon={Network} label="Plan" />
-          <SegBtn active={tab === 'listado'} onClick={() => setTab('listado')} icon={LayoutList} label="Catálogo" />
-          <SegBtn active={tab === 'tutorias'} onClick={() => setTab('tutorias')} icon={CalendarClock} label="Tutorías" />
-        </div>
-      </div>
+      <PageHeader
+        title={ENCABEZADO[tab].titulo}
+        description={ENCABEZADO[tab].bajada}
+        accentColor="#9333ea"
+      />
 
       {renderTab(tab, view)}
     </div>
@@ -146,24 +135,6 @@ function renderTab(tab: MateriasTab, listado: ReactNode): ReactNode {
   if (tab === 'mapa') return <MapaCorrelativas embedded withList />;
   if (tab === 'tutorias') return <TutoriasManagement embedded />;
   return listado;
-}
-
-function SegBtn({ active, onClick, icon: Icon, label }: Readonly<{
-  active: boolean; onClick: () => void; icon: LucideIcon; label: string;
-}>) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors ${
-        active ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-      }`}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </button>
-  );
 }
 
 // ----- Helpers compartidos -----

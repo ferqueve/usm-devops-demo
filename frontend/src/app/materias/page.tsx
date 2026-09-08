@@ -3,7 +3,7 @@ import MateriasManagement from "@/components/materias/MateriasManagement";
 
 export default function MateriasPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <MateriasManagement />
     </DashboardLayout>
   );

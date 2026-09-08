@@ -3,7 +3,7 @@ import SostenibilidadDashboard from "@/components/sostenibilidad/SostenibilidadD
 
 export default function SostenibilidadPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <SostenibilidadDashboard />
     </DashboardLayout>
   );

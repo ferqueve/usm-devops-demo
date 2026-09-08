@@ -4,7 +4,7 @@ import Calendar from '@/components/calendar/index';
 // Página del calendario
 export default function CalendarPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <Calendar />
     </DashboardLayout>
   );

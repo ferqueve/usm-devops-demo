@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   reservationsApi,
@@ -32,7 +31,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
-  ArrowLeft,
   ClipboardList,
   Boxes,
   RefreshCw,
@@ -57,6 +55,7 @@ import {
 import { InventoryRequestFilters } from '@/components/inventory/InventoryRequestFilters';
 import InventoryRequestsCardView from '@/components/inventory/InventoryRequestsCardView';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 const ESTADO_OPTIONS: Array<{
   value: ReservaItemSolicitadoEstado;
@@ -75,7 +74,6 @@ const ESTADO_LABEL = ESTADO_OPTIONS.reduce<Record<ReservaItemSolicitadoEstado, s
 }, { PENDIENTE: 'Pendiente', APROBADO: 'Aprobado', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado' });
 
 export default function InventoryRequestsManagement() {
-  const navigate = useNavigate();
   const { espacios } = useEspacios();
 
   const [requestsPage, setRequestsPage] = useState<PagedResponse<ReservaItemSolicitado> | null>(null);
@@ -420,39 +418,29 @@ export default function InventoryRequestsManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/rooms')}
-            className="h-9"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-            Volver
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{summary.total}</span> solicitudes ·{' '}
-            <span className="font-medium text-foreground">{summary.pendingItems}</span> activas en página
-          </p>
-        </div>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              aria-label="Actualizar"
-              className="h-9 w-9"
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Actualizar</TooltipContent>
-        </Tooltip>
-      </div>
+      <PageHeader
+        title="Solicitudes"
+        count={summary.total}
+        description={`Pedidos de inventario de las reservas · ${summary.pendingItems} activas en esta página.`}
+        accentColor="#F6CA21"
+        actions={
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                aria-label="Actualizar"
+                className={HEADER_ACTION_ICON}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Actualizar</TooltipContent>
+          </Tooltip>
+        }
+      />
 
       <Card className="shadow-card">
         <div className="px-6 pt-4 pb-4">

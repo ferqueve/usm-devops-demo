@@ -3,7 +3,7 @@ import AuditManagement from '@/components/audit/AuditManagement';
 
 export default function AuditPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <AuditManagement />
     </DashboardLayout>
   );

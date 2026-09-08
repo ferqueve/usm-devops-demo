@@ -21,7 +21,6 @@ import {
   Upload,
   LayoutGrid,
   LayoutList,
-  ArrowLeft,
   ArrowRightLeft,
   Building2,
   Tag,
@@ -73,12 +72,12 @@ import AssignSpaceDialog from './AssignSpaceDialog';
 import ImportCSVDialog from './ImportCSVDialog';
 import BulkActionsBar from './BulkActionsBar';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { usePreferences } from '@/hooks/usePreferences';
 import { MantenimientoRecomendaciones } from '@/components/recomendaciones/MantenimientoRecomendaciones';
 import { recomendacionesApi } from '@/lib/api/recomendaciones';
 import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
-import { TipoElementoManagement } from './TipoElementoManagement';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
 
@@ -93,7 +92,7 @@ export default function InventoryManagement() {
 
   // Usar hooks compartidos con caché
   const { espacios } = useEspacios();
-  const { tiposElemento, refresh: refreshTiposElemento } = useTiposElemento();
+  const { tiposElemento } = useTiposElemento();
 
   // Estados principales
   const [items, setItems] = useState<InventarioItem[]>([]);
@@ -146,7 +145,6 @@ export default function InventoryManagement() {
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [assignDialog, setAssignDialog] = useState(false);
   const [importDialog, setImportDialog] = useState(false);
-  const [showTiposManagement, setShowTiposManagement] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventarioItem | null>(null);
 
   // Cargar estadísticas y recomendaciones
@@ -587,88 +585,78 @@ export default function InventoryManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Acciones de página */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/rooms')}
-            className="h-9"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-            Volver
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{totalElements}</span> items · administra el inventario del sistema
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={isRefreshing ? undefined : handleRefresh}
-                disabled={isRefreshing}
-                aria-label="Actualizar"
-                className="h-9 w-9"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Actualizar</TooltipContent>
-          </Tooltip>
-
-          <PermissionGuard requiredPermission="inventario:ver">
+      <PageHeader
+        title="Inventario"
+        count={totalElements}
+        description="Administra el inventario del sistema: items, asignaciones y solicitudes."
+        accentColor="#F6CA21"
+        actions={
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handleExport}
-                  aria-label="Exportar CSV"
-                  className="h-9 w-9"
+                  onClick={isRefreshing ? undefined : handleRefresh}
+                  disabled={isRefreshing}
+                  aria-label="Actualizar"
+                  className={HEADER_ACTION_ICON}
                 >
-                  <Download className="h-4 w-4" />
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin-once' : ''}`} key={isRefreshing ? 'spinning' : 'static'} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Exportar CSV</TooltipContent>
+              <TooltipContent>Actualizar</TooltipContent>
             </Tooltip>
-          </PermissionGuard>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9">
-                Gestionar
-                <ChevronDown className="h-4 w-4 ml-1" />
+            <PermissionGuard requiredPermission="inventario:ver">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleExport}
+                    aria-label="Exportar CSV"
+                    className={HEADER_ACTION_ICON}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Exportar CSV</TooltipContent>
+              </Tooltip>
+            </PermissionGuard>
+
+            <PermissionGuard requiredPermission="inventario:crear">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={HEADER_ACTION}
+                  >
+                    Importar
+                    <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setImportDialog(true)}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar CSV
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </PermissionGuard>
+
+            <PermissionGuard requiredPermission="inventario:crear">
+              <Button
+                onClick={() => setCreateDialog(true)}
+                className={HEADER_PRIMARY}
+              >
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Agregar item
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <PermissionGuard requiredPermission="inventario:crear">
-                <DropdownMenuItem onClick={() => setImportDialog(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Importar CSV
-                </DropdownMenuItem>
-              </PermissionGuard>
-              <PermissionGuard requiredPermissions={['tipo:crear', 'tipo:editar']} requireAll={false}>
-                <DropdownMenuItem onClick={() => setShowTiposManagement(true)}>
-                  <Package className="h-4 w-4 mr-2" />
-                  Gestionar Tipos
-                </DropdownMenuItem>
-              </PermissionGuard>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <PermissionGuard requiredPermission="inventario:crear">
-            <Button onClick={() => setCreateDialog(true)} className="h-9">
-              <Plus className="h-4 w-4 mr-1.5" />
-              Agregar Item
-            </Button>
-          </PermissionGuard>
-        </div>
-      </div>
+            </PermissionGuard>
+          </>
+        }
+      />
 
       {/* Recomendaciones de Mantenimiento (solo para usuarios con permiso inventario:editar) */}
       {canManageInventory && <MantenimientoRecomendaciones />}
@@ -1032,13 +1020,6 @@ export default function InventoryManagement() {
         </DialogContent>
       </Dialog>
 
-      <TipoElementoManagement
-        open={showTiposManagement}
-        onOpenChange={setShowTiposManagement}
-        onSuccess={() => {
-          refreshTiposElemento(); // Recargar tipos cuando cambian
-        }}
-      />
     </div>
   );
 }

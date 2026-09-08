@@ -15,11 +15,11 @@ describe('MetricsCards', () => {
         uptimeMetrics={metric(3600)}
       />
     );
-    expect(screen.getByText('Estado de Salud')).toBeInTheDocument();
+    expect(screen.getByText('Estado de salud')).toBeInTheDocument();
     expect(screen.getByText('UP')).toBeInTheDocument();
     expect(screen.getByText('Memoria JVM')).toBeInTheDocument();
     expect(screen.getByText('Uso de CPU')).toBeInTheDocument();
-    expect(screen.getByText('Tiempo Activo')).toBeInTheDocument();
+    expect(screen.getByText('Tiempo activo')).toBeInTheDocument();
   });
 
   it('marca DOWN si health no es UP', () => {

@@ -28,16 +28,21 @@ interface LogViewerProps {
   maxLines?: number;
   loggers?: LoggersInfo | null;
   onLoggerUpdate?: (name: string, level: string) => Promise<void>;
+  /** Vuelve a pedir el archivo de log. Habilita el modo "seguir en vivo". */
+  onRefresh?: () => void | Promise<void>;
 }
 
 type LogLevel = 'ERROR' | 'WARN' | 'INFO' | 'DEBUG' | 'TRACE' | 'ALL';
 
 const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'OFF'];
 
-export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }: Readonly<LogViewerProps>) {
+export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, onRefresh }: Readonly<LogViewerProps>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<LogLevel>('ALL');
   const [autoScroll, setAutoScroll] = useState(false);
+  // "Seguir en vivo": recarga el archivo cada 5s y baja solo. Sin esto el visor
+  // muestra la foto del momento en que se abrió la vista.
+  const [siguiendo, setSiguiendo] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   // Estados para el diálogo de configuración de loggers
@@ -68,6 +73,17 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
     return 'ALL';
   };
 
+  // Cuántas líneas hay de cada nivel: los chips sin número obligan a probar
+  // uno por uno para descubrir que no hay ningún ERROR.
+  const conteoPorNivel = useMemo(() => {
+    const conteo: Record<string, number> = { ALL: lines.length, ERROR: 0, WARN: 0, INFO: 0, DEBUG: 0, TRACE: 0 };
+    for (const line of lines) {
+      const nivel = detectLogLevel(line);
+      if (nivel !== 'ALL') conteo[nivel] += 1;
+    }
+    return conteo;
+  }, [lines]);
+
   // Filtrar líneas
   const filteredLines = useMemo(() => {
     return lines.filter((line) => {
@@ -80,10 +96,16 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
 
   // Auto-scroll al final
   useEffect(() => {
-    if (autoScroll && scrollRef.current) {
+    if ((autoScroll || siguiendo) && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [filteredLines, autoScroll]);
+  }, [filteredLines, autoScroll, siguiendo]);
+
+  useEffect(() => {
+    if (!siguiendo || !onRefresh) return;
+    const id = setInterval(() => { void onRefresh(); }, 5000);
+    return () => clearInterval(id);
+  }, [siguiendo, onRefresh]);
 
   // Resaltar términos de búsqueda
   const highlightText = (text: string, search: string) => {
@@ -288,6 +310,21 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
             </Dialog>
           )}
 
+          {onRefresh && (
+            <button
+              onClick={() => setSiguiendo(!siguiendo)}
+              title={siguiendo ? 'Dejar de seguir el log' : 'Seguir el log en vivo'}
+              className={`flex items-center gap-1.5 h-7 rounded-md px-2 text-[11px] font-medium transition ${
+                siguiendo
+                  ? 'bg-utec-green/25 text-utec-green'
+                  : 'text-white/80 hover:bg-white/10'
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${siguiendo ? 'animate-pulse bg-utec-green' : 'bg-white/40'}`} />
+              {siguiendo ? 'En vivo' : 'Seguir'}
+            </button>
+          )}
+
           <button
             onClick={() => setAutoScroll(!autoScroll)}
             title="Auto-scroll"
@@ -333,13 +370,15 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate }:
               <button
                 key={level}
                 onClick={() => setLevelFilter(level)}
-                className={`px-2.5 py-1 text-[11px] font-semibold rounded transition ${
+                disabled={conteoPorNivel[level] === 0}
+                className={`px-2.5 py-1 text-[11px] font-semibold rounded transition disabled:cursor-default disabled:opacity-40 ${
                   levelFilter === level
                     ? 'bg-white/15 text-white'
                     : 'text-white/60 hover:text-white'
                 }`}
               >
                 {level}
+                <span className="ml-1 tabular-nums font-normal opacity-70">{conteoPorNivel[level] ?? 0}</span>
               </button>
             ))}
           </div>

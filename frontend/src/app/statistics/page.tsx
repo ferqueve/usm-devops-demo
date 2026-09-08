@@ -4,7 +4,7 @@ import Statistics from '@/components/statistics/index';
 // Página de estadísticas
 export default function StatisticsPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <Statistics />
     </DashboardLayout>
   );

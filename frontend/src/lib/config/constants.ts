@@ -10,14 +10,34 @@ import {
   Sparkles,
   GraduationCap,
   Megaphone,
-  Leaf
+  Leaf,
+  Network,
+  LayoutList,
+  CalendarClock,
+  Boxes,
+  Activity,
+  AlertTriangle,
+  Database,
+  ClipboardList,
+  SlidersHorizontal
 } from "lucide-react";
-import type { SidebarMenuItem } from '../types/ui';
+import type { SidebarMenuItem, SidebarSection } from '../types/ui';
 import type { UserRole } from '../types/users';
 
 // ============================================================================
 // Configuración de Navegación
 // ============================================================================
+
+// Orden de las secciones en el sidebar. Este array manda: agregar una pantalla
+// es sumarle `section` a su ítem, no tocar el layout. La sección "general" no
+// lleva título; el resto se rotula.
+export const sidebarSections: SidebarSection[] = [
+  { id: "general", label: null },
+  { id: "espacios", label: "Espacios" },
+  { id: "academico", label: "Académico" },
+  { id: "analisis", label: "Análisis" },
+  { id: "administracion", label: "Administración" }
+];
 
 export const sidebarMenuItems: SidebarMenuItem[] = [
   {
@@ -25,61 +45,57 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Inicio",
     icon: Home,
     href: "/dashboard",
+    section: "general",
     isActive: true
   },
   {
     id: "calendar",
     label: "Calendario",
     icon: Calendar,
-    href: "/calendar"
+    href: "/calendar",
+    section: "general"
   },
   {
     id: "reservations",
     label: "Reservas",
     icon: BookOpen,
-    href: "/reservations"
+    href: "/reservations",
+    section: "espacios"
   },
   {
     id: "rooms",
     label: "Espacios",
     icon: Building2,
-    href: "/rooms"
+    href: "/rooms",
+    section: "espacios"
   },
   {
-    id: "statistics",
-    label: "Estadísticas",
-    icon: BarChart3,
-    href: "/statistics"
+    id: "inventory",
+    label: "Inventario",
+    icon: Boxes,
+    href: "/inventory",
+    section: "espacios"
   },
   {
-    id: "asistente",
-    label: "Asistente IA",
-    icon: Sparkles,
-    href: "/asistente"
-  },
-  {
-    id: "users",
-    label: "Usuarios",
-    icon: Users,
-    href: "/users"
-  },
-  {
-    id: "system",
-    label: "Sistema",
-    icon: Server,
-    href: "/system"
-  },
-  {
-    id: "audit",
-    label: "Auditoría",
-    icon: FileText,
-    href: "/audit"
+    id: "inventory-requests",
+    label: "Solicitudes",
+    icon: ClipboardList,
+    href: "/inventory/requests",
+    section: "espacios"
   },
   {
     id: "materias",
     label: "Materias",
     icon: GraduationCap,
-    href: "/materias"
+    href: "/materias",
+    section: "academico",
+    // Las tres vistas de Materias viven en el sidebar y no en un segmented
+    // adentro de la pantalla: son destinos, y como tales se navegan por URL.
+    children: [
+      { id: "materias-plan", label: "Plan", icon: Network, href: "/materias?tab=mapa" },
+      { id: "materias-catalogo", label: "Catálogo", icon: LayoutList, href: "/materias?tab=listado" },
+      { id: "materias-tutorias", label: "Tutorías", icon: CalendarClock, href: "/materias?tab=tutorias" }
+    ]
   },
   // Tutorías no tiene ítem propio: cuelga de una materia, así que vive como pestaña
   // dentro de Materias (/materias?tab=tutorias). Eventos sí queda aparte: es la
@@ -88,13 +104,67 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     id: "eventos",
     label: "Eventos",
     icon: Megaphone,
-    href: "/eventos"
+    href: "/eventos",
+    section: "academico"
+  },
+  {
+    id: "statistics",
+    label: "Estadísticas",
+    icon: BarChart3,
+    href: "/statistics",
+    section: "analisis",
+    children: [
+      { id: "statistics-reservas", label: "Reservas", icon: BarChart3, href: "/statistics?tab=reservas" },
+      { id: "statistics-inventario", label: "Inventario", icon: Boxes, href: "/statistics?tab=inventario" }
+    ]
+  },
+  {
+    id: "asistente",
+    label: "Asistente IA",
+    icon: Sparkles,
+    href: "/asistente",
+    section: "analisis"
   },
   {
     id: "sostenibilidad",
     label: "Sostenibilidad",
     icon: Leaf,
-    href: "/sostenibilidad"
+    href: "/sostenibilidad",
+    section: "analisis"
+  },
+  {
+    id: "users",
+    label: "Usuarios",
+    icon: Users,
+    href: "/users",
+    section: "administracion"
+  },
+  {
+    id: "audit",
+    label: "Auditoría",
+    icon: FileText,
+    href: "/audit",
+    section: "administracion"
+  },
+  {
+    id: "system",
+    label: "Sistema",
+    icon: Server,
+    href: "/system",
+    section: "administracion",
+    children: [
+      { id: "system-resumen", label: "Resumen", icon: BarChart3, href: "/system?tab=resumen" },
+      { id: "system-rendimiento", label: "Rendimiento", icon: Activity, href: "/system?tab=rendimiento" },
+      { id: "system-errores", label: "Errores", icon: AlertTriangle, href: "/system?tab=errores" },
+      { id: "system-datos", label: "Base de datos", icon: Database, href: "/system?tab=datos" }
+    ]
+  },
+  {
+    id: "configuracion",
+    label: "Configuración",
+    icon: SlidersHorizontal,
+    href: "/configuracion",
+    section: "administracion"
   }
 ];
 
@@ -138,7 +208,8 @@ export const ROLE_PERMISSIONS = {
       '/tutorias/:id',
       '/eventos',
       '/eventos/:id',
-      '/sostenibilidad'
+      '/sostenibilidad',
+      '/configuracion'
     ],
     sidebarItems: [
       'dashboard',
@@ -147,11 +218,13 @@ export const ROLE_PERMISSIONS = {
       'calendar',
       'users',
       'inventory',
+      'inventory-requests',
       'statistics',
       'asistente',
       'Users',
       'system',
       'audit',
+      'configuracion',
       'materias',
       'eventos',
       'sostenibilidad'
@@ -173,7 +246,8 @@ export const ROLE_PERMISSIONS = {
       '/materias',
       '/materias/:id',
       '/eventos',
-      '/eventos/:id'
+      '/eventos/:id',
+      '/configuracion'
     ],
     sidebarItems: [
       'dashboard',
@@ -184,7 +258,8 @@ export const ROLE_PERMISSIONS = {
       'statistics',
       'asistente',
       'materias',
-      'eventos'
+      'eventos',
+      'configuracion'
     ],
   },
   [ROLES.DOCENTE]: {
@@ -256,15 +331,18 @@ export const ROLE_PERMISSIONS = {
       '/inventory',
       '/inventory/requests',
       '/statistics',
-      '/sostenibilidad'
+      '/sostenibilidad',
+      '/configuracion'
     ],
     sidebarItems: [
       'dashboard',
       'rooms',
       'calendar',
       'inventory',
+      'inventory-requests',
       'statistics',
-      'sostenibilidad'
+      'sostenibilidad',
+      'configuracion'
     ],
   }
 } as const;

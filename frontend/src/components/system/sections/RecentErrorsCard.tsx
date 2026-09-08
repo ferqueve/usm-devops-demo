@@ -1,5 +1,7 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Inbox, Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -24,6 +26,22 @@ function levelBadge(level: string) {
     );
   }
   return <Badge variant="secondary" className="text-[10px]">{level}</Badge>;
+}
+
+/**
+ * Ruido conocido: warnings que aparecen siempre y no dicen nada de la salud del
+ * sistema. Se pueden ocultar para que los errores de verdad no se pierdan entre
+ * ellos.
+ */
+const RUIDO_CONOCIDO: ReadonlyArray<{ patron: RegExp; motivo: string }> = [
+  { patron: /SQL Warning Code: 0, SQLState: 01000/i, motivo: 'aviso de Hibernate, sin efecto' },
+  { patron: /has a collation version mismatch/i, motivo: 'collation de PostgreSQL' },
+  { patron: /Token JWT expirado/i, motivo: 'sesión vencida, el usuario vuelve a entrar' },
+  { patron: /spring\.jpa\.open-in-view/i, motivo: 'aviso de arranque de Spring' },
+];
+
+function motivoDeRuido(mensaje: string): string | null {
+  return RUIDO_CONOCIDO.find((r) => r.patron.test(mensaje))?.motivo ?? null;
 }
 
 function shortLogger(logger: string): string {
@@ -64,7 +82,13 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
     };
   }, []);
 
-  const errors: RecentError[] = data?.top ?? [];
+  const [ocultarRuido, setOcultarRuido] = useState(true);
+
+  const todos: RecentError[] = useMemo(() => data?.top ?? [], [data?.top]);
+  const { errors, ruidoOculto } = useMemo(() => {
+    const visibles = ocultarRuido ? todos.filter((e) => !motivoDeRuido(e.message)) : todos;
+    return { errors: visibles, ruidoOculto: todos.length - visibles.length };
+  }, [todos, ocultarRuido]);
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
@@ -78,6 +102,12 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
             {data.totalGroupsInWindow} grupos · {data.totalCaptured} eventos
           </span>
         )}
+        <div className="flex items-center gap-1.5">
+          <Switch id="ocultar-ruido" checked={ocultarRuido} onCheckedChange={setOcultarRuido} />
+          <Label htmlFor="ocultar-ruido" className="cursor-pointer whitespace-nowrap text-[11px] text-white/80">
+            Ocultar ruido conocido
+          </Label>
+        </div>
       </div>
       {loading && errors.length === 0 ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground bg-card">
@@ -85,9 +115,16 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
           <span className="text-sm">Cargando errores...</span>
         </div>
       ) : errors.length === 0 ? (
-        <div className="flex items-center justify-center py-8 text-muted-foreground bg-card">
-          <Inbox className="h-5 w-5 mr-2" />
-          <span className="text-sm">Sin errores en las últimas {data?.windowHours ?? 24}h</span>
+        <div className="flex flex-col items-center justify-center gap-1 py-8 text-muted-foreground bg-card">
+          <div className="flex items-center">
+            <Inbox className="h-5 w-5 mr-2" />
+            <span className="text-sm">Sin errores en las últimas {data?.windowHours ?? 24}h</span>
+          </div>
+          {ruidoOculto > 0 && (
+            <span className="text-xs">
+              {ruidoOculto} {ruidoOculto === 1 ? 'grupo conocido oculto' : 'grupos conocidos ocultos'}
+            </span>
+          )}
         </div>
       ) : (
           <Table className="table-fixed w-full">
@@ -144,6 +181,12 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
               ))}
             </TableBody>
           </Table>
+      )}
+      {ruidoOculto > 0 && errors.length > 0 && (
+        <p className="border-t bg-card px-4 py-2 text-xs text-muted-foreground">
+          {ruidoOculto} {ruidoOculto === 1 ? 'grupo conocido oculto' : 'grupos conocidos ocultos'}: avisos de
+          Hibernate, collation de PostgreSQL, sesiones vencidas y avisos de arranque de Spring.
+        </p>
       )}
     </div>
   );

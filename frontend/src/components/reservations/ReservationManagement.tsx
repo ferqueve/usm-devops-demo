@@ -15,6 +15,7 @@ import ReservationTableView from './ReservationTableView.tsx';
 import ReservationCalendarView from './ReservationCalendarView.tsx';
 import ReservationFormDialog from './ReservationFormDialog.tsx';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { PageHeader, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { useAuth } from '@/hooks/useAuth';
 import { usePreferences } from '@/hooks/usePreferences';
@@ -619,20 +620,24 @@ export default function ReservationManagement() {
   return (
     <div className="flex flex-col flex-1 min-h-[calc(100vh-8rem)]">
       <div className="space-y-4 sm:space-y-6 flex-shrink-0">
-        {/* Acciones de página */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {canViewRecommendations && !canApprove
-              ? 'Administra tus solicitudes de reserva de espacios'
-              : 'Administra todas las reservas y solicitudes del sistema'}
-          </p>
-          <PermissionGuard requiredPermissions={['reserva:crear']}>
-            <Button onClick={() => setIsFormDialogOpen(true)} className="h-9">
-              <Plus className="h-4 w-4 mr-1.5" />
-              {canViewRecommendations && !canApprove ? 'Nueva Solicitud' : 'Nueva Reserva'}
-            </Button>
-          </PermissionGuard>
-        </div>
+        <PageHeader
+          title="Reservas"
+          count={totalElements}
+          description={
+            canViewRecommendations && !canApprove
+              ? 'Tus solicitudes de reserva de espacios.'
+              : 'Todas las reservas y solicitudes del sistema.'
+          }
+          accentColor="#184897"
+          actions={
+            <PermissionGuard requiredPermissions={['reserva:crear']}>
+              <Button onClick={() => setIsFormDialogOpen(true)} className={HEADER_PRIMARY}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                {canViewRecommendations && !canApprove ? 'Nueva solicitud' : 'Nueva reserva'}
+              </Button>
+            </PermissionGuard>
+          }
+        />
 
         {/* Estadísticas arriba (horizontal) */}
         <PermissionGuard requiredPermission="estadisticas:ver" fallback={null} showFallback={false}>

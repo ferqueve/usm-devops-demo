@@ -2,18 +2,26 @@ import { useCallback, useMemo, memo, useState } from 'react';
 import {
   Sidebar,
   SidebarFooter,
+  SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { LogOut, User, Settings } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { sidebarMenuItems, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
+import { sidebarMenuItems, sidebarSections, canAccessSidebarItem, ROLE_LABELS } from "@/lib/config/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
-import { formatEmailForDisplay, formatNameForSidebar } from "@/lib/utils/text-formatters";
-import type { SidebarMenuItem as SidebarMenuItemType } from "@/lib/types/ui";
+import type { SidebarMenuItem as SidebarMenuItemType, SidebarSubItem } from "@/lib/types/ui";
 import PreferencesModal from "@/components/preferences/PreferencesModal";
 
 // Tipos para las props del sidebar
@@ -28,6 +36,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
   const location = useLocation();
   const { user } = useAuth();
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
+
+  // Iniciales del usuario: identifican mejor que un icono de persona generico.
+  const initials = useMemo(() => {
+    const palabras = (user?.nombre || '').trim().split(/\s+/).filter(Boolean);
+    if (palabras.length === 0) return '·';
+    return palabras.slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+  }, [user?.nombre]);
 
   // Memoizar el handler de click para evitar re-renders innecesarios
   const handleMenuItemClick = useCallback((item: SidebarMenuItemType) => {
@@ -51,70 +68,167 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
     );
   }, [user?.rol]);
 
-  // Memoizar los items del menú para evitar re-renders
-  const menuItems = useMemo(() => 
-    filteredMenuItems.map((item) => {
-      let isActive = location.pathname === item.href;
-      
-      // Lógica especial para Espacios: debe estar activo en /rooms, /rooms/:id e /inventory
-      if (item.id === 'rooms') {
-        isActive = location.pathname === '/rooms' ||
-                   location.pathname.startsWith('/rooms/') ||
-                   location.pathname === '/inventory';
-      }
+  // Marca activo un ítem del menú. Varias rutas hijas no tienen ítem propio y
+  // deben iluminar el ítem padre.
+  const isItemActive = useCallback((item: SidebarMenuItemType) => {
+    // Espacios: activo en /rooms y en el detalle /rooms/:id. Inventario ya no
+    // cuelga de aca: tiene su propio item en el sidebar.
+    if (item.id === 'rooms') {
+      return location.pathname === '/rooms' ||
+             location.pathname.startsWith('/rooms/');
+    }
 
-      // Materias queda activo en su detalle /materias/:id y también en el de una
-      // tutoría, que ya no tiene ítem propio: vive como pestaña dentro de Materias.
-      if (item.id === 'materias') {
-        isActive = location.pathname === '/materias' ||
-                   location.pathname.startsWith('/materias/') ||
-                   location.pathname === '/tutorias' ||
-                   location.pathname.startsWith('/tutorias/');
-      }
+    // Materias queda activo en su detalle /materias/:id y también en el de una
+    // tutoría, que ya no tiene ítem propio: vive como pestaña dentro de Materias.
+    if (item.id === 'materias') {
+      return location.pathname === '/materias' ||
+             location.pathname.startsWith('/materias/') ||
+             location.pathname === '/tutorias' ||
+             location.pathname.startsWith('/tutorias/');
+    }
 
-      // Eventos activo también en el detalle /eventos/:id
-      if (item.id === 'eventos') {
-        isActive = location.pathname === '/eventos' ||
-                   location.pathname.startsWith('/eventos/');
-      }
+    // Eventos activo también en el detalle /eventos/:id
+    if (item.id === 'eventos') {
+      return location.pathname === '/eventos' ||
+             location.pathname.startsWith('/eventos/');
+    }
 
-      return (
-        <SidebarMenuItem key={item.id} className="shrink-0">
-          <SidebarMenuButton
-            asChild
-            isActive={isActive}
-            onClick={() => handleMenuItemClick(item)}
-            className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
-          >
-            <Link to={item.href || "#"} className="flex items-center gap-3 relative">
-              <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      );
-    }), [filteredMenuItems, location.pathname, handleMenuItemClick]);
+    return location.pathname === item.href;
+  }, [location.pathname]);
+
+  // Una vista está activa si su URL coincide con la actual. La primera vista de
+  // cada ítem cubre además la ruta pelada, que es la que se abre por defecto.
+  const isSubItemActive = useCallback((item: SidebarMenuItemType, sub: SidebarSubItem) => {
+    const actual = `${location.pathname}${location.search}`;
+    if (actual === sub.href) return true;
+    return location.pathname === item.href && !location.search && item.children?.[0]?.id === sub.id;
+  }, [location.pathname, location.search]);
+
+  // Agrupar los ítems visibles por sección, en el orden de sidebarSections.
+  // Las secciones que quedan vacías tras el filtro por rol se descartan: así un
+  // ESTUDIANTE nunca ve un título como "Administración" sin ítems debajo.
+  const menuSections = useMemo(() =>
+    sidebarSections
+      .map((section) => ({
+        ...section,
+        items: filteredMenuItems.filter((item) => item.section === section.id),
+      }))
+      .filter((section) => section.items.length > 0)
+  , [filteredMenuItems]);
+
+  // Memoizar los grupos del menú para evitar re-renders
+  const menuGroups = useMemo(() =>
+    menuSections.map((section, index) => (
+      <SidebarGroup
+        key={section.id}
+        className={`p-0 ${index === 0 ? '' : 'mt-5'}`}
+      >
+        {section.label && (
+          <>
+            {/* Hairline que se desvanece: separa sin rayar el panel oscuro */}
+            <div className="mb-2 h-px bg-gradient-to-r from-white/10 to-transparent" />
+            <SidebarGroupLabel className="h-auto px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/40">
+              {section.label}
+            </SidebarGroupLabel>
+          </>
+        )}
+        <SidebarGroupContent>
+          <SidebarMenu className="bg-utec-dark gap-0.5 shrink-0">
+            {section.items.map((item) => {
+              const isActive = isItemActive(item);
+
+              const boton = (
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  onClick={() => handleMenuItemClick(item)}
+                  className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                >
+                  <Link to={item.href || "#"} className="flex items-center gap-3 relative">
+                    <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              );
+
+              if (!item.children?.length) {
+                return (
+                  <SidebarMenuItem key={item.id} className="shrink-0">
+                    {boton}
+                  </SidebarMenuItem>
+                );
+              }
+
+              // Con vistas propias, el ítem no navega: abre y cierra la lista.
+              // Ir a "Materias" sin elegir vista no significa nada; la pantalla
+              // es alguna de las tres.
+              return (
+                <Collapsible key={item.id} asChild defaultOpen={isActive} className="group/collapsible">
+                  <SidebarMenuItem className="shrink-0">
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                      >
+                        <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
+                        <span className="font-medium">{item.label}</span>
+                        <ChevronDown className="ml-auto size-4 text-white/40 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent>
+                      <SidebarMenuSub className="mx-0 mt-1.5 gap-1 border-l border-dashed border-white/15 px-0 py-0 pl-3 ml-4">
+                        {item.children.map((sub) => {
+                          const subActivo = isSubItemActive(item, sub);
+                          return (
+                            <SidebarMenuSubItem key={sub.id}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={subActivo}
+                                className={`h-8 text-white/60 hover:bg-white/10 hover:text-white ${subActivo ? 'bg-white/10 text-white' : ''}`}
+                              >
+                                <Link to={sub.href} className="flex items-center gap-2.5">
+                                  <sub.icon className="size-3.5" />
+                                  <span>{sub.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    )), [menuSections, isItemActive, isSubItemActive, handleMenuItemClick]);
 
   return (
     <Sidebar variant="inset" className="bg-utec-dark shadow-inner-subtle">
-      <SidebarHeader className="h-16 border-b border-white/10 bg-utec-dark px-4">
-        <div className="flex items-center justify-between gap-3 w-full h-full">
-          {/* Logo UTEC a la izquierda */}
-          <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-all hover:scale-105 -mt-2">
-            <img 
-              src="/utec-logo-header.svg" 
-              alt="UTEC Logo" 
-              className="h-12 w-auto"
-            />
+      {/* Un solo lockup: el logo y USM son un unico link, con la bajada diciendo
+          que es la app. El toggle vive aca, con lo que controla, y no del lado
+          de la pagina. */}
+      <SidebarHeader className="h-16 border-b border-white/10 bg-utec-dark px-3">
+        <div className="flex h-full w-full items-center justify-between gap-2">
+          <Link
+            to="/dashboard"
+            className="flex min-w-0 items-center gap-2.5 rounded-md px-1 py-1 transition-colors hover:bg-white/5"
+          >
+            <img src="/utec-isotipo.svg" alt="UTEC" className="h-7 w-7 shrink-0" />
+            <span className="min-w-0">
+              <span className="block font-utec text-base leading-none tracking-[0.14em] text-white">
+                USM
+              </span>
+              <span className="mt-1 block whitespace-nowrap text-[8px] uppercase leading-none tracking-[0.14em] text-white/35">
+                Space Manager
+              </span>
+            </span>
           </Link>
-          
-          {/* Separador vertical con gradiente sutil */}
-          <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent"></div>
-          
-          {/* USM a la derecha */}
-          <Link to="/dashboard" className="flex items-center sidebar-menu-item px-3 py-1.5 rounded-md transition-all hover:scale-105">
-            <span className="text-lg font-utec tracking-wider">USM</span>
-          </Link>
+
+          <SidebarTrigger className="shrink-0 text-white/70 transition-colors hover:bg-white/10 hover:text-white" />
         </div>
       </SidebarHeader>
       
@@ -122,98 +236,66 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           flex-1 min-h-0 acota la altura para que el viewport interno scrollee.
           El thumb se aclara para que se vea sobre el fondo oscuro. */}
       <ScrollArea className="flex-1 min-h-0 bg-utec-dark [&_[data-slot=scroll-area-thumb]]:bg-white/25">
-        <SidebarMenu className="bg-utec-dark gap-0.5 shrink-0 pt-6 px-1 pr-2.5">
-          {menuItems}
-        </SidebarMenu>
+        <div className="bg-utec-dark pt-6 pb-2 px-1 pr-2.5">
+          {menuGroups}
+        </div>
       </ScrollArea>
 
-      {/* Perfil del usuario: fijo (fuera del área scrollable). shrink-0 para que
-          no se comprima cuando la pantalla es baja; solo el menú hace scroll. */}
+      {/* Perfil: una sola pieza. Identidad arriba y las tres acciones de la
+          cuenta abajo, en partes iguales; salir se distingue por el color. */}
       {user && (
-        <div className="bg-utec-dark px-1 py-4 shrink-0 border-t border-white/10">
-          <SidebarMenu className="bg-utec-dark">
-            <SidebarMenuItem>
-              <div className="flex flex-col gap-1 px-1 py-2">
-                {/* Fila superior: Ícono, Rol y Configuración */}
-                <div className="flex items-center gap-1">
-                  {/* Avatar circular más pequeño */}
-                  <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-utec-blue to-utec-purple rounded-full flex items-center justify-center">
-                    <User className="h-3.5 w-3.5 text-white" />
-                  </div>
-                  
-                  {/* Rol como badge */}
-                  <div>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-200">
-                      {ROLE_LABELS[user.rol as keyof typeof ROLE_LABELS] || user.rol}
-                    </span>
-                  </div>
-                  
-                  {/* Ícono de configuración a la derecha */}
-                  <button
-                    onClick={() => setPreferencesOpen(true)}
-                    className="ml-auto flex-shrink-0 p-1.5 rounded-md hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
-                    title="Preferencias"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </button>
+        <SidebarFooter className="shrink-0 border-t border-white/10 bg-utec-dark p-2">
+          <div className="overflow-hidden rounded-lg bg-white/[0.06]">
+            <div className="flex items-center gap-2.5 p-2.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[11px] font-semibold text-white ring-1 ring-inset ring-white/10">
+                {initials}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-semibold leading-tight text-white" title={user.nombre}>
+                  {user.nombre}
                 </div>
-                
-                {/* Información del usuario */}
-                <div className="flex-1 min-w-0 text-left">
-                  {/* Nombre con salto de línea inteligente */}
-                  <div className="text-sm font-semibold text-white break-words mb-0.5 leading-tight" title={user?.nombre || ""}>
-                    {(() => {
-                      const nameFormat = formatNameForSidebar(user?.nombre || "");
-                      if (nameFormat.needsBreak) {
-                        return (
-                          <>
-                            {nameFormat.firstLine}
-                            <br />
-                            {nameFormat.secondLine}
-                          </>
-                        );
-                      }
-                      return nameFormat.firstLine;
-                    })()}
-                  </div>
-                  
-                  {/* Email con salto de línea inteligente */}
-                  <div className="text-xs text-gray-400 leading-tight" title={user?.email || ""}>
-                    {(() => {
-                      const emailFormat = formatEmailForDisplay(user?.email || "", 20);
-                      if (emailFormat.needsBreak) {
-                        return (
-                          <>
-                            {emailFormat.firstLine}
-                            <br />
-                            {emailFormat.secondLine}
-                          </>
-                        );
-                      }
-                      return emailFormat.firstLine;
-                    })()}
-                  </div>
+                <div className="mt-0.5 truncate text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] text-white/35">
+                  {ROLE_LABELS[user.rol as keyof typeof ROLE_LABELS] || user.rol}
+                </div>
+                <div className="mt-1 truncate text-[11px] leading-tight text-white/40" title={user.email}>
+                  {user.email}
                 </div>
               </div>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </div>
+            </div>
+
+            <div className="grid grid-cols-3 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => setPreferencesOpen(true)}
+                className="flex justify-center py-2 text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                title="Preferencias"
+                aria-label="Preferencias"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                className="flex justify-center border-l border-white/10 py-2 text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                title={isDark ? 'Tema claro' : 'Tema oscuro'}
+                aria-label={isDark ? 'Tema claro' : 'Tema oscuro'}
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex justify-center border-l border-white/10 py-2 text-utec-red/80 transition-colors hover:bg-utec-red/15 hover:text-utec-red"
+                title="Cerrar sesión"
+                aria-label="Cerrar sesión"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </SidebarFooter>
       )}
 
-      <SidebarFooter className="border-t border-white/10 bg-utec-dark px-1 py-4 shrink-0">
-        <SidebarMenu className="bg-utec-dark">
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              onClick={handleLogout} 
-              className="sidebar-menu-item transition-smooth hover:bg-utec-red/20 hover:text-utec-red"
-            >
-              <LogOut className="size-4 transition-transform hover-scale" />
-              <span className="font-medium">Cerrar Sesión</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-      
       <PreferencesModal open={preferencesOpen} onOpenChange={setPreferencesOpen} />
     </Sidebar>
   );

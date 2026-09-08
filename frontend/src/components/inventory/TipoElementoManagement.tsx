@@ -3,18 +3,16 @@ import { useTiposElemento } from '@/hooks/useTiposElemento';
 import { Package } from 'lucide-react';
 import { TipoElementoFormDialog } from './TipoElementoFormDialog';
 import { DeleteTipoElementoDialog } from './DeleteTipoElementoDialog';
-import { TipoCrudShell } from '@/components/common/TipoCrudShell';
+import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 import type { TipoElemento } from '@/lib/types/spaces';
 
 interface TipoElementoManagementProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  /** Se avisa al consumidor cuando el catálogo cambió, para que recargue lo suyo. */
+  onSuccess?: () => void;
 }
 
+/** Catálogo de tipos de elemento de inventario. Vive como sección de Configuración. */
 export function TipoElementoManagement({
-  open,
-  onOpenChange,
   onSuccess,
 }: Readonly<TipoElementoManagementProps>) {
   const { tiposElemento, loading, refresh: refreshTiposElemento } = useTiposElemento();
@@ -41,32 +39,28 @@ export function TipoElementoManagement({
 
   const handleFormSuccess = () => {
     refreshTiposElemento();
-    onSuccess();
+    onSuccess?.();
     setCreateDialog(false);
     setEditDialog(false);
   };
 
   const handleDeleteSuccess = () => {
     refreshTiposElemento();
-    onSuccess();
+    onSuccess?.();
     setDeleteDialog(false);
   };
 
   return (
     <>
-      <TipoCrudShell<TipoElemento>
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Gestionar Tipos de Inventario"
-        description="Administra los tipos de elementos de inventario disponibles. Puedes crear, editar y desactivar tipos."
+      <CatalogoCrudShell<TipoElemento>
+        title="Tipos de inventario"
+        description="Clasifican los elementos de inventario: proyector, silla, notebook."
+        Icon={Package}
+        accentColor="#F6CA21"
         loading={loading}
         items={tiposElemento}
-        loadingLabel="Cargando tipos de inventario..."
-        emptyLabel="No hay tipos de inventario disponibles"
-        EmptyIcon={Package}
-        renderRowLeading={() => (
-          <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        )}
+        emptyLabel="Todavía no hay tipos de inventario"
+        createLabel="Crear tipo"
         onCreate={handleCreateClick}
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}

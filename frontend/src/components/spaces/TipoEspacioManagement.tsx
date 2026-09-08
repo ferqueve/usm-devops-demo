@@ -5,17 +5,15 @@ import { Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { TipoEspacioFormDialog } from './TipoEspacioFormDialog';
 import { DeleteTipoEspacioDialog } from './DeleteTipoEspacioDialog';
-import { TipoCrudShell } from '@/components/common/TipoCrudShell';
+import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 
 interface TipoEspacioManagementProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  /** Se avisa al consumidor cuando el catálogo cambió, para que recargue lo suyo. */
+  onSuccess?: () => void;
 }
 
+/** Catálogo de tipos de espacio. Vive como sección de Configuración. */
 export function TipoEspacioManagement({
-  open,
-  onOpenChange,
   onSuccess,
 }: Readonly<TipoEspacioManagementProps>) {
   const [tiposEspacio, setTiposEspacio] = useState<TipoEspacio[]>([]);
@@ -27,10 +25,8 @@ export function TipoEspacioManagement({
   const [selectedTipo, setSelectedTipo] = useState<TipoEspacio | null>(null);
 
   useEffect(() => {
-    if (open) {
-      fetchTiposEspacio();
-    }
-  }, [open]);
+    fetchTiposEspacio();
+  }, []);
 
   const fetchTiposEspacio = async () => {
     try {
@@ -62,29 +58,28 @@ export function TipoEspacioManagement({
 
   const handleFormSuccess = () => {
     fetchTiposEspacio();
-    onSuccess();
+    onSuccess?.();
     setCreateDialog(false);
     setEditDialog(false);
   };
 
   const handleDeleteSuccess = () => {
     fetchTiposEspacio();
-    onSuccess();
+    onSuccess?.();
     setDeleteDialog(false);
   };
 
   return (
     <>
-      <TipoCrudShell<TipoEspacio>
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Gestionar Tipos de Espacios"
-        description="Administra los tipos de espacios disponibles. Puedes crear, editar y desactivar tipos."
+      <CatalogoCrudShell<TipoEspacio>
+        title="Tipos de espacios"
+        description="Clasifican los espacios: aula, laboratorio, sala de reunión."
+        Icon={Palette}
+        accentColor="#184897"
         loading={loading}
         items={tiposEspacio}
-        loadingLabel="Cargando tipos de espacios..."
-        emptyLabel="No hay tipos de espacios disponibles"
-        EmptyIcon={Palette}
+        emptyLabel="Todavía no hay tipos de espacio"
+        createLabel="Crear tipo"
         renderRowLeading={(tipo) => (
           <div
             className="w-4 h-4 rounded-full flex-shrink-0"

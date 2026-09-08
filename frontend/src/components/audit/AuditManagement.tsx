@@ -44,6 +44,7 @@ import {
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 
 const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
   CREATE: { label: 'Crear', badge: 'bg-utec-green text-white border-utec-green', dot: 'bg-utec-green' },
@@ -176,50 +177,51 @@ export default function AuditManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Acciones de página */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{totalElements}</span> registros · cambios realizados en el sistema
-        </p>
+      <PageHeader
+        title="Auditoría"
+        count={totalElements}
+        description="Cambios realizados en el sistema, con su autor y su fecha."
+        accentColor="#DF2B31"
+        actions={
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={isRefreshing ? undefined : handleRefresh}
+                  disabled={isRefreshing}
+                  aria-label="Actualizar"
+                  className={HEADER_ACTION_ICON}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Actualizar</TooltipContent>
+            </Tooltip>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={isRefreshing ? undefined : handleRefresh}
-                disabled={isRefreshing}
-                aria-label="Actualizar"
-                className="h-9 w-9"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Actualizar</TooltipContent>
-          </Tooltip>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9">
-                <Download className="h-4 w-4 mr-1.5" />
-                Exportar
-                <ChevronDown className="h-4 w-4 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleExportCSV}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Exportar CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportPDF}>
-                <FileDown className="h-4 w-4 mr-2" />
-                Exportar PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className={HEADER_ACTION}>
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  Exportar
+                  <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCSV}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Exportar CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Exportar PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        }
+      />
 
       {/* Tabla de logs con filtros embebidos */}
       <div className="border rounded-lg shadow-card overflow-hidden bg-white">

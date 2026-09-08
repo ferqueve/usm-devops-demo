@@ -3,7 +3,7 @@ import InventoryManagement from "@/components/inventory";
 
 export default function InventoryPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <InventoryManagement />
     </DashboardLayout>
   );

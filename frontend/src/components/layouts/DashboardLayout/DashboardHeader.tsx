@@ -1,111 +1,58 @@
-import { memo, useRef, useState, useEffect } from 'react';
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { memo } from 'react';
 import { useSidebar } from "@/components/ui/sidebar-context";
-import { Clock, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { HeaderNodeNetwork } from "./HeaderNodeNetwork";
+import { PAGE_ACTIONS_SLOT, PAGE_HEADER_SLOT } from "@/components/layouts/PageHeader";
 
 interface DashboardHeaderProps {
   title?: string;
+  /** Las pantallas que ya llevan PageHeader ocultan el título de acá: uno solo por pantalla. */
+  hideTitle?: boolean;
 }
 
 export const DashboardHeader = memo(function DashboardHeader({ 
-  title = "Dashboard"
+  title = "Dashboard",
+  hideTitle = false
 }: DashboardHeaderProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [isTriggerVisible, setIsTriggerVisible] = useState(true);
-  const triggerWrapperRef = useRef<HTMLDivElement>(null);
-  const { toggleSidebar, state, open } = useSidebar();
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Actualizar cada minuto
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Detectar si el botón del header está visible
-  useEffect(() => {
-    const triggerWrapper = triggerWrapperRef.current;
-    if (!triggerWrapper) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          setIsTriggerVisible(entry.isIntersecting);
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '0px',
-      }
-    );
-
-    observer.observe(triggerWrapper);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('es-UY', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: false 
-    });
-  };
+  const { toggleSidebar, open } = useSidebar();
 
   return (
     <>
-      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b px-4 lg:px-6 shadow-sm" style={{ backgroundColor: '#525961' }}>
+      {/* Esta barra es el header de la pantalla, no una franja decorativa: las
+          pantallas con PageHeader le mandan su titulo, su bajada y sus acciones
+          a los huecos de abajo. El fondo es el mismo utec-dark del sidebar. */}
+      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-utec-dark px-4 lg:px-6 shadow-sm">
         <HeaderNodeNetwork />
-        <div className="relative z-10 flex items-center gap-4">
-          <div ref={triggerWrapperRef}>
-            <SidebarTrigger 
-              style={{ color: '#d1d5db' }} 
-              className="hover:bg-white/10 transition-all hover:scale-105 rounded-md p-2" 
-            />
-          </div>
-          <div className="h-6 w-px bg-white/20"></div>
-          <div className="flex items-center gap-3 h-16">
-            <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
-              {title}
-            </h1>
-          </div>
+        <div className="relative z-10 flex min-w-0 items-center gap-4">
+          {!hideTitle && (
+            <div className="flex items-center gap-3 h-16">
+              <h1 className="text-lg font-utec m-0 flex items-center h-full leading-none" style={{ color: '#d1d5db' }}>
+                {title}
+              </h1>
+            </div>
+          )}
+          <div id={PAGE_HEADER_SLOT} className="flex min-w-0 items-center" />
         </div>
 
-        <div className="relative z-10 flex items-center gap-2">
-          {/* Toggle de tema claro/oscuro */}
-          <ThemeToggle />
-          {/* Badge con hora actual */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm">
-            <Clock className="h-4 w-4" style={{ color: '#d1d5db' }} />
-            <span className="text-sm font-medium" style={{ color: '#d1d5db' }}>
-              {formatTime(currentTime)}
-            </span>
-          </div>
-        </div>
+        <div id={PAGE_ACTIONS_SLOT} className="relative z-10 flex shrink-0 items-center" />
       </header>
 
-      {/* Hamburger flotante que aparece cuando el botón del header no está visible.
-          Solo se muestra cuando el sidebar está colapsado: con el sidebar abierto el rail
-          interno alcanza para cerrarlo y este botón pisaba el contenido a la derecha. */}
-      {!isTriggerVisible && !(state === 'expanded' && open) && (
+      {/* Con el toggle adentro del sidebar, este flotante es la unica forma de
+          volver a abrirlo cuando esta cerrado. */}
+      {!open && (
         <Button
           onClick={toggleSidebar}
-          className="fixed top-6 left-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
+          className="fixed top-6 left-6 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
           style={{ 
-            backgroundColor: '#525961',
+            backgroundColor: '#343a40',
             color: '#d1d5db',
             border: 'none'
           }}
           size="icon"
-          aria-label="Alternar barra lateral"
+          aria-label="Abrir barra lateral"
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-5 w-5" />
         </Button>
       )}
     </>

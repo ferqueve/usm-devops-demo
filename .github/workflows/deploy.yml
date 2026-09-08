@@ -79,6 +79,12 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: ${{ matrix.build_args }}
+          # Esta etiqueta es la que hace que GHCR asocie el paquete al
+          # repositorio. Sin la asociacion, el GITHUB_TOKEN del workflow no
+          # tiene permiso de escritura sobre el paquete.
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ matrix.image }}:latest

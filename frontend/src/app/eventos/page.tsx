@@ -3,7 +3,7 @@ import EventosManagement from "@/components/eventos/EventosManagement";
 
 export default function EventosPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout hideTitle>
       <EventosManagement />
     </DashboardLayout>
   );
