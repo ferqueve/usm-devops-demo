@@ -22,6 +22,9 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
     .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime())
     .slice(0, 6);
   const misPendientes = misReservas.filter(r => r.estado === 'PENDIENTE').slice(0, 5);
+  // El contador va del agregado del backend: la lista trae las ultimas
+  // cincuenta y contarla daria de menos.
+  const totalPendientes = stats?.reservasPendientes ?? misPendientes.length;
 
   return (
     <div className="space-y-5">
@@ -38,7 +41,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
       <StatStrip
         loading={loading}
         items={[
-          { label: 'Pendientes', value: misPendientes.length, hint: 'esperando aprobación', icon: Clock, bg: 'yellow', to: '/reservations' },
+          { label: 'Pendientes', value: totalPendientes, hint: 'esperando aprobación', icon: Clock, bg: 'yellow', to: '/reservations' },
           { label: 'Confirmadas', value: stats?.reservasAprobadas ?? 0, hint: 'aprobadas', icon: CheckCircle2, bg: 'green', to: '/reservations' },
           { label: 'Próximas', value: proximasMias.length, hint: 'en agenda', icon: ListChecks, bg: 'blue', to: '/reservations' },
           { label: 'Hoy', value: stats?.reservasHoy ?? 0, hint: 'reservas en el campus', bg: 'cyan', to: '/calendar' },

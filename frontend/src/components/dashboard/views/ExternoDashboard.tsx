@@ -15,10 +15,13 @@ interface ExternoDashboardProps {
 }
 
 export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: Readonly<ExternoDashboardProps>) {
-  const pendientes = misReservas.filter(r => r.estado === 'PENDIENTE');
-  const aprobadas = misReservas.filter(r => r.estado === 'APROBADO');
-  const canceladas = misReservas.filter(r => r.estado === 'CANCELADO');
-  const eventosPublicosHoy = data?.stats?.reservasHoy ?? 0;
+  // Los totales salen del agregado del backend y no de la lista: la lista trae
+  // las ultimas cincuenta, asi que contarla daria de menos.
+  const stats = data?.stats;
+  const pendientes = stats?.reservasPendientes ?? 0;
+  const aprobadas = stats?.reservasAprobadas ?? 0;
+  const canceladas = stats?.reservasCanceladas ?? 0;
+  const eventosPublicosHoy = stats?.reservasHoy ?? 0;
 
   return (
     <div className="space-y-5">
@@ -35,9 +38,9 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
       <StatStrip
         loading={loading}
         items={[
-          { label: 'En revisión', value: pendientes.length, hint: 'esperando respuesta', icon: Clock, bg: 'yellow', to: '/reservations' },
-          { label: 'Aprobadas', value: aprobadas.length, hint: 'confirmadas', icon: CheckCircle2, bg: 'green', to: '/reservations' },
-          { label: 'Rechazadas', value: canceladas.length, hint: 'no aprobadas', icon: XCircle, bg: 'red', to: '/reservations' },
+          { label: 'En revisión', value: pendientes, hint: 'esperando respuesta', icon: Clock, bg: 'yellow', to: '/reservations' },
+          { label: 'Aprobadas', value: aprobadas, hint: 'confirmadas', icon: CheckCircle2, bg: 'green', to: '/reservations' },
+          { label: 'Rechazadas', value: canceladas, hint: 'no aprobadas', icon: XCircle, bg: 'red', to: '/reservations' },
           { label: 'Hoy en el campus', value: eventosPublicosHoy, hint: 'eventos públicos', bg: 'blue', to: '/calendar' },
         ]}
       />
