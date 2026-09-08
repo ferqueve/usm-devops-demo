@@ -2,6 +2,7 @@ package com.utec.backend.service;
 
 import com.utec.backend.exception.AuthenticationException;
 import com.utec.backend.exception.UsuarioNotFoundException;
+import com.utec.backend.security.IntentosDeLoginService;
 import com.utec.backend.security.jwt.JwtService;
 import com.utec.backend.security.jwt.TokenBlacklistService;
 import com.utec.backend.model.Usuario;
@@ -34,6 +35,7 @@ public class AuthService {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final AuthenticationManager authenticationManager;
+    private final IntentosDeLoginService intentosDeLogin;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
     private final UsuarioRepository usuarioRepository;
@@ -43,6 +45,14 @@ public class AuthService {
     private final AuditService auditService;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // Antes que nada, el freno: sin esto se podían probar contraseñas sin tope.
+        if (intentosDeLogin.bloqueado(request.getEmail())) {
+            long minutos = intentosDeLogin.minutosRestantes(request.getEmail());
+            log.warn("Login bloqueado por demasiados intentos: {}", request.getEmail());
+            throw new AuthenticationException(
+                "Demasiados intentos fallidos. Volvé a probar en " + minutos + " minutos.");
+        }
+
         // PRIMERO: Verificar si el usuario existe y su tipo ANTES de intentar autenticar
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(request.getEmail());
         
@@ -71,6 +81,7 @@ public class AuthService {
                 detalles.put("tipoUsuario", "oauth");
             }
             auditService.logAuthenticationEvent(EVENT_LOGIN, request.getEmail(), false, detalles);
+            intentosDeLogin.registrarFallo(request.getEmail());
 
             // Si falla la autenticación, verificar si es usuario OAuth con contraseña establecida
             if (usuarioOpt.isPresent() && usuarioOpt.get().getOauthProv() != null) {
@@ -120,6 +131,7 @@ public class AuthService {
         detalles.put("rol", usuario.getRolApp().name());
         detalles.put("userId", usuario.getId());
         auditService.logAuthenticationEvent(EVENT_LOGIN, usuario.getEmail(), true, detalles);
+        intentosDeLogin.registrarExito(usuario.getEmail());
 
         return new AuthenticationResponse(
             token,

@@ -59,6 +59,9 @@ class AuthenticationServiceTest {
     @Mock
     private AuditService auditService;
 
+    @Mock
+    private com.utec.backend.security.IntentosDeLoginService intentosDeLogin;
+
     @InjectMocks
     private AuthService authenticationService;
 
@@ -365,5 +368,20 @@ class AuthenticationServiceTest {
         assertFalse(resultado);
         verify(usuarioRepository).findByEmail(testEmail);
         verify(emailService, never()).enviarEmailVerificacion(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Con demasiados intentos fallidos no se prueba la contraseña siquiera")
+    void debeFrenarDespuesDeDemasiadosIntentos() {
+        when(intentosDeLogin.bloqueado(anyString())).thenReturn(true);
+        when(intentosDeLogin.minutosRestantes(anyString())).thenReturn(12L);
+
+        AuthenticationRequest request = new AuthenticationRequest(testEmail, testPassword);
+
+        AuthenticationException ex = assertThrows(AuthenticationException.class,
+                () -> authenticationService.authenticate(request));
+
+        assertTrue(ex.getMessage().contains("12"), "avisa cuanto falta: " + ex.getMessage());
+        verify(authenticationManager, never()).authenticate(any());
     }
 }
