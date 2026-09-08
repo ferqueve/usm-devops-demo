@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -307,6 +307,11 @@ function AdminMateriasView() {
     [activas],
   );
 
+  // 252 materias renderizadas de una eran 12k nodos en el DOM. El endpoint no
+  // pagina, así que la lista se corta acá.
+  const [pagina, setPagina] = useState(0);
+  const POR_PAGINA = 25;
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = activas.filter((m) => {
@@ -324,6 +329,13 @@ function AdminMateriasView() {
     });
     return list;
   }, [activas, search, carreraFilter, semestreFilter, sortKey, sortDir]);
+
+  const totalPaginas = Math.max(1, Math.ceil(filtered.length / POR_PAGINA));
+  const paginaActual = Math.min(pagina, totalPaginas - 1);
+  const visibles = filtered.slice(paginaActual * POR_PAGINA, paginaActual * POR_PAGINA + POR_PAGINA);
+
+  // Al filtrar, la página en la que estabas puede dejar de existir.
+  useEffect(() => { setPagina(0); }, [search, carreraFilter, semestreFilter]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -438,7 +450,7 @@ function AdminMateriasView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((materia) => {
+                {visibles.map((materia) => {
                   const a = accentFor(materia);
                   return (
                   <TableRow
@@ -514,6 +526,37 @@ function AdminMateriasView() {
             </Table>
           );
         })()}
+
+        {filtered.length > POR_PAGINA && (
+          <div className="flex items-center justify-between gap-3 border-t px-4 py-2.5">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {paginaActual * POR_PAGINA + 1}–{paginaActual * POR_PAGINA + visibles.length} de {filtered.length}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => setPagina(paginaActual - 1)}
+                disabled={paginaActual === 0}
+              >
+                Anterior
+              </Button>
+              <span className="px-1 text-xs text-muted-foreground tabular-nums">
+                {paginaActual + 1} / {totalPaginas}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => setPagina(paginaActual + 1)}
+                disabled={paginaActual >= totalPaginas - 1}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <MateriaFormDialog materia={null} open={createDialog} onOpenChange={setCreateDialog} onSuccess={() => refresh()} />
