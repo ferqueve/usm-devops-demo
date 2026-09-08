@@ -2,7 +2,7 @@ import { usuariosApi } from '@/lib/api/users';
 import type { UserFilters } from '@/lib/types/users';
 import type { InventarioItem, Espacio } from '@/lib/types/spaces';
 import { formatDateOnly } from './timezone';
-import { buildAndDownloadCsv, csvEscape, downloadBlob, todayIsoDate } from './export-helpers';
+import { buildAndDownloadCsv, csvEscape, downloadBlob, todayIsoDate } from './csv-helpers';
 
 /**
  * Exporta usuarios a CSV y descarga el archivo

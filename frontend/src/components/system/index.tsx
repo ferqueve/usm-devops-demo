@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useSystemMetrics } from '@/hooks/useSystemMetrics';
 import { SystemHeader } from './SystemHeader';
 import { HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
-import { buildAndDownloadCsv, csvEscape, downloadBlob, todayIsoDate } from '@/lib/utils/export-helpers';
+import { buildAndDownloadCsv, csvEscape, downloadBlob, todayIsoDate } from '@/lib/utils/csv-helpers';
 import { lazy, Suspense, useEffect, useMemo } from 'react';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab })));

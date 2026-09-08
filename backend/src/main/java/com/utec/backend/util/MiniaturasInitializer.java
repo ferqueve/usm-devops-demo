@@ -38,10 +38,18 @@ public class MiniaturasInitializer implements ApplicationRunner {
     }
 
     private void generarFaltantes() {
+        if (!fileStorageService.isAvailable()) {
+            // Sin esto el resumen decia "0 generadas" y parecia que no habia
+            // nada que hacer, cuando en realidad no habia con que hacerlo.
+            log.warn("Miniaturas de espacios: MinIO no esta disponible, no se genera ninguna");
+            return;
+        }
+
         int generadas = 0;
         int yaEstaban = 0;
         int sinImagen = 0;
         int fuera = 0;
+        int fallidas = 0;
 
         for (var espacio : espacioRepository.findAll()) {
             String imagen = espacio.getImagenUrl();
@@ -57,10 +65,12 @@ public class MiniaturasInitializer implements ApplicationRunner {
                 yaEstaban++;
             } else if (fileStorageService.generarMiniatura(imagen)) {
                 generadas++;
+            } else {
+                fallidas++;
             }
         }
 
-        log.info("Miniaturas de espacios: {} generadas, {} ya existian, {} sin imagen, {} fuera del bucket",
-                generadas, yaEstaban, sinImagen, fuera);
+        log.info("Miniaturas de espacios: {} generadas, {} ya existian, {} sin imagen, {} fuera del bucket, {} fallidas",
+                generadas, yaEstaban, sinImagen, fuera, fallidas);
     }
 }
