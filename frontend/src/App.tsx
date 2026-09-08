@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { useAuth } from '@/hooks/useAuth';
 import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
@@ -6,32 +8,51 @@ import RoleGuard from '@/components/auth/RoleGuard';
 import { ROLES } from '@/lib/config/constants';
 import { Toaster } from '@/components/ui/sonner';
 import AuthPage from './app/auth/page';
-import VerifyEmailPage from './app/auth/verify/page';
-import ForgotPasswordPage from './app/auth/forgot-password/page';
-import ResetPasswordPage from './app/auth/reset-password/page';
-import { AuthCallbackSuccess } from './app/auth/callback-success';
 import { AuthLayout } from './components/layouts/AuthLayout/AuthLayout';
-import DashboardPage from './app/dashboard/page';
-import CalendarPage from './app/calendar/page';
-import ReservationsPage from './app/reservations/page';
-import CreateReservationPage from './app/reservations/create/page';
-import RoomsPage from './app/rooms/page';
-import RoomDetailsPage from './app/rooms/[id]/page';
-import StatisticsPage from './app/statistics/page';
-import AsistentePage from './app/asistente/page';
-import UsersPage from './app/users/page';
-import SystemPage from './app/system/page';
-import InventoryPage from './app/inventory/page';
-import InventoryRequestsPage from './app/inventory/requests/page';
-import ConfiguracionPage from './app/configuracion/page';
-import AuditPage from './app/audit/page';
-import MateriasPage from './app/materias/page';
-import MateriasMapaPage from './app/materias/mapa/page';
-import MateriaDetailPage from './app/materias/[id]/page';
-import TutoriaDetailPage from './app/tutorias/[id]/page';
-import EventosPage from './app/eventos/page';
-import EventoDetailPage from './app/eventos/[id]/page';
-import SostenibilidadPage from './app/sostenibilidad/page';
+
+/**
+ * Las pantallas se cargan por demanda. Importadas de golpe, el navegador se
+ * bajaba el sistema entero en el primer render -- y, peor, corría los efectos
+ * de módulo de cada pantalla: la precarga del dashboard disparaba diez
+ * llamadas a la API en cualquier pantalla que abrieras, aunque no fueras al
+ * dashboard.
+ */
+const VerifyEmailPage = lazy(() => import('./app/auth/verify/page'));
+const ForgotPasswordPage = lazy(() => import('./app/auth/forgot-password/page'));
+const ResetPasswordPage = lazy(() => import('./app/auth/reset-password/page'));
+const AuthCallbackSuccess = lazy(() =>
+  import('./app/auth/callback-success').then((m) => ({ default: m.AuthCallbackSuccess }))
+);
+const DashboardPage = lazy(() => import('./app/dashboard/page'));
+const CalendarPage = lazy(() => import('./app/calendar/page'));
+const ReservationsPage = lazy(() => import('./app/reservations/page'));
+const CreateReservationPage = lazy(() => import('./app/reservations/create/page'));
+const RoomsPage = lazy(() => import('./app/rooms/page'));
+const RoomDetailsPage = lazy(() => import('./app/rooms/[id]/page'));
+const StatisticsPage = lazy(() => import('./app/statistics/page'));
+const AsistentePage = lazy(() => import('./app/asistente/page'));
+const UsersPage = lazy(() => import('./app/users/page'));
+const SystemPage = lazy(() => import('./app/system/page'));
+const InventoryPage = lazy(() => import('./app/inventory/page'));
+const InventoryRequestsPage = lazy(() => import('./app/inventory/requests/page'));
+const ConfiguracionPage = lazy(() => import('./app/configuracion/page'));
+const AuditPage = lazy(() => import('./app/audit/page'));
+const MateriasPage = lazy(() => import('./app/materias/page'));
+const MateriasMapaPage = lazy(() => import('./app/materias/mapa/page'));
+const MateriaDetailPage = lazy(() => import('./app/materias/[id]/page'));
+const TutoriaDetailPage = lazy(() => import('./app/tutorias/[id]/page'));
+const EventosPage = lazy(() => import('./app/eventos/page'));
+const EventoDetailPage = lazy(() => import('./app/eventos/[id]/page'));
+const SostenibilidadPage = lazy(() => import('./app/sostenibilidad/page'));
+
+/** Lo que se ve mientras baja el chunk de la pantalla. */
+function PantallaCargando() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
 
 
 // Componente principal de rutas
@@ -39,7 +60,8 @@ function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Routes>
+    <Suspense fallback={<PantallaCargando />}>
+      <Routes>
       {/* Rutas de autenticación */}
       <Route 
         path="/auth" 
@@ -299,7 +321,8 @@ function AppRoutes() {
         path="*" 
         element={<Navigate to={isAuthenticated ? "/dashboard" : "/auth"} replace />} 
       />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
 
