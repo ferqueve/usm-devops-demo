@@ -115,5 +115,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
             @Param("desde") Instant desde,
             @Param("hasta") Instant hasta,
             @Param("limite") int limite);
+
 }
 

@@ -71,6 +71,7 @@ public class ReservaService {
     private final EmailService emailService;
     private final RecomendacionService recomendacionService;
     private final FileStorageService fileStorageService;
+    private final ReservaEstadisticasService reservaEstadisticasService;
     private final ReservaService self;
 
     public ReservaService(
@@ -82,6 +83,7 @@ public class ReservaService {
             EmailService emailService,
             RecomendacionService recomendacionService,
             FileStorageService fileStorageService,
+            ReservaEstadisticasService reservaEstadisticasService,
             @Lazy @Autowired ReservaService self) {
         this.reservaRepository = reservaRepository;
         this.espacioRepository = espacioRepository;
@@ -91,6 +93,7 @@ public class ReservaService {
         this.emailService = emailService;
         this.recomendacionService = recomendacionService;
         this.fileStorageService = fileStorageService;
+        this.reservaEstadisticasService = reservaEstadisticasService;
         this.self = self;
     }
 
@@ -1013,313 +1016,17 @@ public class ReservaService {
     public ReservaStatsDto obtenerEstadisticasPersonales(String userEmail) {
         log.info("Generando estadísticas personales de reservas para usuario: {}", userEmail);
 
-        // Obtener usuario
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsuarioNotFoundException(MSG_USUARIO_NO_ENCONTRADO + userEmail));
 
-        // Obtener todas las reservas del usuario
-        List<Reserva> reservas = reservaRepository.findByUsuarioId(usuario.getId());
-
-        // Si no hay reservas, retornar DTO con valores en 0 o null
-        if (reservas.isEmpty()) {
-            return crearDtoVacio();
-        }
-
-        // Reutilizar método auxiliar para calcular estadísticas
-        return calcularEstadisticasLegacy(reservas);
+        return reservaEstadisticasService.calcular(usuario.getId());
     }
 
-    /**
-     * Método auxiliar para calcular estadísticas a partir de una lista de reservas
-     */
-    private ReservaStatsDto calcularEstadisticasLegacy(List<Reserva> reservas) {
-        Instant now = Instant.now();
-        YearMonth mesActual = YearMonth.from(now.atZone(ZoneOffset.UTC));
-
-        MetricasBasicas basicas = calcularMetricasBasicas(reservas, now);
-        MetricasTemporales temporales = calcularMetricasTemporales(reservas, now, mesActual);
-        MetricasEspacios espacios = calcularMetricasEspacios(reservas, basicas.totalReservas());
-        MetricasDuracion duracion = calcularMetricasDuracion(reservas, basicas.totalReservas(), mesActual);
-        MetricasFrecuencia frecuencia = calcularMetricasFrecuencia(reservas, now, basicas.totalReservas());
-        MetricasComparativas comparativas = calcularMetricasComparativas(reservas, mesActual, temporales.reservasEsteMes());
-
-        return new ReservaStatsDto(
-                basicas.totalReservas(),
-                basicas.totalAprobadas(),
-                basicas.totalPendientes(),
-                basicas.totalCanceladas(),
-                basicas.totalFuturas(),
-                basicas.totalPasadas(),
-                basicas.totalActivas(),
-                basicas.reservasPorEstado(),
-                temporales.reservasEsteMes(),
-                temporales.reservasProximoMes(),
-                temporales.reservasEsteAnio(),
-                temporales.reservasPorMes(),
-                temporales.reservasPorDiaSemana(),
-                temporales.mesConMasReservas(),
-                temporales.promedioReservasPorMes(),
-                espacios.totalEspaciosUsados(),
-                espacios.espacioMasUsado(),
-                espacios.nombreEspacioMasUsado(),
-                espacios.reservasPorEspacio(),
-                espacios.distribucionPorEspacio(),
-                duracion.duracionTotalHoras(),
-                duracion.duracionPromedioHoras(),
-                duracion.reservaMasLargaHoras(),
-                duracion.reservaMasCortaHoras(),
-                duracion.horasReservadasEsteMes(),
-                frecuencia.promedioReservasPorSemana(),
-                frecuencia.diasDesdeUltimaReserva(),
-                frecuencia.diasHastaProximaReserva(),
-                frecuencia.fechaUltimaReserva(),
-                frecuencia.fechaProximaReserva(),
-                comparativas.reservasMesActual(),
-                comparativas.reservasMesAnterior(),
-                comparativas.diferenciaMesAnterior(),
-                comparativas.porcentajeCambioMesAnterior());
-    }
-
-    private record MetricasBasicas(long totalReservas, long totalAprobadas, long totalPendientes,
-                                   long totalCanceladas, long totalFuturas, long totalPasadas,
-                                   long totalActivas, Map<String, Long> reservasPorEstado) {}
-
-    private record MetricasTemporales(long reservasEsteMes, long reservasProximoMes, long reservasEsteAnio,
-                                      Map<String, Long> reservasPorMes, Map<String, Long> reservasPorDiaSemana,
-                                      String mesConMasReservas, double promedioReservasPorMes) {}
-
-    private record MetricasEspacios(long totalEspaciosUsados, Long espacioMasUsado,
-                                    String nombreEspacioMasUsado, Map<Long, Long> reservasPorEspacio,
-                                    Map<String, Long> distribucionPorEspacio) {}
-
-    private record MetricasDuracion(double duracionTotalHoras, double duracionPromedioHoras,
-                                    double reservaMasLargaHoras, double reservaMasCortaHoras,
-                                    double horasReservadasEsteMes) {}
-
-    private record MetricasFrecuencia(double promedioReservasPorSemana, Long diasDesdeUltimaReserva,
-                                      Long diasHastaProximaReserva, Instant fechaUltimaReserva,
-                                      Instant fechaProximaReserva) {}
-
-    private record MetricasComparativas(long reservasMesActual, long reservasMesAnterior,
-                                        long diferenciaMesAnterior, double porcentajeCambioMesAnterior) {}
-
-    private MetricasBasicas calcularMetricasBasicas(List<Reserva> reservas, Instant now) {
-        long totalReservas = reservas.size();
-        long totalAprobadas = contarPorEstado(reservas, Reserva.EstadoReserva.APROBADO);
-        long totalPendientes = contarPorEstado(reservas, Reserva.EstadoReserva.PENDIENTE);
-        long totalCanceladas = contarPorEstado(reservas, Reserva.EstadoReserva.CANCELADO);
-        long totalFuturas = reservas.stream().filter(r -> r.getInicio().isAfter(now)).count();
-        long totalPasadas = reservas.stream().filter(r -> r.getFin().isBefore(now)).count();
-        long totalActivas = reservas.stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.APROBADO && r.getInicio().isAfter(now))
-                .count();
-
-        Map<String, Long> reservasPorEstado = new HashMap<>();
-        for (Reserva.EstadoReserva estado : Reserva.EstadoReserva.values()) {
-            reservasPorEstado.put(estado.name(), contarPorEstado(reservas, estado));
-        }
-        return new MetricasBasicas(totalReservas, totalAprobadas, totalPendientes, totalCanceladas,
-                totalFuturas, totalPasadas, totalActivas, reservasPorEstado);
-    }
-
-    private long contarPorEstado(List<Reserva> reservas, Reserva.EstadoReserva estado) {
-        return reservas.stream().filter(r -> r.getEstado() == estado).count();
-    }
-
-    private MetricasTemporales calcularMetricasTemporales(List<Reserva> reservas, Instant now, YearMonth mesActual) {
-        YearMonth proximoMes = mesActual.plusMonths(1);
-        int anioActual = now.atZone(ZoneOffset.UTC).getYear();
-
-        long reservasEsteMes = contarEnMes(reservas, mesActual);
-        long reservasProximoMes = contarEnMes(reservas, proximoMes);
-        long reservasEsteAnio = reservas.stream()
-                .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).getYear() == anioActual)
-                .count();
-
-        Map<String, Long> reservasPorMes = new HashMap<>();
-        for (int i = 11; i >= 0; i--) {
-            YearMonth mes = mesActual.minusMonths(i);
-            reservasPorMes.put(mes.toString(), contarEnMes(reservas, mes));
-        }
-
-        Map<String, Long> reservasPorDiaSemana = new HashMap<>();
-        for (DayOfWeek dia : DayOfWeek.values()) {
-            long count = reservas.stream()
-                    .filter(r -> r.getInicio().atZone(ZoneOffset.UTC).getDayOfWeek() == dia)
-                    .count();
-            reservasPorDiaSemana.put(dia.name(), count);
-        }
-
-        String mesConMasReservas = reservasPorMes.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
-
-        double promedioReservasPorMes = reservasPorMes.values().stream()
-                .mapToLong(Long::longValue)
-                .average()
-                .orElse(0.0);
-
-        return new MetricasTemporales(reservasEsteMes, reservasProximoMes, reservasEsteAnio,
-                reservasPorMes, reservasPorDiaSemana, mesConMasReservas, promedioReservasPorMes);
-    }
-
-    private long contarEnMes(List<Reserva> reservas, YearMonth mes) {
-        return reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mes))
-                .count();
-    }
-
-    private MetricasEspacios calcularMetricasEspacios(List<Reserva> reservas, long totalReservas) {
-        Set<Long> espaciosDistintos = reservas.stream()
-                .map(r -> r.getEspacio().getId())
-                .collect(Collectors.toSet());
-        long totalEspaciosUsados = espaciosDistintos.size();
-
-        Map<Long, Long> reservasPorEspacio = reservas.stream()
-                .collect(Collectors.groupingBy(r -> r.getEspacio().getId(), Collectors.counting()));
-
-        Long espacioMasUsado = reservasPorEspacio.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
-
-        String nombreEspacioMasUsado = obtenerNombreEspacioMasUsado(reservas, espacioMasUsado);
-
-        Map<String, Long> distribucionPorEspacio = new HashMap<>();
-        for (Map.Entry<Long, Long> entry : reservasPorEspacio.entrySet()) {
-            long porcentaje = Math.round((entry.getValue() * 100.0) / totalReservas);
-            distribucionPorEspacio.put(entry.getKey().toString(), porcentaje);
-        }
-
-        return new MetricasEspacios(totalEspaciosUsados, espacioMasUsado, nombreEspacioMasUsado,
-                reservasPorEspacio, distribucionPorEspacio);
-    }
-
-    private String obtenerNombreEspacioMasUsado(List<Reserva> reservas, Long espacioMasUsado) {
-        if (espacioMasUsado == null) {
-            return null;
-        }
-        return reservas.stream()
-                .filter(r -> r.getEspacio().getId().equals(espacioMasUsado))
-                .findFirst()
-                .map(r -> r.getEspacio().getNombre())
-                .orElse(null);
-    }
-
-    private MetricasDuracion calcularMetricasDuracion(List<Reserva> reservas, long totalReservas, YearMonth mesActual) {
-        // Calculamos en minutos y dividimos por 60.0 para mantener precisión
-        // sub-hora. Si usamos Duration.toHours() directo, una reserva de 30 min
-        // colapsa a 0h y "Reserva Más Corta" se reporta como 0.
-        double duracionTotalHoras = reservas.stream()
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
-                .sum();
-        double duracionPromedioHoras = totalReservas > 0 ? duracionTotalHoras / totalReservas : 0.0;
-
-        double reservaMasLargaHoras = reservas.stream()
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
-                .max().orElse(0.0);
-        double reservaMasCortaHoras = reservas.stream()
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
-                .filter(d -> d > 0)
-                .min().orElse(0.0);
-
-        double horasReservadasEsteMes = reservas.stream()
-                .filter(r -> YearMonth.from(r.getInicio().atZone(ZoneOffset.UTC)).equals(mesActual))
-                .mapToDouble(r -> Duration.between(r.getInicio(), r.getFin()).toMinutes() / 60.0)
-                .sum();
-
-        return new MetricasDuracion(duracionTotalHoras, duracionPromedioHoras,
-                reservaMasLargaHoras, reservaMasCortaHoras, horasReservadasEsteMes);
-    }
-
-    private MetricasFrecuencia calcularMetricasFrecuencia(List<Reserva> reservas, Instant now, long totalReservas) {
-        long semanasTotales = calcularSemanasTotales(reservas, now);
-        double promedioReservasPorSemana = semanasTotales > 0 ? totalReservas / (double) semanasTotales : 0.0;
-
-        Optional<Reserva> ultimaReservaOpt = reservas.stream()
-                .filter(r -> r.getFin().isBefore(now))
-                .max(Comparator.comparing(Reserva::getFin));
-        Instant fechaUltimaReserva = ultimaReservaOpt.map(Reserva::getFin).orElse(null);
-        Long diasDesdeUltimaReserva = fechaUltimaReserva != null
-                ? Duration.between(fechaUltimaReserva, now).toDays() : null;
-
-        Optional<Reserva> proximaReservaOpt = reservas.stream()
-                .filter(r -> r.getInicio().isAfter(now))
-                .min(Comparator.comparing(Reserva::getInicio));
-        Instant fechaProximaReserva = proximaReservaOpt.map(Reserva::getInicio).orElse(null);
-        Long diasHastaProximaReserva = fechaProximaReserva != null
-                ? Duration.between(now, fechaProximaReserva).toDays() : null;
-
-        return new MetricasFrecuencia(promedioReservasPorSemana, diasDesdeUltimaReserva, diasHastaProximaReserva,
-                fechaUltimaReserva, fechaProximaReserva);
-    }
-
-    private long calcularSemanasTotales(List<Reserva> reservas, Instant now) {
-        Optional<Reserva> primeraReservaOpt = reservas.stream().min(Comparator.comparing(Reserva::getInicio));
-        if (primeraReservaOpt.isEmpty()) {
-            return 1;
-        }
-        long dias = Duration.between(primeraReservaOpt.get().getInicio(), now).toDays();
-        return Math.max(1, dias / 7);
-    }
-
-    private MetricasComparativas calcularMetricasComparativas(List<Reserva> reservas, YearMonth mesActual,
-                                                              long reservasMesActual) {
-        YearMonth mesAnterior = mesActual.minusMonths(1);
-        long reservasMesAnterior = contarEnMes(reservas, mesAnterior);
-        long diferenciaMesAnterior = reservasMesActual - reservasMesAnterior;
-
-        double porcentajeCambio;
-        if (reservasMesAnterior > 0) {
-            porcentajeCambio = (diferenciaMesAnterior * 100.0) / reservasMesAnterior;
-        } else if (reservasMesActual > 0) {
-            porcentajeCambio = 100.0;
-        } else {
-            porcentajeCambio = 0.0;
-        }
-        return new MetricasComparativas(reservasMesActual, reservasMesAnterior, diferenciaMesAnterior, porcentajeCambio);
-    }
-
-    /**
-     * Obtener estadísticas globales de todas las reservas (para ANALISTA/ADMIN)
-     */
-    @Cacheable(value = "reservas", key = "'global-stats'")
-    @Transactional(readOnly = true)
     public ReservaStatsDto obtenerEstadisticasGlobales() {
         log.info("Generando estadísticas globales de reservas");
-
-        // Obtener todas las reservas
-        List<Reserva> reservas = reservaRepository.findAll();
-
-        // Si no hay reservas, retornar DTO con valores en 0 o null
-        if (reservas.isEmpty()) {
-            return crearDtoVacio();
-        }
-
-        // Reutilizar la misma lógica que obtenerEstadisticasPersonales pero con todas
-        // las reservas
-        return calcularEstadisticasLegacy(reservas);
+        return reservaEstadisticasService.calcular(null);
     }
 
-    /**
-     * Crear DTO vacío cuando no hay reservas
-     */
-    private ReservaStatsDto crearDtoVacio() {
-        return new ReservaStatsDto(
-                0L, 0L, 0L, 0L, 0L, 0L, 0L, // básicas
-                new HashMap<>(), // reservasPorEstado
-                0L, 0L, 0L, // temporales básicas
-                new HashMap<>(), new HashMap<>(), // por mes y día
-                null, 0.0, // mes más usado y promedio
-                0L, null, null, // espacios básicos
-                new HashMap<>(), new HashMap<>(), // distribuciones
-                0.0, 0.0, 0.0, 0.0, 0.0, // duración
-                0.0, // promedio por semana
-                null, null, null, null, // frecuencia
-                0L, 0L, 0L, 0.0 // comparativas
-        );
-    }
 
     /**
      * Mapear entidad Reserva a DTO de respuesta

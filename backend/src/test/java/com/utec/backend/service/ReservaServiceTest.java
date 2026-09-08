@@ -63,6 +63,9 @@ class ReservaServiceTest {
     @Mock
     private RecomendacionService recomendacionService;
 
+    @Mock
+    private ReservaEstadisticasService reservaEstadisticasService;
+
     @InjectMocks
     private ReservaService reservaService;
 
@@ -409,28 +412,29 @@ class ReservaServiceTest {
     void debeObtenerEstadisticasPersonales() {
         // Given
         when(usuarioRepository.findByEmail(userEmail)).thenReturn(Optional.of(usuarioTest));
-        when(reservaRepository.findByUsuarioId(usuarioTest.getId())).thenReturn(Arrays.asList(reservaTest));
+        when(reservaEstadisticasService.calcular(usuarioTest.getId())).thenReturn(new ReservaStatsDto());
 
         // When
         ReservaStatsDto resultado = reservaService.obtenerEstadisticasPersonales(userEmail);
 
         // Then
         assertNotNull(resultado);
-        verify(reservaRepository).findByUsuarioId(usuarioTest.getId());
+        verify(reservaEstadisticasService).calcular(usuarioTest.getId());
     }
 
     @Test
     @DisplayName("Debe obtener estadísticas globales")
     void debeObtenerEstadisticasGlobales() {
         // Given
-        when(reservaRepository.findAll()).thenReturn(Arrays.asList(reservaTest));
+        when(reservaEstadisticasService.calcular(null)).thenReturn(new ReservaStatsDto());
 
         // When
         ReservaStatsDto resultado = reservaService.obtenerEstadisticasGlobales();
 
         // Then
         assertNotNull(resultado);
-        verify(reservaRepository).findAll();
+        verify(reservaEstadisticasService).calcular(null);
     }
+
 }
 
