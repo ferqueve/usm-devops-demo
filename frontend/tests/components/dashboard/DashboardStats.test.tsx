@@ -26,6 +26,7 @@ const baseStats = {
   inscriptos: 0,
   tutorias: 0,
   racha: 0,
+  tutoriasAsistidas: 0,
   resueltasPorMi: 0,
   eventosProximos: 0,
 };

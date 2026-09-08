@@ -6,6 +6,7 @@ import { StatStrip } from './_components/StatStrip';
 import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { EspacioFila, ItemFila } from './_components/Filas';
+import { Anillo, BarrasHorizontales, UTEC } from './_components/Graficos';
 
 interface EspaciosStats {
   totalEspacios: number;
@@ -43,6 +44,17 @@ export function MantenimientoDashboard({
   const items = data?.inventarioAtencion ?? [];
   const espaciosCaidos = data?.espaciosFueraDeServicio ?? [];
   const verde = data?.sostenibilidad;
+  const parque = [
+    { nombre: 'Disponibles', valor: inv?.disponibles ?? 0, color: UTEC.verde },
+    { nombre: 'En mantenimiento', valor: inv?.mantenimiento ?? 0, color: UTEC.naranja },
+    { nombre: 'Dañados', valor: inv?.danados ?? 0, color: UTEC.rojo },
+    { nombre: 'Sin asignar', valor: inv?.sinAsignar ?? 0, color: UTEC.amarillo },
+  ];
+  const barrasEspacios = [
+    { nombre: 'Operativos', valor: esp?.disponibles ?? 0 },
+    { nombre: 'Ocupados', valor: esp?.ocupados ?? 0 },
+    { nombre: 'Fuera de servicio', valor: Math.max(0, (esp?.totalEspacios ?? 0) - (esp?.disponibles ?? 0) - (esp?.ocupados ?? 0)) },
+  ];
 
   // El porcentaje sale de los dos numeros que ya tenemos: pedirselo al backend
   // era una columna mas para una division.
@@ -95,6 +107,16 @@ export function MantenimientoDashboard({
           { label: 'Espacios', value: `${esp?.disponibles ?? 0}/${esp?.totalEspacios ?? 0}`, hint: 'operativos', icon: MapPin, bg: 'cyan', to: '/rooms' },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <Panel title="El parque de inventario" count={`${inv?.totalItems ?? 0} items`} accentColor="#184897" action={{ label: 'inventario', to: '/inventory' }}>
+          <Anillo porciones={parque} leyendaCentro="items" />
+        </Panel>
+
+        <Panel title="Los espacios" count={`${esp?.totalEspacios ?? 0} en total`} accentColor="#00c7ff" action={{ label: 'espacios', to: '/rooms' }}>
+          <BarrasHorizontales datos={barrasEspacios} alto={150} multicolor />
+        </Panel>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel

@@ -34,6 +34,8 @@ export interface DashboardStats {
   /** Franjas de tutoría propias y clases seguidas asistidas. */
   tutorias: number;
   racha: number;
+  /** Tutorías a las que el estudiante ya asistió. */
+  tutoriasAsistidas: number;
   /** Solicitudes que este analista ya resolvió. */
   resueltasPorMi: number;
   eventosProximos: number;
@@ -46,6 +48,7 @@ export interface MateriaBreve {
   creditos?: number;
   inscriptos?: number;
   docenteNombre?: string;
+  semestre?: number;
 }
 
 export interface TutoriaBreve {
@@ -155,7 +158,7 @@ const VACIO: DashboardData = {
     totalReservas: 0, reservasHoy: 0, reservasPendientes: 0, reservasAprobadas: 0, reservasCanceladas: 0,
     totalEspacios: 0, espaciosDisponibles: 0, espaciosOcupados: 0, espaciosEnMantenimiento: 0, capacidadPromedio: 0,
     totalUsuarios: 0, usuariosActivos: 0, usuariosNuevosHoy: 0, promedioReservasPorEspacio: 0,
-    materias: 0, creditos: 0, inscriptos: 0, tutorias: 0, racha: 0, resueltasPorMi: 0, eventosProximos: 0,
+    materias: 0, creditos: 0, inscriptos: 0, tutorias: 0, racha: 0, tutoriasAsistidas: 0, resueltasPorMi: 0, eventosProximos: 0,
   },
   proximasReservas: [],
   misReservas: [],

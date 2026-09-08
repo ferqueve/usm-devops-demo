@@ -61,7 +61,7 @@ public record DashboardDto(
 
     /** Una materia, con lo justo para listarla. */
     public record MateriaBreve(Long id, String nombre, String codigo, Integer creditos,
-                               Long inscriptos, String docenteNombre) {
+                               Long inscriptos, String docenteNombre, Integer semestre) {
     }
 
     /** Una franja de tutoria. */
@@ -132,6 +132,8 @@ public record DashboardDto(
             /** Franjas de tutoria propias y clases seguidas asistidas (ESTUDIANTE). */
             long tutorias,
             long racha,
+            /** Tutorias a las que el estudiante ya asistio. */
+            long tutoriasAsistidas,
             /** Solicitudes que este analista ya resolvio. */
             long resueltasPorMi,
             /** Eventos proximos que le tocan al rol. */

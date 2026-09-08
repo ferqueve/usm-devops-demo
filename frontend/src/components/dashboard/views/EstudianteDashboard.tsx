@@ -6,6 +6,7 @@ import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila, MateriaFila, TutoriaFila } from './_components/Filas';
+import { Anillo, BarrasHorizontales, UTEC } from './_components/Graficos';
 
 interface EstudianteDashboardProps {
   data: DashboardData | null;
@@ -27,6 +28,26 @@ export function EstudianteDashboard({ data, loading, onViewDetails }: Readonly<E
   const tutorias = data?.misTutorias ?? [];
   const eventos = data?.eventos ?? [];
 
+  // Cuántos créditos lleva por semestre: es la forma de ver el avance de la
+  // carrera de un vistazo.
+  const creditosPorSemestre = (() => {
+    const suma = new Map<number, number>();
+    for (const m of materias) {
+      if (m.semestre == null) continue;
+      suma.set(m.semestre, (suma.get(m.semestre) ?? 0) + (m.creditos ?? 0));
+    }
+    return [...suma.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([semestre, creditos]) => ({ nombre: `Sem ${semestre}`, valor: creditos }));
+  })();
+
+  const asistidas = stats?.tutoriasAsistidas ?? 0;
+  const agendadas = stats?.tutorias ?? 0;
+  const tutoriasAnillo = [
+    { nombre: 'Asistidas', valor: asistidas, color: UTEC.verde },
+    { nombre: 'Por venir', valor: agendadas, color: UTEC.cian },
+  ];
+
   return (
     <div className="space-y-5">
       <StatStrip
@@ -40,6 +61,26 @@ export function EstudianteDashboard({ data, loading, onViewDetails }: Readonly<E
           { label: 'Espacios libres', value: stats?.espaciosDisponibles ?? 0, hint: `de ${stats?.totalEspacios ?? 0}`, icon: MapPin, bg: 'yellow', to: '/rooms' },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <Panel
+          title="Créditos por semestre"
+          count={`${stats?.creditos ?? 0} en total`}
+          accentColor="#184897"
+          action={{ label: 'plan', to: '/materias?tab=mapa' }}
+        >
+          <BarrasHorizontales datos={creditosPorSemestre} alto={160} multicolor />
+        </Panel>
+
+        <Panel title="Mis tutorías" count={`racha de ${stats?.racha ?? 0}`} accentColor="#86bb4c">
+          <Anillo
+            porciones={tutoriasAnillo}
+            centro={asistidas + agendadas}
+            leyendaCentro="tutorías"
+            alto={132}
+          />
+        </Panel>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel

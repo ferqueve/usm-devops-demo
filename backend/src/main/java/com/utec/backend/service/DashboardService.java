@@ -123,13 +123,16 @@ public class DashboardService {
         List<MateriaResponseDto> materiasCompletas = List.of();
         List<TutoriaResponseDto> tutoriasCompletas = List.of();
         long racha = 0;
+        long asistidas = 0;
         if (esDocente) {
             materiasCompletas = materiaService.getMateriasQueDicta(email);
             tutoriasCompletas = tutoriasVigentes(tutoriaService.tutoriasQueDicta(email));
         } else if (esEstudiante) {
             materiasCompletas = materiaService.getMateriasQueCursa(email);
             tutoriasCompletas = tutoriasVigentes(tutoriaService.tutoriasAgendadas(email));
-            racha = tutoriaService.racha(email).rachaActual();
+            var suRacha = tutoriaService.racha(email);
+            racha = suRacha.rachaActual();
+            asistidas = suRacha.asistidas();
         }
         long totalMaterias = materiasCompletas.size();
         long totalTutorias = tutoriasCompletas.size();
@@ -161,7 +164,7 @@ public class DashboardService {
         long resueltas = aprueba ? resueltasPor(email) : 0;
 
         DashboardDto.Stats stats = stats(reservaStats, esMantenimiento, userStats, usuariosActivos,
-                totalMaterias, creditos, inscriptos, totalTutorias, racha, resueltas, totalEventos);
+                totalMaterias, creditos, inscriptos, totalTutorias, racha, asistidas, resueltas, totalEventos);
 
         return new DashboardDto(
                 stats,
@@ -193,6 +196,7 @@ public class DashboardService {
                                      long inscriptos,
                                      long tutorias,
                                      long racha,
+                                     long tutoriasAsistidas,
                                      long resueltasPorMi,
                                      long eventosProximos) {
         long totalEspacios = valor(espacioService.getTotalEspacios());
@@ -225,6 +229,7 @@ public class DashboardService {
                 inscriptos,
                 tutorias,
                 racha,
+                tutoriasAsistidas,
                 resueltasPorMi,
                 eventosProximos
         );
@@ -237,7 +242,7 @@ public class DashboardService {
         return materias.stream()
                 .limit(FILAS)
                 .map(m -> new DashboardDto.MateriaBreve(m.getId(), m.getNombre(), m.getCodigo(),
-                        m.getCreditos(), m.getTotalInscriptos(), m.getDocenteNombre()))
+                        m.getCreditos(), m.getTotalInscriptos(), m.getDocenteNombre(), m.getSemestre()))
                 .toList();
     }
 

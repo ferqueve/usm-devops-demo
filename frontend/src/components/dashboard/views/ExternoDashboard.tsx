@@ -7,6 +7,7 @@ import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila } from './_components/Filas';
+import { Anillo, Tendencia, UTEC, variacion } from './_components/Graficos';
 
 interface ExternoDashboardProps {
   data: DashboardData | null;
@@ -26,6 +27,13 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
   // El total tambien del agregado: la lista se corta en cincuenta.
   const totalSolicitudes = stats?.totalReservas ?? misReservas.length;
   const eventos = data?.eventos ?? [];
+  const porMes = data?.reservaStats?.reservasPorMes ?? {};
+  const cambio = variacion(porMes);
+  const estados = [
+    { nombre: 'Aprobadas', valor: aprobadas, color: UTEC.verde },
+    { nombre: 'En revisión', valor: pendientes, color: UTEC.amarillo },
+    { nombre: 'Rechazadas', valor: canceladas, color: UTEC.rojo },
+  ];
 
   return (
     <div className="space-y-5">
@@ -49,6 +57,20 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
           { label: 'Eventos', value: stats?.eventosProximos ?? 0, hint: 'abiertos al público', icon: Megaphone, bg: 'cyan', to: '/eventos' },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <Panel
+          title="Cómo vienen mis pedidos"
+          count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}% contra el mes anterior` : undefined}
+          accentColor="#184897"
+        >
+          <Tendencia datos={porMes} />
+        </Panel>
+
+        <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor="#86bb4c">
+          <Anillo porciones={estados} leyendaCentro="pedidos" alto={132} />
+        </Panel>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         <Panel

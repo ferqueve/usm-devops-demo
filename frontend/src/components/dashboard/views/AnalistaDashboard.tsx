@@ -8,6 +8,7 @@ import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila, PresionFila } from './_components/Filas';
+import { Anillo, RitmoSemanal, Tendencia, UTEC, variacion } from './_components/Graficos';
 
 interface AnalistaDashboardProps {
   data: DashboardData | null;
@@ -43,6 +44,14 @@ export function AnalistaDashboard({
   const presion = data?.espaciosConPresion ?? [];
   const maximaPresion = presion.length > 0 ? presion[0].pendientes : 0;
   const eventos = data?.eventos ?? [];
+  const porMes = data?.reservaStats?.reservasPorMes ?? {};
+  const porDia = data?.reservaStats?.reservasPorDiaSemana ?? {};
+  const cambio = variacion(porMes);
+  const estados = [
+    { nombre: 'Aprobadas', valor: totalAprobadas, color: UTEC.verde },
+    { nombre: 'Pendientes', valor: totalPendientes, color: UTEC.amarillo },
+    { nombre: 'Canceladas', valor: data?.reservaStats?.totalCanceladas ?? 0, color: UTEC.rojo },
+  ];
 
   const cola = useMemo(() => {
     const matched = emparejarPrioritarias(reservasPrioritarias, reservasPendientes);
@@ -63,6 +72,25 @@ export function AnalistaDashboard({
           { label: 'Eventos', value: stats?.eventosProximos ?? 0, hint: 'próximos', icon: Megaphone, bg: 'cyan', to: '/eventos' },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Panel
+          title="Reservas por mes"
+          count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
+          accentColor="#184897"
+          action={{ label: 'estadísticas', to: '/statistics' }}
+        >
+          <Tendencia datos={porMes} />
+        </Panel>
+
+        <Panel title="Qué días se carga" accentColor="#00c7ff">
+          <RitmoSemanal datos={porDia} />
+        </Panel>
+
+        <Panel title="En qué estado están" accentColor="#86bb4c">
+          <Anillo porciones={estados} leyendaCentro="reservas" alto={132} />
+        </Panel>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         <Panel

@@ -9,6 +9,7 @@ import { ReservaRow } from './_components/ReservaRow';
 import { DualPanel } from './_components/DualPanel';
 import { Panel } from './_components/Panel';
 import { ActividadFila, EventoFila, PresionFila } from './_components/Filas';
+import { Anillo, BarrasHorizontales, Tendencia, UTEC, variacion } from './_components/Graficos';
 
 interface AdminDashboardProps {
   data: DashboardData | null;
@@ -71,6 +72,17 @@ export function AdminDashboard({
   const usuariosPorRol = Object.entries(data?.userStats?.usuariosPorRol ?? {})
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6);
+  const porMes = data?.reservaStats?.reservasPorMes ?? {};
+  const cambio = variacion(porMes);
+  const barrasUsuarios = usuariosPorRol.map(([rol, cantidad]) => ({
+    nombre: rol.charAt(0) + rol.slice(1).toLowerCase(),
+    valor: cantidad,
+  }));
+  const estados: Array<{ nombre: string; valor: number; color: string }> = [
+    { nombre: 'Aprobadas', valor: data?.reservaStats?.totalAprobadas ?? 0, color: UTEC.verde },
+    { nombre: 'Pendientes', valor: totalPendientes, color: UTEC.amarillo },
+    { nombre: 'Canceladas', valor: data?.reservaStats?.totalCanceladas ?? 0, color: UTEC.rojo },
+  ];
 
   const tasaAprobacion = (() => {
     const ap = data?.reservaStats?.totalAprobadas ?? 0;
@@ -92,6 +104,21 @@ export function AdminDashboard({
           { label: 'Aprobación', value: `${tasaAprobacion}%`, hint: 'últimas reservas', icon: Activity, bg: 'dark', to: '/statistics' },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <Panel
+          title="Reservas por mes"
+          count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}% contra el mes anterior` : undefined}
+          accentColor="#184897"
+          action={{ label: 'estadísticas', to: '/statistics' }}
+        >
+          <Tendencia datos={porMes} />
+        </Panel>
+
+        <Panel title="En qué estado están" count={`${(data?.reservaStats?.totalReservas ?? 0).toLocaleString('es-UY')} en total`} accentColor="#86bb4c">
+          <Anillo porciones={estados} leyendaCentro="reservas" />
+        </Panel>
+      </div>
 
       <DualPanel
         left={{
@@ -160,14 +187,10 @@ export function AdminDashboard({
                 <span className="text-muted-foreground">árboles</span>
               </div>
             )}
-            {usuariosPorRol.length > 0 && (
-              <div className="flex flex-wrap gap-x-4 gap-y-1 border-t pt-3 text-sm">
-                {usuariosPorRol.map(([rol, cantidad]) => (
-                  <span key={rol}>
-                    <b className="tabular-nums">{cantidad}</b>{' '}
-                    <span className="text-muted-foreground">{rol.toLowerCase()}</span>
-                  </span>
-                ))}
+            {barrasUsuarios.length > 0 && (
+              <div className="border-t pt-2">
+                <p className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
+                <BarrasHorizontales datos={barrasUsuarios} alto={118} multicolor />
               </div>
             )}
           </div>

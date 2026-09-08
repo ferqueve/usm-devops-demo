@@ -7,6 +7,7 @@ import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila, MateriaFila, TutoriaFila } from './_components/Filas';
+import { BarrasHorizontales, Progreso, UTEC } from './_components/Graficos';
 
 interface DocenteDashboardProps {
   data: DashboardData | null;
@@ -35,6 +36,11 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
   const materias = data?.misMaterias ?? [];
   const tutorias = data?.misTutorias ?? [];
   const eventos = data?.eventos ?? [];
+  // Las materias con más gente: es lo primero que quiere ver quien las dicta.
+  const inscriptosPorMateria = [...materias]
+    .filter((m) => (m.inscriptos ?? 0) > 0)
+    .sort((a, b) => (b.inscriptos ?? 0) - (a.inscriptos ?? 0))
+    .map((m) => ({ nombre: m.codigo ?? m.nombre, valor: m.inscriptos ?? 0 }));
 
   return (
     <div className="space-y-5">
@@ -59,6 +65,40 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
           { label: 'Hoy', value: stats?.reservasHoy ?? 0, hint: 'reservas en el campus', icon: ListChecks, bg: 'orange', to: '/calendar' },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel
+          title="Inscriptos por materia"
+          count={`${stats?.inscriptos ?? 0} en total`}
+          accentColor="#86bb4c"
+          action={{ label: 'ver materias', to: '/materias?tab=listado' }}
+        >
+          <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} alto={160} />
+        </Panel>
+
+        <Panel
+          title="Cómo vienen mis tutorías"
+          count={tutorias.length ? `${tutorias.length} próximas` : undefined}
+          accentColor="#00c7ff"
+          action={{ label: 'ver todas', to: '/materias?tab=tutorias' }}
+        >
+          {tutorias.length > 0 ? (
+            <div className="space-y-2.5 py-1">
+              {tutorias.map((t) => (
+                <Progreso
+                  key={t.id}
+                  etiqueta={t.materiaNombre ?? 'Tutoría'}
+                  actual={t.agendados}
+                  total={t.cupo}
+                  color={t.cupo > 0 && t.agendados >= t.cupo ? UTEC.naranja : UTEC.cian}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Sin franjas próximas." />
+          )}
+        </Panel>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
