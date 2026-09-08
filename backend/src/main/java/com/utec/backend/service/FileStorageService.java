@@ -385,11 +385,9 @@ public class FileStorageService {
      * Nombre del objeto de la miniatura correspondiente a una imagen.
      * Devuelve null si la imagen es una URL externa o esta vacia.
      */
-    public String getMiniaturaObjectName(String objectName) {
-        if (objectName == null || objectName.trim().isEmpty()) {
-            return null;
-        }
-        if (objectName.startsWith(HTTP_PREFIX) || objectName.startsWith(HTTPS_PREFIX)) {
+    public String getMiniaturaObjectName(String valorGuardado) {
+        String objectName = resolverObjectName(valorGuardado);
+        if (objectName == null) {
             return null;
         }
         int punto = objectName.lastIndexOf('.');
@@ -397,18 +395,42 @@ public class FileStorageService {
         return base + SUFIJO_MINIATURA;
     }
 
+    /**
+     * Nombre del objeto en el bucket a partir de lo guardado en la base, que
+     * segun el origen es la clave del objeto o la URL publica entera. Devuelve
+     * null si la imagen vive fuera de nuestro bucket.
+     */
+    public String resolverObjectName(String valorGuardado) {
+        if (valorGuardado == null || valorGuardado.trim().isEmpty()) {
+            return null;
+        }
+        String valor = valorGuardado.trim();
+        if (!valor.startsWith(HTTP_PREFIX) && !valor.startsWith(HTTPS_PREFIX)) {
+            return valor;
+        }
+        // .../<bucket>/<clave del objeto>
+        String marca = "/" + bucketName + "/";
+        int corte = valor.indexOf(marca);
+        if (corte < 0) {
+            return null;
+        }
+        String clave = valor.substring(corte + marca.length());
+        int query = clave.indexOf('?');
+        return query >= 0 ? clave.substring(0, query) : clave;
+    }
+
     /** True si la miniatura ya existe en el bucket. */
-    public boolean existeMiniatura(String objectName) {
-        String miniatura = getMiniaturaObjectName(objectName);
+    public boolean existeMiniatura(String valorGuardado) {
+        String miniatura = getMiniaturaObjectName(valorGuardado);
         if (miniatura == null || !isAvailable()) {
             return false;
         }
-        if (miniaturasConocidas.contains(objectName)) {
+        if (miniaturasConocidas.contains(valorGuardado)) {
             return true;
         }
         try {
             minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(miniatura).build());
-            miniaturasConocidas.add(objectName);
+            miniaturasConocidas.add(valorGuardado);
             return true;
         } catch (Exception e) {
             return false;
@@ -421,9 +443,10 @@ public class FileStorageService {
      *
      * @return true si la miniatura quedo guardada.
      */
-    public boolean generarMiniatura(String objectName) {
-        String miniatura = getMiniaturaObjectName(objectName);
-        if (miniatura == null || !isAvailable()) {
+    public boolean generarMiniatura(String valorGuardado) {
+        String miniatura = getMiniaturaObjectName(valorGuardado);
+        String objectName = resolverObjectName(valorGuardado);
+        if (miniatura == null || objectName == null || !isAvailable()) {
             return false;
         }
 
@@ -449,11 +472,11 @@ public class FileStorageService {
                             .contentType("image/jpeg")
                             .build()
             );
-            miniaturasConocidas.add(objectName);
+            miniaturasConocidas.add(valorGuardado);
             log.info("Miniatura generada: {} ({} KB)", miniatura, bytes.length / 1024);
             return true;
         } catch (Exception e) {
-            log.warn("No se pudo generar la miniatura de {}: {}", objectName, e.getMessage());
+            log.warn("No se pudo generar la miniatura de {}: {}", valorGuardado, e.getMessage());
             return false;
         }
     }
