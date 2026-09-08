@@ -221,7 +221,6 @@ export const ROLE_PERMISSIONS = {
       'inventory-requests',
       'statistics',
       'asistente',
-      'Users',
       'system',
       'audit',
       'configuracion',
@@ -290,6 +289,10 @@ export const ROLE_PERMISSIONS = {
     description: 'Materias, recursos, tutorías y eventos',
     routes: [
       '/dashboard',
+      // Consulta los espacios del campus, no los administra: el backend le da
+      // espacio:ver y su dashboard enlaza ahi ("espacios libres").
+      '/rooms',
+      '/rooms/:id',
       '/calendar',
       '/materias',
       '/materias/:id',
@@ -300,6 +303,7 @@ export const ROLE_PERMISSIONS = {
     ],
     sidebarItems: [
       'dashboard',
+      'rooms',
       'calendar',
       'materias',
       'eventos'
@@ -310,12 +314,17 @@ export const ROLE_PERMISSIONS = {
     description: 'Oferta abierta de eventos y cursos',
     routes: [
       '/dashboard',
+      // Pide y cancela sus propias reservas: el backend le da reserva:crear y
+      // reserva:ver_propias, y su dashboard entero habla de "mis solicitudes".
+      '/reservations',
+      '/reservations/create',
       '/calendar',
       '/eventos',
       '/eventos/:id'
     ],
     sidebarItems: [
       'dashboard',
+      'reservations',
       'calendar',
       'eventos'
     ],
