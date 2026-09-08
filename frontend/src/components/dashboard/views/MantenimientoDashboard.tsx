@@ -67,12 +67,18 @@ export function MantenimientoDashboard({
       text: <><b>{inv!.danados}</b> item{inv!.danados === 1 ? '' : 's'} dañado{inv!.danados === 1 ? '' : 's'}</>,
     });
   }
-  if ((esp?.enMantenimiento ?? 0) > 0) {
+  // "Fuera de servicio" es todo lo que no esta disponible, no solo lo que esta
+  // en MANTENIMIENTO: contando solo ese estado la alerta decia 2 mientras la
+  // tarjeta decia 11/14 y el panel listaba 3.
+  const fueraDeServicio = espaciosCaidos.length > 0
+    ? espaciosCaidos.length
+    : Math.max(0, (esp?.totalEspacios ?? 0) - (esp?.disponibles ?? 0));
+  if (fueraDeServicio > 0) {
     alertas.push({
       icon: Wrench,
       tone: 'amber',
       to: '/rooms',
-      text: <><b>{esp!.enMantenimiento}</b> espacio{esp!.enMantenimiento === 1 ? '' : 's'} fuera de servicio</>,
+      text: <><b>{fueraDeServicio}</b> espacio{fueraDeServicio === 1 ? '' : 's'} fuera de servicio</>,
     });
   }
 

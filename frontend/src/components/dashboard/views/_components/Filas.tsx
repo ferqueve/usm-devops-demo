@@ -144,14 +144,27 @@ const ACCION_TEXTO: Record<string, string> = {
   DELETE: 'eliminó',
 };
 
+/**
+ * Qué pasó, en castellano.
+ *
+ * La auditoría guarda el login como un CREATE sobre "Autenticacion", que leído
+ * literal daba "Usuario Admin creó Autenticacion".
+ */
+function frase(accion?: string, entidad?: string): string {
+  if (entidad === 'Autenticacion') {
+    return accion === 'DELETE' ? 'cerró sesión' : 'inició sesión';
+  }
+  const verbo = ACCION_TEXTO[accion ?? ''] ?? accion?.toLowerCase() ?? 'tocó';
+  return `${verbo} ${entidad ?? ''}`.trim();
+}
+
 export function ActividadFila({ actividad }: Readonly<{ actividad: Actividad }>) {
-  const verbo = ACCION_TEXTO[actividad.accion ?? ''] ?? actividad.accion?.toLowerCase() ?? 'tocó';
   return (
     <div className={FILA}>
       <CalendarClock className="h-4 w-4 shrink-0 text-muted-foreground" />
       <span className="min-w-0 flex-1 truncate">
-        <b className="font-medium">{actividad.usuario ?? 'Alguien'}</b> {verbo}{' '}
-        <span className="text-muted-foreground">{actividad.entidad}</span>
+        <b className="font-medium">{actividad.usuario ?? 'Alguien'}</b>{' '}
+        <span className="text-muted-foreground">{frase(actividad.accion, actividad.entidad)}</span>
       </span>
       <span className="shrink-0 text-xs text-muted-foreground">
         {formatDistanceToNowStrict(new Date(actividad.cuando), { locale: es, addSuffix: true })}
