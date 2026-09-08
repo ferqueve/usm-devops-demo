@@ -11,20 +11,30 @@ const Panorama360Viewer = lazy(() => import('./Panorama360Viewer'));
  * Se usa un overlay propio (no Radix Dialog) porque el FocusScope del Dialog
  * monta un MutationObserver que choca con el visor 360 (que reescribe el DOM).
  */
-export function SpaceImage({ src, alt }: { src: string; alt: string }) {
+/**
+ * La foto de un espacio.
+ *
+ * `src` es el original y `thumbSrc` la miniatura. En pantalla se muestra la
+ * miniatura: el recuadro mide poco mas de 400 px y el original son 4096 px y
+ * dos megas. El original se baja solo si el usuario abre la vista 360, que si
+ * necesita la resolucion completa.
+ */
+export function SpaceImage({ src, thumbSrc, alt }: { src: string; thumbSrc?: string; alt: string }) {
+  const previa = thumbSrc ?? src;
   const [is360, setIs360] = useState(false);
   const [open, setOpen] = useState(false);
 
+  // La proporcion se mide sobre la miniatura: es la misma y pesa treinta veces menos.
   useEffect(() => {
     setIs360(false);
-    if (!src) return;
+    if (!previa) return;
     const img = new Image();
     img.onload = () => {
       const ratio = img.naturalWidth / img.naturalHeight;
       setIs360(ratio >= 1.9 && ratio <= 2.2);
     };
-    img.src = src;
-  }, [src]);
+    img.src = previa;
+  }, [previa]);
 
   // Escape para cerrar + bloqueo de scroll del body mientras está abierto.
   useEffect(() => {
@@ -43,7 +53,7 @@ export function SpaceImage({ src, alt }: { src: string; alt: string }) {
 
   return (
     <div className="relative">
-      <img src={src} alt={alt} className="w-full aspect-video object-cover" />
+      <img src={previa} alt={alt} className="w-full aspect-video object-cover" />
 
       {is360 && (
         <button

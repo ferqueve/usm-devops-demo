@@ -373,7 +373,11 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
           {/* Imagen / placeholder compacto */}
           <div className="rounded-xl border bg-card overflow-hidden">
             {espacio.imagenUrl ? (
-              <SpaceImage src={espacio.imagenUrl} alt={espacio.nombre} />
+              <SpaceImage
+                src={espacio.imagenUrl}
+                thumbSrc={espacio.imagenThumbUrl}
+                alt={espacio.nombre}
+              />
             ) : (
               <div className="aspect-[16/7] bg-utec-dark flex flex-col items-center justify-center gap-2">
                 <Building2 className="h-10 w-10 text-white/30" />
