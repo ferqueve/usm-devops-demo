@@ -20,6 +20,7 @@ import type { LucideIcon } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
 import { toast } from 'sonner';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { eventosApi } from '@/lib/api/eventos';
 import { espaciosApi } from '@/lib/api/spaces';
@@ -124,6 +125,8 @@ function NotificarEventoDialog({ eventoId, open, onOpenChange }: Readonly<{ even
 
 export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   const navigate = useNavigate();
+  const { hasPermission } = useRolePermissions();
+  const puedeVerInscriptos = hasPermission('evento:ver_inscriptos');
   const [evento, setEvento] = useState<Evento | null>(null);
   const [inscriptos, setInscriptos] = useState<EventoInscripto[]>([]);
   const [inscPage, setInscPage] = useState(0);
@@ -163,9 +166,12 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [eventoId]);
+  // La lista ya se muestra detrás de un PermissionGuard; el pedido también tiene
+  // que respetarlo. Sin esto un DOCENTE abría el evento y se comía un 403.
   const fetchInscriptos = useCallback(() => {
+    if (!puedeVerInscriptos) return;
     eventosApi.inscriptos(eventoId).then((r) => setInscriptos(r.data ?? [])).catch(() => { /* noop */ });
-  }, [eventoId]);
+  }, [eventoId, puedeVerInscriptos]);
 
   useEffect(() => { fetchEvento(); fetchInscriptos(); }, [fetchEvento, fetchInscriptos]);
   useEffect(() => {

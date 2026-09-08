@@ -23,6 +23,7 @@ import { inventarioApi } from '@/lib/api/inventory';
 import { reservationsApi } from '@/lib/api/reservations';
 import type { Espacio, InventarioItem, Reserva } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import {
   ArrowLeft,
   Edit,
@@ -82,6 +83,8 @@ function Section({ title, icon, accentClass, actions, children, bodyClass = 'p-4
 }
 
 export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
+  const { hasPermission } = useRolePermissions();
+  const puedeVerInventario = hasPermission('inventario:ver');
   const navigate = useNavigate();
   const [espacio, setEspacio] = useState<Espacio | null>(null);
   const [inventario, setInventario] = useState<InventarioItem[]>([]);
@@ -110,7 +113,10 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
     }
   }, [espacioId]);
 
+  // El inventario de un espacio es para quien lo administra: un ESTUDIANTE que
+  // abria el detalle se comia un 403 y un toast de error.
   const fetchInventario = useCallback(async () => {
+    if (!puedeVerInventario) return;
     try {
       setLoadingInventario(true);
       const response = await inventarioApi.listarInventarioPorEspacio(espacioId);
@@ -122,7 +128,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
     } finally {
       setLoadingInventario(false);
     }
-  }, [espacioId]);
+  }, [espacioId, puedeVerInventario]);
 
   const fetchReservas = useCallback(async () => {
     try {
@@ -486,7 +492,8 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
         </Section>
       </div>
 
-      {/* Inventario */}
+      {/* Inventario: solo para quien lo administra. */}
+      {puedeVerInventario && (
       <Section
         title="Inventario del espacio"
         icon={<Package className="h-4 w-4 text-utec-yellow" />}
@@ -621,6 +628,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
           );
         })()}
       </Section>
+      )}
 
       {/* Modales */}
       <SpaceFormDialog

@@ -647,8 +647,32 @@ function EstudianteMateriasView() {
   const [actionId, setActionId] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const inscriptasIds = new Set(misMaterias.map((m) => m.id));
-  const disponibles = todas.filter((m) => !m.deletedAt && !inscriptasIds.has(m.id));
+  const inscriptasIds = useMemo(() => new Set(misMaterias.map((m) => m.id)), [misMaterias]);
+  const disponibles = useMemo(
+    () => todas.filter((m) => !m.deletedAt && !inscriptasIds.has(m.id)),
+    [todas, inscriptasIds],
+  );
+
+  // Casi 250 materias dibujadas de una eran 13.000 nodos en el DOM, la pantalla
+  // mas pesada de la app. Y sin buscador no se encontraba ninguna igual.
+  const [busqueda, setBusqueda] = useState('');
+  const [pagina, setPagina] = useState(0);
+  const POR_PAGINA = 24;
+
+  const filtradas = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return disponibles;
+    return disponibles.filter(
+      (m) => m.nombre.toLowerCase().includes(q) || (m.codigo ?? '').toLowerCase().includes(q),
+    );
+  }, [disponibles, busqueda]);
+
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
+  const paginaActual = Math.min(pagina, totalPaginas - 1);
+  const visibles = filtradas.slice(paginaActual * POR_PAGINA, paginaActual * POR_PAGINA + POR_PAGINA);
+
+  // Al buscar, la página en la que estabas puede dejar de existir.
+  useEffect(() => { setPagina(0); }, [busqueda]);
 
   const kpis: StatItem[] = useMemo(() => [
     { label: 'Inscriptas', value: misMaterias.length, icon: BookOpen, bg: 'blue' },
@@ -772,6 +796,17 @@ function EstudianteMateriasView() {
             <GraduationCap className="h-4 w-4 text-utec-green" />
             <h2 className="text-lg font-medium tracking-tight">Disponibles para inscribirse</h2>
             {disponibles.length > 0 && <span className="text-xs text-muted-foreground tabular-nums">{disponibles.length}</span>}
+            {disponibles.length > POR_PAGINA && (
+              <div className="relative ml-auto w-full max-w-[240px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar materia o código…"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="pl-8 h-9"
+                />
+              </div>
+            )}
           </div>
           {(() => {
             if (loadingTodas) {
@@ -780,10 +815,33 @@ function EstudianteMateriasView() {
             if (disponibles.length === 0) {
               return <EmptyState icon={BookOpen} title="No hay materias disponibles" description="Estás inscripto en todas las materias disponibles." />;
             }
+            if (filtradas.length === 0) {
+              return <EmptyState icon={Search} title="Ninguna materia coincide" description={`Nada coincide con «${busqueda}».`} />;
+            }
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {disponibles.map((m) => renderCard(m, false))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {visibles.map((m) => renderCard(m, false))}
+                </div>
+                {filtradas.length > POR_PAGINA && (
+                  <div className="flex items-center justify-between gap-3 border-t pt-3">
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {paginaActual * POR_PAGINA + 1}–{paginaActual * POR_PAGINA + visibles.length} de {filtradas.length}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setPagina(paginaActual - 1)} disabled={paginaActual === 0}>
+                        Anterior
+                      </Button>
+                      <span className="px-1 text-xs text-muted-foreground tabular-nums">
+                        {paginaActual + 1} / {totalPaginas}
+                      </span>
+                      <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setPagina(paginaActual + 1)} disabled={paginaActual >= totalPaginas - 1}>
+                        Siguiente
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             );
           })()}
         </section>

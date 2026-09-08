@@ -205,8 +205,11 @@ public class RecomendacionController {
     /**
      * Obtener analista recomendado para un docente
      */
+    // Es una lectura, y quien la necesita es el docente que arma la solicitud:
+    // 'gestionar_asignaciones' es de inventario y el DOCENTE no lo tiene, asi
+    // que el formulario de reserva se comia un 403 al abrirse.
     @GetMapping("/analistas/asignacion")
-    @PreAuthorize("hasPermission(null, 'recomendacion:gestionar_asignaciones')")
+    @PreAuthorize("hasPermission(null, 'recomendacion:ver')")
     public ResponseEntity<ApiResponse<List<RecomendacionAnalistaDto>>> obtenerAnalistaRecomendado(
             @RequestParam Long docenteId,
             Authentication authentication) {

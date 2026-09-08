@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { tutoriasApi } from '@/lib/api/tutorias';
 import { materiasApi } from '@/lib/api/materias';
 import { espaciosApi } from '@/lib/api/spaces';
@@ -126,6 +127,8 @@ function NotificarTutoriaDialog({ tutoriaId, open, onOpenChange }: Readonly<{ tu
 }
 
 export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
+  const { hasPermission } = useRolePermissions();
+  const puedeVerAgendados = hasPermission('tutoria:ver_agendados');
   const navigate = useNavigate();
   const { user } = useAuth();
   const puedeGestionar = ['DOCENTE', 'ADMIN', 'ANALISTA'].includes(user?.rol ?? '');
@@ -150,9 +153,12 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
       .finally(() => setLoading(false));
   }, [tutoriaId]);
 
+  // Quien se agendó lo ve quien dicta o administra: un ESTUDIANTE que abría el
+  // detalle se comía un 403.
   const fetchAgendados = useCallback(() => {
+    if (!puedeVerAgendados) return;
     tutoriasApi.agendados(tutoriaId).then((r) => setAgendados(r.data ?? [])).catch(() => { /* noop */ });
-  }, [tutoriaId]);
+  }, [tutoriaId, puedeVerAgendados]);
 
   useEffect(() => { fetchTutoria(); fetchAgendados(); }, [fetchTutoria, fetchAgendados]);
 

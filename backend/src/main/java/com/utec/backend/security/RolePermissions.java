@@ -99,6 +99,7 @@ public final class RolePermissions {
     public static final String TUTORIA_EDITAR = "tutoria:editar";
     public static final String TUTORIA_AGENDAR = "tutoria:agendar";
     public static final String TUTORIA_CANCELAR_RESERVA = "tutoria:cancelar_reserva";
+    public static final String TUTORIA_VER_AGENDADOS = "tutoria:ver_agendados";
 
     // ===== Permisos: eventos / oferta abierta =====
     public static final String EVENTO_VER = "evento:ver";
@@ -170,7 +171,7 @@ public final class RolePermissions {
             MATERIA_VER, MATERIA_CREAR, MATERIA_EDITAR, MATERIA_ELIMINAR, MATERIA_VER_INSCRIPTOS,
             INSCRIPCION_CREAR, INSCRIPCION_CANCELAR,
             RECURSO_VER,
-            TUTORIA_VER,
+            TUTORIA_VER, TUTORIA_VER_AGENDADOS,
             EVENTO_VER, EVENTO_CREAR, EVENTO_EDITAR, EVENTO_ELIMINAR, EVENTO_INSCRIBIR, EVENTO_VER_INSCRIPTOS
         ));
 
@@ -255,7 +256,7 @@ public final class RolePermissions {
             // Capa académica - dicta materias, recursos, tutorías
             MATERIA_VER, MATERIA_EDITAR, MATERIA_VER_INSCRIPTOS,
             RECURSO_VER, RECURSO_CREAR, RECURSO_ELIMINAR,
-            TUTORIA_VER, TUTORIA_CREAR, TUTORIA_EDITAR,
+            TUTORIA_VER, TUTORIA_CREAR, TUTORIA_EDITAR, TUTORIA_VER_AGENDADOS,
             EVENTO_VER, EVENTO_INSCRIBIR
         ));
 

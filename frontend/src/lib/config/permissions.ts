@@ -80,6 +80,7 @@ export type Permission =
   | 'tutoria:editar'
   | 'tutoria:agendar'
   | 'tutoria:cancelar_reserva'
+  | 'tutoria:ver_agendados'
   // Eventos / oferta abierta
   | 'evento:ver'
   | 'evento:crear'
@@ -167,7 +168,7 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     'materia:ver', 'materia:crear', 'materia:editar', 'materia:eliminar', 'materia:ver_inscriptos',
     'inscripcion:crear', 'inscripcion:ver_propias', 'inscripcion:cancelar',
     'recurso:ver', 'recurso:crear', 'recurso:eliminar',
-    'tutoria:ver', 'tutoria:crear', 'tutoria:editar', 'tutoria:agendar', 'tutoria:cancelar_reserva',
+    'tutoria:ver', 'tutoria:crear', 'tutoria:editar', 'tutoria:agendar', 'tutoria:cancelar_reserva', 'tutoria:ver_agendados',
     'evento:ver', 'evento:crear', 'evento:editar', 'evento:eliminar', 'evento:inscribir', 'evento:ver_inscriptos',
     'sostenibilidad:ver',
   ],
@@ -215,7 +216,7 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     'materia:ver', 'materia:crear', 'materia:editar', 'materia:eliminar', 'materia:ver_inscriptos',
     'inscripcion:crear', 'inscripcion:cancelar',
     'recurso:ver',
-    'tutoria:ver',
+    'tutoria:ver', 'tutoria:ver_agendados',
     'evento:ver', 'evento:crear', 'evento:editar', 'evento:eliminar', 'evento:inscribir', 'evento:ver_inscriptos',
   ],
 
@@ -293,7 +294,7 @@ export const ROLE_PERMISSIONS_MAP: Record<Role, Permission[]> = {
     // Capa académica - dicta materias, recursos, tutorías
     'materia:ver', 'materia:editar', 'materia:ver_inscriptos',
     'recurso:ver', 'recurso:crear', 'recurso:eliminar',
-    'tutoria:ver', 'tutoria:crear', 'tutoria:editar',
+    'tutoria:ver', 'tutoria:crear', 'tutoria:editar', 'tutoria:ver_agendados',
     'evento:ver', 'evento:inscribir',
   ],
 

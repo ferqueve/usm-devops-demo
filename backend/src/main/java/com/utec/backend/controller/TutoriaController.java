@@ -91,8 +91,10 @@ public class TutoriaController {
     /**
      * Estudiantes agendados en una tutoría.
      */
+    // Por permiso y no por lista de roles, para que el frontend pueda preguntar
+    // lo mismo antes de pedirlo: un ESTUDIANTE abria el detalle y se comia un 403.
     @GetMapping("/{id}/agendados")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ANALISTA') or hasRole('DOCENTE')")
+    @PreAuthorize("hasPermission(null, 'tutoria:ver_agendados')")
     public ResponseEntity<ApiResponse<List<TutoriaAgendadoDto>>> getAgendados(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(tutoriaService.getAgendados(id), "Agendados obtenidos"));
     }

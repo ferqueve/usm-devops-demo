@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { materiasApi } from '@/lib/api/materias';
@@ -359,6 +360,8 @@ function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos:
 
 // ---------- Page ----------
 export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
+  const { hasPermission } = useRolePermissions();
+  const puedeVerInscriptos = hasPermission('materia:ver_inscriptos');
   const navigate = useNavigate();
   const { user } = useAuth();
   const canManage = ADMIN_ROLES.includes(user?.rol ?? '');
@@ -376,13 +379,16 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
 
   const [inscriptos, setInscriptos] = useState<Inscripcion[]>([]);
   const [loadingInsc, setLoadingInsc] = useState(true);
+  // La lista de inscriptos es para quien dicta o administra: un ESTUDIANTE que
+  // abria el detalle se comia un 403.
   const refreshInscriptos = useCallback(() => {
+    if (!puedeVerInscriptos) { setLoadingInsc(false); return; }
     setLoadingInsc(true);
     materiasApi.obtenerInscriptos(materiaId)
       .then((r) => setInscriptos(r.data ?? []))
       .catch(() => { /* noop */ })
       .finally(() => setLoadingInsc(false));
-  }, [materiaId]);
+  }, [materiaId, puedeVerInscriptos]);
 
   const fetchMateria = useCallback(() => {
     setLoading(true);
