@@ -30,11 +30,16 @@ export default defineConfig(({ mode }) => {
           // pedidos de unos pocos KB cada uno, todos con su ida y vuelta.
           // Agrupados por libreria, son cuatro pedidos que ademas quedan
           // cacheados entre pantallas.
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-charts': ['recharts'],
-            'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
-            'vendor-iconos': ['lucide-react'],
+          // Se agrupa por ruta y no por nombre de paquete: nombrarlos exige que
+          // cada uno sea dependencia directa y resuelva desde la raiz, y
+          // html2canvas -- que entra a traves de jspdf -- rompia el build en CI,
+          // donde pnpm no lo aplana.
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return;
+            if (/[\\/]lucide-react[\\/]/.test(id)) return 'vendor-iconos';
+            if (/[\\/](recharts|d3-[a-z]+|victory-vendor)[\\/]/.test(id)) return 'vendor-charts';
+            if (/[\\/](jspdf|jspdf-autotable|html2canvas|canvg|dompurify)[\\/]/.test(id)) return 'vendor-pdf';
+            if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return 'vendor-react';
           },
         },
       },
