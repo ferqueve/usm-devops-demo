@@ -14,6 +14,8 @@ public class EspacioResponseDto {
     private String nombre;
     private Integer capacidad;
     private String imagenUrl;
+    /** Version reducida para listados; null si todavia no se genero. */
+    private String imagenThumbUrl;
     private Long tipoEspacioId;
     private String tipoEspacioNombre;
     private String tipoEspacioColor; // Color del tipo de espacio

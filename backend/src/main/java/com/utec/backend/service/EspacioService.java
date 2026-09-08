@@ -343,6 +343,12 @@ public class EspacioService {
         String imagenUrl = espacio.getImagenUrl();
         if (imagenUrl != null && !imagenUrl.trim().isEmpty()) {
             dto.setImagenUrl(fileStorageService.getImageUrl(imagenUrl));
+            // Solo se ofrece si existe: para las fotos viejas el listado sigue
+            // usando la original hasta que se genere.
+            String miniatura = fileStorageService.getMiniaturaObjectName(imagenUrl);
+            if (miniatura != null && fileStorageService.existeMiniatura(imagenUrl)) {
+                dto.setImagenThumbUrl(fileStorageService.getImageUrl(miniatura));
+            }
         } else {
             dto.setImagenUrl(null);
         }

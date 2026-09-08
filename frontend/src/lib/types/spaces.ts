@@ -11,6 +11,8 @@ export interface Espacio {
   nombre: string;
   capacidad: number;
   imagenUrl?: string;
+  /** Versión reducida para listados. Puede faltar en fotos viejas. */
+  imagenThumbUrl?: string;
   tipoEspacioId: number;
   tipoEspacioNombre?: string;
   tipoEspacioColor?: string; // Color del tipo de espacio
