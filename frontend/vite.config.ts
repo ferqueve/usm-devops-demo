@@ -34,11 +34,15 @@ export default defineConfig(({ mode }) => {
           // cada uno sea dependencia directa y resuelva desde la raiz, y
           // html2canvas -- que entra a traves de jspdf -- rompia el build en CI,
           // donde pnpm no lo aplana.
+          // Solo se agrupa lo que usan todas las pantallas. Recharts y jsPDF
+          // quedaron afuera a proposito: un chunk con nombre propio entra en
+          // los modulepreload del index, asi que agruparlos hacia que las 26
+          // pantallas se bajaran 275 KB de PDF y 136 KB de graficos aunque no
+          // dibujaran nada. Sueltos, viajan dentro del chunk de la pantalla que
+          // los importa.
           manualChunks(id: string) {
             if (!id.includes('node_modules')) return;
             if (/[\\/]lucide-react[\\/]/.test(id)) return 'vendor-iconos';
-            if (/[\\/](recharts|d3-[a-z]+|victory-vendor)[\\/]/.test(id)) return 'vendor-charts';
-            if (/[\\/](jspdf|jspdf-autotable|html2canvas|canvg|dompurify)[\\/]/.test(id)) return 'vendor-pdf';
             if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return 'vendor-react';
           },
         },
