@@ -15,8 +15,11 @@ import java.util.List;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpecificationExecutor<Reserva> {
     
-    // Buscar reservas de un usuario (ordenadas por fecha descendente)
-    @Query("SELECT r FROM Reserva r WHERE r.usuario.id = :usuarioId ORDER BY r.inicio DESC")
+    // Buscar reservas de un usuario (ordenadas por fecha descendente).
+    // Trae el espacio en la misma consulta: las estadisticas recorren la lista
+    // agrupando por espacio, y con la relacion perezosa eso era una consulta
+    // por reserva.
+    @Query("SELECT r FROM Reserva r LEFT JOIN FETCH r.espacio WHERE r.usuario.id = :usuarioId ORDER BY r.inicio DESC")
     List<Reserva> findByUsuarioId(@Param("usuarioId") Long usuarioId);
     
     // Buscar reservas de un espacio
