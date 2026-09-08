@@ -105,16 +105,29 @@ function isAuthEndpoint(endpoint: string): boolean {
          endpoint.includes('/auth/resend-verification');
 }
 
+/**
+ * Si la respuesta significa "tu sesion no sirve para esto": hay que refrescar
+ * el token y, si eso falla, cerrar sesion.
+ *
+ * Un 401 siempre cuenta, sin mirar el texto. Antes se exigia que el mensaje
+ * dijera "jwt", "token" o "expired", asi que la sesion caducada se detectaba
+ * solo porque el backend responde "Token JWT invalido" en castellano y esas
+ * palabras aparecen dentro. Un 401 con cualquier otra redaccion -- el de un
+ * proxy, el que devuelve Spring por defecto -- dejaba al usuario en una
+ * pantalla vacia, sin sesion y sin que nadie lo mandara al login.
+ *
+ * En el 500 el texto sigue importando: ahi solo es cosa del token si lo dice.
+ */
 async function checkJwtError(response: Response, status: number): Promise<boolean> {
-  if (status !== 401 && status !== 500) return false;
-  
+  if (status === 401) return true;
+  if (status !== 500) return false;
+
   try {
     const errorData = await response.clone().json();
     const errorMessage = (errorData.error || errorData.message || '').toLowerCase();
     return errorMessage.includes('jwt') || errorMessage.includes('token') || errorMessage.includes('expired');
   } catch {
-    // Si es 401 y no se puede parsear, probablemente sea JWT expirado
-    return status === 401;
+    return false;
   }
 }
 

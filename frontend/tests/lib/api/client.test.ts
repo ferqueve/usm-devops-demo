@@ -130,6 +130,35 @@ describe('apiRequest', () => {
     expect(localStorage.getItem('token')).toBeNull();
   });
 
+  // El texto del 401 no puede decidir si hay que cerrar sesion: el backend
+  // responde "Token JWT invalido" y por eso funcionaba, pero un 401 de un proxy
+  // o el que devuelve Spring por defecto dejaba al usuario sin sesion y sin
+  // que nadie lo mandara al login.
+  it('cierra sesion ante cualquier 401, diga lo que diga el mensaje', async () => {
+    localStorage.setItem('token', 'tok');
+    const fetchMock = globalThis.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock.mockResolvedValueOnce(
+      makeResponse({ status: 401, ok: false, body: { message: 'Sesión expirada' } }),
+    );
+    const dispatchSpy = vi.spyOn(globalThis, 'dispatchEvent');
+
+    await expect(apiRequest('/protected')).rejects.toThrow(/sesión ha expirado/i);
+    expect(dispatchSpy).toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBeNull();
+  });
+
+  // En cambio un 500 solo es cosa del token si el mensaje lo dice.
+  it('no cierra sesion ante un 500 que no habla del token', async () => {
+    localStorage.setItem('token', 'tok');
+    const fetchMock = globalThis.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock.mockResolvedValueOnce(
+      makeResponse({ status: 500, ok: false, body: { error: 'Error interno del servidor' } }),
+    );
+
+    await expect(apiRequest('/protected')).rejects.toThrow(/Error interno/i);
+    expect(localStorage.getItem('token')).toBe('tok');
+  });
+
   it('refreshes token and retries on 401 jwt error when refresh succeeds', async () => {
     localStorage.setItem('token', 'old-tok');
     localStorage.setItem('refreshToken', 'r-tok');
