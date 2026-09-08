@@ -43,6 +43,12 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
     
     // Contar reservas por espacio y estado
     Long countByEspacioIdAndEstado(Long espacioId, Reserva.EstadoReserva estado);
+
+    /**
+     * Cuantas reservas empiezan dentro del rango. El dashboard muestra el
+     * numero de reservas de hoy: contarlo aca evita traer las filas.
+     */
+    long countByInicioBetween(Instant desde, Instant hasta);
     
     // Buscar reservas futuras de un espacio
     @Query("SELECT r FROM Reserva r WHERE r.espacio.id = :espacioId " +

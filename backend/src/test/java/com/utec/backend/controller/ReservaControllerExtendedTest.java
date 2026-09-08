@@ -452,20 +452,36 @@ class ReservaControllerExtendedTest {
     // ==================== TESTS PARA ESTADÍSTICAS ====================
 
     @Test
-    @DisplayName("GET /api/v1/reservas/mis-reservas/stats - EXTERNO obtiene estadísticas globales (bug actual)")
+    @DisplayName("GET /api/v1/reservas/mis-reservas/stats - un EXTERNO ve sus propias estadísticas")
     @WithMockUser(username = "externo@gmail.com", roles = {"EXTERNO"})
-    void externoObtienEstadisticasGlobales() throws Exception {
-        // Given - El controller actual solo da stats personales a DOCENTE, resto obtiene globales
-        // Esto es un bug ya que EXTERNO debería obtener sus propias estadísticas
+    void externoObtieneEstadisticasPropias() throws Exception {
+        // Antes solo se le daban personales al DOCENTE y el resto caía en el else,
+        // así que un EXTERNO recibía los números de todo el sistema.
         com.utec.backend.dto.reserva.ReservaStatsDto stats = new com.utec.backend.dto.reserva.ReservaStatsDto();
-        stats.setTotalReservas(100L);
-        when(reservaService.obtenerEstadisticasGlobales()).thenReturn(stats);
+        stats.setTotalReservas(3L);
+        when(reservaService.obtenerEstadisticasPersonales("externo@gmail.com")).thenReturn(stats);
 
-        // When & Then - EXTERNO no es DOCENTE, así que cae en el else y obtiene stats globales
         mockMvc.perform(get("/api/v1/reservas/mis-reservas/stats")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.totalReservas").value(3));
+
+        verify(reservaService).obtenerEstadisticasPersonales("externo@gmail.com");
+        verify(reservaService, org.mockito.Mockito.never()).obtenerEstadisticasGlobales();
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/reservas/mis-reservas/stats - un ADMIN ve las de todo el sistema")
+    @WithMockUser(username = "admin@utec.edu.uy", roles = {"ADMIN"})
+    void adminObtieneEstadisticasGlobales() throws Exception {
+        com.utec.backend.dto.reserva.ReservaStatsDto stats = new com.utec.backend.dto.reserva.ReservaStatsDto();
+        stats.setTotalReservas(100L);
+        when(reservaService.obtenerEstadisticasGlobales()).thenReturn(stats);
+
+        mockMvc.perform(get("/api/v1/reservas/mis-reservas/stats")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalReservas").value(100));
 
         verify(reservaService).obtenerEstadisticasGlobales();

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.utec.backend.security.RolAutenticado;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,17 +25,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EventoController {
 
-    private static final String ROLE_PREFIX = "ROLE_";
 
     private final EventoService eventoService;
 
     private static String extractRole(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .map(auth -> auth.getAuthority())
-                .filter(auth -> auth.startsWith(ROLE_PREFIX))
-                .findFirst()
-                .map(auth -> auth.replace(ROLE_PREFIX, ""))
-                .orElse("");
+        return RolAutenticado.de(authentication);
     }
 
     @GetMapping
