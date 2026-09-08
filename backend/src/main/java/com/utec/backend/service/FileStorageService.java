@@ -9,14 +9,23 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Servicio para gestionar el almacenamiento de archivos en MinIO
@@ -27,6 +36,22 @@ public class FileStorageService {
 
     private static final String HTTP_PREFIX = "http://";
     private static final String HTTPS_PREFIX = "https://";
+
+    /**
+     * Ancho de la miniatura. Las fotos de los espacios se suben tal cual salen
+     * de la camara -- medido en produccion, 4096x2304 y 1,9 MB -- y las tarjetas
+     * del listado las muestran a 279 px de ancho. Con doce por pagina eso son
+     * unos 15 MB para dibujar doce miniaturas.
+     */
+    private static final int ANCHO_MINIATURA = 800;
+    private static final String SUFIJO_MINIATURA = "-thumb.jpg";
+
+    /**
+     * Imagenes con miniatura confirmada. Sin esto, armar el DTO de cada espacio
+     * consultaba MinIO una vez por espacio en cada listado. Una miniatura no
+     * desaparece, asi que alcanza con preguntar una vez por arranque.
+     */
+    private final Set<String> miniaturasConocidas = ConcurrentHashMap.newKeySet();
 
     @Nullable
     private final MinioClient minioClient;
@@ -100,6 +125,11 @@ public class FileStorageService {
             );
 
             log.info("Imagen subida exitosamente: {} para espacio {}", objectName, espacioId);
+
+            // La miniatura es lo que consume el listado; si falla, se sigue
+            // mostrando la original.
+            generarMiniatura(objectName);
+
             return objectName;
         } catch (MinioException | InvalidKeyException | NoSuchAlgorithmException e) {
             log.error("Error al subir imagen a MinIO para espacio {}", espacioId, e);
@@ -349,6 +379,103 @@ public class FileStorageService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * Nombre del objeto de la miniatura correspondiente a una imagen.
+     * Devuelve null si la imagen es una URL externa o esta vacia.
+     */
+    public String getMiniaturaObjectName(String objectName) {
+        if (objectName == null || objectName.trim().isEmpty()) {
+            return null;
+        }
+        if (objectName.startsWith(HTTP_PREFIX) || objectName.startsWith(HTTPS_PREFIX)) {
+            return null;
+        }
+        int punto = objectName.lastIndexOf('.');
+        String base = punto > 0 ? objectName.substring(0, punto) : objectName;
+        return base + SUFIJO_MINIATURA;
+    }
+
+    /** True si la miniatura ya existe en el bucket. */
+    public boolean existeMiniatura(String objectName) {
+        String miniatura = getMiniaturaObjectName(objectName);
+        if (miniatura == null || !isAvailable()) {
+            return false;
+        }
+        if (miniaturasConocidas.contains(objectName)) {
+            return true;
+        }
+        try {
+            minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(miniatura).build());
+            miniaturasConocidas.add(objectName);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Genera y guarda la miniatura de una imagen ya subida. Es best-effort: si
+     * algo falla, la aplicacion sigue mostrando la original.
+     *
+     * @return true si la miniatura quedo guardada.
+     */
+    public boolean generarMiniatura(String objectName) {
+        String miniatura = getMiniaturaObjectName(objectName);
+        if (miniatura == null || !isAvailable()) {
+            return false;
+        }
+
+        try (InputStream origen = minioClient.getObject(
+                GetObjectArgs.builder().bucket(bucketName).object(objectName).build())) {
+
+            BufferedImage original = ImageIO.read(origen);
+            if (original == null) {
+                log.warn("No se pudo leer la imagen {} para generar su miniatura", objectName);
+                return false;
+            }
+
+            byte[] bytes = escalarAJpeg(original);
+            if (bytes.length == 0) {
+                return false;
+            }
+
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(miniatura)
+                            .stream(new ByteArrayInputStream(bytes), bytes.length, -1)
+                            .contentType("image/jpeg")
+                            .build()
+            );
+            miniaturasConocidas.add(objectName);
+            log.info("Miniatura generada: {} ({} KB)", miniatura, bytes.length / 1024);
+            return true;
+        } catch (Exception e) {
+            log.warn("No se pudo generar la miniatura de {}: {}", objectName, e.getMessage());
+            return false;
+        }
+    }
+
+    /** Escala manteniendo la relacion de aspecto y codifica en JPEG. */
+    private byte[] escalarAJpeg(BufferedImage original) throws IOException {
+        int ancho = Math.min(ANCHO_MINIATURA, original.getWidth());
+        int alto = Math.max(1, (int) Math.round(original.getHeight() * (ancho / (double) original.getWidth())));
+
+        BufferedImage destino = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = destino.createGraphics();
+        try {
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.drawImage(original, 0, 0, ancho, alto, null);
+        } finally {
+            g.dispose();
+        }
+
+        ByteArrayOutputStream salida = new ByteArrayOutputStream();
+        ImageIO.write(destino, "jpg", salida);
+        return salida.toByteArray();
     }
 }
 

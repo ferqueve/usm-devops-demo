@@ -67,7 +67,8 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
       <div className="relative aspect-[16/10] overflow-hidden bg-utec-dark">
         {hasImagen ? (
           <img
-            src={espacio.imagenUrl}
+            // La tarjeta muestra 279 px: la original son 4096 y casi 2 MB.
+            src={espacio.imagenThumbUrl ?? espacio.imagenUrl}
             alt={espacio.nombre}
             className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
             loading="lazy"
