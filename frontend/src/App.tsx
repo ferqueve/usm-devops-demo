@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
+import { lazyConRecarga } from '@/lib/utils/lazyConRecarga';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthProvider';
@@ -17,33 +18,33 @@ import { AuthLayout } from './components/layouts/AuthLayout/AuthLayout';
  * llamadas a la API en cualquier pantalla que abrieras, aunque no fueras al
  * dashboard.
  */
-const VerifyEmailPage = lazy(() => import('./app/auth/verify/page'));
-const ForgotPasswordPage = lazy(() => import('./app/auth/forgot-password/page'));
-const ResetPasswordPage = lazy(() => import('./app/auth/reset-password/page'));
-const AuthCallbackSuccess = lazy(() =>
+const VerifyEmailPage = lazyConRecarga(() => import('./app/auth/verify/page'));
+const ForgotPasswordPage = lazyConRecarga(() => import('./app/auth/forgot-password/page'));
+const ResetPasswordPage = lazyConRecarga(() => import('./app/auth/reset-password/page'));
+const AuthCallbackSuccess = lazyConRecarga(() =>
   import('./app/auth/callback-success').then((m) => ({ default: m.AuthCallbackSuccess }))
 );
-const DashboardPage = lazy(() => import('./app/dashboard/page'));
-const CalendarPage = lazy(() => import('./app/calendar/page'));
-const ReservationsPage = lazy(() => import('./app/reservations/page'));
-const CreateReservationPage = lazy(() => import('./app/reservations/create/page'));
-const RoomsPage = lazy(() => import('./app/rooms/page'));
-const RoomDetailsPage = lazy(() => import('./app/rooms/[id]/page'));
-const StatisticsPage = lazy(() => import('./app/statistics/page'));
-const AsistentePage = lazy(() => import('./app/asistente/page'));
-const UsersPage = lazy(() => import('./app/users/page'));
-const SystemPage = lazy(() => import('./app/system/page'));
-const InventoryPage = lazy(() => import('./app/inventory/page'));
-const InventoryRequestsPage = lazy(() => import('./app/inventory/requests/page'));
-const ConfiguracionPage = lazy(() => import('./app/configuracion/page'));
-const AuditPage = lazy(() => import('./app/audit/page'));
-const MateriasPage = lazy(() => import('./app/materias/page'));
-const MateriasMapaPage = lazy(() => import('./app/materias/mapa/page'));
-const MateriaDetailPage = lazy(() => import('./app/materias/[id]/page'));
-const TutoriaDetailPage = lazy(() => import('./app/tutorias/[id]/page'));
-const EventosPage = lazy(() => import('./app/eventos/page'));
-const EventoDetailPage = lazy(() => import('./app/eventos/[id]/page'));
-const SostenibilidadPage = lazy(() => import('./app/sostenibilidad/page'));
+const DashboardPage = lazyConRecarga(() => import('./app/dashboard/page'));
+const CalendarPage = lazyConRecarga(() => import('./app/calendar/page'));
+const ReservationsPage = lazyConRecarga(() => import('./app/reservations/page'));
+const CreateReservationPage = lazyConRecarga(() => import('./app/reservations/create/page'));
+const RoomsPage = lazyConRecarga(() => import('./app/rooms/page'));
+const RoomDetailsPage = lazyConRecarga(() => import('./app/rooms/[id]/page'));
+const StatisticsPage = lazyConRecarga(() => import('./app/statistics/page'));
+const AsistentePage = lazyConRecarga(() => import('./app/asistente/page'));
+const UsersPage = lazyConRecarga(() => import('./app/users/page'));
+const SystemPage = lazyConRecarga(() => import('./app/system/page'));
+const InventoryPage = lazyConRecarga(() => import('./app/inventory/page'));
+const InventoryRequestsPage = lazyConRecarga(() => import('./app/inventory/requests/page'));
+const ConfiguracionPage = lazyConRecarga(() => import('./app/configuracion/page'));
+const AuditPage = lazyConRecarga(() => import('./app/audit/page'));
+const MateriasPage = lazyConRecarga(() => import('./app/materias/page'));
+const MateriasMapaPage = lazyConRecarga(() => import('./app/materias/mapa/page'));
+const MateriaDetailPage = lazyConRecarga(() => import('./app/materias/[id]/page'));
+const TutoriaDetailPage = lazyConRecarga(() => import('./app/tutorias/[id]/page'));
+const EventosPage = lazyConRecarga(() => import('./app/eventos/page'));
+const EventoDetailPage = lazyConRecarga(() => import('./app/eventos/[id]/page'));
+const SostenibilidadPage = lazyConRecarga(() => import('./app/sostenibilidad/page'));
 
 /** Lo que se ve mientras baja el chunk de la pantalla. */
 function PantallaCargando() {

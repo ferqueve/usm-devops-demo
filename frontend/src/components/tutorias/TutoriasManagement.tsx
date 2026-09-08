@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -88,6 +88,10 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [tiempo, setTiempo] = useState('todas');
   const [vista, setVista] = useState<'grilla' | 'calendario' | 'agenda'>('grilla');
+  // 144 tarjetas de una eran 8.300 nodos en el DOM, seis veces la pantalla mas
+  // pesada de la app. El endpoint no pagina, asi que la grilla se corta aca.
+  const [pagina, setPagina] = useState(0);
+  const POR_PAGINA = 24;
   const [scanOpen, setScanOpen] = useState(false);
 
   const kpis: StatItem[] = useMemo(() => {
@@ -135,6 +139,13 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
     });
     return [...list].sort((a, b) => (tiempo === 'pasadas' ? b.inicio.localeCompare(a.inicio) : a.inicio.localeCompare(b.inicio)));
   }, [tutorias, search, estadoFilter, tiempo]);
+
+  const totalPaginas = Math.max(1, Math.ceil(filtered.length / POR_PAGINA));
+  const paginaActual = Math.min(pagina, totalPaginas - 1);
+  const visibles = filtered.slice(paginaActual * POR_PAGINA, paginaActual * POR_PAGINA + POR_PAGINA);
+
+  // Al filtrar, la página en la que estabas puede dejar de existir.
+  useEffect(() => { setPagina(0); }, [search, estadoFilter, tiempo]);
 
   const handleEdit = (tutoria: Tutoria) => { setSelected(tutoria); setEditDialog(true); };
 
@@ -251,11 +262,31 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
           return <div className="text-center py-16"><Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" /><p className="text-muted-foreground">Ninguna tutoría coincide con los filtros.</p></div>;
         }
         return (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((tutoria) => (
-              <TutoriaCard key={tutoria.id} tutoria={tutoria} variant="docente" onEdit={handleEdit} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {visibles.map((tutoria) => (
+                <TutoriaCard key={tutoria.id} tutoria={tutoria} variant="docente" onEdit={handleEdit} />
+              ))}
+            </div>
+            {filtered.length > POR_PAGINA && (
+              <div className="mt-4 flex items-center justify-between gap-3 border-t pt-3">
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {paginaActual * POR_PAGINA + 1}–{paginaActual * POR_PAGINA + visibles.length} de {filtered.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setPagina(paginaActual - 1)} disabled={paginaActual === 0}>
+                    Anterior
+                  </Button>
+                  <span className="px-1 text-xs text-muted-foreground tabular-nums">
+                    {paginaActual + 1} / {totalPaginas}
+                  </span>
+                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setPagina(paginaActual + 1)} disabled={paginaActual >= totalPaginas - 1}>
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         );
       })()}
 
