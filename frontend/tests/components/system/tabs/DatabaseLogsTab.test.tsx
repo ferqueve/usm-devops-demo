@@ -28,6 +28,7 @@ describe('DatabaseLogsTab', () => {
         liquibase={null}
         loggers={null}
         logFile=""
+        pool={null}
         onLoggerUpdate={async () => {}}
       />
     );
@@ -47,6 +48,7 @@ describe('DatabaseLogsTab', () => {
         liquibase={liquibase}
         loggers={loggers}
         logFile="app.log"
+        pool={null}
         onLoggerUpdate={onLoggerUpdate}
       />
     );

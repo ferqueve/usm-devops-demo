@@ -74,6 +74,10 @@ export default function System() {
     logFile,
     activeUsers,
     metricsHistory,
+    poolMetrics,
+    trafficMetrics,
+    lastUpdated,
+    statusSince,
     handleRefresh,
     handleLoggerUpdate,
     fetchActivityData,
@@ -198,12 +202,17 @@ export default function System() {
   }
 
   const encabezado = ENCABEZADO[vista];
+  // Con auto-refresh de por medio, lo primero que uno quiere saber es si lo que
+  // ve es de ahora o de hace diez minutos.
+  const actualizado = lastUpdated
+    ? `Actualizado ${lastUpdated.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+    : 'Sin datos todavía';
 
   return (
     <div data-page="system" className="space-y-6 max-w-full overflow-x-hidden" style={{ boxSizing: 'border-box' }}>
       <SystemHeader
         title={encabezado.titulo}
-        description={encabezado.bajada}
+        description={`${encabezado.bajada} · ${actualizado}`}
         accentColor={encabezado.acento}
         extraActions={accionesDeVista}
         hasConnectionError={hasConnectionError}
@@ -223,6 +232,9 @@ export default function System() {
             uptimeMetrics={uptimeMetrics}
             info={info}
             activeUsers={activeUsers}
+            traffic={trafficMetrics}
+            metricsHistory={metricsHistory}
+            statusSince={statusSince}
           />
         </Suspense>
       )}
@@ -238,6 +250,7 @@ export default function System() {
             uptimeMetrics={uptimeMetrics}
             httpMetrics={httpMetrics}
             metricsHistory={metricsHistory}
+            pool={poolMetrics}
           />
         </Suspense>
       )}
@@ -256,6 +269,8 @@ export default function System() {
             loggers={loggers}
             logFile={logFile}
             onLoggerUpdate={handleLoggerUpdate}
+            onRefreshLog={fetchLogsData}
+            pool={poolMetrics}
           />
         </Suspense>
       )}

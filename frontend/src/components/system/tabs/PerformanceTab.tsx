@@ -2,9 +2,11 @@ import { memo } from 'react';
 import { JvmCharts } from '../sections/JvmCharts';
 import { JvmDetailsTable } from '../sections/JvmDetailsTable';
 import { SlowEndpointsCard } from '../sections/SlowEndpointsCard';
+import { RuntimeCards } from '../sections/RuntimeCards';
 import { useSidebarTransition } from '@/hooks/useSidebarTransition';
 import type { MetricInfo } from '@/lib/types/actuator';
 import type { MetricsChartDataPoint } from '@/components/ui/metrics-chart';
+import type { PoolMetrics } from '@/hooks/useSystemMetrics';
 
 interface PerformanceTabProps {
   memoryMetrics: MetricInfo | null | undefined;
@@ -15,6 +17,7 @@ interface PerformanceTabProps {
   uptimeMetrics: MetricInfo | null | undefined;
   httpMetrics: MetricInfo | null | undefined;
   metricsHistory: MetricsChartDataPoint[];
+  pool: PoolMetrics | null | undefined;
 }
 
 export const PerformanceTab = memo(function PerformanceTab({
@@ -26,6 +29,7 @@ export const PerformanceTab = memo(function PerformanceTab({
   uptimeMetrics,
   httpMetrics,
   metricsHistory,
+  pool,
 }: PerformanceTabProps) {
   const { isTransitioning } = useSidebarTransition();
 
@@ -33,6 +37,9 @@ export const PerformanceTab = memo(function PerformanceTab({
     <div className="space-y-6">
       <section>
         <JvmCharts metricsHistory={metricsHistory} isPaused={isTransitioning} />
+      </section>
+      <section>
+        <RuntimeCards pool={pool} gcMetrics={gcMetrics} uptimeMetrics={uptimeMetrics} />
       </section>
       <section>
         <SlowEndpointsCard />

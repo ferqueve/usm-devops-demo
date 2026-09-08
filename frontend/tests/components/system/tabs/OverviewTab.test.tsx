@@ -22,6 +22,9 @@ describe('OverviewTab', () => {
         uptimeMetrics={null}
         info={null}
         activeUsers={null}
+        traffic={null}
+        metricsHistory={[]}
+        statusSince={null}
       />
     );
     expect(screen.getByTestId('metrics-cards')).toBeInTheDocument();

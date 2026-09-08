@@ -2,7 +2,9 @@ import { memo, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { DatabaseSection } from '../sections/DatabaseSection';
 import { LogsSection } from '../sections/LogsSection';
+import { PoolCard } from '../sections/PoolCard';
 import type { HealthInfo, LiquibaseInfo, LoggersInfo } from '@/lib/types/actuator';
+import type { PoolMetrics } from '@/hooks/useSystemMetrics';
 
 interface DatabaseLogsTabProps {
   health: HealthInfo | null | undefined;
@@ -10,6 +12,8 @@ interface DatabaseLogsTabProps {
   loggers: LoggersInfo | null | undefined;
   logFile: string;
   onLoggerUpdate: (name: string, level: string) => Promise<void>;
+  onRefreshLog?: () => void | Promise<void>;
+  pool: PoolMetrics | null | undefined;
 }
 
 export const DatabaseLogsTab = memo(function DatabaseLogsTab({
@@ -17,10 +21,13 @@ export const DatabaseLogsTab = memo(function DatabaseLogsTab({
   liquibase,
   loggers,
   logFile,
-  onLoggerUpdate
+  onLoggerUpdate,
+  onRefreshLog,
+  pool,
 }: DatabaseLogsTabProps) {
   return (
     <div className="space-y-6">
+      <PoolCard pool={pool} />
       <DatabaseSection health={health} liquibase={liquibase} />
       <Suspense
         fallback={
@@ -36,6 +43,7 @@ export const DatabaseLogsTab = memo(function DatabaseLogsTab({
           loggers={loggers}
           logFile={logFile}
           onLoggerUpdate={onLoggerUpdate}
+          onRefreshLog={onRefreshLog}
         />
       </Suspense>
     </div>

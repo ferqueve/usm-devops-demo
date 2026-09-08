@@ -29,6 +29,7 @@ describe('PerformanceTab', () => {
         uptimeMetrics={null}
         httpMetrics={null}
         metricsHistory={[]}
+        pool={null}
       />
     );
     expect(screen.getByTestId('jvm-charts')).toBeInTheDocument();

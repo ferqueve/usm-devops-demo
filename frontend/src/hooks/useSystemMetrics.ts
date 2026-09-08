@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { actuatorApi } from '@/lib/api/system';
 import { statsApi } from '@/lib/api/stats';
 import { toast } from 'sonner';
@@ -17,6 +17,39 @@ type MetricsHistory = {
   cpu: number;
   threads: number;
 };
+
+/** El historial vive en la sesión: al volver a Sistema los gráficos ya tienen serie. */
+const HISTORY_KEY = 'usm:system:metrics-history';
+const HISTORY_MAX = 360;
+
+function leerHistorialGuardado(): MetricsHistory[] {
+  try {
+    const crudo = sessionStorage.getItem(HISTORY_KEY);
+    if (!crudo) return [];
+    const parsed: unknown = JSON.parse(crudo);
+    if (!Array.isArray(parsed)) return [];
+    // Una hora de historia como máximo: lo viejo no dice nada del estado actual.
+    const corte = Date.now() - 60 * 60 * 1000;
+    return (parsed as MetricsHistory[]).filter((p) => p?.timestamp > corte).slice(-HISTORY_MAX);
+  } catch {
+    return [];
+  }
+}
+
+export interface PoolMetrics {
+  activas: number;
+  libres: number;
+  maximo: number;
+  esperando: number;
+}
+
+export interface TrafficMetrics {
+  peticiones: number;
+  demoraMediaMs: number;
+  demoraMaximaMs: number;
+  errores: number;
+  porcentajeError: number;
+}
 
 export const useSystemMetrics = () => {
   const [loading, setLoading] = useState(true);
@@ -44,7 +77,16 @@ export const useSystemMetrics = () => {
   const [activeUsers, setActiveUsers] = useState<ActiveUsersStats | null>(null);
   
   // Historial de métricas para gráficos en tiempo real
-  const [metricsHistory, setMetricsHistory] = useState<MetricsHistory[]>([]);
+  const [metricsHistory, setMetricsHistory] = useState<MetricsHistory[]>(leerHistorialGuardado);
+
+  // Pool de conexiones (HikariCP): lo primero que se mira cuando la base va lenta.
+  const [poolMetrics, setPoolMetrics] = useState<PoolMetrics | null>(null);
+  // Peticiones atendidas, demora media y errores: el pulso del servidor.
+  const [trafficMetrics, setTrafficMetrics] = useState<TrafficMetrics | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  // Desde cuándo el estado de salud es el que es (dentro de esta sesión).
+  const [statusSince, setStatusSince] = useState<Date | null>(null);
+  const statusPrevio = useRef<string | null>(null);
 
   // Actualizar historial de métricas - optimizado para reducir frecuencia
   const updateMetricsHistory = useCallback((memory: number, cpu: number, threads: number) => {
@@ -69,9 +111,11 @@ export const useSystemMetrics = () => {
         return prev; // No actualizar si es muy frecuente
       }
       
-      const updated = [...prev, newDataPoint];
-      // Mantener hasta 1 hora de historia (poll cada 10s → 360 puntos)
-      return updated.slice(-360);
+      const updated = [...prev, newDataPoint].slice(-HISTORY_MAX);
+      try {
+        sessionStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+      } catch { /* sessionStorage lleno o bloqueado: el gráfico sigue andando */ }
+      return updated;
     });
   }, []);
 
@@ -166,6 +210,48 @@ export const useSystemMetrics = () => {
     }
   }, [updateMetricsHistory]);
 
+  const valorDe = useCallback((m: MetricInfo | null | undefined, stat = 'VALUE'): number =>
+    m?.measurements?.find((x) => x.statistic === stat)?.value ?? 0, []);
+
+  const updatePoolMetrics = useCallback((
+    activas: PromiseSettledResult<MetricInfo>,
+    libres: PromiseSettledResult<MetricInfo>,
+    maximo: PromiseSettledResult<MetricInfo>,
+    esperando: PromiseSettledResult<MetricInfo>,
+  ) => {
+    if (activas.status !== 'fulfilled') {
+      setPoolMetrics(null);
+      return;
+    }
+    setPoolMetrics({
+      activas: valorDe(activas.value),
+      libres: libres.status === 'fulfilled' ? valorDe(libres.value) : 0,
+      maximo: maximo.status === 'fulfilled' ? valorDe(maximo.value) : 0,
+      esperando: esperando.status === 'fulfilled' ? valorDe(esperando.value) : 0,
+    });
+  }, [valorDe]);
+
+  const updateTrafficMetrics = useCallback((
+    httpData: PromiseSettledResult<MetricInfo>,
+    erroresData: PromiseSettledResult<MetricInfo>,
+  ) => {
+    if (httpData.status !== 'fulfilled') {
+      setTrafficMetrics(null);
+      return;
+    }
+    const peticiones = valorDe(httpData.value, 'COUNT');
+    const tiempoTotal = valorDe(httpData.value, 'TOTAL_TIME');
+    const errores = erroresData.status === 'fulfilled' ? valorDe(erroresData.value, 'COUNT') : 0;
+    setTrafficMetrics({
+      peticiones,
+      // El actuator devuelve segundos; en pantalla se lee en milisegundos.
+      demoraMediaMs: peticiones > 0 ? (tiempoTotal / peticiones) * 1000 : 0,
+      demoraMaximaMs: valorDe(httpData.value, 'MAX') * 1000,
+      errores,
+      porcentajeError: peticiones > 0 ? (errores / peticiones) * 100 : 0,
+    });
+  }, [valorDe]);
+
   const fetchAllMetrics = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
@@ -193,6 +279,15 @@ export const useSystemMetrics = () => {
         actuatorApi.getMetric('jvm.memory.max'),
       ]);
 
+      // Pool y errores van aparte: si el backend no los expone, el resto sigue.
+      const [poolActivas, poolLibres, poolMaximo, poolEspera, httpErrores] = await Promise.allSettled([
+        actuatorApi.getMetric('hikaricp.connections.active'),
+        actuatorApi.getMetric('hikaricp.connections.idle'),
+        actuatorApi.getMetric('hikaricp.connections.max'),
+        actuatorApi.getMetric('hikaricp.connections.pending'),
+        actuatorApi.getMetric('http.server.requests?tag=outcome:SERVER_ERROR'),
+      ]);
+
       const essentialResults = [healthData, memoryData, cpuData];
       const allFailed = essentialResults.every(result => result.status === 'rejected');
 
@@ -213,6 +308,9 @@ export const useSystemMetrics = () => {
         memoryMaxData
       });
       updateMetricsChart(memoryData, cpuData, threadsData);
+      updatePoolMetrics(poolActivas, poolLibres, poolMaximo, poolEspera);
+      updateTrafficMetrics(httpData, httpErrores);
+      setLastUpdated(new Date());
       
     } catch (error) {
       console.error('Error al cargar métricas:', error);
@@ -226,7 +324,17 @@ export const useSystemMetrics = () => {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [handleConnectionError, updateBasicMetrics, updateMetricsChart]);
+  }, [handleConnectionError, updateBasicMetrics, updateMetricsChart, updatePoolMetrics, updateTrafficMetrics]);
+
+  // El estado de salud rara vez cambia; cuando cambia, importa desde cuándo.
+  useEffect(() => {
+    const actual = health?.status;
+    if (!actual) return;
+    if (statusPrevio.current !== actual) {
+      statusPrevio.current = actual;
+      setStatusSince(new Date());
+    }
+  }, [health?.status]);
 
   // Lazy loaders por tab: cargan los endpoints pesados solo cuando se abre
   // el tab correspondiente. Idempotentes vía dedupe del API client.
@@ -333,6 +441,10 @@ export const useSystemMetrics = () => {
     logFile,
     activeUsers,
     metricsHistory,
+    poolMetrics,
+    trafficMetrics,
+    lastUpdated,
+    statusSince,
     handleRefresh,
     handleLoggerUpdate,
     fetchActivityData,
