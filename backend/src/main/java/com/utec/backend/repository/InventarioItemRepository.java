@@ -13,6 +13,27 @@ public interface InventarioItemRepository extends JpaRepository<InventarioItem, 
     
     // Buscar inventario por espacio
     List<InventarioItem> findByEspacioIdAndActivoTrue(Long espacioId);
+
+    /**
+     * Resumen del inventario activo en una sola pasada: total, disponibles, en
+     * mantenimiento, danados y sin espacio asignado.
+     *
+     * Antes se traia la tabla entera y se contaba en memoria, una pasada por
+     * metrica. Devuelve una sola fila; se declara como lista porque una
+     * proyeccion de varias columnas vuelve envuelta.
+     *
+     * @return [total, disponibles, mantenimiento, danados, sinAsignar]
+     */
+    @Query("""
+            SELECT COUNT(i),
+                   SUM(CASE WHEN i.estado = 'DISPONIBLE' THEN 1 ELSE 0 END),
+                   SUM(CASE WHEN i.estado = 'MANTENIMIENTO' THEN 1 ELSE 0 END),
+                   SUM(CASE WHEN i.estado = 'DANADO' THEN 1 ELSE 0 END),
+                   SUM(CASE WHEN i.espacio IS NULL THEN 1 ELSE 0 END)
+            FROM InventarioItem i
+            WHERE i.activo = true
+            """)
+    List<Object[]> resumenInventario();
     
     // Buscar inventario por tipo de elemento
     List<InventarioItem> findByTipoElementoIdAndActivoTrue(Long tipoElementoId);

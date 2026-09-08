@@ -340,12 +340,9 @@ class InventarioItemServiceTest {
     @DisplayName("Debe obtener estadísticas de inventario")
     void debeObtenerEstadisticasInventario() {
         // Given
-        InventarioItem item2 = new InventarioItem();
-        item2.setEstado("MANTENIMIENTO");
-        item2.setActivo(true);
-
-        when(inventarioItemRepository.countTotalItems()).thenReturn(2L);
-        when(inventarioItemRepository.findAll()).thenReturn(Arrays.asList(itemTest, item2));
+        // La base devuelve una fila con los cinco agregados.
+        when(inventarioItemRepository.resumenInventario())
+                .thenReturn(java.util.List.<Object[]>of(new Object[]{2L, 1L, 1L, 0L, 0L}));
 
         // When
         Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
@@ -353,7 +350,8 @@ class InventarioItemServiceTest {
         // Then
         assertNotNull(stats);
         assertEquals(2L, stats.get("totalItems"));
-        verify(inventarioItemRepository).countTotalItems();
+        assertEquals(1L, stats.get("mantenimiento"));
+        verify(inventarioItemRepository).resumenInventario();
     }
 
     @Test

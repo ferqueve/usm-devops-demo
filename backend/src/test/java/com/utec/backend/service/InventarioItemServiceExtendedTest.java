@@ -383,78 +383,38 @@ class InventarioItemServiceExtendedTest {
     // TESTS DE ESTADÍSTICAS
     // ============================================
 
+    /**
+     * Las estadisticas ya no se calculan recorriendo la tabla: las cuenta la
+     * base en una sola consulta. Lo que queda por probar es el mapeo de esa
+     * fila a la respuesta.
+     */
     @Test
-    @DisplayName("getInventarioStatistics debe contar correctamente items por estado")
-    void estadisticasDebenContarCorrectamentePorEstado() {
-        InventarioItem item1 = crearItem(1L, espacioAula101, tipoProyector, 2, "DISPONIBLE");
-        InventarioItem item2 = crearItem(2L, espacioAula102, tipoProyector, 1, "DISPONIBLE");
-        InventarioItem item3 = crearItem(3L, espacioAula101, tipoPizarra, 1, "MANTENIMIENTO");
-        InventarioItem item4 = crearItem(4L, espacioLaboratorio, tipoComputadora, 3, "MANTENIMIENTO");
-        InventarioItem item5 = crearItem(5L, espacioAula102, tipoProyector, 1, "DANADO");
-
-        when(inventarioItemRepository.countTotalItems()).thenReturn(5L);
-        when(inventarioItemRepository.findAll()).thenReturn(Arrays.asList(item1, item2, item3, item4, item5));
-
-        Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
-
-        assertEquals(5L, stats.get("totalItems"));
-        assertEquals(2L, stats.get("disponibles"), "Debe haber 2 items disponibles");
-        assertEquals(2L, stats.get("mantenimiento"), "Debe haber 2 items en mantenimiento");
-        assertEquals(1L, stats.get("danados"), "Debe haber 1 item dañado");
-    }
-
-    @Test
-    @DisplayName("getInventarioStatistics debe contar items sin asignar correctamente")
-    void estadisticasDebenContarItemsSinAsignar() {
-        InventarioItem item1 = crearItem(1L, espacioAula101, tipoProyector, 1, "DISPONIBLE");
-        InventarioItem item2 = crearItem(2L, null, tipoProyector, 2, "DISPONIBLE"); // Sin asignar
-        InventarioItem item3 = crearItem(3L, null, tipoPizarra, 1, "DISPONIBLE"); // Sin asignar
-        InventarioItem item4 = crearItem(4L, espacioAula102, tipoComputadora, 3, "DISPONIBLE");
-
-        when(inventarioItemRepository.countTotalItems()).thenReturn(4L);
-        when(inventarioItemRepository.findAll()).thenReturn(Arrays.asList(item1, item2, item3, item4));
-
-        Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
-
-        assertEquals(4L, stats.get("totalItems"));
-        assertEquals(2L, stats.get("sinAsignar"), "Debe haber 2 items sin asignar");
-    }
-
-    @Test
-    @DisplayName("getInventarioStatistics con items en todos los estados debe tener estadísticas completas")
-    void estadisticasConTodosLosEstados() {
-        List<InventarioItem> items = new ArrayList<>();
-
-        // 5 disponibles
-        for (int i = 0; i < 5; i++) {
-            items.add(crearItem((long) i, espacioAula101, tipoProyector, 1, "DISPONIBLE"));
-        }
-
-        // 3 en mantenimiento
-        for (int i = 5; i < 8; i++) {
-            items.add(crearItem((long) i, espacioAula102, tipoProyector, 1, "MANTENIMIENTO"));
-        }
-
-        // 2 dañados
-        for (int i = 8; i < 10; i++) {
-            items.add(crearItem((long) i, espacioLaboratorio, tipoComputadora, 1, "DANADO"));
-        }
-
-        // 3 sin asignar
-        for (int i = 10; i < 13; i++) {
-            items.add(crearItem((long) i, null, tipoPizarra, 1, "DISPONIBLE"));
-        }
-
-        when(inventarioItemRepository.countTotalItems()).thenReturn(13L);
-        when(inventarioItemRepository.findAll()).thenReturn(items);
+    @DisplayName("getInventarioStatistics mapea la fila agregada de la base")
+    void estadisticasMapeanLaFilaAgregada() {
+        when(inventarioItemRepository.resumenInventario())
+                .thenReturn(List.<Object[]>of(new Object[]{13L, 8L, 3L, 2L, 3L}));
 
         Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
 
         assertEquals(13L, stats.get("totalItems"));
-        assertEquals(8L, stats.get("disponibles"), "5 disponibles asignados + 3 sin asignar = 8 total");
+        assertEquals(8L, stats.get("disponibles"));
         assertEquals(3L, stats.get("mantenimiento"));
         assertEquals(2L, stats.get("danados"));
         assertEquals(3L, stats.get("sinAsignar"));
+    }
+
+    @Test
+    @DisplayName("getInventarioStatistics devuelve ceros con el inventario vacio")
+    void estadisticasConInventarioVacio() {
+        // SUM sobre cero filas devuelve null, no cero.
+        when(inventarioItemRepository.resumenInventario())
+                .thenReturn(List.<Object[]>of(new Object[]{0L, null, null, null, null}));
+
+        Map<String, Object> stats = inventarioItemService.getInventarioStatistics();
+
+        assertEquals(0L, stats.get("totalItems"));
+        assertEquals(0L, stats.get("disponibles"));
+        assertEquals(0L, stats.get("sinAsignar"));
     }
 
     // ============================================

@@ -230,35 +230,23 @@ public class InventarioItemService {
     
     @Transactional(readOnly = true)
     public Map<String, Object> getInventarioStatistics() {
+        // Una sola consulta agregada. Antes se traia todo el inventario y se
+        // recorria la lista cinco veces para devolver cinco numeros.
+        List<Object[]> filas = inventarioItemRepository.resumenInventario();
+        Object[] fila = filas.isEmpty() ? new Object[5] : filas.get(0);
+
         Map<String, Object> stats = new HashMap<>();
-        
-        // Total de items
-        Long totalItems = self.getTotalInventarioItems();
-        stats.put("totalItems", totalItems);
-        
-        // Items por estado
-        List<InventarioItem> allItems = inventarioItemRepository.findAll();
-        long disponibles = allItems.stream()
-                .filter(item -> item.getActivo() && item.getEstado().equals("DISPONIBLE"))
-                .count();
-        long mantenimiento = allItems.stream()
-                .filter(item -> item.getActivo() && item.getEstado().equals("MANTENIMIENTO"))
-                .count();
-        long danados = allItems.stream()
-                .filter(item -> item.getActivo() && item.getEstado().equals("DANADO"))
-                .count();
-        
-        stats.put("disponibles", disponibles);
-        stats.put("mantenimiento", mantenimiento);
-        stats.put("danados", danados);
-        
-        // Items sin asignar - contar items con espacio_id = null
-        long sinAsignar = allItems.stream()
-                .filter(item -> item.getActivo() && item.getEspacio() == null)
-                .count();
-        stats.put("sinAsignar", sinAsignar);
-        
+        stats.put("totalItems", conteo(fila[0]));
+        stats.put("disponibles", conteo(fila[1]));
+        stats.put("mantenimiento", conteo(fila[2]));
+        stats.put("danados", conteo(fila[3]));
+        stats.put("sinAsignar", conteo(fila[4]));
         return stats;
+    }
+
+    /** SUM sobre cero filas devuelve null; COUNT devuelve Long. */
+    private long conteo(Object valor) {
+        return valor instanceof Number n ? n.longValue() : 0L;
     }
     
     @Transactional(readOnly = true)
