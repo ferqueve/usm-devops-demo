@@ -261,8 +261,13 @@ public class ReservaController {
      * Sin filtrar por usuario, con paginación y filtros
      * Si el usuario es ANALISTA, solo muestra las reservas asignadas a él
      */
+    // 'reserva:ver_gestion' y no 'reserva:ver_todas': esta consulta no aplica el
+    // filtro de reservas publicas, asi que devuelve la tabla entera -- con el
+    // nombre, el mail y el motivo de cada solicitante. Un ESTUDIANTE y un
+    // EXTERNO tienen 'ver_todas' para el calendario y con eso podian paginar
+    // las 9.000 reservas del sistema.
     @GetMapping("/paged")
-    @PreAuthorize("hasPermission(null, 'reserva:ver_todas')")
+    @PreAuthorize("hasPermission(null, 'reserva:ver_gestion')")
     public ResponseEntity<ApiResponse<PagedResponseDto<ReservaResponseDto>>> getAllReservasPaged(
             Authentication authentication,
             @PageableDefault(size = 10, sort = "inicio", direction = Sort.Direction.DESC) Pageable pageable,

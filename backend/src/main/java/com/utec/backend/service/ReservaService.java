@@ -979,10 +979,26 @@ public class ReservaService {
         Specification<Reserva> spec = buildSpecificationPublico(filters, userEmail, userRole);
 
         List<Reserva> reservas = reservaRepository.findAll(spec);
+        boolean gestiona = ROLE_ADMIN.equals(userRole) || ROLE_ANALISTA.equals(userRole);
         return reservas.stream()
                 .map(this::mapToResponseDto)
+                .map(dto -> gestiona ? dto : sinMailAjeno(dto, userEmail))
                 .sorted((a, b) -> b.getInicio().compareTo(a.getInicio()))
                 .toList();
+    }
+
+    /**
+     * Borra el mail del solicitante cuando no es el del que pregunta.
+     *
+     * Esta consulta alimenta el calendario del campus, que solo muestra el
+     * nombre. Iba con el mail de cada uno: un EXTERNO leia treinta direcciones
+     * -- alguna personal -- sin mas que abrir el calendario.
+     */
+    private ReservaResponseDto sinMailAjeno(ReservaResponseDto dto, String userEmail) {
+        if (dto.getUsuarioEmail() != null && !dto.getUsuarioEmail().equals(userEmail)) {
+            dto.setUsuarioEmail(null);
+        }
+        return dto;
     }
 
     /**

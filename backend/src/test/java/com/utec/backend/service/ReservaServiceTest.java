@@ -436,5 +436,52 @@ class ReservaServiceTest {
         verify(reservaEstadisticasService).calcular(null);
     }
 
+
+    @Test
+    @DisplayName("el calendario no expone el mail de los demas solicitantes")
+    void calendarioSinMailAjeno() {
+        Usuario otro = new Usuario();
+        otro.setId(99L);
+        otro.setEmail("otro@utec.edu.uy");
+        otro.setNombre("Otro Usuario");
+
+        Reserva ajena = new Reserva();
+        ajena.setId(1L);
+        ajena.setUsuario(otro);
+        ajena.setEspacio(espacioTest);
+        ajena.setTitulo("Charla");
+        ajena.setInicio(Instant.now().plus(1, ChronoUnit.DAYS));
+        ajena.setFin(Instant.now().plus(2, ChronoUnit.DAYS));
+        ajena.setEstado(Reserva.EstadoReserva.APROBADO);
+
+        Reserva propia = new Reserva();
+        propia.setId(2L);
+        propia.setUsuario(usuarioTest);
+        propia.setEspacio(espacioTest);
+        propia.setTitulo("Mia");
+        propia.setInicio(Instant.now().plus(3, ChronoUnit.DAYS));
+        propia.setFin(Instant.now().plus(4, ChronoUnit.DAYS));
+        propia.setEstado(Reserva.EstadoReserva.APROBADO);
+
+        when(reservaRepository.findAll(ArgumentMatchers.<Specification<Reserva>>any()))
+                .thenReturn(Arrays.asList(ajena, propia));
+
+        List<ReservaResponseDto> comoEstudiante = reservaService.getTodasLasReservas(
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                usuarioTest.getEmail(), ROLE_ESTUDIANTE);
+
+        ReservaResponseDto deOtro = comoEstudiante.stream().filter(r -> r.getId().equals(1L)).findFirst().orElseThrow();
+        ReservaResponseDto mia = comoEstudiante.stream().filter(r -> r.getId().equals(2L)).findFirst().orElseThrow();
+        assertNull(deOtro.getUsuarioEmail(), "no tiene que ver el mail de otro");
+        assertEquals("Otro Usuario", deOtro.getUsuarioNombre(), "el nombre si, que es lo que muestra el calendario");
+        assertEquals(usuarioTest.getEmail(), mia.getUsuarioEmail(), "el propio se mantiene");
+
+        List<ReservaResponseDto> comoAnalista = reservaService.getTodasLasReservas(
+                com.utec.backend.dto.reserva.ReservaFilters.of(null, null, null, null, null, null, null),
+                usuarioTest.getEmail(), ROLE_ANALISTA);
+        assertEquals("otro@utec.edu.uy",
+                comoAnalista.stream().filter(r -> r.getId().equals(1L)).findFirst().orElseThrow().getUsuarioEmail(),
+                "quien gestiona si lo ve");
+    }
 }
 
