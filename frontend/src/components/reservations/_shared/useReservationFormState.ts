@@ -29,6 +29,12 @@ interface SubmitOptions {
 
 export interface UseReservationFormStateOptions {
   needsAnalystAssignment: boolean;
+  /**
+   * Si el usuario elige a que analista le manda la solicitud. Un EXTERNO no
+   * puede: no tiene permiso para listar analistas, asi que su reserva va sin
+   * asignar y la ve cualquiera de ellos.
+   */
+  puedeElegirAnalista: boolean;
   canApprove: boolean;
   canViewRecommendations: boolean;
   userId?: number;
@@ -77,6 +83,7 @@ export interface UseReservationFormStateResult {
 
 interface SubmitDeps {
   needsAnalystAssignment: boolean;
+  puedeElegirAnalista: boolean;
   canApprove: boolean;
   canViewRecommendations: boolean;
   userId?: number;
@@ -112,7 +119,7 @@ async function performSubmit(
     horaFinHora: formData.horaFinHora,
     inicio,
     fin,
-    needsAnalystAssignment: deps.needsAnalystAssignment,
+    puedeElegirAnalista: deps.puedeElegirAnalista,
     analistaId: formData.analistaId,
     tipoRecurrencia: formData.tipoRecurrencia,
     fechaFinRecurrencia: formData.fechaFinRecurrencia,
@@ -141,7 +148,7 @@ async function performSubmit(
       fechaFinRecurrencia: fechaFinRecurrenciaISO,
       analistaId: resolverAnalistaId({
         canApprove: deps.canApprove,
-        needsAnalystAssignment: deps.needsAnalystAssignment,
+        puedeElegirAnalista: deps.puedeElegirAnalista,
         analistaId: formData.analistaId,
         userId: deps.userId,
       }),
@@ -292,7 +299,7 @@ export function useReservationFormState(
   options: UseReservationFormStateOptions,
   onSuccess: () => void
 ): UseReservationFormStateResult {
-  const { needsAnalystAssignment, canApprove, canViewRecommendations, userId, open, mensajeExitoVariantDocente, onReset } = options;
+  const { needsAnalystAssignment, puedeElegirAnalista, canApprove, canViewRecommendations, userId, open, mensajeExitoVariantDocente, onReset } = options;
 
   const [loading, setLoading] = useState(false);
   const [analistas, setAnalistas] = useState<User[]>([]);
@@ -331,7 +338,7 @@ export function useReservationFormState(
 
   // Reset del formulario cuando cambia el contenedor (open) o el flag de necesidad de analista.
   useEffect(() => {
-    if (needsAnalystAssignment) {
+    if (puedeElegirAnalista) {
       fetchAnalistasRef.current();
     }
     setFecha(new Date());
@@ -339,7 +346,7 @@ export function useReservationFormState(
     setItemsSolicitados([]);
     setFormData(INITIAL_FORM_DATA);
     if (onResetRef.current) onResetRef.current();
-  }, [needsAnalystAssignment, open]);
+  }, [puedeElegirAnalista, open]);
 
   // Calcular días completamente ocupados (24h) deshabilitados en el date picker
   const calcularDiasOcupados = useCallback((reservas: Reserva[]) => {
@@ -471,7 +478,7 @@ export function useReservationFormState(
     formData.horaInicioHora &&
     formData.horaFinHora &&
     !horaError &&
-    (!needsAnalystAssignment || formData.analistaId)
+    (!puedeElegirAnalista || formData.analistaId)
   );
 
   const handleSubmit = useCallback(
@@ -481,6 +488,7 @@ export function useReservationFormState(
         { formData, fecha, itemsSolicitados, setLoading },
         {
           needsAnalystAssignment,
+          puedeElegirAnalista,
           canApprove,
           canViewRecommendations,
           userId,
@@ -490,7 +498,7 @@ export function useReservationFormState(
         opts
       );
     },
-    [formData, fecha, itemsSolicitados, needsAnalystAssignment, canApprove, canViewRecommendations, userId, mensajeExitoVariantDocente, onSuccess]
+    [formData, fecha, itemsSolicitados, needsAnalystAssignment, puedeElegirAnalista, canApprove, canViewRecommendations, userId, mensajeExitoVariantDocente, onSuccess]
   );
 
   return {

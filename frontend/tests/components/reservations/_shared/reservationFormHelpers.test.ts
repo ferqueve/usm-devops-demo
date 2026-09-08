@@ -24,7 +24,7 @@ const baseValid: ReservaFormValidation = {
   horaFinHora: '11',
   inicio: futureStart,
   fin: futureEnd,
-  needsAnalystAssignment: false,
+  puedeElegirAnalista: false,
 };
 
 describe('validateReservationFormData', () => {
@@ -63,7 +63,7 @@ describe('validateReservationFormData', () => {
 
   it('analista requerido', () => {
     expect(
-      validateReservationFormData({ ...baseValid, needsAnalystAssignment: true })
+      validateReservationFormData({ ...baseValid, puedeElegirAnalista: true })
     ).toContain('analista');
   });
 
@@ -130,17 +130,17 @@ describe('buildMensajeExitoReserva', () => {
 
 describe('resolverAnalistaId', () => {
   it('canApprove -> userId', () => {
-    expect(resolverAnalistaId({ canApprove: true, needsAnalystAssignment: false, userId: 7 })).toBe(7);
+    expect(resolverAnalistaId({ canApprove: true, puedeElegirAnalista: false, userId: 7 })).toBe(7);
   });
 
   it('needsAnalystAssignment con id -> parsea', () => {
     expect(
-      resolverAnalistaId({ canApprove: false, needsAnalystAssignment: true, analistaId: '5' })
+      resolverAnalistaId({ canApprove: false, puedeElegirAnalista: true, analistaId: '5' })
     ).toBe(5);
   });
 
   it('default undefined', () => {
-    expect(resolverAnalistaId({ canApprove: false, needsAnalystAssignment: false })).toBeUndefined();
+    expect(resolverAnalistaId({ canApprove: false, puedeElegirAnalista: false })).toBeUndefined();
   });
 });
 

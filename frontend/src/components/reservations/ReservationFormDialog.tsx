@@ -300,6 +300,11 @@ export default function ReservationFormDialog({
   const canApprove = hasPermission('reserva:aprobar');
   const canViewRecommendations = hasPermission('recomendacion:ver');
   const needsAnalystAssignment = !canApprove;
+  // Un EXTERNO tampoco aprueba, pero no puede listar analistas: su solicitud va
+  // sin asignar y la ve cualquiera de ellos. Antes el formulario se los pedia
+  // igual, se comia un 403 y el boton de enviar quedaba deshabilitado para
+  // siempre, asi que un externo no podia pedir una reserva.
+  const puedeElegirAnalista = needsAnalystAssignment && hasPermission('usuario:ver_analistas');
 
   // Ref para medir la altura del formulario y aplicarla al panel de recomendaciones
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -337,6 +342,7 @@ export default function ReservationFormDialog({
   const formState = useReservationFormState(
     {
       needsAnalystAssignment,
+      puedeElegirAnalista,
       canApprove,
       canViewRecommendations,
       userId: user?.id,
@@ -523,7 +529,7 @@ export default function ReservationFormDialog({
               )}
 
               {/* Analista asignado */}
-              {needsAnalystAssignment && (
+              {puedeElegirAnalista && (
                 <>
                   <AnalistaSelect
                     value={formData.analistaId}

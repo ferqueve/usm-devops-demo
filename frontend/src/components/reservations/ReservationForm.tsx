@@ -41,6 +41,11 @@ export default function ReservationForm({
   const canApprove = hasPermission('reserva:aprobar');
   const canViewRecommendations = hasPermission('recomendacion:ver');
   const needsAnalystAssignment = !canApprove;
+  // Un EXTERNO tampoco aprueba, pero no puede listar analistas: su solicitud va
+  // sin asignar y la ve cualquiera de ellos. Antes el formulario se los pedia
+  // igual, se comia un 403 y el boton de enviar quedaba deshabilitado para
+  // siempre, asi que un externo no podia pedir una reserva.
+  const puedeElegirAnalista = needsAnalystAssignment && hasPermission('usuario:ver_analistas');
 
   // Hooks compartidos con caché
   const { espacios } = useEspacios();
@@ -50,6 +55,7 @@ export default function ReservationForm({
   const formState = useReservationFormState(
     {
       needsAnalystAssignment,
+      puedeElegirAnalista,
       canApprove,
       canViewRecommendations,
       userId: user?.id,
@@ -196,7 +202,7 @@ export default function ReservationForm({
           <div className="border-t border-dashed border-gray-300 my-4"></div>
 
           {/* Analista asignado */}
-          {needsAnalystAssignment && (
+          {puedeElegirAnalista && (
             <>
               <AnalistaSelect
                 value={formData.analistaId}

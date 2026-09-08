@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 
 const baseOptions = {
   needsAnalystAssignment: false,
+  puedeElegirAnalista: false,
   canApprove: true,
   canViewRecommendations: true,
   userId: 1,
@@ -49,20 +50,47 @@ describe('useReservationFormState', () => {
     expect(result.current.itemsSolicitados).toEqual([]);
   });
 
-  it('no carga analistas si needsAnalystAssignment=false', async () => {
+  it('no carga analistas si el usuario no elige analista', async () => {
     renderHook(() => useReservationFormState(baseOptions, vi.fn()));
     await waitFor(() => {
       expect(usuariosApi.listarAnalistas).not.toHaveBeenCalled();
     });
   });
 
-  it('carga analistas si needsAnalystAssignment=true', async () => {
+  it('carga analistas solo si el usuario elige analista', async () => {
     renderHook(() =>
-      useReservationFormState({ ...baseOptions, needsAnalystAssignment: true }, vi.fn())
+      useReservationFormState({ ...baseOptions, needsAnalystAssignment: true, puedeElegirAnalista: true }, vi.fn())
     );
     await waitFor(() => {
       expect(usuariosApi.listarAnalistas).toHaveBeenCalled();
     });
+  });
+
+  // Un EXTERNO no puede listar analistas: si el formulario se los pidiera, se
+  // comeria un 403 y el envio quedaria bloqueado para siempre.
+  it('un usuario que no elige analista puede enviar sin elegirlo', async () => {
+    const { result } = renderHook(() =>
+      useReservationFormState(
+        { ...baseOptions, canApprove: false, needsAnalystAssignment: true, puedeElegirAnalista: false },
+        vi.fn(),
+      )
+    );
+
+    await waitFor(() => {
+      expect(usuariosApi.listarAnalistas).not.toHaveBeenCalled();
+    });
+
+    act(() => {
+      result.current.setFormData((prev) => ({
+        ...prev,
+        titulo: 'Charla abierta',
+        espacioId: '1',
+        horaInicioHora: '10',
+        horaFinHora: '11',
+      }));
+    });
+
+    expect(result.current.isFormValid).toBe(true);
   });
 
   it('agregar/eliminar/actualizar item solicitado', () => {

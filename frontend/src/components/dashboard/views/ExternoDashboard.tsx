@@ -22,6 +22,8 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
   const aprobadas = stats?.reservasAprobadas ?? 0;
   const canceladas = stats?.reservasCanceladas ?? 0;
   const eventosPublicosHoy = stats?.reservasHoy ?? 0;
+  // El total tambien del agregado: la lista se corta en cincuenta.
+  const totalSolicitudes = stats?.totalReservas ?? misReservas.length;
 
   return (
     <div className="space-y-5">
@@ -48,7 +50,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
       <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
         <Section
           title="Mis solicitudes"
-          count={misReservas.length > 0 ? `${misReservas.length}` : undefined}
+          count={totalSolicitudes > 0 ? `${totalSolicitudes}` : undefined}
           action={{ label: 'ver todas', to: '/reservations' }}
         >
           {misReservas.length > 0 ? (

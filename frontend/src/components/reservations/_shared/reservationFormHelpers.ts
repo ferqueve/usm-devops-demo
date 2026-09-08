@@ -8,7 +8,8 @@ export interface ReservaFormValidation {
   horaFinHora?: string;
   inicio: Date;
   fin: Date;
-  needsAnalystAssignment: boolean;
+  /** Solo quien puede elegir analista esta obligado a elegir uno. */
+  puedeElegirAnalista: boolean;
   analistaId?: string;
   tipoRecurrencia?: string;
   fechaFinRecurrencia?: Date;
@@ -53,7 +54,7 @@ export function validateReservationFormData(input: ReservaFormValidation): strin
   if (requiredError) return requiredError;
   const dateError = validateReservationDates(input);
   if (dateError) return dateError;
-  if (input.needsAnalystAssignment && !input.analistaId) {
+  if (input.puedeElegirAnalista && !input.analistaId) {
     return 'Por favor selecciona un analista para gestionar tu solicitud';
   }
   return validateRecurrencia(input);
@@ -91,12 +92,13 @@ export function buildMensajeExitoReserva(args: MensajeExitoArgs): string {
 // Resuelve el id del analista a asignar según el rol del usuario actual
 export function resolverAnalistaId(args: {
   canApprove: boolean;
-  needsAnalystAssignment: boolean;
+  /** Sin esto la reserva va sin analista y la ve cualquiera de ellos. */
+  puedeElegirAnalista: boolean;
   analistaId?: string;
   userId?: number;
 }): number | undefined {
   if (args.canApprove) return args.userId;
-  if (args.needsAnalystAssignment && args.analistaId) {
+  if (args.puedeElegirAnalista && args.analistaId) {
     return Number.parseInt(args.analistaId);
   }
   return undefined;
