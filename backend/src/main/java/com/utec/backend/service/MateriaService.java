@@ -78,11 +78,29 @@ public class MateriaService {
         return dto;
     }
 
+    /**
+     * Mapea una lista de materias con los inscriptos contados de una sola vez.
+     *
+     * Mapeadas de a una, cada materia disparaba su propio COUNT: listar el
+     * catalogo entero eran 252 consultas de mas.
+     */
+    private List<MateriaResponseDto> mapearLista(List<Materia> materias) {
+        Map<Long, Long> conteos = conteoDeInscriptos();
+        return materias.stream()
+                .map(materia -> mapToResponseDto(materia, conteos.getOrDefault(materia.getId(), 0L)))
+                .toList();
+    }
+
+    private Map<Long, Long> conteoDeInscriptos() {
+        return inscripcionMateriaRepository.contarInscriptosPorMateria().stream()
+                .collect(Collectors.toMap(
+                        InscripcionMateriaRepository.MateriaConteo::getMateriaId,
+                        InscripcionMateriaRepository.MateriaConteo::getTotal));
+    }
+
     @Transactional(readOnly = true)
     public List<MateriaResponseDto> getAllMaterias() {
-        return materiaRepository.findByActivoTrue().stream()
-                .map(this::mapToResponseDto)
-                .toList();
+        return mapearLista(materiaRepository.findActivasConCarreraYDocente());
     }
 
     @Transactional(readOnly = true)
@@ -96,9 +114,7 @@ public class MateriaService {
 
     @Transactional(readOnly = true)
     public List<MateriaResponseDto> getMateriasByCarrera(Long carreraId) {
-        return materiaRepository.findByCarreraId(carreraId).stream()
-                .map(this::mapToResponseDto)
-                .toList();
+        return mapearLista(materiaRepository.findByCarreraId(carreraId));
     }
 
     /**
@@ -107,9 +123,7 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public List<MateriaResponseDto> getMateriasQueDicta(String email) {
         Usuario usuario = resolveUsuario(email);
-        return materiaRepository.findByDocenteId(usuario.getId()).stream()
-                .map(this::mapToResponseDto)
-                .toList();
+        return mapearLista(materiaRepository.findByDocenteId(usuario.getId()));
     }
 
     /**
@@ -118,9 +132,9 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public List<MateriaResponseDto> getMateriasQueCursa(String email) {
         Usuario usuario = resolveUsuario(email);
-        return inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId()).stream()
-                .map(inscripcion -> mapToResponseDto(inscripcion.getMateria()))
-                .toList();
+        return mapearLista(inscripcionMateriaRepository.findByEstudianteIdAndDeletedAtIsNull(usuario.getId()).stream()
+                .map(InscripcionMateria::getMateria)
+                .toList());
     }
 
     private Usuario resolveUsuario(String email) {
@@ -208,9 +222,7 @@ public class MateriaService {
 
     @Transactional(readOnly = true)
     public List<MateriaResponseDto> searchMateriasByNombre(String nombre) {
-        return materiaRepository.findByNombreContainingIgnoreCase(nombre).stream()
-                .map(this::mapToResponseDto)
-                .toList();
+        return mapearLista(materiaRepository.findByNombreContainingIgnoreCase(nombre));
     }
 
     @Transactional(readOnly = true)
@@ -230,10 +242,7 @@ public class MateriaService {
         List<Materia> materias = materiaRepository.findByCarreraIdConPrerrequisitos(carreraId);
         Set<Long> idsActivas = materias.stream().map(Materia::getId).collect(Collectors.toSet());
 
-        Map<Long, Long> inscriptos = inscripcionMateriaRepository.contarInscriptosPorMateria().stream()
-                .collect(Collectors.toMap(
-                        InscripcionMateriaRepository.MateriaConteo::getMateriaId,
-                        InscripcionMateriaRepository.MateriaConteo::getTotal));
+        Map<Long, Long> inscriptos = conteoDeInscriptos();
 
         Usuario usuario = email != null ? usuarioRepository.findByEmail(email).orElse(null) : null;
         String rol = (usuario != null && usuario.getRolApp() != null) ? usuario.getRolApp().name() : "";
@@ -360,6 +369,10 @@ public class MateriaService {
     }
 
     private MateriaResponseDto mapToResponseDto(Materia materia) {
+        return mapToResponseDto(materia, inscripcionMateriaRepository.countByMateriaIdAndDeletedAtIsNull(materia.getId()));
+    }
+
+    private MateriaResponseDto mapToResponseDto(Materia materia, long totalInscriptos) {
         MateriaResponseDto dto = new MateriaResponseDto();
         dto.setId(materia.getId());
         dto.setNombre(materia.getNombre());
@@ -375,7 +388,7 @@ public class MateriaService {
         }
         dto.setSemestre(materia.getSemestre());
         dto.setCreditos(materia.getCreditos());
-        dto.setTotalInscriptos(inscripcionMateriaRepository.countByMateriaIdAndDeletedAtIsNull(materia.getId()));
+        dto.setTotalInscriptos(totalInscriptos);
         dto.setCreatedAt(materia.getCreatedAt());
         dto.setUpdatedAt(materia.getUpdatedAt());
         dto.setDeletedAt(materia.getDeletedAt());

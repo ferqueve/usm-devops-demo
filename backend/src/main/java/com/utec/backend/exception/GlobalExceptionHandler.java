@@ -12,6 +12,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.utec.backend.common.ApiResponse;
 
@@ -112,6 +114,18 @@ public class GlobalExceptionHandler {
         log.warn("Parámetro con tipo inválido: {} = {}", ex.getName(), ex.getValue());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("El parámetro '" + ex.getName() + "' tiene un valor inválido: " + ex.getValue()));
+    }
+
+    /**
+     * Una ruta que no existe. Antes caía en el catch-all de Exception y devolvía
+     * 500: cualquier bot probando rutas al azar inflaba el contador de errores
+     * 5xx que muestra la pantalla de Sistema.
+     */
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<ApiResponse<String>> handleRutaInexistente(Exception ex) {
+        log.warn("Ruta inexistente: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("La ruta solicitada no existe."));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)

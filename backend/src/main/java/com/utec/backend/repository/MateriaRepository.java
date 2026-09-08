@@ -15,6 +15,16 @@ public interface MateriaRepository extends JpaRepository<Materia, Long> {
     @Query("SELECT m FROM Materia m WHERE m.deletedAt IS NULL")
     List<Materia> findByActivoTrue();
 
+    /**
+     * Igual que {@link #findByActivoTrue()}, pero trae carrera y docente en la
+     * misma consulta.
+     *
+     * Son LAZY: al armar el listado, cada materia disparaba una consulta por
+     * cada una de las dos.
+     */
+    @Query("SELECT m FROM Materia m LEFT JOIN FETCH m.carrera LEFT JOIN FETCH m.docente WHERE m.deletedAt IS NULL")
+    List<Materia> findActivasConCarreraYDocente();
+
     // Buscar materias activas dictadas por un docente
     @Query("SELECT m FROM Materia m WHERE m.docente.id = :docenteId AND m.deletedAt IS NULL")
     List<Materia> findByDocenteId(@Param("docenteId") Long docenteId);
