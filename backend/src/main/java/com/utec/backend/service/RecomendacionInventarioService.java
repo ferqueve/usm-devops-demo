@@ -128,18 +128,23 @@ public class RecomendacionInventarioService {
             .filter(InventarioItem::getActivo)
             .filter(item -> item.getEspacio() == null)
             .toList();
-        
-        // Analizar uso de items por espacio
-        List<ReservaItemSolicitado> itemsSolicitados = reservaItemSolicitadoRepository.findAll();
+
+        // Sin items sueltos no hay nada que reasignar, y el conteo de uso que
+        // viene abajo es caro: con todo asignado esto respondia vacio despues de
+        // recorrer todas las solicitudes.
+        if (itemsSinAsignar.isEmpty()) {
+            return List.of();
+        }
+
+        // Uso de cada tipo por espacio, agrupado en la base. Recorrer las
+        // solicitudes en memoria navegando ris.getReserva().getEspacio()
+        // disparaba una consulta por fila.
         Map<Long, Map<Long, Long>> usoPorEspacioYTipo = new HashMap<>();
-        
-        for (ReservaItemSolicitado ris : itemsSolicitados) {
-            if (ris.getReserva().getEspacio() != null && ris.getTipoElemento() != null) {
-                Long espacioId = ris.getReserva().getEspacio().getId();
-                Long tipoId = ris.getTipoElemento().getId();
-                usoPorEspacioYTipo.computeIfAbsent(espacioId, k -> new HashMap<>())
-                    .put(tipoId, usoPorEspacioYTipo.get(espacioId).getOrDefault(tipoId, 0L) + 1);
-            }
+        for (Object[] fila : reservaItemSolicitadoRepository.contarUsoPorEspacioYTipo()) {
+            Long espacioId = (Long) fila[0];
+            Long tipoId = (Long) fila[1];
+            Long cantidad = (Long) fila[2];
+            usoPorEspacioYTipo.computeIfAbsent(espacioId, k -> new HashMap<>()).put(tipoId, cantidad);
         }
         
         List<RecomendacionInventarioDto> recomendaciones = new ArrayList<>();

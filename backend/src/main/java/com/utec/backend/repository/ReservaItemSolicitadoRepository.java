@@ -41,5 +41,23 @@ public interface ReservaItemSolicitadoRepository extends JpaRepository<ReservaIt
            "AND ris.estado IN (com.utec.backend.model.ReservaItemSolicitado.EstadoSolicitud.PENDIENTE, " +
            "com.utec.backend.model.ReservaItemSolicitado.EstadoSolicitud.APROBADO)")
     long countActiveByInventarioItemId(@Param("inventarioItemId") Long inventarioItemId);
+
+    /**
+     * Cuenta cuantas veces se pidio cada tipo de elemento en cada espacio.
+     *
+     * Antes esto se resolvia trayendo todas las filas con findAll() y navegando
+     * ris.getReserva().getEspacio() una por una: con miles de solicitudes eran
+     * miles de consultas y casi cuatro segundos. Agrupado en SQL es una.
+     *
+     * @return filas [espacioId, tipoElementoId, cantidad]
+     */
+    @Query("""
+            SELECT r.espacio.id, ris.tipoElemento.id, COUNT(ris)
+            FROM ReservaItemSolicitado ris
+            JOIN ris.reserva r
+            WHERE r.espacio IS NOT NULL AND ris.tipoElemento IS NOT NULL
+            GROUP BY r.espacio.id, ris.tipoElemento.id
+            """)
+    List<Object[]> contarUsoPorEspacioYTipo();
 }
 
