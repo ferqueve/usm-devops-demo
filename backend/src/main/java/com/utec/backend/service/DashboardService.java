@@ -117,23 +117,34 @@ public class DashboardService {
 
         // Cada rol suma lo suyo. Un bloque que no le toca viaja vacio, no null:
         // la pantalla no tiene que preguntar dos cosas para dibujar una lista.
-        List<DashboardDto.MateriaBreve> misMaterias = List.of();
-        List<DashboardDto.TutoriaBreve> misTutorias = List.of();
-        long creditos = 0;
-        long inscriptos = 0;
+        // Los totales se cuentan sobre la lista entera y las filas se recortan
+        // despues: la tarjeta dice cuantas materias cursa, no cuantas entran en
+        // el panel.
+        List<MateriaResponseDto> materiasCompletas = List.of();
+        List<TutoriaResponseDto> tutoriasCompletas = List.of();
         long racha = 0;
         if (esDocente) {
-            misMaterias = materiasBreves(materiaService.getMateriasQueDicta(email));
-            misTutorias = tutoriasBreves(tutoriaService.tutoriasQueDicta(email));
-            inscriptos = misMaterias.stream().mapToLong(m -> m.inscriptos() == null ? 0 : m.inscriptos()).sum();
+            materiasCompletas = materiaService.getMateriasQueDicta(email);
+            tutoriasCompletas = tutoriasVigentes(tutoriaService.tutoriasQueDicta(email));
         } else if (esEstudiante) {
-            misMaterias = materiasBreves(materiaService.getMateriasQueCursa(email));
-            misTutorias = tutoriasBreves(tutoriaService.tutoriasAgendadas(email));
+            materiasCompletas = materiaService.getMateriasQueCursa(email);
+            tutoriasCompletas = tutoriasVigentes(tutoriaService.tutoriasAgendadas(email));
             racha = tutoriaService.racha(email).rachaActual();
         }
-        creditos = misMaterias.stream().mapToLong(m -> m.creditos() == null ? 0 : m.creditos()).sum();
+        long totalMaterias = materiasCompletas.size();
+        long totalTutorias = tutoriasCompletas.size();
+        long creditos = materiasCompletas.stream()
+                .mapToLong(m -> m.getCreditos() == null ? 0 : m.getCreditos()).sum();
+        long inscriptos = esDocente
+                ? materiasCompletas.stream()
+                        .mapToLong(m -> m.getTotalInscriptos() == null ? 0 : m.getTotalInscriptos()).sum()
+                : 0;
+        List<DashboardDto.MateriaBreve> misMaterias = materiasBreves(materiasCompletas);
+        List<DashboardDto.TutoriaBreve> misTutorias = tutoriasBreves(tutoriasCompletas);
 
-        List<DashboardDto.EventoBreve> eventos = veEventos(rol) ? eventosProximos(email, rol) : List.of();
+        List<EventoResponseDto> eventosCompletos = veEventos(rol) ? eventosVigentes(email, rol) : List.of();
+        List<DashboardDto.EventoBreve> eventos = eventosBreves(eventosCompletos, email);
+        long totalEventos = eventosCompletos.size();
 
         List<DashboardDto.ItemAtencion> inventarioAtencion = List.of();
         List<DashboardDto.EspacioBreve> fueraDeServicio = List.of();
@@ -150,7 +161,7 @@ public class DashboardService {
         long resueltas = aprueba ? resueltasPor(email) : 0;
 
         DashboardDto.Stats stats = stats(reservaStats, esMantenimiento, userStats, usuariosActivos,
-                misMaterias.size(), creditos, inscriptos, misTutorias.size(), racha, resueltas, eventos.size());
+                totalMaterias, creditos, inscriptos, totalTutorias, racha, resueltas, totalEventos);
 
         return new DashboardDto(
                 stats,
@@ -231,11 +242,16 @@ public class DashboardService {
     }
 
     /** Las tutorias que todavia no pasaron, de la mas proxima a la mas lejana. */
-    private List<DashboardDto.TutoriaBreve> tutoriasBreves(List<TutoriaResponseDto> tutorias) {
+    private List<TutoriaResponseDto> tutoriasVigentes(List<TutoriaResponseDto> tutorias) {
         Instant ahora = Instant.now();
         return tutorias.stream()
                 .filter(t -> t.getFin() != null && t.getFin().isAfter(ahora))
                 .sorted(Comparator.comparing(TutoriaResponseDto::getInicio))
+                .toList();
+    }
+
+    private List<DashboardDto.TutoriaBreve> tutoriasBreves(List<TutoriaResponseDto> tutorias) {
+        return tutorias.stream()
                 .limit(FILAS)
                 .map(t -> {
                     int cupo = t.getCupo() == null ? 0 : t.getCupo();
@@ -252,14 +268,22 @@ public class DashboardService {
         return !Usuario.RolApp.MANTENIMIENTO.name().equals(rol);
     }
 
-    private List<DashboardDto.EventoBreve> eventosProximos(String email, String rol) {
+    private List<EventoResponseDto> eventosVigentes(String email, String rol) {
         Instant ahora = Instant.now();
-        Set<Long> mios = eventoService.misInscripciones(email).stream()
-                .map(EventoResponseDto::getId)
-                .collect(Collectors.toSet());
         return eventoService.listar(email, rol).stream()
                 .filter(e -> e.getInicio() != null && e.getInicio().isAfter(ahora))
                 .sorted(Comparator.comparing(EventoResponseDto::getInicio))
+                .toList();
+    }
+
+    private List<DashboardDto.EventoBreve> eventosBreves(List<EventoResponseDto> eventos, String email) {
+        if (eventos.isEmpty()) {
+            return List.of();
+        }
+        Set<Long> mios = eventoService.misInscripciones(email).stream()
+                .map(EventoResponseDto::getId)
+                .collect(Collectors.toSet());
+        return eventos.stream()
                 .limit(FILAS)
                 .map(e -> new DashboardDto.EventoBreve(e.getId(), e.getTitulo(), e.getInicio(),
                         e.getEspacioNombre(), e.getInscriptosCount(), e.getCupo(), mios.contains(e.getId())))

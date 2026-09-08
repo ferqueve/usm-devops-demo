@@ -295,4 +295,25 @@ class DashboardServiceTest {
         assertEquals(42L, dto.espaciosConPresion().get(0).pendientes());
         assertEquals(88L, dto.stats().resueltasPorMi());
     }
+
+    // La tarjeta dice cuantas materias cursa, no cuantas entran en el panel.
+    @Test
+    @DisplayName("el contador cuenta todas las materias, aunque la lista se recorte")
+    void contadorCuentaElTotal() {
+        List<com.utec.backend.dto.materia.MateriaResponseDto> muchas = new java.util.ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            var m = new com.utec.backend.dto.materia.MateriaResponseDto();
+            m.setId((long) i);
+            m.setNombre("Materia " + i);
+            m.setCreditos(4);
+            muchas.add(m);
+        }
+        when(materiaService.getMateriasQueCursa(EMAIL)).thenReturn(muchas);
+
+        DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.ESTUDIANTE.name());
+
+        assertEquals(20L, dto.stats().materias(), "cuenta las veinte");
+        assertEquals(80L, dto.stats().creditos(), "y suma los creditos de las veinte");
+        assertEquals(6, dto.misMaterias().size(), "pero solo lista una pantalla");
+    }
 }
