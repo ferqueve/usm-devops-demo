@@ -414,14 +414,24 @@ public class AcademicDataInitializer implements CommandLineRunner {
             e.setRecordatorioEnviado(false);
             Evento saved = eventoRepository.save(e);
 
+            // Los que no entran van a la lista de espera, como haria la app: el
+            // seeder los daba todos por confirmados y quedaban eventos con 29
+            // inscriptos sobre un cupo de 20.
             int n = Math.min(publico.size(), 10 + rnd.nextInt(25));
+            int confirmados = 0;
             for (Usuario u : muestra(publico, n)) {
+                boolean hayLugar = spec.cupo() <= 0 || confirmados < spec.cupo();
                 EventoInscripcion i = new EventoInscripcion();
                 i.setEvento(saved);
                 i.setUsuario(u);
-                i.setEstado(pasado && rnd.nextInt(3) == 0 ? "ASISTIO" : "INSCRITO");
+                if (!hayLugar) {
+                    i.setEstado("ESPERA");
+                } else {
+                    confirmados++;
+                    i.setEstado(pasado && rnd.nextInt(3) == 0 ? "ASISTIO" : "INSCRITO");
+                }
                 inscripciones.add(i);
-                if (pasado) {
+                if (pasado && hayLugar) {
                     EventoFeedback f = new EventoFeedback();
                     f.setEvento(saved);
                     f.setUsuario(u);
