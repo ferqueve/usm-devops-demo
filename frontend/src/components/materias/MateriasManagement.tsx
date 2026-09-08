@@ -657,6 +657,7 @@ function EstudianteMateriasView() {
   // mas pesada de la app. Y sin buscador no se encontraba ninguna igual.
   const [busqueda, setBusqueda] = useState('');
   const [pagina, setPagina] = useState(0);
+  const [paginaMias, setPaginaMias] = useState(0);
   const POR_PAGINA = 24;
 
   const filtradas = useMemo(() => {
@@ -673,6 +674,13 @@ function EstudianteMateriasView() {
 
   // Al buscar, la página en la que estabas puede dejar de existir.
   useEffect(() => { setPagina(0); }, [busqueda]);
+
+  const totalPaginasMias = Math.max(1, Math.ceil(misMaterias.length / POR_PAGINA));
+  const paginaMiasActual = Math.min(paginaMias, totalPaginasMias - 1);
+  const miasVisibles = misMaterias.slice(
+    paginaMiasActual * POR_PAGINA,
+    paginaMiasActual * POR_PAGINA + POR_PAGINA,
+  );
 
   const kpis: StatItem[] = useMemo(() => [
     { label: 'Inscriptas', value: misMaterias.length, icon: BookOpen, bg: 'blue' },
@@ -782,9 +790,29 @@ function EstudianteMateriasView() {
             return <EmptyState icon={GraduationCap} title="No estás inscripto en materias" description="Inscríbete en alguna de las materias disponibles." />;
           }
           return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {misMaterias.map((m) => renderCard(m, true))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {miasVisibles.map((m) => renderCard(m, true))}
+              </div>
+              {misMaterias.length > POR_PAGINA && (
+                <div className="flex items-center justify-between gap-3 border-t pt-3">
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {paginaMiasActual * POR_PAGINA + 1}–{paginaMiasActual * POR_PAGINA + miasVisibles.length} de {misMaterias.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setPaginaMias(paginaMiasActual - 1)} disabled={paginaMiasActual === 0}>
+                      Anterior
+                    </Button>
+                    <span className="px-1 text-xs text-muted-foreground tabular-nums">
+                      {paginaMiasActual + 1} / {totalPaginasMias}
+                    </span>
+                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setPaginaMias(paginaMiasActual + 1)} disabled={paginaMiasActual >= totalPaginasMias - 1}>
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           );
         })()}
       </section>
