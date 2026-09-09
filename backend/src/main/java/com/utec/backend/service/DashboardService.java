@@ -402,7 +402,7 @@ public class DashboardService {
 
     /** Donde se acumula la cola: los espacios con mas solicitudes esperando. */
     private List<DashboardDto.EspacioPresion> espaciosConPresion() {
-        return reservaRepository.contarPendientesPorEspacio(PageRequest.of(0, 5)).stream()
+        return reservaRepository.contarPendientesPorEspacio(PageRequest.of(0, FILAS)).stream()
                 .map(f -> new DashboardDto.EspacioPresion(
                         ((Number) f[0]).longValue(), (String) f[1], ((Number) f[2]).longValue()))
                 .toList();

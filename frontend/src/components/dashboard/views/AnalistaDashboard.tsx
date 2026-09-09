@@ -62,7 +62,7 @@ export function AnalistaDashboard({
   const masPresionado = presion[0];
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
       <Hero
         etiqueta="LA COLA DE HOY"
         titulo={`${totalPendientes.toLocaleString('es-UY')} solicitudes esperando`}
@@ -87,8 +87,8 @@ export function AnalistaDashboard({
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
-        <div className="grid min-h-0 grid-rows-2 gap-3">
+      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+        <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
@@ -131,7 +131,7 @@ export function AnalistaDashboard({
           )}
         </Panel>
 
-        <div className="grid min-h-0 grid-rows-2 gap-3">
+        <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel title="En qué estado están" accentColor="#86bb4c">
             <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>

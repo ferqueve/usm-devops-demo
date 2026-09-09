@@ -101,7 +101,8 @@ interface TendenciaProps {
 function Marco({ llenar, alto, children }: Readonly<{ llenar?: boolean; alto: number; children: React.ReactElement }>) {
   if (llenar) {
     return (
-      <div className="h-full min-h-0 w-full">
+      // minHeight da el piso: debajo de lg el panel mide auto y h-full seria 0.
+      <div className="h-full min-h-0 w-full" style={{ minHeight: alto }}>
         <ResponsiveContainer width="100%" height="100%">
           {children}
         </ResponsiveContainer>

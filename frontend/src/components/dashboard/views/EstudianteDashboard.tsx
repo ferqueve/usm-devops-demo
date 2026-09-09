@@ -33,7 +33,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
   const agendadas = stats?.tutorias ?? 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
       {proxima ? (
         <Hero
           etiqueta="TU PRÓXIMA TUTORÍA"
@@ -68,9 +68,9 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         {/* Columna de gráficos: dos paneles que se reparten el alto. */}
-        <div className="grid min-h-0 grid-rows-2 gap-3">
+        <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Créditos por semestre"
             count={`${stats?.creditos ?? 0} en total`}
