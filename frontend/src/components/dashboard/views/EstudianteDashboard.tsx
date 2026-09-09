@@ -70,7 +70,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
         {/* Columna de gráficos: dos paneles que se reparten el alto. */}
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Créditos por semestre"
             count={`${stats?.creditos ?? 0} en total`}

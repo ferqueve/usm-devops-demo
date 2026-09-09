@@ -106,7 +106,7 @@ export function AdminDashboard({
       />
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
@@ -144,7 +144,7 @@ export function AdminDashboard({
           )}
         </Panel>
 
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Estado del sistema"
             count={salud ? `${salud.componentes} componentes` : undefined}

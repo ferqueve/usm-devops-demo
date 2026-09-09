@@ -99,7 +99,7 @@ export function MantenimientoDashboard({
       />
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel title="El parque" count={`${inv?.totalItems ?? 0} items`} accentColor="#184897" action={{ label: 'inventario', to: '/inventory' }}>
             <Anillo porciones={parque} leyendaCentro="items" alto={118} />
           </Panel>
@@ -125,7 +125,7 @@ export function MantenimientoDashboard({
           )}
         </Panel>
 
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Espacios fuera de servicio"
             count={espaciosCaidos.length || undefined}

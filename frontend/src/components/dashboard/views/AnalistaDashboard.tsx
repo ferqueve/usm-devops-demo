@@ -88,7 +88,7 @@ export function AnalistaDashboard({
       />
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
@@ -131,7 +131,7 @@ export function AnalistaDashboard({
           )}
         </Panel>
 
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel title="En qué estado están" accentColor="#86bb4c">
             <Anillo porciones={estados} leyendaCentro="reservas" alto={118} />
           </Panel>

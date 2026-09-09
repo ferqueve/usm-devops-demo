@@ -74,7 +74,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
       />
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Cómo vienen mis pedidos"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
