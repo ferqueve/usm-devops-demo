@@ -56,13 +56,13 @@ export function AnalistaDashboard({
   const cola = useMemo(() => {
     const matched = emparejarPrioritarias(reservasPrioritarias, reservasPendientes);
     if (matched.length > 0) return matched;
-    return reservasPendientes.slice(0, 5).map(r => ({ reserva: r, urgencia: 0, razon: '' }));
+    return reservasPendientes.slice(0, 14).map(r => ({ reserva: r, urgencia: 0, razon: '' }));
   }, [reservasPrioritarias, reservasPendientes]);
 
   const masPresionado = presion[0];
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
       <Hero
         etiqueta="LA COLA DE HOY"
         titulo={`${totalPendientes.toLocaleString('es-UY')} solicitudes esperando`}
@@ -87,7 +87,7 @@ export function AnalistaDashboard({
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Reservas por mes"
@@ -95,11 +95,11 @@ export function AnalistaDashboard({
             accentColor="#184897"
             action={{ label: 'estadísticas', to: '/statistics' }}
           >
-            <Tendencia datos={porMes} alto={128} />
+            <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
           <Panel title="Qué días se carga" accentColor="#00c7ff">
-            <RitmoSemanal datos={porDia} alto={128} />
+            <RitmoSemanal datos={porDia} alto={128} llenar />
           </Panel>
         </div>
 
@@ -133,7 +133,7 @@ export function AnalistaDashboard({
 
         <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel title="En qué estado están" accentColor="#86bb4c">
-            <Anillo porciones={estados} leyendaCentro="reservas" alto={118} />
+            <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>
 
           <Panel

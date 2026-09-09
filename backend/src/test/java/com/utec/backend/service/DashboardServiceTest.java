@@ -314,9 +314,9 @@ class DashboardServiceTest {
         DashboardDto dto = service.cargar(EMAIL, Usuario.RolApp.ESTUDIANTE.name());
 
         assertEquals(20L, dto.stats().materias(), "cuenta las veinte");
-        // El grafico suma las veinte, no las seis que entran en el panel.
+        // El grafico suma las veinte, no las catorce que entran en el panel.
         assertEquals(80L, dto.creditosPorSemestre().stream().mapToLong(x -> x.valor()).sum());
         assertEquals(80L, dto.stats().creditos(), "y suma los creditos de las veinte");
-        assertEquals(6, dto.misMaterias().size(), "pero solo lista una pantalla");
+        assertEquals(14, dto.misMaterias().size(), "pero solo lista una pantalla");
     }
 }

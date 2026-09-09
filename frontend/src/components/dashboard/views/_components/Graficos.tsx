@@ -87,10 +87,36 @@ interface TendenciaProps {
   datos: Record<string, number>;
   color?: string;
   alto?: number;
+  /**
+   * El gráfico ocupa todo el alto del panel en vez de uno fijo.
+   *
+   * Solo donde el panel tiene alto definido (una fila de grilla): dentro de un
+   * contenedor que crece con su contenido, ResponsiveContainer mide, agranda al
+   * padre y vuelve a medir.
+   */
+  llenar?: boolean;
+}
+
+/** Envuelve el gráfico para que ocupe el alto del panel. */
+function Marco({ llenar, alto, children }: Readonly<{ llenar?: boolean; alto: number; children: React.ReactElement }>) {
+  if (llenar) {
+    return (
+      <div className="h-full min-h-0 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          {children}
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height={alto}>
+      {children}
+    </ResponsiveContainer>
+  );
 }
 
 /** Doce meses de actividad, en área. */
-export function Tendencia({ datos, color = UTEC.azul, alto = 150 }: Readonly<TendenciaProps>) {
+export function Tendencia({ datos, color = UTEC.azul, alto = 150, llenar }: Readonly<TendenciaProps>) {
   const serie = useMemo(
     () => Object.entries(datos).map(([clave, cantidad]) => ({ mes: nombreDeMes(clave), cantidad })),
     [datos],
@@ -98,7 +124,7 @@ export function Tendencia({ datos, color = UTEC.azul, alto = 150 }: Readonly<Ten
   if (serie.length === 0) return null;
 
   return (
-    <ResponsiveContainer width="100%" height={alto}>
+    <Marco llenar={llenar} alto={alto}>
       <AreaChart data={serie} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id={`grad-${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
@@ -125,7 +151,7 @@ export function Tendencia({ datos, color = UTEC.azul, alto = 150 }: Readonly<Ten
           fill={`url(#grad-${color.slice(1)})`}
         />
       </AreaChart>
-    </ResponsiveContainer>
+    </Marco>
   );
 }
 
@@ -141,10 +167,12 @@ interface AnilloProps {
   centro?: string | number;
   leyendaCentro?: string;
   alto?: number;
+  /** Centra el anillo en el alto del panel en vez de arrimarlo arriba. */
+  llenar?: boolean;
 }
 
 /** Un anillo con el total en el medio y la leyenda al costado. */
-export function Anillo({ porciones, centro, leyendaCentro, alto = 150 }: Readonly<AnilloProps>) {
+export function Anillo({ porciones, centro, leyendaCentro, alto = 150, llenar }: Readonly<AnilloProps>) {
   const datos = porciones.filter((p) => p.valor > 0);
   const total = porciones.reduce((a, p) => a + p.valor, 0);
   if (datos.length === 0) {
@@ -152,8 +180,12 @@ export function Anillo({ porciones, centro, leyendaCentro, alto = 150 }: Readonl
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative shrink-0" style={{ width: alto, height: alto }}>
+    <div className={`flex items-center gap-3 ${llenar ? 'h-full' : ''}`}>
+      {/* Con llenar el anillo crece con el panel, hasta donde no le coma la leyenda. */}
+      <div
+        className={`relative shrink-0 ${llenar ? 'aspect-square h-full max-h-[240px] max-w-[45%]' : ''}`}
+        style={llenar ? { minHeight: alto } : { width: alto, height: alto }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -205,10 +237,12 @@ interface BarrasProps {
   alto?: number;
   /** Colorea cada barra con la paleta, en vez de un solo color. */
   multicolor?: boolean;
+  /** Ocupa el alto del panel. Ver la nota de Tendencia. */
+  llenar?: boolean;
 }
 
 /** Ranking en barras horizontales: nombres largos que se leen. */
-export function BarrasHorizontales({ datos, color = UTEC.azul, alto, multicolor = false }: Readonly<BarrasProps>) {
+export function BarrasHorizontales({ datos, color = UTEC.azul, alto, multicolor = false, llenar }: Readonly<BarrasProps>) {
   if (datos.length === 0) {
     return <p className="py-8 text-center text-sm text-muted-foreground">Sin datos para graficar.</p>;
   }
@@ -216,7 +250,7 @@ export function BarrasHorizontales({ datos, color = UTEC.azul, alto, multicolor 
   // de filas, no un numero fijo.
   const altoUtil = alto ?? Math.max(90, datos.length * 26 + 16);
   return (
-    <ResponsiveContainer width="100%" height={altoUtil}>
+    <Marco llenar={llenar} alto={altoUtil}>
       <BarChart data={datos} layout="vertical" margin={{ top: 2, right: 12, bottom: 2, left: 4 }}>
         <XAxis type="number" hide />
         <YAxis
@@ -236,7 +270,7 @@ export function BarrasHorizontales({ datos, color = UTEC.azul, alto, multicolor 
           ))}
         </Bar>
       </BarChart>
-    </ResponsiveContainer>
+    </Marco>
   );
 }
 
@@ -251,7 +285,7 @@ const DIAS: Array<[string, string]> = [
 ];
 
 /** Qué días se carga el campus. El pico se pinta distinto. */
-export function RitmoSemanal({ datos, alto = 150 }: Readonly<{ datos: Record<string, number>; alto?: number }>) {
+export function RitmoSemanal({ datos, alto = 150, llenar }: Readonly<{ datos: Record<string, number>; alto?: number; llenar?: boolean }>) {
   const serie = useMemo(
     () => DIAS.map(([clave, etiqueta]) => ({ dia: etiqueta, cantidad: datos[clave] ?? 0 })),
     [datos],
@@ -262,7 +296,7 @@ export function RitmoSemanal({ datos, alto = 150 }: Readonly<{ datos: Record<str
   }
 
   return (
-    <ResponsiveContainer width="100%" height={alto}>
+    <Marco llenar={llenar} alto={alto}>
       <BarChart data={serie} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
         <XAxis dataKey="dia" tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} className="text-muted-foreground" />
         <YAxis
@@ -280,7 +314,7 @@ export function RitmoSemanal({ datos, alto = 150 }: Readonly<{ datos: Record<str
           ))}
         </Bar>
       </BarChart>
-    </ResponsiveContainer>
+    </Marco>
   );
 }
 

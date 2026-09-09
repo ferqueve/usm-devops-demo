@@ -21,6 +21,9 @@ interface AdminDashboardProps {
   onViewDetails: (r: Reserva) => void;
 }
 
+/** Filas de la cola: el panel scrollea, asi que sobran para pantallas altas. */
+const FILAS_COLA = 14;
+
 export function AdminDashboard({
   data, loading, reservasPrioritarias, reservasPendientes, loadingPrioritarias,
   pendingInventoryRequests, onViewDetails,
@@ -39,9 +42,9 @@ export function AdminDashboard({
     if (reservasPrioritarias.length > 0) {
       const ids = new Set(reservasPrioritarias.map(p => p.reservaId).filter(Boolean));
       const matched = reservasPendientes.filter(r => ids.has(r.id));
-      if (matched.length > 0) return matched.slice(0, 6);
+      if (matched.length > 0) return matched.slice(0, FILAS_COLA);
     }
-    return reservasPendientes.slice(0, 6);
+    return reservasPendientes.slice(0, FILAS_COLA);
   }, [reservasPrioritarias, reservasPendientes]);
 
   const totalPendientes = data?.reservaStats?.totalPendientes ?? stats?.reservasPendientes ?? 0;
@@ -78,7 +81,7 @@ export function AdminDashboard({
   const masPresionado = presion[0];
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
       <Hero
         etiqueta="LO QUE HAY QUE ATENDER"
         titulo={`${totalPendientes.toLocaleString('es-UY')} reservas por aprobar`}
@@ -105,7 +108,7 @@ export function AdminDashboard({
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Reservas por mes"
@@ -113,11 +116,11 @@ export function AdminDashboard({
             accentColor="#184897"
             action={{ label: 'estadísticas', to: '/statistics' }}
           >
-            <Tendencia datos={porMes} alto={128} />
+            <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
           <Panel title="En qué estado están" accentColor="#86bb4c">
-            <Anillo porciones={estados} leyendaCentro="reservas" alto={118} />
+            <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>
         </div>
 

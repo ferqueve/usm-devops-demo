@@ -38,7 +38,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
   const proximoEvento = eventos[0];
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
       {proximoEvento ? (
         <Hero
           etiqueta="PRÓXIMO EVENTO ABIERTO"
@@ -73,18 +73,18 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
             title="Cómo vienen mis pedidos"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
             accentColor="#184897"
           >
-            <Tendencia datos={porMes} alto={128} />
+            <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
           <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor="#86bb4c">
-            <Anillo porciones={estados} leyendaCentro="pedidos" alto={118} />
+            <Anillo porciones={estados} leyendaCentro="pedidos" alto={118} llenar />
           </Panel>
         </div>
 

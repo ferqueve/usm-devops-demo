@@ -243,8 +243,13 @@ public class DashboardService {
         );
     }
 
-    /** Cuantas materias y tutorias se listan: una pantalla, no un listado. */
-    private static final int FILAS = 6;
+    /**
+     * Cuantas filas trae cada lista: una pantalla, no un listado.
+     *
+     * Los paneles scrollean por dentro, asi que de sobrar entran igual; en
+     * pantallas altas seis filas dejaban media tarjeta vacia.
+     */
+    private static final int FILAS = 14;
 
     private List<DashboardDto.MateriaBreve> materiasBreves(List<MateriaResponseDto> materias) {
         return materias.stream()

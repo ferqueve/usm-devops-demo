@@ -33,7 +33,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
   const agendadas = stats?.tutorias ?? 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
       {proxima ? (
         <Hero
           etiqueta="TU PRÓXIMA TUTORÍA"
@@ -68,7 +68,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
         {/* Columna de gráficos: dos paneles que se reparten el alto. */}
         <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel
@@ -90,6 +90,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
               centro={asistidas + agendadas}
               leyendaCentro="tutorías"
               alto={118}
+              llenar
             />
           </Panel>
         </div>

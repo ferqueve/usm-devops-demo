@@ -63,7 +63,7 @@ export function MantenimientoDashboard({
     : Math.max(0, (esp?.totalEspacios ?? 0) - (esp?.disponibles ?? 0));
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto lg:overflow-hidden">
       {masUrgente ? (
         <Hero
           etiqueta="LO MÁS URGENTE"
@@ -98,10 +98,10 @@ export function MantenimientoDashboard({
         ]}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 grid-rows-2 gap-3">
           <Panel title="El parque" count={`${inv?.totalItems ?? 0} items`} accentColor="#184897" action={{ label: 'inventario', to: '/inventory' }}>
-            <Anillo porciones={parque} leyendaCentro="items" alto={118} />
+            <Anillo porciones={parque} leyendaCentro="items" alto={118} llenar />
           </Panel>
 
           <Panel title="Los espacios" count={`${esp?.totalEspacios ?? 0} en total`} accentColor="#00c7ff" action={{ label: 'espacios', to: '/rooms' }} scroll>
