@@ -145,5 +145,8 @@ CLAUDE.md
 .scannerwork/
 
 # ===== PLAYWRIGHT / SCREENSHOTS =====
+# Las capturas se toman en la raiz del repo (es la unica carpeta que el server
+# de Playwright puede escribir) y no van al historial.
 .playwright-mcp/
 cap-*.png
+/*.png
