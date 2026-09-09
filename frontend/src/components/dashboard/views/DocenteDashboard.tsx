@@ -1,12 +1,12 @@
-import { Link } from 'react-router-dom';
-import { CalendarPlus, CheckCircle2, Clock, GraduationCap, ListChecks, Users, CalendarClock } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Clock, GraduationCap, ListChecks, Users } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
 import { Panel } from './_components/Panel';
+import { Hero } from './_components/Hero';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
-import { EventoFila, MateriaFila, TutoriaFila } from './_components/Filas';
+import { EventoFila, MateriaFila } from './_components/Filas';
 import { BarrasHorizontales, Progreso, UTEC } from './_components/Graficos';
 
 interface DocenteDashboardProps {
@@ -17,19 +17,16 @@ interface DocenteDashboardProps {
 }
 
 /**
- * Lo del docente: sus materias y sus tutorías arriba, sus reservas abajo.
- *
- * Antes la pantalla solo hablaba de reservas, aunque el rol es académico:
- * dictaba materias con inscriptos y daba tutorías, y nada de eso aparecía.
+ * Lo del docente, en una pantalla: su próxima clase de tutoría destacada, sus
+ * números, y una banda con lo académico y lo de reservas.
  */
 export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: Readonly<DocenteDashboardProps>) {
   const stats = data?.stats;
   const ahora = Date.now();
   const proximasMias = misReservas
     .filter(r => new Date(r.inicio).getTime() >= ahora && r.estado === 'APROBADO')
-    .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime())
-    .slice(0, 6);
-  const misPendientes = misReservas.filter(r => r.estado === 'PENDIENTE').slice(0, 6);
+    .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime());
+  const misPendientes = misReservas.filter(r => r.estado === 'PENDIENTE');
   // El contador va del agregado del backend: la lista trae las últimas
   // cincuenta y contarla daría de menos.
   const totalPendientes = stats?.reservasPendientes ?? misPendientes.length;
@@ -37,18 +34,31 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
   const tutorias = data?.misTutorias ?? [];
   const eventos = data?.eventos ?? [];
   const inscriptosPorMateria = data?.inscriptosPorMateria ?? [];
+  const proxima = tutorias[0];
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-end">
-        <Link
-          to="/reservations?new=true"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <CalendarPlus className="h-4 w-4" />
-          Nueva reserva
-        </Link>
-      </div>
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      {proxima ? (
+        <Hero
+          etiqueta="TU PRÓXIMA TUTORÍA A DAR"
+          titulo={proxima.materiaNombre ?? 'Tutoría'}
+          detalle={[proxima.espacioNombre, `${proxima.agendados} de ${proxima.cupo} anotados`].filter(Boolean).join(' · ')}
+          icono={CalendarClock}
+          patron="circuito"
+          cuandoISO={proxima.inicio}
+          accion={{ label: 'Ver', to: `/tutorias/${proxima.id}` }}
+        />
+      ) : (
+        <Hero
+          etiqueta="TUS MATERIAS"
+          titulo={`${stats?.materias ?? 0} materias a tu cargo`}
+          detalle={`${stats?.inscriptos ?? 0} estudiantes inscriptos`}
+          icono={GraduationCap}
+          patron="circuito"
+          foco={{ valor: stats?.inscriptos ?? 0, leyenda: 'inscriptos' }}
+          accion={{ label: 'Ver materias', to: '/materias?tab=listado' }}
+        />
+      )}
 
       <StatStrip
         loading={loading}
@@ -58,50 +68,47 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
           { label: 'Tutorías', value: stats?.tutorias ?? 0, hint: 'franjas próximas', icon: CalendarClock, bg: 'cyan', to: '/materias?tab=tutorias' },
           { label: 'Pendientes', value: totalPendientes, hint: 'esperando aprobación', icon: Clock, bg: 'yellow', to: '/reservations' },
           { label: 'Confirmadas', value: stats?.reservasAprobadas ?? 0, hint: 'aprobadas', icon: CheckCircle2, bg: 'dark', to: '/reservations' },
-          { label: 'Hoy', value: stats?.reservasHoy ?? 0, hint: 'reservas en el campus', icon: ListChecks, bg: 'orange', to: '/calendar' },
+          { label: 'Hoy', value: stats?.reservasHoy ?? 0, hint: 'en el campus', icon: ListChecks, bg: 'orange', to: '/calendar' },
         ]}
       />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Panel
-          title="Inscriptos por materia"
-          count={`${stats?.inscriptos ?? 0} en total`}
-          accentColor="#86bb4c"
-          action={{ label: 'ver materias', to: '/materias?tab=listado' }}
-        >
-          <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} />
-        </Panel>
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+        <div className="flex min-h-0 flex-col gap-3">
+          <Panel
+            title="Inscriptos por materia"
+            count={`${stats?.inscriptos ?? 0} en total`}
+            accentColor="#86bb4c"
+            action={{ label: 'materias', to: '/materias?tab=listado' }}
+            scroll
+          >
+            <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} />
+          </Panel>
 
-        <Panel
-          title="Cómo vienen mis tutorías"
-          count={tutorias.length ? `${tutorias.length} próximas` : undefined}
-          accentColor="#00c7ff"
-          action={{ label: 'ver todas', to: '/materias?tab=tutorias' }}
-        >
-          {tutorias.length > 0 ? (
-            <div className="space-y-2.5 py-1">
-              {tutorias.map((t) => (
-                <Progreso
-                  key={t.id}
-                  etiqueta={t.materiaNombre ?? 'Tutoría'}
-                  actual={t.agendados}
-                  total={t.cupo}
-                  color={t.cupo > 0 && t.agendados >= t.cupo ? UTEC.naranja : UTEC.cian}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="Sin franjas próximas." />
-          )}
-        </Panel>
-      </div>
+          <Panel title="Ocupación de mis tutorías" accentColor="#00c7ff" scroll>
+            {tutorias.length > 0 ? (
+              <div className="space-y-2.5 py-1">
+                {tutorias.map((t) => (
+                  <Progreso
+                    key={t.id}
+                    etiqueta={t.materiaNombre ?? 'Tutoría'}
+                    actual={t.agendados}
+                    total={t.cupo}
+                    color={t.cupo > 0 && t.agendados >= t.cupo ? UTEC.naranja : UTEC.cian}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState title="Sin franjas próximas." />
+            )}
+          </Panel>
+        </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
         <Panel
           title="Mis materias"
           count={stats?.materias || undefined}
           accentColor="#184897"
           action={{ label: 'ver todas', to: '/materias?tab=listado' }}
+          scroll
         >
           {materias.length > 0 ? (
             <div className="divide-y divide-border/60">
@@ -113,31 +120,15 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
         </Panel>
 
         <Panel
-          title="Mis próximas tutorías"
-          count={tutorias.length || undefined}
-          accentColor="#00c7ff"
-          action={{ label: 'ver todas', to: '/materias?tab=tutorias' }}
-        >
-          {tutorias.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {tutorias.map((t) => <TutoriaFila key={t.id} tutoria={t} />)}
-            </div>
-          ) : (
-            <EmptyState title="Sin franjas de tutoría próximas." />
-          )}
-        </Panel>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
-        <Panel
           title="Mis reservas"
           count={proximasMias.length > 0 ? `${proximasMias.length} próximas` : `${totalPendientes} pendientes`}
           accentColor="#F6CA21"
-          action={{ label: 'ver todas', to: '/reservations' }}
+          action={{ label: 'nueva reserva', to: '/reservations?new=true' }}
+          scroll
         >
           {(() => {
             const filas = proximasMias.length > 0 ? proximasMias : misPendientes;
-            if (filas.length === 0) {
+            if (filas.length === 0 && eventos.length === 0) {
               return <EmptyState title="Sin reservas próximas ni pendientes." />;
             }
             return (
@@ -145,26 +136,13 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
                 {filas.map((r) => (
                   <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} showEstado showAvatar={false} />
                 ))}
+                {eventos.map((e) => <EventoFila key={`e${e.id}`} evento={e} />)}
               </div>
             );
           })()}
         </Panel>
-
-        <Panel
-          title="Próximos eventos"
-          count={eventos.length || undefined}
-          accentColor="#86bb4c"
-          action={{ label: 'ver todos', to: '/eventos' }}
-        >
-          {eventos.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
-            </div>
-          ) : (
-            <EmptyState title="Sin eventos próximos." />
-          )}
-        </Panel>
       </div>
+
     </div>
   );
 }

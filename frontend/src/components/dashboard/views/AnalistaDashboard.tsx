@@ -7,8 +7,9 @@ import { StatStrip } from './_components/StatStrip';
 import { Panel } from './_components/Panel';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
-import { EventoFila, PresionFila } from './_components/Filas';
+import { PresionFila } from './_components/Filas';
 import { Anillo, RitmoSemanal, Tendencia, UTEC, variacion } from './_components/Graficos';
+import { Hero } from './_components/Hero';
 
 interface AnalistaDashboardProps {
   data: DashboardData | null;
@@ -43,7 +44,6 @@ export function AnalistaDashboard({
   const reservasHoyCount = stats?.reservasHoy ?? 0;
   const presion = data?.espaciosConPresion ?? [];
   const maximaPresion = presion.length > 0 ? presion[0].pendientes : 0;
-  const eventos = data?.eventos ?? [];
   const porMes = data?.reservaStats?.reservasPorMes ?? {};
   const porDia = data?.reservaStats?.reservasPorDiaSemana ?? {};
   const cambio = variacion(porMes);
@@ -59,8 +59,22 @@ export function AnalistaDashboard({
     return reservasPendientes.slice(0, 5).map(r => ({ reserva: r, urgencia: 0, razon: '' }));
   }, [reservasPrioritarias, reservasPendientes]);
 
+  const masPresionado = presion[0];
+
   return (
-    <div className="space-y-5">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <Hero
+        etiqueta="LA COLA DE HOY"
+        titulo={`${totalPendientes.toLocaleString('es-UY')} solicitudes esperando`}
+        detalle={masPresionado
+          ? `${masPresionado.nombre} concentra ${masPresionado.pendientes} · ${reservasPrioritarias.length} urgentes`
+          : `${reservasPrioritarias.length} marcadas como urgentes`}
+        icono={Inbox}
+        patron="nodos"
+        foco={{ valor: stats?.resueltasPorMi ?? 0, leyenda: 'resueltas por mí' }}
+        accion={{ label: 'Ir a la cola', to: '/reservations' }}
+      />
+
       <StatStrip
         loading={loading}
         items={[
@@ -73,31 +87,28 @@ export function AnalistaDashboard({
         ]}
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Panel
-          title="Reservas por mes"
-          count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-          accentColor="#184897"
-          action={{ label: 'estadísticas', to: '/statistics' }}
-        >
-          <Tendencia datos={porMes} />
-        </Panel>
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+        <div className="flex min-h-0 flex-col gap-3">
+          <Panel
+            title="Reservas por mes"
+            count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
+            accentColor="#184897"
+            action={{ label: 'estadísticas', to: '/statistics' }}
+          >
+            <Tendencia datos={porMes} alto={128} />
+          </Panel>
 
-        <Panel title="Qué días se carga" accentColor="#00c7ff">
-          <RitmoSemanal datos={porDia} />
-        </Panel>
+          <Panel title="Qué días se carga" accentColor="#00c7ff">
+            <RitmoSemanal datos={porDia} alto={128} />
+          </Panel>
+        </div>
 
-        <Panel title="En qué estado están" accentColor="#86bb4c">
-          <Anillo porciones={estados} leyendaCentro="reservas" alto={132} />
-        </Panel>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         <Panel
           title="Cola"
-          count={loadingPrioritarias ? 'calculando…' : `${totalPendientes} pendiente${totalPendientes === 1 ? '' : 's'}`}
-          accentColor="#184897"
-          action={totalPendientes > cola.length ? { label: 'ver todas', to: '/reservations' } : undefined}
+          count={loadingPrioritarias ? 'calculando…' : `${totalPendientes} pendientes`}
+          accentColor="#F6CA21"
+          action={{ label: 'ver todas', to: '/reservations' }}
+          scroll
         >
           {cola.length > 0 ? (
             <div className="divide-y divide-border/60">
@@ -120,54 +131,26 @@ export function AnalistaDashboard({
           )}
         </Panel>
 
-        <Panel
-          title="Dónde se acumula"
-          count={presion.length > 0 ? 'espacios con cola' : undefined}
-          accentColor="#e8630a"
-          action={{ label: 'reservas', to: '/reservations' }}
-        >
-          {presion.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
-            </div>
-          ) : (
-            <EmptyState title="Nada esperando." />
-          )}
-        </Panel>
-      </div>
+        <div className="flex min-h-0 flex-col gap-3">
+          <Panel title="En qué estado están" accentColor="#86bb4c">
+            <Anillo porciones={estados} leyendaCentro="reservas" alto={118} />
+          </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Panel
-          title="Próximas aprobadas"
-          count={data?.proximasReservas?.length || undefined}
-          accentColor="#86bb4c"
-          action={{ label: 'calendario', to: '/calendar' }}
-        >
-          {data?.proximasReservas && data.proximasReservas.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {data.proximasReservas.slice(0, 6).map((r) => (
-                <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="Sin confirmadas próximas." />
-          )}
-        </Panel>
-
-        <Panel
-          title="Próximos eventos"
-          count={eventos.length || undefined}
-          accentColor="#00c7ff"
-          action={{ label: 'ver todos', to: '/eventos' }}
-        >
-          {eventos.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
-            </div>
-          ) : (
-            <EmptyState title="Sin eventos próximos." />
-          )}
-        </Panel>
+          <Panel
+            title="Dónde se acumula"
+            accentColor="#e8630a"
+            action={{ label: 'reservas', to: '/reservations' }}
+            scroll
+          >
+            {presion.length > 0 ? (
+              <div className="divide-y divide-border/60">
+                {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
+              </div>
+            ) : (
+              <EmptyState title="Nada esperando." />
+            )}
+          </Panel>
+        </div>
       </div>
     </div>
   );

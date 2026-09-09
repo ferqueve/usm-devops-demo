@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { CalendarPlus, CheckCircle2, Clock, Megaphone, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Megaphone, XCircle } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
@@ -8,6 +7,7 @@ import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila } from './_components/Filas';
 import { Anillo, Tendencia, UTEC, variacion } from './_components/Graficos';
+import { Hero } from './_components/Hero';
 
 interface ExternoDashboardProps {
   data: DashboardData | null;
@@ -35,17 +35,32 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
     { nombre: 'Rechazadas', valor: canceladas, color: UTEC.rojo },
   ];
 
+  const proximoEvento = eventos[0];
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-end">
-        <Link
-          to="/reservations?new=true"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <CalendarPlus className="h-4 w-4" />
-          Nueva solicitud
-        </Link>
-      </div>
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      {proximoEvento ? (
+        <Hero
+          etiqueta="PRÓXIMO EVENTO ABIERTO"
+          titulo={proximoEvento.titulo}
+          detalle={[proximoEvento.espacioNombre, proximoEvento.inscrito ? 'ya estás anotado' : `${proximoEvento.inscriptos} anotados`]
+            .filter(Boolean).join(' · ')}
+          icono={Megaphone}
+          patron="plasma"
+          cuandoISO={proximoEvento.inicio}
+          accion={{ label: 'Ver', to: `/eventos/${proximoEvento.id}` }}
+        />
+      ) : (
+        <Hero
+          etiqueta="MIS SOLICITUDES"
+          titulo={`${pendientes} esperando respuesta`}
+          detalle={`${aprobadas} aprobadas · ${canceladas} rechazadas`}
+          icono={Clock}
+          patron="plasma"
+          foco={{ valor: totalSolicitudes, leyenda: 'en total' }}
+          accion={{ label: 'Nueva solicitud', to: '/reservations?new=true' }}
+        />
+      )}
 
       <StatStrip
         loading={loading}
@@ -58,30 +73,31 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         ]}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
-        <Panel
-          title="Cómo vienen mis pedidos"
-          count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}% contra el mes anterior` : undefined}
-          accentColor="#184897"
-        >
-          <Tendencia datos={porMes} />
-        </Panel>
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+        <div className="flex min-h-0 flex-col gap-3">
+          <Panel
+            title="Cómo vienen mis pedidos"
+            count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
+            accentColor="#184897"
+          >
+            <Tendencia datos={porMes} alto={128} />
+          </Panel>
 
-        <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor="#86bb4c">
-          <Anillo porciones={estados} leyendaCentro="pedidos" alto={132} />
-        </Panel>
-      </div>
+          <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor="#86bb4c">
+            <Anillo porciones={estados} leyendaCentro="pedidos" alto={118} />
+          </Panel>
+        </div>
 
-      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         <Panel
           title="Mis solicitudes"
           count={totalSolicitudes > 0 ? totalSolicitudes : undefined}
           accentColor="#F6CA21"
-          action={{ label: 'ver todas', to: '/reservations' }}
+          action={{ label: 'nueva', to: '/reservations?new=true' }}
+          scroll
         >
           {misReservas.length > 0 ? (
             <div className="divide-y divide-border/60">
-              {misReservas.slice(0, 8).map((r) => (
+              {misReservas.map((r) => (
                 <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} showEstado showAvatar={false} />
               ))}
             </div>
@@ -93,8 +109,9 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Eventos abiertos"
           count={eventos.length || undefined}
-          accentColor="#86bb4c"
+          accentColor="#00c7ff"
           action={{ label: 'ver todos', to: '/eventos' }}
+          scroll
         >
           {eventos.length > 0 ? (
             <div className="divide-y divide-border/60">
@@ -105,23 +122,6 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
           )}
         </Panel>
       </div>
-
-      <Panel
-        title="Esta semana en el campus"
-        count={data?.proximasReservas?.length || undefined}
-        accentColor="#184897"
-        action={{ label: 'calendario', to: '/calendar' }}
-      >
-        {data?.proximasReservas && data.proximasReservas.length > 0 ? (
-          <div className="divide-y divide-border/60">
-            {data.proximasReservas.slice(0, 6).map((r) => (
-              <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState title="Sin actividades públicas próximas." />
-        )}
-      </Panel>
     </div>
   );
 }

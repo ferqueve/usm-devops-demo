@@ -6,9 +6,9 @@ import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 import { StatStrip } from './_components/StatStrip';
 import { EmptyState } from './_components/EmptyState';
 import { ReservaRow } from './_components/ReservaRow';
-import { DualPanel } from './_components/DualPanel';
 import { Panel } from './_components/Panel';
-import { ActividadFila, EventoFila, PresionFila } from './_components/Filas';
+import { Hero } from './_components/Hero';
+import { ActividadFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, Tendencia, UTEC, variacion } from './_components/Graficos';
 
 interface AdminDashboardProps {
@@ -21,25 +21,11 @@ interface AdminDashboardProps {
   onViewDetails: (r: Reserva) => void;
 }
 
-function filtrarHoy(reservas: Reserva[]): Reserva[] {
-  const ahora = new Date();
-  return reservas
-    .filter(r => {
-      const d = new Date(r.inicio);
-      return d.toDateString() === ahora.toDateString() && d.getTime() >= ahora.getTime();
-    })
-    .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime());
-}
-
 export function AdminDashboard({
   data, loading, reservasPrioritarias, reservasPendientes, loadingPrioritarias,
   pendingInventoryRequests, onViewDetails,
 }: Readonly<AdminDashboardProps>) {
   const stats = data?.stats;
-  const reservasHoy = useMemo(
-    () => filtrarHoy(data?.proximasReservas ?? []),
-    [data?.proximasReservas],
-  );
 
   const urgentesIds = useMemo(() => {
     const ids = new Set<number>();
@@ -67,8 +53,6 @@ export function AdminDashboard({
   const verde = data?.sostenibilidad;
   const actividad = data?.actividadReciente ?? [];
   const presion = data?.espaciosConPresion ?? [];
-  const maximaPresion = presion.length > 0 ? presion[0].pendientes : 0;
-  const eventos = data?.eventos ?? [];
   const usuariosPorRol = Object.entries(data?.userStats?.usuariosPorRol ?? {})
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6);
@@ -91,8 +75,24 @@ export function AdminDashboard({
     return total > 0 ? Math.round((ap / total) * 100) : 0;
   })();
 
+  const masPresionado = presion[0];
+
   return (
-    <div className="space-y-5">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <Hero
+        etiqueta="LO QUE HAY QUE ATENDER"
+        titulo={`${totalPendientes.toLocaleString('es-UY')} reservas por aprobar`}
+        detalle={[
+          masPresionado ? `${masPresionado.nombre} concentra ${masPresionado.pendientes}` : null,
+          `${pendingInventoryRequests} solicitudes de inventario`,
+          salud ? `sistema ${salud.estado}` : null,
+        ].filter(Boolean).join(' · ')}
+        icono={Inbox}
+        patron="nodos"
+        foco={{ valor: `${tasaAprobacion}%`, leyenda: 'aprobación' }}
+        accion={{ label: 'Ir a la cola', to: '/reservations' }}
+      />
+
       <StatStrip
         loading={loading}
         items={[
@@ -105,30 +105,30 @@ export function AdminDashboard({
         ]}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
+        <div className="flex min-h-0 flex-col gap-3">
+          <Panel
+            title="Reservas por mes"
+            count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
+            accentColor="#184897"
+            action={{ label: 'estadísticas', to: '/statistics' }}
+          >
+            <Tendencia datos={porMes} alto={128} />
+          </Panel>
+
+          <Panel title="En qué estado están" accentColor="#86bb4c">
+            <Anillo porciones={estados} leyendaCentro="reservas" alto={118} />
+          </Panel>
+        </div>
+
         <Panel
-          title="Reservas por mes"
-          count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}% contra el mes anterior` : undefined}
-          accentColor="#184897"
-          action={{ label: 'estadísticas', to: '/statistics' }}
+          title="Cola"
+          count={`${totalPendientes} pendientes${loadingPrioritarias ? ' · calculando' : ''}`}
+          accentColor="#F6CA21"
+          action={{ label: 'ver todas', to: '/reservations' }}
+          scroll
         >
-          <Tendencia datos={porMes} />
-        </Panel>
-
-        <Panel title="En qué estado están" count={`${(data?.reservaStats?.totalReservas ?? 0).toLocaleString('es-UY')} en total`} accentColor="#86bb4c">
-          <Anillo porciones={estados} leyendaCentro="reservas" />
-        </Panel>
-      </div>
-
-      <DualPanel
-        left={{
-          title: 'Cola',
-          count: totalPendientes > 0
-            ? `${totalPendientes} pendiente${totalPendientes === 1 ? '' : 's'}${loadingPrioritarias ? ' · calculando prioridades' : ''}`
-            : undefined,
-          action: totalPendientes > colaUrgente.length ? { label: 'ver todas', to: '/reservations' } : undefined,
-          accentColor: '#184897',
-          body: colaUrgente.length > 0 ? (
+          {colaUrgente.length > 0 ? (
             <div className="divide-y divide-border/60">
               {colaUrgente.map((r) => (
                 <ReservaRow
@@ -141,108 +141,62 @@ export function AdminDashboard({
             </div>
           ) : (
             <EmptyState title="Sin pendientes." />
-          ),
-        }}
-        right={{
-          title: 'Hoy',
-          count: reservasHoy.length > 0 ? `${reservasHoy.length} por delante` : undefined,
-          action: { label: 'calendario', to: '/calendar' },
-          accentColor: '#F6CA21',
-          body: reservasHoy.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {reservasHoy.slice(0, 8).map((r) => (
-                <ReservaRow key={r.id} reserva={r} onClick={onViewDetails} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="No queda nada para hoy." />
-          ),
-        }}
-      />
+          )}
+        </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-[2fr_3fr]">
-        <Panel
-          title="Estado del sistema"
-          count={salud ? `${salud.componentes} componentes` : undefined}
-          accentColor={salud && salud.estado !== 'UP' ? '#e2001a' : '#86bb4c'}
-          action={{ label: 'sistema', to: '/system' }}
-        >
-          <div className="space-y-3 py-1">
-            <div className="flex items-center gap-2">
-              <span
-                className={`h-2.5 w-2.5 rounded-full ${salud?.estado === 'UP' ? 'bg-utec-green' : 'bg-utec-red'}`}
-                aria-hidden
-              />
-              <span className="text-lg font-semibold">{salud?.estado ?? 'Sin datos'}</span>
-              <span className="text-sm text-muted-foreground">
-                {salud && salud.caidos.length > 0 ? `· ${salud.caidos.join(', ')} caído(s)` : '· todo al día'}
-              </span>
-            </div>
-            {verde && (
-              <div className="flex items-baseline gap-2 border-t pt-3 text-sm">
-                <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
-                <b className="tabular-nums">{verde.hojasEvitadas.toLocaleString('es-UY')}</b>
-                <span className="text-muted-foreground">hojas evitadas ·</span>
-                <b className="tabular-nums">{verde.arbolesSalvados.toFixed(1)}</b>
-                <span className="text-muted-foreground">árboles</span>
+        <div className="flex min-h-0 flex-col gap-3">
+          <Panel
+            title="Estado del sistema"
+            count={salud ? `${salud.componentes} componentes` : undefined}
+            accentColor={salud && salud.estado !== 'UP' ? '#e2001a' : '#86bb4c'}
+            action={{ label: 'sistema', to: '/system' }}
+            scroll
+          >
+            <div className="space-y-2 py-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${salud?.estado === 'UP' ? 'bg-utec-green' : 'bg-utec-red'}`}
+                  aria-hidden
+                />
+                <span className="font-semibold">{salud?.estado ?? 'Sin datos'}</span>
+                <span className="truncate text-sm text-muted-foreground">
+                  {salud && salud.caidos.length > 0 ? `· ${salud.caidos.join(', ')}` : '· todo al día'}
+                </span>
               </div>
-            )}
-            {barrasUsuarios.length > 0 && (
-              <div className="border-t pt-2">
-                <p className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
-                <BarrasHorizontales datos={barrasUsuarios} multicolor />
+              {verde && (
+                <div className="flex items-baseline gap-2 border-t pt-2 text-sm">
+                  <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
+                  <b className="tabular-nums">{verde.hojasEvitadas.toLocaleString('es-UY')}</b>
+                  <span className="text-muted-foreground">hojas evitadas</span>
+                </div>
+              )}
+              {barrasUsuarios.length > 0 && (
+                <div className="border-t pt-1">
+                  <p className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
+                  <BarrasHorizontales datos={barrasUsuarios} multicolor />
+                </div>
+              )}
+            </div>
+          </Panel>
+
+          <Panel
+            title="Actividad reciente"
+            count={actividad.length || undefined}
+            accentColor="#00c7ff"
+            action={{ label: 'auditoría', to: '/audit' }}
+            scroll
+          >
+            {actividad.length > 0 ? (
+              <div className="divide-y divide-border/60">
+                {actividad.map((a) => (
+                  <ActividadFila key={`${a.cuando}-${a.usuario}-${a.entidad}`} actividad={a} />
+                ))}
               </div>
+            ) : (
+              <EmptyState title="Sin movimientos." />
             )}
-          </div>
-        </Panel>
-
-        <Panel
-          title="Actividad reciente"
-          count={actividad.length || undefined}
-          accentColor="#00c7ff"
-          action={{ label: 'auditoría', to: '/audit' }}
-        >
-          {actividad.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {actividad.map((a) => (
-                <ActividadFila key={`${a.cuando}-${a.usuario}-${a.entidad}`} actividad={a} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="Sin movimientos registrados." />
-          )}
-        </Panel>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Panel
-          title="Dónde se acumula la cola"
-          accentColor="#e8630a"
-          action={{ label: 'reservas', to: '/reservations' }}
-        >
-          {presion.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
-            </div>
-          ) : (
-            <EmptyState title="Nada esperando." />
-          )}
-        </Panel>
-
-        <Panel
-          title="Próximos eventos"
-          count={eventos.length || undefined}
-          accentColor="#184897"
-          action={{ label: 'ver todos', to: '/eventos' }}
-        >
-          {eventos.length > 0 ? (
-            <div className="divide-y divide-border/60">
-              {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
-            </div>
-          ) : (
-            <EmptyState title="Sin eventos próximos." />
-          )}
-        </Panel>
+          </Panel>
+        </div>
       </div>
     </div>
   );

@@ -12,6 +12,12 @@ interface PanelProps {
   accentColor?: string;
   /** Quita el padding del cuerpo, para listas que dibujan sus propios bordes. */
   flush?: boolean;
+  /**
+   * El cuerpo scrollea por dentro en vez de estirar la tarjeta. Es lo que
+   * mantiene el dashboard en una sola pantalla: la lista puede tener veinte
+   * filas y el panel sigue midiendo lo mismo.
+   */
+  scroll?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -30,11 +36,12 @@ export function Panel({
   action,
   accentColor = '#F6CA21',
   flush = false,
+  scroll = false,
   className,
   children,
 }: Readonly<PanelProps>) {
   return (
-    <section className={`flex flex-col overflow-hidden rounded-xl border bg-card ${className ?? ''}`}>
+    <section className={`flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card ${className ?? ''}`}>
       <div className="flex items-center justify-between gap-3 bg-utec-dark px-5 py-3 text-white">
         <div className="flex min-w-0 items-center gap-2.5">
           <span
@@ -57,7 +64,7 @@ export function Panel({
           </Link>
         )}
       </div>
-      <div className={`flex-1 ${flush ? '' : 'p-3'}`}>{children}</div>
+      <div className={`min-h-0 flex-1 ${scroll ? 'overflow-y-auto' : ''} ${flush ? '' : 'p-3'}`}>{children}</div>
     </section>
   );
 }

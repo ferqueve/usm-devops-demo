@@ -149,8 +149,10 @@ export default function UnifiedDashboard() {
     );
   };
 
+  // h-full: el dashboard ocupa el alto que le da el layout y son los paneles
+  // los que scrollean por dentro, no la pagina.
   return (
-    <div className="space-y-5">
+    <div className="flex h-full min-h-0 flex-col">
       {renderView()}
 
       {selectedReserva && (
