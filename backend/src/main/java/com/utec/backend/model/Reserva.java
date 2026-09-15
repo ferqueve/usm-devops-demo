@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
@@ -61,13 +60,23 @@ public class Reserva {
     @Column(name = "mensaje_analista", columnDefinition = "TEXT")
     private String mensajeAnalista;
     
-    @CreationTimestamp
+    // Se fija en alCrear() y no con @CreationTimestamp: Hibernate aplica ese
+    // generador después de los callbacks, y una reserva que nace aprobada
+    // necesita resuelta_en exactamente igual a created_at.
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
     
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /**
+     * Cuándo dejó de estar pendiente (aprobada o cancelada). Mide el tiempo de
+     * respuesta; no se pisa una vez fijado. Si se creó ya aprobada es igual a
+     * created_at, y las estadísticas la excluyen: no fue la respuesta de nadie.
+     */
+    @Column(name = "resuelta_en")
+    private Instant resueltaEn;
     
     // Campos de auditoría que se pueden setear manualmente si es necesario
     // Estos ya están mapeados por las anotaciones @CreationTimestamp y @UpdateTimestamp
@@ -79,6 +88,28 @@ public class Reserva {
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ReservaItemSolicitado> itemsSolicitados;
     
+    @PrePersist
+    void alCrear() {
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        if (estado == EstadoReserva.APROBADO && resueltaEn == null) {
+            resueltaEn = createdAt;
+        }
+    }
+
+    /**
+     * Pasa de PENDIENTE a {@code nuevoEstado} registrando cuándo se resolvió.
+     * Si no estaba pendiente sólo cambia el estado: cancelar una aprobada no
+     * es responder una solicitud.
+     */
+    public void resolver(EstadoReserva nuevoEstado, Instant cuando) {
+        if (estado == EstadoReserva.PENDIENTE && nuevoEstado != EstadoReserva.PENDIENTE && resueltaEn == null) {
+            resueltaEn = cuando;
+        }
+        estado = nuevoEstado;
+    }
+
     // Enumeración para estados
     public enum EstadoReserva {
         PENDIENTE, APROBADO, CANCELADO

@@ -31,6 +31,7 @@ const CreateReservationPage = lazyConRecarga(() => import('./app/reservations/cr
 const RoomsPage = lazyConRecarga(() => import('./app/rooms/page'));
 const RoomDetailsPage = lazyConRecarga(() => import('./app/rooms/[id]/page'));
 const StatisticsPage = lazyConRecarga(() => import('./app/statistics/page'));
+const PrediccionesPage = lazyConRecarga(() => import('./app/predicciones/page'));
 const AsistentePage = lazyConRecarga(() => import('./app/asistente/page'));
 const UsersPage = lazyConRecarga(() => import('./app/users/page'));
 const SystemPage = lazyConRecarga(() => import('./app/system/page'));
@@ -173,6 +174,15 @@ function AppRoutes() {
         element={
           <RoleProtectedRoute>
             <StatisticsPage />
+          </RoleProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/predicciones"
+        element={
+          <RoleProtectedRoute>
+            <PrediccionesPage />
           </RoleProtectedRoute>
         }
       />

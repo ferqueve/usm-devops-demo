@@ -112,25 +112,6 @@ describe('inventarioApi', () => {
     expect(mockApiRequest).toHaveBeenCalledWith('/inventario/stats', { method: 'GET' });
   });
 
-  it('obtenerEstadisticasDetalladasInventario without filters', async () => {
-    await inventarioApi.obtenerEstadisticasDetalladasInventario();
-    expect(mockApiRequest).toHaveBeenCalledWith('/stats/inventario/detailed', { method: 'GET' });
-  });
-
-  it('obtenerEstadisticasDetalladasInventario with filters', async () => {
-    await inventarioApi.obtenerEstadisticasDetalladasInventario(1, 2, 'DISPONIBLE');
-    const [url] = mockApiRequest.mock.calls[0];
-    expect(url).toContain('espacioId=1');
-    expect(url).toContain('tipoElementoId=2');
-    expect(url).toContain('estado=DISPONIBLE');
-  });
-
-  it('obtenerEstadisticasDetalladasInventario ignores estado="todos"', async () => {
-    await inventarioApi.obtenerEstadisticasDetalladasInventario(null, null, 'todos');
-    const [url] = mockApiRequest.mock.calls[0];
-    expect(url).not.toContain('estado=');
-  });
-
   it('obtenerTodoElInventario GET', async () => {
     await inventarioApi.obtenerTodoElInventario();
     expect(mockApiRequest).toHaveBeenCalledWith('/inventario', { method: 'GET' });

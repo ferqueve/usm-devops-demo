@@ -110,9 +110,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
   // Una vista está activa si su URL coincide con la actual. La primera vista de
   // cada ítem cubre además la ruta pelada, que es la que se abre por defecto.
   const isSubItemActive = useCallback((item: SidebarMenuItemType, sub: SidebarSubItem) => {
-    const actual = `${location.pathname}${location.search}`;
-    if (actual === sub.href) return true;
-    return location.pathname === item.href && !location.search && item.children?.[0]?.id === sub.id;
+    const [ruta, consulta = ''] = sub.href.split('?');
+    if (location.pathname !== ruta) return false;
+    // Se comparan sólo los parámetros de la vista (?tab=): los filtros que la
+    // pantalla suma a la URL (?tipoEspacio=, ?aedificio=) no la desmarcan.
+    const actuales = new URLSearchParams(location.search);
+    const propios = [...new URLSearchParams(consulta).entries()];
+    if (propios.length > 0 && propios.every(([clave, valor]) => actuales.get(clave) === valor)) return true;
+    return location.pathname === item.href && !actuales.has('tab') && item.children?.[0]?.id === sub.id;
   }, [location.pathname, location.search]);
 
   // Agrupar los ítems visibles por sección, en el orden de sidebarSections.

@@ -34,6 +34,10 @@ public class PrediccionReserva {
     @Column(name = "espacio_id")
     private Long espacioId;
 
+    /** Tipo de espacio de la predicción; null en la global. */
+    @Column(name = "tipo_espacio_id")
+    private Long tipoEspacioId;
+
     @Column(name = "prediccion", nullable = false, precision = 10, scale = 2)
     private BigDecimal prediccion;
 

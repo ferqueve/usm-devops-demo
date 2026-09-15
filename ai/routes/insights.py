@@ -86,6 +86,11 @@ class AnalyzeForecastRequest(BaseModel):
     historico: list[dict[str, Any]]
     predicciones: list[dict[str, Any]]
     mape: float | None = None
+    # Error ponderado por volumen: con pocas reservas por dia el MAPE se dispara
+    # y el modelo parece peor de lo que es.
+    wape: float | None = None
+    # Reservas ya aprobadas para cada dia del horizonte.
+    reservadas: list[dict[str, Any]] | None = None
 
 
 # --------- 1.4 Generación de copy de evento ---------
@@ -151,16 +156,119 @@ def resumen_temario(body: ResumenTemarioRequest) -> dict:
 def analyze_forecast(body: AnalyzeForecastRequest) -> dict:
     system = (
         "Sos un analista que interpreta predicciones de demanda generadas por un modelo Prophet. "
-        "Te paso histórico reciente, predicciones futuras (cada una con banda inferior y superior) "
-        "y opcionalmente el MAPE del modelo. Devolvé un análisis de 3 a 5 oraciones en español formal "
-        "que cubra: tendencia general, picos o caídas anticipados con fecha aproximada, y una "
+        "Te paso histórico reciente, predicciones futuras (cada una con banda inferior y superior), "
+        "las reservas ya aprobadas para cada día del horizonte y el error del modelo en validación "
+        "(WAPE: error absoluto sobre el volumen total). Devolvé un análisis de 3 a 5 oraciones en "
+        "español formal que cubra: tendencia general, picos o caídas anticipados con fecha aproximada, "
+        "qué días ya tienen reservada casi toda la demanda esperada y cuáles tienen margen, y una "
         "recomendación operativa accionable (por ejemplo, liberar espacios extra cierto día). "
-        "Si el MAPE es alto (>40%), aclaralo brevemente como advertencia."
+        "Si el error es alto (>40%), aclaralo brevemente como advertencia."
     )
     payload = {
-        "mape_porcentaje": body.mape,
+        "error_wape_porcentaje": body.wape if body.wape is not None else body.mape,
         "historico_reciente": body.historico[-30:],  # acotar tokens
         "predicciones": body.predicciones,
+        "reservadas": body.reservadas or [],
     }
     texto = _invoke(system, payload, "forecast")
+    return {"analisis": texto.strip()}
+
+
+# --------- 1.6 Análisis del pronóstico de inventario ---------
+
+class TipoInventarioForecast(BaseModel):
+    nombre: str
+    stockDisponible: float | None = None
+    picoEsperado: float | None = None
+    fechaPico: str | None = None
+    # Probabilidad (0 a 1) de que en algún día del horizonte se pida más de lo que hay.
+    probFaltanteMax: float | None = None
+    diasEnRiesgo: int | None = None
+    riesgo: str | None = None
+    # Lo que ya está pedido para la semana más cargada: si supera el stock, el faltante es un hecho.
+    comprometidasMax: float | None = None
+
+
+class AnalyzeInventarioForecastRequest(BaseModel):
+    wape: float | None = None
+    tipos: list[TipoInventarioForecast]
+
+
+# Los tipos sin riesgo no le aportan nada al análisis y le gastan tokens:
+# se mandan primero los que pueden faltar y se corta ahí.
+_ORDEN_RIESGO = {"sin_stock": 0, "alto": 1, "medio": 2, "bajo": 3}
+
+
+@router.post("/analyze-inventario-forecast")
+def analyze_inventario_forecast(body: AnalyzeInventarioForecastRequest) -> dict:
+    system = (
+        "Sos un analista de operaciones de una universidad. Te paso un pronóstico de demanda de "
+        "equipamiento (proyectores, sillas, computadoras…) para los próximos 30 días: para cada tipo, "
+        "el stock disponible hoy, el pico esperado de unidades pedidas a la vez, la fecha de ese pico, "
+        "la probabilidad máxima de que se pida más de lo que hay (0 a 1), cuántos días superan el 50% "
+        "de probabilidad, un nivel de riesgo (sin_stock, alto, medio, bajo) y el máximo de unidades ya "
+        "comprometidas. Devolvé un análisis de 3 a 5 oraciones en español rioplatense, tono práctico, "
+        "sin bullet points, que diga: qué tipos van a faltar y cuándo, cuántas unidades extra conviene "
+        "conseguir (diferencia entre el pico esperado y el stock) o cómo redistribuir o reprogramar, y "
+        "si lo ya comprometido supera el stock, que eso ya es un faltante seguro. Si ningún tipo tiene "
+        "riesgo, decilo en una oración. Si el error del modelo (WAPE) es mayor a 40%, advertilo. "
+        "No inventes tipos ni números que no estén en el payload."
+    )
+    tipos = sorted(body.tipos, key=lambda t: (_ORDEN_RIESGO.get(t.riesgo or "", 9), -(t.probFaltanteMax or 0)))
+    payload = {
+        "error_wape_porcentaje": body.wape,
+        "tipos": [t.model_dump() for t in tipos[:15]],
+    }
+    texto = _invoke(system, payload, "inventario_forecast")
+    return {"analisis": texto.strip()}
+
+
+# --------- 1.7 Análisis de la asistencia esperada a tutorías ---------
+
+class TutoriaProxima(BaseModel):
+    materia: str
+    inicio: str
+    cupo: int | None = None
+    inscriptos: int
+    esperados: float | None = None
+    riesgo: str
+
+
+class FactorAsistencia(BaseModel):
+    nombre: str
+    oddsRatio: float
+
+
+class AnalyzeAsistenciaRequest(BaseModel):
+    auc: float | None = None
+    tasaBase: float | None = None
+    resumen: dict[str, Any] = {}
+    proximas: list[TutoriaProxima] = []
+    factores: list[FactorAsistencia] = []
+
+
+@router.post("/analyze-asistencia")
+def analyze_asistencia(body: AnalyzeAsistenciaRequest) -> dict:
+    system = (
+        "Sos un asistente de coordinación académica de una universidad. Te paso la predicción de "
+        "asistencia a las próximas tutorías, hecha con una regresión logística: un resumen, la lista "
+        "de tutorías (materia, inicio, cupo, inscriptos, asistentes esperados y un riesgo: vacia, baja, "
+        "normal, alta —alta quiere decir que se llena o desborda—, sin_prediccion) y los factores que "
+        "más pesan, con su odds ratio (mayor a 1 sube las chances de asistir, menor a 1 las baja). "
+        "Devolvé un análisis de 3 a 5 oraciones en español rioplatense, tono práctico, sin bullet points, "
+        "que diga: qué tutorías van a quedar casi vacías y cuáles se desbordan (con materia y fecha), "
+        "qué factores pesan más explicados en lenguaje llano, y una recomendación accionable (por "
+        "ejemplo, recordar a los inscriptos, fusionar tutorías vacías o abrir otra franja). "
+        "Si el AUC es menor a 0.6, advertí que el modelo todavía no distingue bien quién va a ir y que "
+        "los números son orientativos. No inventes tutorías ni números que no estén en el payload."
+    )
+    payload = {
+        "auc": body.auc,
+        "tasa_base_asistencia": body.tasaBase,
+        "resumen": body.resumen,
+        # Acotar tokens: el frontend ya manda las 25 más relevantes, pero no hay que confiar en eso.
+        "proximas": [t.model_dump() for t in body.proximas[:25]],
+        "factores": [f.model_dump() for f in body.factores[:12]],
+    }
+    texto = _invoke(system, payload, "asistencia")
     return {"analisis": texto.strip()}

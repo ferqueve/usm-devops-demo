@@ -1,7 +1,6 @@
 package com.utec.backend.service;
 
 import com.utec.backend.repository.HechosInventarioRepository;
-import com.utec.backend.repository.InventarioItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,6 @@ public class EstadisticasInventarioService {
     private static final String ESTADO_DANADO = "DANADO";
 
     private final HechosInventarioRepository hechosInventarioRepository;
-    private final InventarioItemRepository inventarioItemRepository;
 
     /**
      * Para cada fecha del rango, total de items por estado. Pensado para
@@ -126,43 +124,6 @@ public class EstadisticasInventarioService {
         resultado.put("fechaInicio", fechaInicio.toString());
         resultado.put("fechaFin", fechaFin.toString());
         resultado.put("porEspacio", filas);
-        return resultado;
-    }
-
-    /**
-     * Matriz cruzada espacio × tipo de elemento (estado actual de OLTP).
-     * Devuelve estructura aplanada lista para renderizar como heatmap.
-     */
-    public Map<String, Object> matrizEspacioTipo() {
-        Map<Long, Map<String, Object>> espacios = new LinkedHashMap<>();
-        Map<Long, Map<String, Object>> tipos = new LinkedHashMap<>();
-        List<Map<String, Object>> celdas = new ArrayList<>();
-
-        for (Object[] row : inventarioItemRepository.matrizEspacioTipo()) {
-            Long espacioId = ((Number) row[0]).longValue();
-            String espacioNombre = (String) row[1];
-            Long tipoId = ((Number) row[2]).longValue();
-            String tipoNombre = (String) row[3];
-            int total = ((Number) row[4]).intValue();
-
-            espacios.computeIfAbsent(espacioId, k -> Map.of(
-                    K_ESPACIO_ID, espacioId,
-                    "espacioNombre", espacioNombre == null ? "Sin asignar" : espacioNombre));
-            tipos.computeIfAbsent(tipoId, k -> Map.of(
-                    "tipoId", tipoId,
-                    "tipoNombre", tipoNombre == null ? "—" : tipoNombre));
-
-            Map<String, Object> celda = new LinkedHashMap<>();
-            celda.put(K_ESPACIO_ID, espacioId);
-            celda.put("tipoId", tipoId);
-            celda.put("total", total);
-            celdas.add(celda);
-        }
-
-        Map<String, Object> resultado = new LinkedHashMap<>();
-        resultado.put("espacios", new ArrayList<>(espacios.values()));
-        resultado.put("tipos", new ArrayList<>(tipos.values()));
-        resultado.put("celdas", celdas);
         return resultado;
     }
 

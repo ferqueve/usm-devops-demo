@@ -14,8 +14,8 @@ import java.time.ZoneId;
 /**
  * Scheduler de la capa analítica: pobla las tablas de hechos diarias.
  *
- * Pensado para ejecutarse en horario de bajo tráfico (3:00 / 3:15 AM, después
- * del job de recomendaciones). Los métodos backfill* exponen la misma lógica
+ * Corre de madrugada en la hora del campus (3:00 / 3:15), después del job de
+ * recomendaciones. Los métodos backfill* exponen la misma lógica
  * para correr sobre rangos arbitrarios desde el endpoint admin.
  */
 @Service
@@ -27,17 +27,22 @@ public class EstadisticasScheduledService {
     // antes que en Uruguay.
     private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
 
-    private static final int VENTANA_RECOMPUTE_RESERVAS_DIAS = 7;
+    /**
+     * Días hacia atrás que se recalculan cada noche. Con siete, cancelar o
+     * aprobar a destiempo una reserva de hace dos semanas nunca llegaba a las
+     * estadísticas. Es una sola sentencia agregada: sesenta días cuestan poco.
+     */
+    private static final int VENTANA_RECOMPUTE_RESERVAS_DIAS = 60;
 
     private final HechosReservaRepository hechosReservaRepository;
     private final HechosInventarioRepository hechosInventarioRepository;
 
     /**
-     * Recomputa las reservas de los últimos 7 días. Es idempotente: borra y
+     * Recomputa las reservas de los últimos días (ver la ventana). Es idempotente: borra y
      * vuelve a calcular para absorber cancelaciones, aprobaciones y creaciones
      * con fecha pasada.
      */
-    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(cron = "0 0 3 * * ?", zone = "America/Montevideo")
     @Transactional
     public void recalcularHechosReservaDiario() {
         LocalDate hoy = LocalDate.now(ZONA);
@@ -50,7 +55,7 @@ public class EstadisticasScheduledService {
      * Toma una foto del inventario activo y la etiqueta con la fecha de hoy.
      * No reescribe el pasado: cada día es una observación independiente.
      */
-    @Scheduled(cron = "0 15 3 * * ?")
+    @Scheduled(cron = "0 15 3 * * ?", zone = "America/Montevideo")
     @Transactional
     public void recalcularHechosInventarioDiario() {
         LocalDate hoy = LocalDate.now(ZONA);

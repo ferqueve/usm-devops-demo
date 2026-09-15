@@ -783,7 +783,7 @@ public class ReservaService {
     }
 
     private Reserva aplicarCambioEstado(Reserva reserva, Reserva.EstadoReserva nuevoEstado, String mensajeAnalista) {
-        reserva.setEstado(nuevoEstado);
+        reserva.resolver(nuevoEstado, Instant.now());
         if (mensajeAnalista != null && !mensajeAnalista.trim().isEmpty()) {
             reserva.setMensajeAnalista(mensajeAnalista.trim());
         }
@@ -913,7 +913,8 @@ public class ReservaService {
             throw new IllegalStateException("La reserva ya está cancelada");
         }
 
-        reserva.setEstado(Reserva.EstadoReserva.CANCELADO);
+        // Si seguía pendiente, cancelarla también la resuelve.
+        reserva.resolver(Reserva.EstadoReserva.CANCELADO, Instant.now());
         reservaRepository.save(reserva);
 
         log.info("Reserva ID: {} cancelada exitosamente", id);

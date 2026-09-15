@@ -97,6 +97,14 @@ public class AiService {
         return proxy("POST", "/insights/analyze-forecast", payload);
     }
 
+    public Map<String, Object> analyzeInventarioForecast(Map<String, Object> payload) {
+        return proxy("POST", "/insights/analyze-inventario-forecast", payload);
+    }
+
+    public Map<String, Object> analyzeAsistencia(Map<String, Object> payload) {
+        return proxy("POST", "/insights/analyze-asistencia", payload);
+    }
+
     public Map<String, Object> semanticSearch(String query, int top) {
         return proxy("GET", "/search/espacios?q=" + java.net.URLEncoder.encode(
                 query, java.nio.charset.StandardCharsets.UTF_8) + "&top=" + top, null);

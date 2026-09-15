@@ -14,6 +14,8 @@ export interface AnalyzeForecastRequest {
   historico: Array<Record<string, unknown>>;
   predicciones: Array<Record<string, unknown>>;
   mape?: number | null;
+  wape?: number | null;
+  reservadas?: Array<Record<string, unknown>>;
 }
 
 export interface SemanticSearchResultado {
@@ -80,6 +82,50 @@ export async function postExplainRecomendacion(payload: ExplainRecomendacionRequ
 
 export async function postAnalyzeForecast(payload: AnalyzeForecastRequest): Promise<ApiResponse<{ analisis: string }>> {
   return verificarIA(await apiRequest<{ analisis: string }>(`${base}/insights/analyze-forecast`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }));
+}
+
+export interface AnalyzeInventarioForecastRequest {
+  wape: number | null;
+  tipos: Array<{
+    nombre: string;
+    stockDisponible: number | null;
+    picoEsperado: number | null;
+    fechaPico: string | null;
+    probFaltanteMax: number | null;
+    diasEnRiesgo: number | null;
+    riesgo: string | null;
+    comprometidasMax: number | null;
+  }>;
+}
+
+export async function postAnalyzeInventarioForecast(payload: AnalyzeInventarioForecastRequest): Promise<ApiResponse<{ analisis: string }>> {
+  return verificarIA(await apiRequest<{ analisis: string }>(`${base}/insights/analyze-inventario-forecast`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }));
+}
+
+export interface AnalyzeAsistenciaRequest {
+  auc: number | null;
+  tasaBase: number | null;
+  resumen: Record<string, unknown>;
+  /** Hasta 25: con más, el prompt crece y el análisis no mejora. */
+  proximas: Array<{
+    materia: string;
+    inicio: string;
+    cupo: number | null;
+    inscriptos: number;
+    esperados: number | null;
+    riesgo: string;
+  }>;
+  factores: Array<{ nombre: string; oddsRatio: number }>;
+}
+
+export async function postAnalyzeAsistencia(payload: AnalyzeAsistenciaRequest): Promise<ApiResponse<{ analisis: string }>> {
+  return verificarIA(await apiRequest<{ analisis: string }>(`${base}/insights/analyze-asistencia`, {
     method: 'POST',
     body: JSON.stringify(payload),
   }));

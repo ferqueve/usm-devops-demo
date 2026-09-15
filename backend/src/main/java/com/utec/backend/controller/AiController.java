@@ -71,6 +71,24 @@ public class AiController {
         return ResponseEntity.ok(ApiResponse.success(aiService.analyzeForecast(payload), "ok"));
     }
 
+    // Mismo permiso que analyze-forecast: quien ve las predicciones (GET /stats/ml/*)
+    // tiene que poder pedir su lectura, si no el botón de IA le da 403 en su propia vista.
+    @Operation(summary = "Análisis natural del pronóstico de faltantes de equipamiento")
+    @PostMapping("/insights/analyze-inventario-forecast")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_reservas')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> analyzeInventarioForecast(
+            @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(ApiResponse.success(aiService.analyzeInventarioForecast(payload), "ok"));
+    }
+
+    @Operation(summary = "Análisis natural de la asistencia esperada a las próximas tutorías")
+    @PostMapping("/insights/analyze-asistencia")
+    @PreAuthorize("hasPermission(null, 'estadisticas:ver_reservas')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> analyzeAsistencia(
+            @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(ApiResponse.success(aiService.analyzeAsistencia(payload), "ok"));
+    }
+
     @Operation(summary = "Búsqueda semántica de espacios (RAG)")
     @GetMapping("/search/espacios")
     @PreAuthorize("isAuthenticated()")

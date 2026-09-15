@@ -87,15 +87,6 @@ export const inventarioApi = {
     return apiRequest<InventoryStats>('/inventario/stats', { method: 'GET' });
   },
 
-  async obtenerEstadisticasDetalladasInventario(espacioId?: number | null, tipoElementoId?: number | null, estado?: string): Promise<ApiResponse<InventoryStats>> {
-    const params = new URLSearchParams();
-    if (espacioId !== null && espacioId !== undefined) params.append('espacioId', espacioId.toString());
-    if (tipoElementoId !== null && tipoElementoId !== undefined) params.append('tipoElementoId', tipoElementoId.toString());
-    if (estado && estado !== 'todos') params.append('estado', estado);
-    const queryString = params.toString();
-    return apiRequest<InventoryStats>(`/stats/inventario/detailed${queryString ? '?' + queryString : ''}`, { method: 'GET' });
-  },
-
   async obtenerTodoElInventario(): Promise<ApiResponse<InventarioItem[]>> {
     return apiRequest<InventarioItem[]>('/inventario', { method: 'GET' });
   },

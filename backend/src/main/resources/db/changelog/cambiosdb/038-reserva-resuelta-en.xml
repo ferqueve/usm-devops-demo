@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Cuándo una reserva dejó de estar pendiente. Sin esto el tiempo de
+        respuesta se aproximaba con updated_at, que cambia con cualquier edición.
+        Las reservas existentes quedan en null: no hay forma honesta de
+        reconstruirlo y las estadísticas las excluyen.
+    -->
+    <changeSet id="001" author="Mathias">
+        <addColumn tableName="reserva">
+            <column name="resuelta_en" type="TIMESTAMP WITH TIME ZONE"
+                    remarks="Momento en que pasó de PENDIENTE a APROBADO o CANCELADO; = created_at si nació aprobada">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Todas las estadísticas filtran por inicio; sin índice cada consulta recorre la tabla entera. -->
+    <changeSet id="002" author="Mathias">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="reserva" indexName="idx_reserva_inicio"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="idx_reserva_inicio" tableName="reserva">
+            <column name="inicio"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

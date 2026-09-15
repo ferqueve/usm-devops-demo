@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Predicciones por área. Hasta acá había un único modelo (demanda global
+        de reservas). Se suman:
+        - demanda de reservas por tipo de espacio (mismo modelo, otra serie),
+        - pico diario de equipos pedidos por tipo de elemento, contra el stock,
+        - probabilidad de que cada inscripto vaya a su tutoría.
+        Como las tablas de 022, las escribe ml-svc y el backend sólo las lee.
+    -->
+
+    <changeSet id="001" author="Mathias">
+        <addColumn tableName="modelo_forecast">
+            <column name="tipo_espacio_id" type="BIGINT"
+                    remarks="Tipo de espacio del modelo de reservas por tipo; null en los demás"/>
+        </addColumn>
+        <addColumn tableName="prediccion_reserva">
+            <column name="tipo_espacio_id" type="BIGINT"
+                    remarks="Tipo de espacio de la predicción; null en la global"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="002" author="Mathias">
+        <createTable tableName="prediccion_demanda_equipo"
+                     remarks="Pico diario esperado de unidades pedidas de un tipo de elemento">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="modelo_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_pde_modelo"
+                             references="modelo_forecast(id)" deleteCascade="true"/>
+            </column>
+            <column name="tipo_elemento_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_pde_tipo_elemento"
+                             references="tipo_elemento(id)" deleteCascade="true"/>
+            </column>
+            <column name="fecha_objetivo" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prediccion" type="NUMERIC(10,2)" remarks="Media esperada del pico de unidades simultáneas">
+                <constraints nullable="false"/>
+            </column>
+            <column name="banda_inferior" type="NUMERIC(10,2)"/>
+            <column name="banda_superior" type="NUMERIC(10,2)"/>
+            <column name="comprometidas" type="INTEGER" defaultValueNumeric="0"
+                    remarks="Pico simultáneo de unidades ya pedidas para ese día al entrenar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="generated_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="prediccion_demanda_equipo" indexName="idx_pde_modelo_tipo_fecha">
+            <column name="modelo_id"/>
+            <column name="tipo_elemento_id"/>
+            <column name="fecha_objetivo"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="003" author="Mathias">
+        <createTable tableName="prediccion_asistencia"
+                     remarks="Probabilidad de que un inscripto asista a su tutoría">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="modelo_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_pa_modelo"
+                             references="modelo_forecast(id)" deleteCascade="true"/>
+            </column>
+            <column name="tutoria_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_pa_tutoria"
+                             references="tutoria(id)" deleteCascade="true"/>
+            </column>
+            <column name="tutoria_reserva_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_pa_tutoria_reserva"
+                             references="tutoria_reserva(id)" deleteCascade="true"/>
+            </column>
+            <column name="probabilidad" type="NUMERIC(5,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="generated_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="prediccion_asistencia" columnNames="modelo_id, tutoria_reserva_id"
+                             constraintName="uk_pa_modelo_inscripcion"/>
+        <createIndex tableName="prediccion_asistencia" indexName="idx_pa_tutoria">
+            <column name="tutoria_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

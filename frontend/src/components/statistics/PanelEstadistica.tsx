@@ -1,0 +1,152 @@
+import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight, Info, Lightbulb, Maximize2, MoonStar, Radio, Camera, Calculator } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+
+export type Fuente = 'vivo' | 'noche' | 'foto' | 'modelo';
+
+export interface Explicacion {
+  /** Qué pregunta responde, en una o dos oraciones. */
+  que: string;
+  /** De dónde sale el número y cómo se calcula. */
+  como: string;
+  /** Cómo leerlo o qué mirar primero. */
+  lectura?: string;
+  /** Límites o trampas del dato. */
+  ojo?: string;
+  fuente: Fuente;
+}
+
+const FUENTES: Record<Fuente, { icono: typeof Radio; texto: string }> = {
+  vivo: { icono: Radio, texto: 'En vivo: se calcula sobre las reservas al momento de abrir la pantalla.' },
+  noche: { icono: MoonStar, texto: 'Hasta anoche: sale de las tablas que se recalculan cada madrugada.' },
+  foto: { icono: Camera, texto: 'Foto diaria: el estado del inventario que se registra cada madrugada.' },
+  modelo: { icono: Calculator, texto: 'Estado actual del inventario, calculado al abrir la pantalla.' },
+};
+
+interface Props {
+  title: string;
+  count?: string | number;
+  accentColor?: string;
+  action?: { label: string; to: string };
+  explicacion: Explicacion;
+  /** Con función, el contenido sabe si se muestra en el modal para agrandarse. */
+  children: ReactNode | ((ampliado: boolean) => ReactNode);
+  className?: string;
+  /** Centra el contenido en el alto del panel (donas, medidores). */
+  centrar?: boolean;
+  /** El cuerpo scrollea por dentro en vez de estirar la tarjeta. */
+  scroll?: boolean;
+  /** Sin padding, para tablas que dibujan sus propios bordes. */
+  flush?: boolean;
+}
+
+/**
+ * Panel de estadísticas: encabezado oscuro, contenido que ocupa el alto de su
+ * fila (así dos paneles lado a lado coinciden) y un botón que abre la misma
+ * estadística en grande con qué muestra, cómo se calcula y cómo leerla.
+ */
+export function PanelEstadistica({
+  title,
+  count,
+  accentColor = '#F6CA21',
+  action,
+  explicacion,
+  children,
+  className,
+  centrar = false,
+  scroll = false,
+  flush = false,
+}: Readonly<Props>) {
+  const [abierto, setAbierto] = useState(false);
+  const contenido = (ampliado: boolean) => (typeof children === 'function' ? children(ampliado) : children);
+  const Fuente = FUENTES[explicacion.fuente];
+
+  return (
+    <section className={`flex h-full min-h-0 flex-col overflow-hidden rounded-xl border bg-card ${className ?? ''}`}>
+      <div className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-2.5 text-white">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accentColor }} aria-hidden />
+          <h2 className="shrink-0 text-sm font-semibold tracking-tight">{title}</h2>
+          {count !== undefined && count !== '' && <span className="truncate text-xs text-white/60">{count}</span>}
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          {action && (
+            <Link
+              to={action.to}
+              className="inline-flex items-center gap-0.5 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+            >
+              {action.label}
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={() => setAbierto(true)}
+            aria-label={`Ampliar y explicar: ${title}`}
+            title="Ampliar y ver la explicación"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div
+        className={`min-h-0 flex-1 ${scroll ? 'overflow-y-auto [scrollbar-width:thin]' : ''} ${flush ? '' : 'p-4'} ${
+          centrar ? 'flex flex-col justify-center' : ''
+        }`}
+      >
+        {contenido(false)}
+        {/* Con scroll, un degradé abajo avisa que hay más para ver. */}
+        {scroll && <div className={`pointer-events-none sticky bottom-0 h-8 bg-gradient-to-t from-card to-transparent ${flush ? '' : '-mx-4 -mb-4'}`} aria-hidden />}
+      </div>
+
+      <Dialog open={abierto} onOpenChange={setAbierto}>
+        <DialogContent
+          // Sin esto el foco cae en el primer sector del gráfico y le dibuja un recuadro negro.
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="gap-0 overflow-hidden p-0 sm:max-w-6xl [&_.recharts-surface]:outline-none [&_.recharts-sector]:outline-none [&>button]:top-3.5 [&>button]:text-white [&>button]:ring-offset-utec-dark [&>button]:focus:ring-white/40">
+          <div className="flex items-center gap-2.5 bg-utec-dark px-5 py-3 pr-12 text-white">
+            <span className="h-5 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accentColor }} aria-hidden />
+            <DialogTitle className="text-base font-semibold text-white">{title}</DialogTitle>
+            {count !== undefined && count !== '' && <span className="truncate text-sm text-white/60">{count}</span>}
+          </div>
+          <DialogDescription className="sr-only">{explicacion.que}</DialogDescription>
+
+          {/* Bloque en celular: con grid y alto máximo, las filas se achicaban y la explicación pisaba al gráfico. */}
+          <div className="block max-h-[calc(90vh-52px)] overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="min-w-0 p-5">{contenido(true)}</div>
+
+            <aside className="space-y-4 border-t bg-muted/40 p-5 text-sm lg:border-l lg:border-t-0">
+              <Bloque icono={Info} titulo="Qué muestra">{explicacion.que}</Bloque>
+              <Bloque icono={Calculator} titulo="Cómo se calcula">{explicacion.como}</Bloque>
+              {explicacion.lectura && <Bloque icono={Lightbulb} titulo="Cómo leerlo">{explicacion.lectura}</Bloque>}
+              {explicacion.ojo && (
+                <div className="rounded-lg border border-utec-orange/30 bg-utec-orange/10 px-3 py-2 text-xs leading-relaxed">
+                  <b>Para tener en cuenta:</b> {explicacion.ojo}
+                </div>
+              )}
+              <div className="flex items-start gap-2 border-t pt-3 text-xs text-muted-foreground">
+                <Fuente.icono className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>{Fuente.texto}</span>
+              </div>
+            </aside>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
+function Bloque({ icono: Icono, titulo, children }: Readonly<{ icono: typeof Info; titulo: string; children: ReactNode }>) {
+  return (
+    <div>
+      <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <Icono className="h-3.5 w-3.5" />
+        {titulo}
+      </div>
+      <p className="leading-relaxed text-foreground">{children}</p>
+    </div>
+  );
+}

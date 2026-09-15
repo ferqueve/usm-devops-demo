@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   Database,
   ClipboardList,
-  SlidersHorizontal
+  SlidersHorizontal,
+  BrainCircuit,
 } from "lucide-react";
 import type { SidebarMenuItem, SidebarSection } from '../types/ui';
 import type { UserRole } from '../types/users';
@@ -117,7 +118,22 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
       // Cada vista pide el permiso de sus propios endpoints: MANTENIMIENTO no
       // ve las de reservas y ANALISTA veia la de inventario sin poder abrirla.
       { id: "statistics-reservas", label: "Reservas", icon: BarChart3, href: "/statistics?tab=reservas", permiso: "estadisticas:ver_reservas" },
-      { id: "statistics-inventario", label: "Inventario", icon: Boxes, href: "/statistics?tab=inventario", permiso: "estadisticas:ver_inventario" }
+      { id: "statistics-inventario", label: "Inventario", icon: Boxes, href: "/statistics?tab=inventario", permiso: "estadisticas:ver_inventario" },
+      // Tutorías y eventos: usa los endpoints de reservas, así que pide su permiso.
+      { id: "statistics-academico", label: "Académico", icon: GraduationCap, href: "/statistics?tab=academico", permiso: "estadisticas:ver_reservas" }
+    ]
+  },
+  {
+    id: "predicciones",
+    label: "Predicciones",
+    icon: BrainCircuit,
+    href: "/predicciones",
+    section: "analisis",
+    children: [
+      // Las tres leen los endpoints de ML, que piden el permiso de ver reservas.
+      { id: "predicciones-reservas", label: "Reservas", icon: BarChart3, href: "/predicciones?tab=reservas", permiso: "estadisticas:ver_reservas" },
+      { id: "predicciones-inventario", label: "Inventario", icon: Boxes, href: "/predicciones?tab=inventario", permiso: "estadisticas:ver_reservas" },
+      { id: "predicciones-academico", label: "Académico", icon: GraduationCap, href: "/predicciones?tab=academico", permiso: "estadisticas:ver_reservas" }
     ]
   },
   {
@@ -201,6 +217,7 @@ export const ROLE_PERMISSIONS = {
       '/inventory',
       '/inventory/requests',
       '/statistics',
+      '/predicciones',
       '/asistente',
       '/system',
       '/audit',
@@ -222,6 +239,7 @@ export const ROLE_PERMISSIONS = {
       'inventory',
       'inventory-requests',
       'statistics',
+      'predicciones',
       'asistente',
       'system',
       'audit',
@@ -243,6 +261,7 @@ export const ROLE_PERMISSIONS = {
       '/calendar',
       '/inventory',
       '/statistics',
+      '/predicciones',
       '/asistente',
       '/materias',
       '/materias/:id',
@@ -257,6 +276,7 @@ export const ROLE_PERMISSIONS = {
       'calendar',
       'inventory',
       'statistics',
+      'predicciones',
       'asistente',
       'materias',
       'eventos',

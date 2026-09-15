@@ -22,7 +22,8 @@ import java.util.List;
  * con valor devuelven las de ese usuario, con null las de todo el sistema, que
  * es la unica diferencia entre las estadisticas personales y las globales.
  *
- * Las fechas se agrupan en UTC, igual que hacia el calculo anterior.
+ * Las fechas se agrupan en la hora del campus: en UTC una reserva de las 21:00
+ * caia en el dia -- o el mes -- siguiente.
  */
 @Repository
 public interface ReservaEstadisticasRepository extends JpaRepository<Reserva, Long> {
@@ -52,7 +53,7 @@ public interface ReservaEstadisticasRepository extends JpaRepository<Reserva, Lo
               COALESCE(MAX(EXTRACT(EPOCH FROM (r.fin - r.inicio))), 0) / 3600.0            AS horas_max,
               COALESCE(MIN(EXTRACT(EPOCH FROM (r.fin - r.inicio))), 0) / 3600.0            AS horas_min,
               COALESCE(SUM(EXTRACT(EPOCH FROM (r.fin - r.inicio)))
-                       FILTER (WHERE to_char(r.inicio AT TIME ZONE 'UTC', 'YYYY-MM') = :mesActual), 0) / 3600.0
+                       FILTER (WHERE to_char(r.inicio AT TIME ZONE 'America/Montevideo', 'YYYY-MM') = :mesActual), 0) / 3600.0
                                                                                           AS horas_mes,
               MIN(r.inicio)                                                               AS primera,
               MAX(r.fin) FILTER (WHERE r.fin < :ahora)                                    AS ultima_pasada,
@@ -73,18 +74,18 @@ public interface ReservaEstadisticasRepository extends JpaRepository<Reserva, Lo
             """, nativeQuery = true)
     List<Object[]> conteoPorEstado(@Param("usuarioId") Long usuarioId);
 
-    /** Reservas por mes de inicio, en UTC. Devuelve [YYYY-MM, cantidad]. */
+    /** Reservas por mes de inicio. Devuelve [YYYY-MM, cantidad]. */
     @Query(value = """
-            SELECT to_char(r.inicio AT TIME ZONE 'UTC', 'YYYY-MM') AS mes, COUNT(*)
+            SELECT to_char(r.inicio AT TIME ZONE 'America/Montevideo', 'YYYY-MM') AS mes, COUNT(*)
             FROM reserva r
             WHERE (:usuarioId IS NULL OR r.usuario_id = :usuarioId)
             GROUP BY 1
             """, nativeQuery = true)
     List<Object[]> conteoPorMes(@Param("usuarioId") Long usuarioId);
 
-    /** Reservas por dia de la semana en UTC. Devuelve [1..7 (lunes a domingo), cantidad]. */
+    /** Reservas por dia de la semana. Devuelve [1..7 (lunes a domingo), cantidad]. */
     @Query(value = """
-            SELECT EXTRACT(ISODOW FROM r.inicio AT TIME ZONE 'UTC') AS dia, COUNT(*)
+            SELECT EXTRACT(ISODOW FROM r.inicio AT TIME ZONE 'America/Montevideo') AS dia, COUNT(*)
             FROM reserva r
             WHERE (:usuarioId IS NULL OR r.usuario_id = :usuarioId)
             GROUP BY 1

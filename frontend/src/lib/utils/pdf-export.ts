@@ -1,7 +1,6 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import type { InventoryStats, ReservaStats } from '@/lib/types/spaces';
+import type { Academico, Aprobacion, DemandaInventario, EstadoInventario, ExternosReservas, OcupacionEspacio, ResumenCarrera, ResumenEdificio, ResumenReservas, TopUsuario } from '@/lib/api/stats';
 import {
   drawFiltersBox,
   type ExtendedJsPDF,
@@ -9,12 +8,6 @@ import {
   type RGB,
   renderAutoTable,
 } from './export-helpers';
-
-interface ExportFilters {
-  espacioNombre?: string;
-  tipoElementoNombre?: string;
-  estado?: string;
-}
 
 // Colores compartidos para reportes PDF
 const PDF_COLORS = {
@@ -27,14 +20,6 @@ const PDF_COLORS = {
   purple: [156, 39, 176] as RGB,
   deepPurple: [103, 58, 183] as RGB,
 };
-
-// Función auxiliar para formatear diferencia del mes anterior
-function formatMesAnterior(diferencia: number, porcentaje: number): string {
-  if (diferencia === 0) return '-';
-  const signo = diferencia > 0 ? '+' : '';
-  const signoPorcentaje = porcentaje > 0 ? '+' : '';
-  return `${signo}${diferencia} (${signoPorcentaje}${porcentaje.toFixed(1)}%)`;
-}
 
 // Salto de página si no entra requiredHeight; devuelve el nuevo yPos.
 function pageBreakIfNeeded(
@@ -165,253 +150,95 @@ function createPdfWithCover<T>(
 // INVENTARIO
 // ============================================================================
 
-function buildInventoryFilterText(filters?: ExportFilters): string {
-  if (!filters) return '';
-  const parts: string[] = [];
-  if (filters.espacioNombre) parts.push(`Espacio: ${filters.espacioNombre}`);
-  if (filters.tipoElementoNombre) parts.push(`Tipo: ${filters.tipoElementoNombre}`);
-  if (filters.estado && filters.estado !== 'todos') parts.push(`Estado: ${filters.estado}`);
-  return parts.join(' | ');
+export interface ReporteInventario {
+  /** "Edificio: X | Tipo: Y", o vacío sin filtros. */
+  filtrosTexto: string;
+  estado: EstadoInventario;
+  /** Equipos pedidos en el período, si se pudo cargar. */
+  demanda?: DemandaInventario | null;
+  periodoTexto?: string;
 }
 
-function renderInventoryResumen(ctx: PdfCtx<InventoryStats>): void {
-  const { stats } = ctx;
-  addSectionTitle(ctx, 'RESUMEN EJECUTIVO', PDF_COLORS.primary);
-  checkPageBreak(ctx, 30);
-  const summaryData = [
-    ['Total Items', stats.totalItems.toString(), `${stats.totalCantidad} unidades`],
-    ['Disponibles', stats.disponibles.toString(), `${stats.porcentajeDisponibles.toFixed(1)}%`],
-    ['En Mantenimiento', stats.mantenimiento.toString(), `${stats.porcentajeMantenimiento.toFixed(1)}%`],
-    ['Dañados', stats.danados.toString(), `${stats.porcentajeDanados.toFixed(1)}%`],
-    ['Asignados', stats.asignados.toString(), `${stats.porcentajeAsignados.toFixed(1)}%`],
-    ['Sin Asignar', stats.sinAsignar.toString(), `${stats.porcentajeSinAsignar.toFixed(1)}%`],
-  ];
-  renderTable(ctx, [['Métrica', 'Cantidad', 'Porcentaje']], summaryData, PDF_COLORS.primary);
-
-  // Métricas de salud
-  const { doc, margin, pageWidth } = ctx;
-  checkPageBreak(ctx, 15);
-  doc.setFillColor(245, 245, 245);
-  doc.rect(margin, ctx.yPos, pageWidth - 2 * margin, 10, 'F');
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Indicadores de Salud:', margin + 2, ctx.yPos + 4);
-  doc.setFont('helvetica', 'normal');
-  doc.text(
-    `Ratio de Salud: ${stats.ratioSalud.toFixed(1)}% | Ratio de Problemas: ${stats.ratioProblemas.toFixed(1)}% | Cobertura: ${stats.indiceCobertura.toFixed(1)}%`,
-    margin + 2,
-    ctx.yPos + 8,
-  );
-  ctx.yPos += 15;
-}
-
-function renderInventoryTemporal(ctx: PdfCtx<InventoryStats>): void {
-  const { stats } = ctx;
-  addSectionTitle(ctx, 'ANALISIS TEMPORAL', PDF_COLORS.success);
-  checkPageBreak(ctx, 25);
-  const temporalData = [
-    ['Creados Este Mes', stats.itemsCreadosEsteMes.toString(), formatMesAnterior(stats.diferenciaMesAnterior, stats.porcentajeCambioMesAnterior)],
-    ['Creados Este Año', stats.itemsCreadosEsteAnio.toString(), `Últimos 6 meses: ${stats.itemsCreadosUltimos6Meses}`],
-    ['Actualizados Este Mes', stats.itemsActualizadosEsteMes.toString(), `Últimos 7 días: ${stats.itemsActualizadosUltimos7Dias}`],
-    ['Antigüedad Promedio', `${Math.round(stats.promedioAntiguedadDias)} días`, `${Math.round(stats.promedioTiempoSinActualizarDias)} días sin actualizar`],
-  ];
-  renderTable(ctx, [['Período', 'Cantidad', 'Detalles']], temporalData, PDF_COLORS.success);
-}
-
-function renderInventoryRankings(ctx: PdfCtx<InventoryStats>): void {
-  const { stats, doc, margin } = ctx;
-  addSectionTitle(ctx, 'TOP RANKINGS', PDF_COLORS.warning);
-
-  // Top 10 Espacios
-  checkPageBreak(ctx, 30);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Top 10 Espacios con Más Inventario', margin, ctx.yPos);
-  ctx.yPos += 5;
-
-  const topEspaciosData = stats.topEspacios.map((espacio, index) => [
-    `#${index + 1}`,
-    espacio.espacioNombre,
-    espacio.items.toString(),
-    `${espacio.cantidad} unidades`,
-  ]);
-  renderTable(ctx, [['Rank', 'Espacio', 'Items', 'Cantidad Total']], topEspaciosData, PDF_COLORS.warning);
-
-  // Top 10 Tipos
-  checkPageBreak(ctx, 30);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Top 10 Tipos de Elemento', margin, ctx.yPos);
-  ctx.yPos += 5;
-
-  const topTiposData = stats.topTipos.map((tipo, index) => [
-    `#${index + 1}`,
-    tipo.tipoNombre,
-    tipo.items.toString(),
-    `${tipo.cantidad} unidades`,
-  ]);
-  renderTable(ctx, [['Rank', 'Tipo de Elemento', 'Items', 'Cantidad Total']], topTiposData, PDF_COLORS.warning);
-}
-
-function renderInventoryCriticos(ctx: PdfCtx<InventoryStats>): void {
-  const { stats, doc, margin } = ctx;
-  if (stats.itemsCriticos <= 0 && stats.espaciosSinInventario <= 0) return;
-
-  addSectionTitle(ctx, 'ITEMS CRITICOS Y ALERTAS', PDF_COLORS.danger);
-
-  checkPageBreak(ctx, 20);
-  const criticalData = [
-    ['Items Críticos Totales', stats.itemsCriticos.toString()],
-    ['Sin Asignar + Problemas', stats.itemsSinAsignarConProblemas.toString()],
-    ['Espacios Sin Inventario', stats.espaciosSinInventario.toString()],
-    ['Tipos Sin Items', stats.tiposSinItems.toString()],
-  ];
-  renderTable(ctx, [['Alerta', 'Cantidad']], criticalData, PDF_COLORS.danger);
-
-  if (stats.espaciosConMasProblemas.length > 0) {
-    checkPageBreak(ctx, 25);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Espacios con Más Problemas', margin, ctx.yPos);
-    ctx.yPos += 5;
-
-    const problemasEspaciosData = stats.espaciosConMasProblemas.map((espacio) => [
-      espacio.espacioNombre,
-      espacio.problemas.toString(),
-      `${espacio.porcentaje.toFixed(1)}%`,
-    ]);
-    renderTable(ctx, [['Espacio', 'Problemas', '% del Inventario']], problemasEspaciosData, PDF_COLORS.danger);
-  }
-}
-
-function renderInventoryDistribucion(ctx: PdfCtx<InventoryStats>): void {
-  const { stats, doc, margin } = ctx;
-  addSectionTitle(ctx, 'ANALISIS DE DISTRIBUCION', PDF_COLORS.purple);
-
-  checkPageBreak(ctx, 40);
-  const distribucionData = [
-    ['Items por Espacio (Promedio)', stats.promedioItemsPorEspacio.toFixed(1)],
-    ['Cantidad por Item (Promedio)', stats.promedioCantidadPorItem.toFixed(1)],
-    ['Items por Tipo (Promedio)', stats.promedioItemsPorTipo.toFixed(1)],
-    ['Cantidad por Espacio (Promedio)', stats.promedioCantidadPorEspacio.toFixed(1)],
-    ['Cantidad por Tipo (Promedio)', stats.promedioCantidadPorTipo.toFixed(1)],
-    ['Densidad de Inventario', `${stats.densidadInventario.toFixed(1)} items/espacio`],
-    ['Eficiencia de Asignación', `${stats.eficienciaAsignacion.toFixed(1)}%`],
-    ['Concentración de Inventario', `${stats.concentracionInventario.toFixed(1)}%`],
-  ];
-  renderTable(ctx, [['Métrica', 'Valor']], distribucionData, PDF_COLORS.purple);
-
-  // Distribución por cantidad
-  checkPageBreak(ctx, 20);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Distribución por Cantidad', margin, ctx.yPos);
-  ctx.yPos += 5;
-
-  const cantidadData = [
-    ['Cantidad 1', stats.itemsConCantidad1.toString()],
-    ['Cantidad Media (2-10)', stats.itemsConCantidadMedia.toString()],
-    ['Cantidad Alta (>10)', stats.itemsConCantidadAlta.toString()],
-    ['Rango', `${stats.cantidadMinima} - ${stats.cantidadMaxima}`],
-  ];
-  renderTable(ctx, [['Rango', 'Items']], cantidadData, PDF_COLORS.purple);
-}
-
-function renderInventoryPorTipo(ctx: PdfCtx<InventoryStats>): void {
-  const { stats } = ctx;
-  if (stats.itemsPorTipo.length === 0) return;
-  addSectionTitle(ctx, 'INVENTARIO COMPLETO POR TIPO', PDF_COLORS.teal);
-
-  checkPageBreak(ctx, 50);
-  const tipoCompletoData = stats.itemsPorTipo.map((tipo) => {
-    const porcentaje = stats.totalItems > 0 ? (tipo.items / stats.totalItems) * 100 : 0;
-    return [
-      tipo.tipoNombre,
-      tipo.items.toString(),
-      tipo.cantidad.toString(),
-      tipo.disponibles.toString(),
-      tipo.mantenimiento.toString(),
-      tipo.danados.toString(),
-      `${porcentaje.toFixed(1)}%`,
-    ];
-  });
-
+function renderInventarioDemanda(ctx: PdfCtx<ReporteInventario>): void {
+  const { demanda, periodoTexto } = ctx.stats;
+  if (!demanda || demanda.porTipo.length === 0) return;
+  addSectionTitle(ctx, `DEMANDA DE EQUIPOS${periodoTexto ? ` (${periodoTexto.toUpperCase()})` : ''}`, PDF_COLORS.deepPurple);
   renderTable(
     ctx,
-    [['Tipo', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados', '% del Total']],
-    tipoCompletoData,
-    PDF_COLORS.teal,
-    {
-      styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 20 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 25 },
-        5: { cellWidth: 20 },
-        6: { cellWidth: 20 },
-      },
-    },
-  );
-}
-
-function renderInventoryPorEspacio(ctx: PdfCtx<InventoryStats>): void {
-  const { stats } = ctx;
-  if (stats.itemsPorEspacio.length === 0) return;
-  addSectionTitle(ctx, 'INVENTARIO COMPLETO POR ESPACIO', PDF_COLORS.deepPurple);
-
-  checkPageBreak(ctx, 50);
-  const espacioCompletoData = stats.itemsPorEspacio.map((espacio) => [
-    espacio.espacioNombre,
-    espacio.items.toString(),
-    espacio.cantidad.toString(),
-    espacio.disponibles.toString(),
-    espacio.mantenimiento.toString(),
-    espacio.danados.toString(),
-  ]);
-
-  renderTable(
-    ctx,
-    [['Espacio', 'Items', 'Cantidad', 'Disponibles', 'Mantenimiento', 'Dañados']],
-    espacioCompletoData,
+    [['Tipo', 'Pedidos', 'Unidades', 'Pendientes', 'Entregadas', 'Rechazadas', 'Pico diario', 'Disponibles']],
+    demanda.porTipo.map((t) => [t.nombre, t.solicitudes, t.unidades, t.pendientes, t.entregadas, t.rechazadas, t.maxUnidadesDia, t.disponibles]),
     PDF_COLORS.deepPurple,
-    {
-      styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 20 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 30 },
-        5: { cellWidth: 20 },
-      },
-    },
   );
 }
 
-/**
- * Exporta las estadísticas de inventario a PDF con un diseño profesional
- */
-export function exportInventoryStatsToPDF(
-  stats: InventoryStats,
-  filters?: ExportFilters
-): void {
+function renderInventarioResumen(ctx: PdfCtx<ReporteInventario>): void {
+  addSectionTitle(ctx, 'ESTADO ACTUAL', PDF_COLORS.primary);
+  const { totales: t, cobertura } = ctx.stats.estado;
+  const filas: (string | number)[][] = [
+    ['Items', t.items],
+    ['Unidades', t.unidades],
+    ['Disponibles', `${t.disponibles} (${pct(t.disponibles, t.items)})`],
+    ['En mantenimiento', t.mantenimiento],
+    ['Dañados', t.danados],
+    ['Sin espacio asignado', t.sinEspacio],
+  ];
+  if (cobertura) filas.push(['Espacios con inventario', `${cobertura.conInventario} de ${cobertura.espacios}`]);
+  renderTable(ctx, [['Métrica', 'Valor']], filas, PDF_COLORS.primary);
+}
+
+function renderInventarioAtencion(ctx: PdfCtx<ReporteInventario>): void {
+  const { atencion } = ctx.stats.estado;
+  if (atencion.length === 0) return;
+  addSectionTitle(ctx, 'REQUIEREN ATENCION', PDF_COLORS.danger);
+  renderTable(
+    ctx,
+    [['Tipo', 'Espacio', 'Estado', 'Cantidad', 'Sin cambios (días)']],
+    atencion.map((i) => [i.tipo, i.espacio ?? 'Sin espacio', i.estado === 'DANADO' ? 'Dañado' : 'Mantenimiento', i.cantidad, i.diasSinCambios]),
+    PDF_COLORS.danger,
+  );
+}
+
+function renderInventarioGrupos(ctx: PdfCtx<ReporteInventario>, titulo: string, columna: string,
+  grupos: EstadoInventario['porTipo'], color: RGB): void {
+  if (grupos.length === 0) return;
+  addSectionTitle(ctx, titulo, color);
+  renderTable(
+    ctx,
+    [[columna, 'Items', 'Unidades', 'Disponibles', 'Mantenimiento', 'Dañados']],
+    grupos.map((g) => [g.detalle ? `${g.nombre} (${g.detalle})` : g.nombre, g.items, g.unidades, g.disponibles, g.mantenimiento, g.danados]),
+    color,
+  );
+}
+
+function renderInventarioAntiguedad(ctx: PdfCtx<ReporteInventario>): void {
+  const { antiguedad: a } = ctx.stats.estado;
+  addSectionTitle(ctx, 'ANTIGUEDAD', PDF_COLORS.gray);
+  renderTable(
+    ctx,
+    [['Desde el alta', 'Items']],
+    [
+      ['Menos de 30 días', a.menosDe30Dias],
+      ['30 a 90 días', a.de30a90Dias],
+      ['90 días a 1 año', a.de90DiasAUnAnio],
+      ['Más de 1 año', a.masDeUnAnio],
+      ['Sin revisar hace más de 6 meses', a.sinCambiosHace6Meses],
+    ],
+    PDF_COLORS.gray,
+  );
+}
+
+/** Exporta lo mismo que muestra el estado actual, con los filtros aplicados. */
+export function exportInventarioToPDF(reporte: ReporteInventario): void {
   try {
-    const ctx = createPdfWithCover(stats, 'Reporte de Estadísticas de Inventario', buildInventoryFilterText(filters));
-
-    renderInventoryResumen(ctx);
-    renderInventoryTemporal(ctx);
-    renderInventoryRankings(ctx);
-    renderInventoryCriticos(ctx);
-    renderInventoryDistribucion(ctx);
-    renderInventoryPorTipo(ctx);
-    renderInventoryPorEspacio(ctx);
-
+    const ctx = createPdfWithCover(reporte, 'Estadísticas de Inventario', reporte.filtrosTexto);
+    renderInventarioResumen(ctx);
+    renderInventarioAtencion(ctx);
+    renderInventarioGrupos(ctx, 'POR TIPO', 'Tipo', reporte.estado.porTipo, PDF_COLORS.teal);
+    renderInventarioGrupos(ctx, 'POR ESPACIO', 'Espacio', reporte.estado.porEspacio, PDF_COLORS.deepPurple);
+    renderInventarioAntiguedad(ctx);
+    renderInventarioDemanda(ctx);
     addFooter(ctx.doc, ctx.pageWidth, ctx.pageHeight, PDF_COLORS.gray);
-
-    const fecha = format(new Date(), 'yyyy-MM-dd');
-    ctx.doc.save(`estadisticas_inventario_${fecha}.pdf`);
+    ctx.doc.save(`estadisticas_inventario_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
   } catch (error) {
     console.error('Error al generar PDF:', error);
     throw new Error('Error al generar el PDF. Intenta nuevamente.');
@@ -422,200 +249,207 @@ export function exportInventoryStatsToPDF(
 // RESERVAS
 // ============================================================================
 
-interface ReservationExportFilters {
-  espacioNombre?: string;
-  carreraNombre?: string;
+/** Lo que muestra la pantalla de estadísticas de reservas para un período. */
+export interface ReporteReservas {
+  periodoTexto: string;
+  resumen: ResumenReservas;
+  ocupacion: OcupacionEspacio[];
+  edificios: ResumenEdificio[];
+  carreras: ResumenCarrera[];
+  usuarios: TopUsuario[];
+  /** Filtros aplicados, en texto; vacío sin filtros. */
+  filtrosTexto?: string;
+  aprobacion?: Aprobacion | null;
+  externos?: ExternosReservas | null;
 }
 
-function buildReservationFilterText(filters?: ReservationExportFilters): string {
-  if (!filters) return '';
-  const parts: string[] = [];
-  if (filters.espacioNombre) parts.push(`Espacio: ${filters.espacioNombre}`);
-  if (filters.carreraNombre) parts.push(`Carrera: ${filters.carreraNombre}`);
-  return parts.join(' | ');
+function pct(parte: number, total: number): string {
+  return total > 0 ? `${((parte / total) * 100).toFixed(1)}%` : '0%';
 }
 
-function safePercent(part: number, total: number): string {
-  return total > 0 ? ((part / total) * 100).toFixed(1) : '0';
+function comparacion(actual: number, anterior: number): string {
+  if (anterior <= 0) return '-';
+  const cambio = ((actual - anterior) / anterior) * 100;
+  return `${cambio > 0 ? '+' : ''}${cambio.toFixed(1)}%`;
 }
 
-function formatHoursLabel(hours: number): string {
-  if (hours < 1) return `${Math.round(hours * 60)} min`;
-  if (hours === Math.floor(hours)) return `${Math.floor(hours)}h`;
-  const h = Math.floor(hours);
-  const m = Math.round((hours - h) * 60);
-  return `${h}h ${m}min`;
+function renderReservasResumen(ctx: PdfCtx<ReporteReservas>): void {
+  addSectionTitle(ctx, 'RESUMEN DEL PERIODO', PDF_COLORS.primary);
+  const { actual, anterior, espaciosTotal } = ctx.stats.resumen;
+  renderTable(
+    ctx,
+    [['Métrica', 'Período', 'Período anterior', 'Cambio']],
+    [
+      ['Reservas', actual.total, anterior.total, comparacion(actual.total, anterior.total)],
+      ['Aprobadas', `${actual.aprobadas} (${pct(actual.aprobadas, actual.total)})`, anterior.aprobadas, comparacion(actual.aprobadas, anterior.aprobadas)],
+      ['Pendientes', actual.pendientes, anterior.pendientes, comparacion(actual.pendientes, anterior.pendientes)],
+      ['Canceladas', `${actual.canceladas} (${pct(actual.canceladas, actual.total)})`, anterior.canceladas, comparacion(actual.canceladas, anterior.canceladas)],
+      ['Horas aprobadas', actual.horasAprobadas.toFixed(1), anterior.horasAprobadas.toFixed(1), comparacion(actual.horasAprobadas, anterior.horasAprobadas)],
+      ['Espacios usados', `${actual.espaciosUsados} de ${espaciosTotal}`, anterior.espaciosUsados, '-'],
+      ['Personas que reservaron', actual.usuarios, anterior.usuarios, comparacion(actual.usuarios, anterior.usuarios)],
+    ],
+    PDF_COLORS.primary,
+  );
 }
 
-function formatChangeLabel(diferencia: number, porcentaje: number): string {
-  const signoDif = diferencia > 0 ? '+' : '';
-  const signoPct = porcentaje > 0 ? '+' : '';
-  return `Cambio: ${signoDif}${diferencia} (${signoPct}${porcentaje.toFixed(1)}%)`;
+function renderReservasSerie(ctx: PdfCtx<ReporteReservas>): void {
+  const { serie, granularidad } = ctx.stats.resumen;
+  if (serie.length === 0) return;
+  const unidad = granularidad === 'dia' ? 'Día' : granularidad === 'semana' ? 'Semana del' : 'Mes';
+  addSectionTitle(ctx, 'EVOLUCION', PDF_COLORS.success);
+  renderTable(
+    ctx,
+    [[unidad, 'Aprobadas', 'Pendientes', 'Canceladas', 'Total']],
+    serie.map((p) => [
+      granularidad === 'mes' ? p.periodo.slice(0, 7) : p.periodo,
+      p.aprobadas,
+      p.pendientes,
+      p.canceladas,
+      p.aprobadas + p.pendientes + p.canceladas,
+    ]),
+    PDF_COLORS.success,
+  );
 }
 
-function renderResumenEjecutivo(ctx: PdfCtx<ReservaStats>): void {
-  addSectionTitle(ctx, 'RESUMEN EJECUTIVO', PDF_COLORS.primary);
-  checkPageBreak(ctx, 40);
-  const { stats } = ctx;
-  const porcentajeAprobadas = safePercent(stats.totalAprobadas, stats.totalReservas);
-  const porcentajePendientes = safePercent(stats.totalPendientes, stats.totalReservas);
-  const porcentajeCanceladas = safePercent(stats.totalCanceladas, stats.totalReservas);
-  const summaryData = [
-    ['Total Reservas', stats.totalReservas.toString()],
-    ['Aprobadas', `${stats.totalAprobadas} (${porcentajeAprobadas}%)`],
-    ['Pendientes', `${stats.totalPendientes} (${porcentajePendientes}%)`],
-    ['Canceladas', `${stats.totalCanceladas} (${porcentajeCanceladas}%)`],
-    ['Futuras', stats.totalFuturas.toString()],
-    ['Pasadas', stats.totalPasadas.toString()],
-    ['Activas', stats.totalActivas.toString()],
-  ];
-  renderTable(ctx, [['Métrica', 'Valor']], summaryData, PDF_COLORS.primary);
-}
-
-function renderAnalisisTemporal(ctx: PdfCtx<ReservaStats>): void {
-  addSectionTitle(ctx, 'ANALISIS TEMPORAL', PDF_COLORS.success);
-  checkPageBreak(ctx, 30);
-  const { stats } = ctx;
-  const temporalData = [
-    ['Reservas Este Mes', stats.reservasEsteMes.toString(), formatChangeLabel(stats.diferenciaMesAnterior, stats.porcentajeCambioMesAnterior)],
-    ['Reservas Próximo Mes', stats.reservasProximoMes.toString(), 'Reservas programadas'],
-    ['Reservas Este Año', stats.reservasEsteAnio.toString(), `Promedio: ${stats.promedioReservasPorMes.toFixed(1)}/mes`],
-    ['Promedio Semanal', stats.promedioReservasPorSemana.toFixed(1), `${stats.promedioReservasPorMes.toFixed(1)} por mes`],
-    ['Mes con Más Reservas', stats.mesConMasReservas || 'N/A', ''],
-  ];
-  renderTable(ctx, [['Período', 'Cantidad', 'Detalles']], temporalData, PDF_COLORS.success);
-}
-
-function renderAnalisisDuracion(ctx: PdfCtx<ReservaStats>): void {
-  addSectionTitle(ctx, 'ANALISIS DE DURACION', PDF_COLORS.warning);
-  checkPageBreak(ctx, 25);
-  const { stats } = ctx;
-  const duracionData = [
-    ['Duración Total', formatHoursLabel(stats.duracionTotalHoras)],
-    ['Duración Promedio', formatHoursLabel(stats.duracionPromedioHoras)],
-    ['Reserva Más Larga', formatHoursLabel(stats.reservaMasLargaHoras)],
-    ['Reserva Más Corta', formatHoursLabel(stats.reservaMasCortaHoras)],
-    ['Horas Este Mes', formatHoursLabel(stats.horasReservadasEsteMes)],
-  ];
-  renderTable(ctx, [['Métrica', 'Valor']], duracionData, PDF_COLORS.warning);
-}
-
-function renderAnalisisEspacios(ctx: PdfCtx<ReservaStats>): void {
-  addSectionTitle(ctx, 'ANALISIS DE ESPACIOS', PDF_COLORS.primary);
-  checkPageBreak(ctx, 20);
-  const { stats } = ctx;
-  const espaciosData = [
-    ['Total Espacios Usados', stats.totalEspaciosUsados.toString()],
-    ['Espacio Más Usado', stats.nombreEspacioMasUsado || 'N/A'],
-  ];
-  renderTable(ctx, [['Métrica', 'Valor']], espaciosData, PDF_COLORS.primary);
-
-  if (stats.reservasPorEspacio && Object.keys(stats.reservasPorEspacio).length > 0) {
-    checkPageBreak(ctx, 30);
-    ctx.doc.setFontSize(10);
-    ctx.doc.setFont('helvetica', 'bold');
-    ctx.doc.text('Top 10 Espacios Más Reservados', ctx.margin, ctx.yPos);
-    ctx.yPos += 5;
-    const sortedEspacios = Object.entries(stats.reservasPorEspacio)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10);
-    const topEspaciosData = sortedEspacios.map(([espacioId, cantidad], index) => [
-      `#${index + 1}`,
-      `Espacio ${espacioId}`,
-      cantidad.toString(),
-    ]);
-    renderTable(ctx, [['Rank', 'Espacio', 'Reservas']], topEspaciosData, PDF_COLORS.primary);
+function renderReservasUso(ctx: PdfCtx<ReporteReservas>): void {
+  const { ocupacion, edificios } = ctx.stats;
+  if (ocupacion.length > 0) {
+    addSectionTitle(ctx, 'OCUPACION POR ESPACIO', PDF_COLORS.teal);
+    renderTable(
+      ctx,
+      [['Espacio', 'Horas reservadas', 'Ocupación']],
+      ocupacion.map((o) => [o.espacioNombre, Number(o.horasReservadas).toFixed(1), `${Number(o.porcentaje).toFixed(1)}%`]),
+      PDF_COLORS.teal,
+    );
+  }
+  if (edificios.length > 0) {
+    addSectionTitle(ctx, 'POR EDIFICIO', PDF_COLORS.deepPurple);
+    renderTable(ctx, [['Edificio', 'Reservas']], edificios.map((e) => [e.edificioNombre, e.cantReservas]), PDF_COLORS.deepPurple);
   }
 }
 
-function renderReservasPorMes(ctx: PdfCtx<ReservaStats>): void {
-  const { stats } = ctx;
-  if (!stats.reservasPorMes || Object.keys(stats.reservasPorMes).length === 0) return;
-  addSectionTitle(ctx, 'RESERVAS POR MES', PDF_COLORS.success);
-  checkPageBreak(ctx, 40);
-  ctx.doc.setFontSize(10);
-  ctx.doc.setFont('helvetica', 'bold');
-  ctx.doc.text('Distribución Mensual', ctx.margin, ctx.yPos);
-  ctx.yPos += 5;
-  const reservasPorMesData = Object.entries(stats.reservasPorMes)
-    .map(([mes, cantidad]) => [mes, cantidad.toString()])
-    .sort(([a], [b]) => a.localeCompare(b));
-  renderTable(ctx, [['Mes', 'Cantidad']], reservasPorMesData, PDF_COLORS.success);
-}
-
-function renderReservasPorDiaSemana(ctx: PdfCtx<ReservaStats>): void {
-  const { stats } = ctx;
-  if (!stats.reservasPorDiaSemana || Object.keys(stats.reservasPorDiaSemana).length === 0) return;
-  addSectionTitle(ctx, 'RESERVAS POR DIA DE SEMANA', PDF_COLORS.warning);
-  checkPageBreak(ctx, 30);
-  ctx.doc.setFontSize(10);
-  ctx.doc.setFont('helvetica', 'bold');
-  ctx.doc.text('Distribución por Día de Semana', ctx.margin, ctx.yPos);
-  ctx.yPos += 5;
-  const diasOrden = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const reservasPorDiaData = Object.entries(stats.reservasPorDiaSemana)
-    .map(([dia, cantidad]) => ({
-      dia,
-      cantidad,
-      orden: diasOrden.includes(dia) ? diasOrden.indexOf(dia) : 99,
-    }))
-    .sort((a, b) => a.orden - b.orden)
-    .map(({ dia, cantidad }) => [dia, cantidad.toString()]);
-  renderTable(ctx, [['Día', 'Cantidad']], reservasPorDiaData, PDF_COLORS.warning);
-}
-
-function buildInfoAdicionalData(stats: ReservaStats): string[][] {
-  const infoData: string[][] = [];
-  if (stats.fechaUltimaReserva) {
-    const fechaUltima = format(new Date(stats.fechaUltimaReserva), 'dd MMM yyyy, HH:mm', { locale: es });
-    infoData.push(['Última Reserva', fechaUltima]);
-    if (stats.diasDesdeUltimaReserva !== null && stats.diasDesdeUltimaReserva !== undefined) {
-      infoData.push(['Días desde Última', `${stats.diasDesdeUltimaReserva} días`]);
-    }
+function renderReservasQuien(ctx: PdfCtx<ReporteReservas>): void {
+  const { carreras, usuarios } = ctx.stats;
+  if (carreras.length > 0) {
+    addSectionTitle(ctx, 'POR CARRERA', PDF_COLORS.warning);
+    renderTable(
+      ctx,
+      [['Carrera', 'Aprobadas', 'Canceladas', 'Cancelación']],
+      carreras.map((c) => [c.carreraNombre, c.aprobadas, c.canceladas, `${Number(c.tasaCancelacion).toFixed(1)}%`]),
+      PDF_COLORS.warning,
+    );
   }
-  if (stats.fechaProximaReserva) {
-    const fechaProxima = format(new Date(stats.fechaProximaReserva), 'dd MMM yyyy, HH:mm', { locale: es });
-    infoData.push(['Próxima Reserva', fechaProxima]);
-    if (stats.diasHastaProximaReserva !== null && stats.diasHastaProximaReserva !== undefined) {
-      infoData.push(['Días hasta Próxima', `${stats.diasHastaProximaReserva} días`]);
-    }
+  if (usuarios.length > 0) {
+    addSectionTitle(ctx, 'QUIENES MAS RESERVAN', PDF_COLORS.purple);
+    renderTable(ctx, [['Persona', 'Email', 'Reservas']], usuarios.map((u) => [u.nombre, u.email, u.cantReservas]), PDF_COLORS.purple);
   }
-  return infoData;
 }
 
-function renderInformacionAdicional(ctx: PdfCtx<ReservaStats>): void {
-  const { stats } = ctx;
-  if (!stats.fechaUltimaReserva && !stats.fechaProximaReserva) return;
-  addSectionTitle(ctx, 'INFORMACION ADICIONAL', PDF_COLORS.gray);
-  checkPageBreak(ctx, 20);
-  const infoData = buildInfoAdicionalData(stats);
-  if (infoData.length > 0) {
-    renderTable(ctx, [['Información', 'Valor']], infoData, PDF_COLORS.gray);
+function horasPdf(h: number | null | undefined): string {
+  if (h == null) return '-';
+  return h < 48 ? `${h.toFixed(1)} h` : `${(h / 24).toFixed(1)} días`;
+}
+
+function renderReservasNuevas(ctx: PdfCtx<ReporteReservas>): void {
+  const { aprobacion, externos } = ctx.stats;
+  if (aprobacion && aprobacion.analistas.length > 0) {
+    addSectionTitle(ctx, 'APROBACION POR ANALISTA', PDF_COLORS.danger);
+    renderTable(
+      ctx,
+      [['Analista', 'Asignadas', 'Aprobadas', 'Canceladas', 'Pendientes', 'Vencidas', 'Mediana respuesta']],
+      aprobacion.analistas.map((a) => [a.nombre, a.asignadas, a.aprobadas, a.canceladas, a.pendientes, a.vencidas, horasPdf(a.medianaHoras)]),
+      PDF_COLORS.danger,
+    );
+  }
+  if (externos && externos.organizadores.length > 0) {
+    addSectionTitle(ctx, 'ORGANIZADORES EXTERNOS', PDF_COLORS.deepPurple);
+    renderTable(
+      ctx,
+      [['Organizador', 'Eventos', 'Aprobadas', 'Canceladas', 'Horas', 'Espacios']],
+      externos.organizadores.map((o) => [o.organizador, o.eventos, o.aprobadas, o.canceladas, Number(o.horas).toFixed(1), o.espacios]),
+      PDF_COLORS.deepPurple,
+    );
   }
 }
 
 /**
- * Exporta las estadísticas de reservas a PDF con un diseño profesional
+ * Exporta lo mismo que muestra la pantalla para el período elegido. Antes el
+ * PDF salía con los totales históricos aunque la pantalla filtrara otra cosa.
  */
-export function exportReservationStatsToPDF(
-  stats: ReservaStats,
-  filters?: ReservationExportFilters
-): void {
+export function exportReservasToPDF(reporte: ReporteReservas): void {
   try {
-    const ctx = createPdfWithCover(stats, 'Reporte de Estadísticas de Reservas', buildReservationFilterText(filters));
-
-    renderResumenEjecutivo(ctx);
-    renderAnalisisTemporal(ctx);
-    renderAnalisisDuracion(ctx);
-    renderAnalisisEspacios(ctx);
-    renderReservasPorMes(ctx);
-    renderReservasPorDiaSemana(ctx);
-    renderInformacionAdicional(ctx);
-
+    const ctx = createPdfWithCover(
+      reporte,
+      'Estadísticas de Reservas',
+      `Período: ${reporte.periodoTexto}${reporte.filtrosTexto ? ` | ${reporte.filtrosTexto}` : ''}`,
+    );
+    renderReservasResumen(ctx);
+    renderReservasSerie(ctx);
+    renderReservasUso(ctx);
+    renderReservasQuien(ctx);
+    renderReservasNuevas(ctx);
     addFooter(ctx.doc, ctx.pageWidth, ctx.pageHeight, PDF_COLORS.gray);
+    ctx.doc.save(`estadisticas_reservas_${reporte.resumen.desde}_${reporte.resumen.hasta}.pdf`);
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    throw new Error('Error al generar el PDF. Intenta nuevamente.');
+  }
+}
 
-    const fecha = format(new Date(), 'yyyy-MM-dd');
-    ctx.doc.save(`estadisticas_reservas_${fecha}.pdf`);
+// ============================================================================
+// ACADÉMICO
+// ============================================================================
+
+export interface ReporteAcademico {
+  periodoTexto: string;
+  filtrosTexto: string;
+  datos: Academico;
+  desde: string;
+  hasta: string;
+}
+
+export function exportAcademicoToPDF(reporte: ReporteAcademico): void {
+  try {
+    const ctx = createPdfWithCover(
+      reporte,
+      'Estadísticas Académicas',
+      `Período: ${reporte.periodoTexto}${reporte.filtrosTexto ? ` | ${reporte.filtrosTexto}` : ''}`,
+    );
+    const { tutorias: t, eventos: e, porMateria, eventosLista } = reporte.datos;
+    addSectionTitle(ctx, 'TUTORIAS', PDF_COLORS.warning);
+    renderTable(
+      ctx,
+      [['Métrica', 'Valor']],
+      [
+        ['Tutorías', t.total],
+        ['Presenciales / virtuales', `${t.presenciales} / ${t.virtuales}`],
+        ['Grupales / individuales', `${t.grupales} / ${t.individuales}`],
+        ['Agendadas / cupo', `${t.agendadas} / ${t.cupoTotal}`],
+        ['Asistencia', t.asistenciaPct == null ? '-' : `${t.asistenciaPct.toFixed(1)}%`],
+        ['Calificación', t.ratingPromedio == null ? '-' : `${t.ratingPromedio.toFixed(1)} (${t.feedbacks} opiniones)`],
+      ],
+      PDF_COLORS.warning,
+    );
+    if (porMateria.length > 0) {
+      addSectionTitle(ctx, 'TUTORIAS POR MATERIA', PDF_COLORS.warning);
+      renderTable(
+        ctx,
+        [['Materia', 'Carrera', 'Tutorías', 'Agendadas', 'Asistieron', 'Calificación']],
+        porMateria.map((m) => [m.nombre, m.carreraNombre ?? '-', m.tutorias, m.agendadas, m.asistieron, m.ratingPromedio == null ? '-' : m.ratingPromedio.toFixed(1)]),
+        PDF_COLORS.warning,
+      );
+    }
+    addSectionTitle(ctx, 'EVENTOS', PDF_COLORS.success);
+    renderTable(
+      ctx,
+      [['Evento', 'Tipo', 'Fecha', 'Espacio', 'Inscriptos', 'Cupo', 'Calificación']],
+      eventosLista.map((ev) => [ev.titulo, ev.tipo, ev.fecha.slice(0, 10), ev.espacioNombre ?? '-', ev.inscriptos, ev.cupo ?? '-', ev.ratingPromedio == null ? '-' : ev.ratingPromedio.toFixed(1)]),
+      PDF_COLORS.success,
+    );
+    ctx.yPos += 2;
+    renderTable(ctx, [['Eventos', 'Inscripciones', 'Cupo total']], [[e.total, e.inscripciones, e.cupoTotal]], PDF_COLORS.success);
+    addFooter(ctx.doc, ctx.pageWidth, ctx.pageHeight, PDF_COLORS.gray);
+    ctx.doc.save(`estadisticas_academicas_${reporte.desde}_${reporte.hasta}.pdf`);
   } catch (error) {
     console.error('Error al generar PDF:', error);
     throw new Error('Error al generar el PDF. Intenta nuevamente.');

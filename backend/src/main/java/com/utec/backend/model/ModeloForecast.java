@@ -30,6 +30,10 @@ public class ModeloForecast {
     @Column(name = "espacio_id")
     private Long espacioId;
 
+    /** Sólo en los modelos de reservas por tipo de espacio (scope tipo_espacio). */
+    @Column(name = "tipo_espacio_id")
+    private Long tipoEspacioId;
+
     @Column(name = "algoritmo", nullable = false, length = 50)
     private String algoritmo;
 

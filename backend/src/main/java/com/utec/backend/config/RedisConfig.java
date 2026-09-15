@@ -36,8 +36,6 @@ public class RedisConfig {
     @Value("${cache.usuarioStats.ttl:600000}")
     private long usuarioStatsTtl;
 
-    @Value("${cache.inventarioStatistics.ttl:300000}")
-    private long inventarioStatisticsTtl;
 
     @Value("${cache.espacios.ttl:900000}")
     private long espaciosTtl;
@@ -100,7 +98,6 @@ public class RedisConfig {
                 .disableCachingNullValues();
 
         cacheConfigurations.put("usuarioStats", defaultConfig.entryTtl(Duration.ofMillis(usuarioStatsTtl)));
-        cacheConfigurations.put("inventarioStatistics", defaultConfig.entryTtl(Duration.ofMillis(inventarioStatisticsTtl)));
         cacheConfigurations.put("espacios", defaultConfig.entryTtl(Duration.ofMillis(espaciosTtl)));
         cacheConfigurations.put("reservas", defaultConfig.entryTtl(Duration.ofMillis(reservasTtl)));
         cacheConfigurations.put("recomendaciones", defaultConfig.entryTtl(Duration.ofMillis(recomendacionesTtl)));

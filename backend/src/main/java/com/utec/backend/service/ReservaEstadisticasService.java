@@ -13,7 +13,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,12 +33,15 @@ public class ReservaEstadisticasService {
     /** Meses que se devuelven en la serie mensual, contando el actual. */
     private static final int MESES_SERIE = 12;
 
+    /** Los meses se cuentan en la hora del campus, igual que las consultas. */
+    private static final ZoneId ZONA = ZoneId.of("America/Montevideo");
+
     private final ReservaEstadisticasRepository repository;
 
     @Transactional(readOnly = true)
     public ReservaStatsDto calcular(Long usuarioId) {
         Instant ahora = Instant.now();
-        YearMonth mesActual = YearMonth.from(ahora.atZone(ZoneOffset.UTC));
+        YearMonth mesActual = YearMonth.from(ahora.atZone(ZONA));
 
         List<Object[]> filas = repository.resumen(usuarioId, ahora, mesActual.toString());
         if (filas.isEmpty()) {

@@ -80,6 +80,7 @@ export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
   '/inventory': ['inventario:ver'],
   '/inventory/requests': ['solicitud_inventario:ver'],
   '/statistics': ['estadisticas:ver'],
+  '/predicciones': ['estadisticas:ver_reservas'],
   '/users': ['usuario:gestionar'],
   '/system': ['sistema:acceder'],
   '/audit': ['auditoria:ver'],
@@ -112,8 +113,9 @@ export const COMPONENT_PERMISSIONS_MAP: Record<string, Permission[]> = {
 
   // ===== COMPONENTES DE ESTADÍSTICAS =====
   StatisticsPage: ['estadisticas:ver', 'estadisticas:ver'],
-  InventoryStats: buildStatsPerms('estadisticas:ver_inventario'),
   ReservationStats: buildStatsPerms('estadisticas:ver_reservas'),
+  // Tutorías y eventos: /stats/academico pide el mismo permiso que reservas.
+  AcademicStats: buildStatsPerms('estadisticas:ver_reservas'),
   SpaceStats: buildStatsPerms('estadisticas:ver_espacios'),
 
   // ===== COMPONENTES DE RECOMENDACIONES =====
