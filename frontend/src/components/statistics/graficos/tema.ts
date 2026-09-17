@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { useTheme } from 'next-themes';
 import {
   MARCA,
@@ -53,8 +54,21 @@ const OSCURO: typeof CLARO = construir(SERIE_OSCURO, NEUTRO.oscuro, true);
 
 export type TemaGraficos = typeof CLARO;
 
+/**
+ * Fuerza el tema de los gráficos para un subárbol, ignorando el global.
+ *
+ * `useTheme` devuelve el tema de toda la aplicación, así que un contenedor con
+ * clase `.dark` anidado cambiaba los colores CSS de lo que tenía adentro pero
+ * no los de los gráficos, que eligen su paleta en JavaScript. Con esto un
+ * bloque puede declarar en qué tema vive y los gráficos de adentro lo
+ * respetan. Lo usa la página /ui para mostrar los dos temas a la vez.
+ */
+export const TemaGraficosContexto = createContext<'claro' | 'oscuro' | null>(null);
+
 export function useTemaGraficos(): TemaGraficos {
+  const forzado = useContext(TemaGraficosContexto);
   const { resolvedTheme } = useTheme();
+  if (forzado) return forzado === 'oscuro' ? OSCURO : CLARO;
   return resolvedTheme === 'dark' ? OSCURO : CLARO;
 }
 

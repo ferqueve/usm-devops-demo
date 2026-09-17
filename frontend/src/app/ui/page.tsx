@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react';
-import { Calendar, Inbox, Users } from 'lucide-react';
 
 import {
   DEPARTAMENTO,
@@ -30,7 +29,10 @@ import {
 import { Panel } from '@/components/dashboard/views/_components/Panel';
 import { EmptyState } from '@/components/dashboard/views/_components/EmptyState';
 import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
-import { Anillo, BarrasHorizontales, Tendencia } from '@/components/dashboard/views/_components/Graficos';
+import { TemaGraficosContexto } from '@/components/statistics/graficos/tema';
+import { GraficosDashboard, GraficosEstadisticas } from './_graficos';
+import { FilasDominio, PiezasSistema } from './_dominio';
+import { KPIS } from './_datos';
 
 /**
  * Catálogo de la base visual.
@@ -47,11 +49,6 @@ import { Anillo, BarrasHorizontales, Tendencia } from '@/components/dashboard/vi
  * Sólo se monta en desarrollo (ver App.tsx): es una herramienta de trabajo, no
  * una pantalla del sistema.
  */
-
-const SERIE_MESES: Record<string, number> = {
-  '2026-04': 820, '2026-05': 1180, '2026-06': 960, '2026-07': 1540,
-  '2026-08': 2100, '2026-09': 1870,
-};
 
 /* ------------------------------------------------------------------ *
  * Andamiaje de la página
@@ -85,18 +82,22 @@ function Doble({ children }: Readonly<{ children: ReactNode }>) {
   const pared = 'min-w-0 flex-1 rounded-lg border border-border bg-background p-4 text-foreground';
   return (
     <div className="flex flex-col gap-3 lg:flex-row">
-      <div className={pared}>
-        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          Claro
-        </p>
-        {children}
-      </div>
-      <div className={`dark ${pared}`}>
-        <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          Oscuro
-        </p>
-        {children}
-      </div>
+      <TemaGraficosContexto.Provider value="claro">
+        <div className={pared}>
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Claro
+          </p>
+          {children}
+        </div>
+      </TemaGraficosContexto.Provider>
+      <TemaGraficosContexto.Provider value="oscuro">
+        <div className={`dark ${pared}`}>
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Oscuro
+          </p>
+          {children}
+        </div>
+      </TemaGraficosContexto.Provider>
     </div>
   );
 }
@@ -183,7 +184,10 @@ const INDICE = [
   ['controles', 'Controles'],
   ['datos', 'Datos'],
   ['bloques', 'Bloques'],
+  ['dominio', 'Dominio'],
+  ['sistema', 'Sistema'],
   ['graficos', 'Gráficos'],
+  ['graficos-stats', 'Análisis'],
 ] as const;
 
 export default function UiPage() {
@@ -414,13 +418,7 @@ export default function UiPage() {
           <Seccion id="bloques" titulo="Bloques" nota="Los contenedores que arman una pantalla.">
             <Doble>
               <div className="space-y-3">
-                <StatStrip
-                  items={[
-                    { label: 'A aprobar', value: '4.678', serie: SERIE_MESES, delta: -18, icon: Inbox },
-                    { label: 'Hoy', value: 94, hint: 'reservas programadas', icon: Calendar },
-                    { label: 'Usuarios activos', value: 116, hint: 'en este momento', icon: Users },
-                  ]}
-                />
+                <StatStrip items={KPIS} />
                 <Panel title="Cola" count="3 pendientes" accentColor={MARCA.amarillo}>
                   <div className="space-y-1.5 text-xs">
                     <p className="text-foreground">Charla invitada · Aula 8 · 1.5 h</p>
@@ -432,39 +430,43 @@ export default function UiPage() {
             </Doble>
           </Seccion>
 
-          <Seccion id="graficos" titulo="Gráficos" nota="Mismos componentes que el dashboard.">
+          <Seccion
+            id="dominio"
+            titulo="Dominio"
+            nota="Las filas con las que se listan reservas, materias, tutorías y eventos."
+          >
             <Doble>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border border-border bg-card p-3">
-                  <p className="mb-1 text-xs text-muted-foreground">Tendencia</p>
-                  <Tendencia datos={SERIE_MESES} alto={110} />
-                </div>
-                <div className="rounded-lg border border-border bg-card p-3">
-                  <p className="mb-1 text-xs text-muted-foreground">Anillo</p>
-                  <Anillo
-                    alto={110}
-                    leyendaCentro="reservas"
-                    porciones={[
-                      { nombre: 'Aprobadas', valor: 11171, color: MARCA.verde },
-                      { nombre: 'Pendientes', valor: 4678, color: MARCA.amarillo },
-                      { nombre: 'Canceladas', valor: 946, color: MARCA.rojo },
-                    ]}
-                  />
-                </div>
-                <div className="rounded-lg border border-border bg-card p-3">
-                  <p className="mb-1 text-xs text-muted-foreground">Barras</p>
-                  <BarrasHorizontales
-                    alto={110}
-                    multicolor
-                    datos={[
-                      { nombre: 'Estudiante', valor: 81 },
-                      { nombre: 'Docente', valor: 16 },
-                      { nombre: 'Externo', valor: 12 },
-                      { nombre: 'Analista', valor: 3 },
-                    ]}
-                  />
-                </div>
-              </div>
+              <FilasDominio />
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="sistema"
+            titulo="Sistema"
+            nota="Tarjetas y series de la pantalla de Sistema. Faltan LogViewer y HttpTraceTable: traen sus propios datos y el catálogo tiene que abrir sin backend."
+          >
+            <Doble>
+              <PiezasSistema />
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="graficos"
+            titulo="Gráficos del dashboard"
+            nota="Compactos, acompañan una lista."
+          >
+            <Doble>
+              <GraficosDashboard />
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="graficos-stats"
+            titulo="Gráficos de análisis"
+            nota="Los catorce de la pantalla de Estadísticas."
+          >
+            <Doble>
+              <GraficosEstadisticas />
             </Doble>
           </Seccion>
         </main>
