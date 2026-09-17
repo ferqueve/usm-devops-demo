@@ -89,7 +89,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm ${esPasada ? 'bg-gray-50/50 border-gray-200' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+      className={`group relative overflow-hidden rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm ${esPasada ? 'bg-gray-50/50 border-border' : 'border-border hover:border-border bg-card'}`}
     >
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${estadoConfig.stripeColor}`} />
       <div className="p-3">
@@ -102,8 +102,8 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 className={`w-12 h-12 rounded-xl object-cover ${esPasada ? 'opacity-60 grayscale' : ''}`}
               />
             ) : (
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${esPasada ? 'bg-gray-200 opacity-60' : 'bg-gray-100'}`}>
-                <MapPin className={`h-6 w-6 ${esPasada ? 'text-gray-400' : 'text-gray-500'}`} />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${esPasada ? 'bg-secondary opacity-60' : 'bg-muted'}`}>
+                <MapPin className={`h-6 w-6 ${esPasada ? 'text-muted-foreground' : 'text-muted-foreground'}`} />
               </div>
             )}
           </div>
@@ -155,7 +155,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onViewDetails(reserva)}
-                    className="p-1.5 rounded transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <Eye className="h-4 w-4" />
                   </button>

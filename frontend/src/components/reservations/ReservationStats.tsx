@@ -169,7 +169,7 @@ interface MetricItemProps {
 function MetricItem({ label, value, icon, fullWidth, collapsed }: Readonly<MetricItemProps>) {
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
+      <div className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-muted transition-colors">
         <div className="text-muted-foreground mb-1">
           {icon}
         </div>
@@ -273,23 +273,23 @@ export default function ReservationStats({
       <Card className="animate-pulse">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="h-6 bg-gray-200 rounded w-32"></div>
-            <div className="h-7 w-7 bg-gray-200 rounded"></div>
+            <div className="h-6 bg-secondary rounded w-32"></div>
+            <div className="h-7 w-7 bg-secondary rounded"></div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <div className="col-span-2 h-10 bg-gray-200 rounded"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="col-span-2 h-10 bg-secondary rounded"></div>
+            <div className="h-6 bg-secondary rounded"></div>
+            <div className="h-6 bg-secondary rounded"></div>
+            <div className="h-6 bg-secondary rounded"></div>
+            <div className="h-6 bg-secondary rounded"></div>
           </div>
-          <div className="h-px bg-gray-200"></div>
+          <div className="h-px bg-secondary"></div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <div className="col-span-2 h-10 bg-gray-200 rounded"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="col-span-2 h-10 bg-secondary rounded"></div>
+            <div className="h-6 bg-secondary rounded"></div>
+            <div className="h-6 bg-secondary rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -317,7 +317,7 @@ export default function ReservationStats({
   const getTrendColor = (value: number) => {
     if (value > 0) return 'text-green-600';
     if (value < 0) return 'text-red-600';
-    return 'text-gray-600';
+    return 'text-muted-foreground';
   };
 
   const getTrendIcon = (value: number) => {
@@ -467,7 +467,7 @@ export default function ReservationStats({
               <MetricItem
                 label="Pasadas"
                 value={stats.totalPasadas}
-                icon={<Clock className="h-3.5 w-3.5 text-gray-600" />}
+                icon={<Clock className="h-3.5 w-3.5 text-muted-foreground" />}
                 collapsed={true}
               />
               <MetricItem
@@ -602,7 +602,7 @@ export default function ReservationStats({
           <MetricItem 
             label="Pasadas" 
             value={stats.totalPasadas} 
-            icon={<Clock className="h-3.5 w-3.5 text-gray-600" />}
+            icon={<Clock className="h-3.5 w-3.5 text-muted-foreground" />}
             collapsed={false}
           />
           <MetricItem 

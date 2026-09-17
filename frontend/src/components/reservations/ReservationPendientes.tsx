@@ -219,7 +219,7 @@ export default function ReservationPendientes({
         {isCollapsed ? (
           <CardContent className="px-1.5 sm:px-2 pb-2">
             {!loading && (
-              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-lg hover:bg-muted transition-colors">
                 <div className="text-muted-foreground mb-0.5 sm:mb-1">
                   <Hourglass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-600" />
                 </div>
@@ -274,8 +274,8 @@ export default function ReservationPendientes({
               if (hayFiltrosActivos) {
                 return (
                   <div className="text-center py-6 px-2">
-                    <p className="text-xs sm:text-sm font-medium text-gray-700">Sin resultados</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">No hay pendientes con esos filtros</p>
+                    <p className="text-xs sm:text-sm font-medium text-foreground/80">Sin resultados</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">No hay pendientes con esos filtros</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -291,10 +291,10 @@ export default function ReservationPendientes({
                 );
               }
               return (
-                <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg border border-gray-200 px-2">
+                <div className="text-center py-6 sm:py-8 bg-muted rounded-lg border border-border px-2">
                   <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />
-                  <p className="text-xs sm:text-sm font-medium text-gray-700">No hay solicitudes pendientes</p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Todas las reservas están procesadas</p>
+                  <p className="text-xs sm:text-sm font-medium text-foreground/80">No hay solicitudes pendientes</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Todas las reservas están procesadas</p>
                 </div>
               );
             }
@@ -311,7 +311,7 @@ export default function ReservationPendientes({
                   <button
                     type="button"
                     key={reserva.id}
-                    className="group relative overflow-hidden rounded-md border border-gray-200 hover:border-gray-300 bg-white cursor-pointer text-left w-full transition-all hover:shadow-sm"
+                    className="group relative overflow-hidden rounded-md border border-border hover:border-border bg-card cursor-pointer text-left w-full transition-all hover:shadow-sm"
                     onClick={() => onViewDetails(reserva)}
                     aria-label={`Ver detalles de reserva ${reserva.titulo || reserva.espacioNombre}`}
                   >

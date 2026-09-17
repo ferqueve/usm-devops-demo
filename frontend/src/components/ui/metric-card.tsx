@@ -30,7 +30,7 @@ export const MetricCard = memo(function MetricCard({
   children,
 }: MetricCardProps) {
   const variantStyles = {
-    default: 'bg-gradient-to-br from-gray-50 to-white border-gray-200',
+    default: 'bg-gradient-to-br from-gray-50 to-white border-border',
     success: 'bg-gradient-to-br from-green-50 to-white border-green-200',
     warning: 'bg-gradient-to-br from-yellow-50 to-white border-yellow-200',
     error: 'bg-gradient-to-br from-red-50 to-white border-red-200',
@@ -38,7 +38,7 @@ export const MetricCard = memo(function MetricCard({
   };
 
   const iconColors = {
-    default: 'text-gray-500',
+    default: 'text-muted-foreground',
     success: 'text-utec-green',
     warning: 'text-utec-yellow',
     error: 'text-utec-red',
@@ -77,7 +77,7 @@ export const MetricCard = memo(function MetricCard({
           
           {progress !== undefined && (
             <div className="space-y-1">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
                 <div
                   className={cn(
                     'h-full transition-all duration-300 rounded-full',

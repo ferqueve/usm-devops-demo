@@ -72,7 +72,7 @@ export function ItemsRecomendados({
                   "flex items-center justify-between p-3 rounded-lg border transition-colors",
                   yaSeleccionado
                     ? "bg-emerald-50 border-emerald-200"
-                    : "hover:bg-gray-50 border-gray-200"
+                    : "hover:bg-muted border-border"
                 )}
               >
                 <div className="flex items-center gap-3 flex-1">

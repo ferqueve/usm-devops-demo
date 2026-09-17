@@ -84,7 +84,7 @@ export function AiChatWidget() {
       )}
 
       {open && (
-        <div className="fixed bottom-5 right-5 z-50 flex h-[min(560px,calc(100vh-2.5rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border bg-white shadow-2xl">
+        <div className="fixed bottom-5 right-5 z-50 flex h-[min(560px,calc(100vh-2.5rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border bg-card shadow-2xl">
           <header className="flex items-center justify-between gap-2 bg-utec-dark px-3 py-2 text-white">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-utec-yellow" />
@@ -100,7 +100,7 @@ export function AiChatWidget() {
             </button>
           </header>
 
-          <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3">
+          <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-muted p-3">
             {historial.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-xs text-muted-foreground">
                 <MessageSquareText className="h-8 w-8 text-utec-cyan/40" />
@@ -116,7 +116,7 @@ export function AiChatWidget() {
                   'rounded-lg p-2 text-sm',
                   m.role === 'user'
                     ? 'ml-6 bg-utec-blue text-white'
-                    : 'mr-6 bg-white border border-gray-200',
+                    : 'mr-6 bg-card border border-border',
                 )}
               >
                 <p className="whitespace-pre-wrap">{m.content}</p>
@@ -135,13 +135,13 @@ export function AiChatWidget() {
               </div>
             ))}
             {loading && (
-              <div className="mr-6 flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 text-sm text-muted-foreground">
+              <div className="mr-6 flex items-center gap-2 rounded-lg border border-border bg-card p-2 text-sm text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> pensando…
               </div>
             )}
           </div>
 
-          <div className="border-t bg-white p-2">
+          <div className="border-t bg-card p-2">
             <div className="flex gap-1.5">
               <Input
                 value={input}

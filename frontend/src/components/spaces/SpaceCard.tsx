@@ -111,7 +111,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
               {espacio.tipoEspacioNombre}
             </span>
           ) : (
-            <Badge className="bg-gray-100 text-gray-800 text-xs px-2 py-1 flex-shrink-0">
+            <Badge className="bg-muted text-foreground text-xs px-2 py-1 flex-shrink-0">
               {espacio.tipoEspacioNombre || 'Sin tipo'}
             </Badge>
           )}

@@ -30,7 +30,7 @@ export default function InventoryRequestsCardView({
 }: Readonly<InventoryRequestsCardViewProps>) {
   const getEstadoBadgeClass = (estado: ReservaItemSolicitadoEstado) =>
     estadoOptions.find((option) => option.value === estado)?.badgeClass ??
-    'bg-gray-100 text-gray-700 border-gray-200';
+    'bg-muted text-foreground/80 border-border';
 
   const getSpaceBadgeStyles = (hexColor?: string) => {
     if (!hexColor) {
@@ -104,12 +104,12 @@ export default function InventoryRequestsCardView({
       {requests.map((request) => (
         <article
           key={request.id}
-          className="group overflow-hidden rounded-lg border border-gray-200 bg-white/95 px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-within:shadow-md sm:px-4"
+          className="group overflow-hidden rounded-lg border border-border bg-white/95 px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-within:shadow-md sm:px-4"
         >
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-5">
             <div className="flex min-w-0 flex-col gap-2.5">
-              <header className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wide text-slate-600">
-                <span className="rounded-md bg-slate-100 px-2 py-0.5 font-semibold text-slate-800">
+              <header className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <span className="rounded-md bg-muted px-2 py-0.5 font-semibold text-foreground">
                   #{request.id}
                 </span>
                 <span
@@ -140,7 +140,7 @@ export default function InventoryRequestsCardView({
                     {request.espacioNombre}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
                   <Boxes className="h-3 w-3" />
                   x{request.cantidadSolicitada}
                 </span>
@@ -149,10 +149,10 @@ export default function InventoryRequestsCardView({
                 </span>
               </header>
 
-              <dl className="grid gap-2 sm:gap-3 text-[12px] leading-relaxed text-slate-900 sm:grid-cols-1 lg:grid-cols-2">
+              <dl className="grid gap-2 sm:gap-3 text-[12px] leading-relaxed text-foreground sm:grid-cols-1 lg:grid-cols-2">
                 <div className="grid grid-cols-[auto_1fr] items-start gap-2">
                   <User className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                  <div className="min-w-0 space-y-1 text-slate-900">
+                  <div className="min-w-0 space-y-1 text-foreground">
                     <p className="truncate text-sm font-semibold leading-tight">
                       {request.solicitanteNombre ?? '—'}
                     </p>
@@ -167,17 +167,17 @@ export default function InventoryRequestsCardView({
 
                 <div className="grid grid-cols-[auto_1fr] items-start gap-2">
                   <CalendarClock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                  <div className="flex flex-wrap items-center gap-1 text-sm font-semibold leading-tight text-slate-900">
+                  <div className="flex flex-wrap items-center gap-1 text-sm font-semibold leading-tight text-foreground">
                     <span>{formatCompactDateTime(request.reservaInicio)}</span>
-                    <span className="mx-1 text-[10px] text-slate-400">→</span>
+                    <span className="mx-1 text-[10px] text-muted-foreground">→</span>
                     <span>{formatCompactDateTime(request.reservaFin)}</span>
                   </div>
                 </div>
               </dl>
             </div>
 
-            <aside className="mt-2 flex flex-col gap-2 border-t border-slate-100 pt-2 text-[11px] text-muted-foreground lg:mt-0 lg:min-w-[184px] lg:max-w-[224px] lg:border-0 lg:pt-0 lg:items-end lg:justify-start lg:gap-3">
-              <span className="hidden rounded-md border border-dashed border-slate-300 px-2 py-1 text-center text-[10px] text-slate-500 lg:block">
+            <aside className="mt-2 flex flex-col gap-2 border-t border-border pt-2 text-[11px] text-muted-foreground lg:mt-0 lg:min-w-[184px] lg:max-w-[224px] lg:border-0 lg:pt-0 lg:items-end lg:justify-start lg:gap-3">
+              <span className="hidden rounded-md border border-dashed border-border px-2 py-1 text-center text-[10px] text-muted-foreground lg:block">
                 Creada {formatDateTime(request.createdAt)}
               </span>
               <PermissionGuard requiredPermission="solicitud_inventario:aprobar">

@@ -97,12 +97,12 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
         {[1, 2, 3, 4].map((i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-              <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
+              <div className="h-4 w-4 bg-secondary rounded animate-pulse" />
             </CardHeader>
             <CardContent>
-              <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-2" />
-              <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+              <div className="h-8 w-16 bg-secondary rounded animate-pulse mb-2" />
+              <div className="h-3 w-32 bg-secondary rounded animate-pulse" />
             </CardContent>
           </Card>
         ))}

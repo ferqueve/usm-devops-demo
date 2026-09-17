@@ -25,11 +25,11 @@ export interface ViewModeToggleProps {
 export function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewModeToggleProps>) {
   const buttonClass = (active: boolean) =>
     `p-1.5 rounded transition-colors ${active
-      ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-      : 'text-gray-500 hover:text-gray-700'}`;
+      ? 'bg-card text-foreground shadow-md ring-1 ring-gray-300'
+      : 'text-muted-foreground hover:text-foreground/80'}`;
 
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 flex-shrink-0 self-start">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted flex-shrink-0 self-start">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onViewModeChange('cards')} className={buttonClass(viewMode === 'cards')}>
@@ -66,14 +66,14 @@ export interface FullScreenToggleProps {
 // Botón compartido para entrar/salir de pantalla completa.
 export function FullScreenToggle({ isFullScreen, onToggle }: Readonly<FullScreenToggleProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 flex-shrink-0 self-start">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted flex-shrink-0 self-start">
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             onClick={onToggle}
             className={`p-1.5 rounded transition-colors ${isFullScreen
-              ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-              : 'text-gray-500 hover:text-gray-700'}`}
+              ? 'bg-card text-foreground shadow-md ring-1 ring-gray-300'
+              : 'text-muted-foreground hover:text-foreground/80'}`}
           >
             {isFullScreen ? (
               <Minimize2 className="h-3.5 w-3.5 text-blue-600" />

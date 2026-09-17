@@ -132,7 +132,7 @@ export function VerifyEmailForm({
                 <>
                   <div className="grid gap-3">
                     <Label>Correo Electrónico</Label>
-                    <div className="p-3 bg-gray-50 rounded-md border">
+                    <div className="p-3 bg-muted rounded-md border">
                       <p className="text-sm font-medium">{email}</p>
                     </div>
                   </div>

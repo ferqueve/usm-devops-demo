@@ -52,7 +52,7 @@ export function DeleteInventarioDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-muted p-4 rounded-lg">
           <h4 className="font-medium mb-2">Elemento a eliminar:</h4>
           <div className="space-y-1 text-sm">
             <p><span className="font-medium">Tipo:</span> {inventarioItem.tipoElementoNombre}</p>

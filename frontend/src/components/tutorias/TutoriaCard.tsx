@@ -87,8 +87,8 @@ function EnVivoBadge() {
   return (
     <Badge className="border-utec-red bg-utec-red text-white text-[10px] gap-1">
       <span className="relative flex h-1.5 w-1.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-card opacity-75" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-card" />
       </span>
       En vivo
     </Badge>

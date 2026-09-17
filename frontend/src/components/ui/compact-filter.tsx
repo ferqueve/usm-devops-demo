@@ -4,10 +4,10 @@
  * visual se reuse en Espacios, Usuarios, Auditoría e Inventario.
  *
  * Convención visual:
- *   - Cada grupo vive dentro de `<div className="flex items-center border rounded-lg p-0.5 bg-gray-50">`
+ *   - Cada grupo vive dentro de `<div className="flex items-center border rounded-lg p-0.5 bg-muted">`
  *     con sub-botones de 28-32px.
- *   - Botón activo: `bg-white text-gray-900 shadow-md ring-1 ring-gray-300`.
- *   - Botón inactivo: `text-gray-500 hover:text-gray-700`.
+ *   - Botón activo: `bg-card text-foreground shadow-md ring-1 ring-gray-300`.
+ *   - Botón inactivo: `text-muted-foreground hover:text-foreground/80`.
  */
 import type { LucideIcon } from 'lucide-react';
 import { Filter, CalendarArrowDown, CalendarArrowUp, BrushCleaning } from 'lucide-react';
@@ -17,8 +17,8 @@ import { es } from 'date-fns/locale';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-const ACTIVE_BUTTON_CLASS = 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300';
-const INACTIVE_BUTTON_CLASS = 'text-gray-500 hover:text-gray-700';
+const ACTIVE_BUTTON_CLASS = 'bg-card text-foreground shadow-md ring-1 ring-gray-300';
+const INACTIVE_BUTTON_CLASS = 'text-muted-foreground hover:text-foreground/80';
 
 export function compactFilterButtonClass(isActive: boolean): string {
   return `p-1.5 rounded transition-colors ${isActive ? ACTIVE_BUTTON_CLASS : INACTIVE_BUTTON_CLASS}`;
@@ -68,10 +68,10 @@ export function PopoverFilterSection<T extends number | string>({
   const triggerClass = `p-1.5 rounded transition-colors ${
     isAll ? INACTIVE_BUTTON_CLASS : activeBgClass
   }`;
-  const iconClass = `h-3.5 w-3.5 ${isAll ? 'text-gray-500' : activeTextColorClass}`;
+  const iconClass = `h-3.5 w-3.5 ${isAll ? 'text-muted-foreground' : activeTextColorClass}`;
   const selectedItem = items.find(item => item.id === selectedId);
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onChange(null)} className={allClass}>
@@ -101,8 +101,8 @@ export function PopoverFilterSection<T extends number | string>({
                 onClick={() => onChange(item.id as T)}
                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
                   item.id === selectedId
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-muted text-foreground font-medium'
+                    : 'text-foreground/80 hover:bg-muted'
                 }`}
               >
                 {item.swatchColor && (
@@ -149,12 +149,12 @@ interface EnumFilterSectionProps {
  */
 export function EnumFilterSection({ value, options, onChange }: Readonly<EnumFilterSectionProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       {options.map((opt) => {
         const isActive = opt.value === value;
         const colorClass = isActive
           ? (opt.activeColorClass ?? '')
-          : (opt.inactiveColorClass ?? 'text-gray-500');
+          : (opt.inactiveColorClass ?? 'text-muted-foreground');
         return (
           <Tooltip key={opt.tooltip}>
             <TooltipTrigger asChild>
@@ -188,7 +188,7 @@ export function DateRangeFilterSection({
 }: Readonly<DateRangeFilterSectionProps>) {
   const allClass = compactFilterButtonClass(fechaInicio === undefined && fechaFin === undefined);
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -211,7 +211,7 @@ export function DateRangeFilterSection({
         tooltipFallback="Fecha inicio"
         onChange={onFechaInicioChange}
       />
-      <span className="mx-1 text-gray-400 text-xs">-</span>
+      <span className="mx-1 text-muted-foreground text-xs">-</span>
       <DateBoundButton
         value={fechaFin}
         otherBound={fechaInicio}
@@ -243,7 +243,7 @@ function DateBoundButton({
 }: Readonly<DateBoundButtonProps>) {
   const isUnset = value === undefined;
   const buttonClass = filterTriggerClass(!isUnset);
-  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-gray-500' : 'text-blue-600'}`;
+  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-muted-foreground' : 'text-blue-600'}`;
   const disabledChecker = (date: Date) => {
     if (!otherBound) return false;
     const limit = new Date(otherBound);

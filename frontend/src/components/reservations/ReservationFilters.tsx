@@ -30,8 +30,8 @@ interface TipoEspacio {
   color?: string;
 }
 
-const ACTIVE_BUTTON_CLASS = 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300';
-const INACTIVE_BUTTON_CLASS = 'text-gray-500 hover:text-gray-700';
+const ACTIVE_BUTTON_CLASS = 'bg-card text-foreground shadow-md ring-1 ring-gray-300';
+const INACTIVE_BUTTON_CLASS = 'text-muted-foreground hover:text-foreground/80';
 
 function getFilterButtonClass(isActive: boolean): string {
   return `p-1.5 rounded transition-colors ${isActive ? ACTIVE_BUTTON_CLASS : INACTIVE_BUTTON_CLASS}`;
@@ -58,7 +58,7 @@ function DateRangeFilterSection({
 }: Readonly<DateRangeFilterProps>) {
   const allClass = getFilterButtonClass(fechaInicio === undefined && fechaFin === undefined);
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -81,7 +81,7 @@ function DateRangeFilterSection({
         tooltipFallback="Fecha inicio"
         onChange={onFechaInicioChange}
       />
-      <span className="mx-1 text-gray-400 text-xs">-</span>
+      <span className="mx-1 text-muted-foreground text-xs">-</span>
       <DateBoundButton
         value={fechaFin}
         otherBound={fechaInicio}
@@ -113,7 +113,7 @@ function DateBoundButton({
 }: Readonly<DateBoundButtonProps>) {
   const isUnset = value === undefined;
   const buttonClass = getFilterTriggerClass(!isUnset);
-  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-gray-500' : 'text-blue-600'}`;
+  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-muted-foreground' : 'text-blue-600'}`;
   const disabledChecker = (date: Date) => {
     if (!otherBound) return false;
     const limit = new Date(otherBound);
@@ -162,7 +162,7 @@ interface TiempoFilterProps {
 
 function TiempoFilterSection({ tiempoFilter, onTiempoFilterChange }: Readonly<TiempoFilterProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onTiempoFilterChange('todas')} className={getFilterButtonClass(tiempoFilter === 'todas')}>
@@ -182,7 +182,7 @@ function TiempoFilterSection({ tiempoFilter, onTiempoFilterChange }: Readonly<Ti
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onTiempoFilterChange('pasadas')} className={getFilterButtonClass(tiempoFilter === 'pasadas')}>
-            <Clock className={`h-3.5 w-3.5 ${tiempoFilter === 'pasadas' ? 'text-gray-600' : 'text-gray-500'}`} />
+            <Clock className={`h-3.5 w-3.5 ${tiempoFilter === 'pasadas' ? 'text-muted-foreground' : 'text-muted-foreground'}`} />
           </button>
         </TooltipTrigger>
         <TooltipContent>Reservas pasadas</TooltipContent>
@@ -199,7 +199,7 @@ interface EstadoFilterProps {
 
 function EstadoFilterSection({ estadoFilter, showPendienteFilter, onEstadoFilterChange }: Readonly<EstadoFilterProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onEstadoFilterChange('todas')} className={getFilterButtonClass(estadoFilter === 'todas')}>
@@ -263,10 +263,10 @@ function PopoverFilterSection({
   const triggerClass = `p-1.5 rounded transition-colors ${
     isAll ? INACTIVE_BUTTON_CLASS : activeBgClass
   }`;
-  const iconClass = `h-3.5 w-3.5 ${isAll ? 'text-gray-500' : activeTextColorClass}`;
+  const iconClass = `h-3.5 w-3.5 ${isAll ? 'text-muted-foreground' : activeTextColorClass}`;
   const selectedItem = items.find(item => item.id === selectedId);
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onChange(null)} className={allClass}>
@@ -296,8 +296,8 @@ function PopoverFilterSection({
                 onClick={() => onChange(item.id)}
                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
                   item.id === selectedId
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-muted text-foreground font-medium'
+                    : 'text-foreground/80 hover:bg-muted'
                 }`}
               >
                 {item.swatchColor && (

@@ -53,7 +53,7 @@ function getEstadoConfig(estado: Reserva['estado']) {
     default:
       return {
         label: estado,
-        color: 'bg-gray-50 text-gray-700 border-gray-200'
+        color: 'bg-muted text-foreground/80 border-border'
       };
   }
 }

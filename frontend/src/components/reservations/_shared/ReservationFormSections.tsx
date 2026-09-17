@@ -48,7 +48,7 @@ export interface EspacioSelectProps {
 export function EspacioSelect({ value, espaciosDisponibles, onChange }: Readonly<EspacioSelectProps>) {
   return (
     <div className="flex items-center gap-4">
-      <Label htmlFor="espacio" className="text-sm font-semibold text-gray-700 min-w-[80px]">Espacio *</Label>
+      <Label htmlFor="espacio" className="text-sm font-semibold text-foreground/80 min-w-[80px]">Espacio *</Label>
       <div className="flex-1">
         <Select value={value} onValueChange={onChange}>
           <SelectTrigger id="espacio" className="h-10">
@@ -83,7 +83,7 @@ export interface CarreraSelectProps {
 export function CarreraSelect({ value, carreras, onChange }: Readonly<CarreraSelectProps>) {
   return (
     <div className="flex items-center gap-4">
-      <Label htmlFor="carrera" className="text-sm font-semibold text-gray-700 min-w-[80px]">Carrera</Label>
+      <Label htmlFor="carrera" className="text-sm font-semibold text-foreground/80 min-w-[80px]">Carrera</Label>
       <div className="flex-1">
         <Select
           value={value || 'ninguna'}
@@ -116,7 +116,7 @@ export interface AnalistaSelectProps {
 export function AnalistaSelect({ value, analistas, onChange }: Readonly<AnalistaSelectProps>) {
   return (
     <div className="flex items-center gap-4">
-      <Label htmlFor="analista" className="text-sm font-semibold text-gray-700 min-w-[80px]">
+      <Label htmlFor="analista" className="text-sm font-semibold text-foreground/80 min-w-[80px]">
         Analista *
       </Label>
       <div className="flex-1">
@@ -177,15 +177,15 @@ function ItemSolicitadoCard({
       : observacionLimpia || 'Sin observaciones';
 
   return (
-    <div className="bg-white rounded-md border border-gray-200 p-3 flex items-center gap-3">
+    <div className="bg-card rounded-md border border-border p-3 flex items-center gap-3">
       <div className="flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="text-sm font-semibold text-gray-800">
+        <span className="text-sm font-semibold text-foreground">
           {tipoNombre ?? 'Tipo sin definir'}
         </span>
         <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
           x{item.cantidadSolicitada}
         </span>
-        <span className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-[260px]">
+        <span className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[260px]">
           Obs: {observacionResumen}
         </span>
       </div>
@@ -203,7 +203,7 @@ function ItemSolicitadoCard({
           </PopoverTrigger>
           <PopoverContent align="start" className="w-[320px] space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Tipo de elemento
               </Label>
               <Select
@@ -223,7 +223,7 @@ function ItemSolicitadoCard({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Cantidad
               </Label>
               <Input
@@ -237,7 +237,7 @@ function ItemSolicitadoCard({
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Observaciones (opcional)
               </Label>
               <Textarea
@@ -273,7 +273,7 @@ export function ItemsSolicitadosSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-semibold text-gray-700">Items Solicitados</Label>
+        <Label className="text-sm font-semibold text-foreground/80">Items Solicitados</Label>
         <Button
           type="button"
           variant="outline"
@@ -287,7 +287,7 @@ export function ItemsSolicitadosSection({
         </Button>
       </div>
       {items.length > 0 && (
-        <div className="space-y-3 border border-gray-200 rounded-lg p-2 bg-gray-50">
+        <div className="space-y-3 border border-border rounded-lg p-2 bg-muted">
           {items.map((item, index) => {
             const tipo = tiposElemento.find((t) => t.id === item.tipoElementoId);
             return (
@@ -305,7 +305,7 @@ export function ItemsSolicitadosSection({
         </div>
       )}
       {items.length === 0 && (
-        <p className="text-xs text-gray-500 italic">No hay items solicitados. Haz clic en "Agregar" para añadir uno.</p>
+        <p className="text-xs text-muted-foreground italic">No hay items solicitados. Haz clic en "Agregar" para añadir uno.</p>
       )}
     </div>
   );
@@ -340,7 +340,7 @@ export function HoraInicioFinSection({
   return (
     <div className="flex gap-6">
       <div className="flex-1 space-y-3">
-        <Label className="text-sm font-semibold text-gray-700">Hora de inicio *</Label>
+        <Label className="text-sm font-semibold text-foreground/80">Hora de inicio *</Label>
         <div className="flex gap-3 items-center">
           <div className="flex-1">
             <TimeSelect
@@ -380,10 +380,10 @@ export function HoraInicioFinSection({
         </div>
       </div>
 
-      <div className="border-l border-dashed border-gray-300 self-stretch mx-1.5"></div>
+      <div className="border-l border-dashed border-border self-stretch mx-1.5"></div>
 
       <div className="flex-1 space-y-3">
-        <Label className="text-sm font-semibold text-gray-700">Hora de fin *</Label>
+        <Label className="text-sm font-semibold text-foreground/80">Hora de fin *</Label>
         <div className="flex gap-3 items-center">
           <div className="flex-1">
             <TimeSelect
@@ -435,7 +435,7 @@ export function RecurrenciaSection({ formData, setFormData, fecha }: Readonly<Re
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">Recurrencia</Label>
+        <Label className="text-sm font-semibold text-foreground/80 min-w-[80px]">Recurrencia</Label>
         <div className="flex-1">
           <Select
             value={formData.tipoRecurrencia || 'ninguna'}
@@ -463,7 +463,7 @@ export function RecurrenciaSection({ formData, setFormData, fecha }: Readonly<Re
       {formData.tipoRecurrencia && (
         <>
           <div className="flex items-center gap-4">
-            <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">
+            <Label className="text-sm font-semibold text-foreground/80 min-w-[80px]">
               Hasta el día
             </Label>
             <div className="flex-1">

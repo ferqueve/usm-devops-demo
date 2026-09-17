@@ -22,7 +22,7 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
     if (puntaje >= 0.8) return "bg-emerald-50 text-emerald-700 border-emerald-200";
     if (puntaje >= 0.6) return "bg-blue-50 text-blue-700 border-blue-200";
     if (puntaje >= 0.4) return "bg-amber-50 text-amber-700 border-amber-200";
-    return "bg-gray-50 text-gray-700 border-gray-200";
+    return "bg-muted text-foreground/80 border-border";
   };
 
   const handleExplicar = async (e: React.MouseEvent) => {
@@ -82,7 +82,7 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
             <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-utec-blue">
               <Wand2 className="h-3 w-3" /> Explicación IA
             </div>
-            <p className="whitespace-pre-wrap leading-relaxed text-gray-800">{aiExplicacion}</p>
+            <p className="whitespace-pre-wrap leading-relaxed text-foreground">{aiExplicacion}</p>
           </div>
         )}
         {aiError && (

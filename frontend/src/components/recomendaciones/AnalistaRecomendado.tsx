@@ -78,7 +78,7 @@ export function AnalistaRecomendado({
                   "w-full text-left flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer",
                   isSelected
                     ? "bg-primary/5 border-primary"
-                    : "hover:bg-gray-50 border-gray-200"
+                    : "hover:bg-muted border-border"
                 )}
                 onClick={() => onSelectAnalista?.(analista.analistaId!)}
               >

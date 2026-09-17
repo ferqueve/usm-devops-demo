@@ -489,7 +489,7 @@ export default function UserManagement() {
       <UserStatsCards />
 
       {/* Tabla de usuarios con filtros embebidos */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+      <div className="border rounded-lg shadow-card overflow-hidden bg-card">
         <div className="px-4 pt-4 pb-3">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
             <div className="flex-1">

@@ -49,7 +49,7 @@ export default function InventoryStatsWidget({
           label: 'Sin Asignar',
           value: stats.sinAsignar,
           icon: Archive,
-          color: 'text-gray-600',
+          color: 'text-muted-foreground',
         },
       ]
     : null;

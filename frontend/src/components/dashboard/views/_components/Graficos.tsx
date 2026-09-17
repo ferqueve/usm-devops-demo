@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { MARCA, ORDEN_CATEGORIAS } from '@/lib/design/paleta';
 import {
   Area,
   AreaChart,
@@ -21,18 +22,16 @@ import type { TooltipProps } from 'recharts';
  * Estadísticas. Todos comen datos que el dashboard ya trae en su única llamada.
  */
 
-/** Paleta institucional, en el orden en que se van tomando los colores. */
-export const UTEC = {
-  azul: '#184897',
-  amarillo: '#F6CA21',
-  verde: '#86bb4c',
-  rojo: '#DF2B31',
-  naranja: '#e8630a',
-  cian: '#00c7ff',
-  oscuro: '#343a40',
-} as const;
+/**
+ * Paleta institucional, en el orden en que se van tomando los colores.
+ *
+ * Re-exportada desde `lib/design/paleta` para no volver a tener los hex
+ * escritos acá: este objeto tenía el naranja equivocado (#e8630a en lugar del
+ * #DE7A27 del manual) y nadie lo notaba porque no había con qué compararlo.
+ */
+export const UTEC = MARCA;
 
-const PALETA = [UTEC.azul, UTEC.verde, UTEC.amarillo, UTEC.naranja, UTEC.cian, UTEC.rojo];
+const PALETA = ORDEN_CATEGORIAS.map((k) => MARCA[k]);
 
 function Globo({ active, payload, label }: Readonly<TooltipProps<number, string>>) {
   if (!active || !payload?.length) return null;

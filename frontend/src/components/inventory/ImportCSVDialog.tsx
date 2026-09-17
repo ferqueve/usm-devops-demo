@@ -101,10 +101,10 @@ export default function ImportCSVDialog({
               <Label>Vista previa (primeras 5 líneas)</Label>
               <div className="border rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-muted">
                     <tr>
                       {preview[0]?.map((header, i) => (
-                        <th key={`header-${header.trim()}-${i}`} className="px-3 py-2 text-left font-medium text-gray-700">
+                        <th key={`header-${header.trim()}-${i}`} className="px-3 py-2 text-left font-medium text-foreground/80">
                           {header.trim()}
                         </th>
                       ))}
@@ -114,7 +114,7 @@ export default function ImportCSVDialog({
                     {preview.slice(1).map((row, i) => (
                       <tr key={`row-${i}-${row.join('|')}`}>
                         {row.map((cell, j) => (
-                          <td key={`cell-${preview[0]?.[j]?.trim() ?? j}-${cell}`} className="px-3 py-2 text-gray-600">
+                          <td key={`cell-${preview[0]?.[j]?.trim() ?? j}-${cell}`} className="px-3 py-2 text-muted-foreground">
                             {cell.trim()}
                           </td>
                         ))}

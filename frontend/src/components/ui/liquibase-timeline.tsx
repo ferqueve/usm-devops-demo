@@ -102,7 +102,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
             No hay información de migraciones Liquibase disponible.
           </p>
           <p className="text-xs text-muted-foreground">
-            Verifica que el endpoint <code className="bg-gray-100 px-2 py-1 rounded">actuator/liquibase</code> esté habilitado.
+            Verifica que el endpoint <code className="bg-muted px-2 py-1 rounded">actuator/liquibase</code> esté habilitado.
           </p>
         </div>
       </div>

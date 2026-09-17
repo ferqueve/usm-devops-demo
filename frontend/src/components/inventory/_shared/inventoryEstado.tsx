@@ -28,7 +28,7 @@ const ESTADO_CONFIGS: Record<string, EstadoConfig> = {
 
 const FALLBACK_CONFIG: EstadoConfig = {
   label: '',
-  color: 'bg-gray-50 text-gray-700 border-gray-200',
+  color: 'bg-muted text-foreground/80 border-border',
   icon: AlertCircle,
 };
 

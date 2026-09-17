@@ -55,7 +55,7 @@ function getEstadoConfig(estado: string) {
     case 'DANADO':
       return { label: 'Dañado', color: 'bg-utec-red text-white border-utec-red', icon: AlertCircle };
     default:
-      return { label: estado, color: 'bg-gray-200 text-utec-dark border-gray-300', icon: AlertCircle };
+      return { label: estado, color: 'bg-secondary text-utec-dark border-border', icon: AlertCircle };
   }
 }
 
@@ -302,7 +302,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                     {espacio.tipoEspacioNombre}
                   </span>
                 ) : (
-                  <Badge className="bg-gray-100 text-gray-800">
+                  <Badge className="bg-muted text-foreground">
                     {espacio.tipoEspacioNombre}
                   </Badge>
                 )
@@ -413,7 +413,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                       {espacio.tipoEspacioNombre}
                     </span>
                   ) : (
-                    <Badge className="bg-gray-100 text-gray-800">
+                    <Badge className="bg-muted text-foreground">
                       {espacio.tipoEspacioNombre || 'Sin tipo'}
                     </Badge>
                   )}

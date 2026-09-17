@@ -84,7 +84,7 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
                       onSelectEspacio?.(r.espacio_id);
                       setOpen(false);
                     }}
-                    className="w-full rounded border bg-gray-50 p-2 text-left text-xs hover:border-utec-blue hover:bg-utec-blue/5"
+                    className="w-full rounded border bg-muted p-2 text-left text-xs hover:border-utec-blue hover:bg-utec-blue/5"
                   >
                     <div className="flex items-center justify-between font-semibold text-utec-dark">
                       <span>Espacio #{r.espacio_id}</span>

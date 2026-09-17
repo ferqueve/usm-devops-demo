@@ -108,11 +108,11 @@ export function SpaceTable({
         </TableHeader>
         <TableBody>
           {espacios.map((espacio) => (
-            <TableRow key={espacio.id} className="hover:bg-gray-50">
+            <TableRow key={espacio.id} className="hover:bg-muted">
               <TableCell className="font-medium">#{espacio.id}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-gray-500" />
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{espacio.nombre}</span>
                 </div>
               </TableCell>
@@ -132,14 +132,14 @@ export function SpaceTable({
               </TableCell>
               <TableCell>
                 {espacio.edificioNombre ? (
-                  <span className="text-sm text-gray-700">{espacio.edificioNombre}</span>
+                  <span className="text-sm text-foreground/80">{espacio.edificioNombre}</span>
                 ) : (
-                  <span className="text-sm text-gray-400">Sin edificio</span>
+                  <span className="text-sm text-muted-foreground">Sin edificio</span>
                 )}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-4 w-4 text-gray-500" />
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   <span>{espacio.capacidad} personas</span>
                 </div>
               </TableCell>
@@ -168,7 +168,7 @@ export function SpaceTable({
                       default:
                         return {
                           label: estado,
-                          color: 'bg-gray-200 text-utec-dark border-gray-300',
+                          color: 'bg-secondary text-utec-dark border-border',
                           icon: CheckCircle
                         };
                     }

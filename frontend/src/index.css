@@ -636,61 +636,30 @@ body {
 }
 
 /* ============================================================
-   Modo oscuro — remapeo de utilidades hardcodeadas
+   Modo oscuro — variantes con opacidad
    ------------------------------------------------------------
-   Gran parte de la app se construyó con grises/blancos fijos
-   (bg-white, bg-gray-*, text-gray-*, border-gray-*) sin variante
-   `dark:`. Para que el modo oscuro sea coherente sin tocar ~65
-   archivos, acá remapeamos esas utilidades a los tokens del tema
-   cuando el ancestro tiene la clase `.dark`. Los componentes que
-   sí definen su propia variante `dark:` siguen teniendo prioridad
-   por especificidad de Tailwind.
+   Acá vivía un bloque de ~40 reglas que remapeaba a tokens todos
+   los grises fijos de la app (bg-white, bg-gray-*, text-gray-*,
+   border-gray-*) cuando el ancestro tenía `.dark`. Era un parche
+   para no tener que tocar los archivos.
+
+   Ya no hace falta: esas utilidades se migraron a los tokens del
+   tema en los componentes, así que el modo oscuro sale solo.
+
+   Queda sólo lo que una clase base no puede resolver: las
+   variantes con opacidad, que Tailwind emite con otro nombre de
+   clase y el remapeo por clase base no alcanza.
    ============================================================ */
 
-/* Fondos */
-.dark .bg-white { background-color: var(--card); }
-.dark .bg-gray-50 { background-color: var(--muted); }
-.dark .bg-gray-100 { background-color: var(--muted); }
-.dark .bg-gray-200 { background-color: var(--secondary); }
-.dark .bg-slate-50 { background-color: var(--muted); }
-.dark .bg-slate-100 { background-color: var(--muted); }
-
-/* Hover de fondos claros */
-.dark .hover\:bg-gray-50:hover { background-color: var(--accent); }
-.dark .hover\:bg-gray-100:hover { background-color: var(--accent); }
-.dark .hover\:bg-gray-200:hover { background-color: var(--secondary); }
-.dark .hover\:bg-white:hover { background-color: var(--card); }
-
-/* Texto */
-.dark .text-gray-900,
-.dark .text-gray-800,
-.dark .text-slate-900,
-.dark .text-slate-800 { color: var(--foreground); }
-.dark .text-gray-700,
-.dark .text-gray-600 { color: color-mix(in oklab, var(--foreground) 80%, transparent); }
-.dark .text-gray-500,
-.dark .text-gray-400,
-.dark .text-slate-500 { color: var(--muted-foreground); }
-
-/* Bordes */
-.dark .border-gray-100,
-.dark .border-gray-200,
-.dark .border-gray-300,
-.dark .border-slate-200 { border-color: var(--border); }
-
-/* Divisores y rings */
-.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border); }
-
-/* Variantes con opacidad (no las agarra el remapeo por clase base).
-   Ej.: columna de horas del calendario (bg-gray-50/50), secciones colapsadas. */
+/* Columna de horas del calendario y secciones colapsadas. */
 .dark .bg-gray-50\/50,
 .dark .bg-gray-50\/60,
 .dark .bg-gray-50\/30 { background-color: var(--muted); }
-.dark .bg-gray-100\/50 { background-color: var(--muted); }
-/* Resaltado "hoy" + heatmap del calendario en escala azul (dark → azul).
+
+/* Resaltado "hoy" + heatmap del calendario en escala azul.
    En dark el texto de las celdas es claro, así que las celdas tienen que ser
-   oscuras para mantener contraste. Usamos un azul real (no var(--primary),
-   que en dark es gris claro). */
+   oscuras para mantener contraste. Va un azul real y no var(--primary),
+   que en dark es una tinta más clara. */
 .dark .bg-blue-50\/30 { background-color: color-mix(in oklab, #3b82f6 12%, var(--card)); }
 .dark .bg-blue-50 { background-color: color-mix(in oklab, #3b82f6 15%, var(--card)); }
 .dark .bg-blue-100 { background-color: color-mix(in oklab, #3b82f6 24%, var(--card)); }

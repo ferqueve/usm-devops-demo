@@ -134,7 +134,7 @@ function Estrellas() {
   return (
     <div className="bg-anim absolute inset-0 overflow-hidden" style={{ background: 'radial-gradient(120% 100% at 50% 0%, #1a2440 0%, #080c16 72%)' }} aria-hidden>
       {STARS.map((s, i) => (
-        <span key={i} className="absolute rounded-full bg-white" style={{ top: `${s.top}%`, left: `${s.left}%`, width: s.size, height: s.size, animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite` }} />
+        <span key={i} className="absolute rounded-full bg-card" style={{ top: `${s.top}%`, left: `${s.left}%`, width: s.size, height: s.size, animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite` }} />
       ))}
       <span className="absolute h-px w-24" style={{ top: '12%', left: '4%', background: 'linear-gradient(90deg, transparent, #fff)', animation: 'shooting-star 7s ease-in 1s infinite' }} />
       <span className="absolute h-px w-20" style={{ top: '32%', left: '18%', background: 'linear-gradient(90deg, transparent, #9ad8ff)', animation: 'shooting-star 11s ease-in 5s infinite' }} />

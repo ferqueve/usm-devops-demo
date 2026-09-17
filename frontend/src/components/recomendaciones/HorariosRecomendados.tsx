@@ -97,7 +97,7 @@ export function HorariosRecomendados(props: Readonly<HorariosRecomendadosProps>)
               aria-pressed={isSelected}
               className={cn(
                 "h-auto py-2 px-3 flex flex-col items-start justify-center cursor-pointer",
-                isSelected ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-muted-foreground"
+                isSelected ? "bg-emerald-600 text-white border-emerald-600" : "bg-card text-muted-foreground"
               )}
               onClick={(e) => {
                 // No prevenir eventos por defecto para mantener accesibilidad; solo stopPropagation

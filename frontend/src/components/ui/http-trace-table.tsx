@@ -172,7 +172,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
       DELETE: 'bg-red-100 text-red-800 border-red-200',
       PATCH: 'bg-purple-100 text-purple-800 border-purple-200',
     };
-    return colors[method] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[method] || 'bg-muted text-foreground border-border';
   };
 
   // Badge de status
@@ -180,7 +180,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
     if (status >= 200 && status < 300) return 'bg-green-100 text-green-800 border-green-200';
     if (status >= 300 && status < 400) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     if (status >= 400) return 'bg-red-100 text-red-800 border-red-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    return 'bg-muted text-foreground border-border';
   };
 
   if (!traces.length) {
@@ -191,7 +191,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
           <h3 className="text-sm font-semibold flex-1">Actividad HTTP Reciente</h3>
         </div>
         <p className="text-muted-foreground text-center py-8 bg-card">
-          No hay datos de HTTP exchanges disponibles. Asegúrate de que el endpoint <code className="text-xs bg-gray-100 px-2 py-1 rounded">/actuator/httpexchanges</code> esté habilitado.
+          No hay datos de HTTP exchanges disponibles. Asegúrate de que el endpoint <code className="text-xs bg-muted px-2 py-1 rounded">/actuator/httpexchanges</code> esté habilitado.
         </p>
       </div>
     );

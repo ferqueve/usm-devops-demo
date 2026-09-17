@@ -29,7 +29,7 @@ export function StatusBadge({ status, label, icon = true, pulse = false, classNa
     },
     warning: {
       variant: 'default' as const,
-      className: 'bg-utec-yellow hover:bg-utec-yellow/90 text-gray-900',
+      className: 'bg-utec-yellow hover:bg-utec-yellow/90 text-foreground',
       icon: AlertCircle,
     },
     info: {

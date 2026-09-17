@@ -69,16 +69,16 @@ function PriorityReservationRow({ rec, reservasPendientes, onViewDetails }: Read
   }`;
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg border bg-white hover:shadow-md transition-all">
+    <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-md transition-all">
       <div className="flex items-center gap-3 flex-1">
         <div className={iconWrapperClass}>
           <AlertTriangle className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">
+          <p className="text-sm font-medium text-foreground truncate">
             {rec.razon || 'Reserva prioritaria'}
           </p>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-xs text-muted-foreground truncate">
             {rec.espacioNombre || 'Espacio sin especificar'} - Urgencia: {urgencia}/10
           </p>
         </div>

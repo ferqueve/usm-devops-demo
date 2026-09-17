@@ -17,7 +17,7 @@ function RoomTypeBadge({ type }: Readonly<{ type: Room['type'] }>) {
       case 'meeting-room':
         return { label: 'Sala de Reuniones', color: 'bg-orange-100 text-orange-800' };
       default:
-        return { label: 'Otro', color: 'bg-gray-100 text-gray-800' };
+        return { label: 'Otro', color: 'bg-muted text-foreground' };
     }
   };
 

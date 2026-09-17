@@ -97,9 +97,9 @@ interface InventoryRequestFiltersProps {
 }
 
 const highlightClass =
-  "bg-white text-gray-900 shadow-md ring-1 ring-gray-300 hover:text-gray-900";
+  "bg-card text-foreground shadow-md ring-1 ring-gray-300 hover:text-foreground";
 const defaultButtonClass =
-  "text-gray-500 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40";
+  "text-muted-foreground hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40";
 
 const formatShortDate = (date?: Date) =>
   date ? format(date, "d MMM", { locale: es }) : "";
@@ -113,12 +113,12 @@ interface SearchInputProps {
 
 function SearchInput({ searchValue, activeSearch, onSearchChange, onSearchClear }: Readonly<SearchInputProps>) {
   const wrapperClass = cn(
-    "flex items-center gap-1.5 rounded-md bg-white px-1.5 py-1 transition-colors shadow-xs",
+    "flex items-center gap-1.5 rounded-md bg-card px-1.5 py-1 transition-colors shadow-xs",
     activeSearch ? "ring-1 ring-blue-500/40" : ""
   );
-  const iconClass = cn("h-3.5 w-3.5 shrink-0", activeSearch ? "text-blue-600" : "text-gray-500");
+  const iconClass = cn("h-3.5 w-3.5 shrink-0", activeSearch ? "text-blue-600" : "text-muted-foreground");
   return (
-    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <div className={wrapperClass}>
         <Search className={iconClass} />
         <Input
@@ -131,7 +131,7 @@ function SearchInput({ searchValue, activeSearch, onSearchChange, onSearchClear 
           <button
             type="button"
             onClick={onSearchClear}
-            className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-full p-1 text-muted-foreground transition hover:bg-muted hover:text-muted-foreground"
             aria-label="Limpiar búsqueda"
           >
             <X className="h-3.5 w-3.5" />
@@ -156,7 +156,7 @@ function DateRangeButton({ date, otherDate, isStart, onChange, Icon, tooltipFall
     "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
     date ? highlightClass : defaultButtonClass
   );
-  const iconClass = cn("h-3.5 w-3.5 shrink-0", date ? "text-blue-600" : "text-gray-500");
+  const iconClass = cn("h-3.5 w-3.5 shrink-0", date ? "text-blue-600" : "text-muted-foreground");
   const disabledChecker = (candidate: Date) => {
     if (!otherDate) return false;
     const limit = new Date(otherDate);
@@ -214,7 +214,7 @@ function DateRangeFilter({
     !fechaDesde && !fechaHasta ? highlightClass : defaultButtonClass
   );
   return (
-    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" onClick={onResetFechas} className={resetClass}>
@@ -231,7 +231,7 @@ function DateRangeFilter({
         Icon={CalendarArrowDown}
         tooltipFallback="Fecha desde"
       />
-      <span className="mx-1 text-xs text-gray-400">-</span>
+      <span className="mx-1 text-xs text-muted-foreground">-</span>
       <DateRangeButton
         date={fechaHasta}
         otherDate={fechaDesde}
@@ -259,7 +259,7 @@ function EstadoFilter({ selectedEstados, onToggleEstado, onClearEstados }: Reado
     [ReservaItemSolicitadoEstado, (typeof estadoConfig)[ReservaItemSolicitadoEstado]]
   >;
   return (
-    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" onClick={onClearEstados} className={clearClass}>
@@ -307,13 +307,13 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
     "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
     isAll ? defaultButtonClass : "bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
   );
-  const iconClass = cn("h-3.5 w-3.5", isAll ? "text-gray-500" : "text-blue-700");
+  const iconClass = cn("h-3.5 w-3.5", isAll ? "text-muted-foreground" : "text-blue-700");
   const selectedNombre = isAll
     ? null
     : espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ?? "Espacio seleccionado";
   const tooltipText = isAll ? "Seleccionar espacio" : selectedNombre ?? "Seleccionar espacio";
   return (
-    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" onClick={() => onEspacioChange(null)} className={allClass}>
@@ -343,8 +343,8 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
                 const itemClass = cn(
                   "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                   espacio.id === selectedEspacio
-                    ? "bg-gray-100 text-gray-900 font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "bg-muted text-foreground font-medium"
+                    : "text-foreground/80 hover:bg-muted"
                 );
                 return (
                   <button
@@ -359,7 +359,7 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
               })}
             </div>
           ) : (
-            <div className="flex items-center justify-center rounded-md border border-dashed border-gray-200 px-3 py-6 text-center text-[12px] text-muted-foreground">
+            <div className="flex items-center justify-center rounded-md border border-dashed border-border px-3 py-6 text-center text-[12px] text-muted-foreground">
               No hay espacios disponibles.
             </div>
           )}
@@ -384,7 +384,7 @@ function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewModeToggleP
     viewMode === 'table' ? highlightClass : defaultButtonClass
   );
   return (
-    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" onClick={() => onViewModeChange('cards')} className={cardsClass}>
@@ -416,7 +416,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
     highlightClass
   );
   return (
-    <div className="flex items-center rounded-lg border bg-gray-50 p-0.5">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <span className={cn("px-1.5 text-[11px] text-muted-foreground", "hidden sm:inline")}>
@@ -444,7 +444,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
                 "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                 size === pageSize
                   ? "bg-blue-100 text-blue-900 font-medium shadow-inner"
-                  : "text-gray-700 hover:bg-gray-50"
+                  : "text-foreground/80 hover:bg-muted"
               );
               return (
                 <button key={size} type="button" onClick={() => onPageSizeChange(size)} className={itemClass}>

@@ -4,9 +4,9 @@ import { Users } from "lucide-react";
 
 export function SpaceCardSkeleton() {
   return (
-    <Card className="h-full border border-gray-200 overflow-hidden">
+    <Card className="h-full border border-border overflow-hidden">
       {/* Imagen skeleton */}
-      <div className="aspect-[16/10] bg-gray-100 flex items-center justify-center">
+      <div className="aspect-[16/10] bg-muted flex items-center justify-center">
         <Users className="h-6 w-6 text-gray-300" />
       </div>
       

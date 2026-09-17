@@ -605,7 +605,7 @@ export default function SpacesManagement() {
       />
 
       {/* Espacios con filtros embebidos */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+      <div className="border rounded-lg shadow-card overflow-hidden bg-card">
         <div className="px-4 pt-4 pb-3">
           <div className="space-y-2">
             <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
@@ -694,7 +694,7 @@ export default function SpacesManagement() {
                   Avanzados
                 </Button>
                 {/* Switch de vista (cards / tabla) */}
-                <div className="flex items-center border rounded-md bg-white h-9 p-0.5 ml-auto flex-shrink-0">
+                <div className="flex items-center border rounded-md bg-card h-9 p-0.5 ml-auto flex-shrink-0">
                   <Button
                     variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
                     size="sm"
@@ -743,7 +743,7 @@ export default function SpacesManagement() {
                 <>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-medium text-gray-900">Filtros por Inventario</h4>
+                      <h4 className="text-sm font-medium text-foreground">Filtros por Inventario</h4>
                       {filtrosInventario.length === 0 && (
                         <span className="text-xs text-muted-foreground">Sin filtros</span>
                       )}
@@ -828,7 +828,7 @@ export default function SpacesManagement() {
 
                           {/* Resumen del filtro */}
                           {filtro.tipoElementoId > 0 && (
-                            <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                            <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
                               <strong>Filtro:</strong> Espacios que tengan{' '}
                               {describirCantidadFiltro(filtro.cantidadMin, filtro.cantidadMax)}{' '}
                               <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
@@ -875,7 +875,7 @@ export default function SpacesManagement() {
             <div className="border rounded-lg shadow-card p-8">
               <div className="space-y-3">
                 {Array.from({ length: 5 }, (_, index) => `row-skeleton-${index}`).map((skeletonKey) => (
-                  <div key={skeletonKey} className="h-16 bg-gray-100 animate-pulse rounded" />
+                  <div key={skeletonKey} className="h-16 bg-muted animate-pulse rounded" />
                 ))}
               </div>
             </div>

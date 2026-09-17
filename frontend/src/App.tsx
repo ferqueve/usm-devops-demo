@@ -50,7 +50,7 @@ const SostenibilidadPage = lazyConRecarga(() => import('./app/sostenibilidad/pag
 /** Lo que se ve mientras baja el chunk de la pantalla. */
 function PantallaCargando() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-background">
+    <div className="flex min-h-screen items-center justify-center bg-muted dark:bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );

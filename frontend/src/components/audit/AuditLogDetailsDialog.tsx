@@ -38,7 +38,7 @@ function getAccionConfig(accion: AuditLog['accion']) {
     default:
       return {
         label: accion,
-        color: 'bg-gray-50 text-gray-700 border-gray-200'
+        color: 'bg-muted text-foreground/80 border-border'
       };
   }
 }
@@ -118,7 +118,7 @@ export default function AuditLogDetailsDialog({
 
             {/* Información de Request HTTP */}
             {(log.ipAddress || log.httpMethod || log.endpoint || log.userAgent) && (
-              <div className="border rounded-lg p-4 bg-slate-50">
+              <div className="border rounded-lg p-4 bg-muted">
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <Globe className="h-4 w-4" />
                   Información de Request HTTP
@@ -169,7 +169,7 @@ export default function AuditLogDetailsDialog({
                   <Eye className="h-4 w-4" />
                   Datos Previos
                 </h3>
-                <div className="bg-gray-50 border rounded-lg p-4">
+                <div className="bg-muted border rounded-lg p-4">
                   <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                     {formatJSON(log.datosPrevios)}
                   </pre>
@@ -184,7 +184,7 @@ export default function AuditLogDetailsDialog({
                   <FileText className="h-4 w-4" />
                   Datos Nuevos
                 </h3>
-                <div className="bg-gray-50 border rounded-lg p-4">
+                <div className="bg-muted border rounded-lg p-4">
                   <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                     {formatJSON(log.datosNuevos)}
                   </pre>

@@ -113,7 +113,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
     const parts = text.split(new RegExp(`(${search})`, 'gi'));
     return parts.map((part, i) =>
       part.toLowerCase() === search.toLowerCase() ? (
-        <mark key={`${part}-${i}`} className="bg-yellow-200 text-gray-900">{part}</mark>
+        <mark key={`${part}-${i}`} className="bg-yellow-200 text-foreground">{part}</mark>
       ) : part
     );
   };
@@ -214,14 +214,14 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
   // Obtener color para nivel de log
   const getLevelColor = (level: string) => {
     const colors: Record<string, string> = {
-      TRACE: 'bg-gray-100 text-gray-800 border-gray-200',
+      TRACE: 'bg-muted text-foreground border-border',
       DEBUG: 'bg-blue-100 text-blue-800 border-blue-200',
       INFO: 'bg-green-100 text-green-800 border-green-200',
       WARN: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       ERROR: 'bg-red-100 text-red-800 border-red-200',
-      OFF: 'bg-gray-100 text-gray-800 border-gray-200',
+      OFF: 'bg-muted text-foreground border-border',
     };
-    return colors[level] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[level] || 'bg-muted text-foreground border-border';
   };
 
   // Manejar cambio de nivel
@@ -282,7 +282,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
           <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
         </div>
         <p className="text-muted-foreground text-center py-8 bg-card">
-          No hay logs disponibles. Asegúrate de que el endpoint <code className="text-xs bg-gray-100 px-2 py-1 rounded">/actuator/logfile</code> esté habilitado.
+          No hay logs disponibles. Asegúrate de que el endpoint <code className="text-xs bg-muted px-2 py-1 rounded">/actuator/logfile</code> esté habilitado.
         </p>
       </div>
     );
@@ -394,7 +394,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 key={`${index}-${line.slice(0, 32)}`}
                 className={`log-line py-0.5 px-2 rounded ${getLineClass(line)}`}
               >
-                <span className="text-gray-500 select-none inline-block w-12 text-right mr-3">
+                <span className="text-muted-foreground select-none inline-block w-12 text-right mr-3">
                   {index + 1}
                 </span>
                 <span className="text-gray-100 font-mono text-xs whitespace-pre-wrap break-all">
@@ -403,7 +403,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
               </div>
             ))}
             {filteredLines.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 No se encontraron líneas que coincidan con los filtros
               </div>
             )}
@@ -492,7 +492,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                       type="checkbox"
                       checked={showOnlyModified}
                       onChange={(e) => setShowOnlyModified(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300"
+                      className="w-4 h-4 rounded border-border"
                     />
                     <span className="text-sm">Solo modificados</span>
                   </label>
@@ -539,7 +539,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                         <div
                           key={logger.name}
                           className={`flex items-center gap-3 p-2.5 border rounded-md transition-colors ${
-                            hasChange ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-muted/30'
+                            hasChange ? 'bg-amber-50 border-amber-300' : 'bg-card border-border hover:bg-muted/30'
                           }`}
                         >
                           <p
@@ -592,7 +592,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
               <Button
                 onClick={() => setShowConfirm(true)}
                 disabled={!hasChanges || saving}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-gray-200 disabled:text-muted-foreground"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-secondary disabled:text-muted-foreground"
               >
                 <Save className="h-4 w-4 mr-1.5" />
                 Guardar cambios

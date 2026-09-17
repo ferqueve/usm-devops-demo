@@ -39,8 +39,8 @@ interface TipoEspacio {
 
 function getIntervalBorderClass(esHoraCompleta: boolean, esMediaHora: boolean): string {
   if (esHoraCompleta) return 'border-t border-gray-400';
-  if (esMediaHora) return 'border-t border-gray-300';
-  return 'border-t border-gray-200';
+  if (esMediaHora) return 'border-t border-border';
+  return 'border-t border-border';
 }
 
 interface PosicionVertical {
@@ -553,7 +553,7 @@ function ReservationBar({
 
   const usarColorTipo = !!bgColorOverride;
   const colorTextoClase = usarColorTipo
-    ? (textoSobreFondo(bgColorOverride) === 'dark' ? 'text-gray-900' : 'text-white')
+    ? (textoSobreFondo(bgColorOverride) === 'dark' ? 'text-foreground' : 'text-white')
     : 'text-white';
   // Indicador de agrupación: solo si la barra es lo suficientemente alta como para
   // que el contador no encime visualmente al cuerpo de la barra.
@@ -870,13 +870,13 @@ export default function ReservationCalendarView({
 
            return (
         <div className="space-y-4">
-          <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="border rounded-lg overflow-hidden bg-card">
              <div className="flex">
                {/* Columna de horas - fija a la izquierda */}
                <div className={`w-28 flex-shrink-0 border-r bg-gray-50/50 relative`} style={{ minHeight: `${alturaMinima}px` }}>
                  {/* Sección colapsada antes */}
                  {mostrarColapsadoAntes && (
-                   <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-b border-gray-300">
+                   <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-b border-border">
                      <span className="text-xs text-muted-foreground">...</span>
                    </div>
                  )}
@@ -917,17 +917,17 @@ export default function ReservationCalendarView({
                  
                  {/* Sección colapsada después */}
                  {mostrarColapsadoDespues && (
-                   <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-t border-gray-300">
+                   <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-t border-border">
                      <span className="text-xs text-muted-foreground">...</span>
                    </div>
                  )}
                </div>
 
                                {/* Área de timeline - scrollable */}
-                <div className={`flex-1 relative bg-white ${isFullScreen ? '' : 'overflow-y-auto'}`} style={{ minHeight: `${alturaMinima}px`, backgroundColor: 'var(--background)' }}>
+                <div className={`flex-1 relative bg-card ${isFullScreen ? '' : 'overflow-y-auto'}`} style={{ minHeight: `${alturaMinima}px`, backgroundColor: 'var(--background)' }}>
                   {/* Sección colapsada antes */}
                   {mostrarColapsadoAntes && (
-                    <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center border-b border-gray-300 bg-gray-50/30">
+                    <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center border-b border-border bg-gray-50/30">
                       <span className="text-xs text-muted-foreground">...</span>
                     </div>
                   )}
@@ -1059,7 +1059,7 @@ export default function ReservationCalendarView({
                   
                   {/* Sección colapsada después */}
                   {mostrarColapsadoDespues && (
-                    <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-center border-t border-gray-300 bg-gray-50/30">
+                    <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-center border-t border-border bg-gray-50/30">
                       <span className="text-xs text-muted-foreground">...</span>
                     </div>
                   )}
@@ -1134,8 +1134,8 @@ export default function ReservationCalendarView({
 
     return (
       <div className="space-y-4">
-        <div className="border rounded-lg overflow-hidden bg-white">
-          <div className="grid grid-cols-8 gap-x-2 border-b bg-gray-50">
+        <div className="border rounded-lg overflow-hidden bg-card">
+          <div className="grid grid-cols-8 gap-x-2 border-b bg-muted">
             {/* Celda vacía para el header de horas */}
             <div className="p-2 border-r"></div>
             {/* Headers de días */}
@@ -1165,7 +1165,7 @@ export default function ReservationCalendarView({
                 {horas.map((hora) => (
                   <div
                     key={hora}
-                    className="border-b border-gray-200 px-2 py-1 text-xs text-muted-foreground text-right"
+                    className="border-b border-border px-2 py-1 text-xs text-muted-foreground text-right"
                     style={{ minHeight: `${alturaPorHora}px` }}
                   >
                     {hora.toString().padStart(2, '0')}:00
@@ -1199,14 +1199,14 @@ export default function ReservationCalendarView({
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`border-r last:border-r-0 relative ${esHoy ? 'bg-blue-50/30' : 'bg-white'}`}
+                    className={`border-r last:border-r-0 relative ${esHoy ? 'bg-blue-50/30' : 'bg-card'}`}
                     style={{ minHeight: `${alturaTotal}px` }}
                   >
                     {/* Líneas de horas */}
                     {horas.map((hora) => (
                       <div
                         key={`line-${day.toISOString()}-${hora}`}
-                        className="absolute left-0 right-0 border-b border-gray-200"
+                        className="absolute left-0 right-0 border-b border-border"
                         style={{ top: `${(hora - horaInicioVisible) * alturaPorHora}px` }}
                       />
                     ))}
@@ -1398,10 +1398,10 @@ export default function ReservationCalendarView({
               // Hoy: anillo azul exterior para que destaque incluso encima del heatmap.
               esHoy
                 ? 'border-blue-600 ring-2 ring-blue-500 ring-offset-1'
-                : esDelMes ? 'border-gray-200' : 'border-gray-100',
+                : esDelMes ? 'border-border' : 'border-border',
               !esDelMes ? 'opacity-50' : '',
               esPasado && esDelMes ? 'opacity-70' : '',
-              heatmapBg || (esDelMes ? 'bg-white' : 'bg-gray-50'),
+              heatmapBg || (esDelMes ? 'bg-card' : 'bg-muted'),
             ].filter(Boolean).join(' ');
 
             return (
@@ -1438,7 +1438,7 @@ export default function ReservationCalendarView({
                     {tiposDelDia.map(tipo => (
                       <span
                         key={tipo.nombre}
-                        className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-700"
+                        className="inline-flex items-center gap-1 text-[10px] font-medium text-foreground/80"
                         title={`${tipo.cantidad} ${tipo.nombre}`}
                       >
                         <span
@@ -1539,18 +1539,18 @@ export default function ReservationCalendarView({
             <div className="flex items-center gap-2">
               {/* Botón toggle para ocultar horas nocturnas - visible en vista día y semana */}
               {(calendarViewMode === 'day' || calendarViewMode === 'week') && (
-                <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+                <div className="flex items-center border rounded-lg p-0.5 bg-muted">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => setHideNightHours(!hideNightHours)}
                         className={`p-1.5 rounded transition-colors ${
                           hideNightHours
-                            ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-card text-foreground shadow-md ring-1 ring-gray-300'
+                            : 'text-muted-foreground hover:text-foreground/80'
                         }`}
                       >
-                        <Moon className={`h-3.5 w-3.5 ${hideNightHours ? 'text-blue-600' : 'text-gray-500'}`} />
+                        <Moon className={`h-3.5 w-3.5 ${hideNightHours ? 'text-blue-600' : 'text-muted-foreground'}`} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -1559,12 +1559,12 @@ export default function ReservationCalendarView({
                   </Tooltip>
                 </div>
               )}
-              <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+              <div className="flex items-center border rounded-lg p-0.5 bg-muted">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setCalendarViewMode('day')}
-                  className={`h-7 px-2 text-xs ${calendarViewMode === 'day' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-7 px-2 text-xs ${calendarViewMode === 'day' ? 'bg-card shadow-sm' : ''}`}
                 >
                   Día
                 </Button>
@@ -1572,7 +1572,7 @@ export default function ReservationCalendarView({
                   variant="ghost"
                   size="sm"
                   onClick={() => setCalendarViewMode('week')}
-                  className={`h-7 px-2 text-xs ${calendarViewMode === 'week' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-7 px-2 text-xs ${calendarViewMode === 'week' ? 'bg-card shadow-sm' : ''}`}
                 >
                   Semana
                 </Button>
@@ -1580,7 +1580,7 @@ export default function ReservationCalendarView({
                   variant="ghost"
                   size="sm"
                   onClick={() => setCalendarViewMode('month')}
-                  className={`h-7 px-2 text-xs ${calendarViewMode === 'month' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-7 px-2 text-xs ${calendarViewMode === 'month' ? 'bg-card shadow-sm' : ''}`}
                 >
                   Mes
                 </Button>

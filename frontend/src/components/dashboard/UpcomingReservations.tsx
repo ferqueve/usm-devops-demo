@@ -57,10 +57,10 @@ export default function UpcomingReservations({
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
                 <div className="flex-1">
-                  <div className="h-4 w-48 bg-gray-200 rounded mb-2" />
-                  <div className="h-3 w-64 bg-gray-200 rounded" />
+                  <div className="h-4 w-48 bg-secondary rounded mb-2" />
+                  <div className="h-3 w-64 bg-secondary rounded" />
                 </div>
-                <div className="h-8 w-24 bg-gray-200 rounded" />
+                <div className="h-8 w-24 bg-secondary rounded" />
               </div>
             ))}
           </div>
@@ -110,7 +110,7 @@ export default function UpcomingReservations({
             return (
               <div
                 key={reserva.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors"
               >
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">

@@ -224,7 +224,7 @@ export default function AuditManagement() {
       />
 
       {/* Tabla de logs con filtros embebidos */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+      <div className="border rounded-lg shadow-card overflow-hidden bg-card">
         <div className="px-4 pt-4 pb-3">
           <AuditFilters
             filters={filters}

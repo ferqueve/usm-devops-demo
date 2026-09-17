@@ -44,8 +44,8 @@ export default function StatsListWidget({
           <div className="space-y-3">
             {Array.from({ length: skeletonRows }, (_, i) => i).map((i) => (
               <div key={i} className="flex items-center justify-between">
-                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                <div className="h-6 w-12 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-32 bg-secondary rounded animate-pulse" />
+                <div className="h-6 w-12 bg-secondary rounded animate-pulse" />
               </div>
             ))}
           </div>
@@ -74,7 +74,7 @@ export default function StatsListWidget({
               <div key={item.label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Icon className={`h-4 w-4 ${item.color}`} />
-                  <span className="text-sm text-gray-600">{item.label}</span>
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
                 </div>
                 <span className="text-lg font-semibold">{item.value}</span>
               </div>

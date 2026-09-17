@@ -5,8 +5,8 @@ import { createPortal } from 'react-dom';
  * Clases de las acciones que van en la barra oscura. Se exportan para que todas
  * las pantallas usen las mismas y no cada una su interpretacion.
  *
- * El primario usa bg-[#ffffff] y no bg-white a proposito: index.css remapea
- * `.dark .bg-white` al color de card, asi que en tema oscuro el boton blanco se
+ * El primario usa bg-[#ffffff] y no bg-card a proposito: index.css remapea
+ * `.dark .bg-card` al color de card, asi que en tema oscuro el boton blanco se
  * volvia una plancha gris con el texto oscuro encima.
  */
 export const HEADER_ACTION = 'h-8 px-2.5 text-xs font-medium text-white/75 hover:bg-white/10 hover:text-white';

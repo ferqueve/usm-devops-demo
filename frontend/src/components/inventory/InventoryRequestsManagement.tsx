@@ -532,7 +532,7 @@ export default function InventoryRequestsManagement() {
                         <TableCell className="font-medium">#{item.id}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-medium text-sm text-gray-900">
+                            <span className="font-medium text-sm text-foreground">
                               {item.espacioNombre || '—'}
                             </span>
                             <span className="text-xs text-muted-foreground">Reserva #{item.reservaId}</span>
@@ -540,7 +540,7 @@ export default function InventoryRequestsManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm font-medium text-foreground">
                               {item.solicitanteNombre || '—'}
                             </span>
                             <span className="text-xs text-muted-foreground">{item.solicitanteEmail || '—'}</span>
@@ -551,7 +551,7 @@ export default function InventoryRequestsManagement() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={estadoConfig?.badgeClass ?? 'bg-gray-100 text-gray-700 border-gray-200'}
+                            className={estadoConfig?.badgeClass ?? 'bg-muted text-foreground/80 border-border'}
                           >
                             {ESTADO_LABEL[item.estado]}
                           </Badge>
@@ -666,7 +666,7 @@ export default function InventoryRequestsManagement() {
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     <Badge
                       variant="outline"
-                      className={ESTADO_OPTIONS.find((e) => e.value === selectedRequest.estado)?.badgeClass ?? 'bg-gray-50 text-gray-700 border-gray-200'}
+                      className={ESTADO_OPTIONS.find((e) => e.value === selectedRequest.estado)?.badgeClass ?? 'bg-muted text-foreground/80 border-border'}
                     >
                       {ESTADO_LABEL[selectedRequest.estado]}
                     </Badge>

@@ -67,14 +67,14 @@ export function CarteleraKiosko({ eventos, onClose }: Readonly<CarteleraKioskoPr
             {evento.espacioNombre && <p className="flex items-center gap-2 text-xl text-white/80"><MapPin className="h-5 w-5" />{evento.espacioNombre}</p>}
           </div>
           <div className="text-center">
-            {qr && <img src={qr} alt="QR" className="h-56 w-56 rounded-2xl bg-white p-3 mx-auto" />}
+            {qr && <img src={qr} alt="QR" className="h-56 w-56 rounded-2xl bg-card p-3 mx-auto" />}
             <p className="mt-4 text-lg font-semibold">Escaneá para inscribirte</p>
           </div>
         </div>
       </div>
 
       <div className="absolute bottom-6 inset-x-0 flex justify-center gap-2">
-        {lista.map((e, i) => <span key={e.id} className={`h-2 rounded-full transition-all ${i === idx ? 'w-8 bg-white' : 'w-2 bg-white/40'}`} />)}
+        {lista.map((e, i) => <span key={e.id} className={`h-2 rounded-full transition-all ${i === idx ? 'w-8 bg-card' : 'w-2 bg-white/40'}`} />)}
       </div>
     </div>
   );

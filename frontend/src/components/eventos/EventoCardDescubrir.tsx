@@ -81,7 +81,7 @@ export function EventoCardDescubrir({
         <div className="relative flex items-center justify-between gap-2">
           <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{evento.tipo}</span>
           {enVivo
-            ? <span className="inline-flex items-center gap-1 rounded-full bg-utec-red px-2 py-0.5 text-[10px] font-bold"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />EN VIVO</span>
+            ? <span className="inline-flex items-center gap-1 rounded-full bg-utec-red px-2 py-0.5 text-[10px] font-bold"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-card" />EN VIVO</span>
             : <EstadoBadge estado={evento.estado} />}
         </div>
         <h3 className="relative mt-2 line-clamp-2 text-sm font-bold leading-tight">{evento.titulo}</h3>
