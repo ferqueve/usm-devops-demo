@@ -2902,7 +2902,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/AppInfoCard.tsx",
@@ -2914,7 +2914,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/DatabaseSection.tsx",
@@ -2938,7 +2938,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/HttpTraceSection.tsx",
@@ -2962,7 +2962,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/JvmDetailsTable.tsx",
@@ -2974,7 +2974,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/LogsSection.tsx",
@@ -2998,7 +2998,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/PoolCard.tsx",
@@ -3010,7 +3010,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/RecentErrorsCard.tsx",
@@ -3034,7 +3034,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/SlowEndpointsCard.tsx",
@@ -3058,7 +3058,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/SystemHeader.tsx",
@@ -3412,7 +3412,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/ui/liquibase-timeline.tsx",
@@ -3424,7 +3424,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/ui/log-viewer.tsx",

@@ -36,6 +36,7 @@ import { KPIS } from './_datos';
 import { Inventario } from './_inventario';
 import { Dialogos } from './_dialogos';
 import { TarjetasDominio } from './_tarjetas';
+import { PantallaSistema } from './_sistema';
 
 /**
  * Catálogo de la base visual.
@@ -192,6 +193,7 @@ const INDICE = [
   ['tarjetas', 'Tarjetas'],
   ['dominio', 'Filas'],
   ['sistema', 'Sistema'],
+  ['sistema-full', 'Sistema · pantalla'],
   ['graficos', 'Gráficos'],
   ['graficos-stats', 'Análisis'],
 ] as const;
@@ -479,6 +481,16 @@ export default function UiPage() {
           >
             <Doble>
               <PiezasSistema />
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="sistema-full"
+            titulo="Sistema · la pantalla entera"
+            nota="Con un servicio caído y el pool con espera: el estado sano no muestra cómo se ve una alerta."
+          >
+            <Doble>
+              <PantallaSistema />
             </Doble>
           </Seccion>
 
