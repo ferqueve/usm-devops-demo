@@ -99,12 +99,17 @@ export function AdminDashboard({
       <StatStrip
         loading={loading}
         items={[
-          { label: 'A aprobar', value: totalPendientes, hint: 'pendientes en cola', icon: Inbox, bg: 'yellow', to: '/reservations' },
-          { label: 'Hoy', value: reservasHoyCount, hint: 'reservas programadas', icon: CalendarClock, bg: 'blue', to: '/calendar' },
-          { label: 'Espacios', value: `${espaciosLibres}/${(stats?.totalEspacios ?? 0)}`, hint: enMantenimiento > 0 ? `${enMantenimiento} en mantenimiento` : 'todos disponibles', icon: Building2, bg: 'green', to: '/rooms' },
-          { label: 'Usuarios activos', value: usuariosActivos, hint: 'en este momento', icon: Users, bg: 'cyan', to: '/users' },
-          { label: 'Inventario', value: pendingInventoryRequests, hint: pendingInventoryRequests > 0 ? 'solicitudes pendientes' : 'al día', icon: ClipboardCheck, bg: 'red', to: '/inventory/requests' },
-          { label: 'Aprobación', value: `${tasaAprobacion}%`, hint: 'últimas reservas', icon: Activity, bg: 'dark', to: '/statistics' },
+          // `porMes` es la única serie que hoy manda el back: reservas por mes.
+          // Va sólo en las celdas que cuentan reservas, que es de lo que habla.
+          // Las otras cuatro esperan a que el back devuelva su propia serie;
+          // mientras tanto llevan la aclaración de texto y ninguna línea
+          // inventada.
+          { label: 'A aprobar', value: totalPendientes, serie: porMes, delta: cambio, icon: Inbox, color: 'amarillo', to: '/reservations' },
+          { label: 'Hoy', value: reservasHoyCount, serie: porMes, icon: CalendarClock, color: 'azul', to: '/calendar' },
+          { label: 'Espacios', value: `${espaciosLibres}/${(stats?.totalEspacios ?? 0)}`, hint: enMantenimiento > 0 ? `${enMantenimiento} en mantenimiento` : 'todos disponibles', icon: Building2, color: 'verde', to: '/rooms' },
+          { label: 'Usuarios activos', value: usuariosActivos, hint: 'en este momento', icon: Users, color: 'cian', to: '/users' },
+          { label: 'Inventario', value: pendingInventoryRequests, hint: pendingInventoryRequests > 0 ? 'solicitudes pendientes' : 'al día', icon: ClipboardCheck, color: 'rojo', to: '/inventory/requests' },
+          { label: 'Aprobación', value: `${tasaAprobacion}%`, hint: 'últimas reservas', icon: Activity, color: 'naranja', to: '/statistics' },
         ]}
       />
 

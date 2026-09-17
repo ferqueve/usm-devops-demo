@@ -22,7 +22,7 @@ export const DashboardHeader = memo(function DashboardHeader({
       {/* Esta barra es el header de la pantalla, no una franja decorativa: las
           pantallas con PageHeader le mandan su titulo, su bajada y sus acciones
           a los huecos de abajo. El fondo es el mismo utec-dark del sidebar. */}
-      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-utec-dark px-4 lg:px-6 shadow-sm">
+      <header className="relative overflow-hidden flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-sidebar px-4 lg:px-6 shadow-sm">
         <HeaderNodeNetwork />
         <div className="relative z-10 flex min-w-0 items-center gap-4">
           {!hideTitle && (

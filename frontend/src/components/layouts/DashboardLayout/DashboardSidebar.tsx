@@ -149,7 +149,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           </>
         )}
         <SidebarGroupContent>
-          <SidebarMenu className="bg-utec-dark gap-0.5 shrink-0">
+          <SidebarMenu className="bg-sidebar gap-0.5 shrink-0">
             {section.items.map((item) => {
               const isActive = isItemActive(item);
 
@@ -158,7 +158,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                   asChild
                   isActive={isActive}
                   onClick={() => handleMenuItemClick(item)}
-                  className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                  className={`sidebar-menu-item transition-smooth h-8 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
                 >
                   <Link to={item.href || "#"} className="flex items-center gap-3 relative">
                     <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
@@ -184,7 +184,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         isActive={isActive}
-                        className={`sidebar-menu-item transition-smooth h-9 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                        className={`sidebar-menu-item transition-smooth h-8 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
                       >
                         <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
                         <span className="font-medium">{item.label}</span>
@@ -223,11 +223,11 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
     )), [menuSections, isItemActive, isSubItemActive, handleMenuItemClick]);
 
   return (
-    <Sidebar variant="inset" className="bg-utec-dark shadow-inner-subtle">
+    <Sidebar variant="inset" className="bg-sidebar shadow-inner-subtle">
       {/* Un solo lockup: el logo y USM son un unico link, con la bajada diciendo
           que es la app. El toggle vive aca, con lo que controla, y no del lado
           de la pagina. */}
-      <SidebarHeader className="h-16 border-b border-white/10 bg-utec-dark px-3">
+      <SidebarHeader className="h-16 border-b border-white/10 bg-sidebar px-3">
         <div className="flex h-full w-full items-center justify-between gap-2">
           <Link
             to="/dashboard"
@@ -251,8 +251,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
       {/* Menú scrollable con la ScrollArea de shadcn (en vez del scroll nativo).
           flex-1 min-h-0 acota la altura para que el viewport interno scrollee.
           El thumb se aclara para que se vea sobre el fondo oscuro. */}
-      <ScrollArea className="flex-1 min-h-0 bg-utec-dark [&_[data-slot=scroll-area-thumb]]:bg-white/25">
-        <div className="bg-utec-dark pt-6 pb-2 px-1 pr-2.5">
+      <ScrollArea className="flex-1 min-h-0 bg-sidebar [&_[data-slot=scroll-area-thumb]]:bg-white/25">
+        <div className="bg-sidebar pt-4 pb-2 px-1 pr-2.5">
           {menuGroups}
         </div>
       </ScrollArea>
@@ -260,7 +260,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
       {/* Perfil: una sola pieza. Identidad arriba y las tres acciones de la
           cuenta abajo, en partes iguales; salir se distingue por el color. */}
       {user && (
-        <SidebarFooter className="shrink-0 border-t border-white/10 bg-utec-dark p-2">
+        <SidebarFooter className="shrink-0 border-t border-white/10 bg-sidebar p-2">
           <div className="overflow-hidden rounded-lg bg-white/[0.06]">
             <div className="flex items-center gap-2.5 p-2.5">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[11px] font-semibold text-white ring-1 ring-inset ring-white/10">

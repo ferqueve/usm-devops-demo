@@ -1,16 +1,66 @@
 import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 
-export type UtecBg =
-  | 'blue' | 'yellow' | 'green' | 'orange' | 'red'
-  | 'cyan' | 'dark';
+/**
+ * Tira de métricas del dashboard.
+ *
+ * Celdas de color macizo con los colores institucionales UTEC. El color acá no
+ * dice si algo está bien o mal: es la paleta de la casa, los mismos seis que
+ * arma el isotipo.
+ *
+ * Cada celda lleva su línea de tendencia adentro del campo de color. Es lo que
+ * la hace algo más que un número pintado: muestra si el valor viene subiendo,
+ * bajando o quieto, sin robar espacio ni agregar otro elemento.
+ */
+
+export type ColorUtec = 'azul' | 'verde' | 'amarillo' | 'naranja' | 'rojo' | 'cian';
+
+/**
+ * Color de fondo y color de texto de cada celda.
+ *
+ * El texto no se elige a ojo: es el que gana en contraste contra ese fondo.
+ * Medido en ratio WCAG sobre el hex exacto de marca:
+ *
+ *   verde    blanco 2.28:1 · tinta 6.78:1  → tinta
+ *   amarillo blanco 1.57:1 · tinta 9.84:1  → tinta
+ *   naranja  blanco 3.04:1 · tinta 5.08:1  → tinta
+ *   cian     blanco 1.98:1 · tinta 7.80:1  → tinta
+ *   rojo     blanco 4.64:1 · tinta 3.33:1  → blanco
+ *   azul     blanco 8.70:1 · tinta 1.77:1  → blanco
+ *
+ * Verde y naranja venían con texto blanco y no llegaban ni a 3:1.
+ */
+const paleta: Record<ColorUtec, { fondo: string; texto: 'claro' | 'oscuro' }> = {
+  azul: { fondo: '#184897', texto: 'claro' },
+  rojo: { fondo: '#DF2B31', texto: 'claro' },
+  verde: { fondo: '#86bb4c', texto: 'oscuro' },
+  amarillo: { fondo: '#F6CA21', texto: 'oscuro' },
+  naranja: { fondo: '#DE7A27', texto: 'oscuro' },
+  cian: { fondo: '#00c7ff', texto: 'oscuro' },
+};
+
+/** Orden por defecto, el de las aspas del isotipo. */
+const RUEDA: ColorUtec[] = ['amarillo', 'azul', 'verde', 'cian', 'rojo', 'naranja'];
+
+/** @deprecated Nombres viejos en inglés. */
+export type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
+const legado: Record<UtecBg, ColorUtec> = {
+  blue: 'azul', yellow: 'amarillo', green: 'verde',
+  orange: 'naranja', red: 'rojo', cyan: 'cian', dark: 'azul',
+};
 
 export interface StatItem {
   label: string;
   value: string | number;
+  /** Aclaración corta bajo el número. Se muestra si no hay serie. */
   hint?: string;
   icon?: LucideIcon;
-  /** Fondo institucional UTEC. El color de texto se calcula automáticamente. */
+  /** Mapa "AAAA-MM" → cantidad. Dibuja la línea de tendencia. */
+  serie?: Record<string, number>;
+  /** Variación % contra el período anterior. */
+  delta?: number | null;
+  color?: ColorUtec;
+  /** @deprecated Usar `color`. */
   bg?: UtecBg;
   /** Si se pasa, la celda actúa como link a esa ruta. */
   to?: string;
@@ -21,53 +71,61 @@ interface StatStripProps {
   loading?: boolean;
 }
 
-/**
- * Columnas segun cuantas tarjetas hay.
- *
- * Estaba fijo en seis: con cuatro tarjetas quedaban dos huecos a la derecha y
- * la tira no llegaba al borde.
- */
 const columnas: Record<number, string> = {
-  1: 'lg:grid-cols-1',
-  2: 'lg:grid-cols-2',
-  3: 'lg:grid-cols-3',
-  4: 'lg:grid-cols-4',
-  5: 'lg:grid-cols-5',
-  6: 'lg:grid-cols-6',
+  1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6',
 };
+const gridDe = (n: number) => columnas[Math.min(n, 6)] ?? 'lg:grid-cols-6';
 
-function gridDe(cantidad: number): string {
-  return columnas[Math.min(cantidad, 6)] ?? 'lg:grid-cols-6';
+/**
+ * Línea de tendencia dentro del campo de color.
+ *
+ * Se dibuja en el mismo color del texto de la celda, bajada de opacidad: así
+ * pertenece al bloque en vez de parecer algo pegado encima. Se apoya en el
+ * borde inferior, que es donde no estorba al número.
+ */
+function Chispa({ serie, claro }: Readonly<{ serie: Record<string, number>; claro: boolean }>) {
+  const valores = Object.values(serie);
+  if (valores.length < 3) return null;
+
+  const max = Math.max(...valores);
+  const min = Math.min(...valores);
+  const rango = max - min || 1;
+  const paso = 100 / (valores.length - 1);
+  const puntos = valores
+    .map((v, i) => `${(i * paso).toFixed(2)},${(26 - ((v - min) / rango) * 22).toFixed(2)}`)
+    .join(' ');
+
+  const tinta = claro ? '#ffffff' : '#0f1720';
+
+  return (
+    <svg
+      viewBox="0 0 100 28"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-9 w-full"
+      aria-hidden
+    >
+      <polygon points={`0,28 ${puntos} 100,28`} fill={tinta} opacity={claro ? 0.16 : 0.13} />
+      <polyline
+        points={puntos}
+        fill="none"
+        stroke={tinta}
+        strokeOpacity={claro ? 0.55 : 0.42}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
 }
 
-/**
- * Mapeo de fondo UTEC → clases tailwind para bg + texto principal + texto
- * secundario. Los colores claros (yellow, cyan) usan texto oscuro; los
- * oscuros usan blanco.
- */
-const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string; hover: string }> = {
-  blue:   { bg: 'bg-utec-blue',   text: 'text-white',          subtle: 'text-white/70',          hover: 'hover:brightness-110' },
-  yellow: { bg: 'bg-utec-yellow', text: 'text-utec-dark',      subtle: 'text-utec-dark/70',      hover: 'hover:brightness-95'  },
-  green:  { bg: 'bg-utec-green',  text: 'text-white',          subtle: 'text-white/80',          hover: 'hover:brightness-110' },
-  orange: { bg: 'bg-utec-orange', text: 'text-white',          subtle: 'text-white/80',          hover: 'hover:brightness-110' },
-  red:    { bg: 'bg-utec-red',    text: 'text-white',          subtle: 'text-white/80',          hover: 'hover:brightness-110' },
-  cyan:   { bg: 'bg-utec-cyan',   text: 'text-utec-dark',      subtle: 'text-utec-dark/70',      hover: 'hover:brightness-95'  },
-  dark:   { bg: 'bg-utec-dark',   text: 'text-white',          subtle: 'text-white/60',          hover: 'hover:bg-utec-dark-lighter' },
-};
-
-/**
- * Strip de stats con fondo institucional UTEC. Cada celda es un card
- * de color completo (no más rounded-border-blanco aburrido).
- */
 export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) {
   if (loading) {
     return (
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="rounded-xl bg-muted p-4 animate-pulse">
-            <div className="h-3 w-16 bg-foreground/10 rounded mb-2" />
-            <div className="h-6 w-12 bg-foreground/20 rounded" />
-          </div>
+          <div key={i} className="h-[104px] animate-pulse rounded-xl bg-muted" />
         ))}
       </div>
     );
@@ -75,34 +133,61 @@ export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) 
 
   return (
     <div className={`grid gap-3 grid-cols-2 sm:grid-cols-3 ${gridDe(items.length)}`}>
-      {items.map((item) => {
-        const Icon = item.icon;
-        const c = bgClasses[item.bg ?? 'dark'];
+      {items.map((item, i) => {
+        const color = item.color ?? (item.bg ? legado[item.bg] : RUEDA[i % RUEDA.length]);
+        const { fondo, texto } = paleta[color];
+        const claro = texto === 'claro';
+
+        const principal = claro ? 'text-white' : 'text-[#0f1720]';
+        const suave = claro ? 'text-white/75' : 'text-[#0f1720]/70';
+
         const inner = (
           <>
-            <div className={`flex items-center gap-1.5 text-xs mb-1 ${c.subtle}`}>
-              {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
-              <span className="truncate">{item.label}</span>
-            </div>
-            <div className={`text-2xl font-semibold tabular-nums ${c.text}`}>
-              {item.value}
-            </div>
-            {item.hint && (
-              <div className={`text-[11px] mt-0.5 truncate ${c.subtle}`}>{item.hint}</div>
-            )}
+            {item.serie && <Chispa serie={item.serie} claro={claro} />}
+            <span className="relative">
+              <span className={`flex items-center gap-1.5 text-xs ${suave}`}>
+                {item.icon && <item.icon className="size-3.5 shrink-0" />}
+                <span className="truncate">{item.label}</span>
+              </span>
+
+              <span className="mt-1.5 flex items-baseline gap-1.5">
+                <span className={`text-[1.75rem] font-semibold leading-none tabular-nums tracking-tight ${principal}`}>
+                  {item.value}
+                </span>
+                {item.delta != null && item.delta !== 0 && (
+                  <span className={`text-[11px] leading-none tabular-nums ${suave}`}>
+                    {item.delta > 0 ? '↑' : '↓'} {Math.abs(item.delta)}%
+                  </span>
+                )}
+              </span>
+
+              {!item.serie && item.hint && (
+                <span className={`mt-1 block truncate text-[11px] ${suave}`}>{item.hint}</span>
+              )}
+            </span>
           </>
         );
 
-        const base = `rounded-xl p-4 min-w-0 transition-all ${c.bg}`;
+        const base = 'relative isolate overflow-hidden rounded-xl p-4 min-w-0 min-h-[104px]';
+        const style = { backgroundColor: fondo };
 
         if (item.to) {
           return (
-            <Link key={item.label} to={item.to} className={`${base} ${c.hover}`}>
+            <Link
+              key={item.label}
+              to={item.to}
+              style={style}
+              className={`${base} block transition-[filter,transform] hover:brightness-[1.06]`}
+            >
               {inner}
             </Link>
           );
         }
-        return <div key={item.label} className={base}>{inner}</div>;
+        return (
+          <div key={item.label} style={style} className={base}>
+            {inner}
+          </div>
+        );
       })}
     </div>
   );
