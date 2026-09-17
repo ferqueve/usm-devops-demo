@@ -1570,7 +1570,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/predicciones/academico/DetalleTutoria.tsx",
@@ -1595,7 +1595,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/predicciones/academico/PrediccionesAcademico.tsx",
@@ -1783,7 +1783,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/predicciones/reservas/TablaDias.tsx",
@@ -1795,7 +1795,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/preferences/PreferencesModal.tsx",
@@ -2410,7 +2410,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/statistics/graficos/Apiladas100.tsx",
@@ -2681,7 +2681,7 @@
    "dialog": true,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/statistics/reservas/Aprobacion.tsx",
@@ -2721,7 +2721,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/statistics/reservas/Espacios.tsx",
@@ -2801,7 +2801,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/statistics/reservas/Novedades.tsx",
@@ -2878,7 +2878,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/index.tsx",

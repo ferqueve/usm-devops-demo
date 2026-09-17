@@ -37,6 +37,7 @@ import { Inventario } from './_inventario';
 import { Dialogos } from './_dialogos';
 import { TarjetasDominio } from './_tarjetas';
 import { PantallaSistema } from './_sistema';
+import { PiezasAnalisis } from './_analisis';
 
 /**
  * Catálogo de la base visual.
@@ -196,6 +197,7 @@ const INDICE = [
   ['sistema-full', 'Sistema · pantalla'],
   ['graficos', 'Gráficos'],
   ['graficos-stats', 'Análisis'],
+  ['piezas-analisis', 'Piezas'],
 ] as const;
 
 export default function UiPage() {
@@ -501,6 +503,16 @@ export default function UiPage() {
           >
             <Doble>
               <GraficosDashboard />
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="piezas-analisis"
+            titulo="Piezas de Estadísticas y Predicciones"
+            nota="Acá aparecen un segundo Panel y un segundo EmptyState, cada uno hecho por su cuenta."
+          >
+            <Doble>
+              <PiezasAnalisis />
             </Doble>
           </Seccion>
 
