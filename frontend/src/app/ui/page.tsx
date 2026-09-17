@@ -33,6 +33,8 @@ import { TemaGraficosContexto } from '@/components/statistics/graficos/tema';
 import { GraficosDashboard, GraficosEstadisticas } from './_graficos';
 import { FilasDominio, PiezasSistema } from './_dominio';
 import { KPIS } from './_datos';
+import { Inventario } from './_inventario';
+import { Dialogos } from './_dialogos';
 
 /**
  * Catálogo de la base visual.
@@ -176,6 +178,7 @@ const TOKENS: Array<[string, string]> = [
  * ------------------------------------------------------------------ */
 
 const INDICE = [
+  ['inventario', 'Inventario'],
   ['marca', 'Marca'],
   ['tokens', 'Tokens'],
   ['graficos-color', 'Series'],
@@ -184,6 +187,7 @@ const INDICE = [
   ['controles', 'Controles'],
   ['datos', 'Datos'],
   ['bloques', 'Bloques'],
+  ['dialogos', 'Diálogos'],
   ['dominio', 'Dominio'],
   ['sistema', 'Sistema'],
   ['graficos', 'Gráficos'],
@@ -220,6 +224,14 @@ export default function UiPage() {
         </header>
 
         <main className="mx-auto flex max-w-[1400px] flex-col gap-10 px-6 py-8">
+          <Seccion
+            id="inventario"
+            titulo="Inventario"
+            nota="Qué hay en el sistema y cuánto está acá. Se genera solo; no se anota a mano."
+          >
+            <Inventario />
+          </Seccion>
+
           <Seccion
             id="marca"
             titulo="Marca"
@@ -428,6 +440,14 @@ export default function UiPage() {
                 </Panel>
               </div>
             </Doble>
+          </Seccion>
+
+          <Seccion
+            id="dialogos"
+            titulo="Diálogos"
+            nota="Se abren de verdad. Van en portal sobre el body, así que toman el tema global y no el del panel."
+          >
+            <Dialogos />
           </Seccion>
 
           <Seccion
