@@ -9,8 +9,8 @@
    ],
    "lineas": 365,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -347,7 +347,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/ai/AiChatWidget.tsx",
@@ -358,7 +358,7 @@
    "lineas": 164,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -369,8 +369,8 @@
    ],
    "lineas": 41,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -382,7 +382,7 @@
    "lineas": 224,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -395,7 +395,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/asistente/index.tsx",
@@ -405,8 +405,8 @@
    ],
    "lineas": 57,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -417,8 +417,8 @@
    ],
    "lineas": 199,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -429,8 +429,8 @@
    ],
    "lineas": 126,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -443,7 +443,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/audit/AuditLogDetailsDialog.tsx",
@@ -513,8 +513,8 @@
    ],
    "lineas": 251,
    "dialog": false,
-   "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -526,7 +526,7 @@
    "lineas": 129,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -563,7 +563,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/common/dataviz.tsx",
@@ -590,7 +590,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/common/TipoFormDialogShell.tsx",
@@ -601,7 +601,7 @@
    "lineas": 227,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -648,8 +648,8 @@
    ],
    "lineas": 8,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -673,7 +673,7 @@
    "lineas": 171,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -933,7 +933,7 @@
    "nombres": [
     "PriorityReservationsWidget"
    ],
-   "lineas": 127,
+   "lineas": 130,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -960,7 +960,7 @@
    "lineas": 171,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -972,7 +972,7 @@
    "lineas": 82,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1009,7 +1009,7 @@
    "lineas": 560,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1021,7 +1021,7 @@
    "lineas": 383,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1034,7 +1034,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/eventos/EventosManagement.tsx",
@@ -1057,7 +1057,7 @@
    "lineas": 181,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1081,7 +1081,7 @@
    "lineas": 106,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1118,7 +1118,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/_shared/inventoryEstado.tsx",
@@ -1141,7 +1141,7 @@
    "lineas": 257,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1202,7 +1202,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/InventoryDetailsDialog.tsx",
@@ -1225,7 +1225,7 @@
    "lineas": 270,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1250,7 +1250,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/InventoryRequestsCardView.tsx",
@@ -1262,7 +1262,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/InventoryRequestsManagement.tsx",
@@ -1298,7 +1298,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/TipoElementoFormDialog.tsx",
@@ -1458,7 +1458,7 @@
    "lineas": 98,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1482,7 +1482,7 @@
    "lineas": 102,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1494,7 +1494,7 @@
    "lineas": 734,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1505,8 +1505,8 @@
    ],
    "lineas": 72,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1518,7 +1518,7 @@
    "lineas": 485,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1530,7 +1530,7 @@
    "lineas": 315,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1554,7 +1554,7 @@
    "lineas": 93,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1580,8 +1580,8 @@
    ],
    "lineas": 110,
    "dialog": true,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1605,8 +1605,8 @@
    ],
    "lineas": 241,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1620,8 +1620,8 @@
    ],
    "lineas": 185,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1633,7 +1633,7 @@
    "lineas": 92,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1665,8 +1665,8 @@
    ],
    "lineas": 198,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -1678,8 +1678,8 @@
    ],
    "lineas": 97,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1694,8 +1694,8 @@
    ],
    "lineas": 268,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1706,8 +1706,8 @@
    ],
    "lineas": 254,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1720,8 +1720,8 @@
    ],
    "lineas": 146,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1732,8 +1732,8 @@
    ],
    "lineas": 135,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1744,8 +1744,8 @@
    ],
    "lineas": 208,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1757,8 +1757,8 @@
    ],
    "lineas": 259,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1769,8 +1769,8 @@
    ],
    "lineas": 232,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1806,7 +1806,7 @@
    "lineas": 696,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1819,7 +1819,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/public/auth/LoginForm.tsx",
@@ -1827,11 +1827,11 @@
    "nombres": [
     "LoginForm"
    ],
-   "lineas": 101,
+   "lineas": 103,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/public/auth/RegisterForm.tsx",
@@ -1842,7 +1842,7 @@
    "lineas": 331,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1854,7 +1854,7 @@
    "lineas": 185,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1866,7 +1866,7 @@
    "lineas": 168,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1878,7 +1878,7 @@
    "lineas": 128,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1890,7 +1890,7 @@
    "lineas": 140,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1902,7 +1902,7 @@
    "lineas": 141,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1914,7 +1914,7 @@
    "lineas": 115,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1926,7 +1926,7 @@
    "lineas": 142,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1951,7 +1951,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/recomendaciones/RecomendacionPanel.tsx",
@@ -1963,7 +1963,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/recursos/RecursosPanel.tsx",
@@ -1973,8 +1973,8 @@
    ],
    "lineas": 265,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -1986,7 +1986,7 @@
    "lineas": 207,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2004,7 +2004,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/reservations/_shared/ReservationListChrome.tsx",
@@ -2028,8 +2028,8 @@
    ],
    "lineas": 8,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -2041,7 +2041,7 @@
    "lineas": 1611,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2054,7 +2054,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/reservations/ReservationDetailsDialog.tsx",
@@ -2064,8 +2064,8 @@
    ],
    "lineas": 394,
    "dialog": true,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2078,7 +2078,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/reservations/ReservationForm.tsx",
@@ -2088,8 +2088,8 @@
    ],
    "lineas": 331,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2101,7 +2101,7 @@
    "lineas": 703,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2125,7 +2125,7 @@
    "lineas": 403,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2137,7 +2137,7 @@
    "lineas": 726,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2150,7 +2150,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/rooms/index.tsx",
@@ -2160,8 +2160,8 @@
    ],
    "lineas": 159,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -2185,7 +2185,7 @@
    "lineas": 459,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2196,8 +2196,8 @@
    ],
    "lineas": 106,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2245,7 +2245,7 @@
    "lineas": 239,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2257,7 +2257,7 @@
    "lineas": 40,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2293,7 +2293,7 @@
    "lineas": 671,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2305,7 +2305,7 @@
    "lineas": 431,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2317,7 +2317,7 @@
    "lineas": 102,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2342,7 +2342,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/spaces/TipoEspacioFormDialog.tsx",
@@ -2376,8 +2376,8 @@
    ],
    "lineas": 217,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2391,8 +2391,8 @@
    ],
    "lineas": 138,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2588,8 +2588,8 @@
    ],
    "lineas": 100,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -2602,8 +2602,8 @@
    ],
    "lineas": 193,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2616,8 +2616,8 @@
    ],
    "lineas": 187,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2628,8 +2628,8 @@
    ],
    "lineas": 331,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2641,7 +2641,7 @@
    "lineas": 256,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2652,8 +2652,8 @@
    ],
    "lineas": 67,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2667,8 +2667,8 @@
    ],
    "lineas": 121,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2695,8 +2695,8 @@
    ],
    "lineas": 205,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2707,8 +2707,8 @@
    ],
    "lineas": 55,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2733,8 +2733,8 @@
    ],
    "lineas": 214,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2745,8 +2745,8 @@
    ],
    "lineas": 606,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2758,8 +2758,8 @@
    ],
    "lineas": 128,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2771,8 +2771,8 @@
    ],
    "lineas": 121,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2787,8 +2787,8 @@
    ],
    "lineas": 215,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2811,8 +2811,8 @@
    ],
    "lineas": 156,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2824,7 +2824,7 @@
    "lineas": 94,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2850,8 +2850,8 @@
    ],
    "lineas": 142,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2865,7 +2865,7 @@
    "lineas": 204,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -2888,8 +2888,8 @@
    ],
    "lineas": 280,
    "dialog": false,
-   "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -2926,7 +2926,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/ExternalServicesCard.tsx",
@@ -2950,7 +2950,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/JvmCharts.tsx",
@@ -2986,7 +2986,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/sections/MetricsCards.tsx",
@@ -3021,7 +3021,7 @@
    "lineas": 194,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3045,7 +3045,7 @@
    "lineas": 130,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3070,7 +3070,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/tabs/DatabaseLogsTab.tsx",
@@ -3080,8 +3080,8 @@
    ],
    "lineas": 52,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3094,7 +3094,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/system/tabs/OverviewTab.tsx",
@@ -3104,8 +3104,8 @@
    ],
    "lineas": 68,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3116,8 +3116,8 @@
    ],
    "lineas": 61,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3128,8 +3128,8 @@
    ],
    "lineas": 12,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "chrome",
+   "motivo": "Provider de contexto, sin interfaz propia.",
    "cubierto": false
   },
   {
@@ -3141,7 +3141,7 @@
    "lineas": 78,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3154,7 +3154,7 @@
    "lineas": 107,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3167,7 +3167,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/tutorias/ProximaTutoriaHero.tsx",
@@ -3179,7 +3179,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/tutorias/RachaBadges.tsx",
@@ -3190,7 +3190,7 @@
    "lineas": 50,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3202,7 +3202,7 @@
    "lineas": 48,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3214,7 +3214,7 @@
    "lineas": 194,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3238,7 +3238,7 @@
    "lineas": 599,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3250,7 +3250,7 @@
    "lineas": 131,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3262,7 +3262,7 @@
    "lineas": 428,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3274,7 +3274,7 @@
    "lineas": 71,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3287,7 +3287,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/tutorias/TutoriasManagement.tsx",
@@ -3324,7 +3324,7 @@
    "lineas": 354,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3336,7 +3336,7 @@
    "lineas": 168,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3435,7 +3435,7 @@
    "lineas": 627,
    "dialog": true,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3518,8 +3518,8 @@
    ],
    "lineas": 184,
    "dialog": true,
-   "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "tipo": "montable",
+   "motivo": "",
    "cubierto": true
   },
   {
@@ -3530,8 +3530,8 @@
    ],
    "lineas": 8,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
    "cubierto": false
   },
   {
@@ -3555,7 +3555,7 @@
    "lineas": 215,
    "dialog": false,
    "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
@@ -3566,8 +3566,8 @@
    ],
    "lineas": 278,
    "dialog": false,
-   "tipo": "datos",
-   "motivo": "Pide datos al montarse.",
+   "tipo": "chrome",
+   "motivo": "Provider de contexto, sin interfaz propia.",
    "cubierto": false
   }
  ]

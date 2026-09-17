@@ -46,13 +46,28 @@ function clasificar(ruta, texto, nombres) {
 
   if (rel.startsWith('app/')) return { tipo: 'pantalla', motivo: 'Es una ruta, no una primitiva.' };
   if (/Management$/.test(base)) return { tipo: 'pantalla', motivo: 'Pantalla de gestión completa.' };
+  // components/<modulo>/index.tsx es la pantalla del módulo: arma la ruta entera
+  // con su estado y sus llamadas, no es una pieza que se pueda componer.
+  if (/^components\/[^/]+\/index\.tsx$/.test(rel)) {
+    return { tipo: 'pantalla', motivo: 'Pantalla del módulo.' };
+  }
+  if (/Provider$/.test(base) || /provider/.test(rel)) {
+    return { tipo: 'chrome', motivo: 'Provider de contexto, sin interfaz propia.' };
+  }
   if (rel.startsWith('components/layouts/')) return { tipo: 'chrome', motivo: 'Arma la pantalla; se ve en cualquier ruta.' };
   if (rel.startsWith('components/auth/')) return { tipo: 'chrome', motivo: 'Guardas de ruta, sin interfaz propia.' };
   if (rel.startsWith('components/ui/') && !/log-viewer|http-trace|liquibase|metric|progress-ring|status-badge|avatar-initials|filter-bar|empty-state|backgrounds/.test(rel)) {
     return { tipo: 'shadcn', motivo: 'Primitiva de shadcn sin cambios propios.' };
   }
-  const traeDatos = /use[A-Z]\w*Query|useEffect\s*\(|\bapi\.\w+|fetch\(|axios/.test(texto);
-  if (traeDatos) return { tipo: 'datos', motivo: 'Pide datos al montarse.' };
+  // Pedir datos no siempre se ve como un fetch: buena parte de las pantallas lo
+  // hace a través de un hook propio (`useEstadisticasReservas`, `usePredicciones`)
+  // o de un módulo de `lib/api`. Importar de ahí cuenta como pedir datos.
+  const traeDatos =
+    /use[A-Z]\w*Query|useEffect\s*\(|\bapi\.\w+|fetch\(|axios/.test(texto) ||
+    /from\s+['"]@\/lib\/api\//.test(texto) ||
+    /from\s+['"]@\/hooks\//.test(texto) ||
+    /from\s+['"][^'"]*\/hooks\//.test(texto);
+  if (traeDatos) return { tipo: 'datos', motivo: 'Pide datos al montarse, directo o por un hook propio.' };
   return { tipo: 'montable', motivo: '' };
 }
 
@@ -87,8 +102,15 @@ for (const ruta of todos) {
   }
   if (nombres.size === 0) continue;
 
-  const { tipo, motivo } = clasificar(ruta, texto, nombres);
   const lista = [...nombres].sort();
+  const cubierto = lista.some((n) => cubiertos.has(n));
+
+  // La clasificación es una heurística; el catálogo es la prueba. Si una
+  // sección lo renderiza de verdad, es montable aunque el archivo importe de
+  // lib/api: quiere decir que el dato entra por props y el import era para un
+  // tipo o para una rama que no se usa al montarlo.
+  const { tipo: adivinado, motivo } = clasificar(ruta, texto, nombres);
+  const tipo = cubierto && adivinado === 'datos' ? 'montable' : adivinado;
 
   inventario.push({
     archivo: rel,
@@ -97,8 +119,8 @@ for (const ruta of todos) {
     lineas: texto.split('\n').length,
     dialog: /(Dialog|Sheet|Drawer)Content/.test(texto),
     tipo,
-    motivo,
-    cubierto: lista.some((n) => cubiertos.has(n)),
+    motivo: tipo === 'montable' ? '' : motivo,
+    cubierto,
   });
 }
 

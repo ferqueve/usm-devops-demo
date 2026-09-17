@@ -111,9 +111,12 @@ export default function PriorityReservationsWidget({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
+          {/* `id` es opcional en RecomendacionBase: si el backend no lo manda,
+              todas las filas quedaban con la misma key `undefined` y React
+              perdía el rastro al reordenarse. reservaId siempre viene. */}
           {reservasPrioritarias.slice(0, 5).map((rec) => (
             <PriorityReservationRow
-              key={rec.id}
+              key={rec.id ?? rec.reservaId}
               rec={rec}
               reservasPendientes={reservasPendientes}
               onViewDetails={onViewDetails}

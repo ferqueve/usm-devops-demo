@@ -39,6 +39,8 @@ import { TarjetasDominio } from './_tarjetas';
 import { PantallaSistema } from './_sistema';
 import { PiezasAnalisis } from './_analisis';
 import { Dashboards } from './_dashboards';
+import { ListasYFiltros } from './_listas';
+import { Ultimos } from './_ultimos';
 
 /**
  * Catálogo de la base visual.
@@ -194,11 +196,13 @@ const INDICE = [
   ['dashboards', 'Dashboards'],
   ['dialogos', 'Diálogos'],
   ['tarjetas', 'Tarjetas'],
+  ['listas', 'Listas'],
   ['dominio', 'Filas'],
   ['sistema', 'Sistema'],
   ['sistema-full', 'Sistema · pantalla'],
   ['graficos', 'Gráficos'],
   ['graficos-stats', 'Análisis'],
+  ['ultimos', 'Resto'],
   ['piezas-analisis', 'Piezas'],
 ] as const;
 
@@ -479,6 +483,16 @@ export default function UiPage() {
           </Seccion>
 
           <Seccion
+            id="listas"
+            titulo="Listas, tablas y filtros"
+            nota="Cada módulo tiene su tabla, su vista de fichas y su barra de filtros, escritas por separado."
+          >
+            <Doble>
+              <ListasYFiltros />
+            </Doble>
+          </Seccion>
+
+          <Seccion
             id="dominio"
             titulo="Dominio"
             nota="Las filas con las que se listan reservas, materias, tutorías y eventos."
@@ -535,6 +549,15 @@ export default function UiPage() {
           >
             <Doble>
               <GraficosEstadisticas />
+            </Doble>
+          </Seccion>
+          <Seccion
+            id="ultimos"
+            titulo="El resto"
+            nota="Lo que no entraba en ninguna familia: secciones de Sistema, contenedores genéricos y la grilla pública de eventos."
+          >
+            <Doble>
+              <Ultimos />
             </Doble>
           </Seccion>
         </main>

@@ -193,7 +193,7 @@ export function Dashboards() {
           <SpaceStatsWidget stats={ESPACIOS_STATS} loading={false} />
         </Caja>
 
-        <Caja titulo="InventoryStatsWidget" nota="Sin datos: así se ve el estado vacío.">
+        <Caja titulo="InventoryStatsWidget" nota="Con stats en null no dibuja nada: no tiene estado vacío, queda un hueco mudo.">
           <InventoryStatsWidget stats={null} loading={false} />
         </Caja>
 
