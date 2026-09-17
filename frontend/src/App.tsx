@@ -25,6 +25,15 @@ const AuthCallbackSuccess = lazyConRecarga(() =>
   import('./app/auth/callback-success').then((m) => ({ default: m.AuthCallbackSuccess }))
 );
 const DashboardPage = lazyConRecarga(() => import('./app/dashboard/page'));
+
+/**
+ * Catálogo de la base visual. Sólo existe en desarrollo: es una herramienta
+ * para revisar las primitivas en los dos temas de una sola pasada, no una
+ * pantalla del sistema, y no tiene por qué viajar en el build de producción.
+ */
+const UiPage = import.meta.env.DEV
+  ? lazyConRecarga(() => import('./app/ui/page'))
+  : null;
 const CalendarPage = lazyConRecarga(() => import('./app/calendar/page'));
 const ReservationsPage = lazyConRecarga(() => import('./app/reservations/page'));
 const CreateReservationPage = lazyConRecarga(() => import('./app/reservations/create/page'));
@@ -320,6 +329,8 @@ function AppRoutes() {
           </RoleProtectedRoute>
         }
       />
+
+      {UiPage && <Route path="/ui" element={<UiPage />} />}
 
       {/* Ruta raíz - redirección inteligente */}
       <Route 

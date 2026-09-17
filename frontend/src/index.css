@@ -29,7 +29,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
+/*
+ * `inline` es lo que hace que el modo oscuro funcione en cualquier parte del
+ * árbol y no sólo cuando `.dark` está en el <html>.
+ *
+ * Sin él, `--color-background: var(--background)` se resuelve una vez en :root
+ * y los hijos heredan el valor ya calculado: un `.dark` anidado redefine
+ * `--background` pero nadie lo vuelve a leer. Con `inline`, Tailwind sustituye
+ * la variable en el lugar donde se usa, así que toma la que esté vigente ahí.
+ *
+ * Se notó armando la página /ui, que muestra los dos temas lado a lado: el
+ * panel oscuro salía claro.
+ */
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

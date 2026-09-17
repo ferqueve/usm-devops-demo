@@ -95,6 +95,27 @@ export function conLuz(hex: string, L: number): string {
   return oklchAHex({ ...hexAOklch(hex), L });
 }
 
+/**
+ * Contraste WCAG entre dos colores, como razón (1 a 21).
+ *
+ * Referencias: 4.5 para texto normal, 3 para texto grande o para un elemento
+ * de interfaz que hay que poder distinguir del fondo.
+ */
+export function contraste(a: string, b: string): number {
+  const luz = (hex: string) => {
+    const h = hex.replace('#', '');
+    const [r, g, bl] = [0, 2, 4].map((i) => aLineal(parseInt(h.slice(i, i + 2), 16)));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [claro, oscuro] = [luz(a), luz(b)].sort((x, y) => y - x);
+  return (claro + 0.05) / (oscuro + 0.05);
+}
+
+/** El de los dos que se lea mejor sobre ese fondo. */
+export function tintaSobre(fondo: string, claro = '#ffffff', oscuro = MARCA.tinta): string {
+  return contraste(fondo, claro) >= contraste(fondo, oscuro) ? claro : oscuro;
+}
+
 /** Mezcla dos hex. Sólido: sobre el fondo de un svg un rgba se ensucia. */
 export function mezclar(desde: string, hasta: string, t: number): string {
   const k = Math.max(0, Math.min(1, t));

@@ -6,6 +6,7 @@ vi.mock('next-themes', () => ({ useTheme: () => ({ resolvedTheme: 'light' }) }))
 import { Waffle } from '@/components/statistics/graficos/Waffle';
 import { Medidor } from '@/components/statistics/graficos/Medidor';
 import { CalendarioCalor } from '@/components/statistics/graficos/CalendarioCalor';
+import { SERIE_CLARO } from '@/lib/design/paleta';
 
 describe('Waffle', () => {
   it('reparte exactamente cien cuadros aunque los porcentajes no sean enteros', () => {
@@ -33,13 +34,17 @@ describe('Medidor', () => {
   it('escribe el valor y pinta como alerta cuando más es peor y se pasa del umbral', () => {
     const { container } = render(<Medidor valor={45} etiqueta="Sin respuesta" umbrales={{ alerta: 30, aviso: 10 }} masEsPeor />);
     expect(screen.getByRole('img', { name: 'Sin respuesta: 45%' })).toBeInTheDocument();
+    // Contra la paleta y no contra un hex escrito acá: cuando los colores de
+    // marca se unificaron en lib/design/paleta, este test se cayó por asertar
+    // el valor viejo aunque el comportamiento —pintar de rojo— no había
+    // cambiado. Anclado a la fuente, sigue verificando lo que importa.
     const arco = container.querySelectorAll('path')[1];
-    expect(arco.getAttribute('stroke')).toBe('#c9372c');
+    expect(arco.getAttribute('stroke')).toBe(SERIE_CLARO.rojo);
   });
 
   it('un valor alto donde más es mejor queda en verde', () => {
     const { container } = render(<Medidor valor={92} etiqueta="Se aprueban" umbrales={{ alerta: 60, aviso: 80 }} />);
-    expect(container.querySelectorAll('path')[1].getAttribute('stroke')).toBe('#5f9433');
+    expect(container.querySelectorAll('path')[1].getAttribute('stroke')).toBe(SERIE_CLARO.verde);
   });
 });
 
