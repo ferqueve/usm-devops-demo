@@ -998,7 +998,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/eventos/EventoDetail.tsx",
@@ -1070,7 +1070,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/eventos/InscriptosEventoDialog.tsx",
@@ -1094,7 +1094,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/eventos/ProximoEventoHero.tsx",
@@ -1106,7 +1106,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/_shared/EspacioCell.tsx",
@@ -1130,7 +1130,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/AssignSpaceDialog.tsx",
@@ -1154,7 +1154,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/DeleteInventoryDialog.tsx",
@@ -1286,7 +1286,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/inventory/InventoryTable.tsx",
@@ -1939,7 +1939,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/recomendaciones/RecomendacionList.tsx",
@@ -2018,7 +2018,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/reservations/index.tsx",
@@ -2270,7 +2270,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/spaces/SpaceCardSkeleton.tsx",
@@ -2282,7 +2282,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/spaces/SpaceDetails.tsx",
@@ -3227,7 +3227,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/tutorias/TutoriaDetail.tsx",

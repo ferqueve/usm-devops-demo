@@ -35,6 +35,7 @@ import { FilasDominio, PiezasSistema } from './_dominio';
 import { KPIS } from './_datos';
 import { Inventario } from './_inventario';
 import { Dialogos } from './_dialogos';
+import { TarjetasDominio } from './_tarjetas';
 
 /**
  * Catálogo de la base visual.
@@ -188,7 +189,8 @@ const INDICE = [
   ['datos', 'Datos'],
   ['bloques', 'Bloques'],
   ['dialogos', 'Diálogos'],
-  ['dominio', 'Dominio'],
+  ['tarjetas', 'Tarjetas'],
+  ['dominio', 'Filas'],
   ['sistema', 'Sistema'],
   ['graficos', 'Gráficos'],
   ['graficos-stats', 'Análisis'],
@@ -448,6 +450,16 @@ export default function UiPage() {
             nota="Se abren de verdad. Van en portal sobre el body, así que toman el tema global y no el del panel."
           >
             <Dialogos />
+          </Seccion>
+
+          <Seccion
+            id="tarjetas"
+            titulo="Tarjetas"
+            nota="Con las que se listan espacios, eventos, tutorías y recomendaciones."
+          >
+            <Doble>
+              <TarjetasDominio />
+            </Doble>
           </Seccion>
 
           <Seccion
