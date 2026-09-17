@@ -626,7 +626,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/DashboardStats.tsx",
@@ -638,7 +638,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/index.tsx",
@@ -662,7 +662,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/UnifiedDashboard.tsx",
@@ -686,7 +686,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/_components/DualPanel.tsx",
@@ -698,7 +698,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/_components/EmptyState.tsx",
@@ -757,7 +757,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/_components/Panel.tsx",
@@ -793,7 +793,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/_components/StatStrip.tsx",
@@ -817,7 +817,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/AnalistaDashboard.tsx",
@@ -829,7 +829,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/DocenteDashboard.tsx",
@@ -841,7 +841,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/EstudianteDashboard.tsx",
@@ -853,7 +853,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/ExternoDashboard.tsx",
@@ -865,7 +865,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/MantenimientoDashboard.tsx",
@@ -877,7 +877,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/widgets/_shared/StatsListWidget.tsx",
@@ -889,7 +889,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/widgets/InventoryStatsWidget.tsx",
@@ -901,7 +901,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/widgets/PendingInventoryRequestsAlert.tsx",
@@ -913,7 +913,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/widgets/PendingReservationsAlert.tsx",
@@ -925,7 +925,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/widgets/PriorityReservationsWidget.tsx",
@@ -937,7 +937,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/dashboard/widgets/SpaceStatsWidget.tsx",
@@ -949,7 +949,7 @@
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": false
+   "cubierto": true
   },
   {
    "archivo": "components/eventos/AfichePoster.tsx",

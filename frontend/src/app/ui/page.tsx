@@ -38,6 +38,7 @@ import { Dialogos } from './_dialogos';
 import { TarjetasDominio } from './_tarjetas';
 import { PantallaSistema } from './_sistema';
 import { PiezasAnalisis } from './_analisis';
+import { Dashboards } from './_dashboards';
 
 /**
  * Catálogo de la base visual.
@@ -190,6 +191,7 @@ const INDICE = [
   ['controles', 'Controles'],
   ['datos', 'Datos'],
   ['bloques', 'Bloques'],
+  ['dashboards', 'Dashboards'],
   ['dialogos', 'Diálogos'],
   ['tarjetas', 'Tarjetas'],
   ['dominio', 'Filas'],
@@ -445,6 +447,16 @@ export default function UiPage() {
                   </div>
                 </Panel>
               </div>
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="dashboards"
+            titulo="Dashboards"
+            nota="Los seis por rol con el mismo dato, y los catorce bloques con que se arman."
+          >
+            <Doble>
+              <Dashboards />
             </Doble>
           </Seccion>
 
