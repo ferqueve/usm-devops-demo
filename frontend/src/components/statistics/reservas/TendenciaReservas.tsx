@@ -76,7 +76,13 @@ function Globo({ active, payload, granularidad, colores }: TooltipProps<number, 
   );
 }
 
-export function Tendencia({ resumen, alto = 260 }: Readonly<{ resumen: ResumenReservas; alto?: number }>) {
+/**
+ * El gráfico apilado de reservas del período.
+ *
+ * Se llamaba `Tendencia`, igual que el de línea del dashboard y que la
+ * flechita de variación. El nombre ahora dice de qué es.
+ */
+export function TendenciaReservas({ resumen, alto = 260 }: Readonly<{ resumen: ResumenReservas; alto?: number }>) {
   const { resolvedTheme } = useTheme();
   const colores = resolvedTheme === 'dark' ? ESTADOS.oscuro : ESTADOS.claro;
   const { granularidad } = resumen;

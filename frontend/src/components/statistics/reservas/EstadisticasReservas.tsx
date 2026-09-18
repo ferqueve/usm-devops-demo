@@ -20,7 +20,7 @@ import { CalendarioCalor } from '../graficos/CalendarioCalor';
 import { RadarSemana } from '../graficos/RadarSemana';
 import { TarjetasKpi } from '../graficos/TarjetasKpi';
 import { ResumenIA } from './ResumenIA';
-import { Tendencia } from './Tendencia';
+import { TendenciaReservas } from './TendenciaReservas';
 import { useEstadisticasReservas, type DatosReservas } from './useEstadisticasReservas';
 import type { FiltrosReservas as Filtros } from '@/lib/api/stats';
 import { Analistas, Antelacion, HistogramaRespuesta, PendientesAntiguedad, RespuestaKpis } from './Aprobacion';
@@ -349,7 +349,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
               actual.total === 0 ? (
                 <p className="py-16 text-center text-sm text-muted-foreground">No hubo reservas en el período.</p>
               ) : (
-                <Tendencia resumen={resumen} alto={grande ? 520 : 320} />
+                <TendenciaReservas resumen={resumen} alto={grande ? 520 : 320} />
               )
             }
           </PanelEstadistica>

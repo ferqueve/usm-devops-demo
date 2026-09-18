@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { sumarDias } from '@/lib/utils/fechas';
 
 export type PeriodoId = '30d' | '90d' | '12m' | 'anio';
 
@@ -27,11 +28,6 @@ export function hoyEnElCampus(ahora = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montevideo' }).format(ahora);
 }
 
-function sumarDias(fecha: string, dias: number): string {
-  const d = new Date(`${fecha}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
-}
 
 export function rangoDe(id: PeriodoId, hoy = hoyEnElCampus()): Rango {
   switch (id) {

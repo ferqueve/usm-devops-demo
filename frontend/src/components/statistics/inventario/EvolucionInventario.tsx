@@ -17,8 +17,9 @@ import { BarrasDivergentes } from '../graficos/BarrasDivergentes';
 import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
 import { MARCA } from '@/lib/design/paleta';
 import { GloboGrafico } from '@/components/common/dataviz';
+import { EmptyState } from '@/components/ui/empty-state';
 
-/* Misma historia que en statistics/reservas/Tendencia: este archivo también
+/* Misma historia que en statistics/reservas/TendenciaReservas: este archivo también
    tenía su copia de la escala vieja. Ahora sale de lib/design/paleta. */
 const TEMAS = {
   claro: {
@@ -68,9 +69,6 @@ function Resumen({ etiqueta, valor, detalle }: Readonly<{ etiqueta: string; valo
   );
 }
 
-function Vacio() {
-  return <p className="py-12 text-center text-sm text-muted-foreground">No hay fotos del inventario en el período.</p>;
-}
 
 /**
  * Cómo cambió el inventario dentro del período, a partir de la foto diaria
@@ -168,7 +166,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
           {(grande) => (
             <>
           {estado.length === 0 ? (
-            <Vacio />
+            <EmptyState variant="linea" title="No hay fotos del inventario en el período." />
           ) : (
             <>
               {/* Apilado: la altura total es el parque y cada franja su estado; se ve cuánto pesa cada uno, no sólo si sube o baja. */}
@@ -217,7 +215,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
           {(grande) => (
             <>
           {parque.length === 0 ? (
-            <Vacio />
+            <EmptyState variant="linea" title="No hay fotos del inventario en el período." />
           ) : (
             // Solo items: unidades va en otra escala y en el mismo eje aplastaba la línea.
             <ResponsiveContainer width="100%" height={grande ? 460 : 240}>

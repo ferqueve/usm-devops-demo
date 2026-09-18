@@ -30,8 +30,13 @@ export function GloboGrafico({ className, children }: Readonly<{ className?: str
   );
 }
 
-// --- Flechita de tendencia ▲▼ (variación % vs. período anterior) ---
-export function Tendencia({ delta }: Readonly<{ delta?: number }>) {
+/**
+ * La flechita ▲▼ con el cambio contra el período anterior.
+ *
+ * Se llamaba `Tendencia`, igual que el gráfico de línea del dashboard y que
+ * el de reservas: tres cosas distintas con el mismo nombre en un import.
+ */
+export function FlechaVariacion({ delta }: Readonly<{ delta?: number }>) {
   if (delta == null || Math.abs(delta) < 1) {
     return (
       <span className="inline-flex items-center text-2xs text-muted-foreground/60" title="Sin cambios">
@@ -148,7 +153,7 @@ export function Podio({ top }: Readonly<{ top: PodioEntry[] }>) {
               </span>
               <span className="mt-1.5 w-full truncate text-center text-xs font-semibold leading-tight" title={it.nombre}>{it.nombre}</span>
               <span className="text-2xs font-bold tabular-nums">{it.valor}</span>
-              <Tendencia delta={it.deltaPct} />
+              <FlechaVariacion delta={it.deltaPct} />
               <div className={`mt-2 flex w-full ${m.alto} items-start justify-center rounded-t-lg ${m.ped} shadow-inner`}>
                 <span className="mt-1 text-xl font-black text-white/90 drop-shadow">{pos}</span>
               </div>

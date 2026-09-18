@@ -79,6 +79,18 @@ export function fechaHoraLarga(iso: string | null | undefined, vacio = SIN_FECHA
   });
 }
 
+/**
+ * Corre una fecha «YYYY-MM-DD» N días, y devuelve otra «YYYY-MM-DD».
+ *
+ * Todo en UTC: sumar días en hora local se rompe el día del cambio de
+ * horario, que dura 23 o 25 horas.
+ */
+export function sumarDias(fecha: string, dias: number): string {
+  const d = new Date(`${fecha.slice(0, 10)}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}
+
 /** «18 set». Para ejes de gráfico y listas apretadas. */
 export function fechaCorta(iso: string | null | undefined, vacio = SIN_FECHA): string {
   const d = aFecha(iso?.slice(0, 10));

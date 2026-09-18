@@ -1,3 +1,6 @@
+
+import { API_BASE_URL } from '@/lib/config/api';
+
 // ============================================================================
 // Tipos para la API de autenticación
 // ============================================================================
@@ -47,7 +50,8 @@ export interface ApiResponse<T> {
 // Configuración de la API
 // ============================================================================
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+// La URL vive en `lib/config/api`: la usan cinco módulos y los tests mockean
+// este cliente entero.
 
 // ============================================================================
 // Dedupe de GET requests

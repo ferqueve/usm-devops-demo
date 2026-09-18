@@ -255,6 +255,8 @@ implementaciones de lo mismo:
 | `Panel` | 6 → 2 | `components/common/Panel`; queda el de `RuntimeCards`, que tiene otra forma |
 | Hooks con caché de lista | 4 → 1 | `hooks/cacheDeLista.ts`, con test |
 | Estrellas de valoración | 4 → 1 | `components/common/Estrellas` |
+| `sumarDias` | 4 → 1 | `lib/utils/fechas` |
+| `API_BASE_URL` | 5 → 1 | `lib/config/api` |
 | Días de la semana | 6 → 2 | `lib/utils/fechas`, uno por cada orden |
 | Estado → color | 14 → 1 | `components/common/estados`, con los cinco dominios |
 | Formateo de fechas | 16 → 1 | `lib/utils/fechas.ts` |

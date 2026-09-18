@@ -343,7 +343,7 @@
    "nombres": [
     "AgendaCalendario"
    ],
-   "lineas": 150,
+   "lineas": 140,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -559,7 +559,7 @@
    "nombres": [
     "CatalogoCrudShell"
    ],
-   "lineas": 305,
+   "lineas": 306,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -582,15 +582,16 @@
    "familia": "common",
    "nombres": [
     "Confetti",
+    "FlechaVariacion",
     "Gauge",
-    "Podio",
-    "Tendencia"
+    "GloboGrafico",
+    "Podio"
    ],
-   "lineas": 142,
+   "lineas": 167,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
-   "cubierto": true
+   "cubierto": false
   },
   {
    "archivo": "components/common/EstadoCarga.tsx",
@@ -599,6 +600,36 @@
     "EstadoCarga"
    ],
    "lineas": 71,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/estados.tsx",
+   "familia": "common",
+   "nombres": [
+    "ESTADO",
+    "ESTADO_ESPACIO",
+    "ESTADO_EVENTO",
+    "ESTADO_INVENTARIO",
+    "ESTADO_RESERVA",
+    "ESTADO_TUTORIA",
+    "EstadoBadge"
+   ],
+   "lineas": 181,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/Estrellas.tsx",
+   "familia": "common",
+   "nombres": [
+    "Estrellas"
+   ],
+   "lineas": 73,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -634,7 +665,7 @@
    "nombres": [
     "StatStrip"
    ],
-   "lineas": 262,
+   "lineas": 263,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -717,7 +748,7 @@
     "Tendencia",
     "UTEC"
    ],
-   "lineas": 343,
+   "lineas": 344,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -837,7 +868,7 @@
    "nombres": [
     "CarteleraKiosko"
    ],
-   "lineas": 82,
+   "lineas": 80,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -862,7 +893,7 @@
     "EstadoBadge",
     "EventoCardDescubrir"
    ],
-   "lineas": 146,
+   "lineas": 133,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -874,7 +905,7 @@
    "nombres": [
     "EventoDetail"
    ],
-   "lineas": 550,
+   "lineas": 528,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -910,7 +941,7 @@
    "nombres": [
     "EventosManagement"
    ],
-   "lineas": 513,
+   "lineas": 506,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -922,7 +953,7 @@
    "nombres": [
     "FeedbackEventoPanel"
    ],
-   "lineas": 187,
+   "lineas": 174,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -946,7 +977,7 @@
    "nombres": [
     "ProximoEventoHero"
    ],
-   "lineas": 58,
+   "lineas": 56,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -970,7 +1001,7 @@
    "nombres": [
     "EstadoBadge"
    ],
-   "lineas": 47,
+   "lineas": 12,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1347,7 +1378,7 @@
    "nombres": [
     "MateriaDetail"
    ],
-   "lineas": 464,
+   "lineas": 454,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1398,7 +1429,7 @@
     "HistoricoSemanal",
     "MedidorAuc"
    ],
-   "lineas": 192,
+   "lineas": 193,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1462,7 +1493,7 @@
    "nombres": [
     "AnalisisIA"
    ],
-   "lineas": 92,
+   "lineas": 93,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1483,7 +1514,7 @@
     "NotaModelo",
     "SinModelo"
    ],
-   "lineas": 183,
+   "lineas": 184,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1524,7 +1555,7 @@
     "SemanasTipo",
     "TiraRiesgo"
    ],
-   "lineas": 269,
+   "lineas": 270,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1562,7 +1593,7 @@
    "nombres": [
     "Confiabilidad"
    ],
-   "lineas": 135,
+   "lineas": 136,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1574,7 +1605,7 @@
    "nombres": [
     "GraficoDemanda"
    ],
-   "lineas": 208,
+   "lineas": 209,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1587,7 +1618,7 @@
     "PronosticoPorTipo",
     "TablaTipos"
    ],
-   "lineas": 260,
+   "lineas": 261,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1611,7 +1642,7 @@
    "nombres": [
     "SemanaTipica"
    ],
-   "lineas": 61,
+   "lineas": 62,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1882,7 +1913,7 @@
    "nombres": [
     "ReservationDetailsDialog"
    ],
-   "lineas": 394,
+   "lineas": 371,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2098,7 +2129,7 @@
    "nombres": [
     "SpaceDetails"
    ],
-   "lineas": 661,
+   "lineas": 664,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2134,7 +2165,7 @@
    "nombres": [
     "SpacesManagement"
    ],
-   "lineas": 984,
+   "lineas": 985,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -2146,7 +2177,7 @@
    "nombres": [
     "SpaceTable"
    ],
-   "lineas": 250,
+   "lineas": 211,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2182,7 +2213,7 @@
    "nombres": [
     "EstadisticasAcademico"
    ],
-   "lineas": 218,
+   "lineas": 219,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2207,18 +2238,17 @@
    "archivo": "components/statistics/academico/Visuales.tsx",
    "familia": "statistics",
    "nombres": [
-    "Estrellas",
     "EventosLista",
     "MateriasTutorias",
     "ModalidadTutorias",
     "SemanasTutorias",
     "TutoriasKpis"
    ],
-   "lineas": 234,
+   "lineas": 215,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
   },
   {
    "archivo": "components/statistics/graficos/Apiladas100.tsx",
@@ -2262,7 +2292,7 @@
    "nombres": [
     "Burbujas"
    ],
-   "lineas": 147,
+   "lineas": 148,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2286,7 +2316,7 @@
    "nombres": [
     "Dona"
    ],
-   "lineas": 89,
+   "lineas": 90,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2322,7 +2352,7 @@
    "nombres": [
     "MapaArbol"
    ],
-   "lineas": 82,
+   "lineas": 83,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2358,7 +2388,7 @@
    "nombres": [
     "RadarSemana"
    ],
-   "lineas": 51,
+   "lineas": 52,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2434,7 +2464,7 @@
    "nombres": [
     "EstadisticasInventario"
    ],
-   "lineas": 332,
+   "lineas": 333,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2446,7 +2476,7 @@
    "nombres": [
     "EvolucionInventario"
    ],
-   "lineas": 266,
+   "lineas": 265,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2551,7 +2581,7 @@
    "nombres": [
     "EstadisticasReservas"
    ],
-   "lineas": 607,
+   "lineas": 608,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2590,10 +2620,9 @@
     "MenosUsados",
     "OcupacionEspacios",
     "PorCarrera",
-    "PorEdificio",
     "QuienesMasReservan"
    ],
-   "lineas": 215,
+   "lineas": 188,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2629,23 +2658,23 @@
    "nombres": [
     "ResumenIA"
    ],
-   "lineas": 94,
+   "lineas": 95,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
   },
   {
-   "archivo": "components/statistics/reservas/Tendencia.tsx",
+   "archivo": "components/statistics/reservas/TendenciaReservas.tsx",
    "familia": "statistics",
    "nombres": [
-    "Tendencia"
+    "TendenciaReservas"
    ],
-   "lineas": 132,
+   "lineas": 139,
    "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
   },
   {
    "archivo": "components/statistics/reservas/Visuales.tsx",
@@ -2946,7 +2975,7 @@
    "nombres": [
     "AgendarTutoriaDialog"
    ],
-   "lineas": 78,
+   "lineas": 75,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2983,7 +3012,7 @@
    "nombres": [
     "ProximaTutoriaHero"
    ],
-   "lineas": 64,
+   "lineas": 62,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3031,7 +3060,7 @@
    "nombres": [
     "TutoriaCard"
    ],
-   "lineas": 296,
+   "lineas": 269,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3043,7 +3072,7 @@
    "nombres": [
     "TutoriaDetail"
    ],
-   "lineas": 589,
+   "lineas": 565,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3055,7 +3084,7 @@
    "nombres": [
     "TutoriaFeedbackPanel"
    ],
-   "lineas": 142,
+   "lineas": 129,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3091,7 +3120,7 @@
    "nombres": [
     "TutoriasAgenda"
    ],
-   "lineas": 75,
+   "lineas": 71,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3126,10 +3155,9 @@
    "familia": "ui",
    "nombres": [
     "EVENTO_PATRONES",
-    "EventoPatternBg",
-    "PATRON_DEFAULT"
+    "EventoPatternBg"
    ],
-   "lineas": 355,
+   "lineas": 353,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3312,7 +3340,7 @@
    "nombres": [
     "UserStatsCards"
    ],
-   "lineas": 187,
+   "lineas": 178,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",

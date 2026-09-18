@@ -1,12 +1,10 @@
 import type { OcupacionEspacio, ResumenCarrera, TopUsuario } from '@/lib/api/stats';
 import { filtrable, HOVER_FILTRO } from '../graficos/filtrable';
 import { horas, nombreRol } from './formato';
+import { Vacio } from '@/components/statistics/Vacio';
 
 const n = (v: number) => Number(v).toLocaleString('es-UY');
 
-function Vacio({ texto = 'Sin datos en el período.' }: Readonly<{ texto?: string }>) {
-  return <p className="py-8 text-center text-sm text-muted-foreground">{texto}</p>;
-}
 
 function Barra({ porcentaje, clase }: Readonly<{ porcentaje: number; clase: string }>) {
   return (

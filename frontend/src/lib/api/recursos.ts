@@ -1,7 +1,6 @@
 import { apiRequest, type ApiResponse } from './client';
 import type { Recurso } from '../types/recursos';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+import { API_BASE_URL } from '@/lib/config/api';
 
 export const recursosApi = {
   // Listar recursos de una materia

@@ -1,4 +1,5 @@
 import type { ResumenReservas } from '@/lib/api/stats';
+import { sumarDias } from '@/lib/utils/fechas';
 
 type Granularidad = ResumenReservas['granularidad'];
 
@@ -13,11 +14,6 @@ export interface TramoSerie {
   incompleto: boolean;
 }
 
-function sumarDias(fecha: string, dias: number): string {
-  const d = new Date(`${fecha}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
-}
 
 function finDelTramo(periodo: string, granularidad: Granularidad): string {
   if (granularidad === 'dia') return periodo;

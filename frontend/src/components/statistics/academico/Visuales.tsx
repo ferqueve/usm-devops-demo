@@ -11,6 +11,7 @@ import { Vacio } from '../Vacio';
 import { entero, porcentaje } from '../reservas/formato';
 import { GloboGrafico } from '@/components/common/dataviz';
 import { Estrellas } from '@/components/common/Estrellas';
+import { sumarDias } from '@/lib/utils/fechas';
 
 /** Estrellas de 1 a 5 con medias, y el número al lado. */
 
@@ -75,11 +76,6 @@ export function ModalidadTutorias({ t, grande = false }: Readonly<{ t: Academico
 
 type Semana = Academico['porSemana'][number] & { incompleta: boolean };
 
-function sumarDias(fecha: string, dias: number): string {
-  const d = new Date(`${fecha}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
-}
 
 function GloboSemana({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
