@@ -37,6 +37,7 @@ import { useCountdown } from '@/lib/agenda/tiempo';
 import { eventoToAgendable } from '@/lib/agenda/types';
 import { fechaHora, relativa } from '@/lib/utils/fechas';
 import { ESTADO_EVENTO, EstadoBadge, estadoDe } from '@/components/common/estados';
+import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
 
 interface EventoDetailProps { eventoId: number }
 
@@ -187,11 +188,19 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   };
   const copyLink = () => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copiado')).catch(() => {});
   const exportCSV = () => {
-    const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const rows = inscriptos.map((i) => [esc(i.nombre ?? ''), esc(i.email ?? ''), esc(fechaHora(i.createdAt, { diaSemana: true }))].join(',')).join('\n');
-    const blob = new Blob([`\uFEFFNombre,Email,Inscripto\n${rows}`], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `inscriptos-evento-${eventoId}.csv`; a.click(); URL.revokeObjectURL(url);
+    descargarCSV(
+      [
+        'Nombre,Email,Inscripto',
+        ...inscriptos.map((i) =>
+          [
+            csvEscape(i.nombre ?? ''),
+            csvEscape(i.email ?? ''),
+            csvEscape(fechaHora(i.createdAt, { diaSemana: true })),
+          ].join(',')
+        ),
+      ],
+      `inscriptos-evento-${eventoId}.csv`
+    );
   };
 
   const ocupacion = useMemo(() => {

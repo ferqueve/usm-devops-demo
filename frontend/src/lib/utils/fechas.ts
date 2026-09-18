@@ -29,6 +29,10 @@
  */
 export const DIAS_DESDE_DOMINGO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
 export const DIAS_DESDE_LUNES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
+/** Los mismos, enteros, para cuando hay lugar. */
+export const DIAS_LARGOS_DESDE_LUNES = [
+  'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+] as const;
 
 /** El índice de `Date.getDay()` pasado a semana que arranca el lunes. */
 export const indiceDesdeLunes = (fecha: Date) => (fecha.getDay() + 6) % 7;

@@ -1,21 +1,11 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { NodeNetwork } from '@/components/layouts/AuthLayout/NodeNetwork';
 import { UtecShapesBackground } from './UtecShapesBackground';
-import { MARCA } from '@/lib/design/paleta';
+import { MARCA_EN, PALETA_DECORATIVA } from '@/lib/design/paleta';
 
-// Colores institucionales UTEC.
-const UTEC = {
-  green: MARCA.verde,
-  yellow: MARCA.amarillo,
-  orange: MARCA.naranja,
-  red: MARCA.rojo,
-  blue: MARCA.azul,
-  cyan: MARCA.cian,
-  purple: '#9333EA',
-};
 
 const DARK = 'linear-gradient(160deg, #1b2236 0%, #0e1320 100%)';
-const PALETTE = [UTEC.green, UTEC.yellow, UTEC.orange, UTEC.red, UTEC.blue, UTEC.cyan, UTEC.purple];
+const PALETTE = PALETA_DECORATIVA;
 
 // Posiciones/tiempos deterministas (pseudo-random por seno) para no recomputar en cada render.
 const spread = (i: number, k: number) => Math.round((Math.sin(i * k) * 0.5 + 0.5) * 100);
@@ -87,8 +77,8 @@ function Grilla() {
 function Diagonales() {
   const style: CSSProperties = {
     backgroundImage:
-      `repeating-linear-gradient(45deg, ${UTEC.blue}22 0 14px, transparent 14px 28px),` +
-      `repeating-linear-gradient(45deg, ${UTEC.orange}18 0 14px, transparent 14px 28px)`,
+      `repeating-linear-gradient(45deg, ${MARCA_EN.blue}22 0 14px, transparent 14px 28px),` +
+      `repeating-linear-gradient(45deg, ${MARCA_EN.orange}18 0 14px, transparent 14px 28px)`,
     backgroundSize: '56px 56px, 56px 56px',
     backgroundPosition: '0 0, 28px 28px',
   };
@@ -105,11 +95,11 @@ function Blobs() {
   );
   return (
     <div className="absolute inset-0 overflow-hidden" style={{ background: DARK }} aria-hidden>
-      {blob('-top-10 left-[8%] h-40 w-40', `${UTEC.blue}cc`, 'motion-safe:animate-[auth-float-a_12s_ease-in-out_infinite]')}
-      {blob('top-[30%] left-[42%] h-28 w-28', `${UTEC.orange}b3`, 'motion-safe:animate-[auth-float-b_15s_ease-in-out_infinite]')}
-      {blob('-bottom-12 right-[24%] h-44 w-44', `${UTEC.green}aa`, 'motion-safe:animate-[auth-float-c_13s_ease-in-out_infinite]')}
-      {blob('top-[10%] right-[8%] h-24 w-24', `${UTEC.cyan}99`, 'motion-safe:animate-[auth-float-a_11s_ease-in-out_infinite]')}
-      {blob('bottom-[10%] left-[30%] h-20 w-20', `${UTEC.yellow}99`, 'motion-safe:animate-[auth-float-b_9s_ease-in-out_infinite]')}
+      {blob('-top-10 left-[8%] h-40 w-40', `${MARCA_EN.blue}cc`, 'motion-safe:animate-[auth-float-a_12s_ease-in-out_infinite]')}
+      {blob('top-[30%] left-[42%] h-28 w-28', `${MARCA_EN.orange}b3`, 'motion-safe:animate-[auth-float-b_15s_ease-in-out_infinite]')}
+      {blob('-bottom-12 right-[24%] h-44 w-44', `${MARCA_EN.green}aa`, 'motion-safe:animate-[auth-float-c_13s_ease-in-out_infinite]')}
+      {blob('top-[10%] right-[8%] h-24 w-24', `${MARCA_EN.cyan}99`, 'motion-safe:animate-[auth-float-a_11s_ease-in-out_infinite]')}
+      {blob('bottom-[10%] left-[30%] h-20 w-20', `${MARCA_EN.yellow}99`, 'motion-safe:animate-[auth-float-b_9s_ease-in-out_infinite]')}
     </div>
   );
 }
@@ -123,9 +113,9 @@ function Olas() {
   );
   return (
     <div className="absolute inset-0 overflow-hidden" style={{ background: DARK }} aria-hidden>
-      {wave(UTEC.blue, 0.5, 'motion-safe:animate-[wave-x_13s_linear_infinite]', 120)}
-      {wave(UTEC.cyan, 0.28, 'motion-safe:animate-[wave-x_9s_linear_infinite]', 150)}
-      {wave(UTEC.purple, 0.22, 'motion-safe:animate-[wave-x_17s_linear_infinite]', 95)}
+      {wave(MARCA_EN.blue, 0.5, 'motion-safe:animate-[wave-x_13s_linear_infinite]', 120)}
+      {wave(MARCA_EN.cyan, 0.28, 'motion-safe:animate-[wave-x_9s_linear_infinite]', 150)}
+      {wave(MARCA_EN.cyan, 0.22, 'motion-safe:animate-[wave-x_17s_linear_infinite]', 95)}
     </div>
   );
 }
@@ -149,13 +139,13 @@ function Circuito() {
   return (
     <div className="bg-anim absolute inset-0 overflow-hidden" style={{ background: DARK }} aria-hidden>
       <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" viewBox="0 0 400 200">
-        <g fill="none" stroke={UTEC.cyan} strokeOpacity="0.4" strokeWidth="1.4" strokeDasharray="6 6" style={{ animation: 'circuit-flow 1.2s linear infinite' }}>
+        <g fill="none" stroke={MARCA_EN.cyan} strokeOpacity="0.4" strokeWidth="1.4" strokeDasharray="6 6" style={{ animation: 'circuit-flow 1.2s linear infinite' }}>
           <path d="M0 40 H120 V90 H260 V30 H400" />
           <path d="M0 120 H80 V160 H220 V110 H400" />
           <path d="M40 0 V70 H180 V200" />
           <path d="M320 0 V60 H360 V200" />
         </g>
-        <g fill={UTEC.cyan}>
+        <g fill={MARCA_EN.cyan}>
           {vias.map(([x, y], i) => (
             <circle key={i} cx={x} cy={y} r="3.2" style={{ animation: `twinkle ${2 + (i % 3)}s ease-in-out ${i * 0.3}s infinite` }} />
           ))}
@@ -194,12 +184,12 @@ function Panal() {
       <svg className="absolute inset-0 h-full w-full opacity-50" aria-hidden>
         <defs>
           <pattern id="hex-panal" width="56" height="48" patternUnits="userSpaceOnUse">
-            <path d="M14 0 L42 0 L56 24 L42 48 L14 48 L0 24 Z" fill="none" stroke={UTEC.cyan} strokeOpacity="0.35" strokeWidth="1.2" />
+            <path d="M14 0 L42 0 L56 24 L42 48 L14 48 L0 24 Z" fill="none" stroke={MARCA_EN.cyan} strokeOpacity="0.35" strokeWidth="1.2" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#hex-panal)" />
       </svg>
-      <div className="absolute inset-0" style={{ background: `linear-gradient(105deg, transparent 42%, ${UTEC.cyan}26 50%, transparent 58%)`, animation: 'bg-shimmer 4.5s ease-in-out infinite' }} />
+      <div className="absolute inset-0" style={{ background: `linear-gradient(105deg, transparent 42%, ${MARCA_EN.cyan}26 50%, transparent 58%)`, animation: 'bg-shimmer 4.5s ease-in-out infinite' }} />
     </div>
   );
 }
@@ -208,8 +198,8 @@ function Panal() {
 function Topografia() {
   return (
     <div className="bg-anim absolute inset-0 overflow-hidden" style={{ background: DARK }} aria-hidden>
-      <div className="absolute inset-0" style={{ backgroundImage: `repeating-radial-gradient(circle at 28% 132%, ${UTEC.green}00 0 14px, ${UTEC.green}33 14px 16px)`, backgroundSize: '90px 90px', animation: 'topo-drift 20s linear infinite' }} />
-      <div className="absolute inset-0" style={{ backgroundImage: `repeating-radial-gradient(circle at 82% -24%, ${UTEC.cyan}00 0 16px, ${UTEC.cyan}2b 16px 18px)`, backgroundSize: '110px 110px', animation: 'topo-drift 28s linear infinite reverse' }} />
+      <div className="absolute inset-0" style={{ backgroundImage: `repeating-radial-gradient(circle at 28% 132%, ${MARCA_EN.green}00 0 14px, ${MARCA_EN.green}33 14px 16px)`, backgroundSize: '90px 90px', animation: 'topo-drift 20s linear infinite' }} />
+      <div className="absolute inset-0" style={{ backgroundImage: `repeating-radial-gradient(circle at 82% -24%, ${MARCA_EN.cyan}00 0 16px, ${MARCA_EN.cyan}2b 16px 18px)`, backgroundSize: '110px 110px', animation: 'topo-drift 28s linear infinite reverse' }} />
     </div>
   );
 }
@@ -221,7 +211,7 @@ function Plasma() {
       <div
         className="absolute inset-0 blur-2xl"
         style={{
-          background: `conic-gradient(from 0deg at 50% 50%, ${UTEC.blue}, ${UTEC.purple}, ${UTEC.red}, ${UTEC.orange}, ${UTEC.green}, ${UTEC.cyan}, ${UTEC.blue})`,
+          background: `conic-gradient(from 0deg at 50% 50%, ${MARCA_EN.blue}, ${MARCA_EN.cyan}, ${MARCA_EN.red}, ${MARCA_EN.orange}, ${MARCA_EN.green}, ${MARCA_EN.cyan}, ${MARCA_EN.blue})`,
           opacity: 0.55,
           animation: 'plasma-spin 24s linear infinite',
         }}
@@ -278,7 +268,7 @@ function MatrixCodigo() {
         const ch = String.fromCharCode(0x30a0 + Math.floor(Math.random() * 96));
         const x = i * FONT;
         const y = drops[i] * FONT;
-        ctx.fillStyle = Math.random() < 0.08 ? '#d6ffe0' : UTEC.green;
+        ctx.fillStyle = Math.random() < 0.08 ? '#d6ffe0' : MARCA_EN.green;
         ctx.fillText(ch, x, y);
         if (y > h && Math.random() > 0.975) drops[i] = 0;
         drops[i]++;

@@ -1,17 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { NodeNetwork } from '@/components/layouts/AuthLayout/NodeNetwork';
-import { MARCA } from '@/lib/design/paleta';
+import { MARCA_EN } from '@/lib/design/paleta';
 
-// Colores institucionales UTEC (hex exactos, sólidos como las metric-cards).
-const UTEC = {
-  green: MARCA.verde,
-  yellow: MARCA.amarillo,
-  orange: MARCA.naranja,
-  red: MARCA.rojo,
-  blue: MARCA.azul,
-  cyan: MARCA.cian,
-  purple: '#9333EA',
-};
 
 interface UtecShapesBackgroundProps {
   /** Clases extra para el contenedor raíz (absolute inset-0). */
@@ -87,7 +77,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       {/* Hexágono relleno (motivo del logo UTEC), girando lento */}
       <div className="absolute top-[8%] right-[14%]" style={par(30, 30)}>
         <svg width={s(170)} height={s(170)} viewBox="0 0 100 100" className="motion-safe:animate-[auth-spin-slow_40s_linear_infinite]">
-          <polygon points="50,3 92,26 92,74 50,97 8,74 8,26" fill={UTEC.cyan} />
+          <polygon points="50,3 92,26 92,74 50,97 8,74 8,26" fill={MARCA_EN.cyan} />
         </svg>
       </div>
 
@@ -95,7 +85,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       <div className="absolute -top-10 -left-10" style={par(44, 44)}>
         <div
           className="rounded-full motion-safe:animate-[auth-float-a_12s_ease-in-out_infinite]"
-          style={{ height: s(176), width: s(176), background: UTEC.blue }}
+          style={{ height: s(176), width: s(176), background: MARCA_EN.blue }}
         />
       </div>
 
@@ -103,7 +93,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       <div className="absolute top-[40%] left-[10%]" style={par(58, 58)}>
         <div
           className="rounded-2xl motion-safe:animate-[auth-float-b_15s_ease-in-out_infinite]"
-          style={{ height: s(112), width: s(112), background: UTEC.yellow, transform: 'rotate(15deg)' }}
+          style={{ height: s(112), width: s(112), background: MARCA_EN.yellow, transform: 'rotate(15deg)' }}
         />
       </div>
 
@@ -116,7 +106,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
             height: 0,
             borderLeft: `${s(60)}px solid transparent`,
             borderRight: `${s(60)}px solid transparent`,
-            borderBottom: `${s(104)}px solid ${UTEC.green}`,
+            borderBottom: `${s(104)}px solid ${MARCA_EN.green}`,
             transform: 'rotate(-10deg)',
           }}
         />
@@ -125,7 +115,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       {/* Cruz / plus naranja (tech) */}
       <div className="absolute bottom-[26%] right-[16%]" style={par(64, 64)}>
         <svg width={s(84)} height={s(84)} viewBox="0 0 24 24" className="motion-safe:animate-[auth-float-a_11s_ease-in-out_infinite]">
-          <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill={UTEC.orange} />
+          <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill={MARCA_EN.orange} />
         </svg>
       </div>
 
@@ -133,7 +123,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       <div className="absolute top-[20%] right-[6%]" style={par(72, 72)}>
         <div
           className="rounded-full motion-safe:animate-[auth-float-b_9s_ease-in-out_infinite]"
-          style={{ height: s(96), width: s(96), border: `${s(12)}px solid ${UTEC.red}` }}
+          style={{ height: s(96), width: s(96), border: `${s(12)}px solid ${MARCA_EN.red}` }}
         />
       </div>
 
@@ -141,7 +131,7 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       <div className="absolute bottom-[40%] right-[34%]" style={par(54, 54)}>
         <div
           className="motion-safe:animate-[auth-float-c_17s_ease-in-out_infinite]"
-          style={{ height: s(64), width: s(128), background: UTEC.purple, borderTopLeftRadius: '999px', borderTopRightRadius: '999px' }}
+          style={{ height: s(64), width: s(128), background: MARCA_EN.cyan, borderTopLeftRadius: '999px', borderTopRightRadius: '999px' }}
         />
       </div>
 
@@ -149,19 +139,19 @@ export function UtecShapesBackground({ className = '', scale = 1, nodes = true, 
       <div className="absolute top-[64%] left-[40%]" style={par(40, 40)}>
         <div
           className="rounded-full motion-safe:animate-[auth-float-a_14s_ease-in-out_infinite]"
-          style={{ height: s(28), width: s(96), background: UTEC.cyan, transform: 'rotate(-25deg)' }}
+          style={{ height: s(28), width: s(96), background: MARCA_EN.cyan, transform: 'rotate(-25deg)' }}
         />
       </div>
 
       {/* Puntos sueltos */}
       <div className="absolute top-[14%] left-[40%]" style={par(96, 96)}>
-        <div className="rounded-full" style={{ height: s(20), width: s(20), background: UTEC.green }} />
+        <div className="rounded-full" style={{ height: s(20), width: s(20), background: MARCA_EN.green }} />
       </div>
       <div className="absolute bottom-[16%] right-[40%]" style={par(110, 110)}>
-        <div className="rounded-full" style={{ height: s(24), width: s(24), background: UTEC.yellow }} />
+        <div className="rounded-full" style={{ height: s(24), width: s(24), background: MARCA_EN.yellow }} />
       </div>
       <div className="absolute top-[48%] right-[12%]" style={par(120, 120)}>
-        <div className="rounded-full" style={{ height: s(16), width: s(16), background: UTEC.cyan }} />
+        <div className="rounded-full" style={{ height: s(16), width: s(16), background: MARCA_EN.cyan }} />
       </div>
     </div>
   );

@@ -40,6 +40,7 @@ import { CheckinScanner, ReservaQR } from './CheckinScanner';
 import { useAuth } from '@/hooks/useAuth';
 import { fechaHora, relativa } from '@/lib/utils/fechas';
 import { ESTADO_TUTORIA, EstadoBadge, estadoDe } from '@/components/common/estados';
+import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
 
 interface TutoriaDetailProps { tutoriaId: number }
 
@@ -197,11 +198,19 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   const copyLink = () => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copiado')).catch(() => {});
 
   const exportCSV = () => {
-    const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const rows = agendados.map((a) => [esc(a.nombre ?? ''), esc(a.email ?? ''), esc(fechaHora(a.createdAt, { diaSemana: true }))].join(',')).join('\n');
-    const blob = new Blob([`\uFEFFEstudiante,Email,Agendado\n${rows}`], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `agendados-tutoria-${tutoriaId}.csv`; a.click(); URL.revokeObjectURL(url);
+    descargarCSV(
+      [
+        'Estudiante,Email,Agendado',
+        ...agendados.map((a) =>
+          [
+            csvEscape(a.nombre ?? ''),
+            csvEscape(a.email ?? ''),
+            csvEscape(fechaHora(a.createdAt, { diaSemana: true })),
+          ].join(',')
+        ),
+      ],
+      `agendados-tutoria-${tutoriaId}.csv`
+    );
   };
 
   const ocupacion = useMemo(() => {

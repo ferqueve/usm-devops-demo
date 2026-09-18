@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { HEADER_ACTION, HEADER_ACTION_ICON, PAGE_ACTIONS_SLOT } from '@/components/layouts/PageHeader';
 import { Panel } from '@/components/common/Panel';
-import { csvEscape, downloadBlob } from '@/lib/utils/csv-helpers';
+import { descargarCSV, csvEscape } from '@/lib/utils/csv-helpers';
 import { fechaCorta, type Rango } from '../periodo';
 import { IndiceSecciones, Seccion } from '../Seccion';
 import { PanelEstadistica } from '../PanelEstadistica';
@@ -129,10 +129,7 @@ function exportarCSV(datos: DatosReservas, periodoTexto: string, filtrosTexto: s
       : []),
   ];
   // BOM para que Excel lea los acentos.
-  downloadBlob(
-    new Blob([`\uFEFF${filas.join('\n')}`], { type: 'text/csv;charset=utf-8;' }),
-    `estadisticas_reservas_${resumen.desde}_${resumen.hasta}.csv`,
-  );
+  descargarCSV(filas, `estadisticas_reservas_${resumen.desde}_${resumen.hasta}.csv`);
 }
 
 export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{ rango: Rango; periodoLabel: string }>) {

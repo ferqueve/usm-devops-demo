@@ -169,6 +169,29 @@ export const MARCA = {
 } as const;
 
 /**
+ * Los mismos seis con los nombres en inglés.
+ *
+ * Los patrones decorativos de fondo los tenían escritos a mano, cada uno su
+ * copia, y los dos agregaban un `purple: '#9333EA'` que no es de la marca.
+ * Se exportan una vez para que no haya una tercera copia; los nombres siguen
+ * en inglés porque así los usan esos archivos.
+ */
+export const MARCA_EN = {
+  get green() { return MARCA.verde; },
+  get yellow() { return MARCA.amarillo; },
+  get orange() { return MARCA.naranja; },
+  get red() { return MARCA.rojo; },
+  get blue() { return MARCA.azul; },
+  get cyan() { return MARCA.cian; },
+} as const;
+
+/** Los seis de marca en orden, para un patrón que cicla colores. */
+export const PALETA_DECORATIVA = [
+  MARCA_EN.green, MARCA_EN.yellow, MARCA_EN.orange,
+  MARCA_EN.red, MARCA_EN.blue, MARCA_EN.cyan,
+] as const;
+
+/**
  * Qué departamento nombra cada color (A.4). Son las aspas del isotipo.
  *
  * Usar esto cuando el dato habla de una carrera, materia o evento: ahí el

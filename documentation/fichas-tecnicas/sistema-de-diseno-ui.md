@@ -257,13 +257,16 @@ implementaciones de lo mismo:
 | Estrellas de valoración | 4 → 1 | `components/common/Estrellas` |
 | `sumarDias` | 4 → 1 | `lib/utils/fechas` |
 | `API_BASE_URL` | 5 → 1 | `lib/config/api` |
+| Descarga de CSV | 6 → 1 | `descargarCSV` en `lib/utils/csv-helpers` |
+| `UTEC` (paleta en inglés) | 3 → 1 | `MARCA_EN` en `lib/design/paleta` |
 | Días de la semana | 6 → 2 | `lib/utils/fechas`, uno por cada orden |
 | Estado → color | 14 → 1 | `components/common/estados`, con los cinco dominios |
 | Formateo de fechas | 16 → 1 | `lib/utils/fechas.ts` |
 | Esqueletos de carga | 23 → 1 | la primitiva `ui/skeleton`, en `bg-muted` |
 | Globo de gráfico | 15 → 1 | `GloboGrafico` en `components/common/dataviz` |
 | Tiras de métricas | 9 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
-| Tablas y vistas de fichas | 3 + 3 | pendiente |
+| Tablas y vistas de fichas | 3 + 3 | **no se colapsan a propósito**: `ReservationTableView` no es una tabla, es media pantalla con filtros, paginación y pantalla completa. Serían 36 props. Lo que sí se unificó es el encabezado. |
+| Pistas de barra de progreso | 47 | **no se colapsan a propósito**: la clase se repite pero las implementaciones no compiten —el alto varía según dónde vive la barra— y tocar 47 lugares es riesgo sin beneficio. |
 
 **Código muerto: borrado.** 65 archivos y 5461 líneas. Eran tres capas:
 

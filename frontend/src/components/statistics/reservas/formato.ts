@@ -1,4 +1,5 @@
 import type { HeatmapCelda } from '@/lib/api/stats';
+import { DIAS_LARGOS_DESDE_LUNES } from '@/lib/utils/fechas';
 
 export function horas(valor: number): string {
   if (!Number.isFinite(valor) || valor <= 0) return '0 h';
@@ -35,13 +36,12 @@ export function dias(valor: number): string {
   return `${d} ${d === 1 ? 'día' : 'días'}`;
 }
 
-const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 /** Total por día de la semana a partir del mapa día × hora (0 = domingo en Postgres). */
 export function semana(celdas: HeatmapCelda[]): Array<{ dia: string; valor: number }> {
   const totales = [0, 0, 0, 0, 0, 0, 0];
   for (const c of celdas) totales[(c.diaSemana + 6) % 7] += Number(c.cant);
-  return DIAS_SEMANA.map((dia, i) => ({ dia, valor: totales[i] }));
+  return DIAS_LARGOS_DESDE_LUNES.map((dia, i) => ({ dia, valor: totales[i] }));
 }
 
 const ROLES: Record<string, string> = {

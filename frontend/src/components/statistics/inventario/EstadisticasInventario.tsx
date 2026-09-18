@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { HEADER_ACTION, HEADER_ACTION_ICON, PAGE_ACTIONS_SLOT } from '@/components/layouts/PageHeader';
 import { TarjetasKpi, type Kpi } from '../graficos/TarjetasKpi';
 import type { DemandaInventario, EstadoInventario, FiltrosInventario as Filtros } from '@/lib/api/stats';
-import { csvEscape, downloadBlob } from '@/lib/utils/csv-helpers';
+import { descargarCSV, csvEscape } from '@/lib/utils/csv-helpers';
 import { fechaCorta, hoyEnElCampus, type Rango } from '../periodo';
 import { IndiceSecciones, NotaHastaAnoche, Seccion } from '../Seccion';
 import { PanelEstadistica } from '../PanelEstadistica';
@@ -74,10 +74,7 @@ function exportarCSV(estado: EstadoInventario, filtrosTexto: string, demanda: De
       : []),
   ];
   // BOM para que Excel lea los acentos.
-  downloadBlob(
-    new Blob([`\uFEFF${filas.join('\n')}`], { type: 'text/csv;charset=utf-8;' }),
-    `estadisticas_inventario_${hoyEnElCampus()}.csv`,
-  );
+  descargarCSV(filas, `estadisticas_inventario_${hoyEnElCampus()}.csv`);
 }
 
 const SECCIONES = [
