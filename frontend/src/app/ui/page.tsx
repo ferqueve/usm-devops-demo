@@ -77,7 +77,16 @@ function Seccion({ id, titulo, nota, children }: Readonly<{
  * redefinen ahí y bajan por herencia, así que los componentes de adentro no se
  * enteran de nada y se pintan solos.
  */
-function Doble({ children }: Readonly<{ children: ReactNode }>) {
+/**
+ * `apilado` pone un tema debajo del otro en vez de al lado.
+ *
+ * Es para lo que está pensado para ocupar la pantalla entera —los dashboards,
+ * la pantalla de Sistema—: partirlos al medio les deja la mitad del ancho y
+ * empiezan a recortar etiquetas por un problema que la aplicación real no
+ * tiene. Se pierde la comparación de un vistazo, pero se gana ver la pieza
+ * como es.
+ */
+function Doble({ children, apilado = false }: Readonly<{ children: ReactNode; apilado?: boolean }>) {
   // `text-foreground` va explícito: el color de texto lo pone <body> y se
   // hereda, así que sin esto los títulos y las celdas de tabla del panel
   // oscuro seguían con la tinta del tema claro.
@@ -92,7 +101,7 @@ function Doble({ children }: Readonly<{ children: ReactNode }>) {
   const pared =
     '@container min-w-0 flex-1 rounded-lg border border-border bg-background p-4 text-foreground';
   return (
-    <div className="flex flex-col gap-3 md:flex-row">
+    <div className={`flex flex-col gap-3 ${apilado ? '' : 'md:flex-row'}`}>
       <TemaGraficosContexto.Provider value="claro">
         <div className={pared}>
           <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -339,7 +348,7 @@ export default function UiPage() {
             titulo="Dashboards"
             nota="Los seis por rol con el mismo dato, y los catorce bloques con que se arman."
           >
-            <Doble>
+            <Doble apilado>
               <Dashboards />
             </Doble>
           </Seccion>
@@ -397,7 +406,7 @@ export default function UiPage() {
             titulo="Sistema · la pantalla entera"
             nota="Con un servicio caído y el pool con espera: el estado sano no muestra cómo se ve una alerta."
           >
-            <Doble>
+            <Doble apilado>
               <PantallaSistema />
             </Doble>
           </Seccion>

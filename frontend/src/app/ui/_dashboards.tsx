@@ -53,7 +53,15 @@ function Caja({ titulo, nota, ancho, children }: Readonly<{
   );
 }
 
-/** Marco con alto acotado: el dashboard adentro cree que tiene la pantalla. */
+/**
+ * Marco del alto de una pantalla real.
+ *
+ * Los dashboards se arman con `lg:h-full` y filas de grilla, así que reparten
+ * el alto que les den. En un marco de 520 px esas filas se quedaban sin
+ * espacio y los paneles mostraban 24 px de 317: se veía el título y nada más.
+ * 880 es lo que mide el área útil de una pantalla de trabajo, y con eso el
+ * dashboard se acomoda igual que en la aplicación.
+ */
 function Pantalla({ titulo, nota, children }: Readonly<{
   titulo: string; nota: string; children: ReactNode;
 }>) {
@@ -61,7 +69,7 @@ function Pantalla({ titulo, nota, children }: Readonly<{
     <div className="rounded-lg border border-border bg-card p-3">
       <p className="text-xs font-medium text-foreground">{titulo}</p>
       <p className="mb-2 text-[11px] leading-snug text-muted-foreground">{nota}</p>
-      <div className="h-[520px] overflow-auto rounded-md bg-background p-2">{children}</div>
+      <div className="h-[880px] overflow-hidden rounded-md bg-background p-2">{children}</div>
     </div>
   );
 }
