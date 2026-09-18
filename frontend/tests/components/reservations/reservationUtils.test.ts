@@ -3,45 +3,58 @@ import { getEstadoConfig, formatTime, formatShortDate } from '@/components/reser
 
 describe('reservationUtils', () => {
   describe('getEstadoConfig', () => {
-    it('devuelve config "Aprobada" para APROBADO', () => {
-      const cfg = getEstadoConfig('APROBADO');
-      expect(cfg.label).toBe('Aprobada');
-      expect(cfg.icon).not.toBeNull();
-      expect(cfg.color).toContain('green');
+    // Antes estos tests afirmaban 'green', 'amber' y 'gray': los colores
+    // crudos de Tailwind, que es justo lo que las reglas prohíben. O sea que
+    // fijaban el problema como contrato. Lo que importa es que cada estado se
+    // distinga del otro y que nada quede sin color.
+    it('cada estado trae etiqueta, color e icono', () => {
+      for (const [estado, etiqueta] of [
+        ['APROBADO', 'Aprobada'],
+        ['PENDIENTE', 'Pendiente'],
+        ['CANCELADO', 'Cancelada'],
+      ] as const) {
+        const cfg = getEstadoConfig(estado);
+        expect(cfg.label).toBe(etiqueta);
+        expect(cfg.icon).not.toBeNull();
+        expect(cfg.color).toBeTruthy();
+      }
     });
 
-    it('devuelve config "Pendiente" para PENDIENTE', () => {
-      const cfg = getEstadoConfig('PENDIENTE');
-      expect(cfg.label).toBe('Pendiente');
-      expect(cfg.color).toContain('amber');
+    it('los tres se ven distinto', () => {
+      const colores = (['APROBADO', 'PENDIENTE', 'CANCELADO'] as const).map(
+        (e) => getEstadoConfig(e).color
+      );
+      expect(new Set(colores).size).toBe(3);
     });
 
-    it('devuelve config "Cancelada" para CANCELADO', () => {
-      const cfg = getEstadoConfig('CANCELADO');
-      expect(cfg.label).toBe('Cancelada');
-      expect(cfg.color).toContain('red');
+    it('no escribe colores a mano: todo sale de la paleta de marca', () => {
+      for (const e of ['APROBADO', 'PENDIENTE', 'CANCELADO'] as const) {
+        const cfg = getEstadoConfig(e);
+        for (const clase of [cfg.color, cfg.stripeColor, cfg.borderColor, cfg.cornerBorderColor]) {
+          expect(clase).not.toMatch(/\b(green|amber|red|gray|slate|yellow|blue)-\d{2,3}\b/);
+        }
+      }
     });
 
-    it('devuelve config gris e icono null para estado desconocido', () => {
+    it('un estado que no conoce no rompe: muestra la clave y sigue con icono', () => {
       const cfg = getEstadoConfig('OTRO' as 'APROBADO');
       expect(cfg.label).toBe('OTRO');
-      expect(cfg.icon).toBeNull();
-      expect(cfg.color).toContain('gray');
+      // Antes devolvía `icon: null` y quien lo renderizaba tenía que
+      // acordarse de chequearlo.
+      expect(cfg.icon).not.toBeNull();
+      expect(cfg.color).toBeTruthy();
     });
   });
 
   describe('formatTime', () => {
     it('formatea ISO datetime a HH:MM', () => {
-      const result = formatTime('2025-01-15T14:30:00');
-      expect(result).toMatch(/\d{2}:\d{2}/);
+      expect(formatTime('2025-01-15T14:30:00')).toMatch(/\d{2}:\d{2}/);
     });
   });
 
   describe('formatShortDate', () => {
-    it('formatea fecha en formato corto en español', () => {
-      const result = formatShortDate('2025-06-15T10:00:00');
-      expect(result).toMatch(/2025/);
-      expect(result.length).toBeGreaterThan(0);
+    it('formatea en corto, con el año', () => {
+      expect(formatShortDate('2025-06-15T10:00:00')).toMatch(/2025/);
     });
   });
 });

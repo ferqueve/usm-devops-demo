@@ -256,7 +256,7 @@ implementaciones de lo mismo:
 | Hooks con caché de lista | 4 → 1 | `hooks/cacheDeLista.ts`, con test |
 | Estrellas de valoración | 4 → 1 | `components/common/Estrellas` |
 | Días de la semana | 6 → 2 | `lib/utils/fechas`, uno por cada orden |
-| Estado → color | 9 → 1 | `components/common/estados` |
+| Estado → color | 14 → 1 | `components/common/estados`, con los cinco dominios |
 | Formateo de fechas | 16 → 1 | `lib/utils/fechas.ts` |
 | Esqueletos de carga | 23 → 1 | la primitiva `ui/skeleton`, en `bg-muted` |
 | Globo de gráfico | 15 → 1 | `GloboGrafico` en `components/common/dataviz` |

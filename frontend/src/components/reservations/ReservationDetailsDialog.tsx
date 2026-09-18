@@ -25,6 +25,7 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import type { Reserva } from '@/lib/types/spaces';
 import { useState } from 'react';
+import { getEstadoConfig } from './reservationUtils';
 
 interface ReservationDetailsDialogProps {
   reserva: Reserva;
@@ -33,30 +34,6 @@ interface ReservationDetailsDialogProps {
   onReservaUpdated?: () => void;
 }
 
-function getEstadoConfig(estado: Reserva['estado']) {
-  switch (estado) {
-    case 'APROBADO':
-      return {
-        label: 'Aprobada',
-        color: 'bg-success-suave text-success-texto border-success-borde'
-      };
-    case 'PENDIENTE':
-      return {
-        label: 'Pendiente',
-        color: 'bg-warning-suave text-warning-texto border-warning-borde'
-      };
-    case 'CANCELADO':
-      return {
-        label: 'Cancelada',
-        color: 'bg-danger-suave text-danger-texto border-danger-borde'
-      };
-    default:
-      return {
-        label: estado,
-        color: 'bg-muted text-foreground/80 border-border'
-      };
-  }
-}
 
 export default function ReservationDetailsDialog({
   reserva,

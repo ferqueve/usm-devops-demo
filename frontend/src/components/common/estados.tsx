@@ -1,5 +1,15 @@
 import type { LucideIcon } from 'lucide-react';
-import { AlertCircle, CheckCircle, Clock, FileText, Lock, Wrench, XCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Hourglass,
+  Lock,
+  Wrench,
+  XCircle,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 
@@ -40,6 +50,51 @@ const RELLENO: Record<Tono, string> = {
   oscuro: 'bg-chrome text-white border-utec-dark',
 };
 
+/**
+ * La versión tenue: fondo teñido, texto del mismo tono y borde.
+ *
+ * Es la que va en una pastilla dentro de una tabla, donde un relleno macizo
+ * por fila sería demasiado. El texto usa la familia `marca-*-texto`, que sí
+ * cambia con el tema; el tinte no hace falta que cambie porque va sobre la
+ * tarjeta.
+ */
+const SUAVE: Record<Tono, string> = {
+  verde: 'bg-utec-green/15 text-marca-verde-texto border-utec-green/30',
+  amarillo: 'bg-utec-yellow/15 text-marca-amarillo-texto border-utec-yellow/30',
+  naranja: 'bg-utec-orange/15 text-marca-naranja-texto border-utec-orange/30',
+  rojo: 'bg-utec-red/15 text-marca-rojo-texto border-utec-red/30',
+  azul: 'bg-utec-blue/15 text-marca-azul-texto border-utec-blue/30',
+  oscuro: 'bg-muted text-muted-foreground border-border',
+};
+
+/** Sólo el color, para un icono o una raya. */
+const SOLIDO: Record<Tono, string> = {
+  verde: 'bg-utec-green',
+  amarillo: 'bg-utec-yellow',
+  naranja: 'bg-utec-orange',
+  rojo: 'bg-utec-red',
+  azul: 'bg-utec-blue',
+  oscuro: 'bg-chrome',
+};
+
+const BORDE_SUPERIOR: Record<Tono, string> = {
+  verde: 'border-t-utec-green',
+  amarillo: 'border-t-utec-yellow',
+  naranja: 'border-t-utec-orange',
+  rojo: 'border-t-utec-red',
+  azul: 'border-t-utec-blue',
+  oscuro: 'border-t-utec-dark',
+};
+
+const TINTA: Record<Tono, string> = {
+  verde: 'text-marca-verde-texto',
+  amarillo: 'text-marca-amarillo-texto',
+  naranja: 'text-marca-naranja-texto',
+  rojo: 'text-marca-rojo-texto',
+  azul: 'text-marca-azul-texto',
+  oscuro: 'text-muted-foreground',
+};
+
 /** Una raya al costado, para filas de lista. */
 const BORDE_IZQUIERDO: Record<Tono, string> = {
   verde: 'border-l-utec-green',
@@ -65,6 +120,24 @@ export const ESTADO_TUTORIA: Record<string, Estado> = {
   CANCELADA: { label: 'Cancelada', tono: 'rojo', icon: XCircle },
 };
 
+export const ESTADO_RESERVA: Record<string, Estado> = {
+  APROBADO: { label: 'Aprobada', tono: 'verde', icon: CheckCircle2 },
+  PENDIENTE: { label: 'Pendiente', tono: 'amarillo', icon: Hourglass },
+  CANCELADO: { label: 'Cancelada', tono: 'rojo', icon: XCircle },
+  RECHAZADO: { label: 'Rechazada', tono: 'rojo', icon: XCircle },
+};
+
+/**
+ * El estado de un espacio. Ojo que no es el mismo que el de un item: un
+ * espacio puede estar NO_DISPONIBLE y un item DANADO, y estaban compartiendo
+ * el mismo mapa, así que un espacio no disponible mostraba la clave cruda.
+ */
+export const ESTADO_ESPACIO: Record<string, Estado> = {
+  DISPONIBLE: { label: 'Disponible', tono: 'verde', icon: CheckCircle },
+  MANTENIMIENTO: { label: 'En mantenimiento', tono: 'amarillo', icon: Wrench },
+  NO_DISPONIBLE: { label: 'No disponible', tono: 'rojo', icon: XCircle },
+};
+
 export const ESTADO_INVENTARIO: Record<string, Estado> = {
   DISPONIBLE: { label: 'Disponible', tono: 'verde', icon: CheckCircle },
   MANTENIMIENTO: { label: 'Mantenimiento', tono: 'amarillo', icon: Wrench },
@@ -76,6 +149,8 @@ export const ESTADO: Record<string, Estado> = {
   ...ESTADO_EVENTO,
   ...ESTADO_TUTORIA,
   ...ESTADO_INVENTARIO,
+  ...ESTADO_ESPACIO,
+  ...ESTADO_RESERVA,
 };
 
 /** El estado, o uno que al menos muestra la clave cruda sin romper nada. */
@@ -84,7 +159,11 @@ export function estadoDe(mapa: Record<string, Estado>, clave: string): Estado {
 }
 
 export const relleno = (e: Estado) => RELLENO[e.tono];
+export const suave = (e: Estado) => SUAVE[e.tono];
+export const solido = (e: Estado) => SOLIDO[e.tono];
+export const tinta = (e: Estado) => TINTA[e.tono];
 export const bordeIzquierdo = (e: Estado) => BORDE_IZQUIERDO[e.tono];
+export const bordeSuperior = (e: Estado) => BORDE_SUPERIOR[e.tono];
 
 /** La pastilla con icono. Es la forma en que se ve casi siempre. */
 export function EstadoBadge({

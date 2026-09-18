@@ -16,10 +16,7 @@ import {
   ArrowUp, 
   ArrowDown,
   Building2,
-  Users,
-  CheckCircle,
-  Wrench,
-  XCircle
+  Users
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { Espacio } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { ESTADO_ESPACIO, EstadoBadge, estadoDe } from '@/components/common/estados';
 
 interface SpaceTableProps {
   espacios: Espacio[];
@@ -144,44 +142,7 @@ export function SpaceTable({
                 </div>
               </TableCell>
               <TableCell>
-                {(() => {
-                  const getEstadoConfig = (estado: string) => {
-                    switch (estado) {
-                      case 'DISPONIBLE':
-                        return {
-                          label: 'Disponible',
-                          color: 'bg-utec-green text-marca-tinta border-utec-green',
-                          icon: CheckCircle
-                        };
-                      case 'MANTENIMIENTO':
-                        return {
-                          label: 'En Mantenimiento',
-                          color: 'bg-utec-yellow text-marca-tinta border-utec-yellow',
-                          icon: Wrench
-                        };
-                      case 'NO_DISPONIBLE':
-                        return {
-                          label: 'No Disponible',
-                          color: 'bg-utec-red text-white border-utec-red',
-                          icon: XCircle
-                        };
-                      default:
-                        return {
-                          label: estado,
-                          color: 'bg-secondary text-utec-dark border-border',
-                          icon: CheckCircle
-                        };
-                    }
-                  };
-                  const estadoConfig = getEstadoConfig(espacio.estado);
-                  const EstadoIcon = estadoConfig.icon;
-                  return (
-                    <Badge className={`${estadoConfig.color} border font-medium text-xs`}>
-                      <EstadoIcon className="h-3 w-3 mr-1" />
-                      {estadoConfig.label}
-                    </Badge>
-                  );
-                })()}
+                <EstadoBadge estado={estadoDe(ESTADO_ESPACIO, espacio.estado)} className="text-xs" />
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">

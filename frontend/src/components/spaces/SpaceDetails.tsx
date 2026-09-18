@@ -42,22 +42,22 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ESTADO_ESPACIO, ESTADO_INVENTARIO, estadoDe, relleno } from '@/components/common/estados';
 
 interface SpaceDetailsProps {
   espacioId: number;
 }
 
-function getEstadoConfig(estado: string) {
-  switch (estado) {
-    case 'DISPONIBLE':
-      return { label: 'Disponible', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle };
-    case 'MANTENIMIENTO':
-      return { label: 'Mantenimiento', color: 'bg-utec-yellow text-marca-tinta border-utec-yellow', icon: Wrench };
-    case 'DANADO':
-      return { label: 'Dañado', color: 'bg-utec-red text-white border-utec-red', icon: AlertCircle };
-    default:
-      return { label: estado, color: 'bg-secondary text-utec-dark border-border', icon: AlertCircle };
-  }
+/**
+ * El estado de un item de inventario.
+ *
+ * Antes una sola función servía para el espacio y para los items, con el
+ * mapa del inventario: un espacio NO_DISPONIBLE caía al default y mostraba
+ * la clave cruda. Son dos dominios distintos.
+ */
+function estadoItem(estado: string) {
+  const e = estadoDe(ESTADO_INVENTARIO, estado);
+  return { label: e.label, color: relleno(e), icon: e.icon };
 }
 
 interface SectionProps {
@@ -261,7 +261,10 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
     );
   }
 
-  const estadoConfig = getEstadoConfig(espacio.estado);
+  const estadoConfig = (() => {
+    const e = estadoDe(ESTADO_ESPACIO, espacio.estado);
+    return { label: e.label, color: relleno(e), icon: e.icon };
+  })();
   const EstadoIcon = estadoConfig.icon;
 
   const celdas: StatItem[] = [
@@ -533,7 +536,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
               {/* Vista de cards en móvil */}
               <div className="md:hidden space-y-3 p-4">
                 {inventario.map(item => {
-                  const cfg = getEstadoConfig(item.estado);
+                  const cfg = estadoItem(item.estado);
                   const Icon = cfg.icon;
                   return (
                     <Card key={item.id} className="shadow-sm">
@@ -586,7 +589,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                   </TableHeader>
                   <TableBody>
                     {inventario.map(item => {
-                      const cfg = getEstadoConfig(item.estado);
+                      const cfg = estadoItem(item.estado);
                       const Icon = cfg.icon;
                       return (
                         <TableRow key={item.id}>
