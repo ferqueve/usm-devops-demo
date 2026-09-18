@@ -36,6 +36,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
 import { useCountdown } from '@/lib/agenda/tiempo';
 import { eventoToAgendable } from '@/lib/agenda/types';
+import { fechaHora, relativa } from '@/lib/utils/fechas';
 
 interface EventoDetailProps { eventoId: number }
 
@@ -46,22 +47,6 @@ const ESTADO_BADGE: Record<EventoEstado, { label: string; color: string; icon: L
   CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
-function formatFecha(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-UY', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-function relativo(iso?: string): string {
-  if (!iso) return '';
-  const diff = new Date(iso).getTime() - Date.now();
-  if (Number.isNaN(diff)) return '';
-  const dias = Math.round(diff / 86400000);
-  if (dias === 0) return 'Hoy';
-  if (dias === 1) return 'Mañana';
-  if (dias === -1) return 'Ayer';
-  return dias > 1 ? `En ${dias} días` : `Hace ${Math.abs(dias)} días`;
-}
 
 function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode }>) {
   return (
@@ -209,7 +194,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   const copyLink = () => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copiado')).catch(() => {});
   const exportCSV = () => {
     const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const rows = inscriptos.map((i) => [esc(i.nombre ?? ''), esc(i.email ?? ''), esc(formatFecha(i.createdAt))].join(',')).join('\n');
+    const rows = inscriptos.map((i) => [esc(i.nombre ?? ''), esc(i.email ?? ''), esc(fechaHora(i.createdAt, { diaSemana: true }))].join(',')).join('\n');
     const blob = new Blob([`\uFEFFNombre,Email,Inscripto\n${rows}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `inscriptos-evento-${eventoId}.csv`; a.click(); URL.revokeObjectURL(url);
@@ -348,7 +333,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             </div>
             {evento.descripcion && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{evento.descripcion}</p>}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <MetaItem icon={CalendarClock} label="Cuándo" value={<>{formatFecha(evento.inicio)} · <span className="text-muted-foreground">{relativo(evento.inicio)}</span></>} />
+              <MetaItem icon={CalendarClock} label="Cuándo" value={<>{fechaHora(evento.inicio, { diaSemana: true })} · <span className="text-muted-foreground">{relativa(evento.inicio)}</span></>} />
               {evento.espacioNombre && <MetaItem icon={MapPin} label="Lugar" value={evento.espacioNombre} />}
               {evento.organizadorNombre && <MetaItem icon={User} label="Organiza" value={evento.organizadorNombre} />}
             </div>

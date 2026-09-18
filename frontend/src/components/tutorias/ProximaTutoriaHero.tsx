@@ -5,10 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import { useCountdown } from '@/lib/agenda/tiempo';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { fechaHoraLarga } from '@/lib/utils/fechas';
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString('es-UY', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-}
 
 /**
  * Banner contextual "Tu próxima tutoría" con countdown + patrón animado.
@@ -36,7 +34,7 @@ export function ProximaTutoriaHero({ tutorias, modo }: Readonly<{ tutorias: Tuto
           <div className="flex items-center gap-2 text-xs text-white/60 mb-1.5"><GraduationCap className="h-3.5 w-3.5" />{label}</div>
           <h2 className="text-2xl font-bold leading-tight truncate">{proxima.materiaNombre}</h2>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80 mt-1.5">
-            <span>{fmt(proxima.inicio)}</span>
+            <span>{fechaHoraLarga(proxima.inicio)}</span>
             {modo === 'estudiante' && <span>· {proxima.docenteNombre}</span>}
             {esVirtual
               ? <Badge className="bg-utec-cyan/20 text-marca-cian-texto border-utec-cyan/30 border text-2xs"><Video className="h-3 w-3 mr-1" />Virtual</Badge>

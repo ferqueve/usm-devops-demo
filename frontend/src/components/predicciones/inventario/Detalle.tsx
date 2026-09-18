@@ -112,7 +112,7 @@ export function GraficoPico({ tipo, alto = 300 }: Readonly<{ tipo: TipoInventari
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={datos} margin={{ top: 20, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid stroke={colores.grilla} vertical={false} />
-            <XAxis dataKey="fecha" tickFormatter={fechaCorta} tick={{ fontSize: 11, fill: colores.eje }} axisLine={{ stroke: colores.grilla }} tickLine={false} minTickGap={24} />
+            <XAxis dataKey="fecha" tickFormatter={(v) => fechaCorta(v)} tick={{ fontSize: 11, fill: colores.eje }} axisLine={{ stroke: colores.grilla }} tickLine={false} minTickGap={24} />
             <YAxis
               tick={{ fontSize: 11, fill: colores.eje }}
               axisLine={false}

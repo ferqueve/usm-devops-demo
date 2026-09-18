@@ -40,6 +40,7 @@ import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
 import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { CheckinScanner, ReservaQR } from './CheckinScanner';
 import { useAuth } from '@/hooks/useAuth';
+import { fechaHora, relativa } from '@/lib/utils/fechas';
 
 interface TutoriaDetailProps { tutoriaId: number }
 
@@ -49,12 +50,6 @@ const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon:
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
-function formatFecha(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-UY', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
 function formatHora(iso?: string | null): string {
   if (!iso) return '';
   const d = new Date(iso);
@@ -66,15 +61,6 @@ function duracion(inicio: string, fin: string): string {
   const mins = Math.round(ms / 60000);
   const h = Math.floor(mins / 60); const m = mins % 60;
   return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}min` : (h > 0 ? '' : '0min')}`.trim();
-}
-function relativo(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
-  const dias = Math.round(diff / 86400000);
-  if (dias === 0) return 'Hoy';
-  if (dias === 1) return 'Mañana';
-  if (dias === -1) return 'Ayer';
-  if (dias > 1) return `En ${dias} días`;
-  return `Hace ${Math.abs(dias)} días`;
 }
 
 function NotificarTutoriaDialog({ tutoriaId, open, onOpenChange }: Readonly<{ tutoriaId: number; open: boolean; onOpenChange: (v: boolean) => void }>) {
@@ -218,7 +204,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
 
   const exportCSV = () => {
     const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const rows = agendados.map((a) => [esc(a.nombre ?? ''), esc(a.email ?? ''), esc(formatFecha(a.createdAt))].join(',')).join('\n');
+    const rows = agendados.map((a) => [esc(a.nombre ?? ''), esc(a.email ?? ''), esc(fechaHora(a.createdAt, { diaSemana: true }))].join(',')).join('\n');
     const blob = new Blob([`\uFEFFEstudiante,Email,Agendado\n${rows}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `agendados-tutoria-${tutoriaId}.csv`; a.click(); URL.revokeObjectURL(url);
@@ -367,7 +353,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 <GraduationCap className="h-4 w-4" />{tutoria.docenteNombre}
               </span>
               <span className="flex items-center gap-1.5">
-                <CalendarClock className="h-4 w-4" />{formatFecha(tutoria.inicio)}
+                <CalendarClock className="h-4 w-4" />{fechaHora(tutoria.inicio, { diaSemana: true })}
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4" />
@@ -386,7 +372,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
             </p>
 
             <p className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-              <span className="font-medium">{relativo(tutoria.inicio)}</span>
+              <span className="font-medium">{relativa(tutoria.inicio)}</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">
                 {tutoria.tipo === 'INDIVIDUAL' ? 'Tutoría individual (1 a 1)' : 'Tutoría grupal'}
@@ -519,10 +505,10 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                     <li key={t.id}>
                       <button type="button" onClick={() => navigate(`/tutorias/${t.id}`)} className="w-full text-left rounded-lg border p-3 transition-colors hover:border-utec-blue/40">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-marca-azul-texto" />{formatFecha(t.inicio)}</span>
+                          <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-marca-azul-texto" />{fechaHora(t.inicio, { diaSemana: true })}</span>
                           <Badge className={`${b.color} border font-medium text-2xs shrink-0`}><BI className="h-3 w-3 mr-1" />{b.label}</Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo} agendados · {relativo(t.inicio)}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo} agendados · {relativa(t.inicio)}</p>
                       </button>
                     </li>
                   );

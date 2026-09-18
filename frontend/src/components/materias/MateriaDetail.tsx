@@ -33,17 +33,12 @@ import { TutoriaFormDialog } from '@/components/tutorias/TutoriaFormDialog';
 import { AddInscriptoDialog } from './AddInscriptoDialog';
 import { NotificarDialog } from './NotificarDialog';
 import { MateriaAsistente } from './MateriaAsistente';
+import { fechaHora } from '@/lib/utils/fechas';
 
 interface MateriaDetailProps { materiaId: number }
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 
-function formatFecha(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-UY', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
 
 const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: typeof CheckCircle }> = {
   ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
@@ -70,7 +65,7 @@ function Donut({ value }: Readonly<{ value: number }>) {
 
 function exportInscriptosCSV(materia: Materia, inscriptos: Inscripcion[]) {
   const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-  const rows = inscriptos.map((i) => [esc(i.estudianteNombre), esc(i.estado), esc(formatFecha(i.createdAt))].join(',')).join('\n');
+  const rows = inscriptos.map((i) => [esc(i.estudianteNombre), esc(i.estado), esc(fechaHora(i.createdAt))].join(',')).join('\n');
   const blob = new Blob([`\uFEFFEstudiante,Estado,Fecha\n${rows}`], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -93,7 +88,7 @@ function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
         className="w-full rounded-lg border p-3 text-left text-sm transition-all hover:border-utec-purple/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-utec-purple/40"
       >
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="flex items-center gap-1.5 font-medium"><CalendarClock className="h-4 w-4 text-utec-purple shrink-0" />{formatFecha(tutoria.inicio)}</span>
+        <span className="flex items-center gap-1.5 font-medium"><CalendarClock className="h-4 w-4 text-utec-purple shrink-0" />{fechaHora(tutoria.inicio)}</span>
         <Badge className={`${badge.color} border font-medium text-xs shrink-0`}><Icon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
       </div>
       <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -304,7 +299,7 @@ function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos:
     const ev: Actividad[] = [];
     for (const r of recursos) ev.push({ ts: Date.parse(r.createdAt ?? ''), label: `Recurso agregado: ${r.titulo}`, icon: FolderOpen, color: 'text-marca-cian-texto' });
     for (const i of inscriptos) ev.push({ ts: Date.parse(i.createdAt ?? ''), label: `Se inscribió ${i.estudianteNombre}`, icon: UserPlus, color: 'text-marca-azul-texto' });
-    for (const t of tutorias) ev.push({ ts: Date.parse(t.createdAt ?? ''), label: `Tutoría creada para el ${formatFecha(t.inicio)}`, icon: CalendarClock, color: 'text-utec-purple' });
+    for (const t of tutorias) ev.push({ ts: Date.parse(t.createdAt ?? ''), label: `Tutoría creada para el ${fechaHora(t.inicio)}`, icon: CalendarClock, color: 'text-utec-purple' });
     return ev.filter((e) => !Number.isNaN(e.ts)).sort((a, b) => b.ts - a.ts).slice(0, 8);
   }, [recursos, inscriptos, tutorias]);
 
@@ -322,7 +317,7 @@ function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos:
                   <Icon className="h-2.5 w-2.5" />
                 </span>
                 <p className="text-sm leading-tight">{e.label}</p>
-                <p className="text-xs text-muted-foreground">{formatFecha(new Date(e.ts).toISOString())}</p>
+                <p className="text-xs text-muted-foreground">{fechaHora(new Date(e.ts).toISOString())}</p>
               </li>
             );
           })}

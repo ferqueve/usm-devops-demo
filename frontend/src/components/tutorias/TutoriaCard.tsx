@@ -18,6 +18,7 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { feriadoDe } from '@/lib/feriadosUy';
 import { cn } from '@/lib/utils/helpers';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { relativa } from '@/lib/utils/fechas';
 
 type Variant = 'disponible' | 'agendada' | 'docente';
 
@@ -51,16 +52,6 @@ function formatRango(inicio?: string, fin?: string): string {
   return `${fecha}–${horaFin}`;
 }
 
-function relativo(iso?: string): string {
-  if (!iso) return '';
-  const diff = new Date(iso).getTime() - Date.now();
-  if (Number.isNaN(diff)) return '';
-  const dias = Math.round(diff / 86400000);
-  if (dias === 0) return 'Hoy';
-  if (dias === 1) return 'Mañana';
-  if (dias === -1) return 'Ayer';
-  return dias > 1 ? `en ${dias} días` : `hace ${Math.abs(dias)} días`;
-}
 
 /** Estrellas de rating del docente (ratingPromedio / ratingTotal). */
 function Estrellas({ promedio, total }: Readonly<{ promedio?: number; total?: number }>) {
@@ -193,7 +184,7 @@ export function TutoriaCard({
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <CalendarClock className="h-3.5 w-3.5 shrink-0" />
           <span className="capitalize">{formatRango(tutoria.inicio, tutoria.fin)}</span>
-          <span className="font-medium text-marca-azul-texto">· {relativo(tutoria.inicio)}</span>
+          <span className="font-medium text-marca-azul-texto">· {relativa(tutoria.inicio)}</span>
         </p>
       </div>
 

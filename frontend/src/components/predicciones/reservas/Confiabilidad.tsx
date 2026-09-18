@@ -78,7 +78,7 @@ export function Confiabilidad({ validacion, modelo, referencia, mejora, mae, alt
             <CartesianGrid stroke={colores.grilla} vertical={false} />
             <XAxis
               dataKey="fecha"
-              tickFormatter={fechaCorta}
+              tickFormatter={(v) => fechaCorta(v)}
               tick={{ fontSize: 10, fill: colores.eje }}
               axisLine={{ stroke: colores.grilla }}
               tickLine={false}

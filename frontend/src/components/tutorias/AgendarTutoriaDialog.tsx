@@ -5,11 +5,8 @@ import { Label } from '@/components/ui/label';
 import { CalendarClock, GraduationCap, Loader2, PartyPopper } from 'lucide-react';
 import { feriadoDe } from '@/lib/feriadosUy';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { fechaHoraLarga } from '@/lib/utils/fechas';
 
-function fmt(iso?: string): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleString('es-UY', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-}
 
 interface Props {
   tutoria: Tutoria | null;
@@ -38,7 +35,7 @@ export function AgendarTutoriaDialog({ tutoria, open, loading, onOpenChange, onC
         </DialogHeader>
 
         <div className="space-y-3 py-1">
-          <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarClock className="h-4 w-4" />{fmt(tutoria?.inicio)}</p>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarClock className="h-4 w-4" />{fechaHoraLarga(tutoria?.inicio, '')}</p>
 
           {feriado && (
             <div className="flex items-center gap-2 rounded-lg border border-utec-yellow/40 bg-utec-yellow/10 px-3 py-2 text-sm">

@@ -43,18 +43,11 @@ import { EstadoBadge, parseTags } from './EventoCardDescubrir';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import { relativoInicio } from '@/lib/agenda/tiempo';
 import { MARCA } from '@/lib/design/paleta';
+import { fechaHora } from '@/lib/utils/fechas';
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 type VistaEventos = 'descubrir' | 'calendario' | 'todos' | 'metricas';
 
-function formatFecha(iso?: string): string {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-UY', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
-}
 
 // --- Colores de marca por tipo de evento (donut + podio en Métricas) ---
 const TIPO_COLOR: Record<string, string> = {
@@ -415,7 +408,7 @@ export default function EventosManagement() {
                   <h3 className="relative text-lg font-bold leading-tight line-clamp-2">{evento.titulo}</h3>
                 </div>
                 <div className="p-4 space-y-2 text-sm">
-                  <p className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4 text-marca-cian-texto" />{formatFecha(evento.inicio)} · <span className="font-medium text-foreground">{relativoInicio(evento.inicio, evento.fin)}</span></p>
+                  <p className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4 text-marca-cian-texto" />{fechaHora(evento.inicio, { vacio: '' })} · <span className="font-medium text-foreground">{relativoInicio(evento.inicio, evento.fin)}</span></p>
                   {evento.espacioNombre && <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />{evento.espacioNombre}</p>}
                   <p className="flex items-center gap-2 text-muted-foreground"><Users className="h-4 w-4" />{evento.inscriptosCount}{conCupo ? `/${evento.cupo}` : ''} inscriptos</p>
                 </div>

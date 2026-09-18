@@ -3,15 +3,13 @@ import QRCode from 'qrcode';
 import { CalendarClock, MapPin, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { Evento } from '@/lib/types/eventos';
+import { fechaHoraLarga } from '@/lib/utils/fechas';
 
 interface CarteleraKioskoProps {
   eventos: Evento[];
   onClose: () => void;
 }
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString('es-UY', { weekday: 'long', day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' });
-}
 
 export function CarteleraKiosko({ eventos, onClose }: Readonly<CarteleraKioskoProps>) {
   const lista = eventos.filter((e) => e.estado === 'PUBLICADO').sort((a, b) => a.inicio.localeCompare(b.inicio));
@@ -63,7 +61,7 @@ export function CarteleraKiosko({ eventos, onClose }: Readonly<CarteleraKioskoPr
             <span className="inline-block rounded-full bg-utec-green px-4 py-1.5 text-sm font-semibold mb-5">{evento.tipo}</span>
             <h1 className="text-5xl sm:text-6xl font-bold leading-tight mb-5">{evento.titulo}</h1>
             {evento.descripcion && <p className="text-xl text-white/80 mb-6 line-clamp-3 max-w-2xl">{evento.descripcion}</p>}
-            <p className="flex items-center gap-2 text-2xl text-marca-amarillo-texto font-semibold mb-2"><CalendarClock className="h-6 w-6" />{fmt(evento.inicio)}</p>
+            <p className="flex items-center gap-2 text-2xl text-marca-amarillo-texto font-semibold mb-2"><CalendarClock className="h-6 w-6" />{fechaHoraLarga(evento.inicio)}</p>
             {evento.espacioNombre && <p className="flex items-center gap-2 text-xl text-white/80"><MapPin className="h-5 w-5" />{evento.espacioNombre}</p>}
           </div>
           <div className="text-center">

@@ -173,7 +173,7 @@ export function HistoricoSemanal({ semanas, alto = 260 }: Readonly<{ semanas: Mo
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={semanas} margin={{ top: 8, right: 8, bottom: 0, left: -8 }} barGap={2} barCategoryGap="24%">
             <CartesianGrid stroke={colores.grilla} vertical={false} />
-            <XAxis dataKey="semana" tickFormatter={fechaCorta} tick={{ fontSize: 11, fill: colores.eje }} axisLine={{ stroke: colores.grilla }} tickLine={false} minTickGap={12} />
+            <XAxis dataKey="semana" tickFormatter={(v) => fechaCorta(v)} tick={{ fontSize: 11, fill: colores.eje }} axisLine={{ stroke: colores.grilla }} tickLine={false} minTickGap={12} />
             <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: colores.eje }} axisLine={false} tickLine={false} width={40} />
             <Tooltip content={<GloboSemana />} cursor={{ fill: colores.grilla, fillOpacity: 0.5 }} />
             <Bar dataKey="inscriptos" fill={tema.categorias[0]} fillOpacity={0.3} radius={[3, 3, 0, 0]} isAnimationActive={false} />

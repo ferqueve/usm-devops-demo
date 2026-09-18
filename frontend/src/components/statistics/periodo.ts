@@ -49,11 +49,6 @@ export function rangoDe(id: PeriodoId, hoy = hoyEnElCampus()): Rango {
   }
 }
 
-export function fechaCorta(fecha: string): string {
-  return new Date(`${fecha}T00:00:00Z`)
-    .toLocaleDateString('es-UY', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-    .replace('.', '');
-}
 
 /**
  * El período elegido vive en la URL (?periodo=90d): lo comparten Reservas e
@@ -83,3 +78,7 @@ export function usePeriodo() {
 
   return { id, rango, periodo, elegir };
 }
+
+/* El formato de fecha vive en un solo lugar. Se reexporta para no tocar a
+   quien ya las importaba de este módulo. */
+export { fechaCorta } from '@/lib/utils/fechas';

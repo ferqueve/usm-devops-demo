@@ -175,7 +175,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
               <ResponsiveContainer width="100%" height={grande ? 460 : 240}>
                 <AreaChart data={estado} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
                   <CartesianGrid stroke={c.grilla} vertical={false} />
-                  <XAxis dataKey="fecha" tickFormatter={fechaCorta} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
+                  <XAxis dataKey="fecha" tickFormatter={(v) => fechaCorta(v)} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
                   <YAxis width={34} allowDecimals={false} {...eje} />
                   <Tooltip content={<Globo />} cursor={{ stroke: c.eje, strokeWidth: 1 }} />
                   {ESTADOS.map((e) => (
@@ -223,7 +223,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
             <ResponsiveContainer width="100%" height={grande ? 460 : 240}>
               <AreaChart data={parque} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
                 <CartesianGrid stroke={c.grilla} vertical={false} />
-                <XAxis dataKey="fecha" tickFormatter={fechaCorta} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
+                <XAxis dataKey="fecha" tickFormatter={(v) => fechaCorta(v)} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
                 <YAxis width={34} allowDecimals={false} domain={['dataMin - 2', 'dataMax + 2']} {...eje} />
                 <Tooltip content={<Globo />} cursor={{ stroke: c.eje, strokeWidth: 1 }} />
                 <Area dataKey="items" name="Items" stroke={c.parque} strokeWidth={2} fill={c.parque} fillOpacity={0.12} isAnimationActive={false} />

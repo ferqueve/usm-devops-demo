@@ -109,7 +109,7 @@ export function GraficoDemanda({ historico, dias, alto = 300 }: Readonly<Props>)
           <CartesianGrid stroke={colores.grilla} vertical={false} />
           <XAxis
             dataKey="fecha"
-            tickFormatter={fechaCorta}
+            tickFormatter={(v) => fechaCorta(v)}
             tick={{ fontSize: 11, fill: colores.eje }}
             axisLine={{ stroke: colores.grilla }}
             tickLine={false}

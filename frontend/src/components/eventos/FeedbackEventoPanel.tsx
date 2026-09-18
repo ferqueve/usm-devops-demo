@@ -7,6 +7,7 @@ import { Panel } from '@/components/common/Panel';
 import { EstadoCarga } from '@/components/common/EstadoCarga';
 import { MARCA } from '@/lib/design/paleta';
 import type { EventoFeedbackResumen } from '@/lib/types/eventos';
+import { soloFecha } from '@/lib/utils/fechas';
 
 function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | 'lg' }>) {
   const cls = size === 'lg' ? 'h-5 w-5' : 'h-3.5 w-3.5';
@@ -19,11 +20,6 @@ function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | '
   );
 }
 
-function fmtFecha(iso?: string): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>) {
   const [resumen, setResumen] = useState<EventoFeedbackResumen | null>(null);
@@ -162,7 +158,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
                   </span>
                   <span className="flex items-center gap-2 shrink-0">
                     <Stars value={i.rating} />
-                    <span className="text-2xs text-muted-foreground">{fmtFecha(i.createdAt)}</span>
+                    <span className="text-2xs text-muted-foreground">{soloFecha(i.createdAt, '')}</span>
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{i.comentario}</p>
