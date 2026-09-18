@@ -576,7 +576,7 @@ export default function UserManagement() {
             <FilterBar
               filters={activeFilters}
               onClearAll={clearFilters}
-              className="mt-3 animate-slide-up"
+              className="mt-3"
             />
           )}
         </div>

@@ -792,7 +792,7 @@ export default function InventoryManagement() {
             <FilterBar
               filters={activeFilters}
               onClearAll={clearFilters}
-              className="mt-3 animate-slide-up"
+              className="mt-3"
             />
           )}
           {selectedItems.size > 0 && (

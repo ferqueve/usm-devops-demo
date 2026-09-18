@@ -642,6 +642,28 @@
     background-color: var(--sidebar-primary);
   }
 
+  /* Dos clases que el código usaba y no existían en ningún lado, así que no
+     hacían nada: el icono del sidebar nunca crecía al pasar por encima y el
+     prop `pulse` de StatusBadge no se notaba. La intención estaba clara, así
+     que se definen en vez de borrarse. */
+  .hover-scale {
+    transition: transform 0.15s ease-out;
+  }
+  a:hover .hover-scale,
+  button:hover .hover-scale,
+  [data-slot='sidebar-menu-button']:hover .hover-scale {
+    transform: scale(1.1);
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+    50% { box-shadow: 0 0 0 3px transparent; opacity: 0.85; }
+  }
+
+  .badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
   /* Animación de spin única */
   @keyframes spin-once {
     from { transform: rotate(0deg); }

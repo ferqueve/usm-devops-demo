@@ -158,7 +158,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                   asChild
                   isActive={isActive}
                   onClick={() => handleMenuItemClick(item)}
-                  className={`sidebar-menu-item transition-smooth h-8 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                  className={`sidebar-menu-item h-8 shrink-0 ${isActive ? 'active' : ''}`}
                 >
                   <Link to={item.href || "#"} className="flex items-center gap-3 relative">
                     <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
@@ -184,7 +184,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         isActive={isActive}
-                        className={`sidebar-menu-item transition-smooth h-8 shrink-0 ${isActive ? 'active active-indicator' : ''}`}
+                        className={`sidebar-menu-item h-8 shrink-0 ${isActive ? 'active' : ''}`}
                       >
                         <item.icon className={`size-4 transition-transform ${isActive ? 'scale-110' : 'hover-scale'}`} />
                         <span className="font-medium">{item.label}</span>
