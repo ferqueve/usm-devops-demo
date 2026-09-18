@@ -34,11 +34,21 @@ export const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      /*
+       * Una sola escala de alto para todos los controles:
+       *   sm 32 · normal 36 · lg 40
+       *
+       * Estaba desparejo y se notaba: el botón medía 32, el input 36, el
+       * toggle 36 y una pestaña 29. Cuatro alturas para cosas que se apoyan
+       * una al lado de la otra en una barra de filtros, con lo que ninguna
+       * fila quedaba alineada y todo se sentía apretado. El input ya estaba
+       * en 36, así que es el que manda.
+       */
       size: {
-        default: "h-8 px-3 py-1.5 has-[>svg]:px-2.5",
-        sm: "h-7 rounded-md gap-1 px-2.5 has-[>svg]:px-2",
-        lg: "h-9 rounded-md px-5 has-[>svg]:px-3.5",
-        icon: "size-8",
+        default: "h-9 px-3.5 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1 px-2.5 has-[>svg]:px-2",
+        lg: "h-10 rounded-md px-5 has-[>svg]:px-4",
+        icon: "size-9",
       },
     },
     defaultVariants: {

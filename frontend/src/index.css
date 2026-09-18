@@ -468,7 +468,12 @@
     font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
   }
-  th, td { padding: 0.5rem; }
+
+  /* 0.625rem deja filas de ~44 px, que es el mínimo cómodo para apuntar y
+     para leer una tabla largo rato. Con 0.5rem la fila quedaba en 39 y la
+     pantalla de reservas —que es donde más tiempo se pasa— se sentía
+     apretada. */
+  th, td { padding: 0.625rem 0.75rem; }
 
   /* Foco visible en toda la app, en el azul de marca. */
   :focus-visible {
