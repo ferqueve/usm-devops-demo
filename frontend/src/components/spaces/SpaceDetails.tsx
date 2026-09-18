@@ -49,9 +49,9 @@ interface SpaceDetailsProps {
 function getEstadoConfig(estado: string) {
   switch (estado) {
     case 'DISPONIBLE':
-      return { label: 'Disponible', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle };
+      return { label: 'Disponible', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle };
     case 'MANTENIMIENTO':
-      return { label: 'Mantenimiento', color: 'bg-utec-yellow text-utec-dark border-utec-yellow', icon: Wrench };
+      return { label: 'Mantenimiento', color: 'bg-utec-yellow text-marca-tinta border-utec-yellow', icon: Wrench };
     case 'DANADO':
       return { label: 'Dañado', color: 'bg-utec-red text-white border-utec-red', icon: AlertCircle };
     default:
@@ -467,8 +467,8 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                   const inicio = new Date(r.inicio);
                   const fin = new Date(r.fin);
                   const estadoBadgeClass = r.estado === 'APROBADO'
-                    ? 'bg-utec-green text-white border-utec-green'
-                    : 'bg-utec-yellow text-utec-dark border-utec-yellow';
+                    ? 'bg-utec-green text-marca-tinta border-utec-green'
+                    : 'bg-utec-yellow text-marca-tinta border-utec-yellow';
                   return (
                     <button
                       type="button"

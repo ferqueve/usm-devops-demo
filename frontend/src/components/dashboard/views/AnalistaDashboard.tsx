@@ -3,7 +3,7 @@ import { CalendarClock, CheckCircle2, Flame, Inbox, Megaphone, Stamp } from 'luc
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
-import { StatStrip } from './_components/StatStrip';
+import { StatStrip } from '@/components/common/StatStrip';
 import { Panel } from '@/components/common/Panel';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';

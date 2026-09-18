@@ -1,15 +1,15 @@
-import type { UtecBg } from '@/components/dashboard/views/_components/StatStrip';
+import type { UtecBg } from '@/components/common/StatStrip';
 import { useAuth } from '@/hooks/useAuth';
 import { sugerenciasPara } from './sugerencias';
 
 /** Mismos fondos y contraste que la tira de tarjetas del dashboard. */
 const FONDOS: Record<UtecBg, string> = {
   blue: 'bg-utec-blue text-white hover:brightness-110',
-  yellow: 'bg-utec-yellow text-utec-dark hover:brightness-95',
-  green: 'bg-utec-green text-white hover:brightness-110',
-  orange: 'bg-utec-orange text-white hover:brightness-110',
+  yellow: 'bg-utec-yellow text-marca-tinta hover:brightness-95',
+  green: 'bg-utec-green text-marca-tinta hover:brightness-110',
+  orange: 'bg-utec-orange text-marca-tinta hover:brightness-110',
   red: 'bg-utec-red text-white hover:brightness-110',
-  cyan: 'bg-utec-cyan text-utec-dark hover:brightness-95',
+  cyan: 'bg-utec-cyan text-marca-tinta hover:brightness-95',
   dark: 'bg-chrome text-white hover:bg-utec-dark-lighter',
 };
 

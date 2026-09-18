@@ -57,7 +57,7 @@ export function LineaTiempoSemana({ eventos, onNavigate }: Readonly<LineaTiempoS
             <div key={d.key} className={`rounded-xl border p-2 ${esHoy ? 'border-utec-cyan/60 bg-utec-cyan/5' : 'bg-card'}`}>
               <div className="mb-2 flex items-center justify-between">
                 <span className={`text-2xs font-medium ${esHoy ? 'text-utec-cyan' : 'text-muted-foreground'}`}>{d.nombre}</span>
-                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-2xs font-semibold ${esHoy ? 'bg-utec-cyan text-utec-dark' : 'text-foreground'}`}>{d.numero}</span>
+                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-2xs font-semibold ${esHoy ? 'bg-utec-cyan text-marca-tinta' : 'text-foreground'}`}>{d.numero}</span>
               </div>
               <div className="space-y-1">
                 {d.eventos.length === 0 && <p className="py-2 text-center text-2xs text-muted-foreground/60">Sin eventos</p>}

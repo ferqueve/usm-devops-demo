@@ -11,43 +11,9 @@ import { usuariosApi } from '@/lib/api/users';
 import { ROLE_LABELS, ROLES } from '@/lib/config/constants';
 import type { UserRole, UserStats } from '@/lib/types/users';
 import { Users, UserCheck, MailX, Shield, Monitor, Chrome } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { MARCA } from '@/lib/design/paleta';
-
-type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
-
-const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string }> = {
-  blue:   { bg: 'bg-utec-blue',   text: 'text-white',     subtle: 'text-white/70' },
-  yellow: { bg: 'bg-utec-yellow', text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
-  green:  { bg: 'bg-utec-green',  text: 'text-white',     subtle: 'text-white/80' },
-  orange: { bg: 'bg-utec-orange', text: 'text-white',     subtle: 'text-white/80' },
-  red:    { bg: 'bg-utec-red',    text: 'text-white',     subtle: 'text-white/80' },
-  cyan:   { bg: 'bg-utec-cyan',   text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
-  dark:   { bg: 'bg-chrome',   text: 'text-white',     subtle: 'text-white/60' },
-};
-
-interface ColoredStatProps {
-  label: string;
-  value: string | number;
-  hint?: string;
-  icon: LucideIcon;
-  bg: UtecBg;
-}
-
-function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredStatProps>) {
-  const c = bgClasses[bg];
-  return (
-    <div className={`rounded-xl p-4 min-w-0 ${c.bg}`}>
-      <div className={`flex items-center gap-1.5 text-xs mb-1 ${c.subtle}`}>
-        <Icon className="h-3.5 w-3.5 shrink-0" />
-        <span className="truncate">{label}</span>
-      </div>
-      <div className={`text-2xl font-semibold tabular-nums ${c.text}`}>{value}</div>
-      {hint && <div className={`text-2xs mt-0.5 truncate ${c.subtle}`}>{hint}</div>}
-    </div>
-  );
-}
+import { StatStrip } from '@/components/common/StatStrip';
 
 const ROLE_COLOR: Record<UserRole, string> = {
   [ROLES.ADMIN]: MARCA.rojo,
@@ -198,14 +164,19 @@ export function UserStatsCards() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {/* Izquierda: 6 stat cards de colores en grid 2x3 / 3x2 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <ColoredStat label="Total usuarios" value={stats.totalUsuarios} hint={`${stats.totalActivos} activos · ${stats.totalInactivos} inactivos`} icon={Users} bg="dark" />
-        <ColoredStat label="Verificados" value={stats.totalVerificados} hint={`${porcentajeVerificados}% del total`} icon={UserCheck} bg="dark" />
-        <ColoredStat label="Sin verificar" value={stats.totalNoVerificados} hint={`${100 - porcentajeVerificados}% del total`} icon={MailX} bg="dark" />
-        <ColoredStat label="Activos" value={stats.totalActivos} hint={`${stats.totalInactivos} inactivos`} icon={Shield} bg="dark" />
-        <ColoredStat label="Local" value={stats.usuariosPorProveedor.LOCAL || 0} hint="auth interna" icon={Monitor} bg="dark" />
-        <ColoredStat label="Google" value={stats.usuariosPorProveedor.GOOGLE || 0} hint="OAuth Google" icon={Chrome} bg="dark" />
+      {/* Izquierda: las seis celdas, en 2x3 / 3x2 porque es media pantalla. */}
+      <div>
+        <StatStrip
+          maxColumnas={3}
+          items={[
+            { label: 'Total usuarios', value: stats.totalUsuarios, hint: `${stats.totalActivos} activos · ${stats.totalInactivos} inactivos`, icon: Users, color: 'oscuro' },
+            { label: 'Verificados', value: stats.totalVerificados, hint: `${porcentajeVerificados}% del total`, icon: UserCheck, color: 'oscuro' },
+            { label: 'Sin verificar', value: stats.totalNoVerificados, hint: `${100 - porcentajeVerificados}% del total`, icon: MailX, color: 'oscuro' },
+            { label: 'Activos', value: stats.totalActivos, hint: `${stats.totalInactivos} inactivos`, icon: Shield, color: 'oscuro' },
+            { label: 'Local', value: stats.usuariosPorProveedor.LOCAL || 0, hint: 'auth interna', icon: Monitor, color: 'oscuro' },
+            { label: 'Google', value: stats.usuariosPorProveedor.GOOGLE || 0, hint: 'OAuth Google', icon: Chrome, color: 'oscuro' },
+          ]}
+        />
       </div>
 
       {/* Derecha: donut de distribución por rol */}

@@ -14,7 +14,7 @@ import { MARCA } from '@/lib/design/paleta';
  * bajando o quieto, sin robar espacio ni agregar otro elemento.
  */
 
-export type ColorUtec = 'azul' | 'verde' | 'amarillo' | 'naranja' | 'rojo' | 'cian';
+export type ColorUtec = 'azul' | 'verde' | 'amarillo' | 'naranja' | 'rojo' | 'cian' | 'oscuro';
 
 /**
  * Color de fondo y color de texto de cada celda.
@@ -38,6 +38,10 @@ const paleta: Record<ColorUtec, { fondo: string; texto: 'claro' | 'oscuro' }> = 
   amarillo: { fondo: MARCA.amarillo, texto: 'oscuro' },
   naranja: { fondo: MARCA.naranja, texto: 'oscuro' },
   cian: { fondo: MARCA.cian, texto: 'oscuro' },
+  // La celda que es el total y no una categoría. Va en `--chrome`, el mismo
+  // gris de los encabezados de panel, para que un tile oscuro y un encabezado
+  // no sean dos grises parecidos pero distintos.
+  oscuro: { fondo: 'var(--chrome)', texto: 'claro' },
 };
 
 /** Orden por defecto, el de las aspas del isotipo. */
@@ -47,7 +51,7 @@ const RUEDA: ColorUtec[] = ['amarillo', 'azul', 'verde', 'cian', 'rojo', 'naranj
 export type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
 const legado: Record<UtecBg, ColorUtec> = {
   blue: 'azul', yellow: 'amarillo', green: 'verde',
-  orange: 'naranja', red: 'rojo', cyan: 'cian', dark: 'azul',
+  orange: 'naranja', red: 'rojo', cyan: 'cian', dark: 'oscuro',
 };
 
 export interface StatItem {
@@ -56,10 +60,21 @@ export interface StatItem {
   /** Aclaración corta bajo el número. Se muestra si no hay serie. */
   hint?: string;
   icon?: LucideIcon;
-  /** Mapa "AAAA-MM" → cantidad. Dibuja la línea de tendencia. */
-  serie?: Record<string, number>;
+  /**
+   * La tendencia dibujada al fondo. Mapa "AAAA-MM" → cantidad, o la lista de
+   * valores en orden cronológico.
+   */
+  serie?: Record<string, number> | number[];
   /** Variación % contra el período anterior. */
   delta?: number | null;
+  /**
+   * Si subir es malo —cancelaciones, vencidas—, cambia la explicación del
+   * globo. No cambia el color: acá el color es la paleta de la casa y no dice
+   * si algo está bien o mal.
+   */
+  subirEsMalo?: boolean;
+  /** Antes era cero y ahora no: no hay porcentaje posible, dice «nuevo». */
+  nuevo?: boolean;
   color?: ColorUtec;
   /** @deprecated Usar `color`. */
   bg?: UtecBg;
@@ -70,13 +85,26 @@ export interface StatItem {
 interface StatStripProps {
   items: StatItem[];
   loading?: boolean;
+  /** Contra qué se calcula la variación, para el globo. */
+  contra?: string;
+  /**
+   * Cuántas columnas como mucho en pantalla grande. Por defecto 6, el ancho
+   * completo; media pantalla no da para seis celdas.
+   */
+  maxColumnas?: number;
 }
 
 const columnas: Record<number, string> = {
   1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3',
   4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6',
 };
-const gridDe = (n: number) => columnas[Math.min(n, 6)] ?? 'lg:grid-cols-6';
+const gridDe = (n: number, tope: number) => columnas[Math.min(n, tope)] ?? 'lg:grid-cols-6';
+
+/** "18%", o "×6" cuando el anterior era tan chico que el porcentaje no se lee. */
+function textoCambio(delta: number): string {
+  const abs = Math.abs(delta);
+  return abs >= 400 ? `×${Math.round(1 + abs / 100)}` : `${Math.round(abs)}%`;
+}
 
 /**
  * Línea de tendencia dentro del campo de color.
@@ -85,8 +113,21 @@ const gridDe = (n: number) => columnas[Math.min(n, 6)] ?? 'lg:grid-cols-6';
  * pertenece al bloque en vez de parecer algo pegado encima. Se apoya en el
  * borde inferior, que es donde no estorba al número.
  */
-function Chispa({ serie, claro }: Readonly<{ serie: Record<string, number>; claro: boolean }>) {
-  const valores = Object.values(serie);
+/**
+ * Promedia la serie en tramos para que dibuje la forma y no el ruido diario:
+ * con 90 puntos de lunes a domingo la línea era un serrucho.
+ */
+function suavizar(datos: number[], tramos = 16): number[] {
+  if (datos.length <= tramos) return datos;
+  const largo = datos.length / tramos;
+  return Array.from({ length: tramos }, (_, i) => {
+    const parte = datos.slice(Math.floor(i * largo), Math.floor((i + 1) * largo));
+    return parte.reduce((a, v) => a + v, 0) / Math.max(1, parte.length);
+  });
+}
+
+function Chispa({ serie, claro }: Readonly<{ serie: Record<string, number> | number[]; claro: boolean }>) {
+  const valores = suavizar(Array.isArray(serie) ? serie : Object.values(serie));
   if (valores.length < 3) return null;
 
   const max = Math.max(...valores);
@@ -97,7 +138,7 @@ function Chispa({ serie, claro }: Readonly<{ serie: Record<string, number>; clar
     .map((v, i) => `${(i * paso).toFixed(2)},${(26 - ((v - min) / rango) * 22).toFixed(2)}`)
     .join(' ');
 
-  const tinta = claro ? '#ffffff' : '#0f1720';
+  const tinta = claro ? '#ffffff' : MARCA.tinta;
 
   return (
     <svg
@@ -121,10 +162,15 @@ function Chispa({ serie, claro }: Readonly<{ serie: Record<string, number>; clar
   );
 }
 
-export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) {
+export function StatStrip({
+  items,
+  loading = false,
+  contra = 'el período anterior',
+  maxColumnas = 6,
+}: Readonly<StatStripProps>) {
   if (loading) {
     return (
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+      <div className={`grid gap-3 grid-cols-2 sm:grid-cols-3 ${gridDe(6, maxColumnas)}`}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="h-[104px] animate-pulse rounded-xl bg-muted" />
         ))}
@@ -133,14 +179,14 @@ export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) 
   }
 
   return (
-    <div className={`grid gap-3 grid-cols-2 sm:grid-cols-3 ${gridDe(items.length)}`}>
+    <div className={`grid gap-3 grid-cols-2 sm:grid-cols-3 ${gridDe(items.length, maxColumnas)}`}>
       {items.map((item, i) => {
         const color = item.color ?? (item.bg ? legado[item.bg] : RUEDA[i % RUEDA.length]);
         const { fondo, texto } = paleta[color];
         const claro = texto === 'claro';
 
-        const principal = claro ? 'text-white' : 'text-[color:var(--success-foreground)]';
-        const suave = claro ? 'text-white/75' : 'text-[color:var(--success-foreground)]/70';
+        const principal = claro ? 'text-white' : 'text-marca-tinta';
+        const suave = claro ? 'text-white/75' : 'text-marca-tinta/70';
 
         const inner = (
           <>
@@ -151,25 +197,45 @@ export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) 
                 <span className="truncate">{item.label}</span>
               </span>
 
-              <span className="mt-1.5 flex items-baseline gap-1.5">
+              {/* flex-wrap: sin esto, en una celda angosta el cambio se
+                  montaba encima del número en vez de bajar un renglón. */}
+              <span className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                 <span className={`text-[1.75rem] font-semibold leading-none tabular-nums tracking-tight ${principal}`}>
                   {item.value}
                 </span>
-                {item.delta != null && item.delta !== 0 && (
-                  <span className={`text-2xs leading-none tabular-nums ${suave}`}>
-                    {item.delta > 0 ? '↑' : '↓'} {Math.abs(item.delta)}%
+                {item.nuevo ? (
+                  <span className={`text-2xs leading-none ${suave}`} title={`no había contra ${contra}`}>
+                    nuevo
                   </span>
+                ) : (
+                  item.delta != null &&
+                  Number.isFinite(item.delta) &&
+                  Math.round(item.delta) !== 0 && (
+                    <span
+                      className={`text-2xs leading-none tabular-nums ${suave}`}
+                      title={
+                        item.subirEsMalo
+                          ? `contra ${contra}; acá subir es peor`
+                          : `contra ${contra}`
+                      }
+                    >
+                      {item.delta > 0 ? '↑' : '↓'} {textoCambio(item.delta)}
+                    </span>
+                  )
                 )}
               </span>
 
-              {!item.serie && item.hint && (
+              {item.hint && (
                 <span className={`mt-1 block truncate text-2xs ${suave}`}>{item.hint}</span>
               )}
             </span>
           </>
         );
 
-        const base = 'relative isolate overflow-hidden rounded-xl p-4 min-w-0 min-h-[104px]';
+        // Con serie, la franja de abajo es del gráfico: el pie encima quedaba tachado.
+        const base = `relative isolate overflow-hidden rounded-xl min-w-0 min-h-[104px] p-4 ${
+          item.serie ? 'pb-9' : ''
+        }`;
         const style = { backgroundColor: fondo };
 
         if (item.to) {

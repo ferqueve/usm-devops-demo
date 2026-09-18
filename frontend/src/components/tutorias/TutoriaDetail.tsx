@@ -42,7 +42,7 @@ import { useAuth } from '@/hooks/useAuth';
 interface TutoriaDetailProps { tutoriaId: number }
 
 const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: LucideIcon }> = {
-  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
+  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
   CERRADA: { label: 'Cerrada', color: 'bg-chrome text-white border-utec-dark', icon: Lock },
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
@@ -502,10 +502,10 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                         {espera.map((a) => (
                           <li key={a.reservaId} className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-3 opacity-80">
                             <span className="flex items-center gap-2 min-w-0">
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-utec-dark text-xs font-semibold">{a.nombre?.slice(0, 2).toUpperCase()}</span>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-marca-tinta text-xs font-semibold">{a.nombre?.slice(0, 2).toUpperCase()}</span>
                               <span className="block truncate text-sm font-medium">{a.nombre}</span>
                             </span>
-                            <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-2xs">En espera</Badge>
+                            <Badge className="bg-utec-yellow text-marca-tinta border-utec-yellow text-2xs">En espera</Badge>
                           </li>
                         ))}
                       </ul>

@@ -617,6 +617,18 @@
    "cubierto": true
   },
   {
+   "archivo": "components/common/StatStrip.tsx",
+   "familia": "common",
+   "nombres": [
+    "StatStrip"
+   ],
+   "lineas": 262,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
    "archivo": "components/common/TipoFormDialogShell.tsx",
    "familia": "common",
    "nombres": [
@@ -790,18 +802,6 @@
     "Section"
    ],
    "lineas": 42,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/views/_components/StatStrip.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "StatStrip"
-   ],
-   "lineas": 196,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1042,7 +1042,7 @@
    "nombres": [
     "EventosManagement"
    ],
-   "lineas": 538,
+   "lineas": 540,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -1515,7 +1515,7 @@
    "nombres": [
     "MateriaDetail"
    ],
-   "lineas": 485,
+   "lineas": 486,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2562,7 +2562,7 @@
    "nombres": [
     "TarjetasKpi"
    ],
-   "lineas": 125,
+   "lineas": 68,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3552,7 +3552,7 @@
    "nombres": [
     "UserStatsCards"
    ],
-   "lineas": 216,
+   "lineas": 187,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",

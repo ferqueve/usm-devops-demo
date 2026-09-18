@@ -38,8 +38,8 @@ import { eventoToAgendable } from '@/lib/agenda/types';
 interface EventoDetailProps { eventoId: number }
 
 const ESTADO_BADGE: Record<EventoEstado, { label: string; color: string; icon: LucideIcon }> = {
-  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-utec-dark border-utec-yellow', icon: FileText },
+  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
+  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-marca-tinta border-utec-yellow', icon: FileText },
   FINALIZADO: { label: 'Finalizado', color: 'bg-chrome text-white border-utec-dark', icon: Clock },
   CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
@@ -498,10 +498,10 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                         {espera.map((i) => (
                           <li key={i.inscripcionId} className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-3 opacity-80">
                             <span className="flex items-center gap-2 min-w-0">
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-utec-dark text-xs font-semibold">{i.nombre?.slice(0, 2).toUpperCase()}</span>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-marca-tinta text-xs font-semibold">{i.nombre?.slice(0, 2).toUpperCase()}</span>
                               <span className="block truncate text-sm font-medium">{i.nombre}</span>
                             </span>
-                            <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-2xs">En espera</Badge>
+                            <Badge className="bg-utec-yellow text-marca-tinta border-utec-yellow text-2xs">En espera</Badge>
                           </li>
                         ))}
                       </ul>

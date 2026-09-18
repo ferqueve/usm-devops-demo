@@ -2,7 +2,7 @@ import {
   BarChart3, CalendarClock, DoorOpen, ListChecks, Projector, Wrench, type LucideIcon,
 } from 'lucide-react';
 import { ROLES } from '@/lib/config/constants';
-import type { UtecBg } from '@/components/dashboard/views/_components/StatStrip';
+import type { UtecBg } from '@/components/common/StatStrip';
 
 export interface Sugerencia {
   titulo: string;

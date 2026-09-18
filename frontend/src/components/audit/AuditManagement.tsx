@@ -48,7 +48,7 @@ import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON } from '@/components/layo
 import { MARCA } from '@/lib/design/paleta';
 
 const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
-  CREATE: { label: 'Crear', badge: 'bg-utec-green text-white border-utec-green', dot: 'bg-utec-green' },
+  CREATE: { label: 'Crear', badge: 'bg-utec-green text-marca-tinta border-utec-green', dot: 'bg-utec-green' },
   UPDATE: { label: 'Actualizar', badge: 'bg-utec-blue text-white border-utec-blue', dot: 'bg-utec-blue' },
   DELETE: { label: 'Eliminar', badge: 'bg-utec-red text-white border-utec-red', dot: 'bg-utec-red' },
 };

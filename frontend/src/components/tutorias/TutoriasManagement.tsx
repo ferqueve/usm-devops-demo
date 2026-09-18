@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { StatStrip, type StatItem } from '@/components/dashboard/views/_components/StatStrip';
+import { StatStrip, type StatItem } from '@/components/common/StatStrip';
 import {
   BookOpen,
   CalendarCheck,

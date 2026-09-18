@@ -3,7 +3,7 @@ import { Activity, Building2, CalendarClock, ClipboardCheck, Inbox, Leaf, Users 
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
-import { StatStrip } from './_components/StatStrip';
+import { StatStrip } from '@/components/common/StatStrip';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { Panel } from '@/components/common/Panel';

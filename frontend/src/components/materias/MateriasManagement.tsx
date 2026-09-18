@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { StatStrip, type StatItem } from '@/components/dashboard/views/_components/StatStrip';
+import { StatStrip, type StatItem } from '@/components/common/StatStrip';
 import {
   ArrowDown,
   ArrowUp,
@@ -730,7 +730,7 @@ function EstudianteMateriasView() {
       onOpen={() => navigate(detailPath(materia.id))}
       statusBadge={
         inscripta ? (
-          <Badge className="bg-utec-green text-white border-utec-green text-2xs gap-1 shrink-0">
+          <Badge className="bg-utec-green text-marca-tinta border-utec-green text-2xs gap-1 shrink-0">
             <CheckCircle className="h-3 w-3" />Inscripta
           </Badge>
         ) : (

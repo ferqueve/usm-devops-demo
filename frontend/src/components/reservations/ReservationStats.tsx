@@ -34,11 +34,11 @@ type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
 
 const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string }> = {
   blue:   { bg: 'bg-utec-blue',   text: 'text-white',     subtle: 'text-white/70' },
-  yellow: { bg: 'bg-utec-yellow', text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
-  green:  { bg: 'bg-utec-green',  text: 'text-white',     subtle: 'text-white/80' },
-  orange: { bg: 'bg-utec-orange', text: 'text-white',     subtle: 'text-white/80' },
+  yellow: { bg: 'bg-utec-yellow', text: 'text-marca-tinta', subtle: 'text-marca-tinta/70' },
+  green:  { bg: 'bg-utec-green',  text: 'text-marca-tinta',     subtle: 'text-marca-tinta/80' },
+  orange: { bg: 'bg-utec-orange', text: 'text-marca-tinta',     subtle: 'text-marca-tinta/80' },
   red:    { bg: 'bg-utec-red',    text: 'text-white',     subtle: 'text-white/80' },
-  cyan:   { bg: 'bg-utec-cyan',   text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
+  cyan:   { bg: 'bg-utec-cyan',   text: 'text-marca-tinta', subtle: 'text-marca-tinta/70' },
   dark:   { bg: 'bg-chrome',   text: 'text-white',     subtle: 'text-white/60' },
 };
 

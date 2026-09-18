@@ -14,8 +14,8 @@ export function parseTags(csv?: string): string[] {
 }
 
 const ESTADO_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
-  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-utec-dark border-utec-yellow', icon: FileText },
+  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
+  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-marca-tinta border-utec-yellow', icon: FileText },
   FINALIZADO: { label: 'Finalizado', color: 'bg-chrome text-white border-utec-dark', icon: Clock },
   CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };

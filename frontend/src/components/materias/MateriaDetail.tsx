@@ -43,16 +43,17 @@ function formatFecha(iso?: string | null): string {
 }
 
 const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: typeof CheckCircle }> = {
-  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
+  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
   CERRADA: { label: 'Cerrada', color: 'bg-chrome text-white border-utec-dark', icon: Lock },
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
-type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'purple';
+type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'orange';
 const TILE_CLS: Record<TileVariant, string> = {
-  blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-utec-dark',
-  cyan: 'bg-utec-cyan text-utec-dark', green: 'bg-utec-green text-white',
-  purple: 'bg-utec-purple text-white',
+  blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-marca-tinta',
+  cyan: 'bg-utec-cyan text-marca-tinta', green: 'bg-utec-green text-marca-tinta',
+  // Era `bg-utec-purple`, que no es un color de la marca.
+  orange: 'bg-utec-orange text-marca-tinta',
 };
 function StatTile({ icon: Icon, label, value, variant }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode; variant: TileVariant }>) {
   return (
@@ -457,7 +458,7 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
           <StatTile icon={Users} label="Inscriptos" value={inscriptos.length} variant="blue" />
           <StatTile icon={Award} label="Créditos" value={materia.creditos ?? '—'} variant="yellow" />
           <StatTile icon={Layers} label="Semestre" value={materia.semestre ?? '—'} variant="cyan" />
-          <StatTile icon={CalendarClock} label="Tutorías" value={tutorias.length} variant="purple" />
+          <StatTile icon={CalendarClock} label="Tutorías" value={tutorias.length} variant="orange" />
         </div>
       </div>
 

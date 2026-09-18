@@ -52,8 +52,8 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
 
   // Disponibilidad en este momento (solo aplica si el espacio está DISPONIBLE)
   const ocupadoBadge = enCurso
-    ? { label: 'Ocupado', className: 'bg-utec-orange text-white' }
-    : { label: 'Libre', className: 'bg-utec-green text-white' };
+    ? { label: 'Ocupado', className: 'bg-utec-orange text-marca-tinta' }
+    : { label: 'Libre', className: 'bg-utec-green text-marca-tinta' };
 
   const cardBody = (
     <Card

@@ -87,9 +87,11 @@ function Panel({ title, icon, accent, action, children, className }: Readonly<{ 
 
 // --- KPI tile con count-up + tendencia opcional ---
 const KPI_CLS: Record<string, string> = {
-  green: 'bg-utec-green text-white', cyan: 'bg-utec-cyan text-utec-dark',
-  blue: 'bg-utec-blue text-white', orange: 'bg-utec-cyan text-utec-dark',
-  yellow: 'bg-utec-yellow text-utec-dark', dark: 'bg-chrome text-white',
+  green: 'bg-utec-green text-marca-tinta', cyan: 'bg-utec-cyan text-marca-tinta',
+  blue: 'bg-utec-blue text-white',
+  // Decía `bg-utec-cyan`: el tile «Próximos» pedía naranja y salía cian.
+  orange: 'bg-utec-orange text-marca-tinta',
+  yellow: 'bg-utec-yellow text-marca-tinta', dark: 'bg-chrome text-white',
 };
 function KpiTile({ icon: Icon, label, value, hint, variant, delta }: Readonly<{ icon: LucideIcon; label: string; value: number; hint?: string; variant: string; delta?: number }>) {
   const v = useCountUp(value);
@@ -516,7 +518,7 @@ export default function EventosManagement() {
           {/* Toggle de vista */}
           <div className="flex items-center rounded-md border p-0.5 h-9">
             {VISTAS.filter((t) => !t.adminOnly || isAdmin).map(({ v, icon: Icon, label }) => (
-              <button key={v} type="button" onClick={() => setVista(v)} title={label} className={`flex h-8 w-8 items-center justify-center rounded ${vista === v ? 'bg-utec-cyan text-utec-dark' : 'text-muted-foreground hover:text-foreground'}`}>
+              <button key={v} type="button" onClick={() => setVista(v)} title={label} className={`flex h-8 w-8 items-center justify-center rounded ${vista === v ? 'bg-utec-cyan text-marca-tinta' : 'text-muted-foreground hover:text-foreground'}`}>
                 <Icon className="h-4 w-4" />
               </button>
             ))}

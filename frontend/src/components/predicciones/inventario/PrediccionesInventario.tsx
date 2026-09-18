@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { Boxes, CalendarRange, MousePointerClick, PackageX, Siren, Target } from 'lucide-react';
 import { Panel } from '@/components/common/Panel';
-import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
+import { StatStrip } from '@/components/common/StatStrip';
 import { Medidor } from '@/components/statistics/graficos/Medidor';
 import { useTemaGraficos } from '@/components/statistics/graficos/tema';
 import { postAnalyzeInventarioForecast } from '@/lib/api/ai';

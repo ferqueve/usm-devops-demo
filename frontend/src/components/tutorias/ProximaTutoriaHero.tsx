@@ -42,7 +42,7 @@ export function ProximaTutoriaHero({ tutorias, modo }: Readonly<{ tutorias: Tuto
               ? <Badge className="bg-utec-cyan/20 text-utec-cyan border-utec-cyan/30 border text-2xs"><Video className="h-3 w-3 mr-1" />Virtual</Badge>
               : proxima.espacioNombre && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{proxima.espacioNombre}</span>}
             {modo === 'estudiante' && proxima.reservaEstado === 'ESPERA' && (
-              <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-2xs">En lista de espera</Badge>
+              <Badge className="bg-utec-yellow text-marca-tinta border-utec-yellow text-2xs">En lista de espera</Badge>
             )}
           </div>
         </div>

@@ -187,7 +187,7 @@ export function TutoriaCard({
           <div className="flex shrink-0 flex-col items-end gap-1">
             {tutoria.enVivo && <EnVivoBadge />}
             {esMiMateria && <Badge className="border border-utec-blue/30 bg-utec-blue/15 text-utec-blue text-2xs">Tu materia</Badge>}
-            {enEspera && <Badge className="border-utec-yellow bg-utec-yellow text-utec-dark text-2xs">En espera</Badge>}
+            {enEspera && <Badge className="border-utec-yellow bg-utec-yellow text-marca-tinta text-2xs">En espera</Badge>}
           </div>
         </div>
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">

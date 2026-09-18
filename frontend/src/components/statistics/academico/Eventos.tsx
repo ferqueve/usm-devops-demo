@@ -120,7 +120,7 @@ export function MejorCalificados({ eventos, limite = 6 }: Readonly<{ eventos: Ev
     <ol className="space-y-2.5">
       {calificados.map((e, i) => (
         <li key={e.id} className="flex items-center gap-3">
-          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${i === 0 ? 'bg-utec-yellow text-utec-dark' : 'bg-muted text-muted-foreground'}`}>
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${i === 0 ? 'bg-utec-yellow text-marca-tinta' : 'bg-muted text-muted-foreground'}`}>
             {i + 1}
           </span>
           <div className="min-w-0 flex-1">

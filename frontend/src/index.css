@@ -157,6 +157,23 @@
   --color-utec-cyan: #00c7ff;
   --color-utec-cyan-manual: #00A9E0;
 
+  /* La tinta que se lee sobre un relleno macizo de marca.
+     No cambia con el tema, porque el relleno tampoco: un bloque con
+     su propio texto sólo tiene que separarse de la tarjeta.
+
+     Medido en ratio WCAG sobre el hex exacto de cada color:
+
+       verde    blanco 2.28 · tinta 6.78  → tinta
+       amarillo blanco 1.57 · tinta 9.84  → tinta
+       naranja  blanco 3.04 · tinta 5.08  → tinta
+       cian     blanco 1.98 · tinta 7.80  → tinta
+       rojo     blanco 4.64 · tinta 3.33  → blanco
+       azul     blanco 8.70 · tinta 1.77  → blanco
+
+     Sobre verde, naranja, cian y amarillo el blanco no llega ni a
+     3:1. Estaba escrito así en 32 lugares. */
+  --color-marca-tinta: #212529;
+
   /* Alias históricos. Los usan ~109 lugares; se mantienen para no
      romper pantallas mientras se migra a los nombres de arriba. */
   --color-utec-green: #86bb4c;

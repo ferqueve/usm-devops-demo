@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table';
 import { Panel } from '@/components/common/Panel';
 import { EmptyState } from '@/components/ui/empty-state';
-import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
+import { StatStrip } from '@/components/common/StatStrip';
 import { TemaGraficosContexto } from '@/components/statistics/graficos/tema';
 import { GraficosDashboard, GraficosEstadisticas } from './_graficos';
 import { FilasDominio, PiezasSistema } from './_dominio';

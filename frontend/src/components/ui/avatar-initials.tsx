@@ -26,9 +26,9 @@ export function AvatarInitials({ name, email, size = 'md', className }: Readonly
   const getColorFromName = (str: string): string => {
     const colors = [
       'bg-utec-blue text-white',
-      'bg-utec-green text-white',
-      'bg-utec-cyan text-white',
-      'bg-utec-orange text-white',
+      'bg-utec-green text-marca-tinta',
+      'bg-utec-cyan text-marca-tinta',
+      'bg-utec-orange text-marca-tinta',
       'bg-utec-red text-white',
       'bg-chrome text-white',
       'bg-info text-white',

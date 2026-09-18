@@ -150,13 +150,13 @@ export function SpaceTable({
                       case 'DISPONIBLE':
                         return {
                           label: 'Disponible',
-                          color: 'bg-utec-green text-white border-utec-green',
+                          color: 'bg-utec-green text-marca-tinta border-utec-green',
                           icon: CheckCircle
                         };
                       case 'MANTENIMIENTO':
                         return {
                           label: 'En Mantenimiento',
-                          color: 'bg-utec-yellow text-utec-dark border-utec-yellow',
+                          color: 'bg-utec-yellow text-marca-tinta border-utec-yellow',
                           icon: Wrench
                         };
                       case 'NO_DISPONIBLE':

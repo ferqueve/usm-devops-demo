@@ -19,12 +19,12 @@ const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
  */
 const ESTADO_COLOR: Record<string, string> = {
   // Tutorías
-  ABIERTA: 'bg-utec-green text-white',
+  ABIERTA: 'bg-utec-green text-marca-tinta',
   CERRADA: 'bg-chrome text-white',
   CANCELADA: 'bg-utec-red text-white',
   // Eventos
-  PUBLICADO: 'bg-utec-green text-white',
-  BORRADOR: 'bg-utec-yellow text-utec-dark',
+  PUBLICADO: 'bg-utec-green text-marca-tinta',
+  BORRADOR: 'bg-utec-yellow text-marca-tinta',
   FINALIZADO: 'bg-chrome text-white',
   CANCELADO: 'bg-utec-red text-white',
 };

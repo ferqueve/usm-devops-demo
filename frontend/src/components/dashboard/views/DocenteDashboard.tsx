@@ -1,7 +1,7 @@
 import { CalendarClock, CheckCircle2, Clock, GraduationCap, ListChecks, Users } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
-import { StatStrip } from './_components/StatStrip';
+import { StatStrip } from '@/components/common/StatStrip';
 import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
 import { EmptyState } from '@/components/ui/empty-state';

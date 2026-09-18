@@ -109,7 +109,7 @@ export function GraficosDashboard() {
 export function GraficosEstadisticas() {
   return (
     <div className="grid gap-3 @md:grid-cols-2 @4xl:grid-cols-3 @7xl:grid-cols-4">
-      <Caja titulo="Tarjetas KPI" nota="Su propia tira de métricas, distinta de StatStrip." ancho="triple">
+      <Caja titulo="Tarjetas KPI" nota="Los KPI de Estadísticas. Hoy son StatStrip: sólo arman los items." ancho="triple">
         <TarjetasKpi items={KPIS_ESTADISTICAS} />
       </Caja>
 

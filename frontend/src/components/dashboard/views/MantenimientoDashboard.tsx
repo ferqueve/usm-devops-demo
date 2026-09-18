@@ -1,7 +1,7 @@
 import { Boxes, ClipboardList, Leaf, MapPin, Wrench } from 'lucide-react';
 import type { InventoryStats } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
-import { StatStrip } from './_components/StatStrip';
+import { StatStrip } from '@/components/common/StatStrip';
 import { Panel } from '@/components/common/Panel';
 import { EmptyState } from '@/components/ui/empty-state';
 import { EspacioFila, ItemFila } from './_components/Filas';
