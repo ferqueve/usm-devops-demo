@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { Agendable } from '@/lib/agenda/types';
+import { ESTADO, estadoDe, relleno } from '@/components/common/estados';
 
 interface AgendaCalendarioProps {
   items: Agendable[];
@@ -17,17 +18,6 @@ const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
  * y de evento en un solo mapa: no se pisan entre sí y así el calendario puede mostrar
  * los dos tipos juntos sin saber de cuál viene cada uno.
  */
-const ESTADO_COLOR: Record<string, string> = {
-  // Tutorías
-  ABIERTA: 'bg-utec-green text-marca-tinta',
-  CERRADA: 'bg-chrome text-white',
-  CANCELADA: 'bg-utec-red text-white',
-  // Eventos
-  PUBLICADO: 'bg-utec-green text-marca-tinta',
-  BORRADOR: 'bg-utec-yellow text-marca-tinta',
-  FINALIZADO: 'bg-chrome text-white',
-  CANCELADO: 'bg-utec-red text-white',
-};
 
 /**
  * Calendario mensual de agendables. Sirve tanto a tutorías como a eventos —
@@ -127,7 +117,7 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
                     type="button"
                     onClick={() => navigate(item.href)}
                     className={`block w-full truncate rounded px-1.5 py-0.5 text-left text-2xs font-medium ${
-                      ESTADO_COLOR[item.estado] ?? 'bg-muted'
+                      relleno(estadoDe(ESTADO, item.estado))
                     }`}
                     title={item.titulo}
                   >

@@ -15,9 +15,8 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Award, Building2, CalendarClock, CalendarDays, CalendarPlus, Check, CheckCircle, ChevronLeft, ChevronRight, Clock, Copy, Download, Edit, FileText,
-  Globe, Hourglass, Image as ImageIcon, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Send, Trash2, User, UserCheck, Users, XCircle,
-} from 'lucide-react';
+  Award, Building2, CalendarClock, CalendarDays, CalendarPlus, Check, ChevronLeft, ChevronRight, Copy, Download, Edit, FileText,
+  Globe, Hourglass, Image as ImageIcon, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Send, Trash2, User, UserCheck, Users, } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
@@ -37,15 +36,10 @@ import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
 import { useCountdown } from '@/lib/agenda/tiempo';
 import { eventoToAgendable } from '@/lib/agenda/types';
 import { fechaHora, relativa } from '@/lib/utils/fechas';
+import { ESTADO_EVENTO, EstadoBadge, estadoDe } from '@/components/common/estados';
 
 interface EventoDetailProps { eventoId: number }
 
-const ESTADO_BADGE: Record<EventoEstado, { label: string; color: string; icon: LucideIcon }> = {
-  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
-  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-marca-tinta border-utec-yellow', icon: FileText },
-  FINALIZADO: { label: 'Finalizado', color: 'bg-chrome text-white border-utec-dark', icon: Clock },
-  CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
 
 function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode }>) {
@@ -224,8 +218,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
     );
   }
 
-  const badge = ESTADO_BADGE[evento.estado];
-  const BadgeIcon = badge.icon;
+  const badge = estadoDe(ESTADO_EVENTO, evento.estado);
   const conCupo = evento.cupo != null && evento.cupo > 0;
 
   return (
@@ -275,7 +268,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             <div className="relative flex items-start justify-between gap-2">
               <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wide">{evento.tipo}</span>
               <div className="flex items-center gap-1.5">
-                <Badge className={`${badge.color} border font-medium text-xs`}><BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
+                <EstadoBadge estado={badge} className="text-xs" />
                 <PermissionGuard requiredPermission="evento:editar">
                   <Popover>
                     <PopoverTrigger asChild>

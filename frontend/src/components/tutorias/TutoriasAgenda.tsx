@@ -3,12 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { CalendarClock, ChevronRight, MapPin, Users, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { ESTADO_TUTORIA, bordeIzquierdo, estadoDe } from '@/components/common/estados';
 
-const ESTADO_COLOR: Record<string, string> = {
-  ABIERTA: 'border-l-utec-green',
-  CERRADA: 'border-l-utec-dark',
-  CANCELADA: 'border-l-utec-red',
-};
 
 /** Agenda de los próximos 7 días, agrupada por día. */
 export function TutoriasAgenda({ tutorias }: Readonly<{ tutorias: Tutoria[] }>) {
@@ -50,7 +46,7 @@ export function TutoriasAgenda({ tutorias }: Readonly<{ tutorias: Tutoria[] }>) 
           <ul className="divide-y">
             {items.map((t) => (
               <li key={t.id}>
-                <button type="button" onClick={() => navigate(`/tutorias/${t.id}`)} className={`flex w-full items-center gap-3 px-4 py-3 text-left border-l-4 ${ESTADO_COLOR[t.estado] ?? 'border-l-muted'} hover:bg-muted/40`}>
+                <button type="button" onClick={() => navigate(`/tutorias/${t.id}`)} className={`flex w-full items-center gap-3 px-4 py-3 text-left border-l-4 ${bordeIzquierdo(estadoDe(ESTADO_TUTORIA, t.estado))} hover:bg-muted/40`}>
                   <span className="w-24 shrink-0 text-sm font-semibold tabular-nums">{hora(t.inicio)}–{hora(t.fin)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{t.materiaNombre}</span>

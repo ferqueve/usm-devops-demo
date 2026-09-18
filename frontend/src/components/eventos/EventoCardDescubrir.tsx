@@ -1,34 +1,21 @@
 import {
-  CalendarDays, CheckCircle, Clock, Edit, FileText, Loader2, MapPin, Trash2, Users, XCircle,
+  CalendarDays, CheckCircle, Clock, Edit, Loader2, MapPin, Trash2, Users, XCircle,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import type { Evento } from '@/lib/types/eventos';
 import { relativoInicio, estaEnVivo } from '@/lib/agenda/tiempo';
+import { ESTADO_EVENTO, EstadoBadge as BadgeDeEstado, estadoDe } from '@/components/common/estados';
 
 // --- helpers compartidos con EventosManagement ---
 export function parseTags(csv?: string): string[] {
   return (csv ?? '').split(',').map((t) => t.trim()).filter(Boolean);
 }
 
-const ESTADO_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
-  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
-  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-marca-tinta border-utec-yellow', icon: FileText },
-  FINALIZADO: { label: 'Finalizado', color: 'bg-chrome text-white border-utec-dark', icon: Clock },
-  CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
 export function EstadoBadge({ estado }: Readonly<{ estado: Evento['estado'] }>) {
-  const config = ESTADO_CONFIG[estado] ?? { label: estado, color: 'bg-muted text-foreground border-border', icon: FileText };
-  const Icon = config.icon;
-  return (
-    <Badge className={`${config.color} border font-medium text-2xs shrink-0`}>
-      <Icon className="h-3 w-3 mr-1" />
-      {config.label}
-    </Badge>
-  );
+  return <BadgeDeEstado estado={estadoDe(ESTADO_EVENTO, estado)} className="shrink-0 text-2xs" />;
 }
 
 

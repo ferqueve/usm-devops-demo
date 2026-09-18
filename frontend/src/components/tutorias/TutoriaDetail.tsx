@@ -15,11 +15,9 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Award, BookOpen, Building2, CalendarClock, CalendarPlus, Check, CheckCircle, ChevronRight, Clock, Download, Edit,
+  Award, BookOpen, Building2, CalendarClock, CalendarPlus, Check, ChevronRight, Clock, Download, Edit,
   GraduationCap, Hourglass, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Radio, Send,
-  Trash2, UserCheck, Users, Video, XCircle,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+  Trash2, UserCheck, Users, Video, } from 'lucide-react';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
@@ -41,14 +39,10 @@ import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { CheckinScanner, ReservaQR } from './CheckinScanner';
 import { useAuth } from '@/hooks/useAuth';
 import { fechaHora, relativa } from '@/lib/utils/fechas';
+import { ESTADO_TUTORIA, EstadoBadge, estadoDe } from '@/components/common/estados';
 
 interface TutoriaDetailProps { tutoriaId: number }
 
-const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: LucideIcon }> = {
-  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
-  CERRADA: { label: 'Cerrada', color: 'bg-chrome text-white border-utec-dark', icon: Lock },
-  CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
 function formatHora(iso?: string | null): string {
   if (!iso) return '';
@@ -233,8 +227,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
     );
   }
 
-  const badge = TUTORIA_BADGE[tutoria.estado];
-  const BadgeIcon = badge.icon;
+  const badge = estadoDe(ESTADO_TUTORIA, tutoria.estado);
   const ocupados = Math.max(0, tutoria.cupo - tutoria.plazasDisponibles);
   const enEspera = agendados.filter((a) => a.estado === 'ESPERA').length;
 
@@ -343,9 +336,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold leading-tight">{tutoria.materiaNombre}</h1>
-              <Badge className={`${badge.color} border font-medium text-xs`}>
-                <BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}
-              </Badge>
+              <EstadoBadge estado={badge} className="text-xs" />
             </div>
 
             <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -499,14 +490,13 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
             <Panel title={`Otras tutorías de ${materia?.nombre ?? 'la materia'} · ${otras.length}`} icon={<CalendarClock className="size-4" />} accentColor={MARCA.azul}>
               <ul className="space-y-2">
                 {otras.map((t) => {
-                  const b = TUTORIA_BADGE[t.estado];
-                  const BI = b.icon;
+                  const b = estadoDe(ESTADO_TUTORIA, t.estado);
                   return (
                     <li key={t.id}>
                       <button type="button" onClick={() => navigate(`/tutorias/${t.id}`)} className="w-full text-left rounded-lg border p-3 transition-colors hover:border-utec-blue/40">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-marca-azul-texto" />{fechaHora(t.inicio, { diaSemana: true })}</span>
-                          <Badge className={`${b.color} border font-medium text-2xs shrink-0`}><BI className="h-3 w-3 mr-1" />{b.label}</Badge>
+                          <EstadoBadge estado={b} className="shrink-0 text-2xs" />
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo} agendados · {relativa(t.inicio)}</p>
                       </button>

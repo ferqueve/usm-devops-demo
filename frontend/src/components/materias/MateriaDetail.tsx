@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Award, BookOpen, CalendarClock, CheckCircle, ChevronRight, Download, Edit, FolderOpen,
-  GraduationCap, Layers, Link2, Loader2, Lock, Mail, MapPin, Plus, RotateCcw, Search, Trash2, UserPlus, Users, XCircle,
+  GraduationCap, Layers, Link2, Loader2, Mail, MapPin, Plus, RotateCcw, Search, Trash2, UserPlus, Users, XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { materiasApi } from '@/lib/api/materias';
 import type { Inscripcion, Materia } from '@/lib/types/materias';
-import type { Tutoria, TutoriaEstado } from '@/lib/types/tutorias';
+import type { Tutoria } from '@/lib/types/tutorias';
 import type { Recurso } from '@/lib/types/recursos';
 import { useTutorias } from '@/hooks/useTutorias';
 import { useRecursos } from '@/hooks/useRecursos';
@@ -34,17 +34,13 @@ import { AddInscriptoDialog } from './AddInscriptoDialog';
 import { NotificarDialog } from './NotificarDialog';
 import { MateriaAsistente } from './MateriaAsistente';
 import { fechaHora } from '@/lib/utils/fechas';
+import { ESTADO_TUTORIA, EstadoBadge, estadoDe } from '@/components/common/estados';
 
 interface MateriaDetailProps { materiaId: number }
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 
 
-const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: typeof CheckCircle }> = {
-  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-marca-tinta border-utec-green', icon: CheckCircle },
-  CERRADA: { label: 'Cerrada', color: 'bg-chrome text-white border-utec-dark', icon: Lock },
-  CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
 
 
@@ -75,8 +71,7 @@ function exportInscriptosCSV(materia: Materia, inscriptos: Inscripcion[]) {
 
 function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
   const navigate = useNavigate();
-  const badge = TUTORIA_BADGE[tutoria.estado];
-  const Icon = badge.icon;
+  const badge = estadoDe(ESTADO_TUTORIA, tutoria.estado);
   const ocupados = Math.max(0, tutoria.cupo - tutoria.plazasDisponibles);
   const pct = tutoria.cupo > 0 ? Math.round((ocupados / tutoria.cupo) * 100) : 0;
   const libre = tutoria.plazasDisponibles > 0;
@@ -89,7 +84,7 @@ function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
       >
       <div className="flex items-center justify-between gap-2 mb-1">
         <span className="flex items-center gap-1.5 font-medium"><CalendarClock className="h-4 w-4 text-utec-purple shrink-0" />{fechaHora(tutoria.inicio)}</span>
-        <Badge className={`${badge.color} border font-medium text-xs shrink-0`}><Icon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
+        <EstadoBadge estado={badge} className="shrink-0 text-xs" />
       </div>
       <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5">
         <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" />{tutoria.docenteNombre}</span>
