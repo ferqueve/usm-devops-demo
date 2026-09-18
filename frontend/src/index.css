@@ -234,7 +234,7 @@
   --accent: oklch(0.3600 0.0220 258);
   --accent-foreground: oklch(0.9417 0.0052 248);
 
-  --destructive: oklch(0.7000 0.1850 25.6);
+  --destructive: oklch(0.6800 0.2089 25.6);
   --destructive-foreground: oklch(0.2000 0.0090 248);
 
   /* En oscuro una sombra no separa: el fondo ya es oscuro. Se sube la opacidad
@@ -250,13 +250,13 @@
 
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6800 0.1450 260);
+  --ring: oklch(0.6600 0.1816 260);
 
-  --chart-1: oklch(0.6800 0.1450 260);
-  --chart-2: oklch(0.7315 0.1527 130.8);
-  --chart-3: oklch(0.8530 0.1685 92.2);
-  --chart-4: oklch(0.7300 0.1550 54.8);
-  --chart-5: oklch(0.7000 0.1850 25.6);
+  --chart-1: oklch(0.6600 0.1816 260);
+  --chart-2: oklch(0.6500 0.1771 130.8);
+  --chart-3: oklch(0.8000 0.1637 92.2);
+  --chart-4: oklch(0.6600 0.1639 54.8);
+  --chart-5: oklch(0.6800 0.2089 25.6);
 
   --sidebar: oklch(0.2621 0.0095 248);
   --sidebar-foreground: oklch(0.8671 0.0106 248);

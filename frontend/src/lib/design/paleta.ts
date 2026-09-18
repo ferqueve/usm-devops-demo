@@ -85,14 +85,35 @@ function oklchAHex(color: Oklch): string {
   return '#000000';
 }
 
+/** El croma más alto que sRGB aguanta en ese tono y esa luz. */
+function cromaMaximo(L: number, H: number): number {
+  let bajo = 0;
+  let alto = 0.45;
+  for (let i = 0; i < 32; i++) {
+    const medio = (bajo + alto) / 2;
+    const rgb = oklchARgb({ L, C: medio, H });
+    if (rgb.every((v) => v >= -0.001 && v <= 1.001)) bajo = medio;
+    else alto = medio;
+  }
+  return bajo;
+}
+
 /**
  * Mismo color, otra luminosidad.
  *
  * `L` va de 0 (negro) a 1 (blanco). Sobre fondo claro los gráficos piden
  * alrededor de 0.55; sobre fondo oscuro, alrededor de 0.70.
+ *
+ * Con `vivo` el croma no se copia del original sino que se lleva al tope que
+ * permite sRGB en esa luz. Hace falta al aclarar: lo que se percibe como
+ * saturación es más o menos croma dividido luz, así que subir la luz con el
+ * mismo croma apaga el color. El azul de marca tiene C 0.140 a L 0.42
+ * —saturación 0.33—; aclarado a L 0.70 con ese mismo croma cae a 0.20 y se ve
+ * lavado. Al tope de gamut recupera 0.29.
  */
-export function conLuz(hex: string, L: number): string {
-  return oklchAHex({ ...hexAOklch(hex), L });
+export function conLuz(hex: string, L: number, vivo = false): string {
+  const base = hexAOklch(hex);
+  return oklchAHex({ ...base, L, C: vivo ? cromaMaximo(L, base.H) : base.C });
 }
 
 /**
@@ -190,19 +211,21 @@ const LUZ: { claro: Luz; oscuro: Luz } = {
 /** Una serie completa de gráfico: un hex por tono. */
 export type Serie = Record<Tono, string>;
 
-function serie(luz: Luz): Serie {
+function serie(luz: Luz, vivo = false): Serie {
   return {
-    azul: conLuz(MARCA.azul, luz.azul),
-    verde: conLuz(MARCA.verde, luz.verde),
-    amarillo: conLuz(MARCA.amarillo, luz.amarillo),
-    naranja: conLuz(MARCA.naranja, luz.naranja),
-    rojo: conLuz(MARCA.rojo, luz.rojo),
-    cian: conLuz(MARCA.cian, luz.cian),
+    azul: conLuz(MARCA.azul, luz.azul, vivo),
+    verde: conLuz(MARCA.verde, luz.verde, vivo),
+    amarillo: conLuz(MARCA.amarillo, luz.amarillo, vivo),
+    naranja: conLuz(MARCA.naranja, luz.naranja, vivo),
+    rojo: conLuz(MARCA.rojo, luz.rojo, vivo),
+    cian: conLuz(MARCA.cian, luz.cian, vivo),
   };
 }
 
 export const SERIE_CLARO: Serie = serie(LUZ.claro);
-export const SERIE_OSCURO: Serie = serie(LUZ.oscuro);
+/* Al tope de croma: aclarar sin subir el croma es lo que dejaba apagada la
+   serie oscura. */
+export const SERIE_OSCURO: Serie = serie(LUZ.oscuro, true);
 
 /**
  * Orden de las categorías en un gráfico.
