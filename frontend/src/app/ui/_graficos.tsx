@@ -39,6 +39,7 @@ import {
   TRAMOS,
   GRUPOS_WAFFLE,
 } from './_datos';
+import { FlechaVariacion, Gauge, GloboGrafico, Podio } from '@/components/common/dataviz';
 
 /**
  * Los diecinueve gráficos del sistema, en un solo lugar.
@@ -116,6 +117,34 @@ export function GraficosEstadisticas() {
       <Caja titulo="Dona" nota="Reparto con leyenda al costado y filtro al clic.">
         <Dona porciones={PORCIONES} leyendaCentro="reservas" tamano={150} />
       </Caja>
+      <Caja titulo="Piezas de dataviz" nota="Medidor de 0 a 100, podio y la flecha de variación." ancho="doble">
+        <div className="flex flex-wrap items-center gap-6">
+          <Gauge value={72} />
+          <div className="min-w-[220px] flex-1">
+            <Podio
+              top={[
+                { nombre: 'Aula 8', valor: '396', deltaPct: 12 },
+                { nombre: 'Laboratorio Mecatrónica', valor: '281', deltaPct: -4 },
+                { nombre: 'Anfiteatro', valor: '174' },
+              ]}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <FlechaVariacion delta={18} />
+            <FlechaVariacion delta={-7} />
+            <FlechaVariacion delta={0} />
+          </div>
+        </div>
+      </Caja>
+
+      <Caja titulo="Globo de gráfico" nota="El caparazón que comparten los quince globos.">
+        <GloboGrafico>
+          <p className="mb-1 font-medium">Aula 8</p>
+          <p>Reservas: <b>396</b></p>
+          <p className="text-white/60">67 % del total</p>
+        </GloboGrafico>
+      </Caja>
+
       <Caja titulo="Medidor" nota="Un porcentaje contra umbrales. Cambia de color.">
         <div className="flex flex-wrap gap-4">
           <Medidor valor={92} etiqueta="Se aprueban" umbrales={{ alerta: 60, aviso: 80 }} />
