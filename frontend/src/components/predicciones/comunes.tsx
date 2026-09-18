@@ -4,6 +4,7 @@ import { AlertTriangle, Brain, Info, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /** Lo que cada vista necesita saber del botón de reentrenar de la barra. */
 export interface Entrenamiento {
@@ -132,13 +133,13 @@ export function Anillo({ porcentaje, color = MARCA.verde }: Readonly<{ porcentaj
 export function Esqueleto() {
   return (
     <div className="space-y-3" aria-busy>
-      <div className="h-[132px] animate-pulse rounded-2xl bg-muted" />
+      <Skeleton className="h-[132px] rounded-2xl" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        {[0, 1, 2, 3, 4].map((i) => <div key={i} className="h-[92px] animate-pulse rounded-xl bg-muted" />)}
+        {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
       </div>
       <div className="grid gap-3 lg:grid-cols-3">
-        <div className="h-[380px] animate-pulse rounded-xl bg-muted lg:col-span-2" />
-        <div className="h-[380px] animate-pulse rounded-xl bg-muted" />
+        <Skeleton className="h-[380px] rounded-xl lg:col-span-2" />
+        <Skeleton className="h-[380px] rounded-xl" />
       </div>
     </div>
   );

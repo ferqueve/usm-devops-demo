@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Tira de métricas del dashboard.
@@ -172,7 +173,7 @@ export function StatStrip({
     return (
       <div className={`grid gap-3 grid-cols-2 sm:grid-cols-3 ${gridDe(6, maxColumnas)}`}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-[104px] animate-pulse rounded-xl bg-muted" />
+          <Skeleton key={i} className="h-[104px] rounded-xl" />
         ))}
       </div>
     );

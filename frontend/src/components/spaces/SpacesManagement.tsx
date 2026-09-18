@@ -56,6 +56,7 @@ import { PageHeader, HEADER_ACTION_ICON, HEADER_PRIMARY } from '@/components/lay
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { usePreferences } from '@/hooks/usePreferences';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Describe el rango de cantidad para el resumen de un filtro de inventario
 function describirCantidadFiltro(min?: number, max?: number): string {
@@ -876,7 +877,7 @@ export default function SpacesManagement() {
             <div className="border rounded-lg shadow-card p-8">
               <div className="space-y-3">
                 {Array.from({ length: 5 }, (_, index) => `row-skeleton-${index}`).map((skeletonKey) => (
-                  <div key={skeletonKey} className="h-16 bg-muted animate-pulse rounded" />
+                  <Skeleton key={skeletonKey} className="h-16 rounded" />
                 ))}
               </div>
             </div>

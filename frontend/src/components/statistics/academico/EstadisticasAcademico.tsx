@@ -18,6 +18,7 @@ import { EventosLista, MateriasTutorias, ModalidadTutorias, SemanasTutorias, Tut
 import { EventosPorOcupacion, EventosPorTipo, EventosResumen, MejorCalificados } from './Eventos';
 import { useEstadisticasAcademico } from './useEstadisticasAcademico';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SECCIONES = [
   { id: 'tutorias', titulo: 'Tutorías', icono: GraduationCap, color: MARCA.amarillo },
@@ -58,10 +59,10 @@ function exportarCSV(datos: Academico, periodoTexto: string, filtrosTexto: strin
 function Esqueleto() {
   return (
     <div className="space-y-3" aria-busy>
-      <div className="h-[74px] animate-pulse rounded-xl bg-muted" />
+      <Skeleton className="h-[74px] rounded-xl" />
       <div className="grid gap-3 lg:grid-cols-3">
-        <div className="h-[360px] animate-pulse rounded-xl bg-muted" />
-        <div className="h-[360px] animate-pulse rounded-xl bg-muted lg:col-span-2" />
+        <Skeleton className="h-[360px] rounded-xl" />
+        <Skeleton className="h-[360px] rounded-xl lg:col-span-2" />
       </div>
     </div>
   );

@@ -253,6 +253,7 @@ implementaciones de lo mismo:
 | Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
 | `EmptyState` | 3 → 1 | hecho: `components/ui/empty-state` con variante `linea` |
 | `Panel` | 6 → 2 | `components/common/Panel`; queda el de `RuntimeCards`, que tiene otra forma |
+| Esqueletos de carga | 23 → 1 | la primitiva `ui/skeleton`, en `bg-muted` |
 | Globo de gráfico | 15 → 1 | `GloboGrafico` en `components/common/dataviz` |
 | Tiras de métricas | 9 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
 | Tablas y vistas de fichas | 3 + 3 | pendiente |

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { CloudOff, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { ApiResponse } from '@/lib/api/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   /** Qué va a contar el análisis, antes de pedirlo. */
@@ -64,7 +65,7 @@ export function AnalisisIA({ descripcion, pedir, clave }: Readonly<Props>) {
         {cargando && !texto ? (
           <div className="space-y-2" aria-label="Analizando">
             {[95, 100, 88, 72].map((w) => (
-              <div key={w} className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
+              <Skeleton key={w} className="h-3 rounded" style={{ width: `${w}%` }} />
             ))}
           </div>
         ) : texto ? (

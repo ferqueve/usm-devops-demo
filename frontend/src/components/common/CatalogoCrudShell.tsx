@@ -6,6 +6,7 @@ import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-re
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import type { Permission } from '@/lib/config/permissions';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export interface CatalogoItem {
   id: number;
@@ -104,8 +105,8 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
         <div className="divide-y divide-border">
           {Array.from({ length: 3 }, (_, i) => (
             <div key={i} className="flex items-center gap-3 px-4 py-3">
-              <div className="h-4 w-4 rounded-full bg-muted animate-pulse" />
-              <div className="h-3.5 w-40 rounded bg-muted animate-pulse" />
+              <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-3.5 w-40 rounded" />
             </div>
           ))}
         </div>

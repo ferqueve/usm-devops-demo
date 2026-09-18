@@ -20,6 +20,7 @@ import { FiltrosInventario } from './FiltrosInventario';
 import { useDemandaInventario, useEstadoInventario, useFiltrosInventario } from './useEstadoInventario';
 import { EmbudoEquipos, EspaciosConProblemas, PedidoVsDisponible } from './Demanda';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const n = (v: number) => v.toLocaleString('es-UY');
 
@@ -88,13 +89,13 @@ const SECCIONES = [
 function Esqueleto() {
   return (
     <div className="space-y-3" aria-busy>
-      <div className="h-[74px] animate-pulse rounded-xl bg-muted" />
+      <Skeleton className="h-[74px] rounded-xl" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
-        {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-[92px] animate-pulse rounded-xl bg-muted" />)}
+        {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
       </div>
       <div className="grid gap-3 lg:grid-cols-3">
-        <div className="h-[320px] animate-pulse rounded-xl bg-muted lg:col-span-2" />
-        <div className="h-[320px] animate-pulse rounded-xl bg-muted" />
+        <Skeleton className="h-[320px] rounded-xl lg:col-span-2" />
+        <Skeleton className="h-[320px] rounded-xl" />
       </div>
     </div>
   );
@@ -289,7 +290,7 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
         }
       >
         {!demanda && cargandoDemanda ? (
-          <div className="h-[500px] animate-pulse rounded-xl bg-muted" aria-busy />
+          <Skeleton className="h-[500px] rounded-xl" aria-busy />
         ) : !demanda ? (
           <p className="rounded-xl border border-dashed bg-card py-10 text-center text-sm text-muted-foreground">
             No se pudo cargar la demanda de equipos. Probá actualizar.

@@ -32,6 +32,7 @@ import { ChipsFiltros, FiltrosReservas } from './FiltrosReservas';
 import { Novedades } from './Novedades';
 import { espacioFuera, textoComparacion, textoFiltros, useFiltrosReservas } from './filtros';
 import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SECCIONES = [
   { id: 'resumen', titulo: 'Resumen', icono: BarChart3, color: MARCA.azul },
@@ -49,11 +50,11 @@ function Esqueleto() {
   return (
     <div className="space-y-3" aria-busy>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
-        {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-[92px] animate-pulse rounded-xl bg-muted" />)}
+        {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
       </div>
       <div className="grid gap-3 lg:grid-cols-3">
-        <div className="h-[340px] animate-pulse rounded-xl bg-muted lg:col-span-2" />
-        <div className="h-[340px] animate-pulse rounded-xl bg-muted" />
+        <Skeleton className="h-[340px] rounded-xl lg:col-span-2" />
+        <Skeleton className="h-[340px] rounded-xl" />
       </div>
     </div>
   );

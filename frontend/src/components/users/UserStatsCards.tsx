@@ -137,18 +137,9 @@ export function UserStatsCards() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="rounded-xl bg-muted p-4 animate-pulse">
-            <div className="h-3 w-16 bg-foreground/10 rounded mb-2" />
-            <div className="h-6 w-12 bg-foreground/20 rounded" />
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // El esqueleto lo dibuja StatStrip, que es quien sabe cuánto mide una celda.
+  if (loading) return <StatStrip loading maxColumnas={3} items={[]} />;
+
 
   if (!stats) {
     return (
