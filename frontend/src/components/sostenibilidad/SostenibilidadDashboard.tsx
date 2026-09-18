@@ -7,8 +7,8 @@ import type { LucideIcon } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { toast } from 'sonner';
 import { PageHeader, HEADER_ACTION } from '@/components/layouts/PageHeader';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
-import { EmptyState } from '@/components/dashboard/views/_components/EmptyState';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -296,7 +296,7 @@ function Recursos({ stats }: Readonly<{ stats: SostenibilidadStats }>) {
 const MAX_CUADRADITOS = 20;
 
 function Ranking({ items, hojasPorArbol }: Readonly<{ items: RankingItem[]; hojasPorArbol: number }>) {
-  if (items.length === 0) return <EmptyState title="Sin datos." />;
+  if (items.length === 0) return <EmptyState variant="linea" title="Sin datos." />;
   const maxArboles = Math.max(...items.map((it) => it.hojas / hojasPorArbol));
   const slots = Math.min(MAX_CUADRADITOS, Math.max(1, Math.ceil(maxArboles)));
   const valePor = maxArboles > MAX_CUADRADITOS ? maxArboles / MAX_CUADRADITOS : 1;

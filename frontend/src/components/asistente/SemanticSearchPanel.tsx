@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { Building2, ChevronRight, Loader2, Search, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
-import { EmptyState } from '@/components/dashboard/views/_components/EmptyState';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { getSemanticSearch, type SemanticSearchResultado } from '@/lib/api/ai';
 import { MARCA } from '@/lib/design/paleta';
 
@@ -88,8 +88,8 @@ export function SemanticSearchPanel() {
           ))}
         </div>
       )}
-      {error && <EmptyState title="La búsqueda no está disponible ahora." />}
-      {out && out.length === 0 && <EmptyState title="Sin espacios parecidos." />}
+      {error && <EmptyState variant="linea" title="La búsqueda no está disponible ahora." />}
+      {out && out.length === 0 && <EmptyState variant="linea" title="Sin espacios parecidos." />}
       {out && out.length > 0 && (
         <div className="divide-y divide-border/60 border-t">
           {out.map((r) => {

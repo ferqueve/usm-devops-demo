@@ -2,9 +2,9 @@ import { CalendarDays, Flame, GraduationCap, MapPin, Megaphone, Award } from 'lu
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
-import { EmptyState } from './_components/EmptyState';
+import { EmptyState } from '@/components/ui/empty-state';
 import { EventoFila, MateriaFila, TutoriaFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, UTEC } from './_components/Graficos';
 
@@ -107,7 +107,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
               {materias.map((m) => <MateriaFila key={m.id} materia={m} />)}
             </div>
           ) : (
-            <EmptyState title="Todavía no te inscribiste a ninguna materia." />
+            <EmptyState variant="linea" title="Todavía no te inscribiste a ninguna materia." />
           )}
         </Panel>
 
@@ -124,7 +124,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
               {eventos.map((e) => <EventoFila key={`e${e.id}`} evento={e} />)}
             </div>
           ) : (
-            <EmptyState title="Nada agendado por ahora." />
+            <EmptyState variant="linea" title="Nada agendado por ahora." />
           )}
         </Panel>
       </div>

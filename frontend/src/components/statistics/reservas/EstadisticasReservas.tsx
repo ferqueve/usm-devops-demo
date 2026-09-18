@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { HEADER_ACTION, HEADER_ACTION_ICON, PAGE_ACTIONS_SLOT } from '@/components/layouts/PageHeader';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { csvEscape, downloadBlob } from '@/lib/utils/csv-helpers';
 import { fechaCorta, type Rango } from '../periodo';
 import { IndiceSecciones, Seccion } from '../Seccion';

@@ -2,8 +2,8 @@ import { Boxes, ClipboardList, Leaf, MapPin, Wrench } from 'lucide-react';
 import type { InventoryStats } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
-import { EmptyState } from './_components/EmptyState';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { EspacioFila, ItemFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, UTEC } from './_components/Graficos';
 import { Hero } from './_components/Hero';
@@ -121,7 +121,7 @@ export function MantenimientoDashboard({
               {items.map((i) => <ItemFila key={i.id} item={i} />)}
             </div>
           ) : (
-            <EmptyState title="Ningún item pide atención." />
+            <EmptyState variant="linea" title="Ningún item pide atención." />
           )}
         </Panel>
 
@@ -138,7 +138,7 @@ export function MantenimientoDashboard({
                 {espaciosCaidos.map((e) => <EspacioFila key={e.id} espacio={e} />)}
               </div>
             ) : (
-              <EmptyState title="Todos operativos." />
+              <EmptyState variant="linea" title="Todos operativos." />
             )}
           </Panel>
 
@@ -164,7 +164,7 @@ export function MantenimientoDashboard({
                 </div>
               </div>
             ) : (
-              <EmptyState title="Sin datos." />
+              <EmptyState variant="linea" title="Sin datos." />
             )}
           </Panel>
         </div>

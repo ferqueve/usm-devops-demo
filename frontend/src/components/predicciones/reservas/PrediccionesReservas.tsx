@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { Brain, CalendarCheck, CalendarRange, Target, TrendingDown, TrendingUp, X } from 'lucide-react';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
 import { postAnalyzeForecast } from '@/lib/api/ai';
 import { AnalisisIA } from '../AnalisisIA';

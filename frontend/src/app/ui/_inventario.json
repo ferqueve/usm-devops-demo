@@ -605,6 +605,18 @@
    "cubierto": true
   },
   {
+   "archivo": "components/common/Panel.tsx",
+   "familia": "common",
+   "nombres": [
+    "Panel"
+   ],
+   "lineas": 116,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
    "archivo": "components/common/TipoFormDialogShell.tsx",
    "familia": "common",
    "nombres": [
@@ -713,18 +725,6 @@
    "cubierto": true
   },
   {
-   "archivo": "components/dashboard/views/_components/EmptyState.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "EmptyState"
-   ],
-   "lineas": 11,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
    "archivo": "components/dashboard/views/_components/Filas.tsx",
    "familia": "dashboard",
    "nombres": [
@@ -766,18 +766,6 @@
     "Hero"
    ],
    "lineas": 96,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/views/_components/Panel.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "Panel"
-   ],
-   "lineas": 72,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2689,7 +2677,7 @@
    "nombres": [
     "PanelEstadistica"
    ],
-   "lineas": 154,
+   "lineas": 144,
    "dialog": true,
    "tipo": "montable",
    "motivo": "",
@@ -2886,7 +2874,7 @@
    "nombres": [
     "Vacio"
    ],
-   "lineas": 5,
+   "lineas": 13,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3396,7 +3384,7 @@
    "nombres": [
     "EmptyState"
    ],
-   "lineas": 40,
+   "lineas": 69,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",

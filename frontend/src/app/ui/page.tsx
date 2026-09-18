@@ -19,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
-import { EmptyState } from '@/components/dashboard/views/_components/EmptyState';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
 import { TemaGraficosContexto } from '@/components/statistics/graficos/tema';
 import { GraficosDashboard, GraficosEstadisticas } from './_graficos';
@@ -314,7 +314,7 @@ export default function UiPage() {
                   </TableBody>
                 </Table>
                 <Separator />
-                <EmptyState title="Sin pendientes." />
+                <EmptyState variant="linea" title="Sin pendientes." />
               </div>
             </Doble>
           </Seccion>
@@ -415,7 +415,7 @@ export default function UiPage() {
           <Seccion
             id="piezas-analisis"
             titulo="Piezas de Estadísticas y Predicciones"
-            nota="Acá aparecen un segundo Panel y un segundo EmptyState, cada uno hecho por su cuenta."
+            nota="Acá vivían un segundo Panel y un tercer EmptyState. Hoy PanelEstadistica es el Panel de común más su botón de ampliar, y Vacio es EmptyState en variante línea."
           >
             <Doble>
               <PiezasAnalisis />

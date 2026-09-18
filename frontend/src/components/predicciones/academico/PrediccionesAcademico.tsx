@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CalendarRange, CalendarX2, History, UserCheck, Users, UsersRound, UserX } from 'lucide-react';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
 import { postAnalyzeAsistencia } from '@/lib/api/ai';
 import { statsApi, type PrediccionAcademico, type TutoriaProximaML } from '@/lib/api/stats';

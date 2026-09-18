@@ -2,8 +2,8 @@ import { CheckCircle2, Clock, Megaphone, XCircle } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
-import { EmptyState } from './_components/EmptyState';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila } from './_components/Filas';
 import { Anillo, Tendencia, UTEC, variacion } from './_components/Graficos';
@@ -102,7 +102,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
               ))}
             </div>
           ) : (
-            <EmptyState title="Sin solicitudes enviadas." />
+            <EmptyState variant="linea" title="Sin solicitudes enviadas." />
           )}
         </Panel>
 
@@ -118,7 +118,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
               {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
             </div>
           ) : (
-            <EmptyState title="Sin eventos próximos." />
+            <EmptyState variant="linea" title="Sin eventos próximos." />
           )}
         </Panel>
       </div>

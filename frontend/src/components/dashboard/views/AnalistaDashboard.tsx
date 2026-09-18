@@ -4,8 +4,8 @@ import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
-import { EmptyState } from './_components/EmptyState';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { PresionFila } from './_components/Filas';
 import { Anillo, RitmoSemanal, Tendencia, UTEC, variacion } from './_components/Graficos';
@@ -127,7 +127,7 @@ export function AnalistaDashboard({
               ))}
             </div>
           ) : (
-            <EmptyState title="Cola al día." />
+            <EmptyState variant="linea" title="Cola al día." />
           )}
         </Panel>
 
@@ -147,7 +147,7 @@ export function AnalistaDashboard({
                 {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
               </div>
             ) : (
-              <EmptyState title="Nada esperando." />
+              <EmptyState variant="linea" title="Nada esperando." />
             )}
           </Panel>
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Loader2, RotateCcw, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { cn } from '@/lib/utils/helpers';
 import { useAuth } from '@/hooks/useAuth';
 import { herramienta } from './herramientas';

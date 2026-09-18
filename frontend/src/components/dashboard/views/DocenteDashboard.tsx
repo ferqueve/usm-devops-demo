@@ -2,9 +2,9 @@ import { CalendarClock, CheckCircle2, Clock, GraduationCap, ListChecks, Users } 
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
-import { EmptyState } from './_components/EmptyState';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila, MateriaFila } from './_components/Filas';
 import { BarrasHorizontales, Progreso, UTEC } from './_components/Graficos';
@@ -98,7 +98,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
                 ))}
               </div>
             ) : (
-              <EmptyState title="Sin franjas próximas." />
+              <EmptyState variant="linea" title="Sin franjas próximas." />
             )}
           </Panel>
         </div>
@@ -115,7 +115,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
               {materias.map((m) => <MateriaFila key={m.id} materia={m} />)}
             </div>
           ) : (
-            <EmptyState title="No dictás ninguna materia." />
+            <EmptyState variant="linea" title="No dictás ninguna materia." />
           )}
         </Panel>
 
@@ -129,7 +129,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
           {(() => {
             const filas = proximasMias.length > 0 ? proximasMias : misPendientes;
             if (filas.length === 0 && eventos.length === 0) {
-              return <EmptyState title="Sin reservas próximas ni pendientes." />;
+              return <EmptyState variant="linea" title="Sin reservas próximas ni pendientes." />;
             }
             return (
               <div className="divide-y divide-border/60">

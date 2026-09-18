@@ -16,10 +16,12 @@ import { SemanaTipica } from '@/components/predicciones/reservas/SemanaTipica';
 /**
  * Piezas sueltas de Estadísticas y Predicciones.
  *
- * Dos de ellas son el motivo por el que vale la pena tener esta sección:
- * `PanelEstadistica` es un segundo `Panel` —mismo encabezado oscuro con barra
- * de acento, más un campo de explicación— y `Vacio` es un segundo
- * `EmptyState`. Cada pantalla resolvió por su cuenta lo mismo que ya existía.
+ * Dos de ellas son el motivo por el que valió la pena tener esta sección:
+ * `PanelEstadistica` redibujaba entero el encabezado de `Panel` —mismo fondo,
+ * misma barra de acento, mismo enlace— con otro padding, y `Vacio` era un
+ * tercer `EmptyState`. Cada pantalla había resuelto por su cuenta lo mismo que
+ * ya existía. Hoy los dos componen el de común; siguen acá porque el extra que
+ * aportan —la explicación, el texto por defecto— es propio de estadísticas.
  *
  * El resto de estas dos familias pide objetos de dominio completos
  * (`Academico`, `Aprobacion`, `DemandaInventario`…) y aparece como pendiente
@@ -106,7 +108,7 @@ export function PiezasAnalisis() {
         </PanelEstadistica>
       </Caja>
 
-      <Caja titulo="Vacio" nota="Un segundo EmptyState, con otro texto por defecto.">
+      <Caja titulo="Vacio" nota="EmptyState en variante línea, con el texto por defecto de estadísticas.">
         <div className="rounded-md border border-dashed border-border">
           <Vacio />
         </div>

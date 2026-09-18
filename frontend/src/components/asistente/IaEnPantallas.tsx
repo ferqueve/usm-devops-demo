@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BarChart3, CalendarPlus, ChevronRight, DoorOpen, GraduationCap, Leaf, TrendingUp } from 'lucide-react';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { MARCA } from '@/lib/design/paleta';
 
 const LUGARES = [

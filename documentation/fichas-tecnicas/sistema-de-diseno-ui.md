@@ -251,10 +251,10 @@ implementaciones de lo mismo:
 | familia | copias | estado |
 |---|---|---|
 | Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
+| `EmptyState` | 3 → 1 | hecho: `components/ui/empty-state` con variante `linea` |
+| `Panel` | 2 → 1 | hecho: `components/common/Panel`; `PanelEstadistica` lo compone |
 | Tiras de métricas | 6 | pendiente |
 | Tablas y vistas de fichas | 3 + 3 | pendiente |
-| `Panel` | 2 | pendiente |
-| `EmptyState` | 2 | pendiente |
 
 **Componentes de dashboard sin usar.** `DashboardStats`, `DashboardCharts`,
 `UpcomingReservations` y `QuickActions` —593 líneas más sus cuatro archivos de
@@ -269,7 +269,7 @@ pantalla o se borran; queda a decisión de producto.
 - [x] Documentar la guía de contribución. Está en
       [`documentation/ui/README.md`](../ui/README.md).
 - [x] Sumar un catálogo de componentes. Es la ruta `/ui`, sólo en desarrollo,
-      con los 125 componentes que pueden montarse sin backend y los dos temas
+      con los 124 componentes que pueden montarse sin backend y los dos temas
       lado a lado. La cobertura la calcula `scripts/inventario-ui.mjs`.
 - [x] Colapsar las ocho confirmaciones de borrado. Eran ~690 líneas repetidas;
       hoy son ocho envoltorios sobre `ConfirmarBorradoDialog`, cada uno con su

@@ -3,7 +3,7 @@ import { CheckCircle2, DatabaseZap, FileText, FlaskConical, Lightbulb, Loader2, 
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { MARCA } from '@/lib/design/paleta';
 import {
   postAnalyzeForecast, postExplainRecomendacion, postReindexEmbeddings, postStatsSummary,

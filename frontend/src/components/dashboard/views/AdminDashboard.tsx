@@ -4,9 +4,9 @@ import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
 import { StatStrip } from './_components/StatStrip';
-import { EmptyState } from './_components/EmptyState';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
-import { Panel } from './_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
 import { ActividadFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, Tendencia, UTEC, variacion } from './_components/Graficos';
@@ -148,7 +148,7 @@ export function AdminDashboard({
               ))}
             </div>
           ) : (
-            <EmptyState title="Sin pendientes." />
+            <EmptyState variant="linea" title="Sin pendientes." />
           )}
         </Panel>
 
@@ -201,7 +201,7 @@ export function AdminDashboard({
                 ))}
               </div>
             ) : (
-              <EmptyState title="Sin movimientos." />
+              <EmptyState variant="linea" title="Sin movimientos." />
             )}
           </Panel>
         </div>

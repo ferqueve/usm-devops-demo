@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronRight, Info, Lightbulb, Maximize2, MoonStar, Radio, Camera, Calculator } from 'lucide-react';
+import { Info, Lightbulb, Maximize2, MoonStar, Radio, Camera, Calculator } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Panel } from '@/components/common/Panel';
 import { MARCA } from '@/lib/design/paleta';
 
 export type Fuente = 'vivo' | 'noche' | 'foto' | 'modelo';
@@ -43,9 +43,12 @@ interface Props {
 }
 
 /**
- * Panel de estadísticas: encabezado oscuro, contenido que ocupa el alto de su
- * fila (así dos paneles lado a lado coinciden) y un botón que abre la misma
- * estadística en grande con qué muestra, cómo se calcula y cómo leerla.
+ * Panel de estadísticas: un `Panel` más el botón que abre la misma
+ * estadística en grande, con qué muestra, cómo se calcula y cómo leerla.
+ *
+ * El encabezado no se dibuja acá. Estaba duplicado —mismo fondo, misma barra
+ * de acento, mismo enlace— con otro padding, así que un panel de dashboard y
+ * uno de estadísticas no alineaban aunque estuvieran uno al lado del otro.
  */
 export function PanelEstadistica({
   title,
@@ -64,44 +67,31 @@ export function PanelEstadistica({
   const Fuente = FUENTES[explicacion.fuente];
 
   return (
-    <section className={`flex h-full min-h-0 flex-col overflow-hidden rounded-xl border bg-card ${className ?? ''}`}>
-      <div className="flex items-center justify-between gap-3 bg-chrome px-4 py-2.5 text-white">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accentColor }} aria-hidden />
-          <h2 className="shrink-0 text-sm font-semibold tracking-tight">{title}</h2>
-          {count !== undefined && count !== '' && <span className="truncate text-xs text-white/60">{count}</span>}
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          {action && (
-            <Link
-              to={action.to}
-              className="inline-flex items-center gap-0.5 rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-            >
-              {action.label}
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          )}
+    <>
+      <Panel
+        title={title}
+        count={count}
+        accentColor={accentColor}
+        action={action}
+        className={className}
+        centrar={centrar}
+        scroll={scroll}
+        flush={flush}
+        altoCompleto
+        acciones={
           <button
             type="button"
             onClick={() => setAbierto(true)}
             aria-label={`Ampliar y explicar: ${title}`}
             title="Ampliar y ver la explicación"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+            className="inline-flex size-7 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/15 hover:text-white"
           >
-            <Maximize2 className="h-3.5 w-3.5" />
+            <Maximize2 className="size-3.5" />
           </button>
-        </div>
-      </div>
-
-      <div
-        className={`min-h-0 flex-1 ${scroll ? 'overflow-y-auto [scrollbar-width:thin]' : ''} ${flush ? '' : 'p-4'} ${
-          centrar ? 'flex flex-col justify-center' : ''
-        }`}
+        }
       >
         {contenido(false)}
-        {/* Con scroll, un degradé abajo avisa que hay más para ver. */}
-        {scroll && <div className={`pointer-events-none sticky bottom-0 h-8 bg-gradient-to-t from-card to-transparent ${flush ? '' : '-mx-4 -mb-4'}`} aria-hidden />}
-      </div>
+      </Panel>
 
       <Dialog open={abierto} onOpenChange={setAbierto}>
         <DialogContent
@@ -136,7 +126,7 @@ export function PanelEstadistica({
           </div>
         </DialogContent>
       </Dialog>
-    </section>
+    </>
   );
 }
 
