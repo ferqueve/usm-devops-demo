@@ -127,7 +127,7 @@ function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
         {tutoria.espacioNombre && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{tutoria.espacioNombre}</span>}
       </p>
       <div className="mt-2">
-        <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+        <div className="flex justify-between text-2xs text-muted-foreground mb-1">
           <span>Cupo</span>
           <span className={`tabular-nums ${libre ? 'text-utec-green font-medium' : ''}`}>
             {ocupados}/{tutoria.cupo} · {tutoria.plazasDisponibles} libres
@@ -227,14 +227,14 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
                     <span className="truncate">{i.estudianteNombre}</span>
                     <span className="flex items-center gap-1 shrink-0">
                       {i.estado === 'APROBADA' ? (
-                        <Badge className="bg-utec-green/10 text-utec-green border-utec-green/20 border text-[10px] font-medium">
+                        <Badge className="bg-utec-green/10 text-utec-green border-utec-green/20 border text-2xs font-medium">
                           <CheckCircle className="h-3 w-3 mr-1" />Cursada
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px]">{i.estado}</Badge>
+                        <Badge variant="outline" className="text-2xs">{i.estado}</Badge>
                       )}
                       {canManage && i.estado === 'ACTIVA' && (
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] text-utec-green hover:text-utec-green" disabled={togglingId === i.id} onClick={() => cambiarEstado(i.id, 'APROBADA')} title="Marcar cursada">
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-2xs text-utec-green hover:text-utec-green" disabled={togglingId === i.id} onClick={() => cambiarEstado(i.id, 'APROBADA')} title="Marcar cursada">
                           {togglingId === i.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircle className="h-3.5 w-3.5 mr-1" />Cursada</>}
                         </Button>
                       )}

@@ -49,7 +49,7 @@ function MetricsChartHeader({
       {Icon && <Icon className="h-3.5 w-3.5 text-white/70 shrink-0" />}
       <h3 className="text-sm font-semibold tracking-tight truncate flex-1">{title}</h3>
       <Select value={timeRange.toString()} onValueChange={(val) => onTimeRangeChange(Number(val))}>
-        <SelectTrigger className="w-[85px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+        <SelectTrigger className="w-[85px] h-7 text-2xs bg-white/10 border-white/20 text-white hover:bg-white/15">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -61,7 +61,7 @@ function MetricsChartHeader({
         </SelectContent>
       </Select>
       <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => onYAxisModeChange(val)}>
-        <SelectTrigger className="w-[85px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+        <SelectTrigger className="w-[85px] h-7 text-2xs bg-white/10 border-white/20 text-white hover:bg-white/15">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

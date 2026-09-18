@@ -54,7 +54,7 @@ function Globo({ active, payload, granularidad, colores }: TooltipProps<number, 
     <div className="min-w-[170px] rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="font-medium capitalize text-white/70">{etiquetaTramo(p, granularidad, true)}</p>
       {p.incompleto && (
-        <p className="mb-1 text-[11px] text-utec-yellow">
+        <p className="mb-1 text-2xs text-utec-yellow">
           Incompleta: sólo del {fechaCorta(p.desde)} al {fechaCorta(p.hasta)}
         </p>
       )}

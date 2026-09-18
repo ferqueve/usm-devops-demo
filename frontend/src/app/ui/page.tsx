@@ -95,7 +95,7 @@ function Doble({ children }: Readonly<{ children: ReactNode }>) {
     <div className="flex flex-col gap-3 md:flex-row">
       <TemaGraficosContexto.Provider value="claro">
         <div className={pared}>
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="mb-3 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
             Claro
           </p>
           {children}
@@ -103,7 +103,7 @@ function Doble({ children }: Readonly<{ children: ReactNode }>) {
       </TemaGraficosContexto.Provider>
       <TemaGraficosContexto.Provider value="oscuro">
         <div className={`dark ${pared}`}>
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="mb-3 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
             Oscuro
           </p>
           {children}

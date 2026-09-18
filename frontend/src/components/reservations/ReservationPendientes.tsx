@@ -275,7 +275,7 @@ export default function ReservationPendientes({
                 return (
                   <div className="text-center py-6 px-2">
                     <p className="text-xs sm:text-sm font-medium text-foreground/80">Sin resultados</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">No hay pendientes con esos filtros</p>
+                    <p className="text-2xs sm:text-xs text-muted-foreground mt-1">No hay pendientes con esos filtros</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -294,7 +294,7 @@ export default function ReservationPendientes({
                 <div className="text-center py-6 sm:py-8 bg-muted rounded-lg border border-border px-2">
                   <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-success mx-auto mb-2 sm:mb-3" />
                   <p className="text-xs sm:text-sm font-medium text-foreground/80">No hay solicitudes pendientes</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Todas las reservas están procesadas</p>
+                  <p className="text-2xs sm:text-xs text-muted-foreground mt-1">Todas las reservas están procesadas</p>
                 </div>
               );
             }
@@ -327,7 +327,7 @@ export default function ReservationPendientes({
                         </h3>
                         {isPrioritaria && (
                           <span
-                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0 ${
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-2xs font-semibold flex-shrink-0 ${
                               isAltaUrgencia
                                 ? 'bg-danger-suave text-danger-texto border border-danger-borde'
                                 : 'bg-warning-suave text-warning-texto border border-warning-borde'
@@ -338,7 +338,7 @@ export default function ReservationPendientes({
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-2xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3 flex-shrink-0" />
                           {formatShortDate(reserva.inicio)}
@@ -352,7 +352,7 @@ export default function ReservationPendientes({
                           Cap. {reserva.capacidadEspacio}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-0">
+                      <div className="flex items-center gap-1 text-2xs text-muted-foreground min-w-0">
                         <User className="h-3 w-3 flex-shrink-0" />
                         <span className="truncate">{reserva.usuarioNombre}</span>
                       </div>

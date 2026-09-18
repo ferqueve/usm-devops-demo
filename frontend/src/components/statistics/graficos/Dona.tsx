@@ -67,7 +67,7 @@ export function Dona({ porciones, centro, leyendaCentro, tamano = 150 }: Readonl
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-2xl font-semibold leading-none">{centro ?? formatoNumero(total)}</span>
-          {leyendaCentro && <span className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{leyendaCentro}</span>}
+          {leyendaCentro && <span className="mt-1 text-2xs uppercase tracking-wide text-muted-foreground">{leyendaCentro}</span>}
         </div>
       </div>
       <ul className="min-w-[160px] flex-1 space-y-1.5">

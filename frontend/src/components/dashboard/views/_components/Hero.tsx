@@ -23,7 +23,7 @@ function Casilla({ valor, letra }: Readonly<{ valor: number; letra: string }>) {
   return (
     <div className="min-w-[46px] rounded-lg bg-white/10 px-2.5 py-1.5 text-center ring-1 ring-white/15">
       <div className="text-lg font-bold leading-none tabular-nums">{String(valor).padStart(2, '0')}</div>
-      <div className="text-[10px] text-white/60">{letra}</div>
+      <div className="text-2xs text-white/60">{letra}</div>
     </div>
   );
 }
@@ -56,7 +56,7 @@ export function Hero({
 
       <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-white/60">
+          <div className="mb-1 flex items-center gap-1.5 text-2xs font-medium tracking-wider text-white/60">
             <Icono className="h-3.5 w-3.5" />
             {etiqueta}
           </div>
@@ -76,7 +76,7 @@ export function Hero({
           {foco && (
             <div className="text-right">
               <div className="text-3xl font-bold leading-none tabular-nums">{foco.valor}</div>
-              <div className="text-[11px] text-white/60">{foco.leyenda}</div>
+              <div className="text-2xs text-white/60">{foco.leyenda}</div>
             </div>
           )}
           {accion && (

@@ -39,10 +39,10 @@ export function ProximaTutoriaHero({ tutorias, modo }: Readonly<{ tutorias: Tuto
             <span>{fmt(proxima.inicio)}</span>
             {modo === 'estudiante' && <span>· {proxima.docenteNombre}</span>}
             {esVirtual
-              ? <Badge className="bg-utec-cyan/20 text-utec-cyan border-utec-cyan/30 border text-[10px]"><Video className="h-3 w-3 mr-1" />Virtual</Badge>
+              ? <Badge className="bg-utec-cyan/20 text-utec-cyan border-utec-cyan/30 border text-2xs"><Video className="h-3 w-3 mr-1" />Virtual</Badge>
               : proxima.espacioNombre && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{proxima.espacioNombre}</span>}
             {modo === 'estudiante' && proxima.reservaEstado === 'ESPERA' && (
-              <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-[10px]">En lista de espera</Badge>
+              <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-2xs">En lista de espera</Badge>
             )}
           </div>
         </div>
@@ -51,7 +51,7 @@ export function ProximaTutoriaHero({ tutorias, modo }: Readonly<{ tutorias: Tuto
             {([['D', cd.dias], ['H', cd.horas], ['M', cd.minutos], ['S', cd.segundos]] as const).map(([l, v]) => (
               <div key={l} className="text-center rounded-lg bg-[#1b2236] ring-1 ring-white/15 px-2.5 py-1.5 min-w-[48px]">
                 <div className="text-xl font-bold tabular-nums leading-none">{String(v).padStart(2, '0')}</div>
-                <div className="text-[10px] text-white/60">{l}</div>
+                <div className="text-2xs text-white/60">{l}</div>
               </div>
             ))}
           </div>

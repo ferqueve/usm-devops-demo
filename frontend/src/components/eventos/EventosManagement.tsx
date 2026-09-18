@@ -106,7 +106,7 @@ function KpiTile({ icon: Icon, label, value, hint, variant, delta }: Readonly<{ 
           )}
         </div>
         <div className="text-xs font-medium opacity-80 mt-1.5 flex items-center gap-1"><Icon className="h-3.5 w-3.5" />{label}</div>
-        {hint && <div className="text-[11px] opacity-70 mt-0.5 truncate">{hint}</div>}
+        {hint && <div className="text-2xs opacity-70 mt-0.5 truncate">{hint}</div>}
       </div>
     </div>
   );
@@ -434,7 +434,7 @@ export default function EventosManagement() {
                   <EventoPatternBg patron={evento.patron} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
                   <div className="relative flex items-center justify-between">
-                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold">{evento.tipo}</span>
+                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-2xs font-semibold">{evento.tipo}</span>
                     <EstadoBadge estado={evento.estado} />
                   </div>
                   <h3 className="relative text-lg font-bold leading-tight line-clamp-2">{evento.titulo}</h3>

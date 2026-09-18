@@ -50,7 +50,7 @@ function Fila({
     <div className="flex items-baseline justify-between gap-3 px-4 py-2.5">
       <div className="min-w-0">
         <div className="text-sm">{label}</div>
-        {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
+        {hint && <div className="text-2xs text-muted-foreground">{hint}</div>}
       </div>
       <div className={`shrink-0 text-sm font-semibold tabular-nums ${alerta ? 'text-utec-red' : ''}`}>
         {value}

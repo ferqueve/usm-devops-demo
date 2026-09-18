@@ -79,7 +79,7 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
         </div>
         {aiExplicacion && (
           <div className="rounded border border-utec-blue/30 bg-utec-blue/5 p-2 text-sm">
-            <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-utec-blue">
+            <div className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-utec-blue">
               <Wand2 className="h-3 w-3" /> Explicación IA
             </div>
             <p className="whitespace-pre-wrap leading-relaxed text-foreground">{aiExplicacion}</p>

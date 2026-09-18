@@ -56,18 +56,18 @@ export function LineaTiempoSemana({ eventos, onNavigate }: Readonly<LineaTiempoS
           return (
             <div key={d.key} className={`rounded-xl border p-2 ${esHoy ? 'border-utec-cyan/60 bg-utec-cyan/5' : 'bg-card'}`}>
               <div className="mb-2 flex items-center justify-between">
-                <span className={`text-[11px] font-medium ${esHoy ? 'text-utec-cyan' : 'text-muted-foreground'}`}>{d.nombre}</span>
-                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold ${esHoy ? 'bg-utec-cyan text-utec-dark' : 'text-foreground'}`}>{d.numero}</span>
+                <span className={`text-2xs font-medium ${esHoy ? 'text-utec-cyan' : 'text-muted-foreground'}`}>{d.nombre}</span>
+                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-2xs font-semibold ${esHoy ? 'bg-utec-cyan text-utec-dark' : 'text-foreground'}`}>{d.numero}</span>
               </div>
               <div className="space-y-1">
-                {d.eventos.length === 0 && <p className="py-2 text-center text-[10px] text-muted-foreground/60">Sin eventos</p>}
+                {d.eventos.length === 0 && <p className="py-2 text-center text-2xs text-muted-foreground/60">Sin eventos</p>}
                 {d.eventos.map((e) => (
                   <button
                     key={e.id}
                     type="button"
                     onClick={() => onNavigate(e.id)}
                     title={`${hora(e.inicio)} · ${e.titulo}`}
-                    className={`block w-full truncate rounded-md px-1.5 py-1 text-left text-[10px] font-medium transition-colors ${TIPO_CHIP[e.tipo] ?? TIPO_CHIP_DEFAULT}`}
+                    className={`block w-full truncate rounded-md px-1.5 py-1 text-left text-2xs font-medium transition-colors ${TIPO_CHIP[e.tipo] ?? TIPO_CHIP_DEFAULT}`}
                   >
                     <span className="tabular-nums opacity-80">{hora(e.inicio)}</span> {e.titulo}
                   </button>

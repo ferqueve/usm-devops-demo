@@ -184,7 +184,7 @@ function MiniStat({ icon: Icon, value, label }: Readonly<{ icon: LucideIcon; val
         <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         {value}
       </div>
-      <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -223,7 +223,7 @@ function MateriaCard({
           {statusBadge}
         </div>
         {materia.codigo && (
-          <span className={`mt-3 inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-[10px] font-semibold ${a.chip}`}>
+          <span className={`mt-3 inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-2xs font-semibold ${a.chip}`}>
             {materia.codigo}
           </span>
         )}
@@ -466,7 +466,7 @@ function AdminMateriasView() {
                         <div className="min-w-0">
                           <div className="font-medium truncate">{materia.nombre}</div>
                           {materia.codigo && (
-                            <div className="font-mono text-[11px] text-muted-foreground">{materia.codigo}</div>
+                            <div className="font-mono text-2xs text-muted-foreground">{materia.codigo}</div>
                           )}
                         </div>
                       </div>
@@ -730,11 +730,11 @@ function EstudianteMateriasView() {
       onOpen={() => navigate(detailPath(materia.id))}
       statusBadge={
         inscripta ? (
-          <Badge className="bg-utec-green text-white border-utec-green text-[10px] gap-1 shrink-0">
+          <Badge className="bg-utec-green text-white border-utec-green text-2xs gap-1 shrink-0">
             <CheckCircle className="h-3 w-3" />Inscripta
           </Badge>
         ) : (
-          <Badge variant="outline" className="text-[10px] shrink-0">Disponible</Badge>
+          <Badge variant="outline" className="text-2xs shrink-0">Disponible</Badge>
         )
       }
       footer={

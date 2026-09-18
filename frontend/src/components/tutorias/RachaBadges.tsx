@@ -25,11 +25,11 @@ export function RachaBadges() {
         <div className="flex gap-3">
           <div className="flex-1 rounded-xl bg-utec-green/10 p-3 text-center">
             <div className="text-2xl font-bold tabular-nums text-utec-green">{racha.asistidas}</div>
-            <div className="text-[11px] text-muted-foreground">asistidas</div>
+            <div className="text-2xs text-muted-foreground">asistidas</div>
           </div>
           <div className="flex-1 rounded-xl bg-utec-blue/10 p-3 text-center">
             <div className="text-2xl font-bold tabular-nums text-utec-blue">{racha.agendadas}</div>
-            <div className="text-[11px] text-muted-foreground">agendadas</div>
+            <div className="text-2xs text-muted-foreground">agendadas</div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">

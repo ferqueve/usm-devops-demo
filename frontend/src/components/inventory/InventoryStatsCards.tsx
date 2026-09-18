@@ -41,12 +41,12 @@ export default function InventoryStatsCards({ statistics }: Readonly<InventorySt
     <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 text-sm">
       {cells.map(({ label, value, hint, icon: Icon, accent }) => (
         <div key={label} className="rounded-lg bg-chrome text-white px-3 py-2 min-w-0">
-          <div className="flex items-center gap-1.5 text-[11px] text-white/60 mb-0.5">
+          <div className="flex items-center gap-1.5 text-2xs text-white/60 mb-0.5">
             <Icon className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{label}</span>
           </div>
           <div className={`text-lg font-semibold tabular-nums ${accent ?? ''}`}>{value}</div>
-          {hint && <div className="text-[11px] text-white/60 truncate">{hint}</div>}
+          {hint && <div className="text-2xs text-white/60 truncate">{hint}</div>}
         </div>
       ))}
     </div>

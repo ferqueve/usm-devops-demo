@@ -117,7 +117,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
               <li key={i.id} className="rounded-lg border p-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 min-w-0"><MessageSquare className="h-3.5 w-3.5 text-muted-foreground shrink-0" /><span className="truncate text-sm font-medium">{i.estudianteNombre ?? 'Anónimo'}</span></span>
-                  <span className="flex items-center gap-2 shrink-0"><Stars value={i.rating} /><span className="text-[11px] text-muted-foreground">{fmtFecha(i.createdAt)}</span></span>
+                  <span className="flex items-center gap-2 shrink-0"><Stars value={i.rating} /><span className="text-2xs text-muted-foreground">{fmtFecha(i.createdAt)}</span></span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{i.comentario}</p>
               </li>

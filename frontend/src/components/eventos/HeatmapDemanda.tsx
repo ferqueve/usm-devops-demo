@@ -31,11 +31,11 @@ export function HeatmapDemanda({ eventos }: Readonly<HeatmapDemandaProps>) {
       <div className="inline-block min-w-full">
         <div className="flex">
           <div className="w-10 shrink-0" />
-          {HORAS.map((h) => <div key={h} className="flex-1 text-center text-[9px] text-muted-foreground min-w-[20px]">{h}</div>)}
+          {HORAS.map((h) => <div key={h} className="flex-1 text-center text-2xs text-muted-foreground min-w-[20px]">{h}</div>)}
         </div>
         {DIAS.map((dia, r) => (
           <div key={dia} className="flex items-center">
-            <div className="w-10 shrink-0 text-[10px] text-muted-foreground pr-1 text-right">{dia}</div>
+            <div className="w-10 shrink-0 text-2xs text-muted-foreground pr-1 text-right">{dia}</div>
             {HORAS.map((_, c) => {
               const v = grid[r][c];
               const op = max > 0 && v > 0 ? 0.15 + 0.85 * (v / max) : 0;
@@ -51,7 +51,7 @@ export function HeatmapDemanda({ eventos }: Readonly<HeatmapDemandaProps>) {
             })}
           </div>
         ))}
-        <p className="text-[10px] text-muted-foreground mt-2">Intensidad = eventos + inscriptos por franja. Más oscuro = más demanda.</p>
+        <p className="text-2xs text-muted-foreground mt-2">Intensidad = eventos + inscriptos por franja. Más oscuro = más demanda.</p>
       </div>
     </div>
   );

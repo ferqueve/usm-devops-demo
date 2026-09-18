@@ -95,7 +95,7 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
                 return (
                   <TableRow key={`${e.method}-${e.uri}-${i}`}>
                     <TableCell>
-                      <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-semibold rounded border ${methodColor(e.method)}`}>
+                      <span className={`inline-flex px-1.5 py-0.5 text-2xs font-semibold rounded border ${methodColor(e.method)}`}>
                         {e.method || '-'}
                       </span>
                     </TableCell>
@@ -113,7 +113,7 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
                         <span className={`text-xs font-semibold tabular-nums w-14 text-right ${p95Color(e.p95)}`}>
                           {e.p95.toFixed(0)}
                         </span>
-                        <Badge variant="outline" className="text-[10px] tabular-nums w-16 justify-end">
+                        <Badge variant="outline" className="text-2xs tabular-nums w-16 justify-end">
                           {e.p99.toFixed(0)} p99
                         </Badge>
                       </div>

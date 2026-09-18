@@ -632,7 +632,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
                     {i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
-                    {nodo.codigo && <span className="block font-mono text-[10px] font-semibold text-muted-foreground tracking-wide">{nodo.codigo}</span>}
+                    {nodo.codigo && <span className="block font-mono text-2xs font-semibold text-muted-foreground tracking-wide">{nodo.codigo}</span>}
                     <span className="block text-sm font-medium truncate">{nodo.nombre}</span>
                   </span>
                   <span className="flex items-center gap-1 text-xs font-semibold text-utec-orange whitespace-nowrap">
@@ -715,10 +715,10 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
                 >
                   <span className="w-2.5 h-7 rounded-full shrink-0" style={{ backgroundColor: colorDe(m) }} />
                   <span className="min-w-0 flex-1">
-                    {m.codigo && <span className="block font-mono text-[10px] font-semibold text-muted-foreground tracking-wide">{m.codigo}</span>}
+                    {m.codigo && <span className="block font-mono text-2xs font-semibold text-muted-foreground tracking-wide">{m.codigo}</span>}
                     <span className="block text-sm font-medium truncate">{m.nombre}</span>
                   </span>
-                  <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
+                  <span className="text-2xs text-muted-foreground whitespace-nowrap tabular-nums">
                     S{m.semestre ?? '—'} · {m.creditos ?? 0}cr
                   </span>
                 </button>

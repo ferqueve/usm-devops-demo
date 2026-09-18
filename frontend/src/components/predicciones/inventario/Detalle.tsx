@@ -156,7 +156,7 @@ export function TiraRiesgo({ serie }: Readonly<{ serie: DiaInventarioML[] }>) {
   if (serie.length === 0) return null;
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
+      <div className="mb-1 flex items-center justify-between text-2xs text-muted-foreground">
         <span>Probabilidad de faltante, día por día</span>
         <span className="flex items-center gap-1">
           0%
@@ -174,7 +174,7 @@ export function TiraRiesgo({ serie }: Readonly<{ serie: DiaInventarioML[] }>) {
           />
         ))}
       </div>
-      <div className="mt-0.5 flex justify-between text-[10px] text-muted-foreground">
+      <div className="mt-0.5 flex justify-between text-2xs text-muted-foreground">
         <span>{fechaCorta(serie[0].fecha)}</span>
         <span>{fechaCorta(serie.at(-1)!.fecha)}</span>
       </div>
@@ -200,7 +200,7 @@ export function PatronSemanal({ tipo, alto = 120 }: Readonly<{ tipo: TipoInventa
         <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-muted-foreground/50" style={{ bottom: `${(1 / tope) * 100}%` }} />
         {dias.map((d) => (
           <div key={d.dia} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end" title={`${d.dia}: ×${decimal(d.multiplicador, 2)}`}>
-            <span className="mb-0.5 text-[10px] font-semibold tabular-nums">×{decimal(d.multiplicador)}</span>
+            <span className="mb-0.5 text-2xs font-semibold tabular-nums">×{decimal(d.multiplicador)}</span>
             <div
               className="w-full max-w-[28px] rounded-t-[4px]"
               style={{ height: `${(d.multiplicador / tope) * 100}%`, backgroundColor: colores.prediccion, opacity: d.multiplicador >= 1 ? 1 : 0.4 }}
@@ -209,7 +209,7 @@ export function PatronSemanal({ tipo, alto = 120 }: Readonly<{ tipo: TipoInventa
         ))}
       </div>
       <div className="flex gap-1.5 border-t pt-1">
-        {dias.map((d) => <span key={d.dia} className="min-w-0 flex-1 text-center text-[11px] text-muted-foreground">{d.dia}</span>)}
+        {dias.map((d) => <span key={d.dia} className="min-w-0 flex-1 text-center text-2xs text-muted-foreground">{d.dia}</span>)}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
@@ -231,7 +231,7 @@ export function SemanasTipo({ tipo }: Readonly<{ tipo: TipoInventarioML }>) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[460px] text-sm">
-        <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <thead className="text-2xs uppercase tracking-wide text-muted-foreground">
           <tr className="border-b">
             <th className="px-3 py-2 text-left font-medium">Semana</th>
             <th className="px-3 py-2 text-right font-medium">Pico esperado</th>

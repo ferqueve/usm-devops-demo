@@ -157,7 +157,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
                   </span>
                   <span className="flex items-center gap-2 shrink-0">
                     <Stars value={i.rating} />
-                    <span className="text-[11px] text-muted-foreground">{fmtFecha(i.createdAt)}</span>
+                    <span className="text-2xs text-muted-foreground">{fmtFecha(i.createdAt)}</span>
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{i.comentario}</p>

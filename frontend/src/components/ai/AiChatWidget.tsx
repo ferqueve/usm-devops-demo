@@ -125,7 +125,7 @@ export function AiChatWidget() {
                     {m.tools.map((t, j) => (
                       <span
                         key={j}
-                        className="rounded bg-utec-yellow/40 px-1.5 py-0.5 text-[10px] font-mono text-utec-dark"
+                        className="rounded bg-utec-yellow/40 px-1.5 py-0.5 text-2xs font-mono text-utec-dark"
                       >
                         {t}
                       </span>

@@ -94,7 +94,7 @@ function SysStat({
       <div className={`text-2xl font-semibold tabular-nums ${tono === 'alerta' ? 'text-utec-red' : 'text-white'}`}>
         {value}
       </div>
-      {hint && <div className="text-[11px] mt-0.5 truncate text-white/60">{hint}</div>}
+      {hint && <div className="text-2xs mt-0.5 truncate text-white/60">{hint}</div>}
       {progress !== undefined && (
         <div className="h-1.5 mt-2 rounded-full bg-white/15 overflow-hidden">
           <div

@@ -14,7 +14,7 @@ const UTEC_GREEN = MARCA.verde;
 export function Tendencia({ delta }: Readonly<{ delta?: number }>) {
   if (delta == null || Math.abs(delta) < 1) {
     return (
-      <span className="inline-flex items-center text-[11px] text-muted-foreground/60" title="Sin cambios">
+      <span className="inline-flex items-center text-2xs text-muted-foreground/60" title="Sin cambios">
         <Minus className="h-3 w-3" />
       </span>
     );
@@ -23,7 +23,7 @@ export function Tendencia({ delta }: Readonly<{ delta?: number }>) {
   const txt = `${up ? '+' : ''}${Math.abs(delta) >= 999 ? '999' : Math.round(delta)}%`;
   return (
     <span
-      className={`inline-flex items-center gap-0.5 text-[11px] font-semibold ${up ? 'text-utec-green' : 'text-utec-red'}`}
+      className={`inline-flex items-center gap-0.5 text-2xs font-semibold ${up ? 'text-utec-green' : 'text-utec-red'}`}
       title={`${txt} vs. período anterior`}
     >
       {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{txt}
@@ -48,7 +48,7 @@ export function Gauge({ value, suffix = '/ 100' }: Readonly<{ value: number; suf
       </svg>
       <div className="absolute inset-x-0 bottom-0 text-center">
         <div className="text-3xl font-bold tabular-nums" style={{ color }}>{Math.round(v)}</div>
-        <div className="text-[11px] text-muted-foreground -mt-1">{suffix}</div>
+        <div className="text-2xs text-muted-foreground -mt-1">{suffix}</div>
       </div>
     </div>
   );
@@ -127,7 +127,7 @@ export function Podio({ top }: Readonly<{ top: PodioEntry[] }>) {
                 {m.medal}
               </span>
               <span className="mt-1.5 w-full truncate text-center text-xs font-semibold leading-tight" title={it.nombre}>{it.nombre}</span>
-              <span className="text-[11px] font-bold tabular-nums">{it.valor}</span>
+              <span className="text-2xs font-bold tabular-nums">{it.valor}</span>
               <Tendencia delta={it.deltaPct} />
               <div className={`mt-2 flex w-full ${m.alto} items-start justify-center rounded-t-lg ${m.ped} shadow-inner`}>
                 <span className="mt-1 text-xl font-black text-white/90 drop-shadow">{pos}</span>

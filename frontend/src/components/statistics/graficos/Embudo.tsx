@@ -26,7 +26,7 @@ export function Embudo({ etapas }: Readonly<{ etapas: EtapaEmbudo[] }>) {
           <li key={e.nombre} className="grid grid-cols-[78px_minmax(0,1fr)_52px] items-center gap-2">
             <div className="min-w-0 text-right leading-tight">
               <div className="text-sm font-semibold tabular-nums">{formatoNumero(e.valor)}</div>
-              <div className="truncate text-[11px] text-muted-foreground">{e.nombre}</div>
+              <div className="truncate text-2xs text-muted-foreground">{e.nombre}</div>
             </div>
             <div className="flex justify-center">
               <div

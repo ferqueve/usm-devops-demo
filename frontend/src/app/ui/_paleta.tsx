@@ -80,19 +80,19 @@ function Ficha({ fondo, texto, nombre, detalle }: Readonly<{
   return (
     <div className="min-w-0 overflow-hidden rounded-md border border-border">
       <div className="px-2.5 py-3" style={{ backgroundColor: fondo, color: texto ?? undefined }}>
-        <div className="truncate text-[11px] font-semibold">{nombre}</div>
-        <div className="font-mono text-[10px] opacity-75">{fondo.toUpperCase()}</div>
+        <div className="truncate text-2xs font-semibold">{nombre}</div>
+        <div className="font-mono text-2xs opacity-75">{fondo.toUpperCase()}</div>
       </div>
       <div className="bg-card px-2.5 py-1">
         {ratio !== null && (
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="font-mono text-2xs text-muted-foreground">
             {ratio.toFixed(2)}:1
             <span className={ratio >= 4.5 ? ' text-success-texto' : ratio >= 3 ? ' text-warning-texto' : ' text-danger-texto'}>
               {ratio >= 4.5 ? ' AA' : ratio >= 3 ? ' AA-grande' : ' bajo'}
             </span>
           </span>
         )}
-        {detalle && <div className="truncate text-[10px] text-muted-foreground">{detalle}</div>}
+        {detalle && <div className="truncate text-2xs text-muted-foreground">{detalle}</div>}
       </div>
     </div>
   );
@@ -102,7 +102,7 @@ function Grupo({ titulo, nota, children }: Readonly<{ titulo: string; nota?: str
   return (
     <div className="mb-5 last:mb-0">
       <p className="text-xs font-medium text-foreground">{titulo}</p>
-      {nota && <p className="mb-2 text-[11px] leading-snug text-muted-foreground">{nota}</p>}
+      {nota && <p className="mb-2 text-2xs leading-snug text-muted-foreground">{nota}</p>}
       <div className={nota ? '' : 'mt-2'}>{children}</div>
     </div>
   );
@@ -215,7 +215,7 @@ export function Paleta() {
         <div className="space-y-1.5">
           {([['Sobre claro', SERIE_CLARO], ['Sobre oscuro', SERIE_OSCURO]] as const).map(([titulo, serie]) => (
             <div key={titulo}>
-              <p className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">{titulo}</p>
+              <p className="mb-1 text-2xs uppercase tracking-wider text-muted-foreground">{titulo}</p>
               <div className="grid grid-cols-3 gap-1.5 @md:grid-cols-6">
                 {Object.entries(serie).map(([k, v]) => (
                   <Ficha key={k} fondo={v} nombre={k} />
@@ -231,7 +231,7 @@ export function Paleta() {
           {(['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const).map((n) => (
             <div key={n} className="text-center">
               <div className="size-12 rounded-lg bg-card" style={{ boxShadow: `var(--shadow-${n})` }} />
-              <div className="mt-1 text-[10px] text-muted-foreground">{n}</div>
+              <div className="mt-1 text-2xs text-muted-foreground">{n}</div>
             </div>
           ))}
         </div>
@@ -243,7 +243,7 @@ export function Paleta() {
              ['lg', 'rounded-lg', 'tarjeta'], ['xl', 'rounded-xl', 'panel']] as const).map(([n, clase, uso]) => (
             <div key={n} className="text-center">
               <div className={`size-12 border border-border bg-card ${clase}`} />
-              <div className="mt-1 text-[10px] text-muted-foreground">{n} · {uso}</div>
+              <div className="mt-1 text-2xs text-muted-foreground">{n} · {uso}</div>
             </div>
           ))}
         </div>

@@ -13,7 +13,7 @@ const OPCIONES: Array<{ id: Comparacion; texto: string }> = [
 export function CompararContra({ valor, onCambiar }: Readonly<{ valor: Comparacion; onCambiar: (c: Comparacion) => void }>) {
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden text-[10px] uppercase tracking-wide opacity-75 sm:inline">Comparar con</span>
+      <span className="hidden text-2xs uppercase tracking-wide opacity-75 sm:inline">Comparar con</span>
       <div className="flex items-center rounded-lg bg-black/15 p-0.5 ring-1 ring-black/5" role="radiogroup" aria-label="Comparar con">
         {OPCIONES.map((o) => {
           const activo = o.id === valor;

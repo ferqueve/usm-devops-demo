@@ -18,11 +18,11 @@ export function Section({ title, count, action, children, className }: Readonly<
     <section className={className}>
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-baseline gap-2 min-w-0">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
             {title}
           </h2>
           {count !== undefined && (
-            <span className="text-[11px] text-muted-foreground tabular-nums">{count}</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{count}</span>
           )}
         </div>
         {action && (

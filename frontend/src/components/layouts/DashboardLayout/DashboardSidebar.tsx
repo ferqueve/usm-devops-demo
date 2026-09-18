@@ -143,7 +143,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
           <>
             {/* Hairline que se desvanece: separa sin rayar el panel oscuro */}
             <div className="mb-2 h-px bg-gradient-to-r from-white/10 to-transparent" />
-            <SidebarGroupLabel className="h-auto px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/40">
+            <SidebarGroupLabel className="h-auto px-3 pb-1 text-2xs font-semibold uppercase tracking-[0.12em] text-white/40">
               {section.label}
             </SidebarGroupLabel>
           </>
@@ -263,17 +263,17 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
         <SidebarFooter className="shrink-0 border-t border-white/10 bg-sidebar p-2">
           <div className="overflow-hidden rounded-lg bg-white/[0.06]">
             <div className="flex items-center gap-2.5 p-2.5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[11px] font-semibold text-white ring-1 ring-inset ring-white/10">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-2xs font-semibold text-white ring-1 ring-inset ring-white/10">
                 {initials}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-semibold leading-tight text-white" title={user.nombre}>
+                <div className="truncate text-xs font-semibold leading-tight text-white" title={user.nombre}>
                   {user.nombre}
                 </div>
-                <div className="mt-0.5 truncate text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] text-white/35">
+                <div className="mt-0.5 truncate text-2xs font-semibold uppercase leading-tight tracking-[0.12em] text-white/35">
                   {ROLE_LABELS[user.rol as keyof typeof ROLE_LABELS] || user.rol}
                 </div>
-                <div className="mt-1 truncate text-[11px] leading-tight text-white/40" title={user.email}>
+                <div className="mt-1 truncate text-2xs leading-tight text-white/40" title={user.email}>
                   {user.email}
                 </div>
               </div>

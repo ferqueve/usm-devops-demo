@@ -86,7 +86,7 @@ export function PedidoVsDisponible({ filas, limite }: Readonly<{ filas: EquipoPo
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-2xs text-muted-foreground">
         <span>
           <b className="text-foreground">{noAlcanzan}</b> de {filas.length} tipos no alcanzan o no están en inventario
         </span>
@@ -103,11 +103,11 @@ export function PedidoVsDisponible({ filas, limite }: Readonly<{ filas: EquipoPo
             <li key={f.tipoElementoId} data-severidad={sev}>
               <div className="flex items-center justify-between gap-2">
                 <span className="min-w-0 truncate text-sm font-medium" title={`${f.nombre} · ${entero(Number(f.solicitudes))} pedidos`}>{f.nombre}</span>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${SEVERIDADES[sev].clase}`}>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-2xs font-semibold ${SEVERIDADES[sev].clase}`}>
                   {sev === 'falta' && veces != null && veces >= 2 ? `${Math.round(veces)}× lo que hay` : SEVERIDADES[sev].chip}
                 </span>
               </div>
-              <div className="mt-1 grid grid-cols-[minmax(0,1fr)_104px] items-center gap-x-2 gap-y-0.5 text-[11px] tabular-nums">
+              <div className="mt-1 grid grid-cols-[minmax(0,1fr)_104px] items-center gap-x-2 gap-y-0.5 text-2xs tabular-nums">
                 <div className="h-2 overflow-hidden rounded-full bg-muted">
                   <div className="h-full rounded-full" style={{ width: `${(pico / escala) * 100}%`, backgroundColor: color(sev) }} />
                 </div>

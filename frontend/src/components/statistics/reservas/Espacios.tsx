@@ -152,7 +152,7 @@ export function UsoDeCapacidad({ filas, limite, espacios, onFiltrar }: Readonly<
             {chicos} con espacio de sobra
           </span>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md bg-muted/50 px-2.5 py-1.5 text-[11px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md bg-muted/50 px-2.5 py-1.5 text-2xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-6 rounded-full border border-foreground/20 bg-muted" />barra entera = capacidad del espacio</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-3 rounded-full" style={{ backgroundColor: tema.categorias[0] }} />inscriptos</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-3 w-[3px] rounded bg-foreground" />cupo ofrecido</span>
@@ -176,8 +176,8 @@ export function UsoDeCapacidad({ filas, limite, espacios, onFiltrar }: Readonly<
                   <Icono className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-label={f.tipo === 'EVENTO' ? 'Evento' : 'Tutoría'} />
                   <span className="truncate font-medium" title={f.titulo}>{f.titulo}</span>
                 </span>
-                {e === 'excedido' && <span className="shrink-0 rounded-full bg-utec-red/12 px-2 py-0.5 text-[10px] font-semibold text-utec-red">Excede</span>}
-                {e === 'sobredimensionado' && <span className="shrink-0 rounded-full bg-utec-orange/12 px-2 py-0.5 text-[10px] font-semibold text-utec-orange">Sobra espacio</span>}
+                {e === 'excedido' && <span className="shrink-0 rounded-full bg-utec-red/12 px-2 py-0.5 text-2xs font-semibold text-utec-red">Excede</span>}
+                {e === 'sobredimensionado' && <span className="shrink-0 rounded-full bg-utec-orange/12 px-2 py-0.5 text-2xs font-semibold text-utec-orange">Sobra espacio</span>}
               </div>
               <div
                 className="relative h-2.5 rounded-full border border-foreground/10 bg-muted"
@@ -188,7 +188,7 @@ export function UsoDeCapacidad({ filas, limite, espacios, onFiltrar }: Readonly<
                   <span className="absolute -inset-y-1 w-[3px] rounded bg-foreground" style={{ left: `calc(${pct(cupo)}% - 1.5px)` }} aria-hidden />
                 )}
               </div>
-              <div className="mt-0.5 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+              <div className="mt-0.5 flex items-center justify-between gap-2 text-2xs text-muted-foreground">
                 <span className="min-w-0 truncate tabular-nums">
                   <b className="text-foreground">{plural(inscriptos, 'inscripto', 'inscriptos')}</b>
                   {cupo != null && <> · cupo {entero(cupo)}</>}

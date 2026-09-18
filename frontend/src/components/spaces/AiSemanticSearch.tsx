@@ -88,7 +88,7 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
                   >
                     <div className="flex items-center justify-between font-semibold text-utec-dark">
                       <span>Espacio #{r.espacio_id}</span>
-                      <span className="font-mono text-[10px] text-muted-foreground">
+                      <span className="font-mono text-2xs text-muted-foreground">
                         {(r.similitud * 100).toFixed(1)}%
                       </span>
                     </div>

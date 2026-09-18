@@ -38,7 +38,7 @@ export function RankingTutores() {
                 <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{t.totalEstudiantes}</span>
               </p>
             </div>
-            {t.badge && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">{t.badge}</span>}
+            {t.badge && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-2xs font-medium">{t.badge}</span>}
           </li>
         ))}
       </ul>

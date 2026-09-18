@@ -202,7 +202,7 @@ export function EventoFormDialog({
               disabled={loading}
               required
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Escribí una idea o título y usá <b>Generar con IA</b> para completar descripción y tags.
             </p>
           </div>
@@ -356,7 +356,7 @@ export function EventoFormDialog({
                 )}
               </div>
               {recurrencia !== 'NONE' && (
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Se crearán <b>{Math.max(1, Number(repeticiones) || 1)}</b> eventos repitiendo el horario de inicio.
                 </p>
               )}

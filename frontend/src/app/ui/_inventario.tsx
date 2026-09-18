@@ -31,7 +31,7 @@ function Barra({ hechos, total }: Readonly<{ hechos: number; total: number }>) {
       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
         <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
+      <span className="font-mono text-2xs tabular-nums text-muted-foreground">
         {hechos}/{total}
       </span>
     </div>
@@ -80,7 +80,7 @@ export function Inventario() {
               <p className="text-sm font-semibold tabular-nums text-foreground">
                 {filas.filter((f) => f.tipo === t).length}
               </p>
-              <p className="text-[11px] text-muted-foreground">{ETIQUETA[t].nombre}</p>
+              <p className="text-2xs text-muted-foreground">{ETIQUETA[t].nombre}</p>
             </div>
           ))}
         </div>
@@ -109,7 +109,7 @@ export function Inventario() {
               </div>
               <ul className="space-y-0.5">
                 {visibles.map((i) => (
-                  <li key={i.archivo} className="flex items-baseline gap-2 text-[11px]">
+                  <li key={i.archivo} className="flex items-baseline gap-2 text-2xs">
                     <span
                       className={
                         i.tipo !== 'montable'
@@ -127,12 +127,12 @@ export function Inventario() {
                       {i.nombres.join(', ')}
                     </span>
                     {i.dialog && (
-                      <span className="shrink-0 rounded bg-muted px-1 text-[9px] text-muted-foreground">
+                      <span className="shrink-0 rounded bg-muted px-1 text-2xs text-muted-foreground">
                         diálogo
                       </span>
                     )}
                     {i.tipo !== 'montable' && (
-                      <span className="shrink-0 text-[9px] text-muted-foreground/70">
+                      <span className="shrink-0 text-2xs text-muted-foreground/70">
                         {ETIQUETA[i.tipo]?.nombre}
                       </span>
                     )}
@@ -144,7 +144,7 @@ export function Inventario() {
         })}
       </div>
 
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-2xs text-muted-foreground">
         Generado el {datos.generado} con <code className="font-mono">node scripts/inventario-ui.mjs</code>.
         Correrlo de nuevo después de agregar componentes.
       </p>

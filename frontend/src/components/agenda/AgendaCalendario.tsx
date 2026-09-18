@@ -101,7 +101,7 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
         </div>
       </div>
 
-      <div className="grid grid-cols-7 text-center text-[11px] font-medium text-muted-foreground border-b">
+      <div className="grid grid-cols-7 text-center text-2xs font-medium text-muted-foreground border-b">
         {DIAS.map((d) => <div key={d} className="py-1.5">{d}</div>)}
       </div>
 
@@ -126,7 +126,7 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
                     key={`${item.fuente}-${item.id}`}
                     type="button"
                     onClick={() => navigate(item.href)}
-                    className={`block w-full truncate rounded px-1.5 py-0.5 text-left text-[10px] font-medium ${
+                    className={`block w-full truncate rounded px-1.5 py-0.5 text-left text-2xs font-medium ${
                       ESTADO_COLOR[item.estado] ?? 'bg-muted'
                     }`}
                     title={item.titulo}
@@ -135,7 +135,7 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
                   </button>
                 ))}
                 {delDia.length > maxPorDia && (
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     +{delDia.length - maxPorDia} más
                   </span>
                 )}

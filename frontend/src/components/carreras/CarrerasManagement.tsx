@@ -48,7 +48,7 @@ export function CarrerasManagement() {
         pageSize={10}
         renderRowMeta={(carrera) =>
           carrera.codigo && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 font-normal">
               {carrera.codigo}
             </Badge>
           )

@@ -21,7 +21,7 @@ function GloboMini({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as SerieTipoEspacioPunto;
   return (
-    <div className="rounded-lg bg-chrome px-2.5 py-1.5 text-[11px] text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-2.5 py-1.5 text-2xs text-white shadow-lg">
       <p className="mb-0.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <p>
         Esperadas <b className="tabular-nums">{entero(p.prediccion)}</b>
@@ -64,7 +64,7 @@ function ChipCambio({ valor }: Readonly<{ valor: number | null }>) {
   const sube = valor >= 0;
   // Neutro a propósito: que baje la demanda de un tipo no es malo, puede ser receso.
   return (
-    <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-foreground" title="promedio diario esperado contra los últimos 30 días">
+    <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-2xs font-semibold tabular-nums text-foreground" title="promedio diario esperado contra los últimos 30 días">
       {sube ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {cambio(valor)}
     </span>
@@ -94,7 +94,7 @@ export function PronosticoPorTipo({ tipos, elegido, onElegir, grande = false }: 
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted"><Icono className="h-4 w-4" /></span>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-foreground">{t.nombre}</div>
-                  <div className="text-[11px]">{t.espacios} {t.espacios === 1 ? 'espacio' : 'espacios'}</div>
+                  <div className="text-2xs">{t.espacios} {t.espacios === 1 ? 'espacio' : 'espacios'}</div>
                 </div>
               </div>
               <p className="m-auto max-w-[220px] py-3 text-center text-xs leading-relaxed">
@@ -125,7 +125,7 @@ export function PronosticoPorTipo({ tipos, elegido, onElegir, grande = false }: 
                 </span>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold">{t.nombre}</div>
-                  <div className="text-[11px] text-muted-foreground">{t.espacios} {t.espacios === 1 ? 'espacio' : 'espacios'}</div>
+                  <div className="text-2xs text-muted-foreground">{t.espacios} {t.espacios === 1 ? 'espacio' : 'espacios'}</div>
                 </div>
               </div>
               <ChipCambio valor={t.cambioPct} />
@@ -137,22 +137,22 @@ export function PronosticoPorTipo({ tipos, elegido, onElegir, grande = false }: 
 
             <dl className="mt-2 grid grid-cols-3 gap-1 border-t pt-2 text-center">
               <div>
-                <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">7 días</dt>
+                <dt className="text-2xs uppercase tracking-wide text-muted-foreground">7 días</dt>
                 <dd className="text-sm font-semibold tabular-nums">{entero(t.esperadoProximos7)}</dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">30 días</dt>
+                <dt className="text-2xs uppercase tracking-wide text-muted-foreground">30 días</dt>
                 <dd className="text-sm font-semibold tabular-nums">{entero(t.esperadoProximos30)}</dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">Pico</dt>
+                <dt className="text-2xs uppercase tracking-wide text-muted-foreground">Pico</dt>
                 <dd className="truncate text-sm font-semibold tabular-nums" title={t.picoFecha ? fechaLarga(t.picoFecha) : undefined}>
                   {t.picoFecha ? fechaCorta(t.picoFecha) : '—'}
                 </dd>
               </div>
             </dl>
 
-            <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+            <div className="mt-2 flex items-center justify-between gap-2 text-2xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 {gana && <CheckCircle2 className="h-3 w-3" style={{ color: colores.reservadas }} />}
                 error {t.wape == null ? '—' : `${decimal(t.wape, 0)}%`}
@@ -181,7 +181,7 @@ export function TablaTipos({ tipos, elegido, onElegir }: Readonly<{
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[640px] text-sm">
-        <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <thead className="text-2xs uppercase tracking-wide text-muted-foreground">
           <tr className="border-b">
             <th className="px-3 py-2 text-left font-medium">Tipo</th>
             <th className="px-3 py-2 text-right font-medium" title="Promedio diario de reservas aprobadas en el histórico">Hoy por día</th>
@@ -204,7 +204,7 @@ export function TablaTipos({ tipos, elegido, onElegir }: Readonly<{
               >
                 <td className="px-3 py-2">
                   <div className="font-medium">{t.nombre}</div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-2xs text-muted-foreground">
                     {t.espacios} {t.espacios === 1 ? 'espacio' : 'espacios'}
                     {!t.entrenado && ' · sin modelo'}
                   </div>
@@ -232,7 +232,7 @@ export function TablaTipos({ tipos, elegido, onElegir }: Readonly<{
                   {t.wape == null ? (
                     <span className="text-muted-foreground">—</span>
                   ) : (
-                    <div className="grid w-40 grid-cols-[1fr_auto] items-center gap-x-2 gap-y-0.5 text-[11px] tabular-nums">
+                    <div className="grid w-40 grid-cols-[1fr_auto] items-center gap-x-2 gap-y-0.5 text-2xs tabular-nums">
                       <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                         <div className="h-full rounded-full" style={{ width: `${(t.wape / maxError) * 100}%`, backgroundColor: colores.prediccion }} />
                       </div>

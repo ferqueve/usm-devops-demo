@@ -58,7 +58,7 @@ export function TutoriasAgenda({ tutorias }: Readonly<{ tutorias: Tutoria[] }>) 
                   </span>
                   <span className="flex items-center gap-2 shrink-0">
                     {t.modalidad === 'VIRTUAL'
-                      ? <Badge className="bg-utec-cyan/15 text-utec-cyan border-utec-cyan/30 border text-[10px] gap-1"><Video className="h-3 w-3" />Virtual</Badge>
+                      ? <Badge className="bg-utec-cyan/15 text-utec-cyan border-utec-cyan/30 border text-2xs gap-1"><Video className="h-3 w-3" />Virtual</Badge>
                       : t.espacioNombre && <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{t.espacioNombre}</span>}
                     <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground"><Users className="h-3 w-3" />{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo}</span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />

@@ -79,7 +79,7 @@ function BosqueObjetivo({ arboles, meta, hojasPorArbol, onEditarMeta }: Readonly
   return (
     <section className="grid shrink-0 items-center gap-6 rounded-2xl p-5 text-white lg:grid-cols-[300px_minmax(0,1fr)]" style={{ backgroundColor: VERDE[800] }}>
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider" style={{ color: VERDE[300] }}>
+        <div className="flex items-center gap-1.5 text-2xs font-semibold tracking-wider" style={{ color: VERDE[300] }}>
           <TreePine className="h-3.5 w-3.5" />
           OBJETIVO {new Date().getFullYear()} · BOSQUE UTEC
         </div>
@@ -87,7 +87,7 @@ function BosqueObjetivo({ arboles, meta, hojasPorArbol, onEditarMeta }: Readonly
           {fmt(Math.floor(arboles))}
           <span className="ml-2 text-lg font-medium" style={{ color: VERDE[300] }}>/ {fmt(meta)} árboles</span>
         </h2>
-        <p className="mt-2 text-[13px] leading-relaxed" style={{ color: VERDE[200] }}>
+        <p className="mt-2 text-xs leading-relaxed" style={{ color: VERDE[200] }}>
           Cada árbol son ~{fmt(hojasPorArbol)} hojas que no se imprimieron.{' '}
           {faltan > 0
             ? <>Faltan <b className="text-white">{fmt(faltan)}</b> para completar el bosque del año.</>
@@ -138,7 +138,7 @@ function BosqueObjetivo({ arboles, meta, hojasPorArbol, onEditarMeta }: Readonly
             );
           })}
         </svg>
-        <div className="mt-2 flex justify-between text-[11px]" style={{ color: VERDE[300] }}>
+        <div className="mt-2 flex justify-between text-2xs" style={{ color: VERDE[300] }}>
           <span className="flex items-center gap-1.5">
             <i className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: VERDE[200] }} />
             {fmt(plantados)} plantados
@@ -180,7 +180,7 @@ function Tarjeta({ dato }: Readonly<{ dato: Dato }>) {
         {fmt(v, dato.dec)}
         {dato.unidad && <span className="ml-1 text-sm font-medium opacity-80">{dato.unidad}</span>}
       </div>
-      <div className="mt-0.5 truncate text-[11px] opacity-75">{dato.hint}</div>
+      <div className="mt-0.5 truncate text-2xs opacity-75">{dato.hint}</div>
     </div>
   );
 }
@@ -274,7 +274,7 @@ function Recursos({ stats }: Readonly<{ stats: SostenibilidadStats }>) {
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xl font-bold tabular-nums">{fmt(stats.recursosDigitalesTotales)}</span>
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground">recursos</span>
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">recursos</span>
         </div>
       </div>
       <div className="min-w-0 flex-1 space-y-1.5 text-sm">
@@ -304,7 +304,7 @@ function Ranking({ items, hojasPorArbol }: Readonly<{ items: RankingItem[]; hoja
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="border-b text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+        <tr className="border-b text-left text-2xs uppercase tracking-wide text-muted-foreground">
           <th className="w-px py-2 pl-4 pr-2 font-medium" />
           <th className="py-2 font-medium">Nombre</th>
           <th className="w-px whitespace-nowrap py-2 pl-3 text-right font-medium">Hojas evitadas</th>

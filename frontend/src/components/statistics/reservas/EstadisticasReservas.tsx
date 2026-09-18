@@ -264,7 +264,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
         <Novedades novedades={novedades} contra={contra} onFiltrar={filtrarPor} />
 
         <div>
-          <p className="mb-1.5 px-1 text-right text-[11px] text-muted-foreground">
+          <p className="mb-1.5 px-1 text-right text-2xs text-muted-foreground">
             Los cambios de las tarjetas comparan contra <b className="text-foreground">{contra}</b>.
           </p>
           <TarjetasKpi

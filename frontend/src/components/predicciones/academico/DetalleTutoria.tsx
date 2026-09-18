@@ -86,7 +86,7 @@ export function DetalleTutoria({ tutoria, onCerrar }: Readonly<{ tutoria: Tutori
                         <li key={`${i.estudiante}-${n}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_48px] items-center gap-3 text-sm">
                           <span className="min-w-0">
                             <span className="block truncate font-medium">{i.estudiante}</span>
-                            <span className="block text-[11px] text-muted-foreground">
+                            <span className="block text-2xs text-muted-foreground">
                               {i.inscripcionesPrevias === 0 ? 'primera tutoría' : `fue a ${i.asistenciasPrevias} de ${i.inscripcionesPrevias} anteriores`}
                             </span>
                           </span>

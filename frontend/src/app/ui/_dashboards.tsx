@@ -47,7 +47,7 @@ function Caja({ titulo, nota, ancho, children }: Readonly<{
   return (
     <div className={`min-w-0 rounded-lg border border-border bg-card p-3 ${ancho ? '@md:col-span-2' : ''}`}>
       <p className="text-xs font-medium text-foreground">{titulo}</p>
-      {nota && <p className="text-[11px] leading-snug text-muted-foreground">{nota}</p>}
+      {nota && <p className="text-2xs leading-snug text-muted-foreground">{nota}</p>}
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -68,7 +68,7 @@ function Pantalla({ titulo, nota, children }: Readonly<{
   return (
     <div className="rounded-lg border border-border bg-card p-3">
       <p className="text-xs font-medium text-foreground">{titulo}</p>
-      <p className="mb-2 text-[11px] leading-snug text-muted-foreground">{nota}</p>
+      <p className="mb-2 text-2xs leading-snug text-muted-foreground">{nota}</p>
       <div className="h-[880px] overflow-hidden rounded-md bg-background p-2">{children}</div>
     </div>
   );

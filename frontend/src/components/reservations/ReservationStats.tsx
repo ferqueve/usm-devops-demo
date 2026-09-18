@@ -59,7 +59,7 @@ function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredSta
         <span className="truncate">{label}</span>
       </div>
       <div className={`text-xl font-semibold tabular-nums ${c.text}`}>{value}</div>
-      {hint && <div className={`text-[11px] mt-0.5 truncate ${c.subtle}`}>{hint}</div>}
+      {hint && <div className={`text-2xs mt-0.5 truncate ${c.subtle}`}>{hint}</div>}
     </div>
   );
 }

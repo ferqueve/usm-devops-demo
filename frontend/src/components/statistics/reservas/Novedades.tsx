@@ -123,7 +123,7 @@ export function Novedades({ novedades, contra, onFiltrar }: Readonly<Props>) {
                   <div className="flex items-baseline gap-1.5">
                     <span className="truncate text-sm font-semibold" title={titulo(n)}>{titulo(n)}</span>
                   </div>
-                  <div className="truncate text-[11px] uppercase tracking-wide text-muted-foreground">{metrica(n)}</div>
+                  <div className="truncate text-2xs uppercase tracking-wide text-muted-foreground">{metrica(n)}</div>
                   <div className="mt-0.5 flex items-center gap-1.5 text-sm tabular-nums">
                     <span className="text-muted-foreground">{valor(n, n.antes)}</span>
                     <span className="text-muted-foreground">→</span>

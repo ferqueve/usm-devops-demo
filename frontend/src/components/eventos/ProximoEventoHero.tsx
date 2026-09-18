@@ -35,7 +35,7 @@ export function ProximoEventoHero({ eventos }: Readonly<ProximoEventoHeroProps>)
           <div className="flex items-center gap-2 text-xs text-white/60 mb-1.5"><CalendarClock className="h-3.5 w-3.5" />PRÓXIMO EVENTO</div>
           <h2 className="text-2xl font-bold leading-tight truncate">{proximo.titulo}</h2>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80 mt-1.5">
-            <Badge className="bg-white/15 text-white border-white/20 border text-[10px]">{proximo.tipo}</Badge>
+            <Badge className="bg-white/15 text-white border-white/20 border text-2xs">{proximo.tipo}</Badge>
             <span>{fmt(proximo.inicio)}</span>
             {proximo.espacioNombre && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{proximo.espacioNombre}</span>}
           </div>
@@ -45,7 +45,7 @@ export function ProximoEventoHero({ eventos }: Readonly<ProximoEventoHeroProps>)
             {([['D', cd.dias], ['H', cd.horas], ['M', cd.minutos], ['S', cd.segundos]] as const).map(([l, v]) => (
               <div key={l} className="text-center rounded-lg bg-[#1b2236] ring-1 ring-white/15 px-2.5 py-1.5 min-w-[48px]">
                 <div className="text-xl font-bold tabular-nums leading-none">{String(v).padStart(2, '0')}</div>
-                <div className="text-[10px] text-white/60">{l}</div>
+                <div className="text-2xs text-white/60">{l}</div>
               </div>
             ))}
           </div>

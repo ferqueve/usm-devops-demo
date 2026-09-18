@@ -66,8 +66,8 @@ function ListaHeaders({ titulo, headers }: Readonly<{ titulo: string; headers?: 
 
   return (
     <div className="mt-2">
-      <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</div>
-      <dl className="grid gap-x-3 gap-y-0.5 font-mono text-[11px] sm:grid-cols-[auto_1fr]">
+      <div className="mb-0.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</div>
+      <dl className="grid gap-x-3 gap-y-0.5 font-mono text-2xs sm:grid-cols-[auto_1fr]">
         {entradas.map(([nombre, valores]) => (
           <Fragment key={nombre}>
             <dt className="text-muted-foreground">{nombre}</dt>
@@ -210,12 +210,12 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
               checked={hideActuator}
               onCheckedChange={setHideActuator}
             />
-            <Label htmlFor="hide-actuator" className="text-[11px] cursor-pointer whitespace-nowrap text-white/80">
+            <Label htmlFor="hide-actuator" className="text-2xs cursor-pointer whitespace-nowrap text-white/80">
               Ocultar Actuator
             </Label>
           </div>
           <Select value={limit.toString()} onValueChange={(val) => setLimit(Number(val))}>
-            <SelectTrigger className="w-[110px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+            <SelectTrigger className="w-[110px] h-7 text-2xs bg-white/10 border-white/20 text-white hover:bg-white/15">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -339,7 +339,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
                               </p>
                               <ListaHeaders titulo="Headers de la respuesta" headers={trace.responseHeaders} />
                               {!trace.requestHeaders && !trace.responseHeaders && (
-                                <p className="mt-2 text-[11px] text-muted-foreground">
+                                <p className="mt-2 text-2xs text-muted-foreground">
                                   El backend no está publicando los headers. Se habilitan con
                                   <code className="mx-1 rounded bg-muted px-1 py-0.5">management.httpexchanges.recording.include</code>
                                 </p>

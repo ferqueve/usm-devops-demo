@@ -59,7 +59,7 @@ function Caja({ titulo, nota, ancho, children }: Readonly<{
     <div className={`min-w-0 rounded-lg border border-border bg-card p-3 ${span}`}>
       <div className="mb-2">
         <p className="text-xs font-medium text-foreground">{titulo}</p>
-        <p className="text-[11px] leading-snug text-muted-foreground">{nota}</p>
+        <p className="text-2xs leading-snug text-muted-foreground">{nota}</p>
       </div>
       {children}
     </div>

@@ -82,7 +82,7 @@ function Abridor({
       <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setOpen(true)}>
         <span className="truncate">{label}</span>
       </Button>
-      <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">{nota}</p>
+      <p className="mt-1.5 text-2xs leading-snug text-muted-foreground">{nota}</p>
       {render({ open, onOpenChange: setOpen })}
     </div>
   );
@@ -144,7 +144,7 @@ export function Dialogos() {
         </div>
       </div>
 
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-2xs text-muted-foreground">
         Los diálogos que piden datos al abrirse —ReservationFormDialog,
         SpaceFormDialog, MateriaFormDialog, EventoFormDialog, TutoriaFormDialog,
         InventoryFormDialog, InventarioFormDialog, AddInscriptoDialog, InscriptosDialog,

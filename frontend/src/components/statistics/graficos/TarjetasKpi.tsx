@@ -98,13 +98,13 @@ export function TarjetasKpi({ items, contra = 'el período anterior' }: Readonly
               <div className="flex items-baseline gap-2">
                 <span className={`text-2xl font-semibold ${f.texto}`}>{k.valor}</span>
                 {k.nuevo && (
-                  <span className={`rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-semibold ${f.texto}`} title={`no había contra ${contra}`}>
+                  <span className={`rounded-full bg-white/25 px-1.5 py-0.5 text-2xs font-semibold ${f.texto}`} title={`no había contra ${contra}`}>
                     nuevo
                   </span>
                 )}
                 {!k.nuevo && k.cambio != null && Number.isFinite(k.cambio) && Math.round(k.cambio) !== 0 && (
                   <span
-                    className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                    className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-2xs font-semibold ${
                       bueno ? 'bg-white/25' : 'bg-black/20'
                     } ${f.texto}`}
                     title={`contra ${contra}`}
@@ -114,7 +114,7 @@ export function TarjetasKpi({ items, contra = 'el período anterior' }: Readonly
                   </span>
                 )}
               </div>
-              {k.detalle && <div className={`mt-0.5 truncate text-[11px] ${f.tenue}`}>{k.detalle}</div>}
+              {k.detalle && <div className={`mt-0.5 truncate text-2xs ${f.tenue}`}>{k.detalle}</div>}
             </div>
           </div>
         );

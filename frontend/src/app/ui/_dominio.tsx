@@ -28,7 +28,7 @@ function Caja({ titulo, nota, children }: Readonly<{
   return (
     <div className="min-w-0 rounded-lg border border-border bg-card p-3">
       <p className="text-xs font-medium text-foreground">{titulo}</p>
-      {nota && <p className="mb-2 text-[11px] leading-snug text-muted-foreground">{nota}</p>}
+      {nota && <p className="mb-2 text-2xs leading-snug text-muted-foreground">{nota}</p>}
       <div className={nota ? '' : 'mt-2'}>{children}</div>
     </div>
   );

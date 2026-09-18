@@ -69,17 +69,17 @@ export function Semaforo({ tipos, elegido, onElegir }: Readonly<{
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">{t.nombre}</div>
-                    <div className="text-[11px] text-muted-foreground tabular-nums">
+                    <div className="text-2xs text-muted-foreground tabular-nums">
                       {disponibles(t.stockDisponible)}{t.stockTotal != null && t.stockTotal !== t.stockDisponible ? ` de ${entero(t.stockTotal)}` : ''}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold leading-none tabular-nums">{porcentaje01(t.probFaltanteMax)}</div>
-                    <div className="text-[10px] text-muted-foreground">prob. máx.</div>
+                    <div className="text-2xs text-muted-foreground">prob. máx.</div>
                   </div>
                 </div>
                 <BarraStock t={t} color={estilo.color} />
-                <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-2xs text-muted-foreground">
                   <Chip color={estilo.color} icono={estilo.icono}>{estilo.etiqueta}</Chip>
                   <span className="inline-flex items-center gap-1 tabular-nums">
                     <CalendarClock className="h-3 w-3" />

@@ -174,7 +174,7 @@ function DateRangeButton({ date, otherDate, isStart, onChange, Icon, tooltipFall
           <TooltipTrigger asChild>
             <button type="button" className={buttonClass}>
               <Icon className={iconClass} />
-              {date && <span className="text-[11px]">{formatShortDate(date)}</span>}
+              {date && <span className="text-2xs">{formatShortDate(date)}</span>}
             </button>
           </TooltipTrigger>
         </PopoverTrigger>
@@ -329,7 +329,7 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
               <button type="button" className={triggerClass}>
                 <Building2 className={iconClass} />
                 {selectedNombre && (
-                  <span className="max-w-[140px] truncate text-[11px]">{selectedNombre}</span>
+                  <span className="max-w-[140px] truncate text-2xs">{selectedNombre}</span>
                 )}
               </button>
             </TooltipTrigger>
@@ -359,7 +359,7 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
               })}
             </div>
           ) : (
-            <div className="flex items-center justify-center rounded-md border border-dashed border-border px-3 py-6 text-center text-[12px] text-muted-foreground">
+            <div className="flex items-center justify-center rounded-md border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
               No hay espacios disponibles.
             </div>
           )}
@@ -419,7 +419,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
     <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={cn("px-1.5 text-[11px] text-muted-foreground", "hidden sm:inline")}>
+          <span className={cn("px-1.5 text-2xs text-muted-foreground", "hidden sm:inline")}>
             Pág.
           </span>
         </TooltipTrigger>
@@ -431,7 +431,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
             <TooltipTrigger asChild>
               <button type="button" className={triggerClass}>
                 <ListFilter className="h-3.5 w-3.5 text-info-texto" />
-                <span className="text-[11px]">{pageSize}</span>
+                <span className="text-2xs">{pageSize}</span>
               </button>
             </TooltipTrigger>
           </PopoverTrigger>

@@ -70,7 +70,7 @@ function TitleBar({
         )}
       </div>
       {dbDetails && Object.keys(dbDetails).length > 0 && (
-        <div className="px-4 py-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-white/60 border-t border-white/10">
+        <div className="px-4 py-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-2xs text-white/60 border-t border-white/10">
           {Object.entries(dbDetails).map(([key, value]) => (
             <div key={key} className="flex items-center gap-1.5">
               <span>{key.replaceAll(/([A-Z])/g, ' $1').trim()}:</span>
@@ -112,7 +112,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
   return (
     <div className="border rounded-lg overflow-hidden shadow-card">
       <TitleBar dbStatus={dbStatus} dbDetails={dbDetails} count={changeSets.length} />
-      <p className="border-b bg-muted/30 px-4 py-1.5 text-[11px] text-muted-foreground">
+      <p className="border-b bg-muted/30 px-4 py-1.5 text-2xs text-muted-foreground">
         Las más recientes primero
       </p>
       <ScrollArea className={verTodas ? 'h-[400px]' : ''}>
@@ -140,7 +140,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
                   <div className="max-w-[300px]">
                     <p className="truncate">{changeSet.description || '-'}</p>
                     {changeSet.changeLog && (
-                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                      <p className="text-2xs text-muted-foreground truncate mt-0.5">
                         {changeSet.changeLog}
                       </p>
                     )}

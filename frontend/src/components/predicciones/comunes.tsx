@@ -82,7 +82,7 @@ export function Hero({ rango, titulo, detalle, anillo, extra }: Readonly<{
       <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/90 via-[#0e1320]/40 to-transparent" />
       <div className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
-          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white/60">{rango}</div>
+          <div className="mb-1.5 flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wider text-white/60">{rango}</div>
           <h2 className="text-2xl font-bold leading-tight sm:text-3xl">{titulo}</h2>
           {detalle && <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/75">{detalle}</p>}
           {extra && <div className="mt-3">{extra}</div>}
@@ -92,7 +92,7 @@ export function Hero({ rango, titulo, detalle, anillo, extra }: Readonly<{
           <div className="flex items-center gap-3">
             <div className="text-right">
               <div className="text-4xl font-bold leading-none">{Math.round(anillo.valor)}%</div>
-              <div className="mt-1 text-[11px] text-white/60">{anillo.texto}</div>
+              <div className="mt-1 text-2xs text-white/60">{anillo.texto}</div>
             </div>
             <Anillo porcentaje={anillo.valor} color={anillo.color} />
           </div>
@@ -156,7 +156,7 @@ export function NoCargo() {
 export function Chip({ color, icono: Icono, children, titulo }: Readonly<{ color: string; icono?: LucideIcon; children: ReactNode; titulo?: string }>) {
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold"
+      className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-2xs font-semibold"
       style={{ backgroundColor: `${color}1f`, color }}
       title={titulo}
     >
@@ -175,7 +175,7 @@ export function NotaModelo({ children }: Readonly<{ children: ReactNode }>) {
 export function Dato({ etiqueta, valor }: Readonly<{ etiqueta: string; valor: string }>) {
   return (
     <div className="rounded-lg bg-muted/50 px-2.5 py-1.5">
-      <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{etiqueta}</dt>
+      <dt className="text-2xs uppercase tracking-wide text-muted-foreground">{etiqueta}</dt>
       <dd className="truncate font-medium">{valor}</dd>
     </div>
   );

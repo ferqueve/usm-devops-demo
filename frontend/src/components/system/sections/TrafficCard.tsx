@@ -35,7 +35,7 @@ function Dato({
       <div className={`mt-1 text-xl font-semibold tabular-nums ${alerta ? 'text-utec-red' : ''}`}>
         {value}
       </div>
-      {hint && <div className="text-[11px] text-muted-foreground truncate">{hint}</div>}
+      {hint && <div className="text-2xs text-muted-foreground truncate">{hint}</div>}
     </div>
   );
 }

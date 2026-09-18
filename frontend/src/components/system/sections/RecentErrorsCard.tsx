@@ -16,16 +16,16 @@ import { statsApi, type RecentError, type RecentErrorsResponse } from '@/lib/api
 
 function levelBadge(level: string) {
   if (level === 'ERROR') {
-    return <Badge variant="destructive" className="text-[10px]">ERROR</Badge>;
+    return <Badge variant="destructive" className="text-2xs">ERROR</Badge>;
   }
   if (level === 'WARN') {
     return (
-      <Badge variant="outline" className="text-[10px] border-utec-yellow text-utec-yellow">
+      <Badge variant="outline" className="text-2xs border-utec-yellow text-utec-yellow">
         WARN
       </Badge>
     );
   }
-  return <Badge variant="secondary" className="text-[10px]">{level}</Badge>;
+  return <Badge variant="secondary" className="text-2xs">{level}</Badge>;
 }
 
 /**
@@ -104,7 +104,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
         )}
         <div className="flex items-center gap-1.5">
           <Switch id="ocultar-ruido" checked={ocultarRuido} onCheckedChange={setOcultarRuido} />
-          <Label htmlFor="ocultar-ruido" className="cursor-pointer whitespace-nowrap text-[11px] text-white/80">
+          <Label htmlFor="ocultar-ruido" className="cursor-pointer whitespace-nowrap text-2xs text-white/80">
             Ocultar ruido conocido
           </Label>
         </div>
@@ -154,7 +154,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
                     {e.exception && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="text-[11px] text-utec-red break-words line-clamp-1 cursor-help">
+                          <div className="text-2xs text-utec-red break-words line-clamp-1 cursor-help">
                             {e.exception}
                           </div>
                         </TooltipTrigger>

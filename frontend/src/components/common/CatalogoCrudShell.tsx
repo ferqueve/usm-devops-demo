@@ -156,7 +156,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
                 <span className="text-sm font-medium truncate">{item.nombre}</span>
                 {renderRowMeta?.(item)}
                 {item.activo === false && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="secondary" className="text-2xs px-1.5 py-0">
                     Inactivo
                   </Badge>
                 )}

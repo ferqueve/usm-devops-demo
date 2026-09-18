@@ -62,7 +62,7 @@ export function Seccion({ id, titulo, descripcion, icono: Icono, color, destacad
         <div className="flex flex-wrap items-center gap-2">
           {destacados.map((d) => (
             <div key={d.etiqueta} className="rounded-lg bg-black/10 px-3 py-1.5 text-right ring-1 ring-black/5">
-              <div className="text-[10px] uppercase tracking-wide opacity-75">{d.etiqueta}</div>
+              <div className="text-2xs uppercase tracking-wide opacity-75">{d.etiqueta}</div>
               <div className="text-sm font-semibold">{d.valor}</div>
             </div>
           ))}
@@ -196,7 +196,7 @@ export function IndiceSecciones({
  */
 export function NotaHastaAnoche() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-2xs text-muted-foreground">
       <MoonStar className="h-3 w-3" />
       datos hasta anoche
     </span>

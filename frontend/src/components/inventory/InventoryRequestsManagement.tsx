@@ -671,7 +671,7 @@ export default function InventoryRequestsManagement() {
                     >
                       {ESTADO_LABEL[selectedRequest.estado]}
                     </Badge>
-                    <span className="text-[11px] text-muted-foreground">#{selectedRequest.id}</span>
+                    <span className="text-2xs text-muted-foreground">#{selectedRequest.id}</span>
                   </div>
                 </div>
               </DialogHeader>

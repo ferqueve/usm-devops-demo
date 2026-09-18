@@ -24,7 +24,7 @@ export function EstadoBadge({ estado }: Readonly<{ estado: Evento['estado'] }>) 
   const config = ESTADO_CONFIG[estado] ?? { label: estado, color: 'bg-muted text-foreground border-border', icon: FileText };
   const Icon = config.icon;
   return (
-    <Badge className={`${config.color} border font-medium text-[10px] shrink-0`}>
+    <Badge className={`${config.color} border font-medium text-2xs shrink-0`}>
       <Icon className="h-3 w-3 mr-1" />
       {config.label}
     </Badge>
@@ -79,9 +79,9 @@ export function EventoCardDescubrir({
         <EventoPatternBg patron={evento.patron} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
         <div className="relative flex items-center justify-between gap-2">
-          <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{evento.tipo}</span>
+          <span className="rounded-full bg-white/20 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide">{evento.tipo}</span>
           {enVivo
-            ? <span className="inline-flex items-center gap-1 rounded-full bg-utec-red px-2 py-0.5 text-[10px] font-bold"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-card" />EN VIVO</span>
+            ? <span className="inline-flex items-center gap-1 rounded-full bg-utec-red px-2 py-0.5 text-2xs font-bold"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-card" />EN VIVO</span>
             : <EstadoBadge estado={evento.estado} />}
         </div>
         <h3 className="relative mt-2 line-clamp-2 text-sm font-bold leading-tight">{evento.titulo}</h3>
@@ -91,9 +91,9 @@ export function EventoCardDescubrir({
       <div className="flex flex-1 flex-col gap-2 p-3 text-sm">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground"><Clock className="h-3.5 w-3.5 text-utec-cyan" />{relativo}</span>
-          {agotado && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">Agotado</span>}
-          {ultimos && <span className="inline-flex items-center gap-1 rounded-full bg-utec-red/10 px-2 py-0.5 text-[10px] font-bold text-utec-red">🔥 Últimos {libres}</span>}
-          {yaInscrito && <span className="inline-flex items-center gap-1 rounded-full bg-utec-green/10 px-2 py-0.5 text-[10px] font-semibold text-utec-green"><CheckCircle className="h-3 w-3" />Inscrito</span>}
+          {agotado && <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-semibold text-muted-foreground">Agotado</span>}
+          {ultimos && <span className="inline-flex items-center gap-1 rounded-full bg-utec-red/10 px-2 py-0.5 text-2xs font-bold text-utec-red">🔥 Últimos {libres}</span>}
+          {yaInscrito && <span className="inline-flex items-center gap-1 rounded-full bg-utec-green/10 px-2 py-0.5 text-2xs font-semibold text-utec-green"><CheckCircle className="h-3 w-3" />Inscrito</span>}
         </div>
 
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{fmtFechaCorta(evento.inicio)}</p>
@@ -105,7 +105,7 @@ export function EventoCardDescubrir({
         {tags.length > 0 && onTag && (
           <div className="flex flex-wrap gap-1">
             {tags.slice(0, 3).map((t) => (
-              <button key={t} type="button" onClick={(e) => { stop(e); onTag(t); }} className="inline-flex items-center rounded-full bg-utec-blue/10 px-2 py-0.5 text-[10px] font-medium text-utec-blue transition-colors hover:bg-utec-blue/20">{t}</button>
+              <button key={t} type="button" onClick={(e) => { stop(e); onTag(t); }} className="inline-flex items-center rounded-full bg-utec-blue/10 px-2 py-0.5 text-2xs font-medium text-utec-blue transition-colors hover:bg-utec-blue/20">{t}</button>
             ))}
           </div>
         )}

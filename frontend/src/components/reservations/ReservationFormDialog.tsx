@@ -99,7 +99,7 @@ function RecomendacionEspacioCard({ rec, onSelect }: Readonly<RecomendacionEspac
               {rec.tipoEspacioNombre && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] px-1.5 py-0.5 h-5"
+                  className="text-2xs px-1.5 py-0.5 h-5"
                   style={{
                     borderColor: rec.tipoEspacioColor,
                     color: rec.tipoEspacioColor,
@@ -113,7 +113,7 @@ function RecomendacionEspacioCard({ rec, onSelect }: Readonly<RecomendacionEspac
                 <span>{rec.capacidad}</span>
               </div>
               {rec.disponible && (
-                <Badge variant="outline" className="bg-success-suave text-success-texto border-success-borde text-[10px] px-1.5 py-0.5 h-5">
+                <Badge variant="outline" className="bg-success-suave text-success-texto border-success-borde text-2xs px-1.5 py-0.5 h-5">
                   Disponible
                 </Badge>
               )}

@@ -39,7 +39,7 @@ export function TablaGrupos({ grupos, columna, conDetalle = false }: Readonly<{
   }
   return (
     <table className="w-full text-sm">
-      <thead className="sticky top-0 z-10 bg-card text-[11px] uppercase tracking-wide text-muted-foreground">
+      <thead className="sticky top-0 z-10 bg-card text-2xs uppercase tracking-wide text-muted-foreground">
         <tr className="border-b">
           <th className="px-3 py-2 text-left font-medium">{columna}</th>
           <th className="px-2 py-2 text-right font-medium">Items</th>
@@ -55,7 +55,7 @@ export function TablaGrupos({ grupos, columna, conDetalle = false }: Readonly<{
             <tr key={g.id} className="border-b border-border/60 last:border-0 hover:bg-muted/40">
               <td className="px-3 py-1.5">
                 <div className={g.items === 0 ? 'text-muted-foreground' : ''}>{g.nombre}</div>
-                {conDetalle && g.detalle && <div className="text-[11px] text-muted-foreground">{g.detalle}</div>}
+                {conDetalle && g.detalle && <div className="text-2xs text-muted-foreground">{g.detalle}</div>}
               </td>
               <td className="px-2 py-1.5 text-right tabular-nums">{g.items === 0 ? <span className="text-xs text-muted-foreground">vacío</span> : n(g.items)}</td>
               <td className="hidden px-2 py-1.5 text-right tabular-nums text-muted-foreground sm:table-cell">{g.items === 0 ? '' : n(g.unidades)}</td>
@@ -145,7 +145,7 @@ export function Matriz({ estado }: Readonly<{ estado: EstadoInventario }>) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full table-fixed border-separate border-spacing-[3px] text-[11px]" style={{ minWidth: 160 + tipos.length * 56 }}>
+      <table className="w-full table-fixed border-separate border-spacing-[3px] text-2xs" style={{ minWidth: 160 + tipos.length * 56 }}>
         <thead>
           <tr>
             <th className="sticky left-0 z-10 w-[160px] bg-card pr-2 text-left font-medium text-muted-foreground">Espacio</th>

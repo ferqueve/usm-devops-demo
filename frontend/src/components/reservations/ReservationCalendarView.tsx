@@ -424,12 +424,12 @@ function OverflowChip({ top, leftPercent, widthPercent, altura, reservas, onView
           aria-label={`${cuenta} reservas adicionales — abrir lista`}
         >
           {apilado ? (
-            <span className="absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold leading-none">
+            <span className="absolute inset-0 flex flex-col items-center justify-center text-2xs font-bold leading-none">
               <span>+</span>
               <span>{cuenta}</span>
             </span>
           ) : (
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none">
+            <span className="absolute inset-0 flex items-center justify-center text-2xs font-bold leading-none">
               +{cuenta}
             </span>
           )}
@@ -604,14 +604,14 @@ function ReservationBar({
         {mostrarContador && (
           contadorApilado ? (
             <span
-              className={`absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold leading-none pointer-events-none ${colorTextoClase}`}
+              className={`absolute inset-0 flex flex-col items-center justify-center text-2xs font-bold leading-none pointer-events-none ${colorTextoClase}`}
             >
               <span>×</span>
               <span>{cantidadAgrupada}</span>
             </span>
           ) : (
             <span
-              className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none pointer-events-none ${colorTextoClase}`}
+              className={`absolute inset-0 flex items-center justify-center text-2xs font-bold leading-none pointer-events-none ${colorTextoClase}`}
             >
               ×{cantidadAgrupada}
             </span>
@@ -1011,14 +1011,14 @@ export default function ReservationCalendarView({
                             >
                               {reserva.titulo || reserva.espacioNombre}
                             </h4>
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                            <div className="flex items-center gap-1 text-2xs text-muted-foreground leading-tight">
                               <Clock className="h-2.5 w-2.5 flex-shrink-0" />
                               <span className="truncate">
                                 {formatTime(reserva.inicio)}–{formatTime(reserva.fin)}
                               </span>
                             </div>
                             {mostrarCapacidad && (
-                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                              <div className="flex items-center gap-1 text-2xs text-muted-foreground leading-tight">
                                 <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                                 <span className="truncate">Cap. {reserva.capacidadEspacio}</span>
                               </div>
@@ -1426,7 +1426,7 @@ export default function ReservationCalendarView({
                     {format(day, 'd')}
                   </span>
                   {cantidad > 0 && (
-                    <span className="text-[10px] text-muted-foreground font-medium tabular-nums">
+                    <span className="text-2xs text-muted-foreground font-medium tabular-nums">
                       {cantidad}
                     </span>
                   )}
@@ -1438,7 +1438,7 @@ export default function ReservationCalendarView({
                     {tiposDelDia.map(tipo => (
                       <span
                         key={tipo.nombre}
-                        className="inline-flex items-center gap-1 text-[10px] font-medium text-foreground/80"
+                        className="inline-flex items-center gap-1 text-2xs font-medium text-foreground/80"
                         title={`${tipo.cantidad} ${tipo.nombre}`}
                       >
                         <span

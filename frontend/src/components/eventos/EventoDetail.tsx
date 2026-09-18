@@ -66,7 +66,7 @@ function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; lab
     <div className="flex items-start gap-2.5 rounded-xl border bg-muted/30 p-3">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-cyan/10 text-utec-cyan"><Icon className="h-4 w-4" /></span>
       <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground leading-none">{label}</p>
+        <p className="text-2xs uppercase tracking-wide text-muted-foreground leading-none">{label}</p>
         <p className="text-sm font-medium truncate mt-1">{value}</p>
       </div>
     </div>
@@ -298,7 +298,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
             {/* Arriba: tipo (izq) · estado + tema (der) */}
             <div className="relative flex items-start justify-between gap-2">
-              <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{evento.tipo}</span>
+              <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wide">{evento.tipo}</span>
               <div className="flex items-center gap-1.5">
                 <Badge className={`${badge.color} border font-medium text-xs`}><BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
                 <PermissionGuard requiredPermission="evento:editar">
@@ -321,7 +321,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                               className={`relative h-14 overflow-hidden rounded-lg border text-left transition-shadow ${activo ? 'ring-2 ring-utec-cyan' : 'hover:ring-1 hover:ring-utec-cyan/50'}`}
                             >
                               <EventoPatternBg patron={p.id} />
-                              <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/45 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                              <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/45 px-1.5 py-0.5 text-2xs font-medium text-white">
                                 {p.nombre}{activo && <Check className="h-3 w-3" />}
                               </span>
                             </button>
@@ -341,7 +341,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   {([['D', countdown.dias], ['H', countdown.horas], ['M', countdown.minutos], ['S', countdown.segundos]] as const).map(([l, v]) => (
                     <div key={l} className="text-center rounded-md bg-white/15 ring-1 ring-white/15 px-2.5 py-1 min-w-[42px]">
                       <div className="text-base font-bold tabular-nums leading-none">{String(v).padStart(2, '0')}</div>
-                      <div className="text-[9px] text-white/60 uppercase">{l}</div>
+                      <div className="text-2xs text-white/60 uppercase">{l}</div>
                     </div>
                   ))}
                 </div>
@@ -501,7 +501,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-utec-dark text-xs font-semibold">{i.nombre?.slice(0, 2).toUpperCase()}</span>
                               <span className="block truncate text-sm font-medium">{i.nombre}</span>
                             </span>
-                            <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-[10px]">En espera</Badge>
+                            <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-2xs">En espera</Badge>
                           </li>
                         ))}
                       </ul>

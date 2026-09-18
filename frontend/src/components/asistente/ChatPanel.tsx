@@ -151,13 +151,13 @@ export function ChatPanel() {
                       </div>
                       {m.tools && m.tools.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1">
-                          <span className="text-[11px] text-muted-foreground">consultó</span>
+                          <span className="text-2xs text-muted-foreground">consultó</span>
                           {[...new Set(m.tools)].map((t) => {
                             const h = herramienta(t);
                             return (
                               <span
                                 key={t}
-                                className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"
+                                className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground"
                               >
                                 <h.icon className="h-3 w-3" />
                                 {h.label}

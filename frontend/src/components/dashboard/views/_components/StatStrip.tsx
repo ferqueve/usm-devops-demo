@@ -156,14 +156,14 @@ export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) 
                   {item.value}
                 </span>
                 {item.delta != null && item.delta !== 0 && (
-                  <span className={`text-[11px] leading-none tabular-nums ${suave}`}>
+                  <span className={`text-2xs leading-none tabular-nums ${suave}`}>
                     {item.delta > 0 ? '↑' : '↓'} {Math.abs(item.delta)}%
                   </span>
                 )}
               </span>
 
               {!item.serie && item.hint && (
-                <span className={`mt-1 block truncate text-[11px] ${suave}`}>{item.hint}</span>
+                <span className={`mt-1 block truncate text-2xs ${suave}`}>{item.hint}</span>
               )}
             </span>
           </>

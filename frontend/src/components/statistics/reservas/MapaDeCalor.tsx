@@ -50,7 +50,7 @@ export function MapaDeCalor({ celdas }: Readonly<{ celdas: HeatmapCelda[] }>) {
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-separate border-spacing-[3px] text-[11px]" style={{ minWidth: 90 + horas.length * 36 }}>
+        <table className="w-full table-fixed border-separate border-spacing-[3px] text-2xs" style={{ minWidth: 90 + horas.length * 36 }}>
           <thead>
             <tr>
               <th className="w-10" />

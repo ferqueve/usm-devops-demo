@@ -19,7 +19,7 @@ export function ReservaQR({ reservaId, nombre }: Readonly<{ reservaId: number; n
       <PopoverContent className="w-auto p-3 text-center">
         {src ? <img src={src} alt="QR de la reserva" className="h-40 w-40" /> : <div className="flex h-40 w-40 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
         {nombre && <p className="mt-2 text-xs font-medium">{nombre}</p>}
-        <p className="text-[10px] text-muted-foreground">Mostralo para el check-in</p>
+        <p className="text-2xs text-muted-foreground">Mostralo para el check-in</p>
       </PopoverContent>
     </Popover>
   );

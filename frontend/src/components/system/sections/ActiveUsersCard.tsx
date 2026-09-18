@@ -98,7 +98,7 @@ export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUse
                       <p className="font-medium text-sm truncate">
                         {user.nombre} {user.apellido}
                       </p>
-                      <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-semibold rounded border ${ROLE_BADGE_COLOR[user.rol] || ROLE_BADGE_COLOR.ESTUDIANTE}`}>
+                      <span className={`inline-flex px-1.5 py-0.5 text-2xs font-semibold rounded border ${ROLE_BADGE_COLOR[user.rol] || ROLE_BADGE_COLOR.ESTUDIANTE}`}>
                         {user.rol}
                       </span>
                     </div>
@@ -115,7 +115,7 @@ export const ActiveUsersCard = memo(function ActiveUsersCard({ data }: ActiveUse
             </div>
           </ScrollArea>
         )}
-        <p className="text-[11px] text-muted-foreground text-center mt-3 pt-2 border-t">
+        <p className="text-2xs text-muted-foreground text-center mt-3 pt-2 border-t">
           Actualizado automáticamente cada 2 minutos
         </p>
       </div>

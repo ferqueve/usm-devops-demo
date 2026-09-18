@@ -64,12 +64,12 @@ export function CalendarioCalor({ dias, unidad = 'reservas' }: Readonly<Props>) 
     <div key="esquina" />,
     // Con cuadrados chicos no entran siete etiquetas: van día por medio.
     ...DIAS.map((d, i) => (
-      <div key={`d${i}`} className="flex items-center pr-1.5 text-[10px] leading-none text-muted-foreground">
+      <div key={`d${i}`} className="flex items-center pr-1.5 text-2xs leading-none text-muted-foreground">
         {grande || i % 2 === 0 ? d : ''}
       </div>
     )),
     ...semanas.flatMap((col, i) => [
-      <div key={`m${i}`} className="h-3.5 whitespace-nowrap text-[10px] leading-none text-muted-foreground">
+      <div key={`m${i}`} className="h-3.5 whitespace-nowrap text-2xs leading-none text-muted-foreground">
         {meses[i]}
       </div>,
       ...col.map((d, j) => {
@@ -84,10 +84,10 @@ export function CalendarioCalor({ dias, unidad = 'reservas' }: Readonly<Props>) 
           >
             {grande && (
               <>
-                <span className="absolute left-1 top-0.5 text-[9px] leading-none opacity-70" style={{ color: tema.secuencialTexto(t) }}>
+                <span className="absolute left-1 top-0.5 text-2xs leading-none opacity-70" style={{ color: tema.secuencialTexto(t) }}>
                   {Number(d.fecha.slice(8, 10))}
                 </span>
-                <span className="text-[11px] font-semibold leading-none tabular-nums" style={{ color: tema.secuencialTexto(t) }}>
+                <span className="text-2xs font-semibold leading-none tabular-nums" style={{ color: tema.secuencialTexto(t) }}>
                   {d.valor || ''}
                 </span>
               </>

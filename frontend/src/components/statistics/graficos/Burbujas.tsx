@@ -56,7 +56,7 @@ function Globo({ active, payload, ejeX, ejeY, tamano, formatoY, formatoX }: Glob
       <p>{ejeX}: <b>{formatoX(p.x)}</b></p>
       <p>{ejeY}: <b>{formatoY(p.y)}</b></p>
       <p>{tamano}: <b>{formatoNumero(p.z)}</b></p>
-      {p.alClic && <p className="mt-1 text-[10px] text-white/60">Clic para filtrar</p>}
+      {p.alClic && <p className="mt-1 text-2xs text-white/60">Clic para filtrar</p>}
     </div>
   );
 }

@@ -314,7 +314,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
             <button
               onClick={() => setSiguiendo(!siguiendo)}
               title={siguiendo ? 'Dejar de seguir el log' : 'Seguir el log en vivo'}
-              className={`flex items-center gap-1.5 h-7 rounded-md px-2 text-[11px] font-medium transition ${
+              className={`flex items-center gap-1.5 h-7 rounded-md px-2 text-2xs font-medium transition ${
                 siguiendo
                   ? 'bg-utec-green/25 text-utec-green'
                   : 'text-white/80 hover:bg-white/10'
@@ -371,7 +371,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 key={level}
                 onClick={() => setLevelFilter(level)}
                 disabled={conteoPorNivel[level] === 0}
-                className={`px-2.5 py-1 text-[11px] font-semibold rounded transition disabled:cursor-default disabled:opacity-40 ${
+                className={`px-2.5 py-1 text-2xs font-semibold rounded transition disabled:cursor-default disabled:opacity-40 ${
                   levelFilter === level
                     ? 'bg-white/15 text-white'
                     : 'text-white/60 hover:text-white'
@@ -549,7 +549,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                             {logger.name}
                           </p>
                           <span
-                            className={`inline-flex px-2 py-0.5 text-[11px] font-semibold rounded-md border whitespace-nowrap flex-shrink-0 ${getLevelColor(currentLevel)}`}
+                            className={`inline-flex px-2 py-0.5 text-2xs font-semibold rounded-md border whitespace-nowrap flex-shrink-0 ${getLevelColor(currentLevel)}`}
                           >
                             {currentLevel}
                           </span>

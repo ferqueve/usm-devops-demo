@@ -180,7 +180,7 @@ export function AdminDashboard({
               )}
               {barrasUsuarios.length > 0 && (
                 <div className="border-t pt-1">
-                  <p className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
+                  <p className="mb-1 text-2xs uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
                   <BarrasHorizontales datos={barrasUsuarios} multicolor />
                 </div>
               )}

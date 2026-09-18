@@ -45,7 +45,7 @@ export function OcupacionEspacios({ filas, onFiltrar }: Readonly<{ filas: Ocupac
                 {o.edificioNombre && <span className="text-xs text-muted-foreground"> · {o.edificioNombre}</span>}
               </span>
               {sinUso ? (
-                <span className="shrink-0 rounded bg-utec-orange/12 px-1.5 py-0.5 text-[11px] font-medium text-utec-orange">sin uso</span>
+                <span className="shrink-0 rounded bg-utec-orange/12 px-1.5 py-0.5 text-2xs font-medium text-utec-orange">sin uso</span>
               ) : (
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                   {n(o.reservas)} res. · {horas(Number(o.horasReservadas))} · <b className="text-foreground">{Math.round(pct)}%</b>
@@ -132,7 +132,7 @@ export function PorCarrera({ filas, onFiltrar }: Readonly<{ filas: ResumenCarrer
       {/* En celular la tabla scrollea de costado en vez de cortar la última columna. */}
       <div className="overflow-x-auto">
       <table className="w-full min-w-[440px] text-sm">
-        <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <thead className="text-2xs uppercase tracking-wide text-muted-foreground">
           <tr className="border-b">
             <th className="py-2 pr-2 text-left font-medium">Carrera</th>
             <th className="px-2 py-2 text-right font-medium">Aprobadas</th>
@@ -191,14 +191,14 @@ export function QuienesMasReservan({ filas, onFiltrarRol }: Readonly<{ filas: To
                   <span className="font-medium">{u.nombre}</span>
                   <span
                     {...filtrable(nombreRol(u.rol), onFiltrarRol ? () => onFiltrarRol(u.rol) : null)}
-                    className={`ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground ${onFiltrarRol ? 'cursor-pointer hover:bg-utec-orange/15 hover:text-utec-orange' : ''}`}
+                    className={`ml-1.5 rounded bg-muted px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground ${onFiltrarRol ? 'cursor-pointer hover:bg-utec-orange/15 hover:text-utec-orange' : ''}`}
                   >
                     {nombreRol(u.rol)}
                   </span>
                 </span>
                 <span className="shrink-0 font-semibold tabular-nums">{n(total)}</span>
               </div>
-              <div className="mb-1 flex justify-between gap-2 text-[11px] text-muted-foreground">
+              <div className="mb-1 flex justify-between gap-2 text-2xs text-muted-foreground">
                 <span className="truncate">{u.email}</span>
                 <span className="shrink-0 tabular-nums">
                   {n(u.aprobadas)} aprobadas · {n(u.canceladas)} canceladas

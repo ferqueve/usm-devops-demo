@@ -204,7 +204,7 @@ export function EventosLista({ eventos, limite }: Readonly<{ eventos: Academico[
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium" title={e.titulo}>{e.titulo}</div>
-                <div className="flex min-w-0 items-center gap-1 text-[11px] text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-1 text-2xs text-muted-foreground">
                   <CalendarDays className="h-3 w-3 shrink-0" />
                   <span className="truncate">
                     {fechaCorta(e.fecha.slice(0, 10))}
@@ -220,7 +220,7 @@ export function EventosLista({ eventos, limite }: Readonly<{ eventos: Academico[
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                 <div className="h-full rounded-full" style={{ width: `${Math.min(100, pct ?? 100)}%`, backgroundColor: color, opacity: pct == null ? 0.35 : 1 }} />
               </div>
-              <span className="w-24 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
+              <span className="w-24 shrink-0 text-right text-2xs tabular-nums text-muted-foreground">
                 <b className="text-foreground">{entero(inscriptos)}</b>
                 {cupo != null ? ` / ${entero(cupo)} · ${Math.round(pct ?? 0)}%` : ' inscriptos'}
               </span>

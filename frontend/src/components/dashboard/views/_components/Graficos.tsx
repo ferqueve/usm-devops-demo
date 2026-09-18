@@ -209,7 +209,7 @@ export function Anillo({ porciones, centro, leyendaCentro, alto = 150, llenar }:
             {(centro ?? total).toLocaleString?.('es-UY') ?? centro ?? total}
           </span>
           {leyendaCentro && (
-            <span className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">{leyendaCentro}</span>
+            <span className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">{leyendaCentro}</span>
           )}
         </div>
       </div>

@@ -42,7 +42,7 @@ export function EventosResumen({ e, grande = false }: Readonly<{ e: Academico['e
           <div key={c.etiqueta} className="rounded-lg border bg-muted/30 px-2 py-2 text-center">
             <c.icono className="mx-auto mb-0.5 h-3.5 w-3.5 text-muted-foreground" />
             <div className="text-sm font-semibold tabular-nums">{c.valor}</div>
-            <div className="text-[10px] leading-tight text-muted-foreground">{c.etiqueta}</div>
+            <div className="text-2xs leading-tight text-muted-foreground">{c.etiqueta}</div>
           </div>
         ))}
       </div>
@@ -125,7 +125,7 @@ export function MejorCalificados({ eventos, limite = 6 }: Readonly<{ eventos: Ev
           </span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium" title={e.titulo}>{e.titulo}</div>
-            <div className="text-[11px] text-muted-foreground">
+            <div className="text-2xs text-muted-foreground">
               {nombreTipo(e.tipo)} · {entero(e.inscriptos)} inscriptos
             </div>
           </div>

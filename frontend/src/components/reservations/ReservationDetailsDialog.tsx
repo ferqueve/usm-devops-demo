@@ -179,7 +179,7 @@ export default function ReservationDetailsDialog({
               <Badge variant="outline" className={estadoConfig.color}>
                 {estadoConfig.label}
               </Badge>
-              <span className="text-[11px] text-muted-foreground">#{reserva.id}</span>
+              <span className="text-2xs text-muted-foreground">#{reserva.id}</span>
             </div>
           </div>
           {reserva.esPublica && (
@@ -226,7 +226,7 @@ export default function ReservationDetailsDialog({
                   <dd className="mt-0.5 font-medium flex items-center gap-1.5">
                     <span className="truncate">{reserva.carreraNombre}</span>
                     {reserva.carreraCodigo && (
-                      <Badge variant="outline" className="text-[10px] py-0 h-4 px-1.5 flex-shrink-0">
+                      <Badge variant="outline" className="text-2xs py-0 h-4 px-1.5 flex-shrink-0">
                         {reserva.carreraCodigo}
                       </Badge>
                     )}

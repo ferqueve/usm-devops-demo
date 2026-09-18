@@ -91,12 +91,12 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
             return (
               <div key={d.label} className="flex min-h-[120px] flex-col bg-card p-2">
                 <div className="mb-1.5 flex items-center gap-1.5">
-                  <span className={cn('text-[11px] font-semibold uppercase', esHoy ? 'text-utec-blue' : 'text-muted-foreground')}>{d.label}</span>
-                  <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-medium tabular-nums', esHoy ? 'bg-utec-blue text-white' : 'text-muted-foreground')}>{d.fecha.getDate()}</span>
+                  <span className={cn('text-2xs font-semibold uppercase', esHoy ? 'text-utec-blue' : 'text-muted-foreground')}>{d.label}</span>
+                  <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-2xs font-medium tabular-nums', esHoy ? 'bg-utec-blue text-white' : 'text-muted-foreground')}>{d.fecha.getDate()}</span>
                 </div>
                 <div className="flex flex-1 flex-col gap-1">
                   {d.items.length === 0 ? (
-                    <span className="text-[10px] text-muted-foreground/50">—</span>
+                    <span className="text-2xs text-muted-foreground/50">—</span>
                   ) : (
                     d.items.map((t) => (
                       <button
@@ -105,7 +105,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
                         onClick={() => navigate(`/tutorias/${t.id}`)}
                         title={`${hora(t.inicio)} · ${t.materiaNombre} · ${t.docenteNombre}`}
                         className={cn(
-                          'flex items-center gap-1 rounded-md px-1.5 py-1 text-left text-[11px] font-medium transition-transform hover:scale-[1.02]',
+                          'flex items-center gap-1 rounded-md px-1.5 py-1 text-left text-2xs font-medium transition-transform hover:scale-[1.02]',
                           colorDeMateria(t.materiaNombre),
                           t.estado === 'CANCELADA' && 'line-through opacity-60',
                         )}

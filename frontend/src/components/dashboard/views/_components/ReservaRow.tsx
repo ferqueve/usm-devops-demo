@@ -112,7 +112,7 @@ export function ReservaRow({
       {/* Columna 1: hora */}
       <div className="text-xs tabular-nums leading-tight">
         <div className="font-medium">{format(inicio, 'HH:mm')}</div>
-        <div className="text-muted-foreground text-[11px]">{fechaCorta}</div>
+        <div className="text-muted-foreground text-2xs">{fechaCorta}</div>
       </div>
 
       {/* Columna 2: título + meta (espacio, dur) */}
@@ -128,7 +128,7 @@ export function ReservaRow({
           )}
           <span className="text-sm leading-tight truncate font-medium">{titleBase || reserva.espacioNombre}</span>
           {titleId && (
-            <span className="text-[10px] font-mono text-muted-foreground tracking-tight shrink-0">{titleId}</span>
+            <span className="text-2xs font-mono text-muted-foreground tracking-tight shrink-0">{titleId}</span>
           )}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 min-w-0">
@@ -154,7 +154,7 @@ export function ReservaRow({
       <div className="flex items-center gap-2 shrink-0">
         {showAvatar && (reserva.usuarioNombre || reserva.usuarioId) && (
           <div
-            className={`w-6 h-6 rounded-full text-[10px] font-semibold flex items-center justify-center shrink-0 ${avatarColor}`}
+            className={`w-6 h-6 rounded-full text-2xs font-semibold flex items-center justify-center shrink-0 ${avatarColor}`}
             title={reserva.usuarioNombre ?? undefined}
           >
             {iniciales(reserva.usuarioNombre)}

@@ -204,11 +204,11 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
           <div className="ml-auto flex gap-5 text-center">
             <div>
               <div className="text-lg font-bold tabular-nums text-utec-blue">{miRating.tutorias}</div>
-              <div className="text-[11px] text-muted-foreground">franjas</div>
+              <div className="text-2xs text-muted-foreground">franjas</div>
             </div>
             <div>
               <div className="text-lg font-bold tabular-nums text-utec-green">{miRating.estudiantes}</div>
-              <div className="text-[11px] text-muted-foreground">estudiantes</div>
+              <div className="text-2xs text-muted-foreground">estudiantes</div>
             </div>
           </div>
         </div>
@@ -414,7 +414,7 @@ function EstudianteView({ embedded }: Readonly<{ embedded?: boolean }>) {
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-utec-blue/10 text-utec-blue"><GraduationCap className="h-3.5 w-3.5" /></span>
             <h3 className="text-sm font-bold">{materia}</h3>
-            {misMaterias.has(materia) && <span className="rounded-full bg-utec-blue/15 px-2 py-0.5 text-[10px] font-medium text-utec-blue">Tu materia</span>}
+            {misMaterias.has(materia) && <span className="rounded-full bg-utec-blue/15 px-2 py-0.5 text-2xs font-medium text-utec-blue">Tu materia</span>}
             <span className="ml-auto text-xs text-muted-foreground">{items.length} {items.length === 1 ? 'horario' : 'horarios'}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

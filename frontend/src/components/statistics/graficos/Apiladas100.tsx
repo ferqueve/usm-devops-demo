@@ -32,7 +32,7 @@ export function Apiladas100({ filas }: Readonly<{ filas: FilaApilada[] }>) {
                     return (
                       <div
                         key={s.nombre}
-                        className="flex min-w-[3px] items-center justify-center overflow-hidden text-[10px] font-semibold tabular-nums"
+                        className="flex min-w-[3px] items-center justify-center overflow-hidden text-2xs font-semibold tabular-nums"
                         style={{ flexGrow: s.valor, flexBasis: 0, backgroundColor: s.color, color: s.texto ?? '#ffffff' }}
                         title={`${f.etiqueta} · ${s.nombre}: ${formatoNumero(s.valor)} (${pct}%)`}
                       >
