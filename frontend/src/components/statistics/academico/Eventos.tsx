@@ -6,7 +6,7 @@ import { Medidor } from '../graficos/Medidor';
 import { useTemaGraficos } from '../graficos/tema';
 import { Vacio } from '../Vacio';
 import { entero, porcentaje } from '../reservas/formato';
-import { Estrellas } from './Visuales';
+import { Estrellas } from '@/components/common/Estrellas';
 
 type Evento = Academico['eventosLista'][number];
 
@@ -129,7 +129,7 @@ export function MejorCalificados({ eventos, limite = 6 }: Readonly<{ eventos: Ev
               {nombreTipo(e.tipo)} · {entero(e.inscriptos)} inscriptos
             </div>
           </div>
-          <Estrellas valor={e.ratingPromedio} chico />
+          <Estrellas valor={e.ratingPromedio} tamano="chico" />
         </li>
       ))}
     </ol>

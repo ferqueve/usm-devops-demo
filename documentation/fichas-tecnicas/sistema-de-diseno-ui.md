@@ -253,6 +253,9 @@ implementaciones de lo mismo:
 | Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
 | `EmptyState` | 3 → 1 | hecho: `components/ui/empty-state` con variante `linea` |
 | `Panel` | 6 → 2 | `components/common/Panel`; queda el de `RuntimeCards`, que tiene otra forma |
+| Hooks con caché de lista | 4 → 1 | `hooks/cacheDeLista.ts`, con test |
+| Estrellas de valoración | 4 → 1 | `components/common/Estrellas` |
+| Días de la semana | 6 → 2 | `lib/utils/fechas`, uno por cada orden |
 | Estado → color | 9 → 1 | `components/common/estados` |
 | Formateo de fechas | 16 → 1 | `lib/utils/fechas.ts` |
 | Esqueletos de carga | 23 → 1 | la primitiva `ui/skeleton`, en `bg-muted` |

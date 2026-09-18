@@ -4,8 +4,8 @@ import { CalendarRange, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils/helpers';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
 
-const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 // Paleta cálida-fría para diferenciar materias (tinte suave + texto legible en claro/oscuro).
 const MATERIA_COLORES = [
@@ -46,7 +46,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
     const inicioSemana = lunesDe(hoy);
     inicioSemana.setDate(inicioSemana.getDate() + semanaOffset * 7);
 
-    const cols = DIAS.map((label, i) => {
+    const cols = DIAS_DESDE_LUNES.map((label, i) => {
       const fecha = new Date(inicioSemana);
       fecha.setDate(inicioSemana.getDate() + i);
       return { label, fecha, items: [] as Tutoria[] };

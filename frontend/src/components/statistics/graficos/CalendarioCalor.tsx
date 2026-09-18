@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { formatoNumero, useTemaGraficos } from './tema';
+import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
 
 interface Props {
   /** Un valor por día, YYYY-MM-DD. */
@@ -7,7 +8,6 @@ interface Props {
   unidad?: string;
 }
 
-const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 function diaSemana(fecha: string): number {
   return (new Date(`${fecha}T00:00:00Z`).getUTCDay() + 6) % 7;
@@ -63,7 +63,7 @@ export function CalendarioCalor({ dias, unidad = 'reservas' }: Readonly<Props>) 
   const celdas = [
     <div key="esquina" />,
     // Con cuadrados chicos no entran siete etiquetas: van día por medio.
-    ...DIAS.map((d, i) => (
+    ...DIAS_DESDE_LUNES.map((d, i) => (
       <div key={`d${i}`} className="flex items-center pr-1.5 text-2xs leading-none text-muted-foreground">
         {grande || i % 2 === 0 ? d : ''}
       </div>

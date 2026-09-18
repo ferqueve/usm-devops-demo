@@ -16,6 +16,23 @@
  * atrás al oeste de Greenwich.
  */
 
+/**
+ * Los días, en los dos órdenes que hacen falta.
+ *
+ * Estaban escritos seis veces, tres empezando en lunes y tres en domingo. No
+ * era un bug —los de lunes convierten con `(getDay() + 6) % 7`— pero tener las
+ * dos versiones sueltas es pedir uno.
+ *
+ * `DIAS_DESDE_DOMINGO` es el que se indexa directo con `Date.getDay()`.
+ * `DIAS_DESDE_LUNES` es el que se muestra, porque la semana del campus
+ * arranca el lunes.
+ */
+export const DIAS_DESDE_DOMINGO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
+export const DIAS_DESDE_LUNES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
+
+/** El índice de `Date.getDay()` pasado a semana que arranca el lunes. */
+export const indiceDesdeLunes = (fecha: Date) => (fecha.getDay() + 6) % 7;
+
 /** Lo que se muestra cuando no hay fecha. Un guion largo, no un hueco. */
 const SIN_FECHA = '—';
 

@@ -8,17 +8,8 @@ import { EstadoCarga } from '@/components/common/EstadoCarga';
 import { MARCA } from '@/lib/design/paleta';
 import type { EventoFeedbackResumen } from '@/lib/types/eventos';
 import { soloFecha } from '@/lib/utils/fechas';
+import { Estrellas } from '@/components/common/Estrellas';
 
-function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | 'lg' }>) {
-  const cls = size === 'lg' ? 'h-5 w-5' : 'h-3.5 w-3.5';
-  return (
-    <span className="inline-flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} className={`${cls} ${n <= Math.round(value) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/40'}`} />
-      ))}
-    </span>
-  );
-}
 
 
 export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>) {
@@ -93,7 +84,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
           <div className="flex items-center gap-4">
             <div className="text-center shrink-0">
               <div className="text-3xl font-bold tabular-nums leading-none">{promedio.toFixed(1)}</div>
-              <div className="mt-1"><Stars value={promedio} /></div>
+              <div className="mt-1"><Estrellas valor={promedio} conNumero={false} /></div>
             </div>
             <div className="flex-1 space-y-1">
               {[5, 4, 3, 2, 1].map((n) => {
@@ -157,7 +148,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
                     <span className="truncate text-sm font-medium">{i.usuarioNombre ?? 'Anónimo'}</span>
                   </span>
                   <span className="flex items-center gap-2 shrink-0">
-                    <Stars value={i.rating} />
+                    <Estrellas valor={i.rating} conNumero={false} />
                     <span className="text-2xs text-muted-foreground">{soloFecha(i.createdAt, '')}</span>
                   </span>
                 </div>

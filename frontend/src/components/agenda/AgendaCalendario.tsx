@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { Agendable } from '@/lib/agenda/types';
 import { ESTADO, estadoDe, relleno } from '@/components/common/estados';
+import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
 
 interface AgendaCalendarioProps {
   items: Agendable[];
@@ -11,7 +12,6 @@ interface AgendaCalendarioProps {
   maxPorDia?: number;
 }
 
-const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 /**
  * Color del chip según el estado crudo de la entidad. Cubre los estados de tutoría
@@ -92,7 +92,7 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
       </div>
 
       <div className="grid grid-cols-7 text-center text-2xs font-medium text-muted-foreground border-b">
-        {DIAS.map((d) => <div key={d} className="py-1.5">{d}</div>)}
+        {DIAS_DESDE_LUNES.map((d) => <div key={d} className="py-1.5">{d}</div>)}
       </div>
 
       <div className="grid grid-cols-7">

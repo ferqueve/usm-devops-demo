@@ -33,6 +33,7 @@ import { Novedades } from './Novedades';
 import { espacioFuera, textoComparacion, textoFiltros, useFiltrosReservas } from './filtros';
 import { MARCA } from '@/lib/design/paleta';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DIAS_DESDE_DOMINGO } from '@/lib/utils/fechas';
 
 const SECCIONES = [
   { id: 'resumen', titulo: 'Resumen', icono: BarChart3, color: MARCA.azul },
@@ -43,7 +44,6 @@ const SECCIONES = [
 ];
 
 // 0 = domingo, como EXTRACT(DOW).
-const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 
 function Esqueleto() {
@@ -381,7 +381,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
         titulo="Uso"
         descripcion="Cuándo y dónde se concentran las reservas aprobadas, y a qué hora se llena cada tipo de espacio."
         destacados={[
-          ...(pico ? [{ etiqueta: 'Hora pico', valor: `${DIAS_CORTOS[pico.diaSemana]} ${pico.hora}:00` }] : []),
+          ...(pico ? [{ etiqueta: 'Hora pico', valor: `${DIAS_DESDE_DOMINGO[pico.diaSemana]} ${pico.hora}:00` }] : []),
           { etiqueta: 'Espacios usados', valor: `${actual.espaciosUsados} de ${resumen.espaciosTotal}` },
           ...(tipoMasSaturado ? [{ etiqueta: 'Tipo más saturado', valor: `${tipoMasSaturado[0]} ${Math.round(tipoMasSaturado[1].suma / tipoMasSaturado[1].n)}%` }] : []),
           ...(espacios ? [{ etiqueta: 'Horas sin lugar', valor: entero(horasLlenas) }] : []),

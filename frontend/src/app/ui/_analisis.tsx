@@ -5,7 +5,7 @@ import { MARCA } from '@/lib/design/paleta';
 
 import { PanelEstadistica } from '@/components/statistics/PanelEstadistica';
 import { Vacio } from '@/components/statistics/Vacio';
-import { Estrellas } from '@/components/statistics/academico/Visuales';
+import { Estrellas } from '@/components/common/Estrellas';
 import { CompararContra } from '@/components/statistics/reservas/CompararContra';
 import { MapaDeCalor } from '@/components/statistics/reservas/MapaDeCalor';
 import { MedidorAuc } from '@/components/predicciones/academico/ConfiabilidadAcademico';
@@ -126,7 +126,7 @@ export function PiezasAnalisis() {
           <Estrellas valor={4.6} />
           <Estrellas valor={3.2} />
           <Estrellas valor={null} />
-          <Estrellas valor={5} chico />
+          <Estrellas valor={5} tamano="chico" />
         </div>
       </Caja>
 

@@ -7,7 +7,6 @@ import {
   GraduationCap,
   Loader2,
   MapPin,
-  Star,
   Users,
   Video,
   X,
@@ -19,6 +18,7 @@ import { feriadoDe } from '@/lib/feriadosUy';
 import { cn } from '@/lib/utils/helpers';
 import type { Tutoria } from '@/lib/types/tutorias';
 import { relativa } from '@/lib/utils/fechas';
+import { Estrellas } from '@/components/common/Estrellas';
 
 type Variant = 'disponible' | 'agendada' | 'docente';
 
@@ -54,24 +54,6 @@ function formatRango(inicio?: string, fin?: string): string {
 
 
 /** Estrellas de rating del docente (ratingPromedio / ratingTotal). */
-function Estrellas({ promedio, total }: Readonly<{ promedio?: number; total?: number }>) {
-  if (!total || total === 0) {
-    return <span className="text-2xs text-muted-foreground">Docente nuevo · sin valoraciones aún</span>;
-  }
-  const p = promedio ?? 0;
-  const redondeado = Math.round(p);
-  return (
-    <span className="flex items-center gap-1 text-xs">
-      <span className="flex">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Star key={i} className={cn('h-3.5 w-3.5', i <= redondeado ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/30')} />
-        ))}
-      </span>
-      <span className="font-semibold tabular-nums text-foreground">{p.toFixed(1)}</span>
-      <span className="text-muted-foreground">({total})</span>
-    </span>
-  );
-}
 
 /** Badge "En vivo" cálido (rojo, con latido) para tutorías walk-in disponibles ahora. */
 function EnVivoBadge() {
@@ -193,7 +175,7 @@ export function TutoriaCard({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-muted-foreground">{tutoria.docenteNombre}</span>
           <span className="text-muted-foreground/40">·</span>
-          <Estrellas promedio={tutoria.ratingPromedio} total={tutoria.ratingTotal} />
+          <Estrellas valor={tutoria.ratingPromedio} total={tutoria.ratingTotal} sinDatos="Docente nuevo · sin valoraciones aún" tamano="chico" />
         </div>
 
         {/* Chips: modalidad, espacio, tags */}
