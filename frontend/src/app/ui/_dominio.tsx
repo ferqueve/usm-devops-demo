@@ -59,7 +59,7 @@ const SERIE_SISTEMA = Array.from({ length: 24 }, (_, i) => ({
 /** Filas de reserva, materia, tutoría y evento. */
 export function FilasDominio() {
   return (
-    <div className="grid gap-3 lg:grid-cols-2">
+    <div className="grid gap-3 @lg:grid-cols-2 @5xl:grid-cols-3">
       <Caja titulo="Fila de reserva" nota="La misma fila en sus tres estados y con acento de urgencia. El tipo Reserva no contempla RECHAZADO aunque el string existe en lib/types.">
         <div className="divide-y divide-border">
           <ReservaRow reserva={RESERVA_BASE} showEstado />
@@ -106,7 +106,7 @@ export function FilasDominio() {
 /** Tarjetas y gráficos de la pantalla de Sistema. */
 export function PiezasSistema() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 @md:grid-cols-2 @4xl:grid-cols-4 @7xl:grid-cols-5">
       <Caja titulo="MetricCard" nota="Variantes por estado.">
         <div className="space-y-2">
           <MetricCard title="Memoria JVM" value="68%" icon={Cpu} description="1.4 GB de 2 GB" progress={68} variant="warning" />
@@ -142,9 +142,9 @@ export function PiezasSistema() {
         </div>
       </Caja>
 
-      <div className="sm:col-span-2 lg:col-span-4">
+      <div className="@md:col-span-2 @3xl:col-span-4">
         <Caja titulo="MetricsChart" nota="Serie en vivo de la pantalla de Sistema.">
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-3 @lg:grid-cols-2 @5xl:grid-cols-3">
             <MetricsChart
               title="Memoria usada"
               data={SERIE_SISTEMA as never}
@@ -169,7 +169,7 @@ export function PiezasSistema() {
         </Caja>
       </div>
 
-      <div className="sm:col-span-2 lg:col-span-4">
+      <div className="@md:col-span-2 @3xl:col-span-4">
         <Caja titulo="FilterBar" nota="Filtros activos, con su forma de quitarlos.">
           <FilterBar
             filters={[

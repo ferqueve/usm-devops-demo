@@ -142,7 +142,7 @@ export function Paleta() {
         titulo="Marca"
         nota="Hex exactos del manual 2.1 (A.4). Cinco nombran un departamento; el cian es el centro del isotipo. No dependen del tema."
       >
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-1.5 @md:grid-cols-4 @6xl:grid-cols-6">
           <Ficha fondo={MARCA.cian} texto={MARCA.tinta} nombre="Cian" detalle="principal del sistema" />
           {Object.entries(DEPARTAMENTO).map(([k, d]) => (
             <Ficha
@@ -164,7 +164,7 @@ export function Paleta() {
       >
         <div className="space-y-1.5">
           {ROLES.map((rol) => (
-            <div key={rol} className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            <div key={rol} className="grid grid-cols-2 gap-1.5 @md:grid-cols-4 @6xl:grid-cols-6">
               {PIEZAS.map((pieza) => {
                 const v = pieza ? `--${rol}-${pieza}` : `--${rol}`;
                 const fondo = t[v];
@@ -188,7 +188,7 @@ export function Paleta() {
       </Grupo>
 
       <Grupo titulo="Superficies" nota="De la más honda a la más alta. Cada una tiene que separarse de la de al lado.">
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-1.5 @md:grid-cols-4 @4xl:grid-cols-6 @7xl:grid-cols-8">
           {VARS_SUPERFICIE.map((v) => (
             <Ficha key={v} fondo={t[v] ?? '#000000'} nombre={v.replace('--', '')} detalle={v} />
           ))}
@@ -196,7 +196,7 @@ export function Paleta() {
       </Grupo>
 
       <Grupo titulo="Acción y texto" nota="Con el contraste del par que forman.">
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-1.5 @md:grid-cols-4 @6xl:grid-cols-6">
           <Ficha fondo={t['--primary'] ?? '#000'} texto={t['--primary-foreground']} nombre="Acción" detalle="--primary" />
           <Ficha fondo={t['--destructive'] ?? '#000'} texto={t['--destructive-foreground']} nombre="Destructivo" detalle="--destructive" />
           <Ficha fondo={t['--chrome'] ?? '#000'} texto={t['--chrome-foreground']} nombre="Banda" detalle="--chrome" />
@@ -216,7 +216,7 @@ export function Paleta() {
           {([['Sobre claro', SERIE_CLARO], ['Sobre oscuro', SERIE_OSCURO]] as const).map(([titulo, serie]) => (
             <div key={titulo}>
               <p className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">{titulo}</p>
-              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+              <div className="grid grid-cols-3 gap-1.5 @md:grid-cols-6">
                 {Object.entries(serie).map(([k, v]) => (
                   <Ficha key={k} fondo={v} nombre={k} />
                 ))}

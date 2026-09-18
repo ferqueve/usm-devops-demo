@@ -98,7 +98,7 @@ export function Dialogos() {
             ocho archivos, la misma firma, ~690 líneas
           </span>
         </p>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-2 @md:grid-cols-2 @3xl:grid-cols-4 @7xl:grid-cols-6">
           <Abridor label="Carrera" nota="DeleteCarreraDialog · 77 líneas"
             render={(p) => <DeleteCarreraDialog {...p} carrera={carrera} onSuccess={noop} />} />
           <Abridor label="Materia" nota="DeleteMateriaDialog · 77 líneas"
@@ -120,7 +120,7 @@ export function Dialogos() {
 
       <div>
         <p className="mb-2 text-xs font-medium text-foreground">Alta y edición</p>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-2 @md:grid-cols-2 @3xl:grid-cols-4 @7xl:grid-cols-6">
           <Abridor label="Tipo de espacio" nota="TipoEspacioFormDialog · alta y edición"
             render={(p) => <TipoEspacioFormDialog {...p} tipoEspacio={null} onSuccess={noop} />} />
           <Abridor label="Tipo de elemento" nota="TipoElementoFormDialog · alta y edición"
@@ -134,7 +134,7 @@ export function Dialogos() {
 
       <div>
         <p className="mb-2 text-xs font-medium text-foreground">Detalle y ayuda</p>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-2 @md:grid-cols-2 @3xl:grid-cols-4 @7xl:grid-cols-6">
           <Abridor label="Detalle de inventario" nota="InventoryDetailsDialog"
             render={(p) => <InventoryDetailsDialog {...p} item={item} />} />
           <Abridor label="Detalle de auditoría" nota="AuditLogDetailsDialog · antes y después"

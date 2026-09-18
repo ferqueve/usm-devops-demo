@@ -26,7 +26,7 @@ const noop = () => {};
 function Caja({ titulo, nota, ancho, children }: Readonly<{
   titulo: string; nota?: string; ancho?: 'doble' | 'todo'; children: ReactNode;
 }>) {
-  const span = ancho ? 'sm:col-span-2' : '';
+  const span = ancho ? '@md:col-span-2' : '';
   return (
     <div className={`min-w-0 rounded-lg border border-border bg-card p-3 ${span}`}>
       <p className="text-xs font-medium text-foreground">{titulo}</p>
@@ -126,7 +126,7 @@ const DEMANDA = Array.from({ length: 28 }, (_, i) => ({
 
 export function TarjetasDominio() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3 @md:grid-cols-2 @5xl:grid-cols-3">
       <Caja titulo="SpaceCard" nota="Disponible y en mantenimiento, más su esqueleto de carga.">
         <div className="space-y-2">
           <SpaceCard espacio={espacio} onEdit={noop} />

@@ -54,7 +54,7 @@ function Caja({ titulo, nota, ancho, children }: Readonly<{
   titulo: string; nota: string; ancho?: 'doble' | 'triple'; children: ReactNode;
 }>) {
   const span =
-    ancho === 'triple' ? 'sm:col-span-2 lg:col-span-3' : ancho === 'doble' ? 'lg:col-span-2' : '';
+    ancho === 'triple' ? '@md:col-span-2 @4xl:col-span-3' : ancho === 'doble' ? '@4xl:col-span-2' : '';
   return (
     <div className={`min-w-0 rounded-lg border border-border bg-card p-3 ${span}`}>
       <div className="mb-2">
@@ -69,7 +69,7 @@ function Caja({ titulo, nota, ancho, children }: Readonly<{
 /** Las cinco compactas que usan los dashboards. */
 export function GraficosDashboard() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3 @md:grid-cols-2 @4xl:grid-cols-3 @7xl:grid-cols-4">
       <Caja titulo="Tendencia" nota="Serie mensual. Acompaña un panel, sin ejes cargados.">
         <Tendencia datos={SERIE_MESES} alto={110} />
       </Caja>
@@ -108,7 +108,7 @@ export function GraficosDashboard() {
 /** Las catorce de la pantalla de estadísticas. */
 export function GraficosEstadisticas() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3 @md:grid-cols-2 @4xl:grid-cols-3 @7xl:grid-cols-4">
       <Caja titulo="Tarjetas KPI" nota="Su propia tira de métricas, distinta de StatStrip." ancho="triple">
         <TarjetasKpi items={KPIS_ESTADISTICAS} />
       </Caja>

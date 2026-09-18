@@ -43,7 +43,7 @@ function Caja({ titulo, nota, ancho, children }: Readonly<{
   titulo: string; nota?: string; ancho?: boolean; children: ReactNode;
 }>) {
   return (
-    <div className={`min-w-0 rounded-lg border border-border bg-card p-3 ${ancho ? 'sm:col-span-2' : ''}`}>
+    <div className={`min-w-0 rounded-lg border border-border bg-card p-3 ${ancho ? '@md:col-span-2' : ''}`}>
       <p className="text-xs font-medium text-foreground">{titulo}</p>
       {nota && <p className="text-[11px] leading-snug text-muted-foreground">{nota}</p>}
       <div className="mt-2 overflow-auto">{children}</div>
@@ -139,7 +139,7 @@ export function ListasYFiltros() {
   };
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3 @md:grid-cols-2 @5xl:grid-cols-3">
       <Caja titulo="InventoryTable" nota="Tabla de inventario con selección y orden." ancho>
         <InventoryTable
           items={ITEMS}

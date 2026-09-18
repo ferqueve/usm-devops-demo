@@ -81,9 +81,18 @@ function Doble({ children }: Readonly<{ children: ReactNode }>) {
   // `text-foreground` va explícito: el color de texto lo pone <body> y se
   // hereda, así que sin esto los títulos y las celdas de tabla del panel
   // oscuro seguían con la tinta del tema claro.
-  const pared = 'min-w-0 flex-1 rounded-lg border border-border bg-background p-4 text-foreground';
+  /*
+   * `@container`: lo de adentro se acomoda según el ancho del panel, no el de
+   * la ventana. Hace falta porque los dos temas van lado a lado: en una
+   * pantalla de 3440 px cada panel mide ~1700, pero un breakpoint de viewport
+   * como `2xl:` se dispararía a 1536 px de ventana, cuando cada panel todavía
+   * mide 750. Con consultas de contenedor la grilla crece cuando de verdad
+   * hay lugar.
+   */
+  const pared =
+    '@container min-w-0 flex-1 rounded-lg border border-border bg-background p-4 text-foreground';
   return (
-    <div className="flex flex-col gap-3 lg:flex-row">
+    <div className="flex flex-col gap-3 md:flex-row">
       <TemaGraficosContexto.Provider value="claro">
         <div className={pared}>
           <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -144,7 +153,7 @@ export default function UiPage() {
   return (
     <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-10 border-b border-border bg-card/90 backdrop-blur">
-          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
             <div className="mr-auto">
               <h1 className="text-base font-semibold tracking-tight text-foreground">
                 Base visual
@@ -167,7 +176,7 @@ export default function UiPage() {
           </div>
         </header>
 
-        <main className="mx-auto flex max-w-[1400px] flex-col gap-10 px-6 py-8">
+        <main className="flex flex-col gap-10 px-6 py-8">
           <Seccion
             id="inventario"
             titulo="Inventario"
