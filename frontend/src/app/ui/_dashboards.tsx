@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
-import { Award, Boxes, CalendarDays, Inbox } from 'lucide-react';
+import { CalendarDays, Inbox } from 'lucide-react';
 
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
-import { MARCA } from '@/lib/design/paleta';
 
 import { AdminDashboard } from '@/components/dashboard/views/AdminDashboard';
 import { AnalistaDashboard } from '@/components/dashboard/views/AnalistaDashboard';
@@ -12,18 +11,6 @@ import { ExternoDashboard } from '@/components/dashboard/views/ExternoDashboard'
 import { MantenimientoDashboard } from '@/components/dashboard/views/MantenimientoDashboard';
 
 import { Hero } from '@/components/dashboard/views/_components/Hero';
-import { Section } from '@/components/dashboard/views/_components/Section';
-import { DualPanel } from '@/components/dashboard/views/_components/DualPanel';
-import QuickActions from '@/components/dashboard/QuickActions';
-import DashboardStats from '@/components/dashboard/DashboardStats';
-import DashboardCharts from '@/components/dashboard/DashboardCharts';
-import UpcomingReservations from '@/components/dashboard/UpcomingReservations';
-import StatsListWidget from '@/components/dashboard/widgets/_shared/StatsListWidget';
-import InventoryStatsWidget from '@/components/dashboard/widgets/InventoryStatsWidget';
-import SpaceStatsWidget from '@/components/dashboard/widgets/SpaceStatsWidget';
-import PriorityReservationsWidget from '@/components/dashboard/widgets/PriorityReservationsWidget';
-import PendingReservationsAlert from '@/components/dashboard/widgets/PendingReservationsAlert';
-import PendingInventoryRequestsAlert from '@/components/dashboard/widgets/PendingInventoryRequestsAlert';
 
 import { DASHBOARD, RESERVAS_PENDIENTES, RESERVAS_PROXIMAS } from './_datos-dashboard';
 
@@ -153,74 +140,16 @@ export function Dashboards() {
           </div>
         </Caja>
 
-        <Caja titulo="Section" nota="Título con conteo y enlace.">
-          <Section title="Mis materias" count={4} action={{ label: 'ver todas', to: '/materias' }}>
-            <p className="text-xs text-muted-foreground">El contenido va acá.</p>
-          </Section>
-        </Caja>
 
-        <Caja titulo="DualPanel" nota="Dos paneles con proporción fija.">
-          <DualPanel
-            ratio="3/2"
-            left={{ title: 'Izquierda', body: <p className="text-xs text-muted-foreground">3 partes</p> }}
-            right={{ title: 'Derecha', body: <p className="text-xs text-muted-foreground">2 partes</p> }}
-          />
-        </Caja>
 
-        <Caja titulo="QuickActions" nota="Atajos del dashboard.">
-          <QuickActions />
-        </Caja>
 
-        <Caja titulo="DashboardStats" nota="La tira vieja del dashboard: otra implementación más." ancho>
-          <DashboardStats stats={DASHBOARD.stats} />
-        </Caja>
 
-        <Caja titulo="DashboardCharts" nota="Los gráficos del dashboard anterior." ancho>
-          <DashboardCharts reservas={RESERVAS_PROXIMAS} stats={DASHBOARD.reservaStats} />
-        </Caja>
 
-        <Caja titulo="UpcomingReservations" nota="Próximas, con filtro de sólo las mías." ancho>
-          <UpcomingReservations reservas={RESERVAS_PROXIMAS} onViewDetails={noop} onToggleFilter={noop} />
-        </Caja>
 
-        <Caja titulo="StatsListWidget" nota="Lista de métricas con icono y color.">
-          <StatsListWidget
-            title="Resumen académico"
-            TitleIcon={Award}
-            loading={false}
-            items={[
-              { label: 'Materias', value: 4, icon: Award, color: MARCA.azul },
-              { label: 'Créditos', value: 44, icon: Award, color: MARCA.verde },
-              { label: 'Tutorías', value: 3, icon: CalendarDays, color: MARCA.naranja },
-              { label: 'Racha', value: 5, icon: Boxes, color: MARCA.amarillo },
-            ]}
-          />
-        </Caja>
 
-        <Caja titulo="SpaceStatsWidget" nota="Resumen del parque de espacios.">
-          <SpaceStatsWidget stats={ESPACIOS_STATS} loading={false} />
-        </Caja>
 
-        <Caja titulo="InventoryStatsWidget" nota="Con stats en null no dibuja nada: no tiene estado vacío, queda un hueco mudo.">
-          <InventoryStatsWidget stats={null} loading={false} />
-        </Caja>
 
-        <Caja titulo="PriorityReservationsWidget" nota="Cola ordenada por urgencia.">
-          <PriorityReservationsWidget
-            reservasPrioritarias={PRIORITARIAS}
-            reservasPendientes={RESERVAS_PENDIENTES}
-            loading={false}
-            canApprove
-            onViewDetails={noop}
-          />
-        </Caja>
 
-        <Caja titulo="Avisos" nota="Las dos alertas del dashboard.">
-          <div className="space-y-2">
-            <PendingReservationsAlert count={4678} loading={false} canApprove />
-            <PendingInventoryRequestsAlert count={7458} />
-          </div>
-        </Caja>
       </div>
     </div>
   );

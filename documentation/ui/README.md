@@ -256,13 +256,21 @@ una llamada de datos no lo son.
 
 `localhost:5173/ui`, sólo en desarrollo.
 
-Están **los 124 componentes que pueden montarse sin backend**. Lo que queda
+Están **los 108 componentes que pueden montarse sin backend**. Lo que queda
 fuera tiene el motivo escrito: pide datos, es una ruta entera, es estructura, o
 es una primitiva de shadcn sin cambios propios.
 
 ```bash
 node scripts/inventario-ui.mjs   # recalcula la cobertura
+node scripts/muerto.mjs          # qué no importa nadie
 ```
+
+`muerto.mjs` separa tres casos, porque no significan lo mismo: lo que **sólo
+usa el catálogo** —existe, se ve en `/ui`, y ninguna pantalla lo usa—, lo que
+**sólo usan los tests** —el módulo y su test se sostienen mutuamente— y lo que
+**no importa nadie**. El primero es el más engañoso: parece vivo porque se
+puede mirar. Un barrel muerto esconde a sus hijos, así que después de borrar
+conviene volver a correrlo.
 
 La cobertura no se anota a mano: el script lee qué importan las secciones de
 `/ui`. Si se agrega una pantalla y no se pone en el catálogo, aparece como
@@ -284,7 +292,12 @@ que es justo lo que hay que poder revisar.
 ## Sobre shadcn
 
 No es una dependencia: es código propio en `components/ui`. Tocarlo es el flujo
-previsto, no una señal de que falle. Lo usan 166 de 341 archivos.
+previsto, no una señal de que falle. Quedan 39 primitivas y las usan 151 de
+los 379 archivos de `src`.
+
+Se borraron 22 que no usaba nadie —acordeón, carrusel, menubar, formulario,
+OTP…— y con ellas 26 dependencias. Venían de instalar shadcn entero, no de
+haberlas necesitado.
 
 Lo que sí es dependencia es **Radix**, que hace la parte difícil: foco atrapado
 en un modal, navegación por teclado, `aria-*`, portales, cerrar con Escape,

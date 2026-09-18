@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
-import { GraduationCap, Sparkles } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 
 import { MARCA } from '@/lib/design/paleta';
 import { IaEnPantallas } from '@/components/asistente/IaEnPantallas';
 import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 import { EventosDescubrir } from '@/components/eventos/EventosDescubrir';
 import { RecomendacionList } from '@/components/recomendaciones/RecomendacionList';
-import { RecomendacionPanel } from '@/components/recomendaciones/RecomendacionPanel';
 import { DatabaseSection } from '@/components/system/sections/DatabaseSection';
 import { HttpTraceSection } from '@/components/system/sections/HttpTraceSection';
 import { LogsSection } from '@/components/system/sections/LogsSection';
@@ -139,14 +138,6 @@ export function Ultimos() {
         <RecomendacionList recomendaciones={RECOMENDACIONES} onSelect={noop} />
       </Caja>
 
-      <Caja titulo="RecomendacionPanel" nota="La misma lista, con título e icono.">
-        <RecomendacionPanel
-          title="Espacios sugeridos"
-          icon={<Sparkles className="size-4" />}
-          recomendaciones={RECOMENDACIONES}
-          onSelect={noop}
-        />
-      </Caja>
 
       <Caja titulo="CatalogoCrudShell" nota="El shell de ABM que usan cuatro pantallas." ancho>
         <CatalogoCrudShell

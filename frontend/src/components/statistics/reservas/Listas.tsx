@@ -1,4 +1,4 @@
-import type { OcupacionEspacio, ResumenCarrera, ResumenEdificio, TopUsuario } from '@/lib/api/stats';
+import type { OcupacionEspacio, ResumenCarrera, TopUsuario } from '@/lib/api/stats';
 import { filtrable, HOVER_FILTRO } from '../graficos/filtrable';
 import { horas, nombreRol } from './formato';
 
@@ -89,30 +89,6 @@ export function MenosUsados({ filas, cantidad = 5, onFiltrar }: Readonly<{ filas
   );
 }
 
-export function PorEdificio({ filas }: Readonly<{ filas: ResumenEdificio[] }>) {
-  if (filas.length === 0) return <Vacio />;
-  const total = filas.reduce((a, e) => a + Number(e.cantReservas), 0);
-  const maximo = Math.max(...filas.map((e) => Number(e.cantReservas)));
-  return (
-    <ul className="space-y-2.5">
-      {filas.map((e) => {
-        const cant = Number(e.cantReservas);
-        return (
-          <li key={`${e.edificioId ?? 'sin'}`}>
-            <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
-              <span className="truncate">{e.edificioNombre}</span>
-              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                <b className="text-foreground">{n(cant)}</b> · {total > 0 ? Math.round((cant / total) * 100) : 0}%
-              </span>
-            </div>
-            <Barra porcentaje={maximo > 0 ? (cant / maximo) * 100 : 0} clase="bg-utec-blue" />
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
 /**
  * Por carrera. "Sin carrera" va aparte, al pie: en los datos es casi la mitad
  * de las reservas y encabezando la tabla tapaba a las carreras de verdad.
@@ -173,7 +149,6 @@ export function PorCarrera({ filas, onFiltrar }: Readonly<{ filas: ResumenCarrer
     </div>
   );
 }
-
 
 export function QuienesMasReservan({ filas, onFiltrarRol }: Readonly<{ filas: TopUsuario[]; onFiltrarRol?: (rol: string) => void }>) {
   if (filas.length === 0) return <Vacio />;

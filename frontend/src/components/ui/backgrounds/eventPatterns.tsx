@@ -305,8 +305,6 @@ export type EventoPatron =
   | 'formas' | 'nodos' | 'aurora' | 'grilla' | 'diagonales' | 'blobs' | 'olas'
   | 'estrellas' | 'circuito' | 'confeti' | 'ecualizador' | 'panal' | 'topografia' | 'plasma' | 'burbujas' | 'matrix';
 
-export const PATRON_DEFAULT: EventoPatron = 'formas';
-
 export const EVENTO_PATRONES: ReadonlyArray<{ id: EventoPatron; nombre: string }> = [
   { id: 'formas', nombre: 'Formas UTEC' },
   { id: 'nodos', nombre: 'Red de nodos' },

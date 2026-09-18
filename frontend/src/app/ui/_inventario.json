@@ -665,30 +665,6 @@
    "cubierto": false
   },
   {
-   "archivo": "components/dashboard/DashboardCharts.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "DashboardCharts"
-   ],
-   "lineas": 175,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/DashboardStats.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "DashboardStats"
-   ],
-   "lineas": 151,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
    "archivo": "components/dashboard/index.tsx",
    "familia": "dashboard",
    "nombres": [
@@ -701,18 +677,6 @@
    "cubierto": false
   },
   {
-   "archivo": "components/dashboard/QuickActions.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "QuickActions"
-   ],
-   "lineas": 92,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
    "archivo": "components/dashboard/UnifiedDashboard.tsx",
    "familia": "dashboard",
    "nombres": [
@@ -723,30 +687,6 @@
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
-  },
-  {
-   "archivo": "components/dashboard/UpcomingReservations.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "UpcomingReservations"
-   ],
-   "lineas": 179,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/views/_components/DualPanel.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "DualPanel"
-   ],
-   "lineas": 74,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
   },
   {
    "archivo": "components/dashboard/views/_components/Filas.tsx",
@@ -802,18 +742,6 @@
     "ReservaRow"
    ],
    "lineas": 168,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/views/_components/Section.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "Section"
-   ],
-   "lineas": 42,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -886,78 +814,6 @@
     "MantenimientoDashboard"
    ],
    "lineas": 175,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/widgets/_shared/StatsListWidget.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "StatsListWidget"
-   ],
-   "lineas": 85,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/widgets/InventoryStatsWidget.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "InventoryStatsWidget"
-   ],
-   "lineas": 66,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/widgets/PendingInventoryRequestsAlert.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "PendingInventoryRequestsAlert"
-   ],
-   "lineas": 40,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/widgets/PendingReservationsAlert.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "PendingReservationsAlert"
-   ],
-   "lineas": 54,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/widgets/PriorityReservationsWidget.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "PriorityReservationsWidget"
-   ],
-   "lineas": 130,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/dashboard/widgets/SpaceStatsWidget.tsx",
-   "familia": "dashboard",
-   "nombres": [
-    "SpaceStatsWidget"
-   ],
-   "lineas": 60,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1073,18 +929,6 @@
    "cubierto": false
   },
   {
-   "archivo": "components/eventos/HeatmapDemanda.tsx",
-   "familia": "eventos",
-   "nombres": [
-    "HeatmapDemanda"
-   ],
-   "lineas": 59,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
    "archivo": "components/eventos/InscriptosEventoDialog.tsx",
    "familia": "eventos",
    "nombres": [
@@ -1095,18 +939,6 @@
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
    "cubierto": false
-  },
-  {
-   "archivo": "components/eventos/LineaTiempoSemana.tsx",
-   "familia": "eventos",
-   "nombres": [
-    "LineaTiempoSemana"
-   ],
-   "lineas": 83,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
   },
   {
    "archivo": "components/eventos/ProximoEventoHero.tsx",
@@ -1484,18 +1316,6 @@
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
-  },
-  {
-   "archivo": "components/materias/InscriptosDialog.tsx",
-   "familia": "materias",
-   "nombres": [
-    "InscriptosDialog"
-   ],
-   "lineas": 102,
-   "dialog": true,
-   "tipo": "datos",
-   "motivo": "Pide datos al montarse, directo o por un hook propio.",
-   "cubierto": false
   },
   {
    "archivo": "components/materias/MapaCorrelativas.tsx",
@@ -1966,18 +1786,6 @@
    "cubierto": true
   },
   {
-   "archivo": "components/recomendaciones/RecomendacionPanel.tsx",
-   "familia": "recomendaciones",
-   "nombres": [
-    "RecomendacionPanel"
-   ],
-   "lineas": 51,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
    "archivo": "components/recursos/RecursosPanel.tsx",
    "familia": "recursos",
    "nombres": [
@@ -2163,18 +1971,6 @@
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
-  },
-  {
-   "archivo": "components/rooms/index.tsx",
-   "familia": "rooms",
-   "nombres": [
-    "Rooms"
-   ],
-   "lineas": 159,
-   "dialog": false,
-   "tipo": "pantalla",
-   "motivo": "Pantalla del módulo.",
-   "cubierto": false
   },
   {
    "archivo": "components/sostenibilidad/ComoFuncionaDialog.tsx",
@@ -3352,18 +3148,6 @@
    "cubierto": false
   },
   {
-   "archivo": "components/ui/combobox.tsx",
-   "familia": "ui",
-   "nombres": [
-    "Combobox"
-   ],
-   "lineas": 92,
-   "dialog": false,
-   "tipo": "shadcn",
-   "motivo": "Primitiva de shadcn sin cambios propios.",
-   "cubierto": false
-  },
-  {
    "archivo": "components/ui/compact-filter.tsx",
    "familia": "ui",
    "nombres": [
@@ -3451,36 +3235,12 @@
    "cubierto": false
   },
   {
-   "archivo": "components/ui/metric-card.tsx",
-   "familia": "ui",
-   "nombres": [
-    "MetricCard"
-   ],
-   "lineas": 104,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
    "archivo": "components/ui/metrics-chart.tsx",
    "familia": "ui",
    "nombres": [
     "MetricsChart"
    ],
    "lineas": 235,
-   "dialog": false,
-   "tipo": "montable",
-   "motivo": "",
-   "cubierto": true
-  },
-  {
-   "archivo": "components/ui/progress-ring.tsx",
-   "familia": "ui",
-   "nombres": [
-    "ProgressRing"
-   ],
-   "lineas": 66,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3497,18 +3257,6 @@
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
-  },
-  {
-   "archivo": "components/ui/theme-toggle.tsx",
-   "familia": "ui",
-   "nombres": [
-    "ThemeToggle"
-   ],
-   "lineas": 29,
-   "dialog": false,
-   "tipo": "shadcn",
-   "motivo": "Primitiva de shadcn sin cambios propios.",
-   "cubierto": false
   },
   {
    "archivo": "components/ui/time-select.tsx",

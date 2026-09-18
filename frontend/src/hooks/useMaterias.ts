@@ -148,10 +148,3 @@ export function useMisMaterias(vinculo: 'dicto' | 'curso') {
   };
 }
 
-/**
- * Invalida el caché de materias manualmente.
- */
-export function invalidateMateriasCache() {
-  materiasCache = null;
-  cacheTimestamp = 0;
-}

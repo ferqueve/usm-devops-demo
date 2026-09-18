@@ -5,8 +5,6 @@ import { SpaceCard } from '@/components/spaces/SpaceCard';
 import { SpaceCardSkeleton } from '@/components/spaces/SpaceCardSkeleton';
 import { EventoCardDescubrir, EstadoBadge as EstadoEvento } from '@/components/eventos/EventoCardDescubrir';
 import { ProximoEventoHero } from '@/components/eventos/ProximoEventoHero';
-import { LineaTiempoSemana } from '@/components/eventos/LineaTiempoSemana';
-import { HeatmapDemanda } from '@/components/eventos/HeatmapDemanda';
 import { TutoriaCard } from '@/components/tutorias/TutoriaCard';
 import { RecomendacionCard } from '@/components/recomendaciones/RecomendacionCard';
 import InventoryStatsCards from '@/components/inventory/InventoryStatsCards';
@@ -119,10 +117,6 @@ const EVENTOS_SEMANA = [
   { ...(evento as object), id: 3, titulo: 'Taller de Impresión 3D', inicio: '2026-09-19T14:00:00', fin: '2026-09-19T17:00:00', tipo: 'CURSO' } as never,
 ];
 
-const DEMANDA = Array.from({ length: 28 }, (_, i) => ({
-  inicio: new Date(2026, 8, 1 + i, 9 + (i % 10)).toISOString(),
-  inscriptosCount: 4 + ((i * 7) % 26),
-}));
 
 export function TarjetasDominio() {
   return (
@@ -176,13 +170,7 @@ export function TarjetasDominio() {
         <ProximoEventoHero eventos={EVENTOS_SEMANA} />
       </Caja>
 
-      <Caja titulo="HeatmapDemanda" nota="Cuándo se anota la gente.">
-        <HeatmapDemanda eventos={DEMANDA} />
-      </Caja>
 
-      <Caja titulo="LineaTiempoSemana" nota="La semana de eventos en una línea." ancho="todo">
-        <LineaTiempoSemana eventos={EVENTOS_SEMANA} onNavigate={noop} />
-      </Caja>
 
       <Caja titulo="InventoryStatsCards" nota="Otra tira de métricas más, la sexta del sistema." ancho="doble">
         <InventoryStatsCards

@@ -37,10 +37,6 @@ export interface UserFilters {
   fechaHasta?: string;
 }
 
-export interface ChangeRoleRequest {
-  rolApp: UserRole;
-}
-
 export interface UserStats {
   totalUsuarios: number;
   totalActivos: number;

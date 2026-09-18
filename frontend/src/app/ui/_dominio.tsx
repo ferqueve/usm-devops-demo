@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react';
-import { Activity, Cpu, HardDrive, Timer } from 'lucide-react';
+import { Activity, HardDrive } from 'lucide-react';
 
 import type { Reserva } from '@/lib/types/spaces';
 import { MARCA } from '@/lib/design/paleta';
-import { MetricCard } from '@/components/ui/metric-card';
 import { MetricsChart } from '@/components/ui/metrics-chart';
-import { ProgressRing } from '@/components/ui/progress-ring';
 import { AvatarInitials } from '@/components/ui/avatar-initials';
 import { FilterBar } from '@/components/ui/filter-bar';
 import { ReservaRow } from '@/components/dashboard/views/_components/ReservaRow';
@@ -107,31 +105,8 @@ export function FilasDominio() {
 export function PiezasSistema() {
   return (
     <div className="grid gap-3 @md:grid-cols-2 @4xl:grid-cols-4 @7xl:grid-cols-5">
-      <Caja titulo="MetricCard" nota="Variantes por estado.">
-        <div className="space-y-2">
-          <MetricCard title="Memoria JVM" value="68%" icon={Cpu} description="1.4 GB de 2 GB" progress={68} variant="warning" />
-          <MetricCard title="Uptime" value="12 d" icon={Timer} description="sin reinicios" variant="success" />
-        </div>
-      </Caja>
 
-      <Caja titulo="MetricCard · error" nota="Con tendencia.">
-        <MetricCard
-          title="Errores 5xx"
-          value={23}
-          icon={Activity}
-          description="última hora"
-          trend={{ value: 12, isPositive: false }}
-          variant="error"
-        />
-      </Caja>
 
-      <Caja titulo="ProgressRing" nota="Anillo de un solo valor.">
-        <div className="flex flex-wrap items-center gap-4">
-          <ProgressRing progress={68} showLabel />
-          <ProgressRing progress={94} size={56} color={MARCA.verde} showLabel />
-          <ProgressRing progress={23} size={56} color={MARCA.rojo} showLabel />
-        </div>
-      </Caja>
 
       <Caja titulo="AvatarInitials" nota="Color derivado del email, estable.">
         <div className="flex flex-wrap items-center gap-2">

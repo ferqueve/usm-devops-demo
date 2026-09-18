@@ -256,10 +256,18 @@ implementaciones de lo mismo:
 | Tiras de métricas | 9 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
 | Tablas y vistas de fichas | 3 + 3 | pendiente |
 
-**Componentes de dashboard sin usar.** `DashboardStats`, `DashboardCharts`,
-`UpcomingReservations` y `QuickActions` —593 líneas más sus cuatro archivos de
-test— no los importa ninguna pantalla: sólo el catálogo. O vuelven a una
-pantalla o se borran; queda a decisión de producto.
+**Código muerto: borrado.** 65 archivos y 5461 líneas. Eran tres capas:
+
+- La generación anterior del dashboard —`DashboardStats`, `DashboardCharts`,
+  `UpcomingReservations`, `QuickActions` y toda la carpeta `widgets/`—, que
+  las vistas por rol ya habían reemplazado con `StatStrip` y `Panel`. Estaba
+  escondida detrás de un barrel que tampoco importaba nadie.
+- 22 primitivas de shadcn que nunca se usaron, y con ellas 26 dependencias.
+- Restos sueltos: `components/rooms` (superado por `components/spaces`),
+  `InscriptosDialog` (superado por el panel de `MateriaDetail`),
+  `mock-data.ts`, `lib/config/timezone.ts` y 13 exports sin un solo uso.
+
+Lo encuentra `node scripts/muerto.mjs`.
 
 ### 5.3 TODOs
 
@@ -269,7 +277,7 @@ pantalla o se borran; queda a decisión de producto.
 - [x] Documentar la guía de contribución. Está en
       [`documentation/ui/README.md`](../ui/README.md).
 - [x] Sumar un catálogo de componentes. Es la ruta `/ui`, sólo en desarrollo,
-      con los 124 componentes que pueden montarse sin backend y los dos temas
+      con los 108 componentes que pueden montarse sin backend y los dos temas
       lado a lado. La cobertura la calcula `scripts/inventario-ui.mjs`.
 - [x] Colapsar las ocho confirmaciones de borrado. Eran ~690 líneas repetidas;
       hoy son ocho envoltorios sobre `ConfirmarBorradoDialog`, cada uno con su
