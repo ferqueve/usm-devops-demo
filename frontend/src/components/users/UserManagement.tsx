@@ -596,13 +596,13 @@ export default function UserManagement() {
               <div className="hidden xl:block px-4 pt-2">
                 <div className="border rounded-lg overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-chrome">
-                      <TableRow className="hover:bg-transparent border-b-0">
-                        <TableHead className="h-10 text-white/80 min-w-[200px]">Email</TableHead>
-                        <TableHead className="h-10 text-white/80 min-w-[150px]">Nombre</TableHead>
-                        <TableHead className="h-10 text-white/80">Rol</TableHead>
-                        <TableHead className="h-10 text-white/80 text-center">Estado</TableHead>
-                        <TableHead className="h-10 text-white/80 text-right">Acciones</TableHead>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[200px]">Email</TableHead>
+                        <TableHead className="min-w-[150px]">Nombre</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead className="text-center">Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

@@ -585,12 +585,12 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
               <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b-0">
-                      <TableHead className="h-10 bg-chrome text-white/70">Tipo de Elemento</TableHead>
-                      <TableHead className="h-10 bg-chrome text-white/70">Cantidad</TableHead>
-                      <TableHead className="h-10 bg-chrome text-white/70">Estado</TableHead>
+                    <TableRow>
+                      <TableHead>Tipo de Elemento</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Estado</TableHead>
                       <PermissionGuard requiredPermissions={['inventario:editar', 'inventario:eliminar']}>
-                        <TableHead className="h-10 bg-chrome text-white/70 text-right">Acciones</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                       </PermissionGuard>
                     </TableRow>
                   </TableHeader>

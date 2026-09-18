@@ -80,13 +80,13 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
         </div>
       ) : (
           <Table>
-            <TableHeader className="bg-chrome">
+            <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-white/10">
-                <TableHead className="h-9 w-[70px] text-white/70 text-xs font-semibold uppercase tracking-wide">Método</TableHead>
-                <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Endpoint</TableHead>
-                <TableHead className="h-9 w-[60px] text-right text-white/70 text-xs font-semibold uppercase tracking-wide">Hits</TableHead>
-                <TableHead className="h-9 w-[80px] text-right text-white/70 text-xs font-semibold uppercase tracking-wide">Media</TableHead>
-                <TableHead className="h-9 w-[260px] text-white/70 text-xs font-semibold uppercase tracking-wide">p95 / p99</TableHead>
+                <TableHead className="w-[70px]">Método</TableHead>
+                <TableHead>Endpoint</TableHead>
+                <TableHead className="w-[60px] text-right">Hits</TableHead>
+                <TableHead className="w-[80px] text-right">Media</TableHead>
+                <TableHead className="w-[260px]">p95 / p99</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

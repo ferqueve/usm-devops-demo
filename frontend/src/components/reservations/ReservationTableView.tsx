@@ -293,12 +293,12 @@ export default function ReservationTableView({
               <UITable>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="h-9 py-2">Espacio</TableHead>
-                    <TableHead className="h-9 py-2 hidden md:table-cell">Fecha</TableHead>
-                    <TableHead className="h-9 py-2">Horario</TableHead>
-                    <TableHead className="h-9 py-2 hidden lg:table-cell">Capacidad</TableHead>
-                    <TableHead className="h-9 py-2">Estado</TableHead>
-                    <TableHead className="h-9 py-2 text-right">Acciones</TableHead>
+                    <TableHead>Espacio</TableHead>
+                    <TableHead className="hidden md:table-cell">Fecha</TableHead>
+                    <TableHead>Horario</TableHead>
+                    <TableHead className="hidden lg:table-cell">Capacidad</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

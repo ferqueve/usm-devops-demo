@@ -514,15 +514,15 @@ export default function InventoryRequestsManagement() {
             <div className="overflow-x-auto border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-b-0">
-                    <TableHead className="h-10 bg-chrome text-white/70">ID</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70">Reserva</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70">Solicitante</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70">Elemento</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70">Cantidad</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70">Estado</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70">Creada</TableHead>
-                    <TableHead className="h-10 bg-chrome text-white/70 text-right">Acciones</TableHead>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Reserva</TableHead>
+                    <TableHead>Solicitante</TableHead>
+                    <TableHead>Elemento</TableHead>
+                    <TableHead>Cantidad</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Creada</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

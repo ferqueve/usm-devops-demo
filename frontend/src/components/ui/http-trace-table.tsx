@@ -272,13 +272,13 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
       {/* Tabla */}
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-chrome">
+          <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-white/10">
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Timestamp</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Método</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">URI</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Status</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Tiempo</TableHead>
+              <TableHead>Timestamp</TableHead>
+              <TableHead>Método</TableHead>
+              <TableHead>URI</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Tiempo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

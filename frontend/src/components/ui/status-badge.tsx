@@ -22,7 +22,7 @@ export function StatusBadge({ status, label, icon = true, pulse = false, classNa
     // tira de métricas del dashboard.
     success: {
       variant: 'default' as const,
-      className: 'bg-utec-green hover:bg-utec-green/90 text-[color:var(--success-foreground)]',
+      className: 'bg-utec-green hover:bg-utec-green/90 text-marca-tinta',
       icon: CheckCircle2,
     },
     error: {
@@ -32,7 +32,9 @@ export function StatusBadge({ status, label, icon = true, pulse = false, classNa
     },
     warning: {
       variant: 'default' as const,
-      className: 'bg-utec-yellow hover:bg-utec-yellow/90 text-foreground',
+      // Decía `text-foreground`, que sigue al tema mientras el amarillo no:
+      // en oscuro la pastilla quedaba casi blanca sobre amarillo, 1,57:1.
+      className: 'bg-utec-yellow hover:bg-utec-yellow/90 text-marca-tinta',
       icon: AlertCircle,
     },
     info: {

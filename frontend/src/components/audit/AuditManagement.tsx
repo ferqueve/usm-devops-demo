@@ -248,15 +248,15 @@ export default function AuditManagement() {
             <div className="px-4 pt-4">
               <div className="overflow-x-auto border rounded-lg overflow-hidden">
             <Table>
-              <TableHeader className="bg-chrome">
-                <TableRow className="hover:bg-transparent border-b-0">
-                  <TableHead className="h-10 bg-chrome text-white/70 w-[90px]">ID</TableHead>
-                  <TableHead className="h-10 bg-chrome text-white/70 min-w-[140px]">Entidad</TableHead>
-                  <TableHead className="h-10 bg-chrome text-white/70 w-[100px]">ID Entidad</TableHead>
-                  <TableHead className="h-10 bg-chrome text-white/70 w-[130px]">Acción</TableHead>
-                  <TableHead className="h-10 bg-chrome text-white/70 min-w-[200px]">Usuario</TableHead>
-                  <TableHead className="h-10 bg-chrome text-white/70 min-w-[200px]">Fecha/Hora</TableHead>
-                  <TableHead className="h-10 bg-chrome text-white/70 text-right w-[80px]">Detalles</TableHead>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[90px]">ID</TableHead>
+                  <TableHead className="min-w-[140px]">Entidad</TableHead>
+                  <TableHead className="w-[100px]">ID Entidad</TableHead>
+                  <TableHead className="w-[130px]">Acción</TableHead>
+                  <TableHead className="min-w-[200px]">Usuario</TableHead>
+                  <TableHead className="min-w-[200px]">Fecha/Hora</TableHead>
+                  <TableHead className="text-right w-[80px]">Detalles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

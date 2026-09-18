@@ -117,13 +117,13 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
       </p>
       <ScrollArea className={verTodas ? 'h-[400px]' : ''}>
         <Table>
-          <TableHeader className="bg-chrome">
+          <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-white/10">
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[60px]">#</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[120px]">ID</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Descripción</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[100px]">Autor</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[150px]">Fecha</TableHead>
+              <TableHead className="w-[60px]">#</TableHead>
+              <TableHead className="w-[120px]">ID</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead className="w-[100px]">Autor</TableHead>
+              <TableHead className="w-[150px]">Fecha</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

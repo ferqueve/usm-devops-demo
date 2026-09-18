@@ -128,13 +128,13 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
         </div>
       ) : (
           <Table className="table-fixed w-full">
-            <TableHeader className="bg-chrome">
+            <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-white/10">
-                <TableHead className="h-9 w-[70px] text-white/70 text-xs font-semibold uppercase tracking-wide">Nivel</TableHead>
-                <TableHead className="h-9 w-[60px] text-center text-white/70 text-xs font-semibold uppercase tracking-wide">Count</TableHead>
-                <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Mensaje</TableHead>
-                <TableHead className="h-9 w-[180px] hidden lg:table-cell text-white/70 text-xs font-semibold uppercase tracking-wide">Logger</TableHead>
-                <TableHead className="h-9 w-[90px] text-right text-white/70 text-xs font-semibold uppercase tracking-wide">Último</TableHead>
+                <TableHead className="w-[70px]">Nivel</TableHead>
+                <TableHead className="w-[60px] text-center">Count</TableHead>
+                <TableHead>Mensaje</TableHead>
+                <TableHead className="w-[180px] hidden lg:table-cell">Logger</TableHead>
+                <TableHead className="w-[90px] text-right">Último</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

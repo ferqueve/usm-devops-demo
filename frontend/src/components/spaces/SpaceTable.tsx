@@ -64,8 +64,8 @@ export function SpaceTable({
     <div className="border rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b-0">
-            <TableHead className="h-10 bg-chrome text-white/70 w-[80px]">
+          <TableRow>
+            <TableHead className="w-[80px]">
               <button
                 onClick={() => onSort && handleSort('id')}
                 className="flex items-center hover:text-white transition-colors"
@@ -73,7 +73,7 @@ export function SpaceTable({
                 ID {onSort && getSortIcon('id')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-chrome text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('nombre')}
                 className="flex items-center hover:text-white transition-colors"
@@ -81,7 +81,7 @@ export function SpaceTable({
                 Nombre {onSort && getSortIcon('nombre')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-chrome text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('tipo')}
                 className="flex items-center hover:text-white transition-colors"
@@ -89,10 +89,10 @@ export function SpaceTable({
                 Tipo de Espacio {onSort && getSortIcon('tipo')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-chrome text-white/70">
+            <TableHead>
               Edificio
             </TableHead>
-            <TableHead className="h-10 bg-chrome text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('capacidad')}
                 className="flex items-center hover:text-white transition-colors"
@@ -100,10 +100,10 @@ export function SpaceTable({
                 Capacidad {onSort && getSortIcon('capacidad')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-chrome text-white/70">
+            <TableHead>
               Estado
             </TableHead>
-            <TableHead className="h-10 bg-chrome text-white/70 text-right">Acciones</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
