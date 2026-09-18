@@ -1,6 +1,7 @@
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import { formatoNumero, useTemaGraficos } from './tema';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 interface Props {
   /** Lunes a domingo. */
@@ -12,9 +13,9 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as { dia: string; valor: number; pct: number };
   return (
-    <div className="rounded-lg bg-chrome px-3 py-1.5 text-xs text-white shadow-lg">
+    <GloboGrafico>
       {p.dia}: <b>{formatoNumero(p.valor)}</b> · {p.pct}% de la semana
-    </div>
+    </GloboGrafico>
   );
 }
 

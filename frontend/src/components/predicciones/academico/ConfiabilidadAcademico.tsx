@@ -16,6 +16,7 @@ import { useTemaGraficos } from '@/components/statistics/graficos/tema';
 import { Vacio } from '@/components/statistics/Vacio';
 import { useColores } from '../colores';
 import { decimal, entero, fechaCorta, porcentaje01, SVG_LLENO } from '../formato';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 type Modelo = PrediccionAcademico['modelo'];
 
@@ -84,12 +85,12 @@ function GloboCalibracion({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PuntoCalibracion;
   return (
-    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium text-white/70">Predicho entre {porcentaje01(p.desde)} y {porcentaje01(p.hasta)}</p>
       <p>Predijo en promedio <b>{porcentaje01(p.predicho)}</b></p>
       <p>Fueron <b>{porcentaje01(p.real)}</b></p>
       <p className="text-white/60">{entero(p.n)} inscripciones</p>
-    </div>
+    </GloboGrafico>
   );
 }
 
@@ -152,12 +153,12 @@ function GloboSemana({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Semana;
   return (
-    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium text-white/70">Semana del {fechaCorta(p.semana)}</p>
       <p>Inscriptos: <b>{entero(p.inscriptos)}</b></p>
       <p>Asistieron: <b>{entero(p.asistieron)}</b></p>
       <p>Esperados: <b>{decimal(p.esperados)}</b></p>
-    </div>
+    </GloboGrafico>
   );
 }
 

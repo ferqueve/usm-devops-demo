@@ -3,6 +3,7 @@ import type { TooltipProps } from 'recharts';
 import { porcentaje } from '../reservas/formato';
 import { filtrable, HOVER_FILTRO } from './filtrable';
 import { formatoNumero, useTemaGraficos } from './tema';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 export interface PorcionDona {
   nombre: string;
@@ -25,9 +26,9 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PorcionDona & { total: number };
   return (
-    <div className="rounded-lg bg-chrome px-3 py-1.5 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <span style={{ color: p.color }}>●</span> {p.nombre}: <b>{formatoNumero(p.valor)}</b> · {porcentaje(p.valor, p.total)}%
-    </div>
+    </GloboGrafico>
   );
 }
 

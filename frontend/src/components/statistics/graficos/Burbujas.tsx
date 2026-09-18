@@ -1,6 +1,7 @@
 import { CartesianGrid, LabelList, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import { formatoNumero, useTemaGraficos } from './tema';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 export interface PuntoBurbuja {
   nombre: string;
@@ -51,13 +52,13 @@ function Globo({ active, payload, ejeX, ejeY, tamano, formatoY, formatoX }: Glob
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PuntoBurbuja;
   return (
-    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium">{p.nombre}</p>
       <p>{ejeX}: <b>{formatoX(p.x)}</b></p>
       <p>{ejeY}: <b>{formatoY(p.y)}</b></p>
       <p>{tamano}: <b>{formatoNumero(p.z)}</b></p>
       {p.alClic && <p className="mt-1 text-2xs text-white/60">Clic para filtrar</p>}
-    </div>
+    </GloboGrafico>
   );
 }
 

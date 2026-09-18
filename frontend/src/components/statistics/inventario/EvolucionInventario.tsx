@@ -16,6 +16,7 @@ import { fechaCorta, type Rango } from '../periodo';
 import { BarrasDivergentes } from '../graficos/BarrasDivergentes';
 import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
 import { MARCA } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 /* Misma historia que en statistics/reservas/Tendencia: este archivo también
    tenía su copia de la escala vieja. Ahora sale de lib/design/paleta. */
@@ -39,7 +40,7 @@ const ESTADOS = [
 function Globo({ active, payload, label }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium text-white/70">{fechaCorta(String(label))}</p>
       {payload.map((p) => (
         <div key={String(p.dataKey)} className="flex items-center gap-2 py-0.5">
@@ -48,7 +49,7 @@ function Globo({ active, payload, label }: TooltipProps<number, string>) {
           <span className="font-semibold tabular-nums">{Number(p.value).toLocaleString('es-UY')}</span>
         </div>
       ))}
-    </div>
+    </GloboGrafico>
   );
 }
 

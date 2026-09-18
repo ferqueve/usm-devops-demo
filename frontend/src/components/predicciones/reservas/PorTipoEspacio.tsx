@@ -6,6 +6,7 @@ import type { SerieTipoEspacioPunto, TipoEspacioML } from '@/lib/api/stats';
 import { useColores } from '../colores';
 import { cambio, decimal, entero, fechaConDia, fechaCorta, fechaLarga, mayuscula, SVG_LLENO } from '../formato';
 import { MARCA } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 /** Ícono por el nombre del tipo; los tipos se cargan a mano y no traen uno propio. */
 function iconoTipo(nombre: string): LucideIcon {
@@ -21,7 +22,7 @@ function GloboMini({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as SerieTipoEspacioPunto;
   return (
-    <div className="rounded-lg bg-chrome px-2.5 py-1.5 text-2xs text-white shadow-lg">
+    <GloboGrafico className="text-2xs">
       <p className="mb-0.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <p>
         Esperadas <b className="tabular-nums">{entero(p.prediccion)}</b>
@@ -30,7 +31,7 @@ function GloboMini({ active, payload }: TooltipProps<number, string>) {
         )}
       </p>
       <p>Ya aprobadas <b className="tabular-nums">{entero(p.reservadas)}</b></p>
-    </div>
+    </GloboGrafico>
   );
 }
 

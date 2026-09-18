@@ -19,6 +19,7 @@ import { useColores } from '../colores';
 import { decimal, entero, fechaConDia, fechaCorta, fechaLarga, porcentaje01, SVG_LLENO } from '../formato';
 import { estiloRiesgo } from './estilos';
 import { MARCA } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 /** Chips para elegir el tipo; el punto de color es su riesgo. */
 export function SelectorTipos({ tipos, elegido, onElegir }: Readonly<{
@@ -65,12 +66,12 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Punto;
   return (
-    <div className="min-w-[190px] rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico className="min-w-[190px]">
       <p className="mb-1.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <Renglon color={colores.prediccion} etiqueta="Pico esperado" valor={decimal(p.prediccion)} extra={p.bandaInferior != null && p.bandaSuperior != null ? `${entero(p.bandaInferior)}–${entero(p.bandaSuperior)}` : undefined} />
       <Renglon color={colores.reservadas} etiqueta="Ya pedidas" valor={entero(p.comprometidas)} />
       <Renglon color={MARCA.rojo} etiqueta="Prob. de faltante" valor={porcentaje01(p.probFaltante)} />
-    </div>
+    </GloboGrafico>
   );
 }
 

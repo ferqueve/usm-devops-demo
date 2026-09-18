@@ -1,4 +1,7 @@
+import type { ReactNode } from 'react';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
+
+import { cn } from '@/lib/utils/helpers';
 import { MARCA } from '@/lib/design/paleta';
 
 // ============================================================================
@@ -9,6 +12,23 @@ import { MARCA } from '@/lib/design/paleta';
 // ============================================================================
 
 const UTEC_GREEN = MARCA.verde;
+
+/**
+ * El globo que sale al pasar el mouse por un gráfico.
+ *
+ * Había once copias del mismo caparazón —`bg-chrome`, texto blanco, sombra—
+ * repartidas entre Estadísticas, Predicciones y el dashboard. Lo de adentro
+ * sí es propio de cada gráfico: un reparto no se explica como una serie. Lo
+ * que no tenía por qué variar era la caja, y ya había variado: nueve usaban
+ * `py-2`, cuatro `py-1.5` y una un borde y un radio distintos.
+ */
+export function GloboGrafico({ className, children }: Readonly<{ className?: string; children: ReactNode }>) {
+  return (
+    <div className={cn('rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg', className)}>
+      {children}
+    </div>
+  );
+}
 
 // --- Flechita de tendencia ▲▼ (variación % vs. período anterior) ---
 export function Tendencia({ delta }: Readonly<{ delta?: number }>) {

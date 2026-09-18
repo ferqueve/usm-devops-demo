@@ -9,6 +9,7 @@ import { formatoNumero, useTemaGraficos } from '../graficos/tema';
 import { fechaCorta } from '../periodo';
 import { Vacio } from '../Vacio';
 import { entero, porcentaje, rating } from '../reservas/formato';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 /** Estrellas de 1 a 5 con medias, y el número al lado. */
 export function Estrellas({ valor, chico = false }: Readonly<{ valor: number | null | undefined; chico?: boolean }>) {
@@ -100,12 +101,12 @@ function GloboSemana({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Semana;
   return (
-    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium">Semana del {fechaCorta(p.semana)}{p.incompleta ? ' (incompleta)' : ''}</p>
       <p>{formatoNumero(p.tutorias)} tutorías</p>
       <p>Agendadas: <b>{formatoNumero(p.agendadas)}</b></p>
       <p>Asistieron: <b>{formatoNumero(p.asistieron)}</b> ({porcentaje(p.asistieron, p.agendadas)}%)</p>
-    </div>
+    </GloboGrafico>
   );
 }
 

@@ -1,6 +1,7 @@
 import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import { MARCA, tintaSobre } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 export interface NodoArbol {
   nombre: string;
@@ -51,11 +52,11 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as NodoArbol;
   return (
-    <div className="rounded-lg bg-chrome px-3 py-1.5 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <b>{p.nombre}</b>
       {p.detalle && <div className="text-white/75">{p.detalle}</div>}
       {p.alClic && <div className="mt-0.5 text-2xs text-white/60">Clic para filtrar por este espacio</div>}
-    </div>
+    </GloboGrafico>
   );
 }
 
