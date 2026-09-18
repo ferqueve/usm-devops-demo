@@ -12,8 +12,8 @@ import {
 import type { TooltipProps } from 'recharts';
 import { reservationsApi } from '@/lib/api/reservations';
 import type { ReservaStats } from '@/lib/types/spaces';
-import type { LucideIcon } from 'lucide-react';
 import { MARCA } from '@/lib/design/paleta';
+import { StatStrip } from '@/components/common/StatStrip';
 import {
   TrendingUp,
   TrendingDown,
@@ -29,40 +29,6 @@ import {
   ChevronLeft,
   PieChart as PieChartIcon,
 } from 'lucide-react';
-
-type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
-
-const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string }> = {
-  blue:   { bg: 'bg-utec-blue',   text: 'text-white',     subtle: 'text-white/70' },
-  yellow: { bg: 'bg-utec-yellow', text: 'text-marca-tinta', subtle: 'text-marca-tinta/70' },
-  green:  { bg: 'bg-utec-green',  text: 'text-marca-tinta',     subtle: 'text-marca-tinta/80' },
-  orange: { bg: 'bg-utec-orange', text: 'text-marca-tinta',     subtle: 'text-marca-tinta/80' },
-  red:    { bg: 'bg-utec-red',    text: 'text-white',     subtle: 'text-white/80' },
-  cyan:   { bg: 'bg-utec-cyan',   text: 'text-marca-tinta', subtle: 'text-marca-tinta/70' },
-  dark:   { bg: 'bg-chrome',   text: 'text-white',     subtle: 'text-white/60' },
-};
-
-interface ColoredStatProps {
-  label: string;
-  value: React.ReactNode;
-  hint?: React.ReactNode;
-  icon: LucideIcon;
-  bg: UtecBg;
-}
-
-function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredStatProps>) {
-  const c = bgClasses[bg];
-  return (
-    <div className={`rounded-xl p-3 min-w-0 ${c.bg}`}>
-      <div className={`flex items-center gap-1.5 text-xs mb-1 ${c.subtle}`}>
-        <Icon className="h-3.5 w-3.5 shrink-0" />
-        <span className="truncate">{label}</span>
-      </div>
-      <div className={`text-xl font-semibold tabular-nums ${c.text}`}>{value}</div>
-      {hint && <div className={`text-2xs mt-0.5 truncate ${c.subtle}`}>{hint}</div>}
-    </div>
-  );
-}
 
 const ESTADO_COLOR: Record<'Aprobadas' | 'Pendientes' | 'Canceladas', string> = {
   Aprobadas: MARCA.verde,
@@ -342,49 +308,18 @@ export default function ReservationStats({
 
     return (
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Izquierda: 6 stat cards dark en grid 2x3 / 3x2 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <ColoredStat
-            label="Pendientes"
-            value={stats.totalPendientes}
-            hint="a revisar"
-            icon={Hourglass}
-            bg="dark"
-          />
-          <ColoredStat
-            label="Activas ahora"
-            value={stats.totalActivas}
-            hint="en curso"
-            icon={Activity}
-            bg="dark"
-          />
-          <ColoredStat
-            label="Este mes"
-            value={stats.reservasEsteMes}
-            hint={esteMesHint}
-            icon={Calendar}
-            bg="dark"
-          />
-          <ColoredStat
-            label="Aprobación"
-            value={`${aprobacionPct}%`}
-            hint={`${stats.totalAprobadas} aprobadas`}
-            icon={CheckCircle2}
-            bg="dark"
-          />
-          <ColoredStat
-            label="Espacios usados"
-            value={stats.totalEspaciosUsados}
-            hint={stats.nombreEspacioMasUsado ? `top: ${stats.nombreEspacioMasUsado}` : undefined}
-            icon={MapPin}
-            bg="dark"
-          />
-          <ColoredStat
-            label="Duración total"
-            value={formatHours(stats.duracionTotalHoras)}
-            hint="horas reservadas"
-            icon={Clock}
-            bg="dark"
+        {/* Izquierda: las seis celdas, en 2x3 / 3x2 porque es media pantalla. */}
+        <div>
+          <StatStrip
+            maxColumnas={3}
+            items={[
+              { label: 'Pendientes', value: stats.totalPendientes, hint: 'a revisar', icon: Hourglass, color: 'oscuro' },
+              { label: 'Activas ahora', value: stats.totalActivas, hint: 'en curso', icon: Activity, color: 'oscuro' },
+              { label: 'Este mes', value: stats.reservasEsteMes, hint: esteMesHint, icon: Calendar, color: 'oscuro' },
+              { label: 'Aprobación', value: `${aprobacionPct}%`, hint: `${stats.totalAprobadas} aprobadas`, icon: CheckCircle2, color: 'oscuro' },
+              { label: 'Espacios usados', value: stats.totalEspaciosUsados, hint: stats.nombreEspacioMasUsado ? `top: ${stats.nombreEspacioMasUsado}` : undefined, icon: MapPin, color: 'oscuro' },
+              { label: 'Duración total', value: formatHours(stats.duracionTotalHoras), hint: 'horas reservadas', icon: Clock, color: 'oscuro' },
+            ]}
           />
         </div>
 

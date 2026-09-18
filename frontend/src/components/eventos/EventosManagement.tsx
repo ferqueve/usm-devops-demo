@@ -1,4 +1,13 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { StatStrip, type ColorUtec } from '@/components/common/StatStrip';
+
+/** Los nombres de color de esta pantalla, a los de la paleta. */
+const COLOR_KPI: Record<string, ColorUtec> = {
+  green: 'verde', cyan: 'cian', blue: 'azul',
+  // Decía `cyan`: el tile «Próximos» pedía naranja y salía cian.
+  orange: 'naranja', yellow: 'amarillo', dark: 'oscuro',
+};
 import { useNavigate } from 'react-router-dom';
 import {
   Area, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -21,8 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEventos } from '@/hooks/useEventos';
 import { eventosApi } from '@/lib/api/eventos';
 import type { Evento } from '@/lib/types/eventos';
-import { useCountUp } from '@/components/sostenibilidad/useCountUp';
-import { Gauge, Podio, Tendencia, type PodioEntry } from '@/components/common/dataviz';
+import { Gauge, Podio, type PodioEntry } from '@/components/common/dataviz';
 import { EventoFormDialog } from './EventoFormDialog';
 import { DeleteEventoDialog } from './DeleteEventoDialog';
 import { InscriptosEventoDialog } from './InscriptosEventoDialog';
@@ -72,47 +80,7 @@ function monthLabel(key: string): string {
 }
 
 // --- Panel con header (mismo patrón visual que Sostenibilidad) ---
-function Panel({ title, icon, accent, action, children, className }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode; className?: string }>) {
-  return (
-    <div className={`rounded-2xl border bg-card overflow-hidden ${className ?? ''}`}>
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
 
-// --- KPI tile con count-up + tendencia opcional ---
-const KPI_CLS: Record<string, string> = {
-  green: 'bg-utec-green text-marca-tinta', cyan: 'bg-utec-cyan text-marca-tinta',
-  blue: 'bg-utec-blue text-white',
-  // Decía `bg-utec-cyan`: el tile «Próximos» pedía naranja y salía cian.
-  orange: 'bg-utec-orange text-marca-tinta',
-  yellow: 'bg-utec-yellow text-marca-tinta', dark: 'bg-chrome text-white',
-};
-function KpiTile({ icon: Icon, label, value, hint, variant, delta }: Readonly<{ icon: LucideIcon; label: string; value: number; hint?: string; variant: string; delta?: number }>) {
-  const v = useCountUp(value);
-  return (
-    <div className={`relative overflow-hidden rounded-xl p-4 min-w-0 ${KPI_CLS[variant]}`}>
-      <Icon className="absolute -right-3 -bottom-3 h-16 w-16 opacity-15" />
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
-          <div className="text-2xl sm:text-3xl font-bold tabular-nums leading-none">{fmtNum(v)}</div>
-          {delta != null && (
-            <span className="rounded-full bg-black/15 px-1.5 py-0.5 dark:bg-white/15">
-              <Tendencia delta={delta} />
-            </span>
-          )}
-        </div>
-        <div className="text-xs font-medium opacity-80 mt-1.5 flex items-center gap-1"><Icon className="h-3.5 w-3.5" />{label}</div>
-        {hint && <div className="text-2xs opacity-70 mt-0.5 truncate">{hint}</div>}
-      </div>
-    </div>
-  );
-}
 
 interface ToggleDef { v: VistaEventos; icon: LucideIcon; label: string; adminOnly?: boolean }
 /*
@@ -329,14 +297,19 @@ export default function EventosManagement() {
     if (vista === 'metricas' && isAdmin) {
       return (
         <div className="space-y-6">
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            {kpis.map((k) => (
-              <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} hint={k.hint} variant={k.variant} delta={k.delta} />
-            ))}
-          </div>
+          <StatStrip
+            items={kpis.map((k) => ({
+              label: k.label,
+              value: fmtNum(k.value),
+              hint: k.hint,
+              icon: k.icon,
+              color: COLOR_KPI[k.variant],
+              delta: k.delta,
+            }))}
+          />
 
           <div className="grid gap-4 lg:grid-cols-4">
-            <Panel title="Tipos de evento" icon={<Layers className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10">
+            <Panel title="Tipos de evento" icon={<Layers className="size-4" />} accentColor={MARCA.azul}>
               {tipoData.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Sin datos.</p>
               ) : (
@@ -362,7 +335,7 @@ export default function EventosManagement() {
               )}
             </Panel>
 
-            <Panel title="Ocupación global" icon={<Activity className="h-4 w-4 text-utec-cyan" />} accent="bg-utec-cyan/10">
+            <Panel title="Ocupación global" icon={<Activity className="size-4" />} accentColor={MARCA.cian}>
               <Gauge value={ocupacion.pct} suffix="%" />
               <p className="text-xs text-muted-foreground text-center mt-2">
                 {ocupacion.cap > 0
@@ -371,7 +344,7 @@ export default function EventosManagement() {
               </p>
             </Panel>
 
-            <Panel title="Actividad por mes" icon={<BarChart3 className="h-4 w-4 text-utec-green" />} accent="bg-utec-green/10" className="lg:col-span-2">
+            <Panel title="Actividad por mes" icon={<BarChart3 className="size-4" />} accentColor={MARCA.verde} className="lg:col-span-2">
               {serieData.length === 0 ? (
                 <p className="py-10 text-center text-sm text-muted-foreground">Aún no hay datos mensuales.</p>
               ) : (
@@ -391,7 +364,7 @@ export default function EventosManagement() {
           </div>
 
           {topEventos.length > 0 && (
-            <Panel title="Eventos más populares" icon={<Trophy className="h-4 w-4 text-utec-yellow" />} accent="bg-utec-yellow/10">
+            <Panel title="Eventos más populares" icon={<Trophy className="size-4" />} accentColor={MARCA.amarillo}>
               <div className="space-y-3">
                 <Podio
                   top={topEventos.slice(0, 3).map((e): PodioEntry => ({

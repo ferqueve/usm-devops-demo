@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
@@ -75,18 +77,6 @@ function relativo(iso: string): string {
   return `Hace ${Math.abs(dias)} días`;
 }
 
-function Panel({ title, icon, accent, action, children }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode }>) {
-  return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
 function NotificarTutoriaDialog({ tutoriaId, open, onOpenChange }: Readonly<{ tutoriaId: number; open: boolean; onOpenChange: (v: boolean) => void }>) {
   const [asunto, setAsunto] = useState('Aviso de tutoría');
   const [mensaje, setMensaje] = useState('');
@@ -454,9 +444,9 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           )}
           <Panel
             title={`Agendados · ${agendados.filter((a) => a.estado !== 'ESPERA').length}`}
-            icon={<Users className="h-4 w-4 text-utec-blue" />}
-            accent="bg-utec-blue/10"
-            action={(
+            icon={<Users className="size-4" />}
+            accentColor={MARCA.azul}
+            acciones={(
               agendados.length > 0
                 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button>
                 : null
@@ -520,7 +510,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           <TutoriaFeedbackPanel tutoriaId={tutoria.id} />
 
           {otras.length > 0 && (
-            <Panel title={`Otras tutorías de ${materia?.nombre ?? 'la materia'} · ${otras.length}`} icon={<CalendarClock className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10">
+            <Panel title={`Otras tutorías de ${materia?.nombre ?? 'la materia'} · ${otras.length}`} icon={<CalendarClock className="size-4" />} accentColor={MARCA.azul}>
               <ul className="space-y-2">
                 {otras.map((t) => {
                   const b = TUTORIA_BADGE[t.estado];
@@ -545,7 +535,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           {/* La dona de ocupación vivía acá y repetía por quinta vez el mismo dato
               que ya cuenta la barra del encabezado. */}
           <PermissionGuard requiredPermission="tutoria:editar">
-            <Panel title="Estado" icon={<Lock className="h-4 w-4 text-utec-orange" />} accent="bg-utec-orange/10">
+            <Panel title="Estado" icon={<Lock className="size-4" />} accentColor={MARCA.naranja}>
               <Select value={tutoria.estado} onValueChange={(v) => cambiarEstado(v as TutoriaEstado)} disabled={savingEstado}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -561,9 +551,9 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           {materia && (
             <Panel
               title="Materia"
-              icon={<BookOpen className="h-4 w-4 text-utec-blue" />}
-              accent="bg-utec-blue/10"
-              action={<Button variant="ghost" size="sm" className="h-7" onClick={() => navigate(`/materias/${materia.id}`)}>Ver<ChevronRight className="h-3.5 w-3.5 ml-0.5" /></Button>}
+              icon={<BookOpen className="size-4" />}
+              accentColor={MARCA.azul}
+              acciones={<Button variant="ghost" size="sm" className="h-7" onClick={() => navigate(`/materias/${materia.id}`)}>Ver<ChevronRight className="h-3.5 w-3.5 ml-0.5" /></Button>}
             >
               <p className="font-medium">{materia.nombre}</p>
               {materia.carreraNombre && (
@@ -578,7 +568,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           )}
 
           {espacio && (
-            <Panel title="Espacio" icon={<MapPin className="h-4 w-4 text-utec-green" />} accent="bg-utec-green/10">
+            <Panel title="Espacio" icon={<MapPin className="size-4" />} accentColor={MARCA.verde}>
               <p className="font-medium">{espacio.nombre}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />Cap. {espacio.capacidad}</span>

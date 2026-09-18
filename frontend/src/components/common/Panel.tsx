@@ -5,6 +5,8 @@ import { MARCA } from '@/lib/design/paleta';
 
 interface PanelProps {
   title: string;
+  /** Icono a la izquierda del título, dentro del encabezado. */
+  icon?: ReactNode;
   /** Dato al lado del título: un conteo, un detalle. */
   count?: string | number;
   /** Enlace de acción a la derecha del encabezado. */
@@ -46,10 +48,17 @@ interface PanelProps {
  * encabezado se dibuja una sola vez y `PanelEstadistica` lo usa pasando su
  * botón por `acciones`.
  *
+ * Y había cuatro copias más, iguales entre sí, en EventosManagement,
+ * EventoDetail, MateriaDetail y TutoriaDetail: tarjeta `rounded-2xl` con
+ * encabezado claro y un cuadradito de color con el icono. Las pantallas de
+ * detalle no se parecían a los dashboards. Lo que aportaban —el icono— es
+ * ahora el prop `icon`.
+ *
  * El encabezado mide 44 px, igual que una fila de tabla.
  */
 export function Panel({
   title,
+  icon,
   count,
   action,
   accentColor = MARCA.amarillo,
@@ -74,6 +83,7 @@ export function Panel({
             style={{ backgroundColor: accentColor }}
             aria-hidden
           />
+          {icon && <span className="shrink-0 [&>svg]:size-4" aria-hidden>{icon}</span>}
           <h2 className="shrink-0 text-sm font-semibold tracking-tight">{title}</h2>
           {count !== undefined && count !== '' && (
             <span className="truncate text-xs tabular-nums text-white/60">{count}</span>

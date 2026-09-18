@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { StatStrip } from '@/components/common/StatStrip';
+import { MARCA } from '@/lib/design/paleta';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
@@ -48,37 +51,7 @@ const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon:
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
-type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'orange';
-const TILE_CLS: Record<TileVariant, string> = {
-  blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-marca-tinta',
-  cyan: 'bg-utec-cyan text-marca-tinta', green: 'bg-utec-green text-marca-tinta',
-  // Era `bg-utec-purple`, que no es un color de la marca.
-  orange: 'bg-utec-orange text-marca-tinta',
-};
-function StatTile({ icon: Icon, label, value, variant }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode; variant: TileVariant }>) {
-  return (
-    <div className={`relative overflow-hidden rounded-2xl p-4 ${TILE_CLS[variant]}`}>
-      <Icon className="absolute -right-3 -bottom-3 h-16 w-16 opacity-15" />
-      <div className="relative">
-        <div className="text-3xl font-bold tabular-nums leading-none">{value}</div>
-        <div className="text-xs font-medium opacity-80 mt-1.5">{label}</div>
-      </div>
-    </div>
-  );
-}
 
-function Panel({ title, icon, accent, action, children }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode }>) {
-  return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
 
 function Donut({ value }: Readonly<{ value: number }>) {
   const r = 26;
@@ -188,7 +161,7 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
   );
 
   return (
-    <Panel title={`Inscriptos · ${inscriptos.length}`} icon={<Users className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10" action={action}>
+    <Panel title={`Inscriptos · ${inscriptos.length}`} icon={<Users className="size-4" />} accentColor={MARCA.azul} acciones={action}>
       {(() => {
         if (loading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
         if (inscriptos.length === 0) {
@@ -285,7 +258,7 @@ function TutoriasPanel({ materiaId, tutorias, loading, onRefresh }: Readonly<{ m
   );
 
   return (
-    <Panel title={`Tutorías · ${tutorias.length}`} icon={<CalendarClock className="h-4 w-4 text-utec-purple" />} accent="bg-utec-purple/10" action={action}>
+    <Panel title={`Tutorías · ${tutorias.length}`} icon={<CalendarClock className="size-4" />} accentColor={MARCA.cian} acciones={action}>
       {(() => {
         if (loading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
         if (tutorias.length === 0) {
@@ -336,7 +309,7 @@ function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos:
   }, [recursos, inscriptos, tutorias]);
 
   return (
-    <Panel title="Actividad reciente" icon={<CalendarClock className="h-4 w-4 text-utec-orange" />} accent="bg-utec-orange/10">
+    <Panel title="Actividad reciente" icon={<CalendarClock className="size-4" />} accentColor={MARCA.naranja}>
       {eventos.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">Sin actividad registrada.</p>
       ) : (
@@ -454,11 +427,16 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
           {materia.docenteNombre && <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><GraduationCap className="h-4 w-4" />{materia.docenteNombre}</p>}
           {materia.descripcion && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{materia.descripcion}</p>}
         </div>
-        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-          <StatTile icon={Users} label="Inscriptos" value={inscriptos.length} variant="blue" />
-          <StatTile icon={Award} label="Créditos" value={materia.creditos ?? '—'} variant="yellow" />
-          <StatTile icon={Layers} label="Semestre" value={materia.semestre ?? '—'} variant="cyan" />
-          <StatTile icon={CalendarClock} label="Tutorías" value={tutorias.length} variant="orange" />
+        <div className="lg:col-span-2">
+          <StatStrip
+            maxColumnas={2}
+            items={[
+              { label: 'Inscriptos', value: inscriptos.length, icon: Users, color: 'azul' },
+              { label: 'Créditos', value: materia.creditos ?? '—', icon: Award, color: 'amarillo' },
+              { label: 'Semestre', value: materia.semestre ?? '—', icon: Layers, color: 'cian' },
+              { label: 'Tutorías', value: tutorias.length, icon: CalendarClock, color: 'naranja' },
+            ]}
+          />
         </div>
       </div>
 

@@ -610,7 +610,7 @@
    "nombres": [
     "Panel"
    ],
-   "lineas": 116,
+   "lineas": 126,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1006,7 +1006,7 @@
    "nombres": [
     "EventoDetail"
    ],
-   "lineas": 560,
+   "lineas": 550,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1042,7 +1042,7 @@
    "nombres": [
     "EventosManagement"
    ],
-   "lineas": 540,
+   "lineas": 513,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -1515,7 +1515,7 @@
    "nombres": [
     "MateriaDetail"
    ],
-   "lineas": 486,
+   "lineas": 464,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2134,7 +2134,7 @@
    "nombres": [
     "ReservationStats"
    ],
-   "lineas": 727,
+   "lineas": 662,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3235,7 +3235,7 @@
    "nombres": [
     "TutoriaDetail"
    ],
-   "lineas": 599,
+   "lineas": 589,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",

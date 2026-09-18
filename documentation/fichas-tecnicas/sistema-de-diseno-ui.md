@@ -252,8 +252,8 @@ implementaciones de lo mismo:
 |---|---|---|
 | Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
 | `EmptyState` | 3 → 1 | hecho: `components/ui/empty-state` con variante `linea` |
-| `Panel` | 2 → 1 | hecho: `components/common/Panel`; `PanelEstadistica` lo compone |
-| Tiras de métricas | 6 → 3 | en curso: `components/common/StatStrip` absorbió `TarjetasKpi` y `UserStatsCards` |
+| `Panel` | 6 → 2 | `components/common/Panel`; queda el de `RuntimeCards`, que tiene otra forma |
+| Tiras de métricas | 7 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
 | Tablas y vistas de fichas | 3 + 3 | pendiente |
 
 **Componentes de dashboard sin usar.** `DashboardStats`, `DashboardCharts`,

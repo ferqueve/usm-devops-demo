@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
@@ -69,18 +71,6 @@ function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; lab
         <p className="text-2xs uppercase tracking-wide text-muted-foreground leading-none">{label}</p>
         <p className="text-sm font-medium truncate mt-1">{value}</p>
       </div>
-    </div>
-  );
-}
-function Panel({ title, icon, accent, action, children, className }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode; className?: string }>) {
-  return (
-    <div className={`rounded-2xl border bg-card overflow-hidden flex flex-col ${className ?? ''}`}>
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b shrink-0">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4 flex-1">{children}</div>
     </div>
   );
 }
@@ -400,7 +390,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
           </div>
         </div>
         <div className="lg:col-span-1">
-          <Panel title="Difundir" icon={<QrCode className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10" className="h-full">
+          <Panel title="Difundir" icon={<QrCode className="size-4" />} accentColor={MARCA.azul} altoCompleto>
             <div className="flex h-full flex-col">
               <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
                 {qrUrl
@@ -431,10 +421,10 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
         <div className="lg:col-span-2">
           <Panel
             title={`Inscriptos · ${inscriptos.filter((i) => i.estado !== 'ESPERA').length}`}
-            icon={<Users className="h-4 w-4 text-utec-blue" />}
-            accent="bg-utec-blue/10"
-            className="h-full"
-            action={inscriptos.length > 0 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button> : undefined}
+            icon={<Users className="size-4" />}
+            accentColor={MARCA.azul}
+            altoCompleto
+            acciones={inscriptos.length > 0 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button> : undefined}
           >
             {(() => {
               if (inscriptos.length === 0) return <p className="text-sm text-muted-foreground py-2">Nadie se inscribió todavía.</p>;
@@ -524,7 +514,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
         </div>
         <div className="lg:col-span-1 flex flex-col gap-4">
           <PermissionGuard requiredPermission="evento:editar">
-            <Panel title="Estado" icon={<FileText className="h-4 w-4 text-utec-cyan" />} accent="bg-utec-cyan/10">
+            <Panel title="Estado" icon={<FileText className="size-4" />} accentColor={MARCA.cian}>
               <Select value={evento.estado} onValueChange={(v) => cambiarEstado(v as EventoEstado)} disabled={savingEstado}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -538,7 +528,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             </Panel>
           </PermissionGuard>
           {espacio && (
-            <Panel title="Espacio" icon={<MapPin className="h-4 w-4 text-utec-green" />} accent="bg-utec-green/10">
+            <Panel title="Espacio" icon={<MapPin className="size-4" />} accentColor={MARCA.verde}>
               <p className="font-medium">{espacio.nombre}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />Cap. {espacio.capacidad}</span>

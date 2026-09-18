@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 
 import { MARCA } from '@/lib/design/paleta';
+import { Download, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -328,6 +329,26 @@ export default function UiPage() {
                     <p className="text-foreground">Charla invitada · Aula 8 · 1.5 h</p>
                     <p className="text-foreground">Tutoría · Aula 9 · 1 h</p>
                     <p className="text-muted-foreground">Defensa de tesis · Aula teórica 3</p>
+                  </div>
+                </Panel>
+                {/* Con icono y con acciones: es la forma que usaban las cuatro
+                    copias locales de las pantallas de detalle. */}
+                <Panel
+                  title="Inscriptos"
+                  count="24"
+                  icon={<Users />}
+                  accentColor={MARCA.azul}
+                  acciones={
+                    <Button variant="ghost" size="sm" className="h-7 text-white hover:bg-white/15 hover:text-white">
+                      <Download className="size-3.5" />
+                      CSV
+                    </Button>
+                  }
+                >
+                  <div className="space-y-1.5 text-xs">
+                    <p className="text-foreground">Ana Fernández · 3.º semestre</p>
+                    <p className="text-foreground">Bruno Cardozo · 3.º semestre</p>
+                    <p className="text-muted-foreground">y 22 más</p>
                   </div>
                 </Panel>
               </div>
