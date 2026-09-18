@@ -20,6 +20,7 @@ import type { RankingItem, SostenibilidadRanking, SostenibilidadStats } from '@/
 import { EQUIVALENCIAS, META_ARBOLES_DEFAULT, META_ARBOLES_STORAGE_KEY } from '@/lib/config/sostenibilidad';
 import { useCountUp } from './useCountUp';
 import { ComoFuncionaDialog } from './ComoFuncionaDialog';
+import { MARCA } from '@/lib/design/paleta';
 
 /**
  * Escala de verdes de la pantalla. Todo es verde a propósito: es la pantalla
@@ -31,7 +32,7 @@ const VERDE = {
   800: '#2d5a22',
   700: '#3d7a2d',
   600: '#5a9a3a',
-  500: '#86bb4c',
+  500: MARCA.verde,
   300: '#b9d99a',
   200: '#d7eac3',
   100: '#eef6e6',

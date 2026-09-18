@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Info, Lightbulb, Maximize2, MoonStar, Radio, Camera, Calculator } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { MARCA } from '@/lib/design/paleta';
 
 export type Fuente = 'vivo' | 'noche' | 'foto' | 'modelo';
 
@@ -49,7 +50,7 @@ interface Props {
 export function PanelEstadistica({
   title,
   count,
-  accentColor = '#F6CA21',
+  accentColor = MARCA.amarillo,
   action,
   explicacion,
   children,

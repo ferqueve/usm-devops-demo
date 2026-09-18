@@ -119,7 +119,7 @@ export function AnalistaDashboard({
                   onClick={onViewDetails}
                   accent={urgencia >= 7 ? 'urgent' : null}
                   rightSlot={urgencia >= 7 ? (
-                    <span className="text-[10px] uppercase tracking-wider text-red-600 font-medium" title={razon}>
+                    <span className="text-[10px] uppercase tracking-wider text-danger-texto font-medium" title={razon}>
                       urgente
                     </span>
                   ) : undefined}

@@ -62,6 +62,54 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* ----------------------------------------------------------
+     Roles semánticos
+     ----------------------------------------------------------
+     Cuatro estados, cuatro piezas cada uno. Salen de un color de
+     marca y cubren los tres usos que aparecían escritos a mano
+     como `bg-blue-50`, `text-red-600`, `border-amber-200`: un
+     fondo tenue, un borde para ese fondo, un texto que se lee
+     encima, y el relleno macizo.
+
+     El relleno es el hex de marca en los dos temas: un bloque con
+     su propio texto no necesita cambiar de color según el tema,
+     sólo separarse de la tarjeta, y el hex ya lo hace. Lo que sí
+     cambia por tema son el fondo tenue, el borde y el texto.
+     ---------------------------------------------------------- */
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-suave: var(--info-suave);
+  --color-info-borde: var(--info-borde);
+  --color-info-texto: var(--info-texto);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-suave: var(--success-suave);
+  --color-success-borde: var(--success-borde);
+  --color-success-texto: var(--success-texto);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-suave: var(--warning-suave);
+  --color-warning-borde: var(--warning-borde);
+  --color-warning-texto: var(--warning-texto);
+
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-suave: var(--danger-suave);
+  --color-danger-borde: var(--danger-borde);
+  --color-danger-texto: var(--danger-texto);
+
+  /* Quinto rol, para cuando hace falta «otra categoría» y no un estado: el rol
+     ADMIN, un chip de filtro, un tile. Estaba resuelto con morado, que no es
+     de la marca. El cian sí lo es —es el centro del isotipo— y hace el mismo
+     trabajo. */
+  --color-acento: var(--acento);
+  --color-acento-foreground: var(--acento-foreground);
+  --color-acento-suave: var(--acento-suave);
+  --color-acento-borde: var(--acento-borde);
+  --color-acento-texto: var(--acento-texto);
+
   /* Banda oscura: cabeceras de tabla, encabezados de panel, globos de
      gráfico. Son superficies que se ven oscuras en los dos temas, pero no con
      el mismo valor: en claro es el #343a40 del sitio, y en oscuro tiene que
@@ -211,6 +259,38 @@
   --chart-4: oklch(0.6788 0.1531 54.8);
   --chart-5: oklch(0.5868 0.2137 25.6);
 
+  /* Estados. El relleno es el hex de marca; el texto de encima es el que gana
+     en contraste medido, no el que parece. */
+  --info: #184897;
+  --info-foreground: #ffffff;
+  --info-suave: #edf4ff;
+  --info-borde: #c4daff;
+  --info-texto: #1e4e9e;
+
+  --success: #86bb4c;
+  --success-foreground: #0f1720;
+  --success-suave: #ecf9e1;
+  --success-borde: #cae3b4;
+  --success-texto: #3a5f00;
+
+  --warning: #DE7A27;
+  --warning-foreground: #0f1720;
+  --warning-suave: #fff0e7;
+  --warning-borde: #feceae;
+  --warning-texto: #7f3f00;
+
+  --danger: #DF2B31;
+  --danger-foreground: #ffffff;
+  --danger-suave: #ffefed;
+  --danger-borde: #ffcac5;
+  --danger-texto: #9e0014;
+
+  --acento: #00c7ff;
+  --acento-foreground: #0f1720;
+  --acento-suave: #e5f7ff;
+  --acento-borde: #aae3fc;
+  --acento-texto: #005b77;
+
   --chrome: oklch(0.3451 0.0133 248);
   --chrome-foreground: oklch(1 0 0);
 
@@ -250,8 +330,13 @@
   --accent: oklch(0.3900 0.0260 258);
   --accent-foreground: oklch(0.9417 0.0052 248);
 
-  --destructive: oklch(0.6800 0.2089 25.6);
-  --destructive-foreground: oklch(0.2000 0.0090 248);
+  /* El mismo rojo que en claro y que el de `danger`.
+     Estaba aclarado a L 0.68 para "compensar" el fondo oscuro, y con texto
+     blanco encima daba 3,17:1: el botón Eliminar quedaba ilegible y además
+     era otro rojo que el de la pastilla Cancelada, en la misma fila. Un
+     relleno macizo no necesita cambiar por tema. */
+  --destructive: oklch(0.5868 0.2137 25.6);
+  --destructive-foreground: oklch(0.9816 0.0017 248);
 
   /* En oscuro una sombra no separa: el fondo ya es oscuro. Se sube la opacidad
      y se suma un filo claro arriba, que es lo que de verdad despega la
@@ -273,6 +358,39 @@
   --chart-3: oklch(0.8000 0.1637 92.2);
   --chart-4: oklch(0.6600 0.1639 54.8);
   --chart-5: oklch(0.6800 0.2089 25.6);
+
+  /* El relleno no cambia: un bloque macizo con su propio texto sólo tiene que
+     separarse de la tarjeta, y el hex de marca ya lo hace. Cambian el fondo
+     tenue, el borde y el texto, que sí viven contra el fondo del tema. */
+  --info: #184897;
+  --info-foreground: #ffffff;
+  --info-suave: #212e43;
+  --info-borde: #2e4771;
+  --info-texto: #98bfff;
+
+  --success: #86bb4c;
+  --success-foreground: #0f1720;
+  --success-suave: #263319;
+  --success-borde: #37511c;
+  --success-texto: #a1cf73;
+
+  --warning: #DE7A27;
+  --warning-foreground: #0f1720;
+  --warning-suave: #402716;
+  --warning-borde: #6a3a14;
+  --warning-texto: #fea668;
+
+  --danger: #DF2B31;
+  --danger-foreground: #ffffff;
+  --danger-suave: #491f1d;
+  --danger-borde: #7b2724;
+  --danger-texto: #ffa097;
+
+  --acento: #00c7ff;
+  --acento-foreground: #0f1720;
+  --acento-suave: #11323f;
+  --acento-borde: #004f68;
+  --acento-texto: #51cefd;
 
   --chrome: oklch(0.3350 0.0130 248);
   --chrome-foreground: oklch(1 0 0);
@@ -717,15 +835,10 @@ body {
    Ya no hace falta: esas utilidades se migraron a los tokens del
    tema en los componentes, así que el modo oscuro sale solo.
 
-   Queda sólo lo que una clase base no puede resolver: las
-   variantes con opacidad, que Tailwind emite con otro nombre de
-   clase y el remapeo por clase base no alcanza.
+   Ya no queda ninguna: las variantes con opacidad también se
+   migraron. Sólo sobreviven las reglas del heatmap azul del
+   calendario, que necesitan un azul real y no el token.
    ============================================================ */
-
-/* Columna de horas del calendario y secciones colapsadas. */
-.dark .bg-gray-50\/50,
-.dark .bg-gray-50\/60,
-.dark .bg-gray-50\/30 { background-color: var(--muted); }
 
 /* Resaltado "hoy" + heatmap del calendario en escala azul.
    En dark el texto de las celdas es claro, así que las celdas tienen que ser

@@ -123,7 +123,7 @@ export default function InventoryRequestsCardView({
                 {request.tipoElementoNombre && (
                   <span
                     title={request.tipoElementoNombre}
-                    className="inline-flex max-w-[128px] items-center truncate rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700"
+                    className="inline-flex max-w-[128px] items-center truncate rounded-md border border-info-borde bg-info-suave px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-info-texto"
                   >
                     {request.tipoElementoNombre}
                   </span>
@@ -186,7 +186,7 @@ export default function InventoryRequestsCardView({
                     type="button"
                     onClick={() => onDeliver(request)}
                     disabled={processingRequestId === request.id || request.inventarioItemId == null}
-                    className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-600/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-70 lg:h-8"
+                    className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md bg-success px-3 text-xs font-semibold text-white transition hover:bg-success/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-success/40 disabled:cursor-not-allowed disabled:opacity-70 lg:h-8"
                   >
                     <ClipboardCheck className="h-3.5 w-3.5" />
                     Entregado

@@ -23,17 +23,17 @@ function getAccionConfig(accion: AuditLog['accion']) {
     case 'CREATE':
       return {
         label: 'Crear',
-        color: 'bg-green-50 text-green-700 border-green-200'
+        color: 'bg-success-suave text-success-texto border-success-borde'
       };
     case 'UPDATE':
       return {
         label: 'Actualizar',
-        color: 'bg-blue-50 text-blue-700 border-blue-200'
+        color: 'bg-info-suave text-info-texto border-info-borde'
       };
     case 'DELETE':
       return {
         label: 'Eliminar',
-        color: 'bg-red-50 text-red-700 border-red-200'
+        color: 'bg-danger-suave text-danger-texto border-danger-borde'
       };
     default:
       return {
@@ -198,16 +198,16 @@ export default function AuditLogDetailsDialog({
                 <h3 className="text-sm font-semibold text-muted-foreground">Comparación</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-medium mb-2 text-red-600">Datos Previos</p>
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-xs font-medium mb-2 text-danger-texto">Datos Previos</p>
+                    <div className="bg-danger-suave border border-danger-borde rounded-lg p-3">
                       <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                         {formatJSON(log.datosPrevios)}
                       </pre>
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-medium mb-2 text-green-600">Datos Nuevos</p>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs font-medium mb-2 text-success-texto">Datos Nuevos</p>
+                    <div className="bg-success-suave border border-success-borde rounded-lg p-3">
                       <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                         {formatJSON(log.datosNuevos)}
                       </pre>

@@ -38,17 +38,17 @@ function getEstadoConfig(estado: Reserva['estado']) {
     case 'APROBADO':
       return {
         label: 'Aprobada',
-        color: 'bg-green-50 text-green-700 border-green-200'
+        color: 'bg-success-suave text-success-texto border-success-borde'
       };
     case 'PENDIENTE':
       return {
         label: 'Pendiente',
-        color: 'bg-amber-50 text-amber-700 border-amber-200'
+        color: 'bg-warning-suave text-warning-texto border-warning-borde'
       };
     case 'CANCELADO':
       return {
         label: 'Cancelada',
-        color: 'bg-red-50 text-red-700 border-red-200'
+        color: 'bg-danger-suave text-danger-texto border-danger-borde'
       };
     default:
       return {
@@ -285,14 +285,14 @@ export default function ReservationDetailsDialog({
               <Button
                 variant="outline"
                 onClick={handleRechazarClick}
-                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="border-danger-borde text-danger-texto hover:bg-danger-suave hover:text-danger-texto"
               >
                 <XCircle className="h-4 w-4 mr-1.5" />
                 Rechazar
               </Button>
               <Button
                 onClick={handleAprobarClick}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-success hover:bg-success text-white"
               >
                 <CheckCircle2 className="h-4 w-4 mr-1.5" />
                 Aprobar
@@ -337,7 +337,7 @@ export default function ReservationDetailsDialog({
             <AlertDialogAction
               onClick={handleAprobarReserva}
               disabled={loading}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-success hover:bg-success"
             >
               {loading ? 'Aprobando...' : 'Aprobar Reserva'}
             </AlertDialogAction>
@@ -380,7 +380,7 @@ export default function ReservationDetailsDialog({
             <AlertDialogAction
               onClick={handleRechazarReserva}
               disabled={loading}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-danger hover:bg-danger"
             >
               {loading ? 'Rechazando...' : 'Rechazar Reserva'}
             </AlertDialogAction>

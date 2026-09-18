@@ -139,8 +139,8 @@ export function StatStrip({ items, loading = false }: Readonly<StatStripProps>) 
         const { fondo, texto } = paleta[color];
         const claro = texto === 'claro';
 
-        const principal = claro ? 'text-white' : 'text-[#0f1720]';
-        const suave = claro ? 'text-white/75' : 'text-[#0f1720]/70';
+        const principal = claro ? 'text-white' : 'text-[color:var(--success-foreground)]';
+        const suave = claro ? 'text-white/75' : 'text-[color:var(--success-foreground)]/70';
 
         const inner = (
           <>

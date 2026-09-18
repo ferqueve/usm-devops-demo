@@ -45,6 +45,7 @@ import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
+import { MARCA } from '@/lib/design/paleta';
 
 const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
   CREATE: { label: 'Crear', badge: 'bg-utec-green text-white border-utec-green', dot: 'bg-utec-green' },
@@ -181,7 +182,7 @@ export default function AuditManagement() {
         title="Auditoría"
         count={totalElements}
         description="Cambios realizados en el sistema, con su autor y su fecha."
-        accentColor="#DF2B31"
+        accentColor={MARCA.rojo}
         actions={
           <>
             <Tooltip>

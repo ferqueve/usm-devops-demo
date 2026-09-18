@@ -65,7 +65,7 @@ function PriorityReservationRow({ rec, reservasPendientes, onViewDetails }: Read
   };
 
   const iconWrapperClass = `flex items-center justify-center w-10 h-10 rounded-full ${
-    isAltaUrgencia ? 'bg-amber-100 text-amber-700' : 'bg-amber-50 text-amber-700'
+    isAltaUrgencia ? 'bg-warning-suave text-warning-texto' : 'bg-warning-suave text-warning-texto'
   }`;
 
   return (
@@ -102,11 +102,11 @@ export default function PriorityReservationsWidget({
   }
 
   return (
-    <Card className="border-amber-200 bg-amber-50">
+    <Card className="border-warning-borde bg-warning-suave">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-amber-600" />
-          <CardTitle className="text-amber-900">Reservas Prioritarias</CardTitle>
+          <Sparkles className="h-5 w-5 text-warning-texto" />
+          <CardTitle className="text-warning-texto">Reservas Prioritarias</CardTitle>
         </div>
       </CardHeader>
       <CardContent>

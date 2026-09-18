@@ -30,11 +30,11 @@ export const MetricCard = memo(function MetricCard({
   children,
 }: MetricCardProps) {
   const variantStyles = {
-    default: 'bg-gradient-to-br from-gray-50 to-white border-border',
-    success: 'bg-gradient-to-br from-green-50 to-white border-green-200',
-    warning: 'bg-gradient-to-br from-yellow-50 to-white border-yellow-200',
-    error: 'bg-gradient-to-br from-red-50 to-white border-red-200',
-    info: 'bg-gradient-to-br from-blue-50 to-white border-blue-200',
+    default: 'bg-gradient-to-br from-muted to-white border-border',
+    success: 'bg-gradient-to-br from-success-suave to-white border-success-borde',
+    warning: 'bg-gradient-to-br from-warning-suave to-white border-warning-borde',
+    error: 'bg-gradient-to-br from-danger-suave to-white border-danger-borde',
+    info: 'bg-gradient-to-br from-info-suave to-white border-info-borde',
   };
 
   const iconColors = {
@@ -85,7 +85,7 @@ export const MetricCard = memo(function MetricCard({
                     variant === 'warning' && 'bg-utec-yellow',
                     variant === 'error' && 'bg-utec-red',
                     variant === 'info' && 'bg-utec-blue',
-                    variant === 'default' && 'bg-gray-500'
+                    variant === 'default' && 'bg-muted-foreground'
                   )}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />

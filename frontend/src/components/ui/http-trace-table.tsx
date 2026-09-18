@@ -166,20 +166,20 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
   // Badge de método
   const getMethodBadge = (method: string) => {
     const colors: Record<string, string> = {
-      GET: 'bg-blue-100 text-blue-800 border-blue-200',
-      POST: 'bg-green-100 text-green-800 border-green-200',
-      PUT: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      DELETE: 'bg-red-100 text-red-800 border-red-200',
-      PATCH: 'bg-purple-100 text-purple-800 border-purple-200',
+      GET: 'bg-info-suave text-info-texto border-info-borde',
+      POST: 'bg-success-suave text-success-texto border-success-borde',
+      PUT: 'bg-warning-suave text-warning-texto border-warning-borde',
+      DELETE: 'bg-danger-suave text-danger-texto border-danger-borde',
+      PATCH: 'bg-acento-suave text-acento-texto border-acento-borde',
     };
     return colors[method] || 'bg-muted text-foreground border-border';
   };
 
   // Badge de status
   const getStatusBadge = (status: number) => {
-    if (status >= 200 && status < 300) return 'bg-green-100 text-green-800 border-green-200';
-    if (status >= 300 && status < 400) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    if (status >= 400) return 'bg-red-100 text-red-800 border-red-200';
+    if (status >= 200 && status < 300) return 'bg-success-suave text-success-texto border-success-borde';
+    if (status >= 300 && status < 400) return 'bg-warning-suave text-warning-texto border-warning-borde';
+    if (status >= 400) return 'bg-danger-suave text-danger-texto border-danger-borde';
     return 'bg-muted text-foreground border-border';
   };
 

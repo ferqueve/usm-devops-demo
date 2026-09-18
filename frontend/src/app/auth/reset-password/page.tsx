@@ -200,12 +200,12 @@ export default function ResetPasswordPage() {
         {message && (
           <div className={`rounded-md p-4 ${
             message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+              ? 'bg-success-suave dark:bg-success/20 border border-success-borde dark:border-success'
               : 'bg-destructive/10 border border-destructive/20'
           }`}>
             <p className={`text-sm ${
               message.type === 'success'
-                ? 'text-green-900 dark:text-green-100'
+                ? 'text-success-texto dark:text-success-suave'
                 : 'text-destructive'
             }`}>
               {message.text}

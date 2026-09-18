@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Panel } from '@/components/dashboard/views/_components/Panel';
 import { EmptyState } from '@/components/dashboard/views/_components/EmptyState';
 import { getSemanticSearch, type SemanticSearchResultado } from '@/lib/api/ai';
+import { MARCA } from '@/lib/design/paleta';
 
 const EJEMPLOS = ['Laboratorio para 20', 'Aula grande con proyector', 'Sala para reunión'];
 
@@ -50,7 +51,7 @@ export function SemanticSearchPanel() {
     <Panel
       title="Encontrá un espacio"
       count="por descripción"
-      accentColor="#00c7ff"
+      accentColor={MARCA.cian}
       action={{ label: 'espacios', to: '/rooms' }}
       flush
       className="shrink-0"

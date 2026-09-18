@@ -7,7 +7,7 @@ export function SpaceCardSkeleton() {
     <Card className="h-full border border-border overflow-hidden">
       {/* Imagen skeleton */}
       <div className="aspect-[16/10] bg-muted flex items-center justify-center">
-        <Users className="h-6 w-6 text-gray-300" />
+        <Users className="h-6 w-6 text-muted-foreground" />
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">

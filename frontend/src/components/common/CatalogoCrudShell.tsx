@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import type { Permission } from '@/lib/config/permissions';
+import { MARCA } from '@/lib/design/paleta';
 
 export interface CatalogoItem {
   id: number;
@@ -56,7 +57,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
   title,
   description,
   Icon,
-  accentColor = '#F6CA21',
+  accentColor = MARCA.amarillo,
   loading,
   items,
   emptyLabel,

@@ -48,8 +48,8 @@ export function FiltrosInventario({ opciones, filtros, activos, onCambiar, onLim
         onChange={(espacioId) => onCambiar({ espacioId })}
         Icon={DoorOpen}
         tooltipNone={filtros.edificioId == null ? 'Todos los espacios' : 'Todos los espacios del edificio'}
-        activeBgClass="bg-emerald-100 text-emerald-900 shadow-md ring-1 ring-emerald-300"
-        activeTextColorClass="text-emerald-700"
+        activeBgClass="bg-success-suave text-success-texto shadow-md ring-1 ring-success-borde"
+        activeTextColorClass="text-success-texto"
       />
       <PopoverFilterSection<number>
         selectedId={filtros.tipoElementoId ?? null}
@@ -57,8 +57,8 @@ export function FiltrosInventario({ opciones, filtros, activos, onCambiar, onLim
         onChange={(tipoElementoId) => onCambiar({ tipoElementoId })}
         Icon={Tag}
         tooltipNone="Todos los tipos"
-        activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-        activeTextColorClass="text-purple-700"
+        activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+        activeTextColorClass="text-acento-texto"
       />
       <ClearFiltersButton visible={activos} onClear={onLimpiar} />
     </div>

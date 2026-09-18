@@ -131,7 +131,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
               <TableRow key={`${changeSet.id}-${index}`}>
                 <TableCell className="font-medium text-xs text-center">
                   <div className="flex items-center justify-center gap-1">
-                    <CheckCircle2 className="h-3 w-3 text-green-600" />
+                    <CheckCircle2 className="h-3 w-3 text-success-texto" />
                     {changeSet.orderExecuted || index + 1}
                   </div>
                 </TableCell>

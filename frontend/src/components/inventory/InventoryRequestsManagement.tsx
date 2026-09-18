@@ -56,16 +56,17 @@ import { InventoryRequestFilters } from '@/components/inventory/InventoryRequest
 import InventoryRequestsCardView from '@/components/inventory/InventoryRequestsCardView';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
+import { MARCA } from '@/lib/design/paleta';
 
 const ESTADO_OPTIONS: Array<{
   value: ReservaItemSolicitadoEstado;
   label: string;
   badgeClass: string;
 }> = [
-  { value: 'PENDIENTE', label: 'Pendiente', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'APROBADO', label: 'Aprobado', badgeClass: 'bg-blue-50 text-blue-700 border-blue-200' },
-  { value: 'ENTREGADO', label: 'Entregado', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'RECHAZADO', label: 'Rechazado', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200' },
+  { value: 'PENDIENTE', label: 'Pendiente', badgeClass: 'bg-warning-suave text-warning-texto border-warning-borde' },
+  { value: 'APROBADO', label: 'Aprobado', badgeClass: 'bg-info-suave text-info-texto border-info-borde' },
+  { value: 'ENTREGADO', label: 'Entregado', badgeClass: 'bg-success-suave text-success-texto border-success-borde' },
+  { value: 'RECHAZADO', label: 'Rechazado', badgeClass: 'bg-danger-suave text-danger-texto border-danger-borde' },
 ];
 
 const ESTADO_LABEL = ESTADO_OPTIONS.reduce<Record<ReservaItemSolicitadoEstado, string>>((acc, item) => {
@@ -422,7 +423,7 @@ export default function InventoryRequestsManagement() {
         title="Solicitudes"
         count={summary.total}
         description={`Pedidos de inventario de las reservas · ${summary.pendingItems} activas en esta página.`}
-        accentColor="#F6CA21"
+        accentColor={MARCA.amarillo}
         actions={
           <Tooltip>
             <TooltipTrigger asChild>
@@ -616,7 +617,7 @@ export default function InventoryRequestsManagement() {
         </CardContent>
 
         {!loading && requestsPage && requestsPage.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50/60">
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/60">
             <p className="text-xs text-muted-foreground">
               Página {requestsPage.page + 1} de {requestsPage.totalPages}
             </p>
@@ -862,7 +863,7 @@ export default function InventoryRequestsManagement() {
                       );
                     }}
                     disabled={updatingRequest || !canReject}
-                    className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    className="border-danger-borde text-danger-texto hover:bg-danger-suave hover:text-danger-texto"
                   >
                     <XCircle className="h-4 w-4 mr-1.5" />
                     Rechazar
@@ -875,7 +876,7 @@ export default function InventoryRequestsManagement() {
                         handleMarkDelivered(selectedRequest);
                       }}
                       disabled={updatingRequest || !canDeliver}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="bg-success hover:bg-success text-white"
                     >
                       <ClipboardCheck className="h-4 w-4 mr-1.5" />
                       Confirmar entrega
@@ -896,7 +897,7 @@ export default function InventoryRequestsManagement() {
                         );
                       }}
                       disabled={updatingRequest || !canApprove}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="bg-success hover:bg-success text-white"
                     >
                       <CheckCircle2 className="h-4 w-4 mr-1.5" />
                       Aprobar

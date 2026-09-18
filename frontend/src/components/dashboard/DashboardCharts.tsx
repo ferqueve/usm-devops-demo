@@ -108,28 +108,28 @@ export default function DashboardCharts({ reservas, stats, espacios = [], loadin
       value: `${tasaAprobacion}%`,
       change: tasaAprobacion >= 80 ? 'Excelente' : tasaAprobacion >= 50 ? 'Estable' : 'A revisar',
       icon: TrendingUp,
-      color: 'text-emerald-600',
+      color: 'text-success-texto',
     },
     {
       label: 'Día Pico',
       value: diaPico?.label ?? '—',
       change: diaPico ? `${diaPico.value} reservas` : 'Sin datos',
       icon: CalendarDays,
-      color: 'text-blue-600',
+      color: 'text-info-texto',
     },
     {
       label: 'Espacio Más Usado',
       value: espacioTop?.label ?? '—',
       change: espacioTop ? `${espacioTop.value} reservas` : 'Sin datos',
       icon: MapPin,
-      color: 'text-purple-600',
+      color: 'text-acento-texto',
     },
     {
       label: 'Horas Reservadas',
       value: horasTotales > 0 ? `${horasTotales}h` : '—',
       change: 'Acumulado total',
       icon: Clock,
-      color: 'text-amber-600',
+      color: 'text-warning-texto',
     },
   ];
 

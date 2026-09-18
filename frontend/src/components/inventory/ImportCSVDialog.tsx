@@ -144,12 +144,12 @@ export default function ImportCSVDialog({
           )}
 
           {/* Instrucciones */}
-          <div className="border rounded-lg p-4 bg-blue-50">
+          <div className="border rounded-lg p-4 bg-info-suave">
             <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <CheckCircle className="h-5 w-5 text-info-texto mt-0.5" />
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-blue-900">Formato requerido:</p>
-                <ul className="list-disc list-inside space-y-1 text-blue-800">
+                <p className="font-medium text-info-texto">Formato requerido:</p>
+                <ul className="list-disc list-inside space-y-1 text-info-texto">
                   <li>El CSV debe contener encabezados en la primera fila</li>
                   <li>Columnas: Espacio, Tipo Elemento, Cantidad, Marca, Modelo, Serie, Estado, Valor</li>
                   <li>Estado debe ser: DISPONIBLE, MANTENIMIENTO o DANADO</li>

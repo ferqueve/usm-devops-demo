@@ -13,6 +13,7 @@ import type { UserRole, UserStats } from '@/lib/types/users';
 import { Users, UserCheck, MailX, Shield, Monitor, Chrome } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { MARCA } from '@/lib/design/paleta';
 
 type UtecBg = 'blue' | 'yellow' | 'green' | 'orange' | 'red' | 'cyan' | 'dark';
 
@@ -49,12 +50,12 @@ function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredSta
 }
 
 const ROLE_COLOR: Record<UserRole, string> = {
-  [ROLES.ADMIN]: '#DF2B31',
-  [ROLES.ANALISTA]: '#184897',
-  [ROLES.DOCENTE]: '#00c7ff',
-  [ROLES.ESTUDIANTE]: '#86bb4c',
-  [ROLES.EXTERNO]: '#F6CA21',
-  [ROLES.MANTENIMIENTO]: '#DE7A27',
+  [ROLES.ADMIN]: MARCA.rojo,
+  [ROLES.ANALISTA]: MARCA.azul,
+  [ROLES.DOCENTE]: MARCA.cian,
+  [ROLES.ESTUDIANTE]: MARCA.verde,
+  [ROLES.EXTERNO]: MARCA.amarillo,
+  [ROLES.MANTENIMIENTO]: MARCA.naranja,
 };
 
 interface TooltipPayload {

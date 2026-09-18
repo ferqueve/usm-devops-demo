@@ -5,6 +5,7 @@ import type { TooltipProps } from 'recharts';
 import type { SerieTipoEspacioPunto, TipoEspacioML } from '@/lib/api/stats';
 import { useColores } from '../colores';
 import { cambio, decimal, entero, fechaConDia, fechaCorta, fechaLarga, mayuscula, SVG_LLENO } from '../formato';
+import { MARCA } from '@/lib/design/paleta';
 
 /** Ícono por el nombre del tipo; los tipos se cargan a mano y no traen uno propio. */
 function iconoTipo(nombre: string): LucideIcon {
@@ -118,7 +119,7 @@ export function PronosticoPorTipo({ tipos, elegido, onElegir, grande = false }: 
               <div className="flex min-w-0 items-center gap-2">
                 <span
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white"
-                  style={{ backgroundColor: activo ? '#DE7A27' : '#184897' }}
+                  style={{ backgroundColor: activo ? MARCA.naranja : MARCA.azul }}
                 >
                   <Icono className="h-4 w-4" />
                 </span>

@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { formatBytes, formatUptime } from '@/lib/utils/formatters';
 import type { HealthInfo, MetricInfo, MetricMeasurement } from '@/lib/types/actuator';
 import type { MetricsChartDataPoint } from '@/components/ui/metrics-chart';
+import { MARCA } from '@/lib/design/paleta';
 
 interface MetricsCardsProps {
   health: HealthInfo | null | undefined;
@@ -80,7 +81,7 @@ function SysStat({
   progress,
   umbral,
   serie,
-  serieColor = '#00c7ff',
+  serieColor = MARCA.cian,
   onClick,
   tono = 'normal',
 }: Readonly<SysStatProps>) {
@@ -193,7 +194,7 @@ export const MetricsCards = memo(function MetricsCards({
         progress={memoryUsagePercent}
         umbral
         serie={serieMemoria}
-        serieColor="#00c7ff"
+        serieColor={MARCA.cian}
       />
       <SysStat
         label="Uso de CPU"
@@ -203,7 +204,7 @@ export const MetricsCards = memo(function MetricsCards({
         progress={cpuUsage * 100}
         umbral
         serie={serieCpu}
-        serieColor="#86bb4c"
+        serieColor={MARCA.verde}
       />
       <SysStat
         label="Tiempo activo"

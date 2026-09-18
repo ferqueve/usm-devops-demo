@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { MoonStar } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 export interface Destacado {
   etiqueta: string;
@@ -44,7 +45,7 @@ function esOscuro(hex: string): boolean {
 export function Seccion({ id, titulo, descripcion, icono: Icono, color, destacados = [], nota, children }: Readonly<SeccionProps>) {
   // Tarjeta entera del color institucional de la sección. Sobre amarillo o
   // celeste el blanco no se lee, así que el texto pasa al gris oscuro.
-  const tinta = esClaro(color) ? '#343a40' : '#ffffff';
+  const tinta = esClaro(color) ? MARCA.oscuro : '#ffffff';
   const cabecera = (
     <div className="relative overflow-hidden rounded-xl px-5 py-4 shadow-sm" style={{ backgroundColor: color, color: tinta }}>
       <Icono className="pointer-events-none absolute -right-4 -top-6 h-32 w-32 opacity-10" aria-hidden />

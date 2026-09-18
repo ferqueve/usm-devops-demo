@@ -80,6 +80,7 @@ import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
+import { MARCA } from '@/lib/design/paleta';
 
 type ViewMode = 'table' | 'cards';
 
@@ -589,7 +590,7 @@ export default function InventoryManagement() {
         title="Inventario"
         count={totalElements}
         description="Administra el inventario del sistema: items, asignaciones y solicitudes."
-        accentColor="#F6CA21"
+        accentColor={MARCA.amarillo}
         actions={
           <>
             <Tooltip>
@@ -744,8 +745,8 @@ export default function InventoryManagement() {
           }
           Icon={Tag}
           tooltipNone="Todos los tipos"
-          activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-          activeTextColorClass="text-purple-700"
+          activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+          activeTextColorClass="text-acento-texto"
         />
         <EnumFilterSection
           value={filters.estado ?? null}
@@ -755,22 +756,22 @@ export default function InventoryManagement() {
               value: 'DISPONIBLE',
               tooltip: 'Disponible',
               Icon: CheckCircle2,
-              activeColorClass: 'text-green-600',
-              inactiveColorClass: 'text-green-500',
+              activeColorClass: 'text-success-texto',
+              inactiveColorClass: 'text-success',
             },
             {
               value: 'MANTENIMIENTO',
               tooltip: 'En mantenimiento',
               Icon: Wrench,
-              activeColorClass: 'text-amber-600',
-              inactiveColorClass: 'text-amber-500',
+              activeColorClass: 'text-warning-texto',
+              inactiveColorClass: 'text-warning',
             },
             {
               value: 'DANADO',
               tooltip: 'Dañado',
               Icon: XCircle,
-              activeColorClass: 'text-red-600',
-              inactiveColorClass: 'text-red-500',
+              activeColorClass: 'text-danger-texto',
+              inactiveColorClass: 'text-danger',
             },
           ]}
           onChange={(value) =>

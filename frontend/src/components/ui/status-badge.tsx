@@ -22,7 +22,7 @@ export function StatusBadge({ status, label, icon = true, pulse = false, classNa
     // tira de métricas del dashboard.
     success: {
       variant: 'default' as const,
-      className: 'bg-utec-green hover:bg-utec-green/90 text-[#0f1720]',
+      className: 'bg-utec-green hover:bg-utec-green/90 text-[color:var(--success-foreground)]',
       icon: CheckCircle2,
     },
     error: {

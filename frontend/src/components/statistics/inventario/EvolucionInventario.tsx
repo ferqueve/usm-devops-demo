@@ -15,6 +15,7 @@ import {
 import { fechaCorta, type Rango } from '../periodo';
 import { BarrasDivergentes } from '../graficos/BarrasDivergentes';
 import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
+import { MARCA } from '@/lib/design/paleta';
 
 /* Misma historia que en statistics/reservas/Tendencia: este archivo también
    tenía su copia de la escala vieja. Ahora sale de lib/design/paleta. */
@@ -160,7 +161,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
         <PanelEstadistica
           title="Estado del parque"
           count={ultimo ? `items por estado · última foto del ${fechaCorta(ultimo.fecha)}` : 'items por estado'}
-          accentColor="#86bb4c"
+          accentColor={MARCA.verde}
           explicacion={EXPLICACIONES.evolucionEstado}
         >
           {(grande) => (
@@ -209,7 +210,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
         <PanelEstadistica
           title="Tamaño del parque"
           count={primero && ultimo ? `${primero.items} → ${ultimo.items} items · ${ultimo.unidades.toLocaleString('es-UY')} unidades` : undefined}
-          accentColor="#184897"
+          accentColor={MARCA.azul}
           explicacion={EXPLICACIONES.tamanoParque}
         >
           {(grande) => (
@@ -242,7 +243,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
       <PanelEstadistica
         title="Qué cambió"
         count={delta ? `entre el ${fechaCorta(delta.fechaInicio)} y el ${fechaCorta(delta.fechaFin)}` : undefined}
-        accentColor="#DE7A27"
+        accentColor={MARCA.naranja}
         scroll
         className="max-h-[360px]"
         explicacion={EXPLICACIONES.cambios}

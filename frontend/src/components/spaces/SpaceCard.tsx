@@ -85,7 +85,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
 
         {/* Badge en overlay: estado fuera de servicio, o disponibilidad ahora */}
         {fueraDeServicio ? (
-          <Badge className="bg-gray-700 text-white font-medium text-xs absolute top-2 right-2 shadow-sm border-0">
+          <Badge className="bg-chrome text-white font-medium text-xs absolute top-2 right-2 shadow-sm border-0">
             <EstadoFueraIcon className="h-3 w-3 mr-1" />
             {getEstadoLabel(espacio.estado)}
           </Badge>

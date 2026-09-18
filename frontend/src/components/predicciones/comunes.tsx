@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { AlertTriangle, Brain, Info, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
+import { MARCA } from '@/lib/design/paleta';
 
 /** Lo que cada vista necesita saber del botón de reentrenar de la barra. */
 export interface Entrenamiento {
@@ -32,7 +33,7 @@ export function SinModelo({ titulo, detalle, entrenamiento, textoBoton }: Readon
         <h2 className="text-xl font-semibold">{titulo}</h2>
         <p className="mt-2 text-sm text-white/70">{esAdmin ? detalle : 'Un administrador tiene que entrenarlo primero.'}</p>
         {esAdmin && (
-          <Button onClick={entrenar} disabled={reentrenando} className="mt-5 h-9 bg-[#ffffff] px-4 text-sm font-semibold text-[#343a40] hover:bg-[#e9eaec]">
+          <Button onClick={entrenar} disabled={reentrenando} className="mt-5 h-9 bg-card px-4 text-sm font-semibold text-chrome hover:bg-[#e9eaec]">
             {reentrenando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             <span className="ml-2">{reentrenando ? 'Entrenando…' : textoBoton}</span>
           </Button>
@@ -107,7 +108,7 @@ export function ChipHero({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 /** Anillo del hero. */
-export function Anillo({ porcentaje, color = '#86bb4c' }: Readonly<{ porcentaje: number; color?: string }>) {
+export function Anillo({ porcentaje, color = MARCA.verde }: Readonly<{ porcentaje: number; color?: string }>) {
   const radio = 22;
   const circunferencia = 2 * Math.PI * radio;
   const valor = Math.max(0, Math.min(100, porcentaje));

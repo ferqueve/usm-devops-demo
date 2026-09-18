@@ -13,16 +13,16 @@ export default function PendingInventoryRequestsAlert({ count }: Readonly<Pendin
   }
 
   return (
-    <Card className="border-yellow-200 bg-yellow-50">
+    <Card className="border-warning-borde bg-warning-suave">
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Package className="h-5 w-5 text-yellow-600" />
+            <Package className="h-5 w-5 text-warning-texto" />
             <div>
-              <p className="text-sm font-medium text-yellow-900">
+              <p className="text-sm font-medium text-warning-texto">
                 Tienes {count} solicitud{count > 1 ? 'es' : ''} de inventario pendiente{count > 1 ? 's' : ''}
               </p>
-              <p className="text-xs text-yellow-700 mt-1">
+              <p className="text-xs text-warning-texto mt-1">
                 Revisa y procesa las solicitudes de inventario
               </p>
             </div>

@@ -31,13 +31,14 @@ import { CompararContra } from './CompararContra';
 import { ChipsFiltros, FiltrosReservas } from './FiltrosReservas';
 import { Novedades } from './Novedades';
 import { espacioFuera, textoComparacion, textoFiltros, useFiltrosReservas } from './filtros';
+import { MARCA } from '@/lib/design/paleta';
 
 const SECCIONES = [
-  { id: 'resumen', titulo: 'Resumen', icono: BarChart3, color: '#184897' },
-  { id: 'uso', titulo: 'Uso', icono: MapPinned, color: '#86bb4c' },
-  { id: 'quien', titulo: 'Quién reserva', icono: Users, color: '#DE7A27' },
-  { id: 'aprobacion', titulo: 'Aprobación', icono: ClipboardCheck, color: '#DF2B31' },
-  { id: 'espacios', titulo: 'Espacios', icono: Building, color: '#00c7ff' },
+  { id: 'resumen', titulo: 'Resumen', icono: BarChart3, color: MARCA.azul },
+  { id: 'uso', titulo: 'Uso', icono: MapPinned, color: MARCA.verde },
+  { id: 'quien', titulo: 'Quién reserva', icono: Users, color: MARCA.naranja },
+  { id: 'aprobacion', titulo: 'Aprobación', icono: ClipboardCheck, color: MARCA.rojo },
+  { id: 'espacios', titulo: 'Espacios', icono: Building, color: MARCA.cian },
 ];
 
 // 0 = domingo, como EXTRACT(DOW).
@@ -251,7 +252,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
       <Seccion
         id="resumen"
         icono={BarChart3}
-        color="#184897"
+        color={MARCA.azul}
         titulo="Resumen"
         descripcion={`Cuántas reservas hubo y cómo terminaron, contra ${comparacion === 'anio' ? 'las mismas fechas del año pasado' : 'el período anterior del mismo largo'}.`}
         destacados={[
@@ -339,7 +340,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           <PanelEstadistica
             title="Cómo evolucionó"
             count={periodoLabel.toLowerCase()}
-            accentColor="#184897"
+            accentColor={MARCA.azul}
             className="lg:col-span-2"
             explicacion={EXPLICACIONES.evolucion}
           >
@@ -354,7 +355,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           <PanelEstadistica
             title="Cómo terminaron"
             count={`${actual.total.toLocaleString('es-UY')} reservas`}
-            accentColor="#86bb4c"
+            accentColor={MARCA.verde}
             centrar
             explicacion={EXPLICACIONES.terminaron}
           >
@@ -362,7 +363,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           </PanelEstadistica>
         </div>
 
-        <Panel title="En pocas palabras" count="resumen con IA" accentColor="#F6CA21">
+        <Panel title="En pocas palabras" count="resumen con IA" accentColor={MARCA.amarillo}>
           <ResumenIA
             resumen={resumen}
             periodoTexto={periodoTexto}
@@ -375,7 +376,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
       <Seccion
         id="uso"
         icono={MapPinned}
-        color="#86bb4c"
+        color={MARCA.verde}
         titulo="Uso"
         descripcion="Cuándo y dónde se concentran las reservas aprobadas, y a qué hora se llena cada tipo de espacio."
         destacados={[
@@ -389,23 +390,23 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           <PanelEstadistica
             title="Día por día"
             count="reservas aprobadas de cada día"
-            accentColor="#184897"
+            accentColor={MARCA.azul}
             className="lg:col-span-2"
             centrar
             explicacion={EXPLICACIONES.calendario}
           >
             <CalendarioCalor dias={diario.map((p) => ({ fecha: p.periodo, valor: p.aprobadas }))} unidad="reservas aprobadas" />
           </PanelEstadistica>
-          <PanelEstadistica title="Forma de la semana" count="peso de cada día" accentColor="#00c7ff" centrar explicacion={EXPLICACIONES.semana}>
+          <PanelEstadistica title="Forma de la semana" count="peso de cada día" accentColor={MARCA.cian} centrar explicacion={EXPLICACIONES.semana}>
             {(grande) => <RadarSemana dias={semana(heatmap)} alto={grande ? 440 : 230} />}
           </PanelEstadistica>
         </div>
 
-        <PanelEstadistica title="Día y hora" count="reservas aprobadas por hora de inicio" accentColor="#184897" explicacion={EXPLICACIONES.diaHora}>
+        <PanelEstadistica title="Día y hora" count="reservas aprobadas por hora de inicio" accentColor={MARCA.azul} explicacion={EXPLICACIONES.diaHora}>
           <MapaDeCalor celdas={heatmap} />
         </PanelEstadistica>
 
-        <PanelEstadistica title="Saturación por tipo y hora" count="lunes a viernes · % de espacios del tipo ocupados" accentColor="#00c7ff" explicacion={EXPLICACIONES.saturacion}>
+        <PanelEstadistica title="Saturación por tipo y hora" count="lunes a viernes · % de espacios del tipo ocupados" accentColor={MARCA.cian} explicacion={EXPLICACIONES.saturacion}>
           {espacios ? <Saturacion celdas={espacios.saturacion} /> : <Vacio texto="No se pudo cargar la saturación. Probá actualizar." />}
         </PanelEstadistica>
 
@@ -413,7 +414,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           <PanelEstadistica
             title="Dónde se reserva"
             count={`${actual.espaciosUsados} de ${resumen.espaciosTotal} espacios · tamaño = horas, color = ocupación`}
-            accentColor="#86bb4c"
+            accentColor={MARCA.verde}
             action={{ label: 'espacios', to: '/rooms' }}
             className="lg:col-span-2"
             explicacion={EXPLICACIONES.ocupacion}
@@ -433,10 +434,10 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           </PanelEstadistica>
           {/* Dos filas iguales que suman el alto del mapa de al lado. */}
           <div className="grid gap-3 lg:grid-rows-2">
-            <PanelEstadistica title="Por edificio" count="reservas aprobadas" accentColor="#184897" centrar explicacion={EXPLICACIONES.edificio}>
+            <PanelEstadistica title="Por edificio" count="reservas aprobadas" accentColor={MARCA.azul} centrar explicacion={EXPLICACIONES.edificio}>
               {(grande) => <DonaEdificios filas={edificios} tamano={grande ? 240 : 124} onFiltrar={porEdificio} />}
             </PanelEstadistica>
-            <PanelEstadistica title="Menos usados" count="los que más margen tienen" accentColor="#DE7A27" centrar explicacion={EXPLICACIONES.menosUsados}>
+            <PanelEstadistica title="Menos usados" count="los que más margen tienen" accentColor={MARCA.naranja} centrar explicacion={EXPLICACIONES.menosUsados}>
               {(grande) => <MenosUsados filas={ocupacion} cantidad={grande ? 13 : 5} onFiltrar={porEspacio} />}
             </PanelEstadistica>
           </div>
@@ -446,7 +447,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
       <Seccion
         id="quien"
         icono={Users}
-        color="#DE7A27"
+        color={MARCA.naranja}
         titulo="Quién reserva"
         descripcion="Qué carreras y qué personas piden más espacios, y cuánto cancelan."
         destacados={[
@@ -458,7 +459,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           <PanelEstadistica
             title="Volumen contra cancelación"
             count="cada burbuja es una carrera · tamaño = cancelaciones tardías"
-            accentColor="#DE7A27"
+            accentColor={MARCA.naranja}
             className="lg:col-span-2"
             explicacion={EXPLICACIONES.burbujas}
           >
@@ -470,13 +471,13 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
         </div>
         {/* Alto fijo en escritorio: las dos tablas scrollean por dentro y quedan parejas. */}
         <div className="grid gap-3 lg:h-[500px] lg:grid-cols-2">
-          <PanelEstadistica title="Por carrera" count="marca si cancela más del 15%" accentColor="#DE7A27" scroll explicacion={EXPLICACIONES.carrera}>
+          <PanelEstadistica title="Por carrera" count="marca si cancela más del 15%" accentColor={MARCA.naranja} scroll explicacion={EXPLICACIONES.carrera}>
             <PorCarrera filas={carreras} onFiltrar={porCarrera} />
           </PanelEstadistica>
           <PanelEstadistica
             title="Quiénes más reservan"
             count={`top 10 de ${actual.usuarios.toLocaleString('es-UY')} personas`}
-            accentColor="#F6CA21"
+            accentColor={MARCA.amarillo}
             scroll
             explicacion={EXPLICACIONES.quienes}
           >
@@ -484,7 +485,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
           </PanelEstadistica>
         </div>
         <div className="grid gap-3 lg:h-[420px] lg:grid-cols-3">
-          <PanelEstadistica title="Eventos externos" count={externos ? `${entero(externos.total)} en el período` : undefined} accentColor="#DE7A27" centrar explicacion={EXPLICACIONES.externosResumen}>
+          <PanelEstadistica title="Eventos externos" count={externos ? `${entero(externos.total)} en el período` : undefined} accentColor={MARCA.naranja} centrar explicacion={EXPLICACIONES.externosResumen}>
             {(grande) => (externos ? <ResumenExternos datos={externos} grande={grande} /> : <Vacio texto="No se pudieron cargar los externos. Probá actualizar." />)}
           </PanelEstadistica>
           <PanelEstadistica
@@ -503,7 +504,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
       <Seccion
         id="aprobacion"
         icono={ClipboardCheck}
-        color="#DF2B31"
+        color={MARCA.rojo}
         titulo="Aprobación"
         descripcion="Cuánto se tarda en responder, quién tiene la carga y qué queda esperando."
         destacados={
@@ -522,16 +523,16 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
               <PanelEstadistica
                 title="Tiempo de respuesta"
                 count={`${entero(aprobacion.respuesta.conDato)} respondidas`}
-                accentColor="#DF2B31"
+                accentColor={MARCA.rojo}
                 centrar
                 explicacion={EXPLICACIONES.respuesta}
               >
                 {(grande) => <RespuestaKpis datos={aprobacion.respuesta} grande={grande} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Cuánto se tarda" count="respuestas por tramo" accentColor="#F6CA21" centrar explicacion={EXPLICACIONES.histogramaRespuesta}>
+              <PanelEstadistica title="Cuánto se tarda" count="respuestas por tramo" accentColor={MARCA.amarillo} centrar explicacion={EXPLICACIONES.histogramaRespuesta}>
                 {(grande) => <HistogramaRespuesta tramos={aprobacion.distribucionRespuesta} alto={grande ? 360 : 220} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Esperando respuesta" count={`${entero(pendientesTotal)} pendientes`} accentColor="#DE7A27" centrar explicacion={EXPLICACIONES.pendientesAntiguedad}>
+              <PanelEstadistica title="Esperando respuesta" count={`${entero(pendientesTotal)} pendientes`} accentColor={MARCA.naranja} centrar explicacion={EXPLICACIONES.pendientesAntiguedad}>
                 {(grande) => <PendientesAntiguedad tramos={aprobacion.pendientesPorAntiguedad} alto={grande ? 360 : 200} />}
               </PanelEstadistica>
             </div>
@@ -539,14 +540,14 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
               <PanelEstadistica
                 title="Por analista"
                 count={`${aprobacion.analistas.length} con reservas asignadas`}
-                accentColor="#DF2B31"
+                accentColor={MARCA.rojo}
                 className="lg:col-span-3"
                 scroll
                 explicacion={EXPLICACIONES.analistas}
               >
                 <Analistas filas={aprobacion.analistas} />
               </PanelEstadistica>
-              <PanelEstadistica title="Según la antelación" count="cómo terminan por días de aviso" accentColor="#184897" className="lg:col-span-2" centrar explicacion={EXPLICACIONES.antelacion}>
+              <PanelEstadistica title="Según la antelación" count="cómo terminan por días de aviso" accentColor={MARCA.azul} className="lg:col-span-2" centrar explicacion={EXPLICACIONES.antelacion}>
                 <Antelacion tramos={aprobacion.antelacion} />
               </PanelEstadistica>
             </div>
@@ -559,7 +560,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
       <Seccion
         id="espacios"
         icono={Building}
-        color="#00c7ff"
+        color={MARCA.cian}
         titulo="Espacios y capacidad"
         descripcion="Si el tamaño de cada espacio acompaña lo que se hace en él."
         destacados={
@@ -578,7 +579,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
               <PanelEstadistica
                 title="Capacidad contra ocupación"
                 count="cada burbuja es un espacio · tamaño = reservas"
-                accentColor="#00c7ff"
+                accentColor={MARCA.cian}
                 className="lg:col-span-3"
                 explicacion={EXPLICACIONES.capacidadOcupacion}
               >
@@ -587,7 +588,7 @@ export default function EstadisticasReservas({ rango, periodoLabel }: Readonly<{
               <PanelEstadistica
                 title="Uso de la capacidad"
                 count="tutorías y eventos contra el tamaño del espacio"
-                accentColor="#DE7A27"
+                accentColor={MARCA.naranja}
                 className="lg:col-span-2"
                 scroll
                 explicacion={EXPLICACIONES.usoCapacidad}

@@ -38,9 +38,9 @@ import {
 } from './_shared/ReservationFormSections';
 
 function getPuntajeBadgeClass(puntaje: number): string {
-  if (puntaje >= 0.8) return 'bg-emerald-100 text-emerald-700';
-  if (puntaje >= 0.6) return 'bg-blue-100 text-blue-700';
-  return 'bg-amber-100 text-amber-700';
+  if (puntaje >= 0.8) return 'bg-success-suave text-success-texto';
+  if (puntaje >= 0.6) return 'bg-info-suave text-info-texto';
+  return 'bg-warning-suave text-warning-texto';
 }
 
 // Carga espacios disponibles y los convierte a recomendaciones; null si no hay
@@ -113,7 +113,7 @@ function RecomendacionEspacioCard({ rec, onSelect }: Readonly<RecomendacionEspac
                 <span>{rec.capacidad}</span>
               </div>
               {rec.disponible && (
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                <Badge variant="outline" className="bg-success-suave text-success-texto border-success-borde text-[10px] px-1.5 py-0.5 h-5">
                   Disponible
                 </Badge>
               )}
@@ -171,7 +171,7 @@ function RecomendacionesGeneralesPanel({
   }
   return (
     <div className="text-center py-8 text-sm text-muted-foreground">
-      <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+      <Sparkles className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
       <p>Completa el formulario para ver recomendaciones</p>
     </div>
   );
@@ -432,7 +432,7 @@ export default function ReservationFormDialog({
       <DialogContent className="!grid-cols-1 w-[95vw] max-w-[1400px] lg:max-w-[1400px] !p-0 !gap-0 max-h-[90vh] !flex !flex-col overflow-hidden">
         <form onSubmit={onFormSubmit} className="flex flex-col h-full min-h-0">
           {/* Header compacto */}
-          <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 px-4 sm:px-6 pt-4 pb-3 flex-shrink-0">
+          <div className="relative bg-gradient-to-br from-info to-info px-4 sm:px-6 pt-4 pb-3 flex-shrink-0">
             <div className="flex items-center gap-3 mb-2">
               <p className="text-xs font-medium text-white/90">NUEVA RESERVA</p>
               <div className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
@@ -510,16 +510,16 @@ export default function ReservationFormDialog({
 
               {/* Indicador de reserva pública - solo para externos */}
               {!canViewRecommendations && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="bg-info-suave border border-info-borde rounded-lg p-3 mb-4">
                   <div className="flex items-start gap-2">
-                    <div className="text-blue-600 mt-0.5">
+                    <div className="text-info-texto mt-0.5">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-blue-900">Reserva Pública</p>
-                      <p className="text-xs text-blue-700 mt-1">
+                      <p className="text-sm font-medium text-info-texto">Reserva Pública</p>
+                      <p className="text-xs text-info-texto mt-1">
                         Tu solicitud de reserva será pública y visible para todos los usuarios del sistema.
                         Un analista revisará y aprobará tu solicitud.
                       </p>
@@ -688,7 +688,7 @@ export default function ReservationFormDialog({
                 Cancelar
               </Button>
               <PermissionGuard requiredPermissions={['reserva:crear']}>
-                <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-info hover:bg-info">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {submitLabel}
                 </Button>

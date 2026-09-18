@@ -30,8 +30,8 @@ export function AvatarInitials({ name, email, size = 'md', className }: Readonly
       'bg-utec-cyan text-white',
       'bg-utec-orange text-white',
       'bg-utec-red text-white',
-      'bg-slate-700 text-white',
-      'bg-indigo-600 text-white',
+      'bg-chrome text-white',
+      'bg-info text-white',
     ];
 
     let hash = 0;

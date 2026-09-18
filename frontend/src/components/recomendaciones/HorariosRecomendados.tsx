@@ -97,7 +97,7 @@ export function HorariosRecomendados(props: Readonly<HorariosRecomendadosProps>)
               aria-pressed={isSelected}
               className={cn(
                 "h-auto py-2 px-3 flex flex-col items-start justify-center cursor-pointer",
-                isSelected ? "bg-emerald-600 text-white border-emerald-600" : "bg-card text-muted-foreground"
+                isSelected ? "bg-success text-white border-success" : "bg-card text-muted-foreground"
               )}
               onClick={(e) => {
                 // No prevenir eventos por defecto para mantener accesibilidad; solo stopPropagation
@@ -116,7 +116,7 @@ export function HorariosRecomendados(props: Readonly<HorariosRecomendadosProps>)
                   {inicioDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - {finDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 {horario.disponible && (
-                  <CheckCircle className={cn("h-3 w-3 ml-auto", isSelected ? "text-white" : "text-emerald-600")} />
+                  <CheckCircle className={cn("h-3 w-3 ml-auto", isSelected ? "text-white" : "text-success-texto")} />
                 )}
               </div>
               {horario.puntaje > 0.7 && (

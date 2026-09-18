@@ -68,7 +68,7 @@ export function DeleteEventoDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-danger hover:bg-danger">
             {loading && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
             Eliminar
           </AlertDialogAction>

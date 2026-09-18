@@ -191,7 +191,7 @@ export default function ReservationPendientes({
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <Hourglass className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 shrink-0" />
+              <Hourglass className="h-4 w-4 sm:h-5 sm:w-5 text-warning-texto shrink-0" />
               <CardTitle className="text-sm sm:text-base truncate">
                 Pendientes
                 {totalElements > 0 && (
@@ -221,7 +221,7 @@ export default function ReservationPendientes({
             {!loading && (
               <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-lg hover:bg-muted transition-colors">
                 <div className="text-muted-foreground mb-0.5 sm:mb-1">
-                  <Hourglass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-600" />
+                  <Hourglass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-warning-texto" />
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-center leading-tight truncate w-full">
                   {totalElements}
@@ -252,7 +252,7 @@ export default function ReservationPendientes({
                     onClick={() => setOnlyUrgent((prev) => !prev)}
                     aria-label="Solo urgentes"
                     aria-pressed={onlyUrgent}
-                    className={`h-8 w-8 flex-shrink-0 ${onlyUrgent ? 'bg-red-600 hover:bg-red-700 text-white' : ''}`}
+                    className={`h-8 w-8 flex-shrink-0 ${onlyUrgent ? 'bg-danger hover:bg-danger text-white' : ''}`}
                   >
                     <Flame className="h-4 w-4" />
                   </Button>
@@ -265,7 +265,7 @@ export default function ReservationPendientes({
             if (loading) {
               return (
                 <div className="text-center py-6 sm:py-8">
-                  <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-yellow-600"></div>
+                  <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-warning"></div>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-2">Cargando solicitudes...</p>
                 </div>
               );
@@ -292,7 +292,7 @@ export default function ReservationPendientes({
               }
               return (
                 <div className="text-center py-6 sm:py-8 bg-muted rounded-lg border border-border px-2">
-                  <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />
+                  <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-success mx-auto mb-2 sm:mb-3" />
                   <p className="text-xs sm:text-sm font-medium text-foreground/80">No hay solicitudes pendientes</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Todas las reservas están procesadas</p>
                 </div>
@@ -329,8 +329,8 @@ export default function ReservationPendientes({
                           <span
                             className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0 ${
                               isAltaUrgencia
-                                ? 'bg-red-50 text-red-700 border border-red-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                ? 'bg-danger-suave text-danger-texto border border-danger-borde'
+                                : 'bg-warning-suave text-warning-texto border border-warning-borde'
                             }`}
                           >
                             <AlertTriangle className="h-2.5 w-2.5" />

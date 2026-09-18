@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { RefreshCw } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PageHeader, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
+import { MARCA } from '@/lib/design/paleta';
 
 interface SystemHeaderProps {
   /** Título y bajada de la vista actual; por defecto, los de la pantalla. */
@@ -24,7 +25,7 @@ interface SystemHeaderProps {
 export const SystemHeader = memo(function SystemHeader({
   title = 'Sistema',
   description = 'Monitoreo en tiempo real del servidor.',
-  accentColor = '#00c7ff',
+  accentColor = MARCA.cian,
   extraActions,
   hasConnectionError,
   autoRefresh,

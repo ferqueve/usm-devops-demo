@@ -318,7 +318,7 @@ export default function ReservationForm({
             Cancelar
           </Button>
           <PermissionGuard requiredPermissions={['reserva:crear']}>
-            <Button type="submit" disabled={loading || !isFormValid} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" disabled={loading || !isFormValid} className="bg-info hover:bg-info">
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {needsAnalystAssignment ? 'Enviar Solicitud' : 'Crear Reserva'}
             </Button>

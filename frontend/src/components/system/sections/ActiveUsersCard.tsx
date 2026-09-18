@@ -9,12 +9,12 @@ interface ActiveUsersCardProps {
 }
 
 const ROLE_BADGE_COLOR: Record<string, string> = {
-  ADMIN: 'bg-purple-100 text-purple-800 border-purple-200',
-  ANALISTA: 'bg-blue-100 text-blue-800 border-blue-200',
-  DOCENTE: 'bg-green-100 text-green-800 border-green-200',
+  ADMIN: 'bg-acento-suave text-acento-texto border-acento-borde',
+  ANALISTA: 'bg-info-suave text-info-texto border-info-borde',
+  DOCENTE: 'bg-success-suave text-success-texto border-success-borde',
   ESTUDIANTE: 'bg-muted text-foreground border-border',
-  EXTERNO: 'bg-orange-100 text-orange-800 border-orange-200',
-  MANTENIMIENTO: 'bg-amber-100 text-amber-800 border-amber-200',
+  EXTERNO: 'bg-warning-suave text-warning-texto border-warning-borde',
+  MANTENIMIENTO: 'bg-warning-suave text-warning-texto border-warning-borde',
 };
 
 function getRelativeTime(lastActivity: string): string {

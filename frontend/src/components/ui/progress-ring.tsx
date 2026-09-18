@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils/helpers';
+import { MARCA } from '@/lib/design/paleta';
 
 interface ProgressRingProps {
   progress: number; // 0-100
@@ -17,7 +18,7 @@ export function ProgressRing({
   progress,
   size = 120,
   strokeWidth = 8,
-  color = '#86bb4c',
+  color = MARCA.verde,
   backgroundColor = '#e5e7eb',
   showLabel = true,
   className,

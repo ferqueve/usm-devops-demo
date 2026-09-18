@@ -1,19 +1,20 @@
 import { Link } from 'react-router-dom';
 import { BarChart3, CalendarPlus, ChevronRight, DoorOpen, GraduationCap, Leaf, TrendingUp } from 'lucide-react';
 import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 const LUGARES = [
-  { href: '/statistics?tab=reservas', label: 'Estadísticas', detalle: 'resumen del período', icon: BarChart3, color: '#184897' },
-  { href: '/predicciones?tab=reservas', label: 'Predicciones', detalle: 'lectura de cada modelo', icon: TrendingUp, color: '#DE7A27' },
-  { href: '/rooms', label: 'Espacios', detalle: 'búsqueda por descripción', icon: DoorOpen, color: '#00c7ff' },
+  { href: '/statistics?tab=reservas', label: 'Estadísticas', detalle: 'resumen del período', icon: BarChart3, color: MARCA.azul },
+  { href: '/predicciones?tab=reservas', label: 'Predicciones', detalle: 'lectura de cada modelo', icon: TrendingUp, color: MARCA.naranja },
+  { href: '/rooms', label: 'Espacios', detalle: 'búsqueda por descripción', icon: DoorOpen, color: MARCA.cian },
   { href: '/materias', label: 'Materias', detalle: 'resumen de temarios', icon: GraduationCap, color: '#9333ea' },
-  { href: '/eventos', label: 'Eventos', detalle: 'redacta el evento', icon: CalendarPlus, color: '#F6CA21' },
-  { href: '/sostenibilidad', label: 'Sostenibilidad', detalle: 'impacto explicado', icon: Leaf, color: '#86bb4c' },
+  { href: '/eventos', label: 'Eventos', detalle: 'redacta el evento', icon: CalendarPlus, color: MARCA.amarillo },
+  { href: '/sostenibilidad', label: 'Sostenibilidad', detalle: 'impacto explicado', icon: Leaf, color: MARCA.verde },
 ];
 
 export function IaEnPantallas() {
   return (
-    <Panel title="También en" count="otras pantallas" accentColor="#F6CA21" flush className="shrink-0">
+    <Panel title="También en" count="otras pantallas" accentColor={MARCA.amarillo} flush className="shrink-0">
       <div className="divide-y divide-border/60">
         {LUGARES.map((l) => (
           <Link

@@ -269,7 +269,7 @@ export function RegisterForm({
                 >
                   Términos y Condiciones
                 </button>
-                <span className="text-red-500">*</span>
+                <span className="text-danger">*</span>
               </Label>
             </div>
           </div>
@@ -294,7 +294,7 @@ export function RegisterForm({
                 >
                   Política de Privacidad
                 </button>
-                <span className="text-red-500">*</span>
+                <span className="text-danger">*</span>
               </Label>
             </div>
           </div>

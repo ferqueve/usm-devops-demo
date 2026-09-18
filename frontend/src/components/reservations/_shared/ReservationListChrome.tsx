@@ -25,7 +25,7 @@ export interface ViewModeToggleProps {
 export function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewModeToggleProps>) {
   const buttonClass = (active: boolean) =>
     `p-1.5 rounded transition-colors ${active
-      ? 'bg-card text-foreground shadow-md ring-1 ring-gray-300'
+      ? 'bg-card text-foreground shadow-md ring-1 ring-border'
       : 'text-muted-foreground hover:text-foreground/80'}`;
 
   return (
@@ -72,11 +72,11 @@ export function FullScreenToggle({ isFullScreen, onToggle }: Readonly<FullScreen
           <button
             onClick={onToggle}
             className={`p-1.5 rounded transition-colors ${isFullScreen
-              ? 'bg-card text-foreground shadow-md ring-1 ring-gray-300'
+              ? 'bg-card text-foreground shadow-md ring-1 ring-border'
               : 'text-muted-foreground hover:text-foreground/80'}`}
           >
             {isFullScreen ? (
-              <Minimize2 className="h-3.5 w-3.5 text-blue-600" />
+              <Minimize2 className="h-3.5 w-3.5 text-info-texto" />
             ) : (
               <Maximize2 className="h-3.5 w-3.5" />
             )}

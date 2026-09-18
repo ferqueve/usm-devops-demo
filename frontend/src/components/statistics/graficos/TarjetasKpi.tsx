@@ -2,16 +2,17 @@ import { useId } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { TrendingDown, TrendingUp } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 type Fondo = 'dark' | 'green' | 'yellow' | 'red' | 'blue' | 'cyan' | 'orange';
 
 const FONDOS: Record<Fondo, { bg: string; texto: string; tenue: string; trazo: string }> = {
   dark: { bg: 'bg-chrome', texto: 'text-white', tenue: 'text-white/60', trazo: '#ffffff' },
   green: { bg: 'bg-utec-green', texto: 'text-white', tenue: 'text-white/80', trazo: '#ffffff' },
-  yellow: { bg: 'bg-utec-yellow', texto: 'text-utec-dark', tenue: 'text-utec-dark/70', trazo: '#343a40' },
+  yellow: { bg: 'bg-utec-yellow', texto: 'text-utec-dark', tenue: 'text-utec-dark/70', trazo: MARCA.oscuro },
   red: { bg: 'bg-utec-red', texto: 'text-white', tenue: 'text-white/80', trazo: '#ffffff' },
   blue: { bg: 'bg-utec-blue', texto: 'text-white', tenue: 'text-white/75', trazo: '#ffffff' },
-  cyan: { bg: 'bg-utec-cyan', texto: 'text-utec-dark', tenue: 'text-utec-dark/70', trazo: '#343a40' },
+  cyan: { bg: 'bg-utec-cyan', texto: 'text-utec-dark', tenue: 'text-utec-dark/70', trazo: MARCA.oscuro },
   orange: { bg: 'bg-utec-orange', texto: 'text-white', tenue: 'text-white/80', trazo: '#ffffff' },
 };
 

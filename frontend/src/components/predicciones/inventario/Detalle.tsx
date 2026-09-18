@@ -18,6 +18,7 @@ import { mezclar, useTemaGraficos } from '@/components/statistics/graficos/tema'
 import { useColores } from '../colores';
 import { decimal, entero, fechaConDia, fechaCorta, fechaLarga, porcentaje01, SVG_LLENO } from '../formato';
 import { estiloRiesgo } from './estilos';
+import { MARCA } from '@/lib/design/paleta';
 
 /** Chips para elegir el tipo; el punto de color es su riesgo. */
 export function SelectorTipos({ tipos, elegido, onElegir }: Readonly<{
@@ -68,7 +69,7 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
       <p className="mb-1.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <Renglon color={colores.prediccion} etiqueta="Pico esperado" valor={decimal(p.prediccion)} extra={p.bandaInferior != null && p.bandaSuperior != null ? `${entero(p.bandaInferior)}–${entero(p.bandaSuperior)}` : undefined} />
       <Renglon color={colores.reservadas} etiqueta="Ya pedidas" valor={entero(p.comprometidas)} />
-      <Renglon color="#DF2B31" etiqueta="Prob. de faltante" valor={porcentaje01(p.probFaltante)} />
+      <Renglon color={MARCA.rojo} etiqueta="Prob. de faltante" valor={porcentaje01(p.probFaltante)} />
     </div>
   );
 }

@@ -81,6 +81,7 @@ import {
   ClearFiltersButton,
 } from '@/components/ui/compact-filter';
 import { toast } from 'sonner';
+import { MARCA } from '@/lib/design/paleta';
 
 // Componente para mostrar el icono del proveedor
 const ProviderIcon = ({ provider }: { provider?: string }) => {
@@ -446,7 +447,7 @@ export default function UserManagement() {
         title="Usuarios"
         count={totalElements}
         description="Cuentas del sistema, sus roles y su estado."
-        accentColor="#184897"
+        accentColor={MARCA.azul}
         actions={
           <>
             <Tooltip>
@@ -510,8 +511,8 @@ export default function UserManagement() {
                 onChange={(v) => handleRoleFilter(v ?? '')}
                 Icon={UserCog}
                 tooltipNone="Todos los roles"
-                activeBgClass="bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300"
-                activeTextColorClass="text-indigo-700"
+                activeBgClass="bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde"
+                activeTextColorClass="text-info-texto"
               />
               <EnumFilterSection
                 value={filters.verificado === undefined ? null : (filters.verificado ? 'true' : 'false')}
@@ -521,15 +522,15 @@ export default function UserManagement() {
                     value: 'true',
                     tooltip: 'Verificados',
                     Icon: CheckCircle2,
-                    activeColorClass: 'text-green-600',
-                    inactiveColorClass: 'text-green-500',
+                    activeColorClass: 'text-success-texto',
+                    inactiveColorClass: 'text-success',
                   },
                   {
                     value: 'false',
                     tooltip: 'Sin verificar',
                     Icon: Hourglass,
-                    activeColorClass: 'text-amber-600',
-                    inactiveColorClass: 'text-amber-500',
+                    activeColorClass: 'text-warning-texto',
+                    inactiveColorClass: 'text-warning',
                   },
                 ]}
                 onChange={(v) => handleVerificadoFilter(v ?? '')}
@@ -542,15 +543,15 @@ export default function UserManagement() {
                     value: 'true',
                     tooltip: 'Activos',
                     Icon: CheckCircle2,
-                    activeColorClass: 'text-green-600',
-                    inactiveColorClass: 'text-green-500',
+                    activeColorClass: 'text-success-texto',
+                    inactiveColorClass: 'text-success',
                   },
                   {
                     value: 'false',
                     tooltip: 'Inactivos',
                     Icon: XCircle,
-                    activeColorClass: 'text-red-600',
-                    inactiveColorClass: 'text-red-500',
+                    activeColorClass: 'text-danger-texto',
+                    inactiveColorClass: 'text-danger',
                   },
                 ]}
                 onChange={(v) => handleActivoFilter(v ?? '')}

@@ -13,6 +13,7 @@ import ReservationFormDialog from '@/components/reservations/ReservationFormDial
 import { Button } from '@/components/ui/Button';
 import { PageHeader, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { Plus } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 interface EspacioOption {
   id: number;
@@ -182,7 +183,7 @@ export default function Calendar() {
       <PageHeader
         title="Calendario"
         description={isExterno ? 'Las reservas públicas del sistema.' : 'Todas las reservas del sistema, por día y por espacio.'}
-        accentColor="#184897"
+        accentColor={MARCA.azul}
         actions={
           isExterno ? (
             <Button onClick={handleCreateReserva} className={HEADER_PRIMARY}>

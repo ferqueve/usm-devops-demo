@@ -70,7 +70,7 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
-          {error && <p className="text-xs text-red-600">Error: {error}</p>}
+          {error && <p className="text-xs text-danger-texto">Error: {error}</p>}
           {resultados && resultados.length === 0 && (
             <p className="text-xs text-muted-foreground">Sin coincidencias.</p>
           )}

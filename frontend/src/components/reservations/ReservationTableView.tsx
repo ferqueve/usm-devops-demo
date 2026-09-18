@@ -92,7 +92,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
   const EstadoIcon = estadoConfig.icon;
 
   return (
-    <TableRow className={`hover:bg-gray-50/50 ${esPasada ? 'opacity-75' : ''}`}>
+    <TableRow className={`hover:bg-muted/50 ${esPasada ? 'opacity-75' : ''}`}>
       <TableCell className="py-2 relative">
         <div className={`absolute top-0 left-0 w-0 h-0 ${estadoConfig.cornerBorderColor} border-r-transparent border-r-[12px] border-t-[12px] pointer-events-none`} />
         <div className="min-w-0">
@@ -176,7 +176,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onCancelReserva(reserva)}
-                    className="p-1.5 rounded transition-colors text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="p-1.5 rounded transition-colors text-danger-texto hover:text-danger-texto hover:bg-danger-suave"
                   >
                     <X className="h-4 w-4" />
                   </button>

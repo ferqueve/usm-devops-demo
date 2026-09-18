@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Panel } from '@/components/dashboard/views/_components/Panel';
+import { MARCA } from '@/lib/design/paleta';
 import {
   postAnalyzeForecast, postExplainRecomendacion, postReindexEmbeddings, postStatsSummary,
 } from '@/lib/api/ai';
@@ -27,7 +28,7 @@ const PRUEBAS: Prueba[] = [
     endpoint: 'POST /ai/insights/stats-summary',
     descripcion: 'Resumen ejecutivo de un período.',
     icon: FileText,
-    color: '#184897',
+    color: MARCA.azul,
     correr: async () => {
       const r = await postStatsSummary({
         periodo: 'últimos 30 días',
@@ -45,7 +46,7 @@ const PRUEBAS: Prueba[] = [
     endpoint: 'POST /ai/insights/explain-recomendacion',
     descripcion: 'Humaniza la razón del recomendador.',
     icon: Lightbulb,
-    color: '#F6CA21',
+    color: MARCA.amarillo,
     correr: async () => {
       const r = await postExplainRecomendacion({
         recomendacion: {
@@ -171,7 +172,7 @@ function Reindexar() {
   return (
     <Tarjeta
       icon={DatabaseZap}
-      color="#00c7ff"
+      color={MARCA.cian}
       titulo="Reindexar embeddings"
       endpoint="POST /ai/admin/reindex-embeddings"
       descripcion="Recalcula los vectores de todos los espacios para la búsqueda."

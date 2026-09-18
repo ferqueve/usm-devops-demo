@@ -19,9 +19,9 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
   const [aiError, setAiError] = useState<string | null>(null);
 
   const getPuntajeColor = (puntaje: number) => {
-    if (puntaje >= 0.8) return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    if (puntaje >= 0.6) return "bg-blue-50 text-blue-700 border-blue-200";
-    if (puntaje >= 0.4) return "bg-amber-50 text-amber-700 border-amber-200";
+    if (puntaje >= 0.8) return "bg-success-suave text-success-texto border-success-borde";
+    if (puntaje >= 0.6) return "bg-info-suave text-info-texto border-info-borde";
+    if (puntaje >= 0.4) return "bg-warning-suave text-warning-texto border-warning-borde";
     return "bg-muted text-foreground/80 border-border";
   };
 
@@ -86,7 +86,7 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
           </div>
         )}
         {aiError && (
-          <p className="text-xs text-red-600">Error IA: {aiError}</p>
+          <p className="text-xs text-danger-texto">Error IA: {aiError}</p>
         )}
         <Button
           variant="ghost"

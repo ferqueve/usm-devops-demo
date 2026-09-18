@@ -49,26 +49,26 @@ const estadoConfig: Record<
   PENDIENTE: {
     label: "Pendiente",
     icon: Hourglass,
-    activeClass: "text-amber-600",
-    inactiveClass: "text-amber-500",
+    activeClass: "text-warning-texto",
+    inactiveClass: "text-warning",
   },
   APROBADO: {
     label: "Aprobado",
     icon: CheckCircle2,
-    activeClass: "text-emerald-600",
-    inactiveClass: "text-emerald-500",
+    activeClass: "text-success-texto",
+    inactiveClass: "text-success",
   },
   ENTREGADO: {
     label: "Entregado",
     icon: PackageCheck,
-    activeClass: "text-blue-600",
-    inactiveClass: "text-blue-500",
+    activeClass: "text-info-texto",
+    inactiveClass: "text-info",
   },
   RECHAZADO: {
     label: "Rechazado",
     icon: XCircle,
-    activeClass: "text-rose-600",
-    inactiveClass: "text-rose-500",
+    activeClass: "text-danger-texto",
+    inactiveClass: "text-danger",
   },
 };
 
@@ -97,9 +97,9 @@ interface InventoryRequestFiltersProps {
 }
 
 const highlightClass =
-  "bg-card text-foreground shadow-md ring-1 ring-gray-300 hover:text-foreground";
+  "bg-card text-foreground shadow-md ring-1 ring-border hover:text-foreground";
 const defaultButtonClass =
-  "text-muted-foreground hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40";
+  "text-muted-foreground hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info/40";
 
 const formatShortDate = (date?: Date) =>
   date ? format(date, "d MMM", { locale: es }) : "";
@@ -114,9 +114,9 @@ interface SearchInputProps {
 function SearchInput({ searchValue, activeSearch, onSearchChange, onSearchClear }: Readonly<SearchInputProps>) {
   const wrapperClass = cn(
     "flex items-center gap-1.5 rounded-md bg-card px-1.5 py-1 transition-colors shadow-xs",
-    activeSearch ? "ring-1 ring-blue-500/40" : ""
+    activeSearch ? "ring-1 ring-info/40" : ""
   );
-  const iconClass = cn("h-3.5 w-3.5 shrink-0", activeSearch ? "text-blue-600" : "text-muted-foreground");
+  const iconClass = cn("h-3.5 w-3.5 shrink-0", activeSearch ? "text-info-texto" : "text-muted-foreground");
   return (
     <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <div className={wrapperClass}>
@@ -156,7 +156,7 @@ function DateRangeButton({ date, otherDate, isStart, onChange, Icon, tooltipFall
     "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
     date ? highlightClass : defaultButtonClass
   );
-  const iconClass = cn("h-3.5 w-3.5 shrink-0", date ? "text-blue-600" : "text-muted-foreground");
+  const iconClass = cn("h-3.5 w-3.5 shrink-0", date ? "text-info-texto" : "text-muted-foreground");
   const disabledChecker = (candidate: Date) => {
     if (!otherDate) return false;
     const limit = new Date(otherDate);
@@ -305,9 +305,9 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
   );
   const triggerClass = cn(
     "flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors",
-    isAll ? defaultButtonClass : "bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
+    isAll ? defaultButtonClass : "bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde"
   );
-  const iconClass = cn("h-3.5 w-3.5", isAll ? "text-muted-foreground" : "text-blue-700");
+  const iconClass = cn("h-3.5 w-3.5", isAll ? "text-muted-foreground" : "text-info-texto");
   const selectedNombre = isAll
     ? null
     : espacios.find((espacio) => espacio.id === selectedEspacio)?.nombre ?? "Espacio seleccionado";
@@ -430,7 +430,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
           <PopoverTrigger asChild>
             <TooltipTrigger asChild>
               <button type="button" className={triggerClass}>
-                <ListFilter className="h-3.5 w-3.5 text-blue-600" />
+                <ListFilter className="h-3.5 w-3.5 text-info-texto" />
                 <span className="text-[11px]">{pageSize}</span>
               </button>
             </TooltipTrigger>
@@ -443,7 +443,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
               const itemClass = cn(
                 "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                 size === pageSize
-                  ? "bg-blue-100 text-blue-900 font-medium shadow-inner"
+                  ? "bg-info-suave text-info-texto font-medium shadow-inner"
                   : "text-foreground/80 hover:bg-muted"
               );
               return (
@@ -490,7 +490,7 @@ export function InventoryRequestFilters({
             <button
               type="button"
               onClick={onClearFilters}
-              className="p-1.5 rounded bg-rose-500 text-white transition-colors hover:bg-rose-600"
+              className="p-1.5 rounded bg-danger text-white transition-colors hover:bg-danger"
             >
               <BrushCleaning className="h-3.5 w-3.5" />
             </button>

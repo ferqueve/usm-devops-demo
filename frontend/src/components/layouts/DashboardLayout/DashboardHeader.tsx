@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { HeaderNodeNetwork } from "./HeaderNodeNetwork";
 import { PAGE_ACTIONS_SLOT, PAGE_HEADER_SLOT } from "@/components/layouts/PageHeader";
+import { MARCA } from '@/lib/design/paleta';
 
 interface DashboardHeaderProps {
   title?: string;
@@ -45,7 +46,7 @@ export const DashboardHeader = memo(function DashboardHeader({
           onClick={toggleSidebar}
           className="fixed top-6 left-6 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
           style={{ 
-            backgroundColor: '#343a40',
+            backgroundColor: MARCA.oscuro,
             color: '#d1d5db',
             border: 'none'
           }}

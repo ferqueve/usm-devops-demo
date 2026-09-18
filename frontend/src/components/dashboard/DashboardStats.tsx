@@ -23,7 +23,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: `${stats.reservasHoy} eventos hoy`,
       trend: "up" as const,
       icon: Calendar,
-      color: "text-blue-600"
+      color: "text-info-texto"
     },
     {
       label: "Eventos Aprobados",
@@ -31,7 +31,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: `${stats.reservasHoy} eventos públicos hoy`,
       trend: "up" as const,
       icon: BookOpen,
-      color: "text-green-600"
+      color: "text-success-texto"
     },
     {
       label: "Mis Solicitudes Pendientes",
@@ -39,7 +39,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: "Esperando aprobación",
       trend: stats.reservasPendientes > 0 ? "neutral" as const : "up" as const,
       icon: Clock,
-      color: "text-yellow-600"
+      color: "text-warning-texto"
     },
     {
       label: "Espacios Disponibles",
@@ -47,7 +47,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: `${stats.totalEspacios} espacios totales`,
       trend: "up" as const,
       icon: Building2,
-      color: "text-purple-600"
+      color: "text-acento-texto"
     }
   ];
 
@@ -59,7 +59,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: `${stats.reservasHoy} hoy`,
       trend: "up" as const,
       icon: BookOpen,
-      color: "text-blue-600"
+      color: "text-info-texto"
     },
     {
       label: "Espacios Disponibles",
@@ -67,7 +67,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: `${stats.espaciosEnMantenimiento} en mantenimiento`,
       trend: stats.espaciosEnMantenimiento > 0 ? "neutral" as const : "up" as const,
       icon: Building2,
-      color: "text-green-600"
+      color: "text-success-texto"
     },
     {
       label: "Reservas por Espacio",
@@ -75,7 +75,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: `${stats.totalEspacios} espacios totales`,
       trend: stats.promedioReservasPorEspacio > 5 ? "up" as const : "neutral" as const,
       icon: BarChart3,
-      color: "text-purple-600"
+      color: "text-acento-texto"
     },
     {
       label: "Usuarios Activos",
@@ -83,7 +83,7 @@ export default function DashboardStats({ stats, loading = false }: Readonly<Dash
       change: stats.usuariosNuevosHoy > 0 ? `+${stats.usuariosNuevosHoy} nuevos hoy` : "Sin cambios",
       trend: stats.usuariosNuevosHoy > 0 ? "up" as const : "neutral" as const,
       icon: Users,
-      color: "text-indigo-600"
+      color: "text-info-texto"
     }
   ];
 

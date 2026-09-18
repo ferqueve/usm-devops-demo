@@ -65,7 +65,7 @@ export function DeleteTipoEspacioDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <AlertTriangle className="h-5 w-5 text-danger" />
             Desactivar Tipo de Espacio
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -86,7 +86,7 @@ export function DeleteTipoEspacioDialog({
             <AlertDialogAction
               onClick={handleDelete}
               disabled={loading}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-danger hover:bg-danger"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />

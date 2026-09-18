@@ -171,7 +171,7 @@ export function EspaciosConProblemas({ filas, onVerEstado }: Readonly<{ filas: D
               <button
                 type="button"
                 onClick={() => onVerEstado(f.espacioId)}
-                className="inline-flex shrink-0 items-center rounded-md px-1.5 py-1 text-xs font-medium text-utec-blue hover:bg-muted dark:text-sky-400"
+                className="inline-flex shrink-0 items-center rounded-md px-1.5 py-1 text-xs font-medium text-utec-blue hover:bg-muted dark:text-info"
                 title={`Ver el estado del inventario de ${f.nombre}`}
               >
                 ver estado

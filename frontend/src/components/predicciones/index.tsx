@@ -12,6 +12,7 @@ import type { Entrenamiento } from './comunes';
 import PrediccionesAcademico from './academico/PrediccionesAcademico';
 import PrediccionesInventario from './inventario/PrediccionesInventario';
 import PrediccionesReservas from './reservas/PrediccionesReservas';
+import { MARCA } from '@/lib/design/paleta';
 
 type Vista = 'reservas' | 'inventario' | 'academico';
 
@@ -31,7 +32,7 @@ const VISTAS: Record<Vista, { nombre: string; descripcion: string }> = {
 };
 
 /** El naranja es de Predicciones en las tres vistas: no copia los colores de Estadísticas. */
-const ACENTO = '#DE7A27';
+const ACENTO = MARCA.naranja;
 
 const NOMBRE_MODELO: Record<string, string> = { reservas: 'Reservas', inventario: 'Inventario', academico: 'Académico' };
 

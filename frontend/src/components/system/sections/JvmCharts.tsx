@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Activity, MemoryStick, Cpu } from 'lucide-react';
 import { MetricsChart, type MetricsChartDataPoint } from '@/components/ui/metrics-chart';
+import { MARCA } from '@/lib/design/paleta';
 
 interface JvmChartsProps {
   metricsHistory: MetricsChartDataPoint[];
@@ -37,7 +38,7 @@ export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = fa
         data={metricsHistory}
         dataKey="cpu"
         icon={Cpu}
-        color="#86bb4c"
+        color={MARCA.verde}
         unit="%"
         type="area"
         height={180}
@@ -48,7 +49,7 @@ export const JvmCharts = memo(function JvmCharts({ metricsHistory, isPaused = fa
         data={metricsHistory}
         dataKey="threads"
         icon={Activity}
-        color="#F6CA21"
+        color={MARCA.amarillo}
         unit=""
         type="line"
         height={180}

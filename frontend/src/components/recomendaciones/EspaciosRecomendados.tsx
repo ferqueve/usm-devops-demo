@@ -108,9 +108,9 @@ export function EspaciosRecomendados({
                   className={cn(
                     "ml-2",
                     (() => {
-                      if (rec.puntaje >= 0.8) return "bg-emerald-100 text-emerald-700";
-                      if (rec.puntaje >= 0.6) return "bg-blue-100 text-blue-700";
-                      return "bg-amber-100 text-amber-700";
+                      if (rec.puntaje >= 0.8) return "bg-success-suave text-success-texto";
+                      if (rec.puntaje >= 0.6) return "bg-info-suave text-info-texto";
+                      return "bg-warning-suave text-warning-texto";
                     })()
                   )}
                 >
@@ -123,7 +123,7 @@ export function EspaciosRecomendados({
                   <span>{rec.capacidad} personas</span>
                 </div>
                 {rec.disponible && (
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                  <Badge variant="outline" className="bg-success-suave text-success-texto border-success-borde">
                     Disponible
                   </Badge>
                 )}

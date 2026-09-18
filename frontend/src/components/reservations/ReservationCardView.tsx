@@ -89,7 +89,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm ${esPasada ? 'bg-gray-50/50 border-border' : 'border-border hover:border-border bg-card'}`}
+      className={`group relative overflow-hidden rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm ${esPasada ? 'bg-muted/50 border-border' : 'border-border hover:border-border bg-card'}`}
     >
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${estadoConfig.stripeColor}`} />
       <div className="p-3">
@@ -171,7 +171,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onCancelReserva(reserva)}
-                      className="p-1.5 rounded transition-colors text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="p-1.5 rounded transition-colors text-danger-texto hover:text-danger-texto hover:bg-danger-suave"
                     >
                       <X className="h-4 w-4" />
                     </button>

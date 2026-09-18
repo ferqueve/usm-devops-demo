@@ -182,7 +182,7 @@ function ItemSolicitadoCard({
         <span className="text-sm font-semibold text-foreground">
           {tipoNombre ?? 'Tipo sin definir'}
         </span>
-        <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+        <span className="text-xs font-semibold text-info-texto bg-info-suave px-2 py-1 rounded-full">
           x{item.cantidadSolicitada}
         </span>
         <span className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[260px]">
@@ -196,7 +196,7 @@ function ItemSolicitadoCard({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+              className="h-8 w-8 p-0 text-info hover:text-info-texto hover:bg-info-suave"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -254,7 +254,7 @@ function ItemSolicitadoCard({
           variant="ghost"
           size="sm"
           onClick={() => onEliminar(index)}
-          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+          className="h-8 w-8 p-0 text-danger hover:text-danger-texto hover:bg-danger-suave"
         >
           <X className="h-4 w-4" />
         </Button>
@@ -477,8 +477,8 @@ export function RecurrenciaSection({ formData, setFormData, fecha }: Readonly<Re
           </div>
 
           {formData.fechaFinRecurrencia && fecha && formData.tipoRecurrencia && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm font-medium text-blue-900">
+            <div className="bg-info-suave border border-info-borde rounded-lg p-3">
+              <p className="text-sm font-medium text-info-texto">
                 Se crearán aproximadamente{' '}
                 <span className="font-bold">
                   {calcularCantidadReservas(
@@ -489,7 +489,7 @@ export function RecurrenciaSection({ formData, setFormData, fecha }: Readonly<Re
                 </span>{' '}
                 reservas
               </p>
-              <p className="text-xs text-blue-700 mt-1">
+              <p className="text-xs text-info-texto mt-1">
                 {formData.tipoRecurrencia === 'DIARIA' && 'Una reserva por día'}
                 {formData.tipoRecurrencia === 'SEMANAL' && 'Una reserva por semana'}
                 {formData.tipoRecurrencia === 'MENSUAL' && 'Una reserva por mes'}

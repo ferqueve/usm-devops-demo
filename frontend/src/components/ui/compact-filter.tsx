@@ -6,7 +6,7 @@
  * Convención visual:
  *   - Cada grupo vive dentro de `<div className="flex items-center border rounded-lg p-0.5 bg-muted">`
  *     con sub-botones de 28-32px.
- *   - Botón activo: `bg-card text-foreground shadow-md ring-1 ring-gray-300`.
+ *   - Botón activo: `bg-card text-foreground shadow-md ring-1 ring-border`.
  *   - Botón inactivo: `text-muted-foreground hover:text-foreground/80`.
  */
 import type { LucideIcon } from 'lucide-react';
@@ -17,7 +17,7 @@ import { es } from 'date-fns/locale';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-const ACTIVE_BUTTON_CLASS = 'bg-card text-foreground shadow-md ring-1 ring-gray-300';
+const ACTIVE_BUTTON_CLASS = 'bg-card text-foreground shadow-md ring-1 ring-border';
 const INACTIVE_BUTTON_CLASS = 'text-muted-foreground hover:text-foreground/80';
 
 export function compactFilterButtonClass(isActive: boolean): string {
@@ -60,8 +60,8 @@ export function PopoverFilterSection<T extends number | string>({
   onChange,
   Icon,
   tooltipNone,
-  activeBgClass = 'bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300',
-  activeTextColorClass = 'text-blue-700',
+  activeBgClass = 'bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde',
+  activeTextColorClass = 'text-info-texto',
 }: Readonly<PopoverFilterSectionProps<T>>) {
   const isAll = selectedId === null;
   const allClass = compactFilterButtonClass(isAll);
@@ -243,7 +243,7 @@ function DateBoundButton({
 }: Readonly<DateBoundButtonProps>) {
   const isUnset = value === undefined;
   const buttonClass = filterTriggerClass(!isUnset);
-  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-muted-foreground' : 'text-blue-600'}`;
+  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-muted-foreground' : 'text-info-texto'}`;
   const disabledChecker = (date: Date) => {
     if (!otherBound) return false;
     const limit = new Date(otherBound);
@@ -298,7 +298,7 @@ export function ClearFiltersButton({ onClear, visible }: Readonly<ClearFiltersBu
         <button
           onClick={onClear}
           aria-label="Limpiar filtros"
-          className="p-1.5 rounded transition-colors bg-red-500 text-white hover:bg-red-600"
+          className="p-1.5 rounded transition-colors bg-danger text-white hover:bg-danger"
         >
           <BrushCleaning className="h-3.5 w-3.5" />
         </button>

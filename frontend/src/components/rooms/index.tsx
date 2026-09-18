@@ -9,13 +9,13 @@ function RoomTypeBadge({ type }: Readonly<{ type: Room['type'] }>) {
   const getTypeConfig = (type: Room['type']) => {
     switch (type) {
       case 'classroom':
-        return { label: 'Aula', color: 'bg-blue-100 text-blue-800' };
+        return { label: 'Aula', color: 'bg-info-suave text-info-texto' };
       case 'laboratory':
-        return { label: 'Laboratorio', color: 'bg-green-100 text-green-800' };
+        return { label: 'Laboratorio', color: 'bg-success-suave text-success-texto' };
       case 'auditorium':
-        return { label: 'Auditorio', color: 'bg-purple-100 text-purple-800' };
+        return { label: 'Auditorio', color: 'bg-acento-suave text-acento-texto' };
       case 'meeting-room':
-        return { label: 'Sala de Reuniones', color: 'bg-orange-100 text-orange-800' };
+        return { label: 'Sala de Reuniones', color: 'bg-warning-suave text-warning-texto' };
       default:
         return { label: 'Otro', color: 'bg-muted text-foreground' };
     }
@@ -33,8 +33,8 @@ function RoomTypeBadge({ type }: Readonly<{ type: Room['type'] }>) {
 // Componente para mostrar el estado de disponibilidad
 function AvailabilityStatus({ isAvailable }: Readonly<{ isAvailable: boolean }>) {
   return (
-    <div className={`flex items-center gap-2 ${isAvailable ? 'text-green-600' : 'text-red-600'}`}>
-      <div className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
+    <div className={`flex items-center gap-2 ${isAvailable ? 'text-success-texto' : 'text-danger-texto'}`}>
+      <div className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-success' : 'bg-danger'}`}></div>
       <span className="text-sm font-medium">
         {isAvailable ? 'Disponible' : 'No Disponible'}
       </span>
@@ -134,19 +134,19 @@ export default function Rooms() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">12</div>
+              <div className="text-2xl font-bold text-info-texto">12</div>
               <p className="text-sm text-muted-foreground">Total Espacios</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">8</div>
+              <div className="text-2xl font-bold text-success-texto">8</div>
               <p className="text-sm text-muted-foreground">Disponibles</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">2</div>
+              <div className="text-2xl font-bold text-danger-texto">2</div>
               <p className="text-sm text-muted-foreground">En Mantenimiento</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">2</div>
+              <div className="text-2xl font-bold text-acento-texto">2</div>
               <p className="text-sm text-muted-foreground">Ocupados</p>
             </div>
           </div>

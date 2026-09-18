@@ -71,7 +71,7 @@ export function ItemsRecomendados({
                 className={cn(
                   "flex items-center justify-between p-3 rounded-lg border transition-colors",
                   yaSeleccionado
-                    ? "bg-emerald-50 border-emerald-200"
+                    ? "bg-success-suave border-success-borde"
                     : "hover:bg-muted border-border"
                 )}
               >
@@ -86,12 +86,12 @@ export function ItemsRecomendados({
                 </div>
                 <div className="flex items-center gap-2">
                   {item.disponible !== false && (
-                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <Badge variant="outline" className="bg-success-suave text-success-texto border-success-borde">
                       {item.cantidadDisponible || "Disponible"}
                     </Badge>
                   )}
                   {yaSeleccionado ? (
-                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                    <CheckCircle className="h-5 w-5 text-success-texto" />
                   ) : (
                     <Button
                       size="sm"

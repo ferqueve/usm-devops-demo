@@ -36,11 +36,11 @@ export default function UpcomingReservations({
   const getEstadoBadge = (estado: string) => {
     switch (estado) {
       case 'APROBADO':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Aprobado</Badge>;
+        return <Badge className="bg-success-suave text-success-texto hover:bg-success-suave">Aprobado</Badge>;
       case 'PENDIENTE':
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pendiente</Badge>;
+        return <Badge className="bg-warning-suave text-warning-texto hover:bg-warning-suave">Pendiente</Badge>;
       case 'CANCELADO':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Cancelado</Badge>;
+        return <Badge className="bg-danger-suave text-danger-texto hover:bg-danger-suave">Cancelado</Badge>;
       default:
         return <Badge variant="outline">{estado}</Badge>;
     }

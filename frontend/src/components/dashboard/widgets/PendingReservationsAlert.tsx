@@ -29,14 +29,14 @@ export default function PendingReservationsAlert({
     : 'Tus solicitudes están siendo revisadas por un analista';
 
   return (
-    <Card className="border-orange-200 bg-orange-50">
+    <Card className="border-warning-borde bg-warning-suave">
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-orange-600" />
+            <AlertCircle className="h-5 w-5 text-warning-texto" />
             <div>
-              <p className="text-sm font-medium text-orange-900">{message}</p>
-              <p className="text-xs text-orange-700 mt-1">{description}</p>
+              <p className="text-sm font-medium text-warning-texto">{message}</p>
+              <p className="text-xs text-warning-texto mt-1">{description}</p>
             </div>
           </div>
           {canApprove && (

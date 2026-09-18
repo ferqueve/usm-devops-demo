@@ -113,7 +113,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
     const parts = text.split(new RegExp(`(${search})`, 'gi'));
     return parts.map((part, i) =>
       part.toLowerCase() === search.toLowerCase() ? (
-        <mark key={`${part}-${i}`} className="bg-yellow-200 text-foreground">{part}</mark>
+        <mark key={`${part}-${i}`} className="bg-warning-suave text-foreground">{part}</mark>
       ) : part
     );
   };
@@ -215,10 +215,10 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
   const getLevelColor = (level: string) => {
     const colors: Record<string, string> = {
       TRACE: 'bg-muted text-foreground border-border',
-      DEBUG: 'bg-blue-100 text-blue-800 border-blue-200',
-      INFO: 'bg-green-100 text-green-800 border-green-200',
-      WARN: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      ERROR: 'bg-red-100 text-red-800 border-red-200',
+      DEBUG: 'bg-info-suave text-info-texto border-info-borde',
+      INFO: 'bg-success-suave text-success-texto border-success-borde',
+      WARN: 'bg-warning-suave text-warning-texto border-warning-borde',
+      ERROR: 'bg-danger-suave text-danger-texto border-danger-borde',
       OFF: 'bg-muted text-foreground border-border',
     };
     return colors[level] || 'bg-muted text-foreground border-border';
@@ -386,7 +386,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
       </div>
 
       {/* Visor de logs */}
-      <div className="bg-gray-900">
+      <div className="bg-chrome">
         <ScrollArea className="h-[400px]" ref={scrollRef}>
           <div className="p-4">
             {filteredLines.map((line, index) => (
@@ -397,7 +397,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 <span className="text-muted-foreground select-none inline-block w-12 text-right mr-3">
                   {index + 1}
                 </span>
-                <span className="text-gray-100 font-mono text-xs whitespace-pre-wrap break-all">
+                <span className="text-foreground font-mono text-xs whitespace-pre-wrap break-all">
                   {highlightText(line, searchTerm)}
                 </span>
               </div>
@@ -433,7 +433,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                   </DialogDescription>
                 </div>
                 {hasChanges && (
-                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0">
+                  <Badge variant="outline" className="bg-warning-suave text-warning-texto border-warning-borde flex-shrink-0">
                     {Object.keys(changes).length} cambios pendientes
                   </Badge>
                 )}
@@ -519,7 +519,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 )}
 
                 {hasChanges && (
-                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
+                  <div className="flex items-start gap-2 p-3 bg-warning-suave border border-warning-borde rounded-md text-xs text-warning-texto">
                     <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <p>
                       Los cambios son <strong>temporales</strong> y se perderán al reiniciar el servidor.
@@ -539,7 +539,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                         <div
                           key={logger.name}
                           className={`flex items-center gap-3 p-2.5 border rounded-md transition-colors ${
-                            hasChange ? 'bg-amber-50 border-amber-300' : 'bg-card border-border hover:bg-muted/30'
+                            hasChange ? 'bg-warning-suave border-warning-borde' : 'bg-card border-border hover:bg-muted/30'
                           }`}
                         >
                           <p
@@ -553,7 +553,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                           >
                             {currentLevel}
                           </span>
-                          {hasChange && <span className="text-amber-600 flex-shrink-0">→</span>}
+                          {hasChange && <span className="text-warning-texto flex-shrink-0">→</span>}
                           <Select
                             value={pendingLevel || currentLevel}
                             onValueChange={(value) => handleLevelChange(logger.name, value)}
@@ -592,7 +592,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
               <Button
                 onClick={() => setShowConfirm(true)}
                 disabled={!hasChanges || saving}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-secondary disabled:text-muted-foreground"
+                className="bg-success hover:bg-success text-white disabled:bg-secondary disabled:text-muted-foreground"
               >
                 <Save className="h-4 w-4 mr-1.5" />
                 Guardar cambios

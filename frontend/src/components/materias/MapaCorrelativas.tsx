@@ -12,6 +12,7 @@ import { carrerasApi } from '@/lib/api/carreras';
 import { materiasApi } from '@/lib/api/materias';
 import type { Carrera } from '@/lib/types/spaces';
 import type { EstadoMapa, MapaCarrera, MapaNodo } from '@/lib/types/materias';
+import { MARCA, NEUTRO, escalaDe } from '@/lib/design/paleta';
 
 // --- Geometría del tablero ---
 const COL_W = 260;
@@ -37,55 +38,66 @@ interface Paleta {
   semText: string;
 }
 
-// Color por semestre (para la vista sin progreso: admin/docente). Índice = (semestre-1) % 6.
-const SEM_LIGHT: NodeStyle[] = [
-  { fill: '#eaf1fb', stroke: '#184897', text: '#1e2a44', sub: '#5b6b86' },
-  { fill: '#e1f6fc', stroke: '#00a5d6', text: '#0b3a45', sub: '#5a7a82' },
-  { fill: '#eef6e6', stroke: '#6fa03d', text: '#2e3d1c', sub: '#5f7048' },
-  { fill: '#fbf3dc', stroke: '#c9a51f', text: '#4a3d0e', sub: '#8a7a3c' },
-  { fill: '#fdeede', stroke: '#de7a27', text: '#4a2f14', sub: '#8a6642' },
-  { fill: '#f4ecfd', stroke: '#9333ea', text: '#3a2154', sub: '#6f5a8a' },
-];
-const SEM_DARK: NodeStyle[] = [
-  { fill: '#1c2635', stroke: '#5c86d6', text: '#dbe6fb', sub: '#8ea4c8' },
-  { fill: '#14303a', stroke: '#38d6f5', text: '#d6f4fd', sub: '#7fb3c0' },
-  { fill: '#1e2a19', stroke: '#9ed665', text: '#e2f0d5', sub: '#9bb082' },
-  { fill: '#2b2610', stroke: '#e6c74e', text: '#f3ead0', sub: '#b8a86a' },
-  { fill: '#2c1f12', stroke: '#f0a05a', text: '#f6e2d0', sub: '#c79a72' },
-  { fill: '#251a33', stroke: '#c084f5', text: '#ece0fb', sub: '#a98fca' },
-];
+/*
+ * Color por semestre (vista sin progreso: admin/docente). Índice = (semestre-1) % 6.
+ *
+ * Los seis salen de los seis colores de la marca y las cuatro piezas de cada
+ * uno las calcula `escalaDe`. Antes eran cuarenta y ocho hex escritos a mano
+ * —uno por pieza, por semestre y por tema— y entre ellos había un morado
+ * (#9333ea) que no es de la marca.
+ */
+const TONOS_SEMESTRE = [MARCA.azul, MARCA.cian, MARCA.verde, MARCA.amarillo, MARCA.naranja, MARCA.rojo];
 
-const PALETA_LIGHT: Paleta = {
-  estado: {
-    APROBADA: { fill: '#86bb4c', stroke: '#6fa03d', text: '#ffffff', sub: 'rgba(255,255,255,0.85)' },
-    CURSANDO: { fill: '#00c7ff', stroke: '#00a5d6', text: '#08323d', sub: 'rgba(8,50,61,0.7)' },
-    DISPONIBLE: { fill: '#ffffff', stroke: '#86bb4c', text: '#343a40', sub: '#6b7280' },
-    BLOQUEADA: { fill: '#eef0f2', stroke: '#d3d8de', text: '#9aa1a9', sub: '#b4bac1' },
-    NEUTRO: { fill: '#ffffff', stroke: '#184897', text: '#343a40', sub: '#6b7280' },
-  },
-  sem: SEM_LIGHT,
-  board: 'radial-gradient(circle at 1px 1px, rgba(52,58,64,0.08) 1px, transparent 0) 0 0 / 26px 26px, linear-gradient(180deg,#fbfdff,#f2f6fb)',
-  edge: '#9aa6b2',
-  edgeAprobada: '#86bb4c',
-  edgeDim: '#d9dee4',
-  semText: '#8a929b',
-};
+const porSemestre = (tema: 'claro' | 'oscuro'): NodeStyle[] =>
+  TONOS_SEMESTRE.map((hex) => {
+    const e = escalaDe(hex, tema);
+    return { fill: e.suave, stroke: e.solido, text: e.texto, sub: e.suaveTexto };
+  });
 
-const PALETA_DARK: Paleta = {
-  estado: {
-    APROBADA: { fill: '#6fa03d', stroke: '#9ed665', text: '#ffffff', sub: 'rgba(255,255,255,0.82)' },
-    CURSANDO: { fill: '#0891b2', stroke: '#38d6f5', text: '#e6faff', sub: 'rgba(230,250,255,0.75)' },
-    DISPONIBLE: { fill: '#262b31', stroke: '#86bb4c', text: '#e5e7eb', sub: '#9aa1a9' },
-    BLOQUEADA: { fill: '#1e2227', stroke: '#3a4046', text: '#727982', sub: '#565c63' },
-    NEUTRO: { fill: '#262b31', stroke: '#4a5b8f', text: '#e5e7eb', sub: '#9aa1a9' },
-  },
-  sem: SEM_DARK,
-  board: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0) 0 0 / 26px 26px, linear-gradient(180deg,#20242a,#191c21)',
-  edge: '#5a636e',
-  edgeAprobada: '#86bb4c',
-  edgeDim: '#33383f',
-  semText: '#8a929b',
-};
+const SEM_LIGHT: NodeStyle[] = porSemestre('claro');
+const SEM_DARK: NodeStyle[] = porSemestre('oscuro');
+
+/*
+ * Estado de cada materia. Sale de la marca igual que los semestres: verde
+ * para lo cursado, cian para lo que está en curso, y los neutros de la
+ * superficie para lo disponible y lo bloqueado. Antes eran otros veinte hex a
+ * mano por tema.
+ *
+ * El tablero no puede usar los tokens de Tailwind: es un gradiente que se
+ * arma como string para un <svg>, así que se compone con los valores de la
+ * escala.
+ */
+function paletaDe(tema: 'claro' | 'oscuro'): Paleta {
+  const claro = tema === 'claro';
+  const verde = escalaDe(MARCA.verde, tema);
+  const cian = escalaDe(MARCA.cian, tema);
+  const azul = escalaDe(MARCA.azul, tema);
+  const gris = escalaDe(MARCA.oscuro, tema);
+  const superficie = claro ? '#ffffff' : gris.suave;
+  const tinta = claro ? MARCA.oscuro : NEUTRO.oscuro.texto;
+  const apagado = claro ? NEUTRO.claro.eje : NEUTRO.oscuro.eje;
+
+  return {
+    estado: {
+      APROBADA: { fill: MARCA.verde, stroke: verde.solido, text: verde.texto, sub: verde.suaveTexto },
+      CURSANDO: { fill: MARCA.cian, stroke: cian.solido, text: cian.texto, sub: cian.suaveTexto },
+      DISPONIBLE: { fill: superficie, stroke: MARCA.verde, text: tinta, sub: apagado },
+      BLOQUEADA: { fill: gris.suave, stroke: gris.borde, text: apagado, sub: apagado },
+      NEUTRO: { fill: superficie, stroke: azul.solido, text: tinta, sub: apagado },
+    },
+    sem: claro ? SEM_LIGHT : SEM_DARK,
+    board: claro
+      ? `radial-gradient(circle at 1px 1px, rgba(52,58,64,0.08) 1px, transparent 0) 0 0 / 26px 26px, linear-gradient(180deg, ${NEUTRO.claro.superficie}, ${NEUTRO.claro.vacio})`
+      : `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0) 0 0 / 26px 26px, linear-gradient(180deg, ${NEUTRO.oscuro.vacio}, ${NEUTRO.oscuro.superficie})`,
+    edge: apagado,
+    edgeAprobada: MARCA.verde,
+    edgeDim: claro ? NEUTRO.claro.grilla : NEUTRO.oscuro.grilla,
+    semText: apagado,
+  };
+}
+
+const PALETA_LIGHT: Paleta = paletaDe('claro');
+const PALETA_DARK: Paleta = paletaDe('oscuro');
 
 const ESTADO_LABEL: Record<EstadoMapa, string> = {
   APROBADA: 'Cursada',
@@ -548,7 +560,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
 
                     {n.estado === 'CURSANDO' && (
                       <rect x={-4} y={-4} width={NODE_W + 8} height={NODE_H + 8} rx={18} fill="none"
-                            stroke="#00c7ff" strokeWidth={3}>
+                            stroke={MARCA.cian} strokeWidth={3}>
                         <animate attributeName="opacity" values="0.7;0.15;0.7" dur="1.8s" repeatCount="indefinite" />
                       </rect>
                     )}

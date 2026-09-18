@@ -17,10 +17,11 @@ import { textoFiltros, useFiltrosReservas } from '../reservas/filtros';
 import { EventosLista, MateriasTutorias, ModalidadTutorias, SemanasTutorias, TutoriasKpis } from './Visuales';
 import { EventosPorOcupacion, EventosPorTipo, EventosResumen, MejorCalificados } from './Eventos';
 import { useEstadisticasAcademico } from './useEstadisticasAcademico';
+import { MARCA } from '@/lib/design/paleta';
 
 const SECCIONES = [
-  { id: 'tutorias', titulo: 'Tutorías', icono: GraduationCap, color: '#F6CA21' },
-  { id: 'eventos', titulo: 'Eventos', icono: Presentation, color: '#86bb4c' },
+  { id: 'tutorias', titulo: 'Tutorías', icono: GraduationCap, color: MARCA.amarillo },
+  { id: 'eventos', titulo: 'Eventos', icono: Presentation, color: MARCA.verde },
 ];
 
 function exportarCSV(datos: Academico, periodoTexto: string, filtrosTexto: string, rango: Rango) {
@@ -141,7 +142,7 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
           <Seccion
             id="tutorias"
             icono={GraduationCap}
-            color="#F6CA21"
+            color={MARCA.amarillo}
             titulo="Tutorías"
             descripcion="Cuánto se llenan las tutorías, cuántos de los inscriptos van y cómo las califican."
             destacados={[
@@ -152,18 +153,18 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
             ]}
           >
             <div className="grid gap-3 lg:h-[360px] lg:grid-cols-3">
-              <PanelEstadistica title="Asistencia y cupo" count={`${entero(t.total)} en el período`} accentColor="#F6CA21" centrar explicacion={EXPLICACIONES.tutorias}>
+              <PanelEstadistica title="Asistencia y cupo" count={`${entero(t.total)} en el período`} accentColor={MARCA.amarillo} centrar explicacion={EXPLICACIONES.tutorias}>
                 {(grande) => <TutoriasKpis t={t} grande={grande} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Semana a semana" count="agendadas contra asistencias" accentColor="#86bb4c" className="lg:col-span-2" centrar explicacion={EXPLICACIONES.semanasTutorias}>
+              <PanelEstadistica title="Semana a semana" count="agendadas contra asistencias" accentColor={MARCA.verde} className="lg:col-span-2" centrar explicacion={EXPLICACIONES.semanasTutorias}>
                 {(grande) => <SemanasTutorias semanas={datos.porSemana} alto={grande ? 440 : 250} desde={rango.desde} hasta={rango.hasta} />}
               </PanelEstadistica>
             </div>
             <div className="grid gap-3 lg:h-[460px] lg:grid-cols-3">
-              <PanelEstadistica title="Por materia" count="las 15 con más agendadas" accentColor="#184897" className="lg:col-span-2" scroll explicacion={EXPLICACIONES.materias}>
+              <PanelEstadistica title="Por materia" count="las 15 con más agendadas" accentColor={MARCA.azul} className="lg:col-span-2" scroll explicacion={EXPLICACIONES.materias}>
                 <MateriasTutorias filas={datos.porMateria} />
               </PanelEstadistica>
-              <PanelEstadistica title="Modalidad" count="presencial, virtual, grupal" accentColor="#00c7ff" centrar explicacion={EXPLICACIONES.modalidad}>
+              <PanelEstadistica title="Modalidad" count="presencial, virtual, grupal" accentColor={MARCA.cian} centrar explicacion={EXPLICACIONES.modalidad}>
                 {(grande) => <ModalidadTutorias t={t} grande={grande} />}
               </PanelEstadistica>
             </div>
@@ -172,7 +173,7 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
           <Seccion
             id="eventos"
             icono={Presentation}
-            color="#86bb4c"
+            color={MARCA.verde}
             titulo="Eventos"
             descripcion="Qué eventos se hicieron, cuánto se llenaron y cómo los calificaron."
             destacados={[
@@ -183,10 +184,10 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
             ]}
           >
             <div className="grid gap-3 lg:h-[380px] lg:grid-cols-3">
-              <PanelEstadistica title="Ocupación del cupo" count={`${entero(e.inscripciones)} inscripciones`} accentColor="#86bb4c" centrar explicacion={EXPLICACIONES.eventosResumen}>
+              <PanelEstadistica title="Ocupación del cupo" count={`${entero(e.inscripciones)} inscripciones`} accentColor={MARCA.verde} centrar explicacion={EXPLICACIONES.eventosResumen}>
                 {(grande) => <EventosResumen e={e} grande={grande} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Qué tan llenos" count="eventos por tramo de ocupación" accentColor="#F6CA21" centrar explicacion={EXPLICACIONES.eventosTramos}>
+              <PanelEstadistica title="Qué tan llenos" count="eventos por tramo de ocupación" accentColor={MARCA.amarillo} centrar explicacion={EXPLICACIONES.eventosTramos}>
                 {(grande) => <EventosPorOcupacion eventos={datos.eventosLista} alto={grande ? 360 : 220} />}
               </PanelEstadistica>
               <PanelEstadistica title="Por tipo" count="cursos, talleres, eventos" accentColor="#9333ea" centrar explicacion={EXPLICACIONES.eventosTipo}>
@@ -197,14 +198,14 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
               <PanelEstadistica
                 title="Todos los eventos"
                 count={`${entero(e.total)} · cupo ${entero(e.cupoTotal)}`}
-                accentColor="#86bb4c"
+                accentColor={MARCA.verde}
                 className="lg:col-span-2"
                 scroll
                 explicacion={EXPLICACIONES.eventos}
               >
                 <EventosLista eventos={datos.eventosLista} />
               </PanelEstadistica>
-              <PanelEstadistica title="Mejor calificados" count="promedio de opiniones" accentColor="#F6CA21" scroll explicacion={EXPLICACIONES.eventos}>
+              <PanelEstadistica title="Mejor calificados" count="promedio de opiniones" accentColor={MARCA.amarillo} scroll explicacion={EXPLICACIONES.eventos}>
                 <MejorCalificados eventos={datos.eventosLista} />
               </PanelEstadistica>
             </div>

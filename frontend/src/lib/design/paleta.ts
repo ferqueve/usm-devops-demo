@@ -237,6 +237,48 @@ export const ORDEN_CATEGORIAS: readonly Tono[] = [
   'azul', 'verde', 'naranja', 'cian', 'rojo', 'amarillo',
 ];
 
+/**
+ * Las cuatro piezas de un color, para un tema.
+ *
+ * Es la misma receta con la que se arman los roles semánticos de `index.css`,
+ * expuesta para cuando hace falta una escala por categoría en JavaScript: seis
+ * semestres, seis carreras, seis tipos de espacio. Antes cada pantalla que
+ * necesitaba eso escribía sus cuatro hex a mano por cada categoría y por cada
+ * tema —el mapa de correlativas tenía cuarenta y ocho, con un morado que no es
+ * de la marca—.
+ */
+export interface Escala {
+  /** Fondo tenue. */
+  suave: string;
+  /** Borde de ese fondo. */
+  borde: string;
+  /** Relleno macizo o trazo. */
+  solido: string;
+  /** Texto que se lee sobre el fondo tenue. */
+  texto: string;
+  /** Texto secundario sobre el fondo tenue. */
+  suaveTexto: string;
+}
+
+const RECETA = {
+  claro: { suave: [0.965, 0.22], borde: [0.885, 0.45], texto: [0.44, 1], suaveTexto: [0.58, 0.55] },
+  oscuro: { suave: [0.3, 0.3], borde: [0.4, 0.55], texto: [0.8, 0.85], suaveTexto: [0.68, 0.5] },
+} as const;
+
+export function escalaDe(hex: string, tema: 'claro' | 'oscuro'): Escala {
+  const base = hexAOklch(hex);
+  const r = RECETA[tema];
+  const pieza = ([L, f]: readonly [number, number]) =>
+    oklchAHex({ L, C: Math.min(base.C * f, cromaMaximo(L, base.H)), H: base.H });
+  return {
+    suave: pieza(r.suave),
+    borde: pieza(r.borde),
+    solido: tema === 'claro' ? hex : conLuz(hex, 0.7, true),
+    texto: pieza(r.texto),
+    suaveTexto: pieza(r.suaveTexto),
+  };
+}
+
 /** Neutros de gráfico: grilla, ejes, huecos. Son los grises del sitio UTEC. */
 export interface Neutro {
   grilla: string;

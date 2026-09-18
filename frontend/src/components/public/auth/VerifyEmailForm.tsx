@@ -66,7 +66,7 @@ export function VerifyEmailForm({
       case 'loading':
         return (
           <div className="flex flex-col items-center gap-2 text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-info-suave rounded-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
             <h1 className="text-2xl font-bold">Verificando email...</h1>
@@ -80,12 +80,12 @@ export function VerifyEmailForm({
         return (
           <>
             <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 bg-success-suave rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-success-texto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-green-600">¡Email verificado!</h1>
+              <h1 className="text-2xl font-bold text-success-texto">¡Email verificado!</h1>
               <p className="text-muted-foreground text-sm text-balance">{message}</p>
               <p className="text-xs text-muted-foreground">
                 Serás redirigido al login en unos segundos...
@@ -96,8 +96,8 @@ export function VerifyEmailForm({
               {email && email.trim() !== '' && (
                 <div className="grid gap-3">
                   <Label>Email verificado</Label>
-                  <div className="p-3 bg-green-50 rounded-md border border-green-200">
-                    <p className="text-sm font-medium text-green-800">{email}</p>
+                  <div className="p-3 bg-success-suave rounded-md border border-success-borde">
+                    <p className="text-sm font-medium text-success-texto">{email}</p>
                   </div>
                 </div>
               )}
@@ -112,19 +112,19 @@ export function VerifyEmailForm({
         return (
           <>
             <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 bg-danger-suave rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-danger-texto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-red-600">Error de verificación</h1>
+              <h1 className="text-2xl font-bold text-danger-texto">Error de verificación</h1>
               <p className="text-muted-foreground text-sm text-balance">{message}</p>
             </div>
             <div className="grid gap-6">
               {/* Mostrar mensaje de reenvío si existe */}
               {resendMessage && (
-                <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
-                  <p className="text-sm text-blue-800">{resendMessage}</p>
+                <div className="p-3 bg-info-suave rounded-md border border-info-borde">
+                  <p className="text-sm text-info-texto">{resendMessage}</p>
                 </div>
               )}
               {/* Solo mostrar opciones de reenvío si hay email disponible */}

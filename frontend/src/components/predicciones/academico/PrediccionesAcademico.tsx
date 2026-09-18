@@ -13,6 +13,7 @@ import { DetalleTutoria } from './DetalleTutoria';
 import { FactoresEnPalabras, GraficoFactores } from './Factores';
 import { DonaRiesgo, EsperadosPorSemana, ListaProximas } from './Proximas';
 import { modeloFlojo } from './estilos';
+import { MARCA } from '@/lib/design/paleta';
 
 /** Resumen de las próximas cuando el servidor no lo manda (no debería pasar, pero la vista no se rompe). */
 function resumenDe(proximas: TutoriaProximaML[]): NonNullable<PrediccionAcademico['resumen']> {
@@ -128,7 +129,7 @@ export default function PrediccionesAcademico({ version, entrenamiento }: Readon
           <Panel
             title="Tutorías que vienen"
             count={`${entero(proximas.length)} · tocá una para ver a los inscriptos`}
-            accentColor="#DE7A27"
+            accentColor={MARCA.naranja}
             className="lg:col-span-2"
             scroll
             flush
@@ -136,12 +137,12 @@ export default function PrediccionesAcademico({ version, entrenamiento }: Readon
             <ListaProximas proximas={proximas} onAbrir={setAbierta} />
           </Panel>
           <div className="grid gap-3 lg:grid-rows-2">
-            <Panel title="Cómo vienen" count="tutorías por riesgo" accentColor="#DF2B31">
+            <Panel title="Cómo vienen" count="tutorías por riesgo" accentColor={MARCA.rojo}>
               <div className="flex h-full flex-col justify-center">
                 <DonaRiesgo proximas={proximas} />
               </div>
             </Panel>
-            <Panel title="Semana a semana" count="van y faltan" accentColor="#86bb4c">
+            <Panel title="Semana a semana" count="van y faltan" accentColor={MARCA.verde}>
               <div className="flex h-full flex-col justify-center">
                 <EsperadosPorSemana proximas={proximas} alto={150} />
               </div>
@@ -156,23 +157,23 @@ export default function PrediccionesAcademico({ version, entrenamiento }: Readon
             <GraficoFactores factores={factores} />
           </div>
         </Panel>
-        <Panel title="En palabras" count="lo que más sube y baja" accentColor="#F6CA21" scroll>
+        <Panel title="En palabras" count="lo que más sube y baja" accentColor={MARCA.amarillo} scroll>
           <FactoresEnPalabras factores={factores} />
         </Panel>
       </div>
 
       <div className="grid gap-3 lg:h-[340px] lg:grid-cols-3">
-        <Panel title="¿Distingue quién va?" count="en validación" accentColor="#86bb4c">
+        <Panel title="¿Distingue quién va?" count="en validación" accentColor={MARCA.verde}>
           <div className="flex h-full flex-col justify-center">
             <MedidorAuc auc={modelo.auc} />
           </div>
         </Panel>
-        <Panel title="¿Mejor que el promedio?" count="error contra la base" accentColor="#F6CA21">
+        <Panel title="¿Mejor que el promedio?" count="error contra la base" accentColor={MARCA.amarillo}>
           <div className="flex h-full flex-col justify-center">
             <BrierContraBase modelo={modelo} />
           </div>
         </Panel>
-        <Panel title="Calibración" count="predicho contra real" accentColor="#184897">
+        <Panel title="Calibración" count="predicho contra real" accentColor={MARCA.azul}>
           <div className="flex h-full flex-col justify-center">
             <CurvaCalibracion calibracion={modelo.calibracion} alto={230} />
           </div>
@@ -183,7 +184,7 @@ export default function PrediccionesAcademico({ version, entrenamiento }: Readon
         <Panel
           title="Semanas de validación"
           count={modelo.validacion ? `${fechaCorta(modelo.validacion.desde)} al ${fechaCorta(modelo.validacion.hasta)} · esperados contra los que fueron` : undefined}
-          accentColor="#DE7A27"
+          accentColor={MARCA.naranja}
           className="lg:col-span-2"
         >
           <HistoricoSemanal semanas={modelo.historicoSemanal} alto={260} />
@@ -197,7 +198,7 @@ export default function PrediccionesAcademico({ version, entrenamiento }: Readon
               <Dato etiqueta="AUC" valor={decimal(modelo.auc, 2)} />
             </dl>
           </Panel>
-          <Panel title="Lectura con IA" accentColor="#00c7ff">
+          <Panel title="Lectura con IA" accentColor={MARCA.cian}>
             <AnalisisIA
               clave={modelo.entrenadoEn ?? ''}
               descripcion="Dice qué tutorías van a quedar vacías o desbordadas, qué pesa más en la asistencia y qué conviene hacer."

@@ -25,25 +25,25 @@ export default function SpaceStatsWidget({
           label: 'Total Espacios',
           value: stats.totalEspacios,
           icon: Building2,
-          color: 'text-blue-600',
+          color: 'text-info-texto',
         },
         {
           label: 'Disponibles',
           value: stats.disponibles,
           icon: CheckCircle2,
-          color: 'text-green-600',
+          color: 'text-success-texto',
         },
         {
           label: 'En Mantenimiento',
           value: stats.enMantenimiento,
           icon: Wrench,
-          color: 'text-yellow-600',
+          color: 'text-warning-texto',
         },
         {
           label: 'Ocupados',
           value: stats.ocupados,
           icon: Users,
-          color: 'text-purple-600',
+          color: 'text-acento-texto',
         },
       ]
     : null;

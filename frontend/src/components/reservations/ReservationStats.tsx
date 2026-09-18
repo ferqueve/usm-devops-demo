@@ -13,6 +13,7 @@ import type { TooltipProps } from 'recharts';
 import { reservationsApi } from '@/lib/api/reservations';
 import type { ReservaStats } from '@/lib/types/spaces';
 import type { LucideIcon } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 import {
   TrendingUp,
   TrendingDown,
@@ -64,9 +65,9 @@ function ColoredStat({ label, value, hint, icon: Icon, bg }: Readonly<ColoredSta
 }
 
 const ESTADO_COLOR: Record<'Aprobadas' | 'Pendientes' | 'Canceladas', string> = {
-  Aprobadas: '#86bb4c',
-  Pendientes: '#F6CA21',
-  Canceladas: '#DF2B31',
+  Aprobadas: MARCA.verde,
+  Pendientes: MARCA.amarillo,
+  Canceladas: MARCA.rojo,
 };
 
 interface TooltipPayload {
@@ -315,14 +316,14 @@ export default function ReservationStats({
   };
 
   const getTrendColor = (value: number) => {
-    if (value > 0) return 'text-green-600';
-    if (value < 0) return 'text-red-600';
+    if (value > 0) return 'text-success-texto';
+    if (value < 0) return 'text-danger-texto';
     return 'text-muted-foreground';
   };
 
   const getTrendIcon = (value: number) => {
-    if (value > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
-    if (value < 0) return <TrendingDown className="h-4 w-4 text-red-600" />;
+    if (value > 0) return <TrendingUp className="h-4 w-4 text-success-texto" />;
+    if (value < 0) return <TrendingDown className="h-4 w-4 text-danger-texto" />;
     return null;
   };
 
@@ -443,25 +444,25 @@ export default function ReservationStats({
               <MetricItem
                 label="Aprobadas"
                 value={stats.totalAprobadas}
-                icon={<CheckCircle2 className="h-3.5 w-3.5 text-green-600" />}
+                icon={<CheckCircle2 className="h-3.5 w-3.5 text-success-texto" />}
                 collapsed={true}
               />
               <MetricItem
                 label="Pendientes"
                 value={stats.totalPendientes}
-                icon={<Hourglass className="h-3.5 w-3.5 text-yellow-600" />}
+                icon={<Hourglass className="h-3.5 w-3.5 text-warning-texto" />}
                 collapsed={true}
               />
               <MetricItem
                 label="Canceladas"
                 value={stats.totalCanceladas}
-                icon={<XCircle className="h-3.5 w-3.5 text-red-600" />}
+                icon={<XCircle className="h-3.5 w-3.5 text-danger-texto" />}
                 collapsed={true}
               />
               <MetricItem
                 label="Futuras"
                 value={stats.totalFuturas}
-                icon={<Calendar className="h-3.5 w-3.5 text-blue-600" />}
+                icon={<Calendar className="h-3.5 w-3.5 text-info-texto" />}
                 collapsed={true}
               />
               <MetricItem
@@ -473,7 +474,7 @@ export default function ReservationStats({
               <MetricItem
                 label="Activas"
                 value={stats.totalActivas}
-                icon={<Activity className="h-3.5 w-3.5 text-green-600" />}
+                icon={<Activity className="h-3.5 w-3.5 text-success-texto" />}
                 collapsed={true}
               />
             </div>
@@ -484,7 +485,7 @@ export default function ReservationStats({
                 <MetricItem
                   label="Este Mes"
                   value={stats.reservasEsteMes}
-                  icon={<Calendar className="h-3.5 w-3.5 text-blue-600" />}
+                  icon={<Calendar className="h-3.5 w-3.5 text-info-texto" />}
                   collapsed={true}
                 />
                 <MetricItem
@@ -520,7 +521,7 @@ export default function ReservationStats({
                 <MetricItem
                   label="Duración Total"
                   value={formatHours(stats.duracionTotalHoras)}
-                  icon={<Clock className="h-3.5 w-3.5 text-blue-600" />}
+                  icon={<Clock className="h-3.5 w-3.5 text-info-texto" />}
                   collapsed={true}
                 />
                 <MetricItem
@@ -532,7 +533,7 @@ export default function ReservationStats({
                 <MetricItem
                   label="Espacios Usados"
                   value={stats.totalEspaciosUsados}
-                  icon={<MapPin className="h-3.5 w-3.5 text-green-600" />}
+                  icon={<MapPin className="h-3.5 w-3.5 text-success-texto" />}
                   collapsed={true}
                 />
                 {stats.nombreEspacioMasUsado && (
@@ -554,8 +555,8 @@ export default function ReservationStats({
                 {stats.diasHastaProximaReserva !== null && (
                   <MetricItem
                     label="Próxima reserva"
-                    value={<span className="text-blue-600">{stats.diasHastaProximaReserva}d</span>}
-                    icon={<Calendar className="h-3.5 w-3.5 text-blue-600" />}
+                    value={<span className="text-info-texto">{stats.diasHastaProximaReserva}d</span>}
+                    icon={<Calendar className="h-3.5 w-3.5 text-info-texto" />}
                     collapsed={true}
                   />
                 )}
@@ -577,26 +578,26 @@ export default function ReservationStats({
           <SectionDivider />
           <MetricItem 
             label="Aprobadas" 
-            value={<span className="text-green-600">{stats.totalAprobadas}</span>} 
-            icon={<CheckCircle2 className="h-3.5 w-3.5 text-green-600" />}
+            value={<span className="text-success-texto">{stats.totalAprobadas}</span>} 
+            icon={<CheckCircle2 className="h-3.5 w-3.5 text-success-texto" />}
             collapsed={false}
           />
           <MetricItem 
             label="Pendientes" 
-            value={<span className="text-yellow-600">{stats.totalPendientes}</span>} 
-            icon={<Hourglass className="h-3.5 w-3.5 text-yellow-600" />}
+            value={<span className="text-warning-texto">{stats.totalPendientes}</span>} 
+            icon={<Hourglass className="h-3.5 w-3.5 text-warning-texto" />}
             collapsed={false}
           />
           <MetricItem 
             label="Canceladas" 
-            value={<span className="text-red-600">{stats.totalCanceladas}</span>} 
-            icon={<XCircle className="h-3.5 w-3.5 text-red-600" />}
+            value={<span className="text-danger-texto">{stats.totalCanceladas}</span>} 
+            icon={<XCircle className="h-3.5 w-3.5 text-danger-texto" />}
             collapsed={false}
           />
           <MetricItem 
             label="Futuras" 
-            value={<span className="text-blue-600">{stats.totalFuturas}</span>} 
-            icon={<Calendar className="h-3.5 w-3.5 text-blue-600" />}
+            value={<span className="text-info-texto">{stats.totalFuturas}</span>} 
+            icon={<Calendar className="h-3.5 w-3.5 text-info-texto" />}
             collapsed={false}
           />
           <MetricItem 
@@ -607,8 +608,8 @@ export default function ReservationStats({
           />
           <MetricItem 
             label="Activas" 
-            value={<span className="text-green-600">{stats.totalActivas}</span>} 
-            icon={<Activity className="h-3.5 w-3.5 text-green-600" />}
+            value={<span className="text-success-texto">{stats.totalActivas}</span>} 
+            icon={<Activity className="h-3.5 w-3.5 text-success-texto" />}
             collapsed={false}
           />
         </div>
@@ -631,7 +632,7 @@ export default function ReservationStats({
                 )}
               </div>
             } 
-            icon={<Calendar className="h-3.5 w-3.5 text-blue-600" />}
+            icon={<Calendar className="h-3.5 w-3.5 text-info-texto" />}
             fullWidth
             collapsed={false}
           />
@@ -668,7 +669,7 @@ export default function ReservationStats({
           <MetricItem 
             label="Duración Total" 
             value={formatHours(stats.duracionTotalHoras)} 
-            icon={<Clock className="h-3.5 w-3.5 text-blue-600" />}
+            icon={<Clock className="h-3.5 w-3.5 text-info-texto" />}
             fullWidth
             collapsed={false}
           />
@@ -682,7 +683,7 @@ export default function ReservationStats({
           <MetricItem 
             label="Espacios Usados" 
             value={stats.totalEspaciosUsados} 
-            icon={<MapPin className="h-3.5 w-3.5 text-green-600" />}
+            icon={<MapPin className="h-3.5 w-3.5 text-success-texto" />}
             collapsed={false}
           />
           {stats.nombreEspacioMasUsado && (
@@ -708,8 +709,8 @@ export default function ReservationStats({
               {stats.diasHastaProximaReserva !== null && (
                 <MetricItem 
                   label="Próxima reserva" 
-                  value={<span className="text-blue-600">{stats.diasHastaProximaReserva} días</span>} 
-                  icon={<Calendar className="h-3.5 w-3.5 text-blue-600" />}
+                  value={<span className="text-info-texto">{stats.diasHastaProximaReserva} días</span>} 
+                  icon={<Calendar className="h-3.5 w-3.5 text-info-texto" />}
                   collapsed={false}
                 />
               )}

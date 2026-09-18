@@ -36,7 +36,7 @@ export function FilterBar({ filters, onClearAll, className }: Readonly<FilterBar
             <span className="text-xs font-medium">{filter.label}</span>
             <button
               onClick={filter.onRemove}
-              className="ml-1 hover:bg-gray-300 rounded-full p-0.5 transition-colors"
+              className="ml-1 hover:bg-secondary rounded-full p-0.5 transition-colors"
               aria-label={`Quitar filtro ${filter.label}`}
             >
               <X className="h-3 w-3" />

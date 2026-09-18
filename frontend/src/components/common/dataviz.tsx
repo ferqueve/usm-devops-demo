@@ -1,4 +1,5 @@
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 // ============================================================================
 // Componentes de data-viz reutilizables (generalizados desde el dashboard de
@@ -7,7 +8,7 @@ import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 // prefers-reduced-motion (via .confetti-piece / keyframe en index.css).
 // ============================================================================
 
-const UTEC_GREEN = '#86bb4c';
+const UTEC_GREEN = MARCA.verde;
 
 // --- Flechita de tendencia ▲▼ (variación % vs. período anterior) ---
 export function Tendencia({ delta }: Readonly<{ delta?: number }>) {
@@ -37,7 +38,7 @@ export function Gauge({ value, suffix = '/ 100' }: Readonly<{ value: number; suf
   const ang = Math.PI * (1 - v / 100);
   const x = cx + r * Math.cos(ang); const y = cy - r * Math.sin(ang);
   const circ = Math.PI * r;
-  const color = v >= 66 ? UTEC_GREEN : v >= 33 ? '#F6CA21' : '#DE7A27';
+  const color = v >= 66 ? UTEC_GREEN : v >= 33 ? MARCA.amarillo : MARCA.naranja;
   return (
     <div className="relative w-[180px] h-[100px] mx-auto">
       <svg viewBox="0 0 180 100" className="w-[180px] h-[100px]">
@@ -57,20 +58,20 @@ export function Gauge({ value, suffix = '/ 100' }: Readonly<{ value: number; suf
 //     prefers-reduced-motion). Reusa el keyframe confetti-fall de index.css. ---
 export function Confetti() {
   const piezas = [
-    { l: '5%', c: '#86bb4c', s: 'h-2 w-1', dur: 3.2, delay: -0.4 },
-    { l: '12%', c: '#00c7ff', s: 'h-1.5 w-1.5 rounded-full', dur: 2.7, delay: -1.9 },
-    { l: '19%', c: '#F6CA21', s: 'h-2.5 w-1', dur: 3.8, delay: -0.9 },
+    { l: '5%', c: MARCA.verde, s: 'h-2 w-1', dur: 3.2, delay: -0.4 },
+    { l: '12%', c: MARCA.cian, s: 'h-1.5 w-1.5 rounded-full', dur: 2.7, delay: -1.9 },
+    { l: '19%', c: MARCA.amarillo, s: 'h-2.5 w-1', dur: 3.8, delay: -0.9 },
     { l: '27%', c: '#9333ea', s: 'h-1.5 w-1.5 rounded-full', dur: 2.4, delay: -2.6 },
-    { l: '34%', c: '#DE7A27', s: 'h-2 w-1', dur: 3.5, delay: -1.2 },
-    { l: '41%', c: '#86bb4c', s: 'h-1.5 w-1.5 rounded-full', dur: 2.9, delay: -0.2 },
-    { l: '48%', c: '#184897', s: 'h-2.5 w-1', dur: 3.1, delay: -2.2 },
-    { l: '55%', c: '#00c7ff', s: 'h-2 w-1', dur: 3.7, delay: -1.5 },
-    { l: '62%', c: '#DF2B31', s: 'h-1.5 w-1.5 rounded-full', dur: 2.6, delay: -0.7 },
-    { l: '69%', c: '#F6CA21', s: 'h-1.5 w-1.5 rounded-full', dur: 3.3, delay: -2.9 },
+    { l: '34%', c: MARCA.naranja, s: 'h-2 w-1', dur: 3.5, delay: -1.2 },
+    { l: '41%', c: MARCA.verde, s: 'h-1.5 w-1.5 rounded-full', dur: 2.9, delay: -0.2 },
+    { l: '48%', c: MARCA.azul, s: 'h-2.5 w-1', dur: 3.1, delay: -2.2 },
+    { l: '55%', c: MARCA.cian, s: 'h-2 w-1', dur: 3.7, delay: -1.5 },
+    { l: '62%', c: MARCA.rojo, s: 'h-1.5 w-1.5 rounded-full', dur: 2.6, delay: -0.7 },
+    { l: '69%', c: MARCA.amarillo, s: 'h-1.5 w-1.5 rounded-full', dur: 3.3, delay: -2.9 },
     { l: '76%', c: '#9333ea', s: 'h-2 w-1', dur: 2.8, delay: -1.1 },
-    { l: '83%', c: '#DE7A27', s: 'h-1.5 w-1.5 rounded-full', dur: 3.6, delay: -0.5 },
-    { l: '90%', c: '#86bb4c', s: 'h-2.5 w-1', dur: 2.5, delay: -2.4 },
-    { l: '96%', c: '#00c7ff', s: 'h-1.5 w-1.5 rounded-full', dur: 3.4, delay: -1.7 },
+    { l: '83%', c: MARCA.naranja, s: 'h-1.5 w-1.5 rounded-full', dur: 3.6, delay: -0.5 },
+    { l: '90%', c: MARCA.verde, s: 'h-2.5 w-1', dur: 2.5, delay: -2.4 },
+    { l: '96%', c: MARCA.cian, s: 'h-1.5 w-1.5 rounded-full', dur: 3.4, delay: -1.7 },
   ];
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -95,8 +96,8 @@ export interface PodioEntry {
 
 const PODIO_META: Record<number, { medal: string; alto: string; ped: string; ring: string }> = {
   1: { medal: '🥇', alto: 'h-24', ped: 'bg-utec-yellow', ring: 'ring-utec-yellow' },
-  2: { medal: '🥈', alto: 'h-16', ped: 'bg-slate-400', ring: 'ring-slate-400' },
-  3: { medal: '🥉', alto: 'h-12', ped: 'bg-orange-400', ring: 'ring-orange-400' },
+  2: { medal: '🥈', alto: 'h-16', ped: 'bg-muted-foreground', ring: 'ring-border' },
+  3: { medal: '🥉', alto: 'h-12', ped: 'bg-warning', ring: 'ring-warning' },
 };
 
 // Podio literal: 2º a la izquierda, 1º al centro (más alto, con corona), 3º a la derecha.

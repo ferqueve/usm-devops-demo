@@ -34,6 +34,7 @@ import { EventosDescubrir } from './EventosDescubrir';
 import { EstadoBadge, parseTags } from './EventoCardDescubrir';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import { relativoInicio } from '@/lib/agenda/tiempo';
+import { MARCA } from '@/lib/design/paleta';
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 type VistaEventos = 'descubrir' | 'calendario' | 'todos' | 'metricas';
@@ -49,10 +50,10 @@ function formatFecha(iso?: string): string {
 
 // --- Colores de marca por tipo de evento (donut + podio en Métricas) ---
 const TIPO_COLOR: Record<string, string> = {
-  EVENTO: '#00c7ff', // utec-cyan
-  CURSO: '#184897', // utec-blue
+  EVENTO: MARCA.cian, // utec-cyan
+  CURSO: MARCA.azul, // utec-blue
 };
-const TIPO_FALLBACK = ['#9333ea', '#00c7ff', '#86bb4c', '#F6CA21', '#DF2B31'];
+const TIPO_FALLBACK = ['#9333ea', MARCA.cian, MARCA.verde, MARCA.amarillo, MARCA.rojo];
 
 function fmtNum(n: number, dec = 0): string {
   return n.toLocaleString('es-UY', { minimumFractionDigits: dec, maximumFractionDigits: dec });
@@ -374,13 +375,13 @@ export default function EventosManagement() {
               ) : (
                 <ResponsiveContainer width="100%" height={168}>
                   <ComposedChart data={serieData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <defs><linearGradient id="gEvInscriptos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00c7ff" stopOpacity={0.35} /><stop offset="100%" stopColor="#00c7ff" stopOpacity={0} /></linearGradient></defs>
+                    <defs><linearGradient id="gEvInscriptos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={MARCA.cian} stopOpacity={0.35} /><stop offset="100%" stopColor={MARCA.cian} stopOpacity={0} /></linearGradient></defs>
                     <CartesianGrid strokeDasharray="2 4" stroke="#e5e7eb" vertical={false} />
                     <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
                     <Tooltip />
-                    <Area type="monotone" dataKey="inscriptos" name="Inscriptos" stroke="#00c7ff" strokeWidth={2} fill="url(#gEvInscriptos)" />
-                    <Line type="monotone" dataKey="eventos" name="Eventos" stroke="#184897" strokeWidth={2} dot={false} />
+                    <Area type="monotone" dataKey="inscriptos" name="Inscriptos" stroke={MARCA.cian} strokeWidth={2} fill="url(#gEvInscriptos)" />
+                    <Line type="monotone" dataKey="eventos" name="Eventos" stroke={MARCA.azul} strokeWidth={2} dot={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               )}
@@ -459,7 +460,7 @@ export default function EventosManagement() {
         title="Eventos"
         count={eventos.length}
         description="Descubrí y participá de la oferta abierta."
-        accentColor="#DE7A27"
+        accentColor={MARCA.naranja}
         actions={
           <PermissionGuard requiredPermission="evento:crear">
             <Button onClick={() => setCreateDialog(true)} className={HEADER_PRIMARY}>

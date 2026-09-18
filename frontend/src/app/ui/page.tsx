@@ -1,13 +1,6 @@
 import { useState, type ReactNode } from 'react';
 
-import {
-  DEPARTAMENTO,
-  MARCA,
-  SERIE_CLARO,
-  SERIE_OSCURO,
-  contraste,
-  tintaSobre,
-} from '@/lib/design/paleta';
+import { MARCA } from '@/lib/design/paleta';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -34,6 +27,7 @@ import { GraficosDashboard, GraficosEstadisticas } from './_graficos';
 import { FilasDominio, PiezasSistema } from './_dominio';
 import { KPIS } from './_datos';
 import { Inventario } from './_inventario';
+import { Paleta } from './_paleta';
 import { Dialogos } from './_dialogos';
 import { TarjetasDominio } from './_tarjetas';
 import { PantallaSistema } from './_sistema';
@@ -121,75 +115,13 @@ function Muestra({ label, children }: Readonly<{ label: string; children: ReactN
 }
 
 /* ------------------------------------------------------------------ *
- * Color
- * ------------------------------------------------------------------ */
-
-/** Pastilla de color con su hex y el contraste del texto que lleva encima. */
-function Chip({ hex, nombre, detalle }: Readonly<{ hex: string; nombre: string; detalle?: string }>) {
-  const tinta = tintaSobre(hex);
-  const ratio = contraste(hex, tinta);
-  return (
-    <div className="min-w-0 overflow-hidden rounded-lg border border-border">
-      <div className="px-3 py-4" style={{ backgroundColor: hex, color: tinta }}>
-        <div className="text-xs font-semibold">{nombre}</div>
-        <div className="mt-0.5 font-mono text-[10px] opacity-80">{hex.toUpperCase()}</div>
-      </div>
-      <div className="bg-card px-3 py-1.5">
-        <div className="font-mono text-[10px] text-muted-foreground">
-          {ratio.toFixed(2)}:1
-          <span className={ratio >= 4.5 ? ' text-utec-green' : ' text-utec-orange'}>
-            {ratio >= 4.5 ? ' AA' : ' bajo'}
-          </span>
-        </div>
-        {detalle && <div className="truncate text-[10px] text-muted-foreground">{detalle}</div>}
-      </div>
-    </div>
-  );
-}
-
-/** Muestra un token del tema leyendo su valor ya resuelto del CSS. */
-function Token({ nombre, variable }: Readonly<{ nombre: string; variable: string }>) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span
-        className="size-9 shrink-0 rounded-md border border-border"
-        style={{ backgroundColor: `var(${variable})` }}
-        aria-hidden
-      />
-      <span className="min-w-0">
-        <span className="block truncate text-xs font-medium text-foreground">{nombre}</span>
-        <span className="block truncate font-mono text-[10px] text-muted-foreground">{variable}</span>
-      </span>
-    </div>
-  );
-}
-
-const TOKENS: Array<[string, string]> = [
-  ['Fondo', '--background'],
-  ['Tarjeta', '--card'],
-  ['Texto', '--foreground'],
-  ['Texto apagado', '--muted-foreground'],
-  ['Acción', '--primary'],
-  ['Secundario', '--secondary'],
-  ['Apagado', '--muted'],
-  ['Acento', '--accent'],
-  ['Destructivo', '--destructive'],
-  ['Borde', '--border'],
-  ['Foco', '--ring'],
-  ['Barra lateral', '--sidebar'],
-];
-
-/* ------------------------------------------------------------------ *
  * Página
  * ------------------------------------------------------------------ */
 
 const INDICE = [
   ['inventario', 'Inventario'],
-  ['marca', 'Marca'],
-  ['tokens', 'Tokens'],
-  ['graficos-color', 'Series'],
+  ['paleta', 'Paleta'],
   ['tipografia', 'Tipografía'],
-  ['superficie', 'Superficie'],
   ['controles', 'Controles'],
   ['datos', 'Datos'],
   ['bloques', 'Bloques'],
@@ -245,58 +177,13 @@ export default function UiPage() {
           </Seccion>
 
           <Seccion
-            id="marca"
-            titulo="Marca"
-            nota="Hex exactos del manual 2.1 (A.4). Cada color nombra un departamento."
+            id="paleta"
+            titulo="Paleta"
+            nota="Todo lo que define el tema, resuelto en vivo del CSS aplicado. Si cambia un token, esta tabla lo muestra sola."
           >
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-              <Chip hex={MARCA.cian} nombre="Cian" detalle="principal del sistema" />
-              {Object.entries(DEPARTAMENTO).map(([k, d]) => (
-                <Chip key={k} hex={d.color} nombre={d.nombre.split(' ')[0]} detalle={d.nombre} />
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              El contraste es contra la tinta que cada uno lleva encima. Los que quedan
-              por debajo de 4.5:1 no sirven para texto chico sobre ese fondo.
-            </p>
-          </Seccion>
-
-          <Seccion id="tokens" titulo="Tokens de interfaz" nota="Lo que usan los componentes.">
             <Doble>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {TOKENS.map(([nombre, variable]) => (
-                  <Token key={variable} nombre={nombre} variable={variable} />
-                ))}
-              </div>
+              <Paleta />
             </Doble>
-          </Seccion>
-
-          <Seccion
-            id="graficos-color"
-            titulo="Series de gráfico"
-            nota="La marca llevada a la luz donde funciona sobre cada fondo."
-          >
-            <div className="flex flex-col gap-3 lg:flex-row">
-              {([['Sobre claro', SERIE_CLARO, '#ffffff'], ['Sobre oscuro', SERIE_OSCURO, '#212529']] as const).map(
-                ([titulo, serie, fondo]) => (
-                  <div key={titulo} className="min-w-0 flex-1 rounded-lg border border-border p-4" style={{ backgroundColor: fondo }}>
-                    <p className="mb-3 text-[10px] font-medium uppercase tracking-wider" style={{ color: fondo === '#ffffff' ? '#6c757d' : '#adb5bd' }}>
-                      {titulo}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(serie).map(([k, v]) => (
-                        <div key={k} className="flex items-center gap-1.5">
-                          <span className="size-5 rounded" style={{ backgroundColor: v }} aria-hidden />
-                          <span className="font-mono text-[10px]" style={{ color: fondo === '#ffffff' ? '#6c757d' : '#adb5bd' }}>
-                            {k} {v}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
           </Seccion>
 
           <Seccion id="tipografia" titulo="Tipografía" nota="Poppins. Gilroy cuando esté licenciada.">
@@ -314,37 +201,6 @@ export default function UiPage() {
                   #A16D · 20:30 · 4.678 · 67 %
                 </p>
                 <p className="font-utec text-lg text-foreground">Fuente UTEC · sólo marca</p>
-              </div>
-            </Doble>
-          </Seccion>
-
-          <Seccion
-            id="superficie"
-            titulo="Superficie"
-            nota="Radio según el tamaño de lo que envuelve, y elevación según cuánto se despega."
-          >
-            <Doble>
-              <div className="mb-5 flex flex-wrap items-end gap-4">
-                {(['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const).map((n) => (
-                  <div key={n} className="text-center">
-                    <div
-                      className="size-16 rounded-lg bg-card"
-                      style={{ boxShadow: `var(--shadow-${n})` }}
-                    />
-                    <div className="mt-1.5 text-[10px] text-muted-foreground">{n}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {([['sm', 'rounded-sm', 'control'], ['md', 'rounded-md', 'botón'],
-                   ['lg', 'rounded-lg', 'tarjeta'], ['xl', 'rounded-xl', 'panel']] as const).map(
-                  ([n, clase, uso]) => (
-                    <div key={n} className="text-center">
-                      <div className={`size-16 border border-border bg-card ${clase}`} />
-                      <div className="mt-1 text-[10px] text-muted-foreground">{n} · {uso}</div>
-                    </div>
-                  )
-                )}
               </div>
             </Doble>
           </Seccion>

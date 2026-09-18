@@ -5,6 +5,7 @@ import { TipoElementoFormDialog } from './TipoElementoFormDialog';
 import { DeleteTipoElementoDialog } from './DeleteTipoElementoDialog';
 import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
 import type { TipoElemento } from '@/lib/types/spaces';
+import { MARCA } from '@/lib/design/paleta';
 
 interface TipoElementoManagementProps {
   /** Se avisa al consumidor cuando el catálogo cambió, para que recargue lo suyo. */
@@ -56,7 +57,7 @@ export function TipoElementoManagement({
         title="Tipos de inventario"
         description="Clasifican los elementos de inventario: proyector, silla, notebook."
         Icon={Package}
-        accentColor="#F6CA21"
+        accentColor={MARCA.amarillo}
         loading={loading}
         items={tiposElemento}
         emptyLabel="Todavía no hay tipos de inventario"

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Database, Recycle } from 'lucide-react';
 import type { MetricInfo } from '@/lib/types/actuator';
 import type { PoolMetrics } from '@/hooks/useSystemMetrics';
+import { MARCA } from '@/lib/design/paleta';
 
 interface RuntimeCardsProps {
   pool: PoolMetrics | null | undefined;
@@ -80,7 +81,7 @@ export const RuntimeCards = memo(function RuntimeCards({ pool, gcMetrics, uptime
       <Panel
         icon={Database}
         title="Pool de conexiones"
-        accent="#184897"
+        accent={MARCA.azul}
         aside={pool ? `${enUso} de ${pool.maximo}` : undefined}
       >
         {pool ? (
@@ -115,7 +116,7 @@ export const RuntimeCards = memo(function RuntimeCards({ pool, gcMetrics, uptime
       <Panel
         icon={Recycle}
         title="Recolección de basura"
-        accent="#86bb4c"
+        accent={MARCA.verde}
         aside={`${porcentajeEnGc.toFixed(2)}% del tiempo`}
       >
         <div className="divide-y">

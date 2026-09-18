@@ -1,15 +1,16 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { NodeNetwork } from '@/components/layouts/AuthLayout/NodeNetwork';
 import { UtecShapesBackground } from './UtecShapesBackground';
+import { MARCA } from '@/lib/design/paleta';
 
 // Colores institucionales UTEC.
 const UTEC = {
-  green: '#86BB4C',
-  yellow: '#F6CA21',
-  orange: '#DE7A27',
-  red: '#DF2B31',
-  blue: '#184897',
-  cyan: '#00C7FF',
+  green: MARCA.verde,
+  yellow: MARCA.amarillo,
+  orange: MARCA.naranja,
+  red: MARCA.rojo,
+  blue: MARCA.azul,
+  cyan: MARCA.cian,
   purple: '#9333EA',
 };
 
