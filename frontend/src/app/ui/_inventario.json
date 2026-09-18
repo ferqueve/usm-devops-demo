@@ -1,5 +1,5 @@
 {
- "generado": "2026-09-17",
+ "generado": "2026-09-18",
  "inventario": [
   {
    "archivo": "App.tsx",
@@ -391,7 +391,7 @@
    "nombres": [
     "IaEnPantallas"
    ],
-   "lineas": 34,
+   "lineas": 35,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -415,7 +415,7 @@
    "nombres": [
     "Laboratorio"
    ],
-   "lineas": 199,
+   "lineas": 200,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -427,7 +427,7 @@
    "nombres": [
     "SemanticSearchPanel"
    ],
-   "lineas": 126,
+   "lineas": 127,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -463,7 +463,7 @@
    "nombres": [
     "AuditManagement"
    ],
-   "lineas": 394,
+   "lineas": 395,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -511,7 +511,7 @@
    "nombres": [
     "Calendar"
    ],
-   "lineas": 251,
+   "lineas": 252,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla del módulo.",
@@ -547,8 +547,8 @@
    "nombres": [
     "DeleteCarreraDialog"
    ],
-   "lineas": 78,
-   "dialog": true,
+   "lineas": 34,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -559,8 +559,20 @@
    "nombres": [
     "CatalogoCrudShell"
    ],
-   "lineas": 304,
+   "lineas": 305,
    "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/ConfirmarBorradoDialog.tsx",
+   "familia": "common",
+   "nombres": [
+    "ConfirmarBorradoDialog"
+   ],
+   "lineas": 187,
+   "dialog": true,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -574,7 +586,7 @@
     "Podio",
     "Tendencia"
    ],
-   "lineas": 141,
+   "lineas": 142,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -610,7 +622,7 @@
    "nombres": [
     "ConfiguracionManagement"
    ],
-   "lineas": 42,
+   "lineas": 43,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -694,7 +706,7 @@
    "nombres": [
     "DualPanel"
    ],
-   "lineas": 73,
+   "lineas": 74,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -765,7 +777,7 @@
    "nombres": [
     "Panel"
    ],
-   "lineas": 71,
+   "lineas": 72,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -801,7 +813,7 @@
    "nombres": [
     "StatStrip"
    ],
-   "lineas": 195,
+   "lineas": 196,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -957,7 +969,7 @@
    "nombres": [
     "AfichePoster"
    ],
-   "lineas": 171,
+   "lineas": 172,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -981,8 +993,8 @@
    "nombres": [
     "DeleteEventoDialog"
    ],
-   "lineas": 80,
-   "dialog": true,
+   "lineas": 34,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -1042,7 +1054,7 @@
    "nombres": [
     "EventosManagement"
    ],
-   "lineas": 537,
+   "lineas": 538,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -1162,8 +1174,8 @@
    "nombres": [
     "DeleteInventoryDialog"
    ],
-   "lineas": 78,
-   "dialog": true,
+   "lineas": 32,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -1174,8 +1186,8 @@
    "nombres": [
     "DeleteTipoElementoDialog"
    ],
-   "lineas": 101,
-   "dialog": true,
+   "lineas": 34,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -1234,7 +1246,7 @@
    "nombres": [
     "InventoryManagement"
    ],
-   "lineas": 1026,
+   "lineas": 1027,
    "dialog": true,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -1270,7 +1282,7 @@
    "nombres": [
     "InventoryRequestsManagement"
    ],
-   "lineas": 915,
+   "lineas": 916,
    "dialog": true,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -1318,7 +1330,7 @@
    "nombres": [
     "TipoElementoManagement"
    ],
-   "lineas": 92,
+   "lineas": 93,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -1390,7 +1402,7 @@
    "nombres": [
     "DashboardHeader"
    ],
-   "lineas": 62,
+   "lineas": 63,
    "dialog": false,
    "tipo": "chrome",
    "motivo": "Arma la pantalla; se ve en cualquier ruta.",
@@ -1443,7 +1455,7 @@
     "PAGE_HEADER_SLOT",
     "PageHeader"
    ],
-   "lineas": 118,
+   "lineas": 119,
    "dialog": false,
    "tipo": "chrome",
    "motivo": "Arma la pantalla; se ve en cualquier ruta.",
@@ -1467,8 +1479,8 @@
    "nombres": [
     "DeleteMateriaDialog"
    ],
-   "lineas": 78,
-   "dialog": true,
+   "lineas": 34,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -1491,7 +1503,7 @@
    "nombres": [
     "MapaCorrelativas"
    ],
-   "lineas": 734,
+   "lineas": 746,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1603,7 +1615,7 @@
    "nombres": [
     "PrediccionesAcademico"
    ],
-   "lineas": 241,
+   "lineas": 242,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1651,7 +1663,7 @@
     "NotaModelo",
     "SinModelo"
    ],
-   "lineas": 182,
+   "lineas": 183,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1663,7 +1675,7 @@
    "nombres": [
     "Predicciones"
    ],
-   "lineas": 198,
+   "lineas": 199,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla del módulo.",
@@ -1692,7 +1704,7 @@
     "SemanasTipo",
     "TiraRiesgo"
    ],
-   "lineas": 268,
+   "lineas": 269,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1704,7 +1716,7 @@
    "nombres": [
     "PrediccionesInventario"
    ],
-   "lineas": 254,
+   "lineas": 255,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1755,7 +1767,7 @@
     "PronosticoPorTipo",
     "TablaTipos"
    ],
-   "lineas": 259,
+   "lineas": 260,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1767,7 +1779,7 @@
    "nombres": [
     "PrediccionesReservas"
    ],
-   "lineas": 232,
+   "lineas": 233,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2110,7 +2122,7 @@
    "nombres": [
     "ReservationManagement"
    ],
-   "lineas": 775,
+   "lineas": 776,
    "dialog": true,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -2134,7 +2146,7 @@
    "nombres": [
     "ReservationStats"
    ],
-   "lineas": 726,
+   "lineas": 727,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2182,7 +2194,7 @@
    "nombres": [
     "SostenibilidadDashboard"
    ],
-   "lineas": 459,
+   "lineas": 460,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2206,8 +2218,8 @@
    "nombres": [
     "DeleteInventarioDialog"
    ],
-   "lineas": 83,
-   "dialog": true,
+   "lineas": 36,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -2218,8 +2230,8 @@
    "nombres": [
     "DeleteSpaceDialog"
    ],
-   "lineas": 96,
-   "dialog": true,
+   "lineas": 34,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -2230,8 +2242,8 @@
    "nombres": [
     "DeleteTipoEspacioDialog"
    ],
-   "lineas": 102,
-   "dialog": true,
+   "lineas": 36,
+   "dialog": false,
    "tipo": "montable",
    "motivo": "",
    "cubierto": true
@@ -2326,7 +2338,7 @@
    "nombres": [
     "SpacesManagement"
    ],
-   "lineas": 983,
+   "lineas": 984,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -2362,7 +2374,7 @@
    "nombres": [
     "TipoEspacioManagement"
    ],
-   "lineas": 117,
+   "lineas": 118,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -2374,7 +2386,7 @@
    "nombres": [
     "EstadisticasAcademico"
    ],
-   "lineas": 217,
+   "lineas": 218,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2562,7 +2574,7 @@
    "nombres": [
     "TarjetasKpi"
    ],
-   "lineas": 124,
+   "lineas": 125,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2586,7 +2598,7 @@
    "nombres": [
     "Statistics"
    ],
-   "lineas": 100,
+   "lineas": 101,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla del módulo.",
@@ -2626,7 +2638,7 @@
    "nombres": [
     "EstadisticasInventario"
    ],
-   "lineas": 331,
+   "lineas": 332,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2638,7 +2650,7 @@
    "nombres": [
     "EvolucionInventario"
    ],
-   "lineas": 256,
+   "lineas": 266,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2677,7 +2689,7 @@
    "nombres": [
     "PanelEstadistica"
    ],
-   "lineas": 153,
+   "lineas": 154,
    "dialog": true,
    "tipo": "montable",
    "motivo": "",
@@ -2743,7 +2755,7 @@
    "nombres": [
     "EstadisticasReservas"
    ],
-   "lineas": 606,
+   "lineas": 607,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2833,7 +2845,7 @@
    "nombres": [
     "Tendencia"
    ],
-   "lineas": 122,
+   "lineas": 132,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2862,7 +2874,7 @@
     "NotaHastaAnoche",
     "Seccion"
    ],
-   "lineas": 204,
+   "lineas": 205,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2886,7 +2898,7 @@
    "nombres": [
     "System"
    ],
-   "lineas": 280,
+   "lineas": 281,
    "dialog": false,
    "tipo": "pantalla",
    "motivo": "Pantalla del módulo.",
@@ -2958,7 +2970,7 @@
    "nombres": [
     "JvmCharts"
    ],
-   "lineas": 60,
+   "lineas": 61,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2994,7 +3006,7 @@
    "nombres": [
     "MetricsCards"
    ],
-   "lineas": 217,
+   "lineas": 218,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3030,7 +3042,7 @@
    "nombres": [
     "RuntimeCards"
    ],
-   "lineas": 142,
+   "lineas": 143,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3066,7 +3078,7 @@
    "nombres": [
     "SystemHeader"
    ],
-   "lineas": 82,
+   "lineas": 83,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3321,7 +3333,7 @@
     "EventoPatternBg",
     "PATRON_DEFAULT"
    ],
-   "lineas": 354,
+   "lineas": 355,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3333,7 +3345,7 @@
    "nombres": [
     "UtecShapesBackground"
    ],
-   "lineas": 168,
+   "lineas": 169,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3468,7 +3480,7 @@
    "nombres": [
     "ProgressRing"
    ],
-   "lineas": 65,
+   "lineas": 66,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3480,7 +3492,7 @@
    "nombres": [
     "StatusBadge"
    ],
-   "lineas": 66,
+   "lineas": 72,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3540,7 +3552,7 @@
    "nombres": [
     "UserManagement"
    ],
-   "lineas": 1041,
+   "lineas": 1042,
    "dialog": true,
    "tipo": "pantalla",
    "motivo": "Pantalla de gestión completa.",
@@ -3552,7 +3564,7 @@
    "nombres": [
     "UserStatsCards"
    ],
-   "lineas": 215,
+   "lineas": 216,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",

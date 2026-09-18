@@ -1,82 +1,35 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/Button";
-import { AlertTriangle } from "lucide-react";
+import { ConfirmarBorradoDialog } from '@/components/common/ConfirmarBorradoDialog';
 import { inventarioApi } from '@/lib/api/inventory';
 import type { InventarioItem } from '@/lib/types/spaces';
-import { toast } from 'sonner';
-import PermissionGuard from '@/components/auth/PermissionGuard';
 
-interface DeleteInventarioDialogProps {
-  inventarioItem: InventarioItem;
+interface Props {
+  inventarioItem: InventarioItem | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function DeleteInventarioDialog({
-  inventarioItem,
-  open,
-  onOpenChange,
-  onSuccess
-}: Readonly<DeleteInventarioDialogProps>) {
-  const handleDelete = async () => {
-    try {
-      await inventarioApi.eliminarInventarioItem(inventarioItem.id);
-      onSuccess();
-      onOpenChange(false);
-      toast.success('Elemento eliminado exitosamente');
-    } catch (error: unknown) {
-      console.error('Error al eliminar elemento:', error);
-      const description = error instanceof Error ? error.message : 'No se pudo eliminar el elemento';
-      toast.error('Error al eliminar elemento', { description });
-    }
-  };
-
+/**
+ * Envoltorio fino sobre `ConfirmarBorradoDialog`.
+ *
+ * Existe para no cambiar los llamadores: la firma `{ inventarioItem, open, onOpenChange,
+ * onSuccess }` es la que ya usaban. Lo único propio son el nombre de la
+ * entidad, de dónde sale su nombre visible, qué llamada la borra y qué
+ * consecuencia tiene.
+ */
+export function DeleteInventarioDialog({ inventarioItem, open, onOpenChange, onSuccess }: Readonly<Props>) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-danger" />
-            Eliminar Elemento de Inventario
-          </DialogTitle>
-          <DialogDescription>
-            ¿Estás seguro de que quieres eliminar este elemento del inventario?
-            Esta acción no se puede deshacer.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="bg-muted p-4 rounded-lg">
-          <h4 className="font-medium mb-2">Elemento a eliminar:</h4>
-          <div className="space-y-1 text-sm">
-            <p><span className="font-medium">Tipo:</span> {inventarioItem.tipoElementoNombre}</p>
-            <p><span className="font-medium">Cantidad:</span> {inventarioItem.cantidad}</p>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <PermissionGuard requiredPermission="inventario:eliminar">
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-            >
-              Eliminar
-            </Button>
-          </PermissionGuard>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <ConfirmarBorradoDialog
+      item={inventarioItem}
+      open={open}
+      onOpenChange={onOpenChange}
+      onSuccess={onSuccess}
+      entidad="asignación"
+      nombre={(x) => x.tipoElementoNombre}
+      eliminar={(x) => inventarioApi.eliminarInventarioItem(x.id)}
+      consecuencia="No se puede deshacer."
+      detalle={(x) => [{ etiqueta: 'Cantidad', valor: x.cantidad }]}
+      permiso="inventario:eliminar"
+    />
   );
 }

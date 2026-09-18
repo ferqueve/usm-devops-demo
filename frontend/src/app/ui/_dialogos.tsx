@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { MARCA } from '@/lib/design/paleta';
 
+import { ConfirmarBorradoDialog } from '@/components/common/ConfirmarBorradoDialog';
 import { DeleteCarreraDialog } from '@/components/carreras/DeleteCarreraDialog';
 import { DeleteMateriaDialog } from '@/components/materias/DeleteMateriaDialog';
 import { DeleteEventoDialog } from '@/components/eventos/DeleteEventoDialog';
@@ -19,6 +20,7 @@ import AuditLogDetailsDialog from '@/components/audit/AuditLogDetailsDialog';
 import { EditUserDialog } from '@/components/users/EditUserDialog';
 import { ComoFuncionaDialog } from '@/components/sostenibilidad/ComoFuncionaDialog';
 import type { AuditLog } from '@/lib/types/audit';
+import type { InventarioItem } from '@/lib/types/spaces';
 
 /**
  * Los diálogos del sistema, abriéndose de verdad.
@@ -28,9 +30,11 @@ import type { AuditLog } from '@/lib/types/audit';
  * de la aplicación. Es además como se usan —uno por vez, tapando la pantalla—,
  * así que verlos de a uno no es una limitación sino la forma correcta.
  *
- * Lo que salta al verlos juntos: los ocho «Delete…Dialog» tienen exactamente
- * la misma firma —{ entidad, open, onOpenChange, onSuccess }— y difieren en el
- * nombre del prop y en una frase de texto. Son ~690 líneas haciendo lo mismo.
+ * Verlos juntos acá fue lo que mostró que los ocho «Delete…Dialog» tenían la
+ * misma firma —{ entidad, open, onOpenChange, onSuccess }— y diferían en el
+ * nombre del prop y en una frase. Eran ~690 líneas diciendo lo mismo; hoy son
+ * ocho envoltorios sobre `ConfirmarBorradoDialog`. Siguen listados de a uno
+ * porque cada uno conserva su firma: lo que cambió es de dónde sale el dibujo.
  */
 
 const noop = () => {};
@@ -47,10 +51,21 @@ const evento = { id: 1, titulo: 'Hackathon de Datos', inicio: '2026-09-20T19:00:
 const espacio = { id: 1, nombre: 'Laboratorio Mecatrónica', capacidad: 25 } as never;
 const tipoEspacio = { id: 1, nombre: 'Laboratorio', descripcion: 'Con equipamiento', color: MARCA.verde } as never;
 const tipoElemento = { id: 1, nombre: 'Proyector', descripcion: 'Equipo audiovisual' } as never;
-const item = {
-  id: 1, nombre: 'Proyector Epson X41', codigo: 'INV-0041', cantidad: 3,
-  estado: 'DISPONIBLE', espacioNombre: 'Aula 8',
-} as never;
+/* Tipado de verdad, no `as never`: la versión anterior traía `nombre` y
+   `codigo`, que no existen en InventarioItem, y el diálogo mostraba el nombre
+   vacío sin que nada se quejara. */
+const item: InventarioItem = {
+  id: 1,
+  espacioId: 8,
+  espacioNombre: 'Aula 8',
+  tipoElementoId: 3,
+  tipoElementoNombre: 'Proyector Epson X41',
+  cantidad: 3,
+  estado: 'DISPONIBLE',
+  activo: true,
+  createdAt: '2026-03-02T10:00:00Z',
+  updatedAt: '2026-09-10T14:30:00Z',
+};
 const log: AuditLog = {
   id: 1,
   entidad: 'Reserva',
@@ -95,25 +110,41 @@ export function Dialogos() {
         <p className="mb-2 text-xs font-medium text-foreground">
           Confirmación de borrado
           <span className="ml-2 font-normal text-muted-foreground">
-            ocho archivos, la misma firma, ~690 líneas
+            ocho entradas, un solo ConfirmarBorradoDialog
           </span>
         </p>
         <div className="grid gap-2 @md:grid-cols-2 @3xl:grid-cols-4 @7xl:grid-cols-6">
-          <Abridor label="Carrera" nota="DeleteCarreraDialog · 77 líneas"
+          <Abridor label="La base" nota="ConfirmarBorradoDialog · lo que dibujan los ocho"
+            render={(p) => (
+              <ConfirmarBorradoDialog
+                {...p}
+                item={item}
+                onSuccess={noop}
+                entidad="asignación"
+                nombre={(x) => x.tipoElementoNombre}
+                eliminar={async () => {}}
+                consecuencia="Acá se cambia cómo se ven las ocho confirmaciones de borrado."
+                detalle={(x) => [
+                  { etiqueta: 'Cantidad', valor: x.cantidad },
+                  { etiqueta: 'Espacio', valor: x.espacioNombre },
+                ]}
+              />
+            )} />
+          <Abridor label="Carrera" nota="DeleteCarreraDialog · la carrera"
             render={(p) => <DeleteCarreraDialog {...p} carrera={carrera} onSuccess={noop} />} />
-          <Abridor label="Materia" nota="DeleteMateriaDialog · 77 líneas"
+          <Abridor label="Materia" nota="DeleteMateriaDialog · la materia"
             render={(p) => <DeleteMateriaDialog {...p} materia={materia} onSuccess={noop} />} />
-          <Abridor label="Evento" nota="DeleteEventoDialog · 79 líneas"
+          <Abridor label="Evento" nota="DeleteEventoDialog · el evento"
             render={(p) => <DeleteEventoDialog {...p} evento={evento} onSuccess={noop} />} />
-          <Abridor label="Espacio" nota="DeleteSpaceDialog · 95 líneas"
+          <Abridor label="Espacio" nota="DeleteSpaceDialog · el espacio"
             render={(p) => <DeleteSpaceDialog {...p} espacio={espacio} onSuccess={noop} />} />
-          <Abridor label="Tipo de espacio" nota="DeleteTipoEspacioDialog · 101 líneas"
+          <Abridor label="Tipo de espacio" nota="DeleteTipoEspacioDialog · el tipo · permiso tipo:eliminar"
             render={(p) => <DeleteTipoEspacioDialog {...p} tipoEspacio={tipoEspacio} onSuccess={noop} />} />
-          <Abridor label="Tipo de elemento" nota="DeleteTipoElementoDialog · 100 líneas"
+          <Abridor label="Tipo de elemento" nota="DeleteTipoElementoDialog · el tipo de elemento"
             render={(p) => <DeleteTipoElementoDialog {...p} tipoElemento={tipoElemento} onSuccess={noop} />} />
-          <Abridor label="Item de inventario" nota="DeleteInventoryDialog · 77 líneas"
+          <Abridor label="Item de inventario" nota="DeleteInventoryDialog · el item · permiso inventario:eliminar"
             render={(p) => <DeleteInventoryDialog {...p} item={item} onSuccess={noop} />} />
-          <Abridor label="Inventario del espacio" nota="DeleteInventarioDialog · 82 líneas"
+          <Abridor label="Inventario del espacio" nota="DeleteInventarioDialog · con detalle · permiso inventario:eliminar"
             render={(p) => <DeleteInventarioDialog {...p} inventarioItem={item} onSuccess={noop} />} />
         </div>
       </div>

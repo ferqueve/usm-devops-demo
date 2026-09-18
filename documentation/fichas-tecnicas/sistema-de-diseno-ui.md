@@ -244,9 +244,22 @@ Dos decisiones de implementación quedan documentadas por ser no obvias:
 
 ### 5.2 Deuda técnica
 
-- En el código frontend hay referencias a clases que **no están definidas** en `index.css` ni en `tw-animate-css` (por ejemplo `active-indicator`, `badge-pulse`, `hover-scale`, `animate-slide-up`). Hoy estos selectores no aplican ningún estilo. Hay dos vías para resolverlo:
-  1. Definirlas formalmente en `index.css` como utilidades propias.
-  2. Reemplazarlas por equivalentes existentes (`hover-lift`, `animate-fade-in-up`, etc.) y borrarlas del código.
+**Familias duplicadas.** Verlas juntas en `/ui` es lo que las hizo visibles.
+Los tokens las dejaron *consistentes*, pero siguen siendo varias
+implementaciones de lo mismo:
+
+| familia | copias | estado |
+|---|---|---|
+| Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
+| Tiras de métricas | 6 | pendiente |
+| Tablas y vistas de fichas | 3 + 3 | pendiente |
+| `Panel` | 2 | pendiente |
+| `EmptyState` | 2 | pendiente |
+
+**Componentes de dashboard sin usar.** `DashboardStats`, `DashboardCharts`,
+`UpcomingReservations` y `QuickActions` —593 líneas más sus cuatro archivos de
+test— no los importa ninguna pantalla: sólo el catálogo. O vuelven a una
+pantalla o se borran; queda a decisión de producto.
 
 ### 5.3 TODOs
 
@@ -256,8 +269,13 @@ Dos decisiones de implementación quedan documentadas por ser no obvias:
 - [x] Documentar la guía de contribución. Está en
       [`documentation/ui/README.md`](../ui/README.md).
 - [x] Sumar un catálogo de componentes. Es la ruta `/ui`, sólo en desarrollo,
-      con los 124 componentes que pueden montarse sin backend y los dos temas
+      con los 125 componentes que pueden montarse sin backend y los dos temas
       lado a lado. La cobertura la calcula `scripts/inventario-ui.mjs`.
+- [x] Colapsar las ocho confirmaciones de borrado. Eran ~690 líneas repetidas;
+      hoy son ocho envoltorios sobre `ConfirmarBorradoDialog`, cada uno con su
+      firma original para no tocar a quien los llama. En el camino se
+      recuperaron tres `PermissionGuard` y se corrigió el género gramatical
+      ("el evento", no "la evento").
 - [ ] Auditoría de accesibilidad. El contraste está medido y visible en
       `/ui#paleta`, y el foco es visible en toda la aplicación. Falta la pasada
       de navegación por teclado, orden de foco y etiquetas en los botones que

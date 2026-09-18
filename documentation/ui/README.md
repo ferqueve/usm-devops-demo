@@ -198,7 +198,7 @@ normales.
 
 `localhost:5173/ui`, sólo en desarrollo.
 
-Están **los 124 componentes que pueden montarse sin backend**. Lo que queda
+Están **los 125 componentes que pueden montarse sin backend**. Lo que queda
 fuera tiene el motivo escrito: pide datos, es una ruta entera, es estructura, o
 es una primitiva de shadcn sin cambios propios.
 
