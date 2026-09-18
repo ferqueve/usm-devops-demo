@@ -120,6 +120,19 @@
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
+
+  /* Elevación. Hay 135 sombras repartidas en la app entre siete niveles de
+     Tailwind y un `.shadow-card` propio, todas con negro puro: sobre una
+     paleta de grises fríos ensucian, y en modo oscuro una sombra negra sobre
+     fondo oscuro no se ve. Acá pasan a salir de la escala, teñidas con la
+     tinta del tema y redefinidas para oscuro más abajo. */
+  --shadow-2xs: var(--sombra-2xs);
+  --shadow-xs: var(--sombra-xs);
+  --shadow-sm: var(--sombra-sm);
+  --shadow-md: var(--sombra-md);
+  --shadow-lg: var(--sombra-lg);
+  --shadow-xl: var(--sombra-xl);
+  --shadow-2xl: var(--sombra-2xl);
 }
 
 /* ============================================================
@@ -154,19 +167,33 @@
   --primary: oklch(0.4183 0.1397 260);
   --primary-foreground: oklch(0.9816 0.0017 248);
 
-  --secondary: oklch(0.9417 0.0052 248);
+  /* Cada superficie tiene que separarse de la de al lado.
+     Estaban las cuatro en el mismo valor que el fondo de página, así que
+     nada de lo que se apoya en ellas se veía: el esqueleto de carga usa
+     bg-accent y era invisible, los hover con bg-accent no pasaba nada, y
+     una pastilla `secondary` desaparecía contra la página. */
+  --secondary: oklch(0.9109 0.0070 248);
   --secondary-foreground: oklch(0.2621 0.0095 248);
-  --muted: oklch(0.9417 0.0052 248);
+  --muted: oklch(0.9640 0.0045 248);
   --muted-foreground: oklch(0.5575 0.0165 245);
-  --accent: oklch(0.9417 0.0052 248);
-  --accent-foreground: oklch(0.2621 0.0095 248);
+  --accent: oklch(0.9280 0.0130 258);
+  --accent-foreground: oklch(0.2600 0.0400 260);
 
   --destructive: oklch(0.5868 0.2137 25.6);
   --destructive-foreground: oklch(0.9816 0.0017 248);
 
-  --border: oklch(0.9109 0.0070 248);
-  --input: oklch(0.9109 0.0070 248);
+  --border: oklch(0.8880 0.0075 248);
+  --input: oklch(0.8880 0.0075 248);
   --ring: oklch(0.4183 0.1397 260);
+
+  /* Sombras con la tinta del tema (33 37 41) y no negro puro. */
+  --sombra-2xs: 0 1px 1px 0 rgb(33 37 41 / 0.05);
+  --sombra-xs: 0 1px 2px 0 rgb(33 37 41 / 0.07);
+  --sombra-sm: 0 1px 3px 0 rgb(33 37 41 / 0.09), 0 1px 2px -1px rgb(33 37 41 / 0.07);
+  --sombra-md: 0 4px 8px -2px rgb(33 37 41 / 0.10), 0 2px 4px -2px rgb(33 37 41 / 0.06);
+  --sombra-lg: 0 10px 20px -4px rgb(33 37 41 / 0.12), 0 4px 8px -4px rgb(33 37 41 / 0.07);
+  --sombra-xl: 0 20px 32px -8px rgb(33 37 41 / 0.16), 0 8px 12px -6px rgb(33 37 41 / 0.08);
+  --sombra-2xl: 0 28px 48px -12px rgb(33 37 41 / 0.22);
 
   /* Gráficos: los cinco del isotipo, en el orden del manual. */
   --chart-1: oklch(0.4183 0.1397 260);
@@ -200,15 +227,26 @@
   --primary: oklch(0.6800 0.1450 260);
   --primary-foreground: oklch(0.2000 0.0090 248);
 
-  --secondary: oklch(0.3451 0.0133 248);
+  --secondary: oklch(0.3200 0.0130 248);
   --secondary-foreground: oklch(0.9417 0.0052 248);
-  --muted: oklch(0.3451 0.0133 248);
+  --muted: oklch(0.2560 0.0110 248);
   --muted-foreground: oklch(0.7692 0.0145 248);
-  --accent: oklch(0.4276 0.0147 248);
+  --accent: oklch(0.3600 0.0220 258);
   --accent-foreground: oklch(0.9417 0.0052 248);
 
   --destructive: oklch(0.7000 0.1850 25.6);
   --destructive-foreground: oklch(0.2000 0.0090 248);
+
+  /* En oscuro una sombra no separa: el fondo ya es oscuro. Se sube la opacidad
+     y se suma un filo claro arriba, que es lo que de verdad despega la
+     superficie. */
+  --sombra-2xs: 0 1px 1px 0 rgb(0 0 0 / 0.30);
+  --sombra-xs: 0 1px 2px 0 rgb(0 0 0 / 0.40), inset 0 1px 0 0 rgb(255 255 255 / 0.03);
+  --sombra-sm: 0 1px 3px 0 rgb(0 0 0 / 0.45), inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+  --sombra-md: 0 4px 10px -2px rgb(0 0 0 / 0.50), inset 0 1px 0 0 rgb(255 255 255 / 0.05);
+  --sombra-lg: 0 12px 24px -4px rgb(0 0 0 / 0.55), inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  --sombra-xl: 0 24px 40px -8px rgb(0 0 0 / 0.60), inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+  --sombra-2xl: 0 32px 56px -12px rgb(0 0 0 / 0.70), inset 0 1px 0 0 rgb(255 255 255 / 0.08);
 
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 15%);
@@ -372,13 +410,15 @@
   .border-utec-blue { border-color: #184897; }
 
   /* Sombras */
+  /* Alias histórico: lo usan 19 lugares. Ahora sale de la escala en vez de
+     traer su propio negro, así sigue el tema como todo lo demás. */
   .shadow-card {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    transition: box-shadow 0.3s ease;
+    box-shadow: var(--sombra-sm);
+    transition: box-shadow 0.2s ease;
   }
 
   .shadow-card:hover {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: var(--sombra-lg);
   }
 
   /* Efectos de hover - Optimizados para mejor rendimiento */
@@ -389,7 +429,7 @@
 
   .hover-lift:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 12px -3px rgb(0 0 0 / 0.08), 0 3px 5px -4px rgb(0 0 0 / 0.08);
+    box-shadow: var(--sombra-md);
   }
 
   /* Barra lateral.

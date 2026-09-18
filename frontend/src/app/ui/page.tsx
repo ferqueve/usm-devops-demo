@@ -318,8 +318,23 @@ export default function UiPage() {
             </Doble>
           </Seccion>
 
-          <Seccion id="superficie" titulo="Superficie" nota="Radio según el tamaño de lo que envuelve.">
+          <Seccion
+            id="superficie"
+            titulo="Superficie"
+            nota="Radio según el tamaño de lo que envuelve, y elevación según cuánto se despega."
+          >
             <Doble>
+              <div className="mb-5 flex flex-wrap items-end gap-4">
+                {(['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const).map((n) => (
+                  <div key={n} className="text-center">
+                    <div
+                      className="size-16 rounded-lg bg-card"
+                      style={{ boxShadow: `var(--shadow-${n})` }}
+                    />
+                    <div className="mt-1.5 text-[10px] text-muted-foreground">{n}</div>
+                  </div>
+                ))}
+              </div>
               <div className="flex flex-wrap gap-3">
                 {([['sm', 'rounded-sm', 'control'], ['md', 'rounded-md', 'botón'],
                    ['lg', 'rounded-lg', 'tarjeta'], ['xl', 'rounded-xl', 'panel']] as const).map(
