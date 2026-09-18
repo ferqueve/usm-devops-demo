@@ -5,15 +5,25 @@ import type { TooltipProps } from 'recharts';
 import type { ResumenReservas } from '@/lib/api/stats';
 import { fechaCorta } from '../periodo';
 import { marcarIncompletos, type TramoSerie as Punto } from './tramos';
+import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
 
 /**
  * Colores de estado, no de serie: verde/ámbar/rojo significan lo que
  * significan en toda la app. Para quien no distingue verde de rojo, el orden
  * de apilado es fijo (aprobadas abajo) y la leyenda y el globo los nombran.
  */
+/* Salen de lib/design/paleta y no escritos acá: este archivo tenía su propia
+   copia de la escala vieja —#c9372c para canceladas, #5f9433 para aprobadas—
+   y por eso el mismo estado no era del mismo rojo que en el resto de la app. */
 const ESTADOS = {
-  claro: { aprobadas: '#5f9433', pendientes: '#c98a00', canceladas: '#c9372c', grilla: '#eceef1', eje: '#6b7280' },
-  oscuro: { aprobadas: '#6fa23e', pendientes: '#d49b1c', canceladas: '#e0564a', grilla: '#2f3237', eje: '#a1a1aa' },
+  claro: {
+    aprobadas: SERIE_CLARO.verde, pendientes: SERIE_CLARO.amarillo, canceladas: SERIE_CLARO.rojo,
+    grilla: NEUTRO.claro.grilla, eje: NEUTRO.claro.eje,
+  },
+  oscuro: {
+    aprobadas: SERIE_OSCURO.verde, pendientes: SERIE_OSCURO.amarillo, canceladas: SERIE_OSCURO.rojo,
+    grilla: NEUTRO.oscuro.grilla, eje: NEUTRO.oscuro.eje,
+  },
 };
 
 const ETIQUETAS = { aprobadas: 'Aprobadas', pendientes: 'Pendientes', canceladas: 'Canceladas' } as const;

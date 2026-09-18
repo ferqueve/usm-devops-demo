@@ -100,11 +100,11 @@ export function MantenimientoDashboard({
 
       <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
-          <Panel title="El parque" count={`${inv?.totalItems ?? 0} items`} accentColor="#184897" action={{ label: 'inventario', to: '/inventory' }}>
+          <Panel title="El parque" count={`${inv?.totalItems ?? 0} items`} accentColor={UTEC.azul} action={{ label: 'inventario', to: '/inventory' }}>
             <Anillo porciones={parque} leyendaCentro="items" alto={118} llenar />
           </Panel>
 
-          <Panel title="Los espacios" count={`${esp?.totalEspacios ?? 0} en total`} accentColor="#00c7ff" action={{ label: 'espacios', to: '/rooms' }} scroll>
+          <Panel title="Los espacios" count={`${esp?.totalEspacios ?? 0} en total`} accentColor={UTEC.cian} action={{ label: 'espacios', to: '/rooms' }} scroll>
             <BarrasHorizontales datos={barrasEspacios} multicolor />
           </Panel>
         </div>
@@ -129,7 +129,7 @@ export function MantenimientoDashboard({
           <Panel
             title="Espacios fuera de servicio"
             count={espaciosCaidos.length || undefined}
-            accentColor="#e2001a"
+            accentColor={UTEC.rojo}
             action={{ label: 'espacios', to: '/rooms' }}
             scroll
           >
@@ -142,7 +142,7 @@ export function MantenimientoDashboard({
             )}
           </Panel>
 
-          <Panel title="Impacto ambiental" accentColor="#86bb4c" action={{ label: 'ver más', to: '/sostenibilidad' }}>
+          <Panel title="Impacto ambiental" accentColor={UTEC.verde} action={{ label: 'ver más', to: '/sostenibilidad' }}>
             {verde ? (
               <div className="flex h-full flex-col justify-center gap-2 py-1">
                 <div className="flex items-baseline gap-2">

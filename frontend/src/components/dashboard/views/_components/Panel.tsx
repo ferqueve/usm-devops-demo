@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 interface PanelProps {
   title: string;
@@ -34,7 +35,7 @@ export function Panel({
   title,
   count,
   action,
-  accentColor = '#F6CA21',
+  accentColor = MARCA.amarillo,
   flush = false,
   scroll = false,
   className,

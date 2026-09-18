@@ -92,13 +92,13 @@ export function AnalistaDashboard({
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
             action={{ label: 'estadísticas', to: '/statistics' }}
           >
             <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
-          <Panel title="Qué días se carga" accentColor="#00c7ff">
+          <Panel title="Qué días se carga" accentColor={UTEC.cian}>
             <RitmoSemanal datos={porDia} alto={128} llenar />
           </Panel>
         </div>
@@ -106,7 +106,7 @@ export function AnalistaDashboard({
         <Panel
           title="Cola"
           count={loadingPrioritarias ? 'calculando…' : `${totalPendientes} pendientes`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'ver todas', to: '/reservations' }}
           scroll
         >
@@ -132,7 +132,7 @@ export function AnalistaDashboard({
         </Panel>
 
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
-          <Panel title="En qué estado están" accentColor="#86bb4c">
+          <Panel title="En qué estado están" accentColor={UTEC.verde}>
             <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>
 

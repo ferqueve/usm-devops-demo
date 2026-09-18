@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 /**
  * Tira de métricas del dashboard.
  *
- * Celdas de color macizo con los colores institucionales UTEC. El color acá no
+ * Celdas de color macizo con los colores institucionales MARCA. El color acá no
  * dice si algo está bien o mal: es la paleta de la casa, los mismos seis que
  * arma el isotipo.
  *
@@ -31,12 +32,12 @@ export type ColorUtec = 'azul' | 'verde' | 'amarillo' | 'naranja' | 'rojo' | 'ci
  * Verde y naranja venían con texto blanco y no llegaban ni a 3:1.
  */
 const paleta: Record<ColorUtec, { fondo: string; texto: 'claro' | 'oscuro' }> = {
-  azul: { fondo: '#184897', texto: 'claro' },
-  rojo: { fondo: '#DF2B31', texto: 'claro' },
-  verde: { fondo: '#86bb4c', texto: 'oscuro' },
-  amarillo: { fondo: '#F6CA21', texto: 'oscuro' },
-  naranja: { fondo: '#DE7A27', texto: 'oscuro' },
-  cian: { fondo: '#00c7ff', texto: 'oscuro' },
+  azul: { fondo: MARCA.azul, texto: 'claro' },
+  rojo: { fondo: MARCA.rojo, texto: 'claro' },
+  verde: { fondo: MARCA.verde, texto: 'oscuro' },
+  amarillo: { fondo: MARCA.amarillo, texto: 'oscuro' },
+  naranja: { fondo: MARCA.naranja, texto: 'oscuro' },
+  cian: { fondo: MARCA.cian, texto: 'oscuro' },
 };
 
 /** Orden por defecto, el de las aspas del isotipo. */

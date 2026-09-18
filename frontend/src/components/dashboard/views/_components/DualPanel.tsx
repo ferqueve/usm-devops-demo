@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 interface PanelSide {
   title: string;
@@ -30,7 +31,7 @@ function PanelHeader({ title, count, action, accentColor }: Readonly<PanelSide>)
       <div className="flex items-center gap-2.5 min-w-0">
         <span
           className="w-1 h-4 rounded-sm shrink-0"
-          style={{ backgroundColor: accentColor ?? '#F6CA21' }}
+          style={{ backgroundColor: accentColor ?? MARCA.amarillo }}
           aria-hidden
         />
         <h2 className="text-sm font-semibold tracking-tight">{title}</h2>

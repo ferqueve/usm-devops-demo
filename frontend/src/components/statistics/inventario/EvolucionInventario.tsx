@@ -14,10 +14,19 @@ import {
 } from '@/lib/api/stats';
 import { fechaCorta, type Rango } from '../periodo';
 import { BarrasDivergentes } from '../graficos/BarrasDivergentes';
+import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
 
+/* Misma historia que en statistics/reservas/Tendencia: este archivo también
+   tenía su copia de la escala vieja. Ahora sale de lib/design/paleta. */
 const TEMAS = {
-  claro: { disponibles: '#5f9433', mantenimiento: '#c98a00', danados: '#c9372c', parque: '#1f55ab', grilla: '#eceef1', eje: '#6b7280' },
-  oscuro: { disponibles: '#6fa23e', mantenimiento: '#d49b1c', danados: '#e0564a', parque: '#4f80d6', grilla: '#2f3237', eje: '#a1a1aa' },
+  claro: {
+    disponibles: SERIE_CLARO.verde, mantenimiento: SERIE_CLARO.amarillo, danados: SERIE_CLARO.rojo,
+    parque: SERIE_CLARO.azul, grilla: NEUTRO.claro.grilla, eje: NEUTRO.claro.eje,
+  },
+  oscuro: {
+    disponibles: SERIE_OSCURO.verde, mantenimiento: SERIE_OSCURO.amarillo, danados: SERIE_OSCURO.rojo,
+    parque: SERIE_OSCURO.azul, grilla: NEUTRO.oscuro.grilla, eje: NEUTRO.oscuro.eje,
+  },
 };
 
 const ESTADOS = [

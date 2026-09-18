@@ -118,13 +118,13 @@ export function AdminDashboard({
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
             action={{ label: 'estadísticas', to: '/statistics' }}
           >
             <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
-          <Panel title="En qué estado están" accentColor="#86bb4c">
+          <Panel title="En qué estado están" accentColor={UTEC.verde}>
             <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>
         </div>
@@ -132,7 +132,7 @@ export function AdminDashboard({
         <Panel
           title="Cola"
           count={`${totalPendientes} pendientes${loadingPrioritarias ? ' · calculando' : ''}`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'ver todas', to: '/reservations' }}
           scroll
         >
@@ -156,7 +156,7 @@ export function AdminDashboard({
           <Panel
             title="Estado del sistema"
             count={salud ? `${salud.componentes} componentes` : undefined}
-            accentColor={salud && salud.estado !== 'UP' ? '#e2001a' : '#86bb4c'}
+            accentColor={salud && salud.estado !== 'UP' ? UTEC.rojo : UTEC.verde}
             action={{ label: 'sistema', to: '/system' }}
             scroll
           >
@@ -190,7 +190,7 @@ export function AdminDashboard({
           <Panel
             title="Actividad reciente"
             count={actividad.length || undefined}
-            accentColor="#00c7ff"
+            accentColor={UTEC.cian}
             action={{ label: 'auditoría', to: '/audit' }}
             scroll
           >

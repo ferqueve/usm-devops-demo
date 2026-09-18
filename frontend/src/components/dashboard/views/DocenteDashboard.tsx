@@ -77,14 +77,14 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
           <Panel
             title="Inscriptos por materia"
             count={`${stats?.inscriptos ?? 0} en total`}
-            accentColor="#86bb4c"
+            accentColor={UTEC.verde}
             action={{ label: 'materias', to: '/materias?tab=listado' }}
             scroll
           >
             <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} />
           </Panel>
 
-          <Panel title="Ocupación de mis tutorías" accentColor="#00c7ff" scroll>
+          <Panel title="Ocupación de mis tutorías" accentColor={UTEC.cian} scroll>
             {tutorias.length > 0 ? (
               <div className="space-y-2.5 py-1">
                 {tutorias.map((t) => (
@@ -106,7 +106,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Mis materias"
           count={stats?.materias || undefined}
-          accentColor="#184897"
+          accentColor={UTEC.azul}
           action={{ label: 'ver todas', to: '/materias?tab=listado' }}
           scroll
         >
@@ -122,7 +122,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Mis reservas"
           count={proximasMias.length > 0 ? `${proximasMias.length} próximas` : `${totalPendientes} pendientes`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'nueva reserva', to: '/reservations?new=true' }}
           scroll
         >

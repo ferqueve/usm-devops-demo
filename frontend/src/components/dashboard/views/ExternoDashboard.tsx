@@ -78,12 +78,12 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
           <Panel
             title="Cómo vienen mis pedidos"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
           >
             <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
-          <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor="#86bb4c">
+          <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor={UTEC.verde}>
             <Anillo porciones={estados} leyendaCentro="pedidos" alto={118} llenar />
           </Panel>
         </div>
@@ -91,7 +91,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Mis solicitudes"
           count={totalSolicitudes > 0 ? totalSolicitudes : undefined}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'nueva', to: '/reservations?new=true' }}
           scroll
         >
@@ -109,7 +109,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Eventos abiertos"
           count={eventos.length || undefined}
-          accentColor="#00c7ff"
+          accentColor={UTEC.cian}
           action={{ label: 'ver todos', to: '/eventos' }}
           scroll
         >

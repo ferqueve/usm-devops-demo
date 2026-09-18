@@ -74,14 +74,14 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
           <Panel
             title="Créditos por semestre"
             count={`${stats?.creditos ?? 0} en total`}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
             action={{ label: 'plan', to: '/materias?tab=mapa' }}
             scroll
           >
             <BarrasHorizontales datos={creditosPorSemestre} multicolor />
           </Panel>
 
-          <Panel title="Mis tutorías" count={`racha de ${stats?.racha ?? 0}`} accentColor="#86bb4c">
+          <Panel title="Mis tutorías" count={`racha de ${stats?.racha ?? 0}`} accentColor={UTEC.verde}>
             <Anillo
               porciones={[
                 { nombre: 'Asistidas', valor: asistidas, color: UTEC.verde },
@@ -98,7 +98,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
         <Panel
           title="Mis materias"
           count={stats?.materias || undefined}
-          accentColor="#00c7ff"
+          accentColor={UTEC.cian}
           action={{ label: 'ver todas', to: '/materias?tab=listado' }}
           scroll
         >
@@ -114,7 +114,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
         <Panel
           title="Lo que viene"
           count={`${tutorias.length} tutorías · ${eventos.length} eventos`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'agenda', to: '/materias?tab=tutorias' }}
           scroll
         >
