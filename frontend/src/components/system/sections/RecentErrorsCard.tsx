@@ -20,7 +20,7 @@ function levelBadge(level: string) {
   }
   if (level === 'WARN') {
     return (
-      <Badge variant="outline" className="text-2xs border-utec-yellow text-utec-yellow">
+      <Badge variant="outline" className="text-2xs border-utec-yellow text-marca-amarillo-texto">
         WARN
       </Badge>
     );
@@ -93,7 +93,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
-        <AlertTriangle className="h-4 w-4 text-utec-red shrink-0" />
+        <AlertTriangle className="h-4 w-4 text-marca-rojo-texto shrink-0" />
         <h3 className="text-sm font-semibold flex-1">
           Top errores últimas {data?.windowHours ?? 24}h
         </h3>
@@ -154,7 +154,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
                     {e.exception && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="text-2xs text-utec-red break-words line-clamp-1 cursor-help">
+                          <div className="text-2xs text-marca-rojo-texto break-words line-clamp-1 cursor-help">
                             {e.exception}
                           </div>
                         </TooltipTrigger>

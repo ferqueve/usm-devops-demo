@@ -75,6 +75,30 @@ logra es romper el contraste del texto: así el botón Eliminar quedó una vez e
 Lo que **sí** cambia por tema son las líneas finas de gráfico, los fondos
 tenues, los bordes y el texto — todo lo que vive contra el fondo.
 
+### Relleno y texto son dos familias distintas
+
+`--color-utec-*` son los hexes exactos del manual. Sirven para **rellenar**:
+un bloque macizo, una barra, un punto de leyenda.
+
+Como **color de texto** no sirven. El azul `#184897` sobre una tarjeta oscura
+da 1,32:1. Para texto e íconos está la otra familia, que sí cambia con el
+tema:
+
+```
+text-marca-azul-texto      text-marca-naranja-texto
+text-marca-verde-texto     text-marca-rojo-texto
+text-marca-amarillo-texto  text-marca-cian-texto
+```
+
+Las lightness salen de bajar o subir la luz hasta pasar 4,7:1 contra el fondo
+de página, medido. No se eligieron a ojo.
+
+Y `text-marca-tinta` es la tinta que se lee **encima** de un relleno de marca.
+No cambia con el tema, porque el relleno tampoco.
+
+No usar los roles —`text-success-texto`, `text-danger-texto`— para esto: esos
+significan algo. El color de marca acá es la paleta de la casa, no un estado.
+
 ### Elegir la tinta midiendo, no a ojo
 
 Sobre el verde de marca, el blanco da **2,28:1**. Parece que va; no va.
@@ -245,4 +269,24 @@ aplicación.
 - [ ] ¿El contraste del texto sobre su fondo llega a 4,5:1? Medirlo.
 - [ ] ¿Tiene estado vacío, de carga y de error?
 - [ ] ¿El foco se ve al recorrer con Tab?
+- [ ] `node scripts/contraste.mjs` — no debería sumar grupos nuevos
 - [ ] `npx tsc --noEmit` · `npx eslint` · `npx vitest run`
+
+---
+
+## Medir el contraste, no confiar en la clase
+
+```bash
+node scripts/contraste.mjs          # lo que no llega al mínimo
+node scripts/contraste.mjs --todo   # además, lo que pasa raspando
+```
+
+Abre `/ui`, lee el color que el navegador resolvió para cada texto y el fondo
+real que tiene debajo —apilando las capas translúcidas, y leyendo el `fill`
+del `<rect>` de al lado cuando es un SVG— y calcula el ratio.
+
+Una clase puede estar bien escrita y fallar igual por el fondo que le tocó.
+Así aparecieron el visor de logs —`text-foreground` sobre `bg-chrome`, que es
+oscuro fijo: 1,14:1 en tema claro—, una tarjeta con `bg-white/95` que en
+oscuro se quedaba blanca con el texto claro encima, y 143 usos de un color de
+marca como color de texto.

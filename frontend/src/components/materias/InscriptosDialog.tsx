@@ -48,7 +48,7 @@ export function InscriptosDialog({ materia, open, onOpenChange }: Readonly<Inscr
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue">
+            <div className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto">
               <Users className="h-4 w-4" />
             </div>
             Inscriptos {materia ? `- ${materia.nombre}` : ''}

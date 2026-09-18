@@ -253,7 +253,7 @@ implementaciones de lo mismo:
 | Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
 | `EmptyState` | 3 → 1 | hecho: `components/ui/empty-state` con variante `linea` |
 | `Panel` | 6 → 2 | `components/common/Panel`; queda el de `RuntimeCards`, que tiene otra forma |
-| Tiras de métricas | 7 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
+| Tiras de métricas | 9 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
 | Tablas y vistas de fichas | 3 + 3 | pendiente |
 
 **Componentes de dashboard sin usar.** `DashboardStats`, `DashboardCharts`,
@@ -276,6 +276,10 @@ pantalla o se borran; queda a decisión de producto.
       firma original para no tocar a quien los llama. En el camino se
       recuperaron tres `PermissionGuard` y se corrigió el género gramatical
       ("el evento", no "la evento").
+- [ ] Terminar la pasada de contraste. `node scripts/contraste.mjs` bajó de
+      821 textos a 613, y lo peor pasó de 1,00:1 a 1,70:1. Lo que queda son
+      103 grupos, casi todos entre 3 y 4,5 —`text-muted-foreground` en
+      tamaños chicos—, que es una decisión de sistema y no colores sueltos.
 - [ ] Auditoría de accesibilidad. El contraste está medido y visible en
       `/ui#paleta`, y el foco es visible en toda la aplicación. Falta la pasada
       de navegación por teclado, orden de foco y etiquetas en los botones que

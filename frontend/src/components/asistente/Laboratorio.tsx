@@ -113,14 +113,14 @@ function TarjetaPrueba({ prueba }: Readonly<{ prueba: Prueba }>) {
     >
       {estado.tipo === 'ok' && (
         <div className="space-y-1.5">
-          <span className="flex items-center gap-1 text-2xs font-medium text-utec-green">
+          <span className="flex items-center gap-1 text-2xs font-medium text-marca-verde-texto">
             <CheckCircle2 className="h-3.5 w-3.5" /> OK · {estado.ms} ms
           </span>
           <p className="whitespace-pre-wrap rounded-lg bg-muted/50 p-3 text-sm leading-relaxed">{estado.texto}</p>
         </div>
       )}
       {estado.tipo === 'error' && (
-        <p className="flex items-start gap-1.5 rounded-lg bg-utec-red/5 p-3 font-mono text-xs text-utec-red">
+        <p className="flex items-start gap-1.5 rounded-lg bg-utec-red/5 p-3 font-mono text-xs text-marca-rojo-texto">
           <XCircle className="mt-px h-3.5 w-3.5 shrink-0" /> {estado.texto}
         </p>
       )}

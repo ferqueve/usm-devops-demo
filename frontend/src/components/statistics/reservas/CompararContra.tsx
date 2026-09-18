@@ -25,7 +25,7 @@ export function CompararContra({ valor, onCambiar }: Readonly<{ valor: Comparaci
               aria-checked={activo}
               onClick={() => onCambiar(o.id)}
               className={`h-7 whitespace-nowrap rounded-md px-2.5 text-xs font-medium transition-colors ${
-                activo ? 'bg-card text-chrome shadow-sm' : 'text-current opacity-80 hover:bg-white/15 hover:opacity-100'
+                activo ? 'bg-card text-foreground shadow-sm' : 'text-current opacity-80 hover:bg-white/15 hover:opacity-100'
               }`}
             >
               {o.texto}

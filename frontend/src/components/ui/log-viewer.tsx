@@ -278,7 +278,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
     return (
       <div className="border rounded-lg overflow-hidden shadow-card">
         <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
-          <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
+          <FileText className="h-4 w-4 text-marca-cian-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
         </div>
         <p className="text-muted-foreground text-center py-8 bg-card">
@@ -293,7 +293,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
       <div className="bg-chrome text-white">
         {/* Fila 1: título + count + botones de acción */}
         <div className="flex items-center gap-2 px-4 py-2.5">
-          <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
+          <FileText className="h-4 w-4 text-marca-cian-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
           <span className="text-xs text-white/70 tabular-nums mr-2">{filteredLines.length} líneas</span>
 
@@ -316,7 +316,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
               title={siguiendo ? 'Dejar de seguir el log' : 'Seguir el log en vivo'}
               className={`flex items-center gap-1.5 h-7 rounded-md px-2 text-2xs font-medium transition ${
                 siguiendo
-                  ? 'bg-utec-green/25 text-utec-green'
+                  ? 'bg-utec-green/25 text-marca-verde-texto'
                   : 'text-white/80 hover:bg-white/10'
               }`}
             >
@@ -330,7 +330,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
             title="Auto-scroll"
             className={`flex items-center justify-center h-7 w-7 rounded-md transition ${
               autoScroll
-                ? 'bg-utec-blue/30 text-utec-blue'
+                ? 'bg-utec-blue/30 text-marca-azul-texto'
                 : 'text-white/80 hover:bg-white/10'
             }`}
           >
@@ -348,7 +348,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
           <button
             onClick={handleDownload}
             title="Descargar"
-            className="flex items-center justify-center h-7 w-7 rounded-md text-utec-green hover:bg-white/10 transition"
+            className="flex items-center justify-center h-7 w-7 rounded-md text-marca-verde-texto hover:bg-white/10 transition"
           >
             <Download className="h-4 w-4" />
           </button>
@@ -394,10 +394,10 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 key={`${index}-${line.slice(0, 32)}`}
                 className={`log-line py-0.5 px-2 rounded ${getLineClass(line)}`}
               >
-                <span className="text-muted-foreground select-none inline-block w-12 text-right mr-3">
+                <span className="inline-block w-12 select-none text-right mr-3 opacity-45">
                   {index + 1}
                 </span>
-                <span className="text-foreground font-mono text-xs whitespace-pre-wrap break-all">
+                <span className="font-mono text-xs whitespace-pre-wrap break-all">
                   {highlightText(line, searchTerm)}
                 </span>
               </div>

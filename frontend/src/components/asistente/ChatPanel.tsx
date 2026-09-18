@@ -63,7 +63,7 @@ function AvatarIA({ grande = false }: Readonly<{ grande?: boolean }>) {
         grande ? 'h-12 w-12 rounded-xl' : 'h-7 w-7 rounded-lg',
       )}
     >
-      <Sparkles className={cn('text-utec-yellow', grande ? 'h-6 w-6' : 'h-3.5 w-3.5')} />
+      <Sparkles className={cn('text-marca-amarillo-texto', grande ? 'h-6 w-6' : 'h-3.5 w-3.5')} />
     </span>
   );
 }
@@ -144,7 +144,7 @@ export function ChatPanel() {
                       <div
                         className={cn(
                           'rounded-lg border px-3.5 py-2.5 text-sm leading-relaxed',
-                          m.error ? 'border-utec-red/30 bg-utec-red/5 text-utec-red' : 'bg-muted/40',
+                          m.error ? 'border-utec-red/30 bg-utec-red/5 text-marca-rojo-texto' : 'bg-muted/40',
                         )}
                       >
                         <Contenido texto={m.content} />

@@ -145,10 +145,10 @@ export function UsoDeCapacidad({ filas, limite, espacios, onFiltrar }: Readonly<
     <div>
       <div className="mb-3 space-y-2">
         <div className="flex flex-wrap gap-2 text-xs">
-          <span className="inline-flex items-center gap-1 rounded-full bg-utec-red/12 px-2 py-0.5 font-medium text-utec-red">
+          <span className="inline-flex items-center gap-1 rounded-full bg-utec-red/12 px-2 py-0.5 font-medium text-marca-rojo-texto">
             <AlertTriangle className="h-3 w-3" /> {excedidos} {excedidos === 1 ? 'excede' : 'exceden'} el espacio
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-utec-orange/12 px-2 py-0.5 font-medium text-utec-orange">
+          <span className="inline-flex items-center gap-1 rounded-full bg-utec-orange/12 px-2 py-0.5 font-medium text-marca-naranja-texto">
             {chicos} con espacio de sobra
           </span>
         </div>
@@ -176,8 +176,8 @@ export function UsoDeCapacidad({ filas, limite, espacios, onFiltrar }: Readonly<
                   <Icono className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-label={f.tipo === 'EVENTO' ? 'Evento' : 'Tutoría'} />
                   <span className="truncate font-medium" title={f.titulo}>{f.titulo}</span>
                 </span>
-                {e === 'excedido' && <span className="shrink-0 rounded-full bg-utec-red/12 px-2 py-0.5 text-2xs font-semibold text-utec-red">Excede</span>}
-                {e === 'sobredimensionado' && <span className="shrink-0 rounded-full bg-utec-orange/12 px-2 py-0.5 text-2xs font-semibold text-utec-orange">Sobra espacio</span>}
+                {e === 'excedido' && <span className="shrink-0 rounded-full bg-utec-red/12 px-2 py-0.5 text-2xs font-semibold text-marca-rojo-texto">Excede</span>}
+                {e === 'sobredimensionado' && <span className="shrink-0 rounded-full bg-utec-orange/12 px-2 py-0.5 text-2xs font-semibold text-marca-naranja-texto">Sobra espacio</span>}
               </div>
               <div
                 className="relative h-2.5 rounded-full border border-foreground/10 bg-muted"

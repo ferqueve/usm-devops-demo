@@ -175,7 +175,7 @@ export function TemariosPanel({ tutoriaId, materiaNombre, refreshKey = 0 }: Read
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 border-b px-4 py-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-utec-blue/10 text-utec-blue">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-utec-blue/10 text-marca-azul-texto">
           <MessageSquareText className="h-4 w-4" />
         </span>
         <div className="min-w-0">

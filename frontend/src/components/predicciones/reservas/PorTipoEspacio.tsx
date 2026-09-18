@@ -158,7 +158,7 @@ export function PronosticoPorTipo({ tipos, elegido, onElegir, grande = false }: 
                 error {t.wape == null ? '—' : `${decimal(t.wape, 0)}%`}
                 {t.wapeIngenuo != null && <span className="text-muted-foreground/70">· simple {decimal(t.wapeIngenuo, 0)}%</span>}
               </span>
-              <span className={`inline-flex items-center gap-1 font-medium ${activo ? 'text-utec-orange' : 'opacity-0 transition-opacity group-hover:opacity-100'}`}>
+              <span className={`inline-flex items-center gap-1 font-medium ${activo ? 'text-marca-naranja-texto' : 'opacity-0 transition-opacity group-hover:opacity-100'}`}>
                 <MousePointerClick className="h-3 w-3" />
                 {activo ? 'viendo' : 'ver'}
               </span>

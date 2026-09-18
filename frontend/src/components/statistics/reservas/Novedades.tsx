@@ -95,7 +95,7 @@ export function Novedades({ novedades, contra, onFiltrar }: Readonly<Props>) {
       </div>
       {novedades.length === 0 ? (
         <div className="flex items-center justify-center gap-3 px-4 py-6 text-sm text-muted-foreground">
-          <Sparkles className="h-5 w-5 text-utec-green" />
+          <Sparkles className="h-5 w-5 text-marca-verde-texto" />
           Todo parecido: nada cambió lo suficiente como para destacarlo.
         </div>
       ) : (

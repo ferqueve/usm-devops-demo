@@ -301,7 +301,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ onLogout, onMen
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex justify-center border-l border-white/10 py-2 text-utec-red/80 transition-colors hover:bg-utec-red/15 hover:text-utec-red"
+                className="flex justify-center border-l border-white/10 py-2 text-marca-rojo-texto/80 transition-colors hover:bg-utec-red/15 hover:text-marca-rojo-texto"
                 title="Cerrar sesión"
                 aria-label="Cerrar sesión"
               >

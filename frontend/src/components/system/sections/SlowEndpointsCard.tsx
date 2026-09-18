@@ -13,20 +13,20 @@ import { statsApi, type SlowEndpoint, type SlowEndpointsResponse } from '@/lib/a
 
 function methodColor(method: string): string {
   switch (method) {
-    case 'GET': return 'bg-utec-blue/15 text-utec-blue border-utec-blue/40';
-    case 'POST': return 'bg-utec-green/15 text-utec-green border-utec-green/40';
+    case 'GET': return 'bg-utec-blue/15 text-marca-azul-texto border-utec-blue/40';
+    case 'POST': return 'bg-utec-green/15 text-marca-verde-texto border-utec-green/40';
     case 'PUT':
-    case 'PATCH': return 'bg-utec-orange/15 text-utec-orange border-utec-orange/40';
-    case 'DELETE': return 'bg-utec-red/15 text-utec-red border-utec-red/40';
+    case 'PATCH': return 'bg-utec-orange/15 text-marca-naranja-texto border-utec-orange/40';
+    case 'DELETE': return 'bg-utec-red/15 text-marca-rojo-texto border-utec-red/40';
     default: return 'bg-muted text-muted-foreground';
   }
 }
 
 function p95Color(ms: number): string {
-  if (ms < 200) return 'text-utec-green';
-  if (ms < 500) return 'text-utec-yellow';
-  if (ms < 1000) return 'text-utec-orange';
-  return 'text-utec-red';
+  if (ms < 200) return 'text-marca-verde-texto';
+  if (ms < 500) return 'text-marca-amarillo-texto';
+  if (ms < 1000) return 'text-marca-naranja-texto';
+  return 'text-marca-rojo-texto';
 }
 
 export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
@@ -63,7 +63,7 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
-        <Gauge className="h-4 w-4 text-utec-orange shrink-0" />
+        <Gauge className="h-4 w-4 text-marca-naranja-texto shrink-0" />
         <h3 className="text-sm font-semibold flex-1">Endpoints más lentos (p95)</h3>
         {data && (
           <span className="text-xs text-white/70 tabular-nums">unidad: {data.unit}</span>

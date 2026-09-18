@@ -32,7 +32,7 @@ function Dato({
         <Icon className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{label}</span>
       </div>
-      <div className={`mt-1 text-xl font-semibold tabular-nums ${alerta ? 'text-utec-red' : ''}`}>
+      <div className={`mt-1 text-xl font-semibold tabular-nums ${alerta ? 'text-marca-rojo-texto' : ''}`}>
         {value}
       </div>
       {hint && <div className="text-2xs text-muted-foreground truncate">{hint}</div>}

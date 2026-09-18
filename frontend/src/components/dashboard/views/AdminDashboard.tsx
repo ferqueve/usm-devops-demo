@@ -173,7 +173,7 @@ export function AdminDashboard({
               </div>
               {verde && (
                 <div className="flex items-baseline gap-2 border-t pt-2 text-sm">
-                  <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
+                  <Leaf className="h-4 w-4 shrink-0 text-marca-verde-texto" />
                   <b className="tabular-nums">{verde.hojasEvitadas.toLocaleString('es-UY')}</b>
                   <span className="text-muted-foreground">hojas evitadas</span>
                 </div>

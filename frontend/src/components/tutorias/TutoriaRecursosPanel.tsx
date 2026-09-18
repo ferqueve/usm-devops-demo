@@ -39,7 +39,7 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10"><FileText className="h-4 w-4 text-utec-blue" /></span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10"><FileText className="h-4 w-4 text-marca-azul-texto" /></span>
         <h3 className="text-sm font-semibold">Material de la tutoría</h3>
       </div>
       <div className="p-4 space-y-3">
@@ -49,7 +49,7 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
           <ul className="space-y-2">
             {recursos.map((r) => (
               <li key={r.id} className="flex items-center justify-between gap-2 rounded-lg border p-2.5">
-                <a href={r.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-sm text-utec-blue hover:underline">
+                <a href={r.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-sm text-marca-azul-texto hover:underline">
                   <Link2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{r.titulo}</span><ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
                 </a>
                 {canEdit && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => eliminar(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}

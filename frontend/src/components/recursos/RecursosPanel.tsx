@@ -35,7 +35,7 @@ interface RecursosPanelProps {
 function iconoRecurso(recurso: Recurso) {
   if (recurso.tipo === 'ENLACE') {
     return (
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-cyan/10 text-utec-cyan">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-cyan/10 text-marca-cian-texto">
         <LinkIcon className="h-5 w-5" />
       </div>
     );
@@ -43,20 +43,20 @@ function iconoRecurso(recurso: Recurso) {
   const mime = recurso.mimeType ?? '';
   if (mime.startsWith('image/')) {
     return (
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-green/10 text-utec-green">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-green/10 text-marca-verde-texto">
         <FileImage className="h-5 w-5" />
       </div>
     );
   }
   if (mime === 'application/pdf') {
     return (
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-red/10 text-utec-red">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-red/10 text-marca-rojo-texto">
         <FileText className="h-5 w-5" />
       </div>
     );
   }
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-blue/10 text-utec-blue">
+    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-utec-blue/10 text-marca-azul-texto">
       <FileIcon className="h-5 w-5" />
     </div>
   );
@@ -111,7 +111,7 @@ export function RecursosPanel({ materiaId }: Readonly<RecursosPanelProps>) {
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-cyan/10 text-utec-cyan">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-cyan/10 text-marca-cian-texto">
           <FolderOpen className="h-4 w-4" />
         </span>
         <h3 className="text-sm font-semibold">Recursos académicos</h3>

@@ -39,10 +39,10 @@ export const MetricCard = memo(function MetricCard({
 
   const iconColors = {
     default: 'text-muted-foreground',
-    success: 'text-utec-green',
-    warning: 'text-utec-yellow',
-    error: 'text-utec-red',
-    info: 'text-utec-blue',
+    success: 'text-marca-verde-texto',
+    warning: 'text-marca-amarillo-texto',
+    error: 'text-marca-rojo-texto',
+    info: 'text-marca-azul-texto',
   };
 
   return (
@@ -63,7 +63,7 @@ export const MetricCard = memo(function MetricCard({
               <span
                 className={cn(
                   'text-sm font-medium flex items-center gap-0.5',
-                  trend.isPositive ? 'text-utec-green' : 'text-utec-red'
+                  trend.isPositive ? 'text-marca-verde-texto' : 'text-marca-rojo-texto'
                 )}
               >
                 {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%

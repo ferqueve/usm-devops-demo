@@ -10,7 +10,7 @@ function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | '
   return (
     <span className="inline-flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} className={`${cls} ${n <= Math.round(value) ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/40'}`} />
+        <Star key={n} className={`${cls} ${n <= Math.round(value) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/40'}`} />
       ))}
     </span>
   );
@@ -62,7 +62,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Star className="h-4 w-4 text-utec-yellow" /></span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Star className="h-4 w-4 text-marca-amarillo-texto" /></span>
         <h3 className="text-sm font-semibold">Valoración del docente</h3>
         {total > 0 && <span className="ml-auto text-xs text-muted-foreground">{total} {total === 1 ? 'valoración' : 'valoraciones'}</span>}
       </div>
@@ -82,7 +82,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
                 return (
                   <div key={n} className="flex items-center gap-2 text-xs">
                     <span className="w-3 text-right text-muted-foreground">{n}</span>
-                    <Star className="h-3 w-3 fill-utec-yellow text-utec-yellow" />
+                    <Star className="h-3 w-3 fill-utec-yellow text-marca-amarillo-texto" />
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden"><div className="h-full bg-utec-yellow rounded-full" style={{ width: `${(count / maxDist) * 100}%` }} /></div>
                     <span className="w-5 text-muted-foreground tabular-nums">{count}</span>
                   </div>
@@ -98,7 +98,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
             <div className="flex items-center gap-1" onMouseLeave={() => setHover(0)}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <button key={n} type="button" onClick={() => setRating(n)} onMouseEnter={() => setHover(n)} className="p-0.5" aria-label={`${n} estrellas`}>
-                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/40'}`} />
+                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/40'}`} />
                 </button>
               ))}
             </div>

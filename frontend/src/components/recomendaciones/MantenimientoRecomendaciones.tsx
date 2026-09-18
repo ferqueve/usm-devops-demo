@@ -84,7 +84,7 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
     return (
       <SectionCard
         title="Recomendaciones de mantenimiento"
-        icon={<Sparkles className="h-4 w-4 text-utec-yellow" />}
+        icon={<Sparkles className="h-4 w-4 text-marca-amarillo-texto" />}
         accentClass="bg-utec-yellow"
         count={0}
       >
@@ -100,7 +100,7 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
       {itemsUrgentes.length > 0 && (
         <SectionCard
           title="Items que Requieren Mantenimiento Urgente"
-          icon={<Wrench className="h-4 w-4 text-utec-yellow" />}
+          icon={<Wrench className="h-4 w-4 text-marca-amarillo-texto" />}
           accentClass="bg-utec-yellow"
           count={itemsUrgentes.length}
         >
@@ -120,7 +120,7 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
       {espaciosAtencion.length > 0 && (
         <SectionCard
           title="Espacios que Requieren Atención"
-          icon={<AlertTriangle className="h-4 w-4 text-utec-red" />}
+          icon={<AlertTriangle className="h-4 w-4 text-marca-rojo-texto" />}
           accentClass="bg-utec-red"
           count={espaciosAtencion.length}
         >

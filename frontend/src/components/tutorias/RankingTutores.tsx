@@ -22,18 +22,18 @@ export function RankingTutores() {
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Trophy className="h-4 w-4 text-utec-yellow" /></span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Trophy className="h-4 w-4 text-marca-amarillo-texto" /></span>
         <h3 className="text-sm font-semibold">Ranking de tutores</h3>
       </div>
       <ul className="divide-y">
         {ranking.slice(0, 8).map((t, i) => (
           <li key={t.docenteId} className="flex items-center gap-3 px-4 py-2.5">
             <span className="w-6 text-center text-lg">{MEDALLAS[i] ?? <span className="text-sm text-muted-foreground tabular-nums">{i + 1}</span>}</span>
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-blue/15 text-utec-blue text-xs font-semibold">{t.docenteNombre?.slice(0, 2).toUpperCase()}</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-blue/15 text-marca-azul-texto text-xs font-semibold">{t.docenteNombre?.slice(0, 2).toUpperCase()}</span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{t.docenteNombre}</p>
               <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-0.5"><Star className="h-3 w-3 fill-utec-yellow text-utec-yellow" />{t.promedio.toFixed(1)}</span>
+                <span className="flex items-center gap-0.5"><Star className="h-3 w-3 fill-utec-yellow text-marca-amarillo-texto" />{t.promedio.toFixed(1)}</span>
                 <span>· {t.totalValoraciones} val.</span>
                 <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{t.totalEstudiantes}</span>
               </p>

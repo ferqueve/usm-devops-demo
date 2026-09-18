@@ -667,7 +667,7 @@ export default function InventoryManagement() {
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
             <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
-            <ArrowRightLeft className="h-4 w-4 text-utec-blue" />
+            <ArrowRightLeft className="h-4 w-4 text-marca-azul-texto" />
             <h3 className="text-sm font-semibold tracking-tight">Reasignaciones recomendadas</h3>
             <span className="text-xs text-white/60 ml-auto">{reasignaciones.length} recomendaciones</span>
           </div>
@@ -701,7 +701,7 @@ export default function InventoryManagement() {
                     ) : null;
                   })()}
                 </div>
-                <span className="text-xs font-semibold text-utec-blue ml-2 tabular-nums">
+                <span className="text-xs font-semibold text-marca-azul-texto ml-2 tabular-nums">
                   {(rec.puntaje * 100).toFixed(0)}%
                 </span>
               </button>

@@ -115,12 +115,12 @@ export function Analistas({ filas }: Readonly<{ filas: AnalistaAprobacion[] }>) 
               </div>
               <span className="text-right tabular-nums">
                 {vencidas > 0 ? (
-                  <span className="inline-flex items-center gap-1 rounded bg-utec-red/12 px-1.5 py-0.5 text-xs font-semibold text-utec-red">
+                  <span className="inline-flex items-center gap-1 rounded bg-utec-red/12 px-1.5 py-0.5 text-xs font-semibold text-marca-rojo-texto">
                     <AlertTriangle className="h-3 w-3" />
                     {entero(vencidas)}
                   </span>
                 ) : (
-                  <CheckCircle2 className="ml-auto h-4 w-4 text-utec-green" aria-label="sin vencidas" />
+                  <CheckCircle2 className="ml-auto h-4 w-4 text-marca-verde-texto" aria-label="sin vencidas" />
                 )}
               </span>
               <span className="text-right">
@@ -171,7 +171,7 @@ export function PendientesAntiguedad({ tramos, alto = 200 }: Readonly<{ tramos: 
   if (total === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
-        <CheckCircle2 className="h-8 w-8 text-utec-green" />
+        <CheckCircle2 className="h-8 w-8 text-marca-verde-texto" />
         No quedan reservas pendientes del período.
       </div>
     );
@@ -192,11 +192,11 @@ export function PendientesAntiguedad({ tramos, alto = 200 }: Readonly<{ tramos: 
       />
       <p className="mt-2 text-center text-xs text-muted-foreground">
         {vencidas === total ? (
-          <>Las <b className="text-utec-red">{entero(total)}</b> ya vencieron: su fecha pasó sin respuesta.</>
+          <>Las <b className="text-marca-rojo-texto">{entero(total)}</b> ya vencieron: su fecha pasó sin respuesta.</>
         ) : vencidas === 0 ? (
           'Todas están a tiempo de resolverse.'
         ) : (
-          <><b className="text-utec-red">{entero(vencidas)}</b> de {entero(total)} ya vencieron; {entero(total - vencidas)} siguen a tiempo.</>
+          <><b className="text-marca-rojo-texto">{entero(vencidas)}</b> de {entero(total)} ya vencieron; {entero(total - vencidas)} siguen a tiempo.</>
         )}
       </p>
     </div>

@@ -83,7 +83,7 @@ export function CheckinScanner({ open, onOpenChange, onDetect }: Readonly<Scanne
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue"><QrCode className="h-4 w-4" /></span>Check-in por QR</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto"><QrCode className="h-4 w-4" /></span>Check-in por QR</DialogTitle>
           <DialogDescription>Apuntá la cámara al QR que muestra el estudiante.</DialogDescription>
         </DialogHeader>
 

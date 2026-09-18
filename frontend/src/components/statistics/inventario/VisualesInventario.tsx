@@ -76,7 +76,7 @@ export function WaffleAntiguedad({ a }: Readonly<{ a: EstadoInventario['antigued
           {a.sinCambiosHace6Meses === 1 ? 'item no se revisó' : 'items no se revisaron'} en más de seis meses
         </span>
         {a.sinCambiosHace6Meses > 0 && (
-          <Link to="/inventory" className="ml-1 text-xs font-medium text-utec-blue hover:underline dark:text-utec-cyan">
+          <Link to="/inventory" className="ml-1 text-xs font-medium text-marca-azul-texto hover:underline dark:text-marca-cian-texto">
             ver inventario
           </Link>
         )}

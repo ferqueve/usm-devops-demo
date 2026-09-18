@@ -78,7 +78,7 @@ export function AiChatWidget() {
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-chrome px-4 py-3 text-white shadow-lg transition-all hover:scale-105 hover:bg-utec-blue"
           aria-label="Abrir asistente IA"
         >
-          <Sparkles className="h-5 w-5 text-utec-yellow" />
+          <Sparkles className="h-5 w-5 text-marca-amarillo-texto" />
           <span className="hidden text-sm font-medium sm:inline">Asistente</span>
         </button>
       )}
@@ -87,7 +87,7 @@ export function AiChatWidget() {
         <div className="fixed bottom-5 right-5 z-50 flex h-[min(560px,calc(100vh-2.5rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border bg-card shadow-2xl">
           <header className="flex items-center justify-between gap-2 bg-chrome px-3 py-2 text-white">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-utec-yellow" />
+              <Sparkles className="h-4 w-4 text-marca-amarillo-texto" />
               <h3 className="text-sm font-semibold">Asistente IA</h3>
             </div>
             <button
@@ -103,7 +103,7 @@ export function AiChatWidget() {
           <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-muted p-3">
             {historial.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-xs text-muted-foreground">
-                <MessageSquareText className="h-8 w-8 text-utec-cyan/40" />
+                <MessageSquareText className="h-8 w-8 text-marca-cian-texto/40" />
                 <p className="max-w-[240px]">
                   Preguntá por tus reservas, espacios disponibles o estadísticas.
                 </p>

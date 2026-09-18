@@ -174,6 +174,23 @@
      3:1. Estaba escrito así en 32 lugares. */
   --color-marca-tinta: #212529;
 
+  /* Los seis de marca, en la luz donde se leen como TEXTO.
+
+     `--color-utec-*` son los hexes exactos del manual y sirven para
+     rellenar: un bloque macizo, una barra, un punto de leyenda. Como color
+     de texto no funcionan —el azul #184897 sobre una tarjeta oscura da
+     1,32:1—, así que para eso está esta familia, que sí cambia con el tema.
+
+     Las lightness salen de bajar o subir la luz hasta pasar 4,7:1 contra el
+     fondo de página, midiendo. `scripts/contraste.mjs` lo verifica sobre la
+     página armada. */
+  --color-marca-azul-texto: var(--marca-azul-texto);
+  --color-marca-verde-texto: var(--marca-verde-texto);
+  --color-marca-amarillo-texto: var(--marca-amarillo-texto);
+  --color-marca-naranja-texto: var(--marca-naranja-texto);
+  --color-marca-rojo-texto: var(--marca-rojo-texto);
+  --color-marca-cian-texto: var(--marca-cian-texto);
+
   /* Alias históricos. Los usan ~109 lugares; se mantienen para no
      romper pantallas mientras se migra a los nombres de arriba. */
   --color-utec-green: #86bb4c;
@@ -264,6 +281,14 @@
      Con #f8f9fa la diferencia contra las tarjetas blancas era del 1,5 %:
      no se percibía el borde entre superficie y fondo y la pantalla entera
      se leía como una masa blanca. */
+  /* Marca como texto. Medido contra el fondo de página: 4,70 a 4,81:1. */
+  --marca-azul-texto: #3869bb;
+  --marca-verde-texto: #4a7700;
+  --marca-amarillo-texto: #816800;
+  --marca-naranja-texto: #a65300;
+  --marca-rojo-texto: #d31a27;
+  --marca-cian-texto: #007496;
+
   --background: oklch(0.9417 0.0052 248);
   --foreground: oklch(0.2621 0.0095 248);
 
@@ -364,6 +389,15 @@
      pantalla entera pesaba. Y `muted` quedaba en 0.256 contra 0.262 de la
      tarjeta —la misma colisión que en claro, reintroducida acá—, así que una
      zona apagada dentro de una tarjeta no se distinguía. */
+  /* Marca como texto. Medido contra `card`, que acá es el caso difícil:
+     4,92 a 5,07:1. Contra el fondo de página dan 6,3 a 6,5. */
+  --marca-azul-texto: #85b3ff;
+  --marca-verde-texto: #8dc354;
+  --marca-amarillo-texto: #d6ae08;
+  --marca-naranja-texto: #ff9b52;
+  --marca-rojo-texto: #fe9990;
+  --marca-cian-texto: #09c0f6;
+
   --background: oklch(0.2350 0.0100 248);
   --foreground: oklch(0.9417 0.0052 248);
 
@@ -712,17 +746,31 @@
     @apply text-lg sm:text-xl font-bold mb-3 flex items-center gap-1.5 sm:gap-2 flex-wrap;
   }
 
-  /* Log viewer */
+  /* Visor de logs.
+
+     Es una superficie oscura siempre, como una terminal, así que su texto no
+     puede seguir al tema: decía `text-foreground` y en claro quedaba casi
+     negro sobre el gris de chrome, 1,14:1.
+
+     Los colores salen de la marca subida de luz hasta que se leen sobre
+     #343a40, medido: texto 9,12:1 · error 4,66:1 · aviso 7,05:1. Antes eran
+     `text-red-400` y `text-yellow-400`, paleta cruda de Tailwind. */
   .log-line {
-    @apply font-mono text-xs hover:bg-gray-800/50 transition-colors;
+    @apply font-mono text-xs transition-colors;
+    color: #dee6ed;
+  }
+  .log-line:hover {
+    background-color: rgb(255 255 255 / 0.06);
   }
 
   .log-error {
-    @apply text-red-400 bg-red-950/30;
+    color: #ff7e76;
+    background-color: rgb(255 126 118 / 0.12);
   }
 
   .log-warn {
-    @apply text-yellow-400 bg-yellow-950/30;
+    color: #f2c616;
+    background-color: rgb(242 198 22 / 0.12);
   }
 
   /* Optimización para página Sistema */

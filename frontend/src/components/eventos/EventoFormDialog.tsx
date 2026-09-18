@@ -165,7 +165,7 @@ export function EventoFormDialog({
       <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan">
+            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-marca-cian-texto">
               <CalendarPlus className="h-4 w-4" />
             </span>
             {isEditing ? 'Editar Evento' : 'Crear Nuevo Evento'}
@@ -185,7 +185,7 @@ export function EventoFormDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs gap-1.5 border-utec-cyan/40 text-utec-cyan hover:bg-utec-cyan/10"
+                className="h-7 text-xs gap-1.5 border-utec-cyan/40 text-marca-cian-texto hover:bg-utec-cyan/10"
                 onClick={generarConIA}
                 disabled={loading || generandoIA}
                 title="Genera título, descripción y tags con IA a partir de una idea"
@@ -233,7 +233,7 @@ export function EventoFormDialog({
             {tags.trim() && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {tags.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                  <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">
+                  <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-marca-azul-texto px-2 py-0.5 text-xs font-medium">
                     {t}
                   </span>
                 ))}

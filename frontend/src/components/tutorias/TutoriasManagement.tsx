@@ -66,7 +66,7 @@ export default function TutoriasManagement({ embedded = false }: Readonly<{ embe
 function SectionHeader({
   icon: Icon, title, subtitle, accent = 'blue',
 }: Readonly<{ icon: typeof GraduationCap; title: string; subtitle?: string; accent?: 'blue' | 'orange' }>) {
-  const accentCls = accent === 'orange' ? 'bg-utec-orange/10 text-utec-orange' : 'bg-utec-blue/10 text-utec-blue';
+  const accentCls = accent === 'orange' ? 'bg-utec-orange/10 text-marca-naranja-texto' : 'bg-utec-blue/10 text-marca-azul-texto';
   return (
     <div className="flex items-center gap-2.5">
       <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${accentCls}`}><Icon className="h-4 w-4" /></span>
@@ -188,13 +188,13 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
       {/* Mi ranking / rating personal como tutor */}
       {miRating && miRating.totalVal > 0 && (
         <div className="flex flex-wrap items-center gap-4 rounded-2xl border bg-gradient-to-r from-utec-yellow/10 via-card to-card p-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-utec-yellow/20 text-utec-yellow"><Trophy className="h-6 w-6" /></span>
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-utec-yellow/20 text-marca-amarillo-texto"><Trophy className="h-6 w-6" /></span>
           <div className="min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Tu valoración como tutor</p>
             <div className="flex items-center gap-2">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className={i <= Math.round(miRating.promedio) ? 'h-4 w-4 fill-utec-yellow text-utec-yellow' : 'h-4 w-4 text-muted-foreground/30'} />
+                  <Star key={i} className={i <= Math.round(miRating.promedio) ? 'h-4 w-4 fill-utec-yellow text-marca-amarillo-texto' : 'h-4 w-4 text-muted-foreground/30'} />
                 ))}
               </div>
               <span className="text-xl font-bold tabular-nums">{miRating.promedio.toFixed(1)}</span>
@@ -203,11 +203,11 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
           </div>
           <div className="ml-auto flex gap-5 text-center">
             <div>
-              <div className="text-lg font-bold tabular-nums text-utec-blue">{miRating.tutorias}</div>
+              <div className="text-lg font-bold tabular-nums text-marca-azul-texto">{miRating.tutorias}</div>
               <div className="text-2xs text-muted-foreground">franjas</div>
             </div>
             <div>
-              <div className="text-lg font-bold tabular-nums text-utec-green">{miRating.estudiantes}</div>
+              <div className="text-lg font-bold tabular-nums text-marca-verde-texto">{miRating.estudiantes}</div>
               <div className="text-2xs text-muted-foreground">estudiantes</div>
             </div>
           </div>
@@ -412,9 +412,9 @@ function EstudianteView({ embedded }: Readonly<{ embedded?: boolean }>) {
       {grupos.map(({ materia, items }) => (
         <div key={materia} className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-utec-blue/10 text-utec-blue"><GraduationCap className="h-3.5 w-3.5" /></span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-utec-blue/10 text-marca-azul-texto"><GraduationCap className="h-3.5 w-3.5" /></span>
             <h3 className="text-sm font-bold">{materia}</h3>
-            {misMaterias.has(materia) && <span className="rounded-full bg-utec-blue/15 px-2 py-0.5 text-2xs font-medium text-utec-blue">Tu materia</span>}
+            {misMaterias.has(materia) && <span className="rounded-full bg-utec-blue/15 px-2 py-0.5 text-2xs font-medium text-marca-azul-texto">Tu materia</span>}
             <span className="ml-auto text-xs text-muted-foreground">{items.length} {items.length === 1 ? 'horario' : 'horarios'}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -449,14 +449,14 @@ function EstudianteView({ embedded }: Readonly<{ embedded?: boolean }>) {
       {/* Banners contextuales */}
       {esFinales && topMateria && topMateria[1] > 0 && (
         <div className="flex items-center gap-2 rounded-xl border border-utec-red/30 bg-utec-red/5 px-4 py-2.5 text-sm">
-          <Flame className="h-4 w-4 text-utec-red shrink-0" />
+          <Flame className="h-4 w-4 text-marca-rojo-texto shrink-0" />
           <span><b>Época de finales</b> 🔥 — <b>{topMateria[0]}</b> es la materia con más demanda. Agendá temprano antes de que se llene.</span>
         </div>
       )}
       {hayEnVivo && (
         <div className="flex items-center gap-2 rounded-xl border border-utec-green/30 bg-utec-green/5 px-4 py-2.5 text-sm">
-          <Radio className="h-4 w-4 text-utec-green shrink-0" />
-          <span>Hay <b>tutores disponibles en vivo</b> ahora mismo — buscá el cartel <span className="font-medium text-utec-red">En vivo</span>.</span>
+          <Radio className="h-4 w-4 text-marca-verde-texto shrink-0" />
+          <span>Hay <b>tutores disponibles en vivo</b> ahora mismo — buscá el cartel <span className="font-medium text-marca-rojo-texto">En vivo</span>.</span>
         </div>
       )}
 

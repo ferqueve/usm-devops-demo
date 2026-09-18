@@ -35,7 +35,7 @@ export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps)
         {app ? (
           <div className="space-y-0">
             <Row label="Nombre">
-              <span className="text-utec-blue">{app.name}</span>
+              <span className="text-marca-azul-texto">{app.name}</span>
             </Row>
             <Row label="Versión">
               <Badge variant="outline">{app.version}</Badge>

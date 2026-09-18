@@ -146,7 +146,7 @@ export function MantenimientoDashboard({
             {verde ? (
               <div className="flex h-full flex-col justify-center gap-2 py-1">
                 <div className="flex items-baseline gap-2">
-                  <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
+                  <Leaf className="h-4 w-4 shrink-0 text-marca-verde-texto" />
                   <span className="text-2xl font-semibold tabular-nums">
                     {verde.hojasEvitadas.toLocaleString('es-UY')}
                   </span>

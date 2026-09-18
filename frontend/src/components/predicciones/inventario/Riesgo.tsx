@@ -135,7 +135,7 @@ export function YaFalta({ tipos }: Readonly<{ tipos: TipoInventarioML[] }>) {
   if (falta.length === 0) return null;
   return (
     <div className="flex items-start gap-2 rounded-xl border border-utec-red/30 bg-utec-red/10 px-4 py-2.5 text-sm">
-      <PackageX className="mt-0.5 h-4 w-4 shrink-0 text-utec-red" />
+      <PackageX className="mt-0.5 h-4 w-4 shrink-0 text-marca-rojo-texto" />
       <span>
         <b>Ya no alcanza:</b> para algún día del horizonte ya está pedido más de lo disponible en{' '}
         {falta.map((t) => t.nombre).join(', ')}. Eso no es una predicción: hay que conseguir unidades o reprogramar.

@@ -31,7 +31,7 @@ export function AgendarTutoriaDialog({ tutoria, open, loading, onOpenChange, onC
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue"><GraduationCap className="h-4 w-4" /></span>
+            <span className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto"><GraduationCap className="h-4 w-4" /></span>
             Agendar tutoría
           </DialogTitle>
           <DialogDescription>{tutoria?.materiaNombre} · {tutoria?.docenteNombre}</DialogDescription>
@@ -42,7 +42,7 @@ export function AgendarTutoriaDialog({ tutoria, open, loading, onOpenChange, onC
 
           {feriado && (
             <div className="flex items-center gap-2 rounded-lg border border-utec-yellow/40 bg-utec-yellow/10 px-3 py-2 text-sm">
-              <PartyPopper className="h-4 w-4 text-utec-orange shrink-0" />
+              <PartyPopper className="h-4 w-4 text-marca-naranja-texto shrink-0" />
               <span>Ojo: ese día es feriado en Uruguay (<b>{feriado}</b>). Confirmá que la tutoría se dicta igual.</span>
             </div>
           )}

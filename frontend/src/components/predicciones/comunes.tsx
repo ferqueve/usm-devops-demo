@@ -53,7 +53,7 @@ export function Aviso({ tono = 'alerta', titulo, children }: Readonly<{ tono?: '
         tono === 'alerta' ? 'border-utec-orange/40 bg-utec-orange/10' : 'border-utec-blue/25 bg-utec-blue/5 dark:border-utec-cyan/25 dark:bg-utec-cyan/5'
       }`}
     >
-      <Icono className={`mt-0.5 h-4 w-4 shrink-0 ${tono === 'alerta' ? 'text-utec-orange' : 'text-utec-blue dark:text-utec-cyan'}`} />
+      <Icono className={`mt-0.5 h-4 w-4 shrink-0 ${tono === 'alerta' ? 'text-marca-naranja-texto' : 'text-marca-azul-texto dark:text-marca-cian-texto'}`} />
       <div className="min-w-0 leading-relaxed">
         {titulo && <b className="mr-1">{titulo}</b>}
         {children}

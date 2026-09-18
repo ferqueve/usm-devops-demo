@@ -73,7 +73,7 @@ function Estrellas({ promedio, total }: Readonly<{ promedio?: number; total?: nu
     <span className="flex items-center gap-1 text-xs">
       <span className="flex">
         {[1, 2, 3, 4, 5].map((i) => (
-          <Star key={i} className={cn('h-3.5 w-3.5', i <= redondeado ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/30')} />
+          <Star key={i} className={cn('h-3.5 w-3.5', i <= redondeado ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/30')} />
         ))}
       </span>
       <span className="font-semibold tabular-nums text-foreground">{p.toFixed(1)}</span>
@@ -104,20 +104,20 @@ function ModalidadChip({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1 rounded-full border border-utec-cyan/30 bg-utec-cyan/15 px-2 py-0.5 text-2xs font-medium text-utec-cyan transition-colors hover:bg-utec-cyan/25"
+          className="inline-flex items-center gap-1 rounded-full border border-utec-cyan/30 bg-utec-cyan/15 px-2 py-0.5 text-2xs font-medium text-marca-cian-texto transition-colors hover:bg-utec-cyan/25"
         >
           <Video className="h-3 w-3" />Virtual · enlace
         </a>
       );
     }
     return (
-      <Badge className="border border-utec-cyan/30 bg-utec-cyan/15 text-utec-cyan text-2xs gap-1">
+      <Badge className="border border-utec-cyan/30 bg-utec-cyan/15 text-marca-cian-texto text-2xs gap-1">
         <Video className="h-3 w-3" />Virtual
       </Badge>
     );
   }
   return (
-    <Badge className="border border-utec-green/30 bg-utec-green/15 text-utec-green text-2xs gap-1">
+    <Badge className="border border-utec-green/30 bg-utec-green/15 text-marca-verde-texto text-2xs gap-1">
       <MapPin className="h-3 w-3" />Presencial
     </Badge>
   );
@@ -128,14 +128,14 @@ function CupoInfo({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
   const libres = tutoria.plazasDisponibles;
   if (libres <= 0) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-utec-yellow/15 px-2 py-0.5 text-2xs font-semibold text-utec-orange">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-utec-yellow/15 px-2 py-0.5 text-2xs font-semibold text-marca-naranja-texto">
         <Users className="h-3.5 w-3.5" />Completo · lista de espera
       </span>
     );
   }
   if (libres <= 3) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-utec-orange/15 px-2 py-0.5 text-2xs font-semibold text-utec-orange">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-utec-orange/15 px-2 py-0.5 text-2xs font-semibold text-marca-naranja-texto">
         <Users className="h-3.5 w-3.5" />¡Últimos {libres} lugares!
       </span>
     );
@@ -179,21 +179,21 @@ export function TutoriaCard({
       <div className="relative bg-gradient-to-br from-utec-blue/10 via-utec-blue/5 to-transparent px-4 pt-4 pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-blue/15 text-utec-blue">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-blue/15 text-marca-azul-texto">
               <GraduationCap className="h-4 w-4" />
             </span>
             <h3 className="truncate text-base font-bold leading-tight" title={tutoria.materiaNombre}>{tutoria.materiaNombre}</h3>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             {tutoria.enVivo && <EnVivoBadge />}
-            {esMiMateria && <Badge className="border border-utec-blue/30 bg-utec-blue/15 text-utec-blue text-2xs">Tu materia</Badge>}
+            {esMiMateria && <Badge className="border border-utec-blue/30 bg-utec-blue/15 text-marca-azul-texto text-2xs">Tu materia</Badge>}
             {enEspera && <Badge className="border-utec-yellow bg-utec-yellow text-marca-tinta text-2xs">En espera</Badge>}
           </div>
         </div>
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <CalendarClock className="h-3.5 w-3.5 shrink-0" />
           <span className="capitalize">{formatRango(tutoria.inicio, tutoria.fin)}</span>
-          <span className="font-medium text-utec-blue">· {relativo(tutoria.inicio)}</span>
+          <span className="font-medium text-marca-azul-texto">· {relativo(tutoria.inicio)}</span>
         </p>
       </div>
 
@@ -212,7 +212,7 @@ export function TutoriaCard({
             <span className="inline-flex items-center gap-1 text-2xs text-muted-foreground"><MapPin className="h-3 w-3" />{tutoria.espacioNombre}</span>
           )}
           {tagsDe(tutoria.tags).slice(0, 3).map((t) => (
-            <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 px-1.5 py-0.5 text-2xs font-medium text-utec-blue">
+            <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 px-1.5 py-0.5 text-2xs font-medium text-marca-azul-texto">
               {t.toLowerCase() === 'mate' ? '🧉' : t}
             </span>
           ))}
@@ -240,7 +240,7 @@ export function TutoriaCard({
           ) : (
             <CupoInfo tutoria={tutoria} />
           )}
-          {feriado && <p className="text-2xs text-utec-orange">⚠️ Ese día es feriado ({feriado})</p>}
+          {feriado && <p className="text-2xs text-marca-naranja-texto">⚠️ Ese día es feriado ({feriado})</p>}
         </div>
       </div>
 
@@ -268,7 +268,7 @@ export function TutoriaCard({
               </Button>
             )}
             {!sinConfirmar && tutoria.reservaConfirmada && (
-              <span className="flex flex-1 items-center gap-1 text-xs font-medium text-utec-green"><CheckCircle className="h-3.5 w-3.5" />Asistencia confirmada</span>
+              <span className="flex flex-1 items-center gap-1 text-xs font-medium text-marca-verde-texto"><CheckCircle className="h-3.5 w-3.5" />Asistencia confirmada</span>
             )}
             {!sinConfirmar && !tutoria.reservaConfirmada && (
               <span className="flex-1 text-xs text-muted-foreground">{enEspera ? 'En lista de espera' : 'Reservada'}</span>

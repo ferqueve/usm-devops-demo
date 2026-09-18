@@ -9,12 +9,12 @@ const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 // Paleta cálida-fría para diferenciar materias (tinte suave + texto legible en claro/oscuro).
 const MATERIA_COLORES = [
-  'bg-utec-blue/15 text-utec-blue',
-  'bg-utec-cyan/15 text-utec-cyan',
-  'bg-utec-purple/15 text-utec-purple',
-  'bg-utec-orange/15 text-utec-orange',
-  'bg-utec-green/15 text-utec-green',
-  'bg-utec-yellow/20 text-utec-orange',
+  'bg-utec-blue/15 text-marca-azul-texto',
+  'bg-utec-cyan/15 text-marca-cian-texto',
+  'bg-utec-red/15 text-marca-rojo-texto',
+  'bg-utec-orange/15 text-marca-naranja-texto',
+  'bg-utec-green/15 text-marca-verde-texto',
+  'bg-utec-yellow/20 text-marca-amarillo-texto',
 ];
 
 function colorDeMateria(nombre: string): string {
@@ -72,7 +72,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10 text-utec-blue"><CalendarRange className="h-4 w-4" /></span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10 text-marca-azul-texto"><CalendarRange className="h-4 w-4" /></span>
         <h3 className="text-sm font-semibold">Disponibilidad de la semana</h3>
         <span className="ml-2 text-xs text-muted-foreground capitalize">{rangoLabel}</span>
         <div className="ml-auto flex items-center gap-1">
@@ -91,7 +91,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
             return (
               <div key={d.label} className="flex min-h-[120px] flex-col bg-card p-2">
                 <div className="mb-1.5 flex items-center gap-1.5">
-                  <span className={cn('text-2xs font-semibold uppercase', esHoy ? 'text-utec-blue' : 'text-muted-foreground')}>{d.label}</span>
+                  <span className={cn('text-2xs font-semibold uppercase', esHoy ? 'text-marca-azul-texto' : 'text-muted-foreground')}>{d.label}</span>
                   <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-2xs font-medium tabular-nums', esHoy ? 'bg-utec-blue text-white' : 'text-muted-foreground')}>{d.fecha.getDate()}</span>
                 </div>
                 <div className="flex flex-1 flex-col gap-1">

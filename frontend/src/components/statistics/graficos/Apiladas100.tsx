@@ -1,3 +1,4 @@
+import { tintaSobre } from '@/lib/design/paleta';
 import { porcentaje } from '../reservas/formato';
 import { formatoNumero } from './tema';
 
@@ -33,7 +34,7 @@ export function Apiladas100({ filas }: Readonly<{ filas: FilaApilada[] }>) {
                       <div
                         key={s.nombre}
                         className="flex min-w-[3px] items-center justify-center overflow-hidden text-2xs font-semibold tabular-nums"
-                        style={{ flexGrow: s.valor, flexBasis: 0, backgroundColor: s.color, color: s.texto ?? '#ffffff' }}
+                        style={{ flexGrow: s.valor, flexBasis: 0, backgroundColor: s.color, color: s.texto ?? tintaSobre(s.color) }}
                         title={`${f.etiqueta} · ${s.nombre}: ${formatoNumero(s.valor)} (${pct}%)`}
                       >
                         {pct >= 12 ? `${pct}%` : ''}

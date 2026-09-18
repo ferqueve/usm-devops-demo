@@ -154,7 +154,7 @@ export function AfichePoster({ evento, open, onOpenChange }: Readonly<AfichePost
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan"><ImageIcon className="h-4 w-4" /></span>Afiche del evento</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-cyan/10 text-marca-cian-texto"><ImageIcon className="h-4 w-4" /></span>Afiche del evento</DialogTitle>
           <DialogDescription>Generado con el branding UTEC y un QR a la página del evento.</DialogDescription>
         </DialogHeader>
         <div className="relative rounded-lg overflow-hidden border bg-muted">

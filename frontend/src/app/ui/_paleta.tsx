@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
-import { DEPARTAMENTO, MARCA, SERIE_CLARO, SERIE_OSCURO, contraste } from '@/lib/design/paleta';
+import { DEPARTAMENTO, MARCA, SERIE_CLARO, SERIE_OSCURO, contraste, tintaSobre } from '@/lib/design/paleta';
 
 /**
  * La paleta entera, tal como la pinta el navegador.
@@ -79,7 +79,10 @@ function Ficha({ fondo, texto, nombre, detalle }: Readonly<{
   const ratio = texto ? contraste(fondo, texto) : null;
   return (
     <div className="min-w-0 overflow-hidden rounded-md border border-border">
-      <div className="px-2.5 py-3" style={{ backgroundColor: fondo, color: texto ?? undefined }}>
+      {/* Sin `texto`, la etiqueta va en la tinta que gana el contraste: el
+          nombre de un color tiene que poder leerse. El número de abajo sigue
+          midiendo el par que la ficha viene a mostrar. */}
+      <div className="px-2.5 py-3" style={{ backgroundColor: fondo, color: texto ?? tintaSobre(fondo) }}>
         <div className="truncate text-2xs font-semibold">{nombre}</div>
         <div className="font-mono text-2xs opacity-75">{fondo.toUpperCase()}</div>
       </div>

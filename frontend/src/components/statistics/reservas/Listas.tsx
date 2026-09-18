@@ -45,7 +45,7 @@ export function OcupacionEspacios({ filas, onFiltrar }: Readonly<{ filas: Ocupac
                 {o.edificioNombre && <span className="text-xs text-muted-foreground"> · {o.edificioNombre}</span>}
               </span>
               {sinUso ? (
-                <span className="shrink-0 rounded bg-utec-orange/12 px-1.5 py-0.5 text-2xs font-medium text-utec-orange">sin uso</span>
+                <span className="shrink-0 rounded bg-utec-orange/12 px-1.5 py-0.5 text-2xs font-medium text-marca-naranja-texto">sin uso</span>
               ) : (
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                   {n(o.reservas)} res. · {horas(Number(o.horasReservadas))} · <b className="text-foreground">{Math.round(pct)}%</b>
@@ -79,7 +79,7 @@ export function MenosUsados({ filas, cantidad = 5, onFiltrar }: Readonly<{ filas
               {o.espacioNombre}
               {o.edificioNombre && <span className="text-xs text-muted-foreground"> · {o.edificioNombre}</span>}
             </span>
-            <span className={`shrink-0 tabular-nums ${sinUso ? 'font-semibold text-utec-orange' : 'text-muted-foreground'}`}>
+            <span className={`shrink-0 tabular-nums ${sinUso ? 'font-semibold text-marca-naranja-texto' : 'text-muted-foreground'}`}>
               {sinUso ? 'sin uso' : `${Math.round(Number(o.porcentaje))}% · ${n(o.reservas)} res.`}
             </span>
           </li>
@@ -155,7 +155,7 @@ export function PorCarrera({ filas, onFiltrar }: Readonly<{ filas: ResumenCarrer
                 <td className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{n(c.canceladas)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{n(c.canceladasTarde)}</td>
                 <td className="py-1.5 pl-2 text-right tabular-nums">
-                  <span className={tasa > 15 ? 'rounded bg-utec-red/12 px-1.5 py-0.5 font-semibold text-utec-red' : ''}>{tasa.toFixed(1)}%</span>
+                  <span className={tasa > 15 ? 'rounded bg-utec-red/12 px-1.5 py-0.5 font-semibold text-marca-rojo-texto' : ''}>{tasa.toFixed(1)}%</span>
                 </td>
               </tr>
             );
@@ -191,7 +191,7 @@ export function QuienesMasReservan({ filas, onFiltrarRol }: Readonly<{ filas: To
                   <span className="font-medium">{u.nombre}</span>
                   <span
                     {...filtrable(nombreRol(u.rol), onFiltrarRol ? () => onFiltrarRol(u.rol) : null)}
-                    className={`ml-1.5 rounded bg-muted px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground ${onFiltrarRol ? 'cursor-pointer hover:bg-utec-orange/15 hover:text-utec-orange' : ''}`}
+                    className={`ml-1.5 rounded bg-muted px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground ${onFiltrarRol ? 'cursor-pointer hover:bg-utec-orange/15 hover:text-marca-naranja-texto' : ''}`}
                   >
                     {nombreRol(u.rol)}
                   </span>

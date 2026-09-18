@@ -425,7 +425,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
         */}
         {!embedded && (
           <div className="flex items-center gap-2">
-            <RouteIcon className="h-5 w-5 text-utec-green" />
+            <RouteIcon className="h-5 w-5 text-marca-verde-texto" />
             <h1 className="text-base font-semibold">Mapa de la carrera</h1>
           </div>
         )}
@@ -448,7 +448,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
       {progreso != null && mapa && (
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="font-medium flex items-center gap-1.5"><GraduationCap className="h-4 w-4 text-utec-green" /> Tu avance en {mapa.carreraNombre}</span>
+            <span className="font-medium flex items-center gap-1.5"><GraduationCap className="h-4 w-4 text-marca-verde-texto" /> Tu avance en {mapa.carreraNombre}</span>
             <span className="text-muted-foreground">
               {mapa.materiasAprobadas}/{mapa.totalMaterias} materias · {mapa.creditosAprobados}/{mapa.totalCreditos} créditos
             </span>
@@ -500,7 +500,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
       >
         {loadingMapa && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
-            <Loader2 className="h-6 w-6 animate-spin text-utec-green" />
+            <Loader2 className="h-6 w-6 animate-spin text-marca-verde-texto" />
           </div>
         )}
 
@@ -609,7 +609,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
           {/* Materias-llave (cuellos de botella) */}
           <div className="rounded-2xl border bg-card p-4">
             <div className="flex items-center gap-2 mb-1">
-              <KeyRound className="h-4 w-4 text-utec-orange" />
+              <KeyRound className="h-4 w-4 text-marca-naranja-texto" />
               <h3 className="text-sm font-semibold">Materias llave</h3>
               <span className="text-xs text-muted-foreground ml-auto">las que más desbloquean</span>
             </div>
@@ -628,14 +628,14 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
                     hover === nodo.id ? 'bg-muted border-border' : 'border-transparent hover:bg-muted/60'
                   }`}
                 >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-utec-orange/15 text-utec-orange text-xs font-bold shrink-0">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-utec-orange/15 text-marca-naranja-texto text-xs font-bold shrink-0">
                     {i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
                     {nodo.codigo && <span className="block font-mono text-2xs font-semibold text-muted-foreground tracking-wide">{nodo.codigo}</span>}
                     <span className="block text-sm font-medium truncate">{nodo.nombre}</span>
                   </span>
-                  <span className="flex items-center gap-1 text-xs font-semibold text-utec-orange whitespace-nowrap">
+                  <span className="flex items-center gap-1 text-xs font-semibold text-marca-naranja-texto whitespace-nowrap">
                     <Milestone className="h-3.5 w-3.5" />
                     {bloquea}
                   </span>
@@ -650,7 +650,7 @@ export function MapaCorrelativas({ embedded = false, withList = false }: { embed
           {/* Ruta crítica */}
           <div className="rounded-2xl border bg-card p-4">
             <div className="flex items-center gap-2 mb-1">
-              <RouteIcon className="h-4 w-4 text-utec-green" />
+              <RouteIcon className="h-4 w-4 text-marca-verde-texto" />
               <h3 className="text-sm font-semibold">Ruta crítica</h3>
               <span className="text-xs text-muted-foreground ml-auto">{analisis.profundidad} materias encadenadas</span>
             </div>

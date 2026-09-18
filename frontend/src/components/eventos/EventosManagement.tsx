@@ -415,7 +415,7 @@ export default function EventosManagement() {
                   <h3 className="relative text-lg font-bold leading-tight line-clamp-2">{evento.titulo}</h3>
                 </div>
                 <div className="p-4 space-y-2 text-sm">
-                  <p className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4 text-utec-cyan" />{formatFecha(evento.inicio)} · <span className="font-medium text-foreground">{relativoInicio(evento.inicio, evento.fin)}</span></p>
+                  <p className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4 text-marca-cian-texto" />{formatFecha(evento.inicio)} · <span className="font-medium text-foreground">{relativoInicio(evento.inicio, evento.fin)}</span></p>
                   {evento.espacioNombre && <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />{evento.espacioNombre}</p>}
                   <p className="flex items-center gap-2 text-muted-foreground"><Users className="h-4 w-4" />{evento.inscriptosCount}{conCupo ? `/${evento.cupo}` : ''} inscriptos</p>
                 </div>

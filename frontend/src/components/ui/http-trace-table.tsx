@@ -187,7 +187,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
     return (
       <div className="border rounded-lg overflow-hidden shadow-card bg-card">
         <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
-          <Network className="h-4 w-4 text-utec-blue shrink-0" />
+          <Network className="h-4 w-4 text-marca-azul-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Actividad HTTP Reciente</h3>
         </div>
         <p className="text-muted-foreground text-center py-8 bg-card">
@@ -202,7 +202,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
       <div className="bg-chrome text-white">
         {/* Fila 1: título + Ocultar Actuator + Mostrar N */}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <Network className="h-4 w-4 text-utec-blue shrink-0" />
+          <Network className="h-4 w-4 text-marca-azul-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Actividad HTTP Reciente</h3>
           <div className="flex items-center gap-1.5">
             <Switch
@@ -311,7 +311,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
                           {trace.response.status}
                         </span>
                       </TableCell>
-                      <TableCell className={`text-xs tabular-nums ${esLenta ? 'font-semibold text-utec-orange' : 'text-muted-foreground'}`}>
+                      <TableCell className={`text-xs tabular-nums ${esLenta ? 'font-semibold text-marca-naranja-texto' : 'text-muted-foreground'}`}>
                         {formatDuracion(trace.timeTaken ?? 0)}
                       </TableCell>
                     </TableRow>
@@ -367,10 +367,10 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
         <span>
           Mostrando {filteredTraces.length} de {totalFiltered} filtradas · {resumen.total} en la ventana
         </span>
-        <span className={resumen.errores > 0 ? 'font-semibold text-utec-red' : ''}>
+        <span className={resumen.errores > 0 ? 'font-semibold text-marca-rojo-texto' : ''}>
           {resumen.errores} con error
         </span>
-        <span className={resumen.lentas > 0 ? 'font-semibold text-utec-orange' : ''}>
+        <span className={resumen.lentas > 0 ? 'font-semibold text-marca-naranja-texto' : ''}>
           {resumen.lentas} lentas
         </span>
         <span>demora media {formatDuracion(resumen.demoraMedia)}</span>

@@ -30,9 +30,9 @@ function getRelativeTime(lastActivity: string): string {
 
 function getActivityColor(lastActivity: string): string {
   const diffMinutes = Math.floor((Date.now() - new Date(lastActivity).getTime()) / 60000);
-  if (diffMinutes < 1) return 'text-utec-green';
-  if (diffMinutes < 3) return 'text-utec-blue';
-  if (diffMinutes < 5) return 'text-utec-yellow';
+  if (diffMinutes < 1) return 'text-marca-verde-texto';
+  if (diffMinutes < 3) return 'text-marca-azul-texto';
+  if (diffMinutes < 5) return 'text-marca-amarillo-texto';
   return 'text-muted-foreground';
 }
 

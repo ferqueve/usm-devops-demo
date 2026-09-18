@@ -66,7 +66,7 @@ function relativo(iso?: string): string {
 function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode }>) {
   return (
     <div className="flex items-start gap-2.5 rounded-xl border bg-muted/30 p-3">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-cyan/10 text-utec-cyan"><Icon className="h-4 w-4" /></span>
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-cyan/10 text-marca-cian-texto"><Icon className="h-4 w-4" /></span>
       <div className="min-w-0">
         <p className="text-2xs uppercase tracking-wide text-muted-foreground leading-none">{label}</p>
         <p className="text-sm font-medium truncate mt-1">{value}</p>
@@ -95,7 +95,7 @@ function NotificarEventoDialog({ eventoId, open, onOpenChange }: Readonly<{ even
     <Dialog open={open} onOpenChange={(v) => (sending ? undefined : onOpenChange(v))}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-utec-green"><Mail className="h-4 w-4" /></span>Notificar a los inscriptos</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-marca-verde-texto"><Mail className="h-4 w-4" /></span>Notificar a los inscriptos</DialogTitle>
           <DialogDescription>Se enviará un email a los anotados en este evento.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
@@ -343,7 +343,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="outline" className="text-xs flex items-center gap-1">{evento.esPublico ? <><Globe className="h-3 w-3" />Público</> : <><Lock className="h-3 w-3" />Interno</>}</Badge>
               {evento.tags && evento.tags.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">{t}</span>
+                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-marca-azul-texto px-2 py-0.5 text-xs font-medium">{t}</span>
               ))}
             </div>
             {evento.descripcion && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{evento.descripcion}</p>}
@@ -366,7 +366,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   <span className="text-muted-foreground"> {conCupo ? `de ${evento.cupo} inscriptos` : 'inscriptos · sin cupo'}</span>
                 </p>
                 {conCupo && (
-                  <span className={`text-sm font-semibold tabular-nums ${(evento.plazasDisponibles ?? 0) > 0 ? 'text-utec-green' : 'text-utec-orange'}`}>
+                  <span className={`text-sm font-semibold tabular-nums ${(evento.plazasDisponibles ?? 0) > 0 ? 'text-marca-verde-texto' : 'text-marca-naranja-texto'}`}>
                     {(evento.plazasDisponibles ?? 0) > 0
                       ? `${evento.plazasDisponibles} libre${evento.plazasDisponibles === 1 ? '' : 's'}`
                       : 'Completo'}
@@ -440,7 +440,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                 return (
                   <li key={i.inscripcionId} className="flex items-center justify-between gap-3 rounded-lg border p-3">
                     <span className="flex items-center gap-2 min-w-0">
-                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-utec-green' : 'bg-utec-blue/10 text-utec-blue'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-marca-verde-texto' : 'bg-utec-blue/10 text-marca-azul-texto'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-medium">{i.nombre}</span>
                         <span className="block truncate text-xs text-muted-foreground">{i.email}</span>
@@ -448,7 +448,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                     </span>
                     <span className="flex items-center gap-1 shrink-0">
                       {presente && evento.tipo === 'CURSO' && i.nombre && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Certificado" onClick={() => descargarCertificado(i.nombre as string)}><Award className="h-3.5 w-3.5 text-utec-green" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Certificado" onClick={() => descargarCertificado(i.nombre as string)}><Award className="h-3.5 w-3.5 text-marca-verde-texto" /></Button>
                       )}
                       <PermissionGuard requiredPermission="evento:ver_inscriptos">
                         <Button variant={presente ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => toggleAsistencia(i)} title="Marcar asistencia">
@@ -465,7 +465,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
                       {confirmados.slice(0, 6).map((i) => (
-                        <span key={i.inscripcionId} className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-xs font-semibold ${i.estado === 'ASISTIO' ? 'bg-utec-green/15 text-utec-green' : 'bg-utec-blue/10 text-utec-blue'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
+                        <span key={i.inscripcionId} className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-xs font-semibold ${i.estado === 'ASISTIO' ? 'bg-utec-green/15 text-marca-verde-texto' : 'bg-utec-blue/10 text-marca-azul-texto'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
                       ))}
                       {confirmados.length > 6 && <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-semibold text-muted-foreground">+{confirmados.length - 6}</span>}
                     </div>
@@ -475,7 +475,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   {/* Barra de asistencia */}
                   {confirmados.length > 0 && (
                     <div className="flex items-center gap-3 text-sm">
-                      <span className="flex shrink-0 items-center gap-1.5"><UserCheck className="h-4 w-4 text-utec-green" /><b>{asistieron}</b>/{confirmados.length} asistieron</span>
+                      <span className="flex shrink-0 items-center gap-1.5"><UserCheck className="h-4 w-4 text-marca-verde-texto" /><b>{asistieron}</b>/{confirmados.length} asistieron</span>
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-utec-green transition-all" style={{ width: `${tasa}%` }} /></div>
                       <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{tasa}%</span>
                     </div>

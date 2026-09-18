@@ -103,7 +103,7 @@ function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
       <div className="mt-2">
         <div className="flex justify-between text-2xs text-muted-foreground mb-1">
           <span>Cupo</span>
-          <span className={`tabular-nums ${libre ? 'text-utec-green font-medium' : ''}`}>
+          <span className={`tabular-nums ${libre ? 'text-marca-verde-texto font-medium' : ''}`}>
             {ocupados}/{tutoria.cupo} · {tutoria.plazasDisponibles} libres
           </span>
         </div>
@@ -176,7 +176,7 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
           <>
             <div className="flex -space-x-2 mb-3">
               {inscriptos.slice(0, 7).map((i) => (
-                <span key={i.id} title={i.estudianteNombre} className="flex h-8 w-8 items-center justify-center rounded-full bg-utec-blue/15 text-utec-blue text-xs font-semibold ring-2 ring-card">{i.estudianteNombre?.slice(0, 2).toUpperCase()}</span>
+                <span key={i.id} title={i.estudianteNombre} className="flex h-8 w-8 items-center justify-center rounded-full bg-utec-blue/15 text-marca-azul-texto text-xs font-semibold ring-2 ring-card">{i.estudianteNombre?.slice(0, 2).toUpperCase()}</span>
               ))}
               {inscriptos.length > 7 && <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-semibold ring-2 ring-card">+{inscriptos.length - 7}</span>}
             </div>
@@ -201,14 +201,14 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
                     <span className="truncate">{i.estudianteNombre}</span>
                     <span className="flex items-center gap-1 shrink-0">
                       {i.estado === 'APROBADA' ? (
-                        <Badge className="bg-utec-green/10 text-utec-green border-utec-green/20 border text-2xs font-medium">
+                        <Badge className="bg-utec-green/10 text-marca-verde-texto border-utec-green/20 border text-2xs font-medium">
                           <CheckCircle className="h-3 w-3 mr-1" />Cursada
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-2xs">{i.estado}</Badge>
                       )}
                       {canManage && i.estado === 'ACTIVA' && (
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-2xs text-utec-green hover:text-utec-green" disabled={togglingId === i.id} onClick={() => cambiarEstado(i.id, 'APROBADA')} title="Marcar cursada">
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-2xs text-marca-verde-texto hover:text-marca-verde-texto" disabled={togglingId === i.id} onClick={() => cambiarEstado(i.id, 'APROBADA')} title="Marcar cursada">
                           {togglingId === i.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircle className="h-3.5 w-3.5 mr-1" />Cursada</>}
                         </Button>
                       )}
@@ -302,8 +302,8 @@ interface Actividad { ts: number; label: string; icon: LucideIcon; color: string
 function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos: Recurso[]; inscriptos: Inscripcion[]; tutorias: Tutoria[] }>) {
   const eventos = useMemo<Actividad[]>(() => {
     const ev: Actividad[] = [];
-    for (const r of recursos) ev.push({ ts: Date.parse(r.createdAt ?? ''), label: `Recurso agregado: ${r.titulo}`, icon: FolderOpen, color: 'text-utec-cyan' });
-    for (const i of inscriptos) ev.push({ ts: Date.parse(i.createdAt ?? ''), label: `Se inscribió ${i.estudianteNombre}`, icon: UserPlus, color: 'text-utec-blue' });
+    for (const r of recursos) ev.push({ ts: Date.parse(r.createdAt ?? ''), label: `Recurso agregado: ${r.titulo}`, icon: FolderOpen, color: 'text-marca-cian-texto' });
+    for (const i of inscriptos) ev.push({ ts: Date.parse(i.createdAt ?? ''), label: `Se inscribió ${i.estudianteNombre}`, icon: UserPlus, color: 'text-marca-azul-texto' });
     for (const t of tutorias) ev.push({ ts: Date.parse(t.createdAt ?? ''), label: `Tutoría creada para el ${formatFecha(t.inicio)}`, icon: CalendarClock, color: 'text-utec-purple' });
     return ev.filter((e) => !Number.isNaN(e.ts)).sort((a, b) => b.ts - a.ts).slice(0, 8);
   }, [recursos, inscriptos, tutorias]);
@@ -417,12 +417,12 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
       {/* Identidad + tiles */}
       <div className="grid gap-4 lg:grid-cols-3 items-stretch">
         <div className="rounded-2xl border bg-card p-5 flex flex-col">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-utec-blue/10 text-utec-blue mb-3"><BookOpen className="h-6 w-6" /></div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-utec-blue/10 text-marca-azul-texto mb-3"><BookOpen className="h-6 w-6" /></div>
           <h1 className="text-2xl font-bold leading-tight">{materia.nombre}</h1>
           <div className="flex flex-wrap gap-2 mt-2">
             {materia.codigo && <Badge variant="outline" className="text-xs">{materia.codigo}</Badge>}
-            {materia.carreraNombre && <Badge className="bg-utec-blue/10 text-utec-blue border-utec-blue/20 border text-xs font-medium">{materia.carreraNombre}</Badge>}
-            {!materia.docenteNombre && <Badge className="bg-utec-orange/10 text-utec-orange border-utec-orange/20 border text-xs font-medium">Sin docente</Badge>}
+            {materia.carreraNombre && <Badge className="bg-utec-blue/10 text-marca-azul-texto border-utec-blue/20 border text-xs font-medium">{materia.carreraNombre}</Badge>}
+            {!materia.docenteNombre && <Badge className="bg-utec-orange/10 text-marca-naranja-texto border-utec-orange/20 border text-xs font-medium">Sin docente</Badge>}
           </div>
           {materia.docenteNombre && <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><GraduationCap className="h-4 w-4" />{materia.docenteNombre}</p>}
           {materia.descripcion && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{materia.descripcion}</p>}

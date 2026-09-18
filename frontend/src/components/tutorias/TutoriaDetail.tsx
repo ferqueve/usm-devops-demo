@@ -98,7 +98,7 @@ function NotificarTutoriaDialog({ tutoriaId, open, onOpenChange }: Readonly<{ tu
     <Dialog open={open} onOpenChange={(v) => (sending ? undefined : onOpenChange(v))}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-utec-green"><Mail className="h-4 w-4" /></span>Notificar a los agendados</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-marca-verde-texto"><Mail className="h-4 w-4" /></span>Notificar a los agendados</DialogTitle>
           <DialogDescription>Se enviará un email a los estudiantes anotados en esta tutoría.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
@@ -313,7 +313,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           <EventoPatternBg patron={tutoria.patron ?? 'nodos'} />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/85 via-[#0e1320]/20 to-transparent" />
           <div className="relative flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><CalendarClock className="h-4 w-4 text-utec-blue" />Faltan para la tutoría</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><CalendarClock className="h-4 w-4 text-marca-azul-texto" />Faltan para la tutoría</div>
             <div className="flex items-center gap-2">
               {([['Días', cd.dias], ['Horas', cd.horas], ['Min', cd.minutos], ['Seg', cd.segundos]] as const).map(([l, v]) => (
                 <div key={l} className="text-center rounded-lg bg-[#1b2236] ring-1 ring-white/15 px-3 py-1.5 min-w-[60px]">
@@ -374,7 +374,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 {formatHora(tutoria.inicio)}–{formatHora(tutoria.fin)} · {duracion(tutoria.inicio, tutoria.fin)}
               </span>
               {tutoria.modalidad === 'VIRTUAL' ? (
-                <span className="flex items-center gap-1.5 text-utec-cyan">
+                <span className="flex items-center gap-1.5 text-marca-cian-texto">
                   <Video className="h-4 w-4" />Virtual
                   {tutoria.enlace && (
                     <a href={tutoria.enlace} target="_blank" rel="noopener noreferrer" className="hover:underline">· unirse</a>
@@ -392,7 +392,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 {tutoria.tipo === 'INDIVIDUAL' ? 'Tutoría individual (1 a 1)' : 'Tutoría grupal'}
               </span>
               {tutoria.tags?.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">
+                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-marca-azul-texto px-2 py-0.5 text-xs font-medium">
                   {t.toLowerCase() === 'mate' ? '🧉 mate' : t}
                 </span>
               ))}
@@ -406,7 +406,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 <span className="text-2xl font-bold tabular-nums leading-none">{ocupados}</span>
                 <span className="text-muted-foreground"> de {tutoria.cupo} lugares</span>
               </p>
-              <span className={`text-sm font-semibold tabular-nums ${tutoria.plazasDisponibles > 0 ? 'text-utec-green' : 'text-utec-orange'}`}>
+              <span className={`text-sm font-semibold tabular-nums ${tutoria.plazasDisponibles > 0 ? 'text-marca-verde-texto' : 'text-marca-naranja-texto'}`}>
                 {tutoria.plazasDisponibles > 0
                   ? `${tutoria.plazasDisponibles} libre${tutoria.plazasDisponibles === 1 ? '' : 's'}`
                   : 'Completo'}
@@ -424,7 +424,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
               />
             </div>
             {enEspera > 0 && (
-              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-utec-orange">
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-marca-naranja-texto">
                 <Users className="h-3.5 w-3.5" />{enEspera} en lista de espera
               </p>
             )}
@@ -463,7 +463,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                   <li key={a.reservaId} className="rounded-lg border p-3">
                     <div className="flex items-center justify-between gap-3">
                       <span className="flex items-center gap-2 min-w-0">
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-utec-green' : 'bg-utec-blue/10 text-utec-blue'}`}>{a.nombre?.slice(0, 2).toUpperCase()}</span>
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-marca-verde-texto' : 'bg-utec-blue/10 text-marca-azul-texto'}`}>{a.nombre?.slice(0, 2).toUpperCase()}</span>
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-medium">{a.nombre}{a.confirmada && <span title="Confirmó asistencia"> ✓</span>}</span>
                           <span className="block truncate text-xs text-muted-foreground">{a.email}</span>
@@ -519,7 +519,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                     <li key={t.id}>
                       <button type="button" onClick={() => navigate(`/tutorias/${t.id}`)} className="w-full text-left rounded-lg border p-3 transition-colors hover:border-utec-blue/40">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-utec-blue" />{formatFecha(t.inicio)}</span>
+                          <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-marca-azul-texto" />{formatFecha(t.inicio)}</span>
                           <Badge className={`${b.color} border font-medium text-2xs shrink-0`}><BI className="h-3 w-3 mr-1" />{b.label}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo} agendados · {relativo(t.inicio)}</p>
@@ -557,7 +557,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
             >
               <p className="font-medium">{materia.nombre}</p>
               {materia.carreraNombre && (
-                <Badge className="bg-utec-blue/10 text-utec-blue border-utec-blue/20 border text-xs font-medium mt-1">{materia.carreraNombre}</Badge>
+                <Badge className="bg-utec-blue/10 text-marca-azul-texto border-utec-blue/20 border text-xs font-medium mt-1">{materia.carreraNombre}</Badge>
               )}
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                 {materia.docenteNombre && <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" />{materia.docenteNombre}</span>}

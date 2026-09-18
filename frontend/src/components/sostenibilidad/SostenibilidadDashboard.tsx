@@ -356,7 +356,7 @@ export default function SostenibilidadDashboard() {
     );
   }
   if (!stats) {
-    return <div className="py-12 text-center text-muted-foreground"><Leaf className="mx-auto mb-3 h-10 w-10 text-utec-green/50" /><p>No se pudieron cargar las métricas.</p></div>;
+    return <div className="py-12 text-center text-muted-foreground"><Leaf className="mx-auto mb-3 h-10 w-10 text-marca-verde-texto/50" /><p>No se pudieron cargar las métricas.</p></div>;
   }
 
   // Sale de los mismos factores del backend (papel por hoja y papel por árbol).

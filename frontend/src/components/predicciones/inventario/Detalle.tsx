@@ -249,7 +249,7 @@ export function SemanasTipo({ tipo }: Readonly<{ tipo: TipoInventarioML }>) {
                 <td className="px-3 py-2 text-right tabular-nums">
                   <b>{decimal(s.picoEsperado)}</b> <span className="text-xs text-muted-foreground">/ {entero(stock)}</span>
                 </td>
-                <td className={`px-3 py-2 text-right tabular-nums ${supera ? 'font-semibold text-utec-red' : ''}`}>{entero(s.comprometidasMax)}</td>
+                <td className={`px-3 py-2 text-right tabular-nums ${supera ? 'font-semibold text-marca-rojo-texto' : ''}`}>{entero(s.comprometidasMax)}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-full max-w-[140px] overflow-hidden rounded-full bg-muted">

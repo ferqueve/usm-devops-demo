@@ -17,18 +17,18 @@ export function RachaBadges() {
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-orange/15"><Flame className="h-4 w-4 text-utec-orange" /></span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-orange/15"><Flame className="h-4 w-4 text-marca-naranja-texto" /></span>
         <h3 className="text-sm font-semibold">Tu progreso</h3>
-        {racha.rachaActual > 0 && <span className="ml-auto text-xs font-semibold text-utec-orange">🔥 Racha x{racha.rachaActual}</span>}
+        {racha.rachaActual > 0 && <span className="ml-auto text-xs font-semibold text-marca-naranja-texto">🔥 Racha x{racha.rachaActual}</span>}
       </div>
       <div className="p-4 space-y-3">
         <div className="flex gap-3">
           <div className="flex-1 rounded-xl bg-utec-green/10 p-3 text-center">
-            <div className="text-2xl font-bold tabular-nums text-utec-green">{racha.asistidas}</div>
+            <div className="text-2xl font-bold tabular-nums text-marca-verde-texto">{racha.asistidas}</div>
             <div className="text-2xs text-muted-foreground">asistidas</div>
           </div>
           <div className="flex-1 rounded-xl bg-utec-blue/10 p-3 text-center">
-            <div className="text-2xl font-bold tabular-nums text-utec-blue">{racha.agendadas}</div>
+            <div className="text-2xl font-bold tabular-nums text-marca-azul-texto">{racha.agendadas}</div>
             <div className="text-2xs text-muted-foreground">agendadas</div>
           </div>
         </div>

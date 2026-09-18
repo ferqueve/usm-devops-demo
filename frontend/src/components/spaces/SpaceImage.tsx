@@ -71,7 +71,7 @@ export function SpaceImage({ src, thumbSrc, alt }: { src: string; thumbSrc?: str
         <div className="fixed inset-0 z-[100] flex flex-col bg-black/95" role="dialog" aria-modal="true">
           <div className="flex shrink-0 items-center justify-between px-4 py-3 text-white">
             <span className="flex items-center gap-2 text-sm font-medium">
-              <Rotate3d className="h-4 w-4 text-utec-cyan" />
+              <Rotate3d className="h-4 w-4 text-marca-cian-texto" />
               Vista 360° · {alt}
             </span>
             <button

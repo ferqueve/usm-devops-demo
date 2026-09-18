@@ -20,7 +20,7 @@ export function Estrellas({ valor, chico = false }: Readonly<{ valor: number | n
         <span className="flex text-muted-foreground/30">
           {[0, 1, 2, 3, 4].map((i) => <Star key={i} className={`${tam} fill-current`} />)}
         </span>
-        <span className="absolute inset-0 flex overflow-hidden text-utec-yellow" style={{ width: `${(Math.max(0, Math.min(5, valor)) / 5) * 100}%` }}>
+        <span className="absolute inset-0 flex overflow-hidden text-marca-amarillo-texto" style={{ width: `${(Math.max(0, Math.min(5, valor)) / 5) * 100}%` }}>
           {[0, 1, 2, 3, 4].map((i) => <Star key={i} className={`${tam} shrink-0 fill-current`} />)}
         </span>
       </span>

@@ -115,8 +115,8 @@ export function Inventario() {
                         i.tipo !== 'montable'
                           ? 'text-muted-foreground/50'
                           : i.cubierto
-                            ? 'text-utec-green'
-                            : 'text-utec-orange'
+                            ? 'text-marca-verde-texto'
+                            : 'text-marca-naranja-texto'
                       }
                       title={i.tipo === 'montable' ? (i.cubierto ? 'en el catálogo' : 'pendiente') : ETIQUETA[i.tipo]?.nota}
                       aria-hidden

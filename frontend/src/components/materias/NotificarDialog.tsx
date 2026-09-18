@@ -54,7 +54,7 @@ export function NotificarDialog({ materiaId, materiaNombre, open, onOpenChange }
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-green/10 text-utec-green"><Mail className="h-4 w-4" /></span>
+            <span className="p-1.5 rounded-md bg-utec-green/10 text-marca-verde-texto"><Mail className="h-4 w-4" /></span>
             Notificar a inscriptos
           </DialogTitle>
           <DialogDescription>Se enviará un email a todos los estudiantes inscriptos en la materia.</DialogDescription>

@@ -59,9 +59,9 @@ function TitleBar({
   return (
     <div className="bg-chrome text-white border-b border-white/10">
       <div className="flex items-center gap-2 px-4 py-2.5">
-        <Database className="h-4 w-4 text-utec-blue shrink-0" />
+        <Database className="h-4 w-4 text-marca-azul-texto shrink-0" />
         <h3 className="text-sm font-semibold flex-1">Base de Datos</h3>
-        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${isUp ? 'text-utec-green' : 'text-utec-red'}`}>
+        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${isUp ? 'text-marca-verde-texto' : 'text-marca-rojo-texto'}`}>
           {isUp ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
           {dbStatus}
         </span>

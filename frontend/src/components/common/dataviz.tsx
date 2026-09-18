@@ -23,7 +23,7 @@ export function Tendencia({ delta }: Readonly<{ delta?: number }>) {
   const txt = `${up ? '+' : ''}${Math.abs(delta) >= 999 ? '999' : Math.round(delta)}%`;
   return (
     <span
-      className={`inline-flex items-center gap-0.5 text-2xs font-semibold ${up ? 'text-utec-green' : 'text-utec-red'}`}
+      className={`inline-flex items-center gap-0.5 text-2xs font-semibold ${up ? 'text-marca-verde-texto' : 'text-marca-rojo-texto'}`}
       title={`${txt} vs. período anterior`}
     >
       {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{txt}

@@ -104,7 +104,7 @@ export default function InventoryRequestsCardView({
       {requests.map((request) => (
         <article
           key={request.id}
-          className="group overflow-hidden rounded-lg border border-border bg-white/95 px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-within:shadow-md sm:px-4"
+          className="group overflow-hidden rounded-lg border border-border bg-card px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-within:shadow-md sm:px-4"
         >
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-5">
             <div className="flex min-w-0 flex-col gap-2.5">

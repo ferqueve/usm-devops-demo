@@ -52,7 +52,7 @@ function Fila({
         <div className="text-sm">{label}</div>
         {hint && <div className="text-2xs text-muted-foreground">{hint}</div>}
       </div>
-      <div className={`shrink-0 text-sm font-semibold tabular-nums ${alerta ? 'text-utec-red' : ''}`}>
+      <div className={`shrink-0 text-sm font-semibold tabular-nums ${alerta ? 'text-marca-rojo-texto' : ''}`}>
         {value}
       </div>
     </div>

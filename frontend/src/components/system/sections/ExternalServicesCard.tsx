@@ -26,8 +26,8 @@ const SERVICES: ServiceMeta[] = [
 ];
 
 function statusColor(status: string | undefined): { dot: string; text: string } {
-  if (status === 'UP') return { dot: 'bg-utec-green', text: 'text-utec-green' };
-  if (status === 'DOWN' || status === 'OUT_OF_SERVICE') return { dot: 'bg-utec-red', text: 'text-utec-red' };
+  if (status === 'UP') return { dot: 'bg-utec-green', text: 'text-marca-verde-texto' };
+  if (status === 'DOWN' || status === 'OUT_OF_SERVICE') return { dot: 'bg-utec-red', text: 'text-marca-rojo-texto' };
   return { dot: 'bg-white/30', text: 'text-white/60' };
 }
 

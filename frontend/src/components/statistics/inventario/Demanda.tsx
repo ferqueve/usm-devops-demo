@@ -56,9 +56,9 @@ function severidad(pico: number, disponibles: number, enInventario: number): Sev
 
 const SEVERIDADES: Record<Severidad, { chip: string; clase: string; orden: number }> = {
   sin: { chip: 'No hay en inventario', clase: 'bg-muted text-muted-foreground', orden: 0 },
-  falta: { chip: 'No alcanza', clase: 'bg-utec-red/12 text-utec-red', orden: 1 },
-  justo: { chip: 'Algún día faltó', clase: 'bg-utec-orange/12 text-utec-orange', orden: 2 },
-  alcanza: { chip: 'Alcanza', clase: 'bg-utec-green/15 text-[#4d7a22] dark:text-utec-green', orden: 3 },
+  falta: { chip: 'No alcanza', clase: 'bg-utec-red/12 text-marca-rojo-texto', orden: 1 },
+  justo: { chip: 'Algún día faltó', clase: 'bg-utec-orange/12 text-marca-naranja-texto', orden: 2 },
+  alcanza: { chip: 'Alcanza', clase: 'bg-utec-green/15 text-[#4d7a22] dark:text-marca-verde-texto', orden: 3 },
 };
 
 const plural = (n: number, uno: string, varios: string) => `${entero(n)} ${n === 1 ? uno : varios}`;
@@ -142,7 +142,7 @@ export function EspaciosConProblemas({ filas, onVerEstado }: Readonly<{ filas: D
   if (filas.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
-        <Wrench className="h-7 w-7 text-utec-green" />
+        <Wrench className="h-7 w-7 text-marca-verde-texto" />
         Ningún espacio reservado tiene inventario con problemas.
       </div>
     );
@@ -163,7 +163,7 @@ export function EspaciosConProblemas({ filas, onVerEstado }: Readonly<{ filas: D
                 <div className="h-full rounded-full bg-utec-purple" style={{ width: `${(Number(f.reservas) / maximo) * 100}%` }} />
               </div>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-1 rounded bg-utec-orange/12 px-1.5 py-0.5 text-xs font-semibold text-utec-orange" title="Items en mantenimiento o dañados">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded bg-utec-orange/12 px-1.5 py-0.5 text-xs font-semibold text-marca-naranja-texto" title="Items en mantenimiento o dañados">
               <Wrench className="h-3 w-3" />
               {entero(Number(f.itemsConProblema))}
             </span>
@@ -171,7 +171,7 @@ export function EspaciosConProblemas({ filas, onVerEstado }: Readonly<{ filas: D
               <button
                 type="button"
                 onClick={() => onVerEstado(f.espacioId)}
-                className="inline-flex shrink-0 items-center rounded-md px-1.5 py-1 text-xs font-medium text-utec-blue hover:bg-muted dark:text-info"
+                className="inline-flex shrink-0 items-center rounded-md px-1.5 py-1 text-xs font-medium text-marca-azul-texto hover:bg-muted dark:text-info"
                 title={`Ver el estado del inventario de ${f.nombre}`}
               >
                 ver estado

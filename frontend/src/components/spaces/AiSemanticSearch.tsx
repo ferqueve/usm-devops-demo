@@ -40,10 +40,10 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="h-9 gap-1.5 border-utec-blue/40 text-utec-blue hover:bg-utec-blue/10"
+          className="h-9 gap-1.5 border-utec-blue/40 text-marca-azul-texto hover:bg-utec-blue/10"
           aria-label="Buscar con IA"
         >
-          <Sparkles className="h-4 w-4 text-utec-yellow" />
+          <Sparkles className="h-4 w-4 text-marca-amarillo-texto" />
           <span className="hidden md:inline">Buscar con IA</span>
         </Button>
       </PopoverTrigger>
@@ -51,7 +51,7 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
         <div className="space-y-3">
           <div>
             <h4 className="text-sm font-semibold flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-utec-blue" />
+              <Sparkles className="h-3.5 w-3.5 text-marca-azul-texto" />
               Búsqueda semántica
             </h4>
             <p className="text-xs text-muted-foreground">

@@ -1,3 +1,4 @@
+import { StatStrip, type StatItem } from '@/components/common/StatStrip';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -263,13 +264,13 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
   const estadoConfig = getEstadoConfig(espacio.estado);
   const EstadoIcon = estadoConfig.icon;
 
-  const statCells: { label: string; value: string | number; accent?: string; icon: typeof Users }[] = [
-    { label: 'Capacidad', value: `${espacio.capacidad}`, icon: Users },
-    { label: 'Total items', value: inventarioStats.total, icon: Package },
-    { label: 'Disponibles', value: inventarioStats.disponibles, accent: 'text-utec-green', icon: CheckCircle },
-    { label: 'Mantenimiento', value: inventarioStats.mantenimiento, accent: 'text-utec-yellow', icon: Wrench },
-    { label: 'Dañados', value: inventarioStats.danados, accent: 'text-utec-red', icon: AlertCircle },
-    { label: 'Próximas reservas', value: proximasReservas.length, accent: 'text-utec-blue', icon: CalendarClock },
+  const celdas: StatItem[] = [
+    { label: 'Capacidad', value: `${espacio.capacidad}`, icon: Users, color: 'oscuro' },
+    { label: 'Total items', value: inventarioStats.total, icon: Package, color: 'oscuro' },
+    { label: 'Disponibles', value: inventarioStats.disponibles, icon: CheckCircle, color: 'verde' },
+    { label: 'Mantenimiento', value: inventarioStats.mantenimiento, icon: Wrench, color: 'amarillo' },
+    { label: 'Dañados', value: inventarioStats.danados, icon: AlertCircle, color: 'rojo' },
+    { label: 'Próximas reservas', value: proximasReservas.length, icon: CalendarClock, color: 'azul' },
   ];
 
   return (
@@ -342,7 +343,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                   size="icon"
                   onClick={() => setDeleteDialog(true)}
                   aria-label="Eliminar"
-                  className="h-9 w-9 text-utec-red hover:text-utec-red"
+                  className="h-9 w-9 text-marca-rojo-texto hover:text-marca-rojo-texto"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -353,18 +354,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
         </div>
       </div>
 
-      {/* Strip de stats */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 text-sm">
-        {statCells.map(({ label, value, accent, icon: Icon }) => (
-          <div key={label} className="rounded-lg bg-chrome text-white px-3 py-2 min-w-0">
-            <div className="flex items-center gap-1.5 text-2xs text-white/60 mb-0.5">
-              <Icon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{label}</span>
-            </div>
-            <div className={`text-lg font-semibold tabular-nums ${accent ?? ''}`}>{value}</div>
-          </div>
-        ))}
-      </div>
+      <StatStrip items={celdas} />
 
       {/* Row: Imagen + Info (izq) | Próximas reservas (der) */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
@@ -389,7 +379,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
           {/* Información del espacio */}
           <Section
             title="Información del espacio"
-            icon={<Building2 className="h-4 w-4 text-utec-blue" />}
+            icon={<Building2 className="h-4 w-4 text-marca-azul-texto" />}
             accentClass="bg-utec-blue"
             bodyClass="p-0"
           >
@@ -440,7 +430,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
         {/* Columna derecha: próximas reservas */}
         <Section
           title="Próximas reservas"
-          icon={<CalendarClock className="h-4 w-4 text-utec-green" />}
+          icon={<CalendarClock className="h-4 w-4 text-marca-verde-texto" />}
           accentClass="bg-utec-green"
           bodyClass=""
         >
@@ -500,7 +490,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
       {puedeVerInventario && (
       <Section
         title="Inventario del espacio"
-        icon={<Package className="h-4 w-4 text-utec-yellow" />}
+        icon={<Package className="h-4 w-4 text-marca-amarillo-texto" />}
         accentClass="bg-utec-yellow"
         bodyClass=""
         actions={

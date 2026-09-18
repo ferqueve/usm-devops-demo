@@ -113,7 +113,7 @@ export function RecursoUploadDialog({
       <DialogContent className="sm:max-w-[500px] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan">
+            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-marca-cian-texto">
               <FolderPlus className="h-4 w-4" />
             </span>
             Agregar recurso

@@ -62,7 +62,7 @@ export function TablaGrupos({ grupos, columna, conDetalle = false }: Readonly<{
               <td className="px-3 py-1.5"><BarraEstados g={g} /></td>
               <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums">
                 {problemas > 0 ? (
-                  <span className="font-semibold text-utec-red">
+                  <span className="font-semibold text-marca-rojo-texto">
                     {problemas} <span className="text-xs font-normal text-muted-foreground">· {porcentaje(problemas, g.items)}%</span>
                   </span>
                 ) : (
@@ -82,7 +82,7 @@ export function Atencion({ items }: Readonly<{ items: EstadoInventario['atencion
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-10 text-center">
-        <CheckCircle2 className="h-8 w-8 text-utec-green" />
+        <CheckCircle2 className="h-8 w-8 text-marca-verde-texto" />
         <p className="text-sm font-medium">Todo el inventario está disponible</p>
         <p className="text-xs text-muted-foreground">No hay items en mantenimiento ni dañados con estos filtros.</p>
       </div>
@@ -94,7 +94,7 @@ export function Atencion({ items }: Readonly<{ items: EstadoInventario['atencion
         const danado = i.estado === 'DANADO';
         return (
           <li key={i.id} className="flex items-start gap-3 py-2">
-            <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${danado ? 'bg-utec-red/12 text-utec-red' : 'bg-utec-yellow/20 text-[#9a6b00] dark:text-utec-yellow'}`}>
+            <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${danado ? 'bg-utec-red/12 text-marca-rojo-texto' : 'bg-utec-yellow/20 text-[#9a6b00] dark:text-marca-amarillo-texto'}`}>
               {danado ? <AlertTriangle className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
             </span>
             <div className="min-w-0 flex-1">
@@ -108,7 +108,7 @@ export function Atencion({ items }: Readonly<{ items: EstadoInventario['atencion
                 </span>
               </div>
               <div className="truncate text-xs text-muted-foreground">
-                <span className={danado ? 'text-utec-red' : ''}>{danado ? 'Dañado' : 'En mantenimiento'}</span>
+                <span className={danado ? 'text-marca-rojo-texto' : ''}>{danado ? 'Dañado' : 'En mantenimiento'}</span>
                 {' · '}
                 {i.espacio ?? 'sin espacio asignado'}
                 {i.observaciones && ` · ${i.observaciones}`}

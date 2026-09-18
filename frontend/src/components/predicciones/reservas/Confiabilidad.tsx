@@ -117,9 +117,9 @@ export function Confiabilidad({ validacion, modelo, referencia, mejora, mae, alt
           }`}
         >
           {gana ? (
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-utec-green" />
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marca-verde-texto" />
           ) : (
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-utec-orange" />
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marca-naranja-texto" />
           )}
           <span>
             {gana

@@ -9,7 +9,7 @@ export function ComoFuncionaDialog({ open, onOpenChange }: Readonly<{ open: bool
       <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-green/10 text-utec-green"><Leaf className="h-4 w-4" /></span>
+            <span className="p-1.5 rounded-md bg-utec-green/10 text-marca-verde-texto"><Leaf className="h-4 w-4" /></span>
             ¿Cómo se calcula?
           </DialogTitle>
           <DialogDescription>

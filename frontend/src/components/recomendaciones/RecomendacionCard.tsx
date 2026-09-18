@@ -79,7 +79,7 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
         </div>
         {aiExplicacion && (
           <div className="rounded border border-utec-blue/30 bg-utec-blue/5 p-2 text-sm">
-            <div className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-utec-blue">
+            <div className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-marca-azul-texto">
               <Wand2 className="h-3 w-3" /> Explicación IA
             </div>
             <p className="whitespace-pre-wrap leading-relaxed text-foreground">{aiExplicacion}</p>
@@ -93,7 +93,7 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
           size="sm"
           onClick={handleExplicar}
           disabled={aiLoading}
-          className="h-7 px-2 text-xs text-utec-blue hover:bg-utec-blue/10"
+          className="h-7 px-2 text-xs text-marca-azul-texto hover:bg-utec-blue/10"
         >
           {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
           <span className="ml-1">{aiExplicacion ? 'Regenerar explicación' : 'Explicar con IA'}</span>

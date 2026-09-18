@@ -10,8 +10,8 @@ const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 // Acento por tipo de evento (chip del día).
 const TIPO_CHIP: Record<string, string> = {
-  EVENTO: 'bg-utec-cyan/15 text-utec-cyan hover:bg-utec-cyan/25',
-  CURSO: 'bg-utec-blue/15 text-utec-blue hover:bg-utec-blue/25',
+  EVENTO: 'bg-utec-cyan/15 text-marca-cian-texto hover:bg-utec-cyan/25',
+  CURSO: 'bg-utec-blue/15 text-marca-azul-texto hover:bg-utec-blue/25',
 };
 const TIPO_CHIP_DEFAULT = 'bg-muted text-foreground hover:bg-muted/70';
 
@@ -56,7 +56,7 @@ export function LineaTiempoSemana({ eventos, onNavigate }: Readonly<LineaTiempoS
           return (
             <div key={d.key} className={`rounded-xl border p-2 ${esHoy ? 'border-utec-cyan/60 bg-utec-cyan/5' : 'bg-card'}`}>
               <div className="mb-2 flex items-center justify-between">
-                <span className={`text-2xs font-medium ${esHoy ? 'text-utec-cyan' : 'text-muted-foreground'}`}>{d.nombre}</span>
+                <span className={`text-2xs font-medium ${esHoy ? 'text-marca-cian-texto' : 'text-muted-foreground'}`}>{d.nombre}</span>
                 <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-2xs font-semibold ${esHoy ? 'bg-utec-cyan text-marca-tinta' : 'text-foreground'}`}>{d.numero}</span>
               </div>
               <div className="space-y-1">

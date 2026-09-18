@@ -78,10 +78,10 @@ export function EventosDescubrir(props: Readonly<EventosDescubrirProps>) {
     }
 
     const list: Bucket[] = [
-      { id: 'vivo', titulo: 'En vivo ahora', icon: Radio, accent: 'bg-utec-red/10 text-utec-red', eventos: vivo },
-      { id: 'hoy', titulo: 'Hoy', icon: CalendarClock, accent: 'bg-utec-cyan/10 text-utec-cyan', eventos: hoy },
-      { id: 'semana', titulo: 'Esta semana', icon: CalendarRange, accent: 'bg-utec-blue/10 text-utec-blue', eventos: semana },
-      { id: 'proximos', titulo: 'Próximos', icon: CalendarDays, accent: 'bg-utec-green/10 text-utec-green', eventos: proximos },
+      { id: 'vivo', titulo: 'En vivo ahora', icon: Radio, accent: 'bg-utec-red/10 text-marca-rojo-texto', eventos: vivo },
+      { id: 'hoy', titulo: 'Hoy', icon: CalendarClock, accent: 'bg-utec-cyan/10 text-marca-cian-texto', eventos: hoy },
+      { id: 'semana', titulo: 'Esta semana', icon: CalendarRange, accent: 'bg-utec-blue/10 text-marca-azul-texto', eventos: semana },
+      { id: 'proximos', titulo: 'Próximos', icon: CalendarDays, accent: 'bg-utec-green/10 text-marca-verde-texto', eventos: proximos },
       { id: 'cursos', titulo: 'Cursos abiertos', icon: BookOpen, accent: 'bg-utec-purple/10 text-utec-purple', eventos: cursos },
     ];
     return list.filter((b) => b.eventos.length > 0);
@@ -157,7 +157,7 @@ export function EventosDescubrir(props: Readonly<EventosDescubrirProps>) {
     <div className="space-y-6">
       {hayInscripciones && (
         <section className="space-y-3">
-          <Header icon={Ticket} accent="bg-utec-cyan/15 text-utec-cyan" titulo="Mis inscripciones" count={misInscripciones.length} />
+          <Header icon={Ticket} accent="bg-utec-cyan/15 text-marca-cian-texto" titulo="Mis inscripciones" count={misInscripciones.length} />
           <Grilla>
             {misInscripciones.map((e) => cardFor(e, 'w-full'))}
           </Grilla>
