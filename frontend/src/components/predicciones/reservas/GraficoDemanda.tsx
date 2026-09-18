@@ -35,7 +35,7 @@ function Globo({ active, payload, colores }: TooltipProps<number, string> & { co
   const esPronostico = p.minimo !== undefined;
 
   return (
-    <div className="min-w-[180px] rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <div className="min-w-[180px] rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="mb-1.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       {p.real !== undefined && !esPronostico && (
         <Linea color={colores.real} etiqueta="Aprobadas" valor={entero(p.real)} />

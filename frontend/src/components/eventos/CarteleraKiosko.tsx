@@ -38,7 +38,7 @@ export function CarteleraKiosko({ eventos, onClose }: Readonly<CarteleraKioskoPr
 
   if (!evento) {
     return (
-      <div className="fixed inset-0 z-[100] bg-utec-dark text-white flex items-center justify-center">
+      <div className="fixed inset-0 z-[100] bg-chrome text-white flex items-center justify-center">
         <p className="text-white/70">No hay eventos publicados para mostrar.</p>
         <Button variant="secondary" size="sm" className="absolute top-5 right-5" onClick={onClose}><X className="h-4 w-4" /></Button>
       </div>

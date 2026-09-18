@@ -27,7 +27,7 @@ export function DetalleTutoria({ tutoria, onCerrar }: Readonly<{ tutoria: Tutori
       >
         {t && estilo && (
           <>
-            <div className="flex items-center gap-2.5 bg-utec-dark px-5 py-3 pr-12 text-white">
+            <div className="flex items-center gap-2.5 bg-chrome px-5 py-3 pr-12 text-white">
               <span className="h-5 w-1 shrink-0 rounded-sm" style={{ backgroundColor: estilo.color }} aria-hidden />
               <DialogTitle className="truncate text-base font-semibold text-white">{t.materia}</DialogTitle>
               {t.carrera && <span className="hidden truncate text-sm text-white/60 sm:inline">{t.carrera}</span>}

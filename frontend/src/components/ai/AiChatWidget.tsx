@@ -75,7 +75,7 @@ export function AiChatWidget() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-utec-dark px-4 py-3 text-white shadow-lg transition-all hover:scale-105 hover:bg-utec-blue"
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-chrome px-4 py-3 text-white shadow-lg transition-all hover:scale-105 hover:bg-utec-blue"
           aria-label="Abrir asistente IA"
         >
           <Sparkles className="h-5 w-5 text-utec-yellow" />
@@ -85,7 +85,7 @@ export function AiChatWidget() {
 
       {open && (
         <div className="fixed bottom-5 right-5 z-50 flex h-[min(560px,calc(100vh-2.5rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border bg-card shadow-2xl">
-          <header className="flex items-center justify-between gap-2 bg-utec-dark px-3 py-2 text-white">
+          <header className="flex items-center justify-between gap-2 bg-chrome px-3 py-2 text-white">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-utec-yellow" />
               <h3 className="text-sm font-semibold">Asistente IA</h3>

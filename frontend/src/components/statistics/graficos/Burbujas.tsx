@@ -51,7 +51,7 @@ function Globo({ active, payload, ejeX, ejeY, tamano, formatoY, formatoX }: Glob
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PuntoBurbuja;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="mb-1 font-medium">{p.nombre}</p>
       <p>{ejeX}: <b>{formatoX(p.x)}</b></p>
       <p>{ejeY}: <b>{formatoY(p.y)}</b></p>

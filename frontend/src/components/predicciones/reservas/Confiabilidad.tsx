@@ -19,7 +19,7 @@ function Globo({ active, payload, colores }: TooltipProps<number, string> & { co
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as ValidacionPunto;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="mb-1 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <p className="tabular-nums">
         <span style={{ color: colores.real }}>●</span> Hubo <b>{p.real}</b>

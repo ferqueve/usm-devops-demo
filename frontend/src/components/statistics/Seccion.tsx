@@ -172,7 +172,7 @@ export function IndiceSecciones({
                 }}
                 aria-current={es ? 'true' : undefined}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                  es ? 'bg-utec-dark text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  es ? 'bg-chrome text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {/* Sobre el fondo oscuro, un acento oscuro (el azul) no se veía. */}

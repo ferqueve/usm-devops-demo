@@ -26,7 +26,7 @@ const ratioGrid: Record<NonNullable<DualPanelProps['ratio']>, string> = {
 
 function PanelHeader({ title, count, action, accentColor }: Readonly<PanelSide>) {
   return (
-    <div className="flex items-center justify-between gap-3 px-5 py-3 bg-utec-dark text-white">
+    <div className="flex items-center justify-between gap-3 px-5 py-3 bg-chrome text-white">
       <div className="flex items-center gap-2.5 min-w-0">
         <span
           className="w-1 h-4 rounded-sm shrink-0"

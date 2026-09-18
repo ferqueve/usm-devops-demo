@@ -514,14 +514,14 @@ export default function InventoryRequestsManagement() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-b-0">
-                    <TableHead className="h-10 bg-utec-dark text-white/70">ID</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70">Reserva</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70">Solicitante</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70">Elemento</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70">Cantidad</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70">Estado</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70">Creada</TableHead>
-                    <TableHead className="h-10 bg-utec-dark text-white/70 text-right">Acciones</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">ID</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">Reserva</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">Solicitante</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">Elemento</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">Cantidad</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">Estado</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70">Creada</TableHead>
+                    <TableHead className="h-10 bg-chrome text-white/70 text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

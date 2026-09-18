@@ -40,7 +40,7 @@ interface EventoDetailProps { eventoId: number }
 const ESTADO_BADGE: Record<EventoEstado, { label: string; color: string; icon: LucideIcon }> = {
   PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
   BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-utec-dark border-utec-yellow', icon: FileText },
-  FINALIZADO: { label: 'Finalizado', color: 'bg-utec-dark text-white border-utec-dark', icon: Clock },
+  FINALIZADO: { label: 'Finalizado', color: 'bg-chrome text-white border-utec-dark', icon: Clock },
   CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
@@ -293,7 +293,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
       <div className="grid gap-4 lg:grid-cols-4 items-stretch">
         <div className="lg:col-span-3 rounded-2xl border bg-card overflow-hidden flex flex-col">
           {/* Banner con el patrón del evento */}
-          <div className="relative min-h-[9rem] overflow-hidden bg-utec-dark p-4 text-white flex flex-col justify-between gap-3">
+          <div className="relative min-h-[9rem] overflow-hidden bg-chrome p-4 text-white flex flex-col justify-between gap-3">
             <EventoPatternBg patron={evento.patron} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
             {/* Arriba: tipo (izq) · estado + tema (der) */}

@@ -71,7 +71,7 @@ interface SectionProps {
 function Section({ title, icon, accentClass, actions, children, bodyClass = 'p-4' }: Readonly<SectionProps>) {
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
         <span className={`w-1 h-4 rounded-sm shrink-0 ${accentClass}`} />
         {icon}
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
@@ -356,7 +356,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
       {/* Strip de stats */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 text-sm">
         {statCells.map(({ label, value, accent, icon: Icon }) => (
-          <div key={label} className="rounded-lg bg-utec-dark text-white px-3 py-2 min-w-0">
+          <div key={label} className="rounded-lg bg-chrome text-white px-3 py-2 min-w-0">
             <div className="flex items-center gap-1.5 text-[11px] text-white/60 mb-0.5">
               <Icon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{label}</span>
@@ -379,7 +379,7 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                 alt={espacio.nombre}
               />
             ) : (
-              <div className="aspect-[16/7] bg-utec-dark flex flex-col items-center justify-center gap-2">
+              <div className="aspect-[16/7] bg-chrome flex flex-col items-center justify-center gap-2">
                 <Building2 className="h-10 w-10 text-white/30" />
                 <span className="text-xs text-white/40">Sin imagen</span>
               </div>
@@ -586,11 +586,11 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b-0">
-                      <TableHead className="h-10 bg-utec-dark text-white/70">Tipo de Elemento</TableHead>
-                      <TableHead className="h-10 bg-utec-dark text-white/70">Cantidad</TableHead>
-                      <TableHead className="h-10 bg-utec-dark text-white/70">Estado</TableHead>
+                      <TableHead className="h-10 bg-chrome text-white/70">Tipo de Elemento</TableHead>
+                      <TableHead className="h-10 bg-chrome text-white/70">Cantidad</TableHead>
+                      <TableHead className="h-10 bg-chrome text-white/70">Estado</TableHead>
                       <PermissionGuard requiredPermissions={['inventario:editar', 'inventario:eliminar']}>
-                        <TableHead className="h-10 bg-utec-dark text-white/70 text-right">Acciones</TableHead>
+                        <TableHead className="h-10 bg-chrome text-white/70 text-right">Acciones</TableHead>
                       </PermissionGuard>
                     </TableRow>
                   </TableHeader>

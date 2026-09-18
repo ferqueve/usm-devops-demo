@@ -44,7 +44,7 @@ function formatFecha(iso?: string | null): string {
 
 const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: typeof CheckCircle }> = {
   ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  CERRADA: { label: 'Cerrada', color: 'bg-utec-dark text-white border-utec-dark', icon: Lock },
+  CERRADA: { label: 'Cerrada', color: 'bg-chrome text-white border-utec-dark', icon: Lock },
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 

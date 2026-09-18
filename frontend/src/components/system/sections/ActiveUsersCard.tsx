@@ -42,7 +42,7 @@ interface SectionHeaderProps {
 
 function SectionHeader({ totalActive }: Readonly<SectionHeaderProps>) {
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
       <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
       <Users className="h-3.5 w-3.5 text-white/70 shrink-0" />
       <h3 className="text-sm font-semibold tracking-tight truncate">Usuarios Activos</h3>

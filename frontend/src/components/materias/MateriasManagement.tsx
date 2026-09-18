@@ -408,7 +408,7 @@ function AdminMateriasView() {
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
           <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
           <BookOpen className="h-4 w-4 text-utec-blue" />
           <span className="text-sm font-semibold">Materias</span>

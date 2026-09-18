@@ -10,7 +10,7 @@ interface Props {
 function Globo({ active, payload, label }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-1.5 text-xs text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-3 py-1.5 text-xs text-white shadow-lg">
       {label}: <b className="tabular-nums">{entero(Number(payload[0].value))}</b> por día
     </div>
   );

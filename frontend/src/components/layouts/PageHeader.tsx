@@ -95,7 +95,7 @@ export function PageHeader({
   if (!slots.head) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-utec-dark px-4 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-chrome px-4 py-2.5">
           {heading}
           {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
         </div>

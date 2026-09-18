@@ -6,7 +6,7 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 type Fondo = 'dark' | 'green' | 'yellow' | 'red' | 'blue' | 'cyan' | 'orange';
 
 const FONDOS: Record<Fondo, { bg: string; texto: string; tenue: string; trazo: string }> = {
-  dark: { bg: 'bg-utec-dark', texto: 'text-white', tenue: 'text-white/60', trazo: '#ffffff' },
+  dark: { bg: 'bg-chrome', texto: 'text-white', tenue: 'text-white/60', trazo: '#ffffff' },
   green: { bg: 'bg-utec-green', texto: 'text-white', tenue: 'text-white/80', trazo: '#ffffff' },
   yellow: { bg: 'bg-utec-yellow', texto: 'text-utec-dark', tenue: 'text-utec-dark/70', trazo: '#343a40' },
   red: { bg: 'bg-utec-red', texto: 'text-white', tenue: 'text-white/80', trazo: '#ffffff' },

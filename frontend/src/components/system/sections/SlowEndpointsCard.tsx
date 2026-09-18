@@ -62,7 +62,7 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
         <Gauge className="h-4 w-4 text-utec-orange shrink-0" />
         <h3 className="text-sm font-semibold flex-1">Endpoints más lentos (p95)</h3>
         {data && (
@@ -80,7 +80,7 @@ export const SlowEndpointsCard = memo(function SlowEndpointsCard() {
         </div>
       ) : (
           <Table>
-            <TableHeader className="bg-utec-dark">
+            <TableHeader className="bg-chrome">
               <TableRow className="hover:bg-transparent border-b border-white/10">
                 <TableHead className="h-9 w-[70px] text-white/70 text-xs font-semibold uppercase tracking-wide">Método</TableHead>
                 <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Endpoint</TableHead>

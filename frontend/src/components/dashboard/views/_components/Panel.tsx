@@ -42,7 +42,7 @@ export function Panel({
 }: Readonly<PanelProps>) {
   return (
     <section className={`flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card ${className ?? ''}`}>
-      <div className="flex items-center justify-between gap-3 bg-utec-dark px-5 py-3 text-white">
+      <div className="flex items-center justify-between gap-3 bg-chrome px-5 py-3 text-white">
         <div className="flex min-w-0 items-center gap-2.5">
           <span
             className="h-4 w-1 shrink-0 rounded-sm"

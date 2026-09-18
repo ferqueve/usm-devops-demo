@@ -25,7 +25,7 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PorcionDona & { total: number };
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-1.5 text-xs text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-3 py-1.5 text-xs text-white shadow-lg">
       <span style={{ color: p.color }}>●</span> {p.nombre}: <b>{formatoNumero(p.valor)}</b> · {porcentaje(p.valor, p.total)}%
     </div>
   );

@@ -62,6 +62,15 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Banda oscura: cabeceras de tabla, encabezados de panel, globos de
+     gráfico. Son superficies que se ven oscuras en los dos temas, pero no con
+     el mismo valor: en claro es el #343a40 del sitio, y en oscuro tiene que
+     quedar un escalón por encima de la tarjeta o deja de leerse como banda.
+     Estaban escritas 126 veces como `bg-utec-dark`, un hex fijo que en modo
+     oscuro se quedaba quieto mientras el resto del tema se movía. */
+  --color-chrome: var(--chrome);
+  --color-chrome-foreground: var(--chrome-foreground);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -202,6 +211,9 @@
   --chart-4: oklch(0.6788 0.1531 54.8);
   --chart-5: oklch(0.5868 0.2137 25.6);
 
+  --chrome: oklch(0.3451 0.0133 248);
+  --chrome-foreground: oklch(1 0 0);
+
   /* Barra lateral: el gris oscuro del sitio, sin teñir. */
   --sidebar: oklch(0.3451 0.0133 248);
   --sidebar-foreground: oklch(0.8671 0.0106 248);
@@ -214,12 +226,16 @@
 }
 
 .dark {
-  --background: oklch(0.2000 0.0090 248);
+  /* Subidas respecto de la primera versión: el fondo estaba en L 0.20 y la
+     pantalla entera pesaba. Y `muted` quedaba en 0.256 contra 0.262 de la
+     tarjeta —la misma colisión que en claro, reintroducida acá—, así que una
+     zona apagada dentro de una tarjeta no se distinguía. */
+  --background: oklch(0.2350 0.0100 248);
   --foreground: oklch(0.9417 0.0052 248);
 
-  --card: oklch(0.2621 0.0095 248);
+  --card: oklch(0.2850 0.0110 248);
   --card-foreground: oklch(0.9417 0.0052 248);
-  --popover: oklch(0.2621 0.0095 248);
+  --popover: oklch(0.2850 0.0110 248);
   --popover-foreground: oklch(0.9417 0.0052 248);
 
   /* El azul de marca a L=0.42 no contrasta contra fondo oscuro:
@@ -227,11 +243,11 @@
   --primary: oklch(0.6800 0.1450 260);
   --primary-foreground: oklch(0.2000 0.0090 248);
 
-  --secondary: oklch(0.3200 0.0130 248);
+  --secondary: oklch(0.3550 0.0140 248);
   --secondary-foreground: oklch(0.9417 0.0052 248);
-  --muted: oklch(0.2560 0.0110 248);
+  --muted: oklch(0.3250 0.0120 248);
   --muted-foreground: oklch(0.7692 0.0145 248);
-  --accent: oklch(0.3600 0.0220 258);
+  --accent: oklch(0.3900 0.0260 258);
   --accent-foreground: oklch(0.9417 0.0052 248);
 
   --destructive: oklch(0.6800 0.2089 25.6);
@@ -258,11 +274,14 @@
   --chart-4: oklch(0.6600 0.1639 54.8);
   --chart-5: oklch(0.6800 0.2089 25.6);
 
-  --sidebar: oklch(0.2621 0.0095 248);
+  --chrome: oklch(0.3350 0.0130 248);
+  --chrome-foreground: oklch(1 0 0);
+
+  --sidebar: oklch(0.2850 0.0110 248);
   --sidebar-foreground: oklch(0.8671 0.0106 248);
   --sidebar-primary: oklch(0.7739 0.1497 227);
   --sidebar-primary-foreground: oklch(0.2000 0.0090 248);
-  --sidebar-accent: oklch(0.3451 0.0133 248);
+  --sidebar-accent: oklch(0.3550 0.0140 248);
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.7739 0.1497 227);

@@ -595,7 +595,7 @@ export default function UserManagement() {
               <div className="hidden xl:block px-4 pt-2">
                 <div className="border rounded-lg overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-utec-dark">
+                    <TableHeader className="bg-chrome">
                       <TableRow className="hover:bg-transparent border-b-0">
                         <TableHead className="h-10 text-white/80 min-w-[200px]">Email</TableHead>
                         <TableHead className="h-10 text-white/80 min-w-[150px]">Nombre</TableHead>

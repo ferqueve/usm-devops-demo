@@ -92,7 +92,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
         <AlertTriangle className="h-4 w-4 text-utec-red shrink-0" />
         <h3 className="text-sm font-semibold flex-1">
           Top errores últimas {data?.windowHours ?? 24}h
@@ -128,7 +128,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
         </div>
       ) : (
           <Table className="table-fixed w-full">
-            <TableHeader className="bg-utec-dark">
+            <TableHeader className="bg-chrome">
               <TableRow className="hover:bg-transparent border-b border-white/10">
                 <TableHead className="h-9 w-[70px] text-white/70 text-xs font-semibold uppercase tracking-wide">Nivel</TableHead>
                 <TableHead className="h-9 w-[60px] text-center text-white/70 text-xs font-semibold uppercase tracking-wide">Count</TableHead>

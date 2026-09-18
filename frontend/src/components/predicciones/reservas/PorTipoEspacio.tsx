@@ -20,7 +20,7 @@ function GloboMini({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as SerieTipoEspacioPunto;
   return (
-    <div className="rounded-lg bg-utec-dark px-2.5 py-1.5 text-[11px] text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-2.5 py-1.5 text-[11px] text-white shadow-lg">
       <p className="mb-0.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <p>
         Esperadas <b className="tabular-nums">{entero(p.prediccion)}</b>

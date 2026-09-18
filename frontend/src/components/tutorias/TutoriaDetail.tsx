@@ -43,7 +43,7 @@ interface TutoriaDetailProps { tutoriaId: number }
 
 const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: LucideIcon }> = {
   ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  CERRADA: { label: 'Cerrada', color: 'bg-utec-dark text-white border-utec-dark', icon: Lock },
+  CERRADA: { label: 'Cerrada', color: 'bg-chrome text-white border-utec-dark', icon: Lock },
   CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
@@ -319,7 +319,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
 
       {/* Countdown con patrón animado (catálogo) */}
       {!cd.pasado && tutoria.estado === 'ABIERTA' && (
-        <div className="relative overflow-hidden rounded-2xl border bg-utec-dark text-white px-5 py-4">
+        <div className="relative overflow-hidden rounded-2xl border bg-chrome text-white px-5 py-4">
           <EventoPatternBg patron={tutoria.patron ?? 'nodos'} />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/85 via-[#0e1320]/20 to-transparent" />
           <div className="relative flex flex-wrap items-center justify-between gap-3">

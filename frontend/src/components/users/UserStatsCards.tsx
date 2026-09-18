@@ -23,7 +23,7 @@ const bgClasses: Record<UtecBg, { bg: string; text: string; subtle: string }> = 
   orange: { bg: 'bg-utec-orange', text: 'text-white',     subtle: 'text-white/80' },
   red:    { bg: 'bg-utec-red',    text: 'text-white',     subtle: 'text-white/80' },
   cyan:   { bg: 'bg-utec-cyan',   text: 'text-utec-dark', subtle: 'text-utec-dark/70' },
-  dark:   { bg: 'bg-utec-dark',   text: 'text-white',     subtle: 'text-white/60' },
+  dark:   { bg: 'bg-chrome',   text: 'text-white',     subtle: 'text-white/60' },
 };
 
 interface ColoredStatProps {
@@ -67,7 +67,7 @@ interface TooltipPayload {
 function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
   if (active && payload?.length) {
     return (
-      <div className="bg-utec-dark text-white border border-utec-dark/40 rounded-md shadow-lg px-2.5 py-1.5 text-xs">
+      <div className="bg-chrome text-white border border-utec-dark/40 rounded-md shadow-lg px-2.5 py-1.5 text-xs">
         {payload.map((entry, index) => {
           const p = entry as TooltipPayload;
           const color = p.color ?? p.payload?.fill;
@@ -101,7 +101,7 @@ function RolesDonut({ stats }: Readonly<RolesDonutProps>) {
 
   return (
     <div className="rounded-xl border bg-card overflow-hidden h-full flex flex-col">
-      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
         <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
         <Shield className="h-3.5 w-3.5 text-white/70 shrink-0" />
         <h3 className="text-sm font-semibold tracking-tight truncate">Distribución por rol</h3>

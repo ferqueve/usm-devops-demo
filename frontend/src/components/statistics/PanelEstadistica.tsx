@@ -64,7 +64,7 @@ export function PanelEstadistica({
 
   return (
     <section className={`flex h-full min-h-0 flex-col overflow-hidden rounded-xl border bg-card ${className ?? ''}`}>
-      <div className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-2.5 text-white">
+      <div className="flex items-center justify-between gap-3 bg-chrome px-4 py-2.5 text-white">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accentColor }} aria-hidden />
           <h2 className="shrink-0 text-sm font-semibold tracking-tight">{title}</h2>
@@ -107,7 +107,7 @@ export function PanelEstadistica({
           // Sin esto el foco cae en el primer sector del gráfico y le dibuja un recuadro negro.
           onOpenAutoFocus={(e) => e.preventDefault()}
           className="gap-0 overflow-hidden p-0 sm:max-w-6xl [&_.recharts-surface]:outline-none [&_.recharts-sector]:outline-none [&>button]:top-3.5 [&>button]:text-white [&>button]:ring-offset-utec-dark [&>button]:focus:ring-white/40">
-          <div className="flex items-center gap-2.5 bg-utec-dark px-5 py-3 pr-12 text-white">
+          <div className="flex items-center gap-2.5 bg-chrome px-5 py-3 pr-12 text-white">
             <span className="h-5 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accentColor }} aria-hidden />
             <DialogTitle className="text-base font-semibold text-white">{title}</DialogTitle>
             {count !== undefined && count !== '' && <span className="truncate text-sm text-white/60">{count}</span>}

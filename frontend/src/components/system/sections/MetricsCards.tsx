@@ -111,14 +111,14 @@ function SysStat({
       <button
         type="button"
         onClick={onClick}
-        className="rounded-xl bg-utec-dark p-4 min-w-0 text-left transition-colors hover:bg-utec-dark-lighter"
+        className="rounded-xl bg-chrome p-4 min-w-0 text-left transition-colors hover:bg-utec-dark-lighter"
       >
         {contenido}
       </button>
     );
   }
 
-  return <div className="rounded-xl p-4 min-w-0 bg-utec-dark">{contenido}</div>;
+  return <div className="rounded-xl p-4 min-w-0 bg-chrome">{contenido}</div>;
 }
 
 function desdeHace(desde: Date | null | undefined): string | null {

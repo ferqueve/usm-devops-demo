@@ -25,7 +25,7 @@ export function ProximoEventoHero({ eventos }: Readonly<ProximoEventoHeroProps>)
   if (!proximo) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-utec-dark text-white p-5 sm:p-6">
+    <div className="relative overflow-hidden rounded-2xl bg-chrome text-white p-5 sm:p-6">
       {/* Patrón del próximo evento (catálogo); por defecto las formas UTEC del login */}
       <EventoPatternBg patron={proximo.patron} />
       {/* Velo suave solo a la izquierda para legibilidad del título (no apaga los colores) */}

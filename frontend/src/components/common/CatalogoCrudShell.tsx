@@ -211,7 +211,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
           entraba, así que la altura del header cambiaba de tarjeta en tarjeta.
           Con la estructura fija, las tres se ven iguales y todo queda centrado
           contra la barra de acento. */}
-      <header className="flex items-center justify-between gap-3 bg-utec-dark px-4 py-2.5 text-white">
+      <header className="flex items-center justify-between gap-3 bg-chrome px-4 py-2.5 text-white">
         <div className="flex min-w-0 items-stretch gap-2.5">
           {/* self-stretch: la barra mide exactamente lo que el bloque de texto,
               sin depender de una altura fija que haya que retocar a mano. */}

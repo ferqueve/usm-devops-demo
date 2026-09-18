@@ -40,7 +40,7 @@ export function SelectorTipos({ tipos, elegido, onElegir }: Readonly<{
             onClick={() => onElegir(t.tipoElementoId)}
             title={estilo.etiqueta}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              activo ? 'bg-utec-dark text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              activo ? 'bg-chrome text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             } ${t.status === 'omitido' ? 'italic' : ''}`}
           >
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: estilo.color }} aria-hidden />
@@ -64,7 +64,7 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Punto;
   return (
-    <div className="min-w-[190px] rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <div className="min-w-[190px] rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="mb-1.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <Renglon color={colores.prediccion} etiqueta="Pico esperado" valor={decimal(p.prediccion)} extra={p.bandaInferior != null && p.bandaSuperior != null ? `${entero(p.bandaInferior)}–${entero(p.bandaSuperior)}` : undefined} />
       <Renglon color={colores.reservadas} etiqueta="Ya pedidas" valor={entero(p.comprometidas)} />

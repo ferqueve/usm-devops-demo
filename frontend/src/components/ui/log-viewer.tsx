@@ -277,7 +277,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
   if (!content) {
     return (
       <div className="border rounded-lg overflow-hidden shadow-card">
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
           <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
         </div>
@@ -290,7 +290,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card">
-      <div className="bg-utec-dark text-white">
+      <div className="bg-chrome text-white">
         {/* Fila 1: título + count + botones de acción */}
         <div className="flex items-center gap-2 px-4 py-2.5">
           <FileText className="h-4 w-4 text-utec-cyan shrink-0" />

@@ -84,7 +84,7 @@ export function Novedades({ novedades, contra, onFiltrar }: Readonly<Props>) {
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-utec-dark px-4 py-2.5 text-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-chrome px-4 py-2.5 text-white">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-utec-yellow text-utec-dark">
             <Sparkles className="h-3.5 w-3.5" />

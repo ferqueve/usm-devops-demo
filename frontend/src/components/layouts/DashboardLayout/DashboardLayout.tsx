@@ -98,14 +98,15 @@ export const DashboardLayout = memo(function DashboardLayout({ children, title, 
         <div className="flex flex-col h-full max-w-full overflow-hidden">
           <DashboardHeader title={pageTitle} hideTitle={hideTitle} />
           {/* Con el alto anclado, el scroll de cada pagina vive aca adentro. */}
-          <main className="flex-1 min-h-0 overflow-y-auto p-2 md:p-3 lg:p-4 bg-gray-50 page-dots flex flex-col">
+          <main className="flex-1 min-h-0 overflow-y-auto p-2 md:p-3 lg:p-4 bg-background page-dots flex flex-col">
             <div className="mx-auto max-w-[1920px] min-w-0 w-full px-0 flex-1 flex flex-col min-h-full">
               {children}
             </div>
           </main>
         </div>
       </SidebarInset>
-      <AiChatWidget />
+      {/* En /asistente el chat ya ocupa la pantalla: la burbuja sobraría. */}
+      {location.pathname !== '/asistente' && <AiChatWidget />}
     </SidebarProvider>
   );
 });

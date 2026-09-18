@@ -69,7 +69,7 @@ export function ListaProximas({ proximas, onAbrir }: Readonly<{ proximas: Tutori
               aria-checked={activo}
               onClick={() => setFiltro(f.id)}
               className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                activo ? 'bg-utec-dark text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
+                activo ? 'bg-chrome text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {color && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} aria-hidden />}

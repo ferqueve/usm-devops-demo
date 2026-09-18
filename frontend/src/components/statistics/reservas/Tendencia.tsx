@@ -41,7 +41,7 @@ function Globo({ active, payload, granularidad, colores }: TooltipProps<number, 
   const p = payload[0].payload as Punto;
   const total = ORDEN.reduce((a, k) => a + p[k], 0);
   return (
-    <div className="min-w-[170px] rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <div className="min-w-[170px] rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="font-medium capitalize text-white/70">{etiquetaTramo(p, granularidad, true)}</p>
       {p.incompleto && (
         <p className="mb-1 text-[11px] text-utec-yellow">

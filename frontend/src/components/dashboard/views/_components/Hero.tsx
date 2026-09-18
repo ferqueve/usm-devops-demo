@@ -49,7 +49,7 @@ export function Hero({
   const cd = useCountdown(cuandoISO);
 
   return (
-    <div className="relative shrink-0 overflow-hidden rounded-2xl bg-utec-dark px-5 py-4 text-white">
+    <div className="relative shrink-0 overflow-hidden rounded-2xl bg-chrome px-5 py-4 text-white">
       <EventoPatternBg patron={patron} />
       {/* Velo hacia la izquierda: el título se lee sin apagar el patrón. */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/85 via-[#0e1320]/25 to-transparent" />

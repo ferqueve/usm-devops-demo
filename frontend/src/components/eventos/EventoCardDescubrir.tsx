@@ -16,7 +16,7 @@ export function parseTags(csv?: string): string[] {
 const ESTADO_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
   PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
   BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-utec-dark border-utec-yellow', icon: FileText },
-  FINALIZADO: { label: 'Finalizado', color: 'bg-utec-dark text-white border-utec-dark', icon: Clock },
+  FINALIZADO: { label: 'Finalizado', color: 'bg-chrome text-white border-utec-dark', icon: Clock },
   CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
 };
 
@@ -75,7 +75,7 @@ export function EventoCardDescubrir({
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-card text-left transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-utec-cyan/40 ${className ?? ''}`}
     >
       {/* Cabecera con el PATRÓN del evento (cada evento se ve distinto) */}
-      <div className="relative h-24 shrink-0 overflow-hidden bg-utec-dark p-3 text-white">
+      <div className="relative h-24 shrink-0 overflow-hidden bg-chrome p-3 text-white">
         <EventoPatternBg patron={evento.patron} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
         <div className="relative flex items-center justify-between gap-2">

@@ -36,7 +36,7 @@ const PALETA = ORDEN_CATEGORIAS.map((k) => MARCA[k]);
 function Globo({ active, payload, label }: Readonly<TooltipProps<number, string>>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md border border-utec-dark/40 bg-utec-dark px-2.5 py-1.5 text-xs text-white shadow-lg">
+    <div className="rounded-md border border-utec-dark/40 bg-chrome px-2.5 py-1.5 text-xs text-white shadow-lg">
       {label && <div className="mb-0.5 font-medium">{label}</div>}
       {payload.map((e) => (
         <div key={e.name} className="tabular-nums">

@@ -88,7 +88,7 @@ function Panel({ title, icon, accent, action, children, className }: Readonly<{ 
 const KPI_CLS: Record<string, string> = {
   green: 'bg-utec-green text-white', cyan: 'bg-utec-cyan text-utec-dark',
   blue: 'bg-utec-blue text-white', orange: 'bg-utec-cyan text-utec-dark',
-  yellow: 'bg-utec-yellow text-utec-dark', dark: 'bg-utec-dark text-white',
+  yellow: 'bg-utec-yellow text-utec-dark', dark: 'bg-chrome text-white',
 };
 function KpiTile({ icon: Icon, label, value, hint, variant, delta }: Readonly<{ icon: LucideIcon; label: string; value: number; hint?: string; variant: string; delta?: number }>) {
   const v = useCountUp(value);
@@ -429,7 +429,7 @@ export default function EventosManagement() {
             const conCupo = evento.cupo != null && evento.cupo > 0;
             return (
               <button key={evento.id} type="button" onClick={() => navigate(`/eventos/${evento.id}`)} className="group text-left rounded-2xl border overflow-hidden bg-card transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <div className="relative h-32 overflow-hidden bg-utec-dark p-4 flex flex-col justify-between text-white">
+                <div className="relative h-32 overflow-hidden bg-chrome p-4 flex flex-col justify-between text-white">
                   <EventoPatternBg patron={evento.patron} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
                   <div className="relative flex items-center justify-between">

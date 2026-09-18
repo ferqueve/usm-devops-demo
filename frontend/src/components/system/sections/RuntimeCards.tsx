@@ -28,7 +28,7 @@ function Panel({
 }>) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-card">
-      <div className="flex items-center gap-2.5 border-b border-white/10 bg-utec-dark px-4 py-2.5 text-white">
+      <div className="flex items-center gap-2.5 border-b border-white/10 bg-chrome px-4 py-2.5 text-white">
         <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accent }} aria-hidden />
         <Icon className="h-4 w-4 shrink-0 text-white/70" />
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>

@@ -50,7 +50,7 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as NodoArbol;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-1.5 text-xs text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-3 py-1.5 text-xs text-white shadow-lg">
       <b>{p.nombre}</b>
       {p.detalle && <div className="text-white/75">{p.detalle}</div>}
       {p.alClic && <div className="mt-0.5 text-[10px] text-white/60">Clic para filtrar por este espacio</div>}

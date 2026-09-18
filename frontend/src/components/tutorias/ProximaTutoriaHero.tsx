@@ -28,7 +28,7 @@ export function ProximaTutoriaHero({ tutorias, modo }: Readonly<{ tutorias: Tuto
   const label = modo === 'docente' ? 'TU PRÓXIMA TUTORÍA A DAR' : 'TU PRÓXIMA TUTORÍA';
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-utec-dark text-white p-5 sm:p-6">
+    <div className="relative overflow-hidden rounded-2xl bg-chrome text-white p-5 sm:p-6">
       <EventoPatternBg patron={proxima.patron ?? 'plasma'} />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/85 via-[#0e1320]/35 to-transparent" />
       <div className="relative flex flex-wrap items-center justify-between gap-4">

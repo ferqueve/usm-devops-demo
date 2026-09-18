@@ -57,7 +57,7 @@ function TitleBar({
 }>) {
   const isUp = dbStatus === 'UP';
   return (
-    <div className="bg-utec-dark text-white border-b border-white/10">
+    <div className="bg-chrome text-white border-b border-white/10">
       <div className="flex items-center gap-2 px-4 py-2.5">
         <Database className="h-4 w-4 text-utec-blue shrink-0" />
         <h3 className="text-sm font-semibold flex-1">Base de Datos</h3>
@@ -117,7 +117,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
       </p>
       <ScrollArea className={verTodas ? 'h-[400px]' : ''}>
         <Table>
-          <TableHeader className="bg-utec-dark">
+          <TableHeader className="bg-chrome">
             <TableRow className="hover:bg-transparent border-b border-white/10">
               <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[60px]">#</TableHead>
               <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[120px]">ID</TableHead>

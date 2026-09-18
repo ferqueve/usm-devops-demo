@@ -25,7 +25,7 @@ export function SinModelo({ titulo, detalle, entrenamiento, textoBoton }: Readon
 }>) {
   const { esAdmin, reentrenando, entrenar } = entrenamiento;
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-utec-dark px-6 py-14 text-center text-white">
+    <div className="relative overflow-hidden rounded-2xl bg-chrome px-6 py-14 text-center text-white">
       <EventoPatternBg patron="nodos" />
       <div className="relative mx-auto max-w-md">
         <Brain className="mx-auto mb-3 h-10 w-10 text-white/60" />
@@ -76,7 +76,7 @@ export function Hero({ rango, titulo, detalle, anillo, extra }: Readonly<{
   extra?: ReactNode;
 }>) {
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-utec-dark px-5 py-5 text-white sm:px-6">
+    <section className="relative overflow-hidden rounded-2xl bg-chrome px-5 py-5 text-white sm:px-6">
       <EventoPatternBg patron="nodos" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/90 via-[#0e1320]/40 to-transparent" />
       <div className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-4">

@@ -64,7 +64,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
       onClick={handleViewDetails}
     >
       {/* Banner superior uniforme */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-utec-dark">
+      <div className="relative aspect-[16/10] overflow-hidden bg-chrome">
         {hasImagen ? (
           <img
             // La tarjeta muestra 279 px: la original son 4096 y casi 2 MB.
@@ -75,7 +75,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-utec-dark">
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-chrome">
             <Building2 className="h-10 w-10 text-white/40" />
             <span className="text-xs uppercase tracking-wider text-white/70 font-medium">
               {espacio.tipoEspacioNombre || 'Sin tipo'}
@@ -138,7 +138,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 h-8 text-sm hover:bg-utec-dark hover:text-white hover:border-utec-dark transition-colors"
+            className="flex-1 h-8 text-sm hover:bg-chrome hover:text-white hover:border-utec-dark transition-colors"
             onClick={handleViewDetails}
           >
             <Eye className="h-4 w-4 mr-1.5" />
@@ -148,7 +148,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 h-8 text-sm hover:bg-utec-dark hover:text-white hover:border-utec-dark transition-colors"
+              className="flex-1 h-8 text-sm hover:bg-chrome hover:text-white hover:border-utec-dark transition-colors"
               onClick={handleEdit}
             >
               <Edit className="h-4 w-4 mr-1.5" />

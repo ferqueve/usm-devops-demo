@@ -58,7 +58,7 @@ export const TrafficCard = memo(function TrafficCard({ traffic, uptimeSeconds }:
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-card">
-      <div className="flex items-center gap-2.5 border-b border-white/10 bg-utec-dark px-4 py-2.5 text-white">
+      <div className="flex items-center gap-2.5 border-b border-white/10 bg-chrome px-4 py-2.5 text-white">
         <span className="h-4 w-1 shrink-0 rounded-sm bg-utec-cyan" aria-hidden />
         <h3 className="text-sm font-semibold tracking-tight">Tráfico HTTP</h3>
         <span className="ml-auto text-xs text-white/60">desde el arranque</span>

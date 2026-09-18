@@ -40,7 +40,7 @@ export default function InventoryStatsCards({ statistics }: Readonly<InventorySt
   return (
     <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 text-sm">
       {cells.map(({ label, value, hint, icon: Icon, accent }) => (
-        <div key={label} className="rounded-lg bg-utec-dark text-white px-3 py-2 min-w-0">
+        <div key={label} className="rounded-lg bg-chrome text-white px-3 py-2 min-w-0">
           <div className="flex items-center gap-1.5 text-[11px] text-white/60 mb-0.5">
             <Icon className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{label}</span>

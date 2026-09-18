@@ -29,7 +29,7 @@ const ESTADOS = [
 function Globo({ active, payload, label }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <div className="rounded-lg bg-chrome px-3 py-2 text-xs text-white shadow-lg">
       <p className="mb-1 font-medium text-white/70">{fechaCorta(String(label))}</p>
       {payload.map((p) => (
         <div key={String(p.dataKey)} className="flex items-center gap-2 py-0.5">

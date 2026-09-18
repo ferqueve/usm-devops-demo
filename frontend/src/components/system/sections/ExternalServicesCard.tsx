@@ -42,7 +42,7 @@ export const ExternalServicesCard = memo(function ExternalServicesCard({ health 
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-utec-dark overflow-hidden">
+    <div className="rounded-xl border border-white/10 bg-chrome overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-2.5 text-white">
         <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
         <Server className="h-3.5 w-3.5 text-white/70 shrink-0" />
