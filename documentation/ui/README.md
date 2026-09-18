@@ -218,6 +218,40 @@ normales.
 
 ---
 
+## Cuando no hay nada que mostrar
+
+Son tres estados, no uno: **cargando**, **error** y **vacío**. Los tres viven
+en `components/common/EstadoCarga` y se ven en `/ui#estados`.
+
+El que faltaba era el del error. El patrón que había era `.catch(() => {})`
+seguido de `if (!datos) return null`: cuando la llamada fallaba, el bloque
+desaparecía de la pantalla. Quien lo miraba no veía un error, veía que la
+sección no existía. `StatsListWidget` lo tenía incluso escrito en su propio
+comentario —«consumer may want to render a fallback at a higher level»— y
+ninguno de sus dos consumidores lo hacía.
+
+**Un bloque que no puede mostrar lo suyo tiene que decirlo y dejar
+reintentar.** Vacío y error no son lo mismo: «no hay solicitudes» y «no
+pudimos traer las solicitudes» llevan a decisiones distintas.
+
+```tsx
+<EstadoCarga
+  cargando={cargando}
+  error={error}
+  alReintentar={cargar}
+  vacio={!datos}
+  textoVacio="Sin solicitudes en este período."
+>
+  {…}
+</EstadoCarga>
+```
+
+Quedan 33 `catch` que se comen el error en 20 archivos. Algunos son
+legítimos —portapapeles, `localStorage`, generar un QR—; los que envuelven
+una llamada de datos no lo son.
+
+---
+
 ## El catálogo
 
 `localhost:5173/ui`, sólo en desarrollo.

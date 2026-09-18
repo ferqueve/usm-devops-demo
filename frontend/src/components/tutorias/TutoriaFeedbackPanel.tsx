@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/Button';
 import { Loader2, MessageSquare, Send, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { tutoriasApi } from '@/lib/api/tutorias';
+import { Panel } from '@/components/common/Panel';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
+import { MARCA } from '@/lib/design/paleta';
 import type { TutoriaFeedbackResumen } from '@/lib/types/tutorias';
 
 function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | 'lg' }>) {
@@ -25,6 +28,7 @@ function fmtFecha(iso?: string): string {
 export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number }>) {
   const [resumen, setResumen] = useState<TutoriaFeedbackResumen | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comentario, setComentario] = useState('');
@@ -32,9 +36,10 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
 
   const cargar = useCallback(() => {
     setLoading(true);
+    setError(null);
     tutoriasApi.feedback(tutoriaId)
       .then((r) => { if (r.data) { setResumen(r.data); if (r.data.miRating) setRating(r.data.miRating); } })
-      .catch(() => { /* noop */ })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error de red.'))
       .finally(() => setLoading(false));
   }, [tutoriaId]);
 
@@ -51,23 +56,28 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
     } finally { setEnviando(false); }
   };
 
-  if (loading) {
-    return <div className="rounded-2xl border bg-card p-4 flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
-  }
-  if (!resumen) return null;
-
-  const { promedio, total, distribucion, miRating, puedeValorar, items } = resumen;
+  // Con `resumen` en null el cuerpo no se dibuja, pero JSX evalúa igual lo
+  // que tiene adentro: los valores por defecto evitan que reviente.
+  const {
+    promedio = 0, total = 0, distribucion = [], miRating, puedeValorar = false, items = [],
+  } = resumen ?? ({} as Partial<TutoriaFeedbackResumen>);
   const maxDist = Math.max(1, ...distribucion);
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Star className="h-4 w-4 text-marca-amarillo-texto" /></span>
-        <h3 className="text-sm font-semibold">Valoración del docente</h3>
-        {total > 0 && <span className="ml-auto text-xs text-muted-foreground">{total} {total === 1 ? 'valoración' : 'valoraciones'}</span>}
-      </div>
-
-      <div className="p-4 space-y-4">
+    <Panel
+      title="Valoración del docente"
+      icon={<Star />}
+      accentColor={MARCA.amarillo}
+      count={total > 0 ? `${total} ${total === 1 ? 'valoración' : 'valoraciones'}` : undefined}
+    >
+      <EstadoCarga
+        cargando={loading}
+        error={error}
+        alReintentar={cargar}
+        vacio={!resumen}
+        textoVacio="No hay datos de valoración de esta tutoría."
+      >
+      <div className="space-y-4">
         {total === 0 ? (
           <p className="text-sm text-muted-foreground py-1">Todavía no hay valoraciones de esta tutoría.</p>
         ) : (
@@ -125,6 +135,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
           </ul>
         )}
       </div>
-    </div>
+      </EstadoCarga>
+    </Panel>
   );
 }

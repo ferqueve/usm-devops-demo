@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 
 import { MARCA } from '@/lib/design/paleta';
-import { Download, Users } from 'lucide-react';
+import { Download, Inbox, Loader2, TriangleAlert, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -21,6 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Panel } from '@/components/common/Panel';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatStrip } from '@/components/common/StatStrip';
 import { TemaGraficosContexto } from '@/components/statistics/graficos/tema';
@@ -135,6 +136,7 @@ const INDICE = [
   ['controles', 'Controles'],
   ['datos', 'Datos'],
   ['bloques', 'Bloques'],
+  ['estados', 'Estados'],
   ['dashboards', 'Dashboards'],
   ['dialogos', 'Diálogos'],
   ['tarjetas', 'Tarjetas'],
@@ -350,6 +352,34 @@ export default function UiPage() {
                     <p className="text-foreground">Bruno Cardozo · 3.º semestre</p>
                     <p className="text-muted-foreground">y 22 más</p>
                   </div>
+                </Panel>
+              </div>
+            </Doble>
+          </Seccion>
+
+          <Seccion
+            id="estados"
+            titulo="Cuando no hay nada que mostrar"
+            nota="Cargando, error y vacío. El del error es el que faltaba: antes el bloque desaparecía."
+          >
+            <Doble>
+              <div className="grid gap-3 @2xl:grid-cols-3">
+                <Panel title="Cargando" icon={<Loader2 />} accentColor={MARCA.azul}>
+                  <EstadoCarga cargando>{null}</EstadoCarga>
+                </Panel>
+                <Panel title="Error" icon={<TriangleAlert />} accentColor={MARCA.rojo}>
+                  <EstadoCarga
+                    cargando={false}
+                    error="502 Bad Gateway · el servicio de inventario no responde"
+                    alReintentar={() => {}}
+                  >
+                    {null}
+                  </EstadoCarga>
+                </Panel>
+                <Panel title="Vacío" icon={<Inbox />} accentColor={MARCA.amarillo}>
+                  <EstadoCarga cargando={false} vacio textoVacio="Sin solicitudes en este período.">
+                    {null}
+                  </EstadoCarga>
                 </Panel>
               </div>
             </Doble>

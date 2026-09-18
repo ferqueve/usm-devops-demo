@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import StatsListWidget, { type StatsListItem } from '@/components/dashboard/widgets/_shared/StatsListWidget';
 
 function TitleIcon({ className }: Readonly<{ className?: string }>) {
@@ -30,16 +31,37 @@ describe('StatsListWidget', () => {
     expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
   });
 
-  it('no renderiza nada si items=null y loading=false', () => {
-    const { container } = render(
+  // Antes no dibujaba nada: si la llamada fallaba, el widget desaparecía del
+  // dashboard sin dejar rastro. Ahora el bloque sigue ahí y dice qué pasó.
+  it('sin items y sin cargar, sigue mostrando el bloque y lo dice', () => {
+    render(
       <StatsListWidget
-        title="x"
+        title="Inventario"
         TitleIcon={TitleIcon}
         items={null}
         loading={false}
       />
     );
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.getByText('Inventario')).toBeInTheDocument();
+    expect(screen.getByText('No se pudo traer el detalle.')).toBeInTheDocument();
+  });
+
+  it('con error, lo cuenta y deja reintentar', async () => {
+    const reintentar = vi.fn();
+    render(
+      <StatsListWidget
+        title="Inventario"
+        TitleIcon={TitleIcon}
+        items={null}
+        loading={false}
+        error="502 Bad Gateway"
+        alReintentar={reintentar}
+      />
+    );
+    expect(screen.getByText('No se pudo cargar.')).toBeInTheDocument();
+    expect(screen.getByText('502 Bad Gateway')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+    expect(reintentar).toHaveBeenCalledOnce();
   });
 
   it('renderiza títulos, labels y valores cuando hay items', () => {

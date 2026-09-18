@@ -276,6 +276,10 @@ pantalla o se borran; queda a decisión de producto.
       firma original para no tocar a quien los llama. En el camino se
       recuperaron tres `PermissionGuard` y se corrigió el género gramatical
       ("el evento", no "la evento").
+- [ ] Terminar los estados de error. `components/common/EstadoCarga` ya
+      existe y lo usan los dos paneles de valoración y `StatsListWidget`.
+      Quedan 33 `catch` que se comen el error en 20 archivos; los que
+      envuelven una llamada de datos hay que pasarlos.
 - [ ] Terminar la pasada de contraste. `node scripts/contraste.mjs` bajó de
       821 textos a 613, y lo peor pasó de 1,00:1 a 1,70:1. Lo que queda son
       103 grupos, casi todos entre 3 y 4,5 —`text-muted-foreground` en

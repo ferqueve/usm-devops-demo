@@ -593,6 +593,18 @@
    "cubierto": true
   },
   {
+   "archivo": "components/common/EstadoCarga.tsx",
+   "familia": "common",
+   "nombres": [
+    "EstadoCarga"
+   ],
+   "lineas": 71,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
    "archivo": "components/common/FiltersPanel.tsx",
    "familia": "common",
    "nombres": [
@@ -885,7 +897,7 @@
    "nombres": [
     "StatsListWidget"
    ],
-   "lineas": 88,
+   "lineas": 85,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -1054,7 +1066,7 @@
    "nombres": [
     "FeedbackEventoPanel"
    ],
-   "lineas": 181,
+   "lineas": 187,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1282,7 +1294,7 @@
    "nombres": [
     "InventoryStatsCards"
    ],
-   "lineas": 55,
+   "lineas": 34,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2290,7 +2302,7 @@
    "nombres": [
     "SpaceDetails"
    ],
-   "lineas": 671,
+   "lineas": 661,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2418,7 +2430,7 @@
    "nombres": [
     "Apiladas100"
    ],
-   "lineas": 59,
+   "lineas": 60,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -2514,7 +2526,7 @@
    "nombres": [
     "MapaArbol"
    ],
-   "lineas": 81,
+   "lineas": 82,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
@@ -3247,7 +3259,7 @@
    "nombres": [
     "TutoriaFeedbackPanel"
    ],
-   "lineas": 131,
+   "lineas": 142,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3480,7 +3492,7 @@
    "nombres": [
     "StatusBadge"
    ],
-   "lineas": 72,
+   "lineas": 74,
    "dialog": false,
    "tipo": "montable",
    "motivo": "",
