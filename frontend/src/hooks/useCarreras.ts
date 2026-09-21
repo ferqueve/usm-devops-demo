@@ -1,124 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
 import { carrerasApi } from '@/lib/api/carreras';
 import type { Carrera } from '@/lib/types/spaces';
-import { toast } from 'sonner';
-
-// Caché global compartido entre todos los componentes
-let carrerasCache: Carrera[] | null = null;
-let cacheTimestamp: number = 0;
-let pendingRequest: Promise<Carrera[]> | null = null;
-
-// Duración del caché: 10 minutos (las carreras cambian menos frecuentemente)
-const CACHE_DURATION = 10 * 60 * 1000;
+import { crearCacheDeLista, CACHE_LARGO } from './cacheDeLista';
 
 /**
- * Hook personalizado para obtener la lista de carreras
+ * La lista de carreras, pedida una vez y compartida entre componentes.
  *
- * Características:
- * - Caché global compartido entre componentes (10 minutos)
- * - Una sola llamada HTTP aunque múltiples componentes lo usen
- * - Manejo automático de loading y errores
- * - Función refresh() para invalidar caché
- *
- * @returns {object} { carreras, loading, error, refresh }
- *
- * @example
- * const { carreras, loading } = useCarreras();
+ * El caché lo hace `crearCacheDeLista`: esto sólo le pone el nombre del campo
+ * que devuelve, para no tocar a los componentes que ya lo usaban.
  */
+const cache = crearCacheDeLista<Carrera>({
+  pedir: () => carrerasApi.obtenerCarreras(),
+  nombre: 'las carreras',
+  duracion: CACHE_LARGO,
+});
+
 export function useCarreras() {
-  const [carreras, setCarreras] = useState<Carrera[]>(carrerasCache || []);
-  const [loading, setLoading] = useState<boolean>(!carrerasCache);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchCarreras = useCallback(async (forceRefresh = false) => {
-    const now = Date.now();
-
-    // Si hay caché válido y no es refresh forzado, usar caché
-    if (!forceRefresh && carrerasCache && now - cacheTimestamp < CACHE_DURATION) {
-      setCarreras(carrerasCache);
-      setLoading(false);
-      return carrerasCache;
-    }
-
-    // Si ya hay una petición en curso, esperar a que termine
-    if (pendingRequest) {
-      try {
-        const result = await pendingRequest;
-        setCarreras(result);
-        setLoading(false);
-        return result;
-      } catch (err) {
-        setError(err as Error);
-        setLoading(false);
-        throw err;
-      }
-    }
-
-    // Nueva petición
-    setLoading(true);
-    setError(null);
-
-    pendingRequest = (async () => {
-      try {
-        const response = await carrerasApi.obtenerCarreras();
-
-        if (response.data) {
-          // Actualizar caché global
-          carrerasCache = response.data;
-          cacheTimestamp = Date.now();
-
-          setCarreras(response.data);
-          return response.data;
-        }
-
-        throw new Error('No se recibieron datos');
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        console.error('Error al cargar carreras:', error);
-
-        if (forceRefresh) {
-          toast.error('Error al cargar carreras');
-        }
-
-        throw error;
-      } finally {
-        setLoading(false);
-        pendingRequest = null;
-      }
-    })();
-
-    return pendingRequest;
-  }, []);
-
-  useEffect(() => {
-    // fetchCarreras relanza el error para quien llame a refresh(); en la carga
-    // inicial nadie lo espera, y sin este catch queda como unhandled rejection.
-    // El error ya quedó guardado en el estado del hook.
-    fetchCarreras().catch(() => {});
-  }, [fetchCarreras]);
-
-  /**
-   * Invalida el caché y recarga las carreras
-   */
-  const refresh = useCallback(async () => {
-    carrerasCache = null;
-    cacheTimestamp = 0;
-    return fetchCarreras(true);
-  }, [fetchCarreras]);
-
-  return {
-    carreras,
-    loading,
-    error,
-    refresh,
-  };
+  const { datos, loading, error, refresh } = cache.useLista();
+  return { carreras: datos, loading, error, refresh };
 }
 
-/**
- * Función de utilidad para invalidar el caché manualmente
- */
-export function invalidateCarrerasCache() {
-  carrerasCache = null;
-  cacheTimestamp = 0;
-}
+/** Vacía el caché sin pedir, para después de crear, editar o borrar. */
+export const invalidateCarrerasCache = cache.invalidar;

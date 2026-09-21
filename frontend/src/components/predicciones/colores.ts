@@ -1,34 +1,37 @@
 import { useTheme } from 'next-themes';
+import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
 
 /**
  * Colores de las tres series de la pantalla, uno por tema.
  *
- * No son los institucionales tal cual: el azul UTEC queda por debajo de la
- * banda de luminosidad de un gráfico, y el cian y el verde no llegan a 3:1
- * sobre fondo claro. Estos pasan el validador de paleta (luminosidad, croma,
- * separación para daltonismo y contraste) en claro y en oscuro.
+ * El azul UTEC tal cual (#184897) queda por debajo de la banda de luminosidad
+ * de un gráfico, y el cian y el verde de marca no llegan a 3:1 sobre fondo
+ * claro. Eso sigue siendo cierto: por eso las series no usan el hex crudo sino
+ * las variantes de `lib/design/paleta`, que son el mismo tono llevado a la luz
+ * donde sí funciona. Antes este archivo resolvía lo mismo con hex escritos a
+ * mano que no coincidían con los de estadísticas.
  *
  * Azul frente a naranja porque real contra pronóstico es la comparación que
- * más se mira, y es el par que más se separa.
+ * más se mira, y es el par que más se separa, también en daltonismo.
  */
 const CLARO = {
-  real: '#1f55ab',
-  prediccion: '#c8641a',
-  reservadas: '#0e8a74',
-  referencia: '#9ca3af',
-  grilla: '#eceef1',
-  eje: '#6b7280',
-  hoy: '#343a40',
+  real: SERIE_CLARO.azul,
+  prediccion: SERIE_CLARO.naranja,
+  reservadas: SERIE_CLARO.verde,
+  referencia: NEUTRO.claro.apagado,
+  grilla: NEUTRO.claro.grilla,
+  eje: NEUTRO.claro.eje,
+  hoy: NEUTRO.claro.texto,
 };
 
-const OSCURO = {
-  real: '#4f80d6',
-  prediccion: '#d9782c',
-  reservadas: '#12a08a',
-  referencia: '#71717a',
-  grilla: '#2f3237',
-  eje: '#a1a1aa',
-  hoy: '#e4e4e7',
+const OSCURO: typeof CLARO = {
+  real: SERIE_OSCURO.azul,
+  prediccion: SERIE_OSCURO.naranja,
+  reservadas: SERIE_OSCURO.verde,
+  referencia: NEUTRO.oscuro.apagado,
+  grilla: NEUTRO.oscuro.grilla,
+  eje: NEUTRO.oscuro.eje,
+  hoy: NEUTRO.oscuro.texto,
 };
 
 export type Colores = typeof CLARO;

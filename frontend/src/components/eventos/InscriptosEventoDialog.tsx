@@ -52,7 +52,7 @@ export function InscriptosEventoDialog({
       <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan">
+            <span className="p-1.5 rounded-md bg-utec-cyan/10 text-marca-cian-texto">
               <Users className="h-4 w-4" />
             </span>
             Inscriptos

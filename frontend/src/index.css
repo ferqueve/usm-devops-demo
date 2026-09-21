@@ -1,7 +1,21 @@
-/* Importar fuentes personalizadas */
-@import url('https://fonts.googleapis.com/css2?family=Gilroy:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+/* ============================================================
+   Tipografía
+   ------------------------------------------------------------
+   El Manual de Identidad Visual 2.1 (A.9) fija Gilroy como
+   primera opción para web y Poppins de Google Fonts como
+   fallback oficial "cuando esto no sea posible técnicamente".
 
-/* Definir fuente personalizada UTEC */
+   Gilroy es comercial y no está en Google Fonts: hay que
+   licenciarla y servirla desde /fonts. Mientras no esté, cae
+   en Poppins, que es la caída que el manual mismo prevé. La
+   declaramos igual en la pila para que el día que se suba el
+   archivo entre sola.
+
+   La fuente UTEC queda para el logotipo y los títulos de
+   sección, que es su uso previsto (A.9, "tipografía eventual").
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 @font-face {
   font-family: 'UTEC';
   src: url('/fonts/utec_gruesa_3.0.ttf') format('truetype');
@@ -15,7 +29,26 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
+/* Pantalla con lugar para que un dashboard entre entero sin scroll.
+   Antes se decidía sólo por el ancho (`lg:`), así que a 1280×720 el
+   dashboard se forzaba a caber en 720 px de alto y los paneles quedaban
+   aplastados: «Estado del sistema» casi vacío, la cola con el texto partido.
+   Con menos alto que esto, la página scrollea y cada panel mide lo suyo. */
+@custom-variant pantalla-alta (@media (min-width: 64rem) and (min-height: 52rem));
+
+/*
+ * `inline` es lo que hace que el modo oscuro funcione en cualquier parte del
+ * árbol y no sólo cuando `.dark` está en el <html>.
+ *
+ * Sin él, `--color-background: var(--background)` se resuelve una vez en :root
+ * y los hijos heredan el valor ya calculado: un `.dark` anidado redefine
+ * `--background` pero nadie lo vuelve a leer. Con `inline`, Tailwind sustituye
+ * la variable en el lugar donde se usa, así que toma la que esté vigente ahí.
+ *
+ * Se notó armando la página /ui, que muestra los dos temas lado a lado: el
+ * panel oscuro salía claro.
+ */
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -36,87 +69,435 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Colores institucionales UTEC (expuestos como tokens para que variantes como hover:bg-utec-* funcionen) */
+  /* ----------------------------------------------------------
+     Roles semánticos
+     ----------------------------------------------------------
+     Cuatro estados, cuatro piezas cada uno. Salen de un color de
+     marca y cubren los tres usos que aparecían escritos a mano
+     como `bg-blue-50`, `text-red-600`, `border-amber-200`: un
+     fondo tenue, un borde para ese fondo, un texto que se lee
+     encima, y el relleno macizo.
+
+     El relleno es el hex de marca en los dos temas: un bloque con
+     su propio texto no necesita cambiar de color según el tema,
+     sólo separarse de la tarjeta, y el hex ya lo hace. Lo que sí
+     cambia por tema son el fondo tenue, el borde y el texto.
+     ---------------------------------------------------------- */
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-suave: var(--info-suave);
+  --color-info-borde: var(--info-borde);
+  --color-info-texto: var(--info-texto);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-suave: var(--success-suave);
+  --color-success-borde: var(--success-borde);
+  --color-success-texto: var(--success-texto);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-suave: var(--warning-suave);
+  --color-warning-borde: var(--warning-borde);
+  --color-warning-texto: var(--warning-texto);
+
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-suave: var(--danger-suave);
+  --color-danger-borde: var(--danger-borde);
+  --color-danger-texto: var(--danger-texto);
+
+  /* Quinto rol, para cuando hace falta «otra categoría» y no un estado: el rol
+     ADMIN, un chip de filtro, un tile. Estaba resuelto con morado, que no es
+     de la marca. El cian sí lo es —es el centro del isotipo— y hace el mismo
+     trabajo. */
+  --color-acento: var(--acento);
+  --color-acento-foreground: var(--acento-foreground);
+  --color-acento-suave: var(--acento-suave);
+  --color-acento-borde: var(--acento-borde);
+  --color-acento-texto: var(--acento-texto);
+
+  /* Banda oscura: cabeceras de tabla, encabezados de panel, globos de
+     gráfico. Son superficies que se ven oscuras en los dos temas, pero no con
+     el mismo valor: en claro es el #343a40 del sitio, y en oscuro tiene que
+     quedar un escalón por encima de la tarjeta o deja de leerse como banda.
+     Estaban escritas 126 veces como `bg-utec-dark`, un hex fijo que en modo
+     oscuro se quedaba quieto mientras el resto del tema se movía. */
+  --color-chrome: var(--chrome);
+  --color-chrome-foreground: var(--chrome-foreground);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ----------------------------------------------------------
+     Colores por departamento (Manual 2.1, A.4)
+     ----------------------------------------------------------
+     Cada uno nombra un departamento de UTEC. No son una paleta
+     decorativa ni un semáforo: el color ES el departamento, y
+     por eso van donde el dato habla de una carrera, materia,
+     tutoría o evento. Son los mismos cinco que forman las aspas
+     del isotipo.
+     ---------------------------------------------------------- */
+  --color-dpto-ti: #184897;          /* Tecnologías de la Información */
+  --color-dpto-sostenibilidad: #86bb4c; /* Sostenibilidad Ambiental */
+  --color-dpto-innovacion: #F6CA21;  /* Innovación y Emprendimientos */
+  --color-dpto-alimentos: #DE7A27;   /* Alimentos */
+  --color-dpto-mecatronica: #DF2B31; /* Mecatrónica, Logística y Biomédica */
+
+  /* Cian: color principal del sistema de identidad (Manual A.4).
+     Es de marca —isotipo, cabecera, acentos—, no de interfaz: a
+     este brillo compite con el texto y cansa en pantallas de
+     trabajo con mucha tabla. El hex es el que usa utec.edu.uy;
+     el manual imprime #00A9E0. */
+  --color-utec-cyan: #00c7ff;
+  --color-utec-cyan-manual: #00A9E0;
+
+  /* La tinta que se lee sobre un relleno macizo de marca.
+     No cambia con el tema, porque el relleno tampoco: un bloque con
+     su propio texto sólo tiene que separarse de la tarjeta.
+
+     Medido en ratio WCAG sobre el hex exacto de cada color:
+
+       verde    blanco 2.28 · tinta 6.78  → tinta
+       amarillo blanco 1.57 · tinta 9.84  → tinta
+       naranja  blanco 3.04 · tinta 5.08  → tinta
+       cian     blanco 1.98 · tinta 7.80  → tinta
+       rojo     blanco 4.64 · tinta 3.33  → blanco
+       azul     blanco 8.70 · tinta 1.77  → blanco
+
+     Sobre verde, naranja, cian y amarillo el blanco no llega ni a
+     3:1. Estaba escrito así en 32 lugares. */
+  --color-marca-tinta: #212529;
+
+  /* Los seis de marca, en la luz donde se leen como TEXTO.
+
+     `--color-utec-*` son los hexes exactos del manual y sirven para
+     rellenar: un bloque macizo, una barra, un punto de leyenda. Como color
+     de texto no funcionan —el azul #184897 sobre una tarjeta oscura da
+     1,32:1—, así que para eso está esta familia, que sí cambia con el tema.
+
+     Las lightness salen de bajar o subir la luz hasta pasar 4,7:1 contra el
+     fondo de página, midiendo. `scripts/contraste.mjs` lo verifica sobre la
+     página armada. */
+  --color-marca-azul-texto: var(--marca-azul-texto);
+  --color-marca-verde-texto: var(--marca-verde-texto);
+  --color-marca-amarillo-texto: var(--marca-amarillo-texto);
+  --color-marca-naranja-texto: var(--marca-naranja-texto);
+  --color-marca-rojo-texto: var(--marca-rojo-texto);
+  --color-marca-cian-texto: var(--marca-cian-texto);
+
+  /* Alias históricos. Los usan ~109 lugares; se mantienen para no
+     romper pantallas mientras se migra a los nombres de arriba. */
   --color-utec-green: #86bb4c;
   --color-utec-yellow: #F6CA21;
   --color-utec-orange: #DE7A27;
   --color-utec-red: #DF2B31;
   --color-utec-blue: #184897;
-  --color-utec-cyan: #00c7ff;
   --color-utec-purple: #9333ea;
   --color-utec-dark: #343a40;
   --color-utec-dark-lighter: #4a5057;
   --color-utec-dark-subtle: #3a4046;
+
+  /* ----------------------------------------------------------
+     Escala tipográfica
+     ----------------------------------------------------------
+     Explícita y no la que trae Tailwind, por dos motivos medidos.
+
+     El piso estaba demasiado abajo: 631 usos de text-xs a 12 px más
+     286 escritos a mano por debajo —151 de 11 px, 129 de 10 y seis de
+     9—. Son 917 de 1345 usos de texto a 12 px o menos: dos tercios de
+     la aplicación en tamaño de nota al pie, en una herramienta donde
+     se pasan horas leyendo tablas. Y de esos, 325 van además en
+     `muted-foreground`: chico y de poco contraste a la vez.
+
+     Y en el extremo chico no había escala: convivían 9, 10, 11, 12 y
+     13 px. Ahora hay dos escalones y nada por debajo de 11.
+
+     `xs` sube a 13 px, que es el mínimo cómodo para leer seguido.
+     ---------------------------------------------------------- */
+  --text-2xs: 0.6875rem;   /* 11 px · el piso: etiquetas mínimas */
+  --text-2xs--line-height: 1.45;
+  --text-xs: 0.8125rem;    /* 13 px · dato secundario, pies, badges */
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.875rem;     /* 14 px · el cuerpo de la interfaz */
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.55;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.45;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.25;
+
+  --font-sans: 'Gilroy', 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --font-display: 'UTEC', 'Gilroy', 'Poppins', sans-serif;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Elevación. Hay 135 sombras repartidas en la app entre siete niveles de
+     Tailwind y un `.shadow-card` propio, todas con negro puro: sobre una
+     paleta de grises fríos ensucian, y en modo oscuro una sombra negra sobre
+     fondo oscuro no se ve. Acá pasan a salir de la escala, teñidas con la
+     tinta del tema y redefinidas para oscuro más abajo. */
+  --shadow-2xs: var(--sombra-2xs);
+  --shadow-xs: var(--sombra-xs);
+  --shadow-sm: var(--sombra-sm);
+  --shadow-md: var(--sombra-md);
+  --shadow-lg: var(--sombra-lg);
+  --shadow-xl: var(--sombra-xl);
+  --shadow-2xl: var(--sombra-2xl);
 }
 
-/* Variables CSS globales */
+/* ============================================================
+   Paleta de interfaz
+   ------------------------------------------------------------
+   Neutros: la escala gris de utec.edu.uy (#212529 texto,
+   #343a40 superficies oscuras, #f8f9fa fondo). Son grises casi
+   sin croma a propósito: con cinco colores de departamento que
+   tienen que convivir encima, teñir el neutro lo inclinaría
+   hacia uno de ellos. El gris neutro es lo que deja que los
+   cinco funcionen.
+
+   Acción: azul #184897. Es el color del Departamento de
+   Tecnologías de la Información, que es lo que esta app es, y
+   contrasta bien con texto chico. El cian queda para la marca.
+   ============================================================ */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --radius: 0.5rem;
+
+  /* Fondo de página: gray-200 del sitio (#e9ecef), no gray-100.
+     Con #f8f9fa la diferencia contra las tarjetas blancas era del 1,5 %:
+     no se percibía el borde entre superficie y fondo y la pantalla entera
+     se leía como una masa blanca. */
+  /* Marca como texto. Medido contra el fondo de página: 4,70 a 4,81:1. */
+  --marca-azul-texto: #3869bb;
+  --marca-verde-texto: #4a7700;
+  --marca-amarillo-texto: #816800;
+  --marca-naranja-texto: #a65300;
+  --marca-rojo-texto: #d31a27;
+  --marca-cian-texto: #007496;
+
+  --background: oklch(0.9417 0.0052 248);
+  --foreground: oklch(0.2621 0.0095 248);
+
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.2621 0.0095 248);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.2621 0.0095 248);
+
+  --primary: oklch(0.4183 0.1397 260);
+  --primary-foreground: oklch(0.9816 0.0017 248);
+
+  /* Cada superficie tiene que separarse de la de al lado.
+     Estaban las cuatro en el mismo valor que el fondo de página, así que
+     nada de lo que se apoya en ellas se veía: el esqueleto de carga usa
+     bg-accent y era invisible, los hover con bg-accent no pasaba nada, y
+     una pastilla `secondary` desaparecía contra la página. */
+  --secondary: oklch(0.9109 0.0070 248);
+  --secondary-foreground: oklch(0.2621 0.0095 248);
+  --muted: oklch(0.9640 0.0045 248);
+  /* Sube de L 0.5575 a 0.5150: pasa de 4,69:1 a 5,59:1 sobre la tarjeta.
+     325 lugares combinan este color con texto de 13 px, así que es chico y de
+     poco contraste a la vez; el tamaño ya subió, esto acompaña. */
+  --muted-foreground: oklch(0.5150 0.0165 245);
+  --accent: oklch(0.9280 0.0130 258);
+  --accent-foreground: oklch(0.2600 0.0400 260);
+
+  --destructive: oklch(0.5868 0.2137 25.6);
+  --destructive-foreground: oklch(0.9816 0.0017 248);
+
+  --border: oklch(0.8880 0.0075 248);
+  --input: oklch(0.8880 0.0075 248);
+  --ring: oklch(0.4183 0.1397 260);
+
+  /* Sombras con la tinta del tema (33 37 41) y no negro puro. */
+  --sombra-2xs: 0 1px 1px 0 rgb(33 37 41 / 0.05);
+  --sombra-xs: 0 1px 2px 0 rgb(33 37 41 / 0.07);
+  --sombra-sm: 0 1px 3px 0 rgb(33 37 41 / 0.09), 0 1px 2px -1px rgb(33 37 41 / 0.07);
+  --sombra-md: 0 4px 8px -2px rgb(33 37 41 / 0.10), 0 2px 4px -2px rgb(33 37 41 / 0.06);
+  --sombra-lg: 0 10px 20px -4px rgb(33 37 41 / 0.12), 0 4px 8px -4px rgb(33 37 41 / 0.07);
+  --sombra-xl: 0 20px 32px -8px rgb(33 37 41 / 0.16), 0 8px 12px -6px rgb(33 37 41 / 0.08);
+  --sombra-2xl: 0 28px 48px -12px rgb(33 37 41 / 0.22);
+
+  /* Gráficos: los cinco del isotipo, en el orden del manual. */
+  --chart-1: oklch(0.4183 0.1397 260);
+  --chart-2: oklch(0.7315 0.1527 130.8);
+  --chart-3: oklch(0.8530 0.1685 92.2);
+  --chart-4: oklch(0.6788 0.1531 54.8);
+  --chart-5: oklch(0.5868 0.2137 25.6);
+
+  /* Estados. El relleno es el hex de marca; el texto de encima es el que gana
+     en contraste medido, no el que parece. */
+  --info: #184897;
+  --info-foreground: #ffffff;
+  --info-suave: #edf4ff;
+  --info-borde: #c4daff;
+  --info-texto: #1e4e9e;
+
+  --success: #86bb4c;
+  --success-foreground: #0f1720;
+  --success-suave: #ecf9e1;
+  --success-borde: #cae3b4;
+  --success-texto: #3a5f00;
+
+  --warning: #DE7A27;
+  --warning-foreground: #0f1720;
+  --warning-suave: #fff0e7;
+  --warning-borde: #feceae;
+  --warning-texto: #7f3f00;
+
+  --danger: #DF2B31;
+  --danger-foreground: #ffffff;
+  --danger-suave: #ffefed;
+  --danger-borde: #ffcac5;
+  --danger-texto: #9e0014;
+
+  --acento: #00c7ff;
+  --acento-foreground: #0f1720;
+  --acento-suave: #e5f7ff;
+  --acento-borde: #aae3fc;
+  --acento-texto: #005b77;
+
+  --chrome: oklch(0.3451 0.0133 248);
+  --chrome-foreground: oklch(1 0 0);
+
+  /* Barra lateral: el gris oscuro del sitio, sin teñir. */
+  --sidebar: oklch(0.3451 0.0133 248);
+  --sidebar-foreground: oklch(0.8671 0.0106 248);
+  --sidebar-primary: oklch(0.7739 0.1497 227);
+  --sidebar-primary-foreground: oklch(0.2621 0.0095 248);
+  --sidebar-accent: oklch(0.4276 0.0147 248);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.7739 0.1497 227);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  /* Subidas respecto de la primera versión: el fondo estaba en L 0.20 y la
+     pantalla entera pesaba. Y `muted` quedaba en 0.256 contra 0.262 de la
+     tarjeta —la misma colisión que en claro, reintroducida acá—, así que una
+     zona apagada dentro de una tarjeta no se distinguía. */
+  /* Marca como texto. Medido contra `card`, que acá es el caso difícil:
+     4,92 a 5,07:1. Contra el fondo de página dan 6,3 a 6,5. */
+  --marca-azul-texto: #85b3ff;
+  --marca-verde-texto: #8dc354;
+  --marca-amarillo-texto: #d6ae08;
+  --marca-naranja-texto: #ff9b52;
+  --marca-rojo-texto: #fe9990;
+  --marca-cian-texto: #09c0f6;
+
+  --background: oklch(0.2350 0.0100 248);
+  --foreground: oklch(0.9417 0.0052 248);
+
+  --card: oklch(0.2850 0.0110 248);
+  --card-foreground: oklch(0.9417 0.0052 248);
+  --popover: oklch(0.2850 0.0110 248);
+  --popover-foreground: oklch(0.9417 0.0052 248);
+
+  /* El azul de marca a L=0.42 no contrasta contra fondo oscuro:
+     misma tinta, más luminosa. */
+  --primary: oklch(0.6800 0.1450 260);
+  --primary-foreground: oklch(0.2000 0.0090 248);
+
+  --secondary: oklch(0.3550 0.0140 248);
+  --secondary-foreground: oklch(0.9417 0.0052 248);
+  --muted: oklch(0.3250 0.0120 248);
+  --muted-foreground: oklch(0.7950 0.0145 248);
+  --accent: oklch(0.3900 0.0260 258);
+  --accent-foreground: oklch(0.9417 0.0052 248);
+
+  /* El mismo rojo que en claro y que el de `danger`.
+     Estaba aclarado a L 0.68 para "compensar" el fondo oscuro, y con texto
+     blanco encima daba 3,17:1: el botón Eliminar quedaba ilegible y además
+     era otro rojo que el de la pastilla Cancelada, en la misma fila. Un
+     relleno macizo no necesita cambiar por tema. */
+  --destructive: oklch(0.5868 0.2137 25.6);
+  --destructive-foreground: oklch(0.9816 0.0017 248);
+
+  /* En oscuro una sombra no separa: el fondo ya es oscuro. Se sube la opacidad
+     y se suma un filo claro arriba, que es lo que de verdad despega la
+     superficie. */
+  --sombra-2xs: 0 1px 1px 0 rgb(0 0 0 / 0.30);
+  --sombra-xs: 0 1px 2px 0 rgb(0 0 0 / 0.40), inset 0 1px 0 0 rgb(255 255 255 / 0.03);
+  --sombra-sm: 0 1px 3px 0 rgb(0 0 0 / 0.45), inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+  --sombra-md: 0 4px 10px -2px rgb(0 0 0 / 0.50), inset 0 1px 0 0 rgb(255 255 255 / 0.05);
+  --sombra-lg: 0 12px 24px -4px rgb(0 0 0 / 0.55), inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  --sombra-xl: 0 24px 40px -8px rgb(0 0 0 / 0.60), inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+  --sombra-2xl: 0 32px 56px -12px rgb(0 0 0 / 0.70), inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+
+  --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.6600 0.1816 260);
+
+  --chart-1: oklch(0.6600 0.1816 260);
+  --chart-2: oklch(0.6500 0.1771 130.8);
+  --chart-3: oklch(0.8000 0.1637 92.2);
+  --chart-4: oklch(0.6600 0.1639 54.8);
+  --chart-5: oklch(0.6800 0.2089 25.6);
+
+  /* El relleno no cambia: un bloque macizo con su propio texto sólo tiene que
+     separarse de la tarjeta, y el hex de marca ya lo hace. Cambian el fondo
+     tenue, el borde y el texto, que sí viven contra el fondo del tema. */
+  --info: #184897;
+  --info-foreground: #ffffff;
+  --info-suave: #212e43;
+  --info-borde: #2e4771;
+  --info-texto: #98bfff;
+
+  --success: #86bb4c;
+  --success-foreground: #0f1720;
+  --success-suave: #263319;
+  --success-borde: #37511c;
+  --success-texto: #a1cf73;
+
+  --warning: #DE7A27;
+  --warning-foreground: #0f1720;
+  --warning-suave: #402716;
+  --warning-borde: #6a3a14;
+  --warning-texto: #fea668;
+
+  --danger: #DF2B31;
+  --danger-foreground: #ffffff;
+  --danger-suave: #491f1d;
+  --danger-borde: #7b2724;
+  --danger-texto: #ffa097;
+
+  --acento: #00c7ff;
+  --acento-foreground: #0f1720;
+  --acento-suave: #11323f;
+  --acento-borde: #004f68;
+  --acento-texto: #51cefd;
+
+  --chrome: oklch(0.3350 0.0130 248);
+  --chrome-foreground: oklch(1 0 0);
+
+  --sidebar: oklch(0.2850 0.0110 248);
+  --sidebar-foreground: oklch(0.8671 0.0106 248);
+  --sidebar-primary: oklch(0.7739 0.1497 227);
+  --sidebar-primary-foreground: oklch(0.2000 0.0090 248);
+  --sidebar-accent: oklch(0.3550 0.0140 248);
+  --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.7739 0.1497 227);
 }
 
 @layer base {
@@ -126,110 +507,108 @@
     @apply border-border;
     box-sizing: border-box;
   }
-  
-  /* Reducción global de tamaño para pantallas 1080p */
+
+  /* La raíz vuelve a 16px.
+     Estaba en 87.5% para "que entrara todo en 1080p", pero el rem es
+     también la unidad de la escala de espaciado de Tailwind: achicar la
+     raíz encogía además todos los padding, gap y alturas un 12,5%. Esa
+     era la sensación de apretado. La densidad se consigue con texto de
+     14px sobre espaciado correcto, no encogiendo el sistema entero. */
   html {
     overflow-x: hidden;
-    font-size: 87.5%; /* Reduce de 16px a 14px base (12.5% menos) */
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    font-family: 'Gilroy', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    line-height: 1.4; /* Reducido de 1.6 a 1.4 */
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-feature-settings: 'cv05' 1, 'ss03' 1;
     overflow-x: hidden;
-    font-size: 0.875rem; /* 14px base */
   }
-  
-  /* Reducir tamaños de fuente globalmente */
-  h1 { font-size: 1.75rem; line-height: 1.3; } /* ~28px */
-  h2 { font-size: 1.5rem; line-height: 1.3; } /* ~24px */
-  h3 { font-size: 1.25rem; line-height: 1.3; } /* ~20px */
-  h4 { font-size: 1.125rem; line-height: 1.3; } /* ~18px */
-  h5 { font-size: 1rem; line-height: 1.3; } /* ~16px */
-  h6 { font-size: 0.875rem; line-height: 1.3; } /* ~14px */
-  
-  /* Reducir espaciados en padding y margin */
-  main, section, article {
-    font-size: 0.875rem; /* 14px base */
-  }
-  
-  /* Reducir altura de botones */
-  button {
-    font-size: 0.875rem;
-    line-height: 1.4;
-  }
-  
-  /* Reducir inputs y selects */
-  input, select, textarea {
-    font-size: 0.875rem;
-    line-height: 1.4;
-  }
-  
-  /* Reducir margin bottom en títulos y párrafos */
+
+  /* Escala tipográfica. Las cifras de la app (2.487 reservas, 68 %)
+     van en versalitas tabulares para que no bailen al actualizarse. */
   h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.011em;
+    line-height: 1.25;
     margin-bottom: 0.5rem;
+    text-wrap: balance;
   }
-  
+  h1 { font-size: 1.75rem; letter-spacing: -0.021em; }
+  h2 { font-size: 1.375rem; letter-spacing: -0.017em; }
+  h3 { font-size: 1.125rem; }
+  h4 { font-size: 1rem; }
+  h5 { font-size: 0.9375rem; }
+  h6 { font-size: 0.875rem; }
+
   p {
     margin-bottom: 0.5rem;
+    text-wrap: pretty;
   }
-  
-  /* Reducir espaciado en secciones */
+
+  button, input, select, textarea {
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  /* Cifras tabulares donde se comparan números en columna */
+  table, [data-slot="table"] {
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 0.625rem deja filas de ~44 px, que es el mínimo cómodo para apuntar y
+     para leer una tabla largo rato. Con 0.5rem la fila quedaba en 39 y la
+     pantalla de reservas —que es donde más tiempo se pasa— se sentía
+     apretada. */
+  th, td { padding: 0.625rem 0.75rem; }
+
+  /* Foco visible en toda la app, en el azul de marca. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Tamaño por defecto de los iconos.
+     Antes había un bloque que forzaba TODO svg a 14px con selectores
+     de atributo (svg[class*="size-4"]), que le ganaban en especificidad
+     a las clases de Tailwind: cualquier size-5 o size-6 quedaba pisado.
+     Ahora es una regla de elemento, que las clases sí pueden sobrescribir. */
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
   .section-separator {
     padding-top: 1rem !important;
     margin-top: 1rem !important;
   }
-  
-  .section-title {
-    margin-bottom: 0.75rem !important;
-  }
-  
-  /* Reducir espaciado en tablas */
-  table {
-    font-size: 0.875rem;
-  }
-  
-  th, td {
-    padding: 0.5rem;
-  }
-  
-  /* Reducir tamaño de badges y labels */
-  [class*="badge"], [class*="Badge"] {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-  }
-  
-  /* Reducir iconos SVG */
-  svg {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-  
-  svg[class*="size-4"] {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-  
-  svg[class*="size-5"] {
-    width: 1rem;
-    height: 1rem;
-  }
-  
-  svg[class*="size-6"] {
-    width: 1.125rem;
-    height: 1.125rem;
-  }
+  .section-title { margin-bottom: 0.75rem !important; }
 
   /* Prevenir overflow horizontal */
   #root, #root > *, main, main > *, div, section, article {
     max-width: 100%;
     min-width: 0;
   }
-  
   .flex > *, .grid > * {
     min-width: 0;
     min-height: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -268,13 +647,15 @@
   .border-utec-blue { border-color: #184897; }
 
   /* Sombras */
+  /* Alias histórico: lo usan 19 lugares. Ahora sale de la escala en vez de
+     traer su propio negro, así sigue el tema como todo lo demás. */
   .shadow-card {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    transition: box-shadow 0.3s ease;
+    box-shadow: var(--sombra-sm);
+    transition: box-shadow 0.2s ease;
   }
 
   .shadow-card:hover {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: var(--sombra-lg);
   }
 
   /* Efectos de hover - Optimizados para mejor rendimiento */
@@ -285,23 +666,60 @@
 
   .hover-lift:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 12px -3px rgb(0 0 0 / 0.08), 0 3px 5px -4px rgb(0 0 0 / 0.08);
+    box-shadow: var(--sombra-md);
   }
 
-  /* Sidebar */
+  /* Barra lateral.
+     El ítem activo se marca con el azul de marca y una barra a la
+     izquierda, no con un gris apenas más claro que el de al lado:
+     antes había que buscar dónde estabas parado. */
   .sidebar-menu-item {
-    color: #d1d5db;
-    transition: all 0.2s ease;
+    color: var(--sidebar-foreground);
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .sidebar-menu-item:hover {
-    background-color: #4a5057;
-    color: #ffffff;
+    background-color: var(--sidebar-accent);
+    color: var(--sidebar-accent-foreground);
   }
 
   .sidebar-menu-item.active {
-    background-color: #525961;
-    color: #ffffff;
+    position: relative;
+    background-color: color-mix(in oklab, var(--sidebar-primary) 22%, transparent);
+    color: var(--sidebar-accent-foreground);
+    font-weight: 600;
+  }
+
+  .sidebar-menu-item.active::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.3rem;
+    inset-inline-start: -0.25rem;
+    width: 2px;
+    border-radius: 9999px;
+    background-color: var(--sidebar-primary);
+  }
+
+  /* Dos clases que el código usaba y no existían en ningún lado, así que no
+     hacían nada: el icono del sidebar nunca crecía al pasar por encima y el
+     prop `pulse` de StatusBadge no se notaba. La intención estaba clara, así
+     que se definen en vez de borrarse. */
+  .hover-scale {
+    transition: transform 0.15s ease-out;
+  }
+  a:hover .hover-scale,
+  button:hover .hover-scale,
+  [data-slot='sidebar-menu-button']:hover .hover-scale {
+    transform: scale(1.1);
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+    50% { box-shadow: 0 0 0 3px transparent; opacity: 0.85; }
+  }
+
+  .badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
   }
 
   /* Animación de spin única */
@@ -335,17 +753,31 @@
     @apply text-lg sm:text-xl font-bold mb-3 flex items-center gap-1.5 sm:gap-2 flex-wrap;
   }
 
-  /* Log viewer */
+  /* Visor de logs.
+
+     Es una superficie oscura siempre, como una terminal, así que su texto no
+     puede seguir al tema: decía `text-foreground` y en claro quedaba casi
+     negro sobre el gris de chrome, 1,14:1.
+
+     Los colores salen de la marca subida de luz hasta que se leen sobre
+     #343a40, medido: texto 9,12:1 · error 4,66:1 · aviso 7,05:1. Antes eran
+     `text-red-400` y `text-yellow-400`, paleta cruda de Tailwind. */
   .log-line {
-    @apply font-mono text-xs hover:bg-gray-800/50 transition-colors;
+    @apply font-mono text-xs transition-colors;
+    color: #dee6ed;
+  }
+  .log-line:hover {
+    background-color: rgb(255 255 255 / 0.06);
   }
 
   .log-error {
-    @apply text-red-400 bg-red-950/30;
+    color: #ff7e76;
+    background-color: rgb(255 126 118 / 0.12);
   }
 
   .log-warn {
-    @apply text-yellow-400 bg-yellow-950/30;
+    color: #f2c616;
+    background-color: rgb(242 198 22 / 0.12);
   }
 
   /* Optimización para página Sistema */
@@ -529,61 +961,25 @@ body {
 }
 
 /* ============================================================
-   Modo oscuro — remapeo de utilidades hardcodeadas
+   Modo oscuro — variantes con opacidad
    ------------------------------------------------------------
-   Gran parte de la app se construyó con grises/blancos fijos
-   (bg-white, bg-gray-*, text-gray-*, border-gray-*) sin variante
-   `dark:`. Para que el modo oscuro sea coherente sin tocar ~65
-   archivos, acá remapeamos esas utilidades a los tokens del tema
-   cuando el ancestro tiene la clase `.dark`. Los componentes que
-   sí definen su propia variante `dark:` siguen teniendo prioridad
-   por especificidad de Tailwind.
+   Acá vivía un bloque de ~40 reglas que remapeaba a tokens todos
+   los grises fijos de la app (bg-white, bg-gray-*, text-gray-*,
+   border-gray-*) cuando el ancestro tenía `.dark`. Era un parche
+   para no tener que tocar los archivos.
+
+   Ya no hace falta: esas utilidades se migraron a los tokens del
+   tema en los componentes, así que el modo oscuro sale solo.
+
+   Ya no queda ninguna: las variantes con opacidad también se
+   migraron. Sólo sobreviven las reglas del heatmap azul del
+   calendario, que necesitan un azul real y no el token.
    ============================================================ */
 
-/* Fondos */
-.dark .bg-white { background-color: var(--card); }
-.dark .bg-gray-50 { background-color: var(--muted); }
-.dark .bg-gray-100 { background-color: var(--muted); }
-.dark .bg-gray-200 { background-color: var(--secondary); }
-.dark .bg-slate-50 { background-color: var(--muted); }
-.dark .bg-slate-100 { background-color: var(--muted); }
-
-/* Hover de fondos claros */
-.dark .hover\:bg-gray-50:hover { background-color: var(--accent); }
-.dark .hover\:bg-gray-100:hover { background-color: var(--accent); }
-.dark .hover\:bg-gray-200:hover { background-color: var(--secondary); }
-.dark .hover\:bg-white:hover { background-color: var(--card); }
-
-/* Texto */
-.dark .text-gray-900,
-.dark .text-gray-800,
-.dark .text-slate-900,
-.dark .text-slate-800 { color: var(--foreground); }
-.dark .text-gray-700,
-.dark .text-gray-600 { color: color-mix(in oklab, var(--foreground) 80%, transparent); }
-.dark .text-gray-500,
-.dark .text-gray-400,
-.dark .text-slate-500 { color: var(--muted-foreground); }
-
-/* Bordes */
-.dark .border-gray-100,
-.dark .border-gray-200,
-.dark .border-gray-300,
-.dark .border-slate-200 { border-color: var(--border); }
-
-/* Divisores y rings */
-.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border); }
-
-/* Variantes con opacidad (no las agarra el remapeo por clase base).
-   Ej.: columna de horas del calendario (bg-gray-50/50), secciones colapsadas. */
-.dark .bg-gray-50\/50,
-.dark .bg-gray-50\/60,
-.dark .bg-gray-50\/30 { background-color: var(--muted); }
-.dark .bg-gray-100\/50 { background-color: var(--muted); }
-/* Resaltado "hoy" + heatmap del calendario en escala azul (dark → azul).
+/* Resaltado "hoy" + heatmap del calendario en escala azul.
    En dark el texto de las celdas es claro, así que las celdas tienen que ser
-   oscuras para mantener contraste. Usamos un azul real (no var(--primary),
-   que en dark es gris claro). */
+   oscuras para mantener contraste. Va un azul real y no var(--primary),
+   que en dark es una tinta más clara. */
 .dark .bg-blue-50\/30 { background-color: color-mix(in oklab, #3b82f6 12%, var(--card)); }
 .dark .bg-blue-50 { background-color: color-mix(in oklab, #3b82f6 15%, var(--card)); }
 .dark .bg-blue-100 { background-color: color-mix(in oklab, #3b82f6 24%, var(--card)); }

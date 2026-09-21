@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { postResumenTemario } from '@/lib/api/ai';
 import { tutoriasApi } from '@/lib/api/tutorias';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 interface TemariosPanelProps {
   tutoriaId: number;
@@ -173,21 +175,15 @@ export function TemariosPanel({ tutoriaId, materiaNombre, refreshKey = 0 }: Read
   };
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 border-b px-4 py-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-utec-blue/10 text-utec-blue">
-          <MessageSquareText className="h-4 w-4" />
-        </span>
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold leading-tight">Qué vienen a preguntar</h3>
-          <p className="text-xs text-muted-foreground">
-            {temarios.length === 0
-              ? 'Temarios anotados al agendar'
-              : `${temarios.length} temario${temarios.length === 1 ? '' : 's'} · ${agrupados.length} tema${agrupados.length === 1 ? '' : 's'}`}
-          </p>
-        </div>
-      </div>
-      <div className="p-4">{cuerpo()}</div>
-    </div>
+    <Panel
+      title="Qué vienen a preguntar"
+      icon={<MessageSquareText />}
+      accentColor={MARCA.azul}
+      count={temarios.length === 0
+        ? 'temarios anotados al agendar'
+        : `${temarios.length} temario${temarios.length === 1 ? '' : 's'} · ${agrupados.length} tema${agrupados.length === 1 ? '' : 's'}`}
+    >
+      {cuerpo()}
+    </Panel>
   );
 }

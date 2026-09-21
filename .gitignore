@@ -67,6 +67,7 @@ coverage/
 # Playwright E2E artifacts
 frontend/test-results/
 frontend/playwright-report/
+frontend/e2e-reporte*
 
 # ===== LOGS =====
 *.log

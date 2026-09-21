@@ -3,9 +3,9 @@ import { CalendarClock, CheckCircle2, Flame, Inbox, Megaphone, Stamp } from 'luc
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
-import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
-import { EmptyState } from './_components/EmptyState';
+import { StatStrip } from '@/components/common/StatStrip';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { PresionFila } from './_components/Filas';
 import { Anillo, RitmoSemanal, Tendencia, UTEC, variacion } from './_components/Graficos';
@@ -62,7 +62,7 @@ export function AnalistaDashboard({
   const masPresionado = presion[0];
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       <Hero
         etiqueta="LA COLA DE HOY"
         titulo={`${totalPendientes.toLocaleString('es-UY')} solicitudes esperando`}
@@ -87,18 +87,18 @@ export function AnalistaDashboard({
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
             action={{ label: 'estadísticas', to: '/statistics' }}
           >
             <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
-          <Panel title="Qué días se carga" accentColor="#00c7ff">
+          <Panel title="Qué días se carga" accentColor={UTEC.cian}>
             <RitmoSemanal datos={porDia} alto={128} llenar />
           </Panel>
         </div>
@@ -106,7 +106,7 @@ export function AnalistaDashboard({
         <Panel
           title="Cola"
           count={loadingPrioritarias ? 'calculando…' : `${totalPendientes} pendientes`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'ver todas', to: '/reservations' }}
           scroll
         >
@@ -119,7 +119,7 @@ export function AnalistaDashboard({
                   onClick={onViewDetails}
                   accent={urgencia >= 7 ? 'urgent' : null}
                   rightSlot={urgencia >= 7 ? (
-                    <span className="text-[10px] uppercase tracking-wider text-red-600 font-medium" title={razon}>
+                    <span className="text-2xs uppercase tracking-wider text-danger-texto font-medium" title={razon}>
                       urgente
                     </span>
                   ) : undefined}
@@ -127,12 +127,12 @@ export function AnalistaDashboard({
               ))}
             </div>
           ) : (
-            <EmptyState title="Cola al día." />
+            <EmptyState variant="linea" title="Cola al día." />
           )}
         </Panel>
 
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
-          <Panel title="En qué estado están" accentColor="#86bb4c">
+          <Panel title="En qué estado están" accentColor={UTEC.verde}>
             <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>
 
@@ -147,7 +147,7 @@ export function AnalistaDashboard({
                 {presion.map((e) => <PresionFila key={e.id} espacio={e} maximo={maximaPresion} />)}
               </div>
             ) : (
-              <EmptyState title="Nada esperando." />
+              <EmptyState variant="linea" title="Nada esperando." />
             )}
           </Panel>
         </div>

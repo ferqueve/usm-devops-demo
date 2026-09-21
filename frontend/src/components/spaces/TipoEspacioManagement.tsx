@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { TipoEspacioFormDialog } from './TipoEspacioFormDialog';
 import { DeleteTipoEspacioDialog } from './DeleteTipoEspacioDialog';
 import { CatalogoCrudShell } from '@/components/common/CatalogoCrudShell';
+import { MARCA } from '@/lib/design/paleta';
 
 interface TipoEspacioManagementProps {
   /** Se avisa al consumidor cuando el catálogo cambió, para que recargue lo suyo. */
@@ -75,7 +76,7 @@ export function TipoEspacioManagement({
         title="Tipos de espacios"
         description="Clasifican los espacios: aula, laboratorio, sala de reunión."
         Icon={Palette}
-        accentColor="#184897"
+        accentColor={MARCA.azul}
         loading={loading}
         items={tiposEspacio}
         emptyLabel="Todavía no hay tipos de espacio"

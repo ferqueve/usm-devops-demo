@@ -16,6 +16,7 @@ import type { ForecastHistoricoPunto } from '@/lib/api/stats';
 import { useColores, type Colores } from '../colores';
 import { entero, fechaCorta, fechaLarga } from '../formato';
 import type { Dia } from './usePredicciones';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 interface Punto {
   fecha: string;
@@ -35,7 +36,7 @@ function Globo({ active, payload, colores }: TooltipProps<number, string> & { co
   const esPronostico = p.minimo !== undefined;
 
   return (
-    <div className="min-w-[180px] rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico className="min-w-[180px]">
       <p className="mb-1.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       {p.real !== undefined && !esPronostico && (
         <Linea color={colores.real} etiqueta="Aprobadas" valor={entero(p.real)} />
@@ -51,7 +52,7 @@ function Globo({ active, payload, colores }: TooltipProps<number, string> & { co
           <Linea color={colores.reservadas} etiqueta="Ya aprobadas" valor={entero(p.confirmadas ?? 0)} />
         </>
       )}
-    </div>
+    </GloboGrafico>
   );
 }
 
@@ -108,7 +109,7 @@ export function GraficoDemanda({ historico, dias, alto = 300 }: Readonly<Props>)
           <CartesianGrid stroke={colores.grilla} vertical={false} />
           <XAxis
             dataKey="fecha"
-            tickFormatter={fechaCorta}
+            tickFormatter={(v) => fechaCorta(v)}
             tick={{ fontSize: 11, fill: colores.eje }}
             axisLine={{ stroke: colores.grilla }}
             tickLine={false}

@@ -4,17 +4,19 @@ import { CalendarRange, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils/helpers';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
-const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 // Paleta cálida-fría para diferenciar materias (tinte suave + texto legible en claro/oscuro).
 const MATERIA_COLORES = [
-  'bg-utec-blue/15 text-utec-blue',
-  'bg-utec-cyan/15 text-utec-cyan',
-  'bg-utec-purple/15 text-utec-purple',
-  'bg-utec-orange/15 text-utec-orange',
-  'bg-utec-green/15 text-utec-green',
-  'bg-utec-yellow/20 text-utec-orange',
+  'bg-utec-blue/15 text-marca-azul-texto',
+  'bg-utec-cyan/15 text-marca-cian-texto',
+  'bg-utec-red/15 text-marca-rojo-texto',
+  'bg-utec-orange/15 text-marca-naranja-texto',
+  'bg-utec-green/15 text-marca-verde-texto',
+  'bg-utec-yellow/20 text-marca-amarillo-texto',
 ];
 
 function colorDeMateria(nombre: string): string {
@@ -46,7 +48,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
     const inicioSemana = lunesDe(hoy);
     inicioSemana.setDate(inicioSemana.getDate() + semanaOffset * 7);
 
-    const cols = DIAS.map((label, i) => {
+    const cols = DIAS_DESDE_LUNES.map((label, i) => {
       const fecha = new Date(inicioSemana);
       fecha.setDate(inicioSemana.getDate() + i);
       return { label, fecha, items: [] as Tutoria[] };
@@ -70,17 +72,19 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
   const totalSemana = dias.reduce((a, d) => a + d.items.length, 0);
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10 text-utec-blue"><CalendarRange className="h-4 w-4" /></span>
-        <h3 className="text-sm font-semibold">Disponibilidad de la semana</h3>
-        <span className="ml-2 text-xs text-muted-foreground capitalize">{rangoLabel}</span>
-        <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemanaOffset((o) => o - 1)} title="Semana anterior"><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" className="h-7" onClick={() => setSemanaOffset(0)} disabled={semanaOffset === 0}>Hoy</Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemanaOffset((o) => o + 1)} title="Semana siguiente"><ChevronRight className="h-4 w-4" /></Button>
-        </div>
-      </div>
+    <Panel
+      title="Disponibilidad de la semana"
+      icon={<CalendarRange />}
+      accentColor={MARCA.azul}
+      count={rangoLabel}
+      acciones={
+        <>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => setSemanaOffset((o) => o - 1)} title="Semana anterior"><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/75 hover:bg-white/10 hover:text-white" onClick={() => setSemanaOffset(0)} disabled={semanaOffset === 0}>Hoy</Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => setSemanaOffset((o) => o + 1)} title="Semana siguiente"><ChevronRight className="size-4" /></Button>
+        </>
+      }
+    >
 
       {totalSemana === 0 ? (
         <div className="px-4 py-10 text-center text-sm text-muted-foreground">No hay tutorías en esta semana.</div>
@@ -91,12 +95,12 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
             return (
               <div key={d.label} className="flex min-h-[120px] flex-col bg-card p-2">
                 <div className="mb-1.5 flex items-center gap-1.5">
-                  <span className={cn('text-[11px] font-semibold uppercase', esHoy ? 'text-utec-blue' : 'text-muted-foreground')}>{d.label}</span>
-                  <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-medium tabular-nums', esHoy ? 'bg-utec-blue text-white' : 'text-muted-foreground')}>{d.fecha.getDate()}</span>
+                  <span className={cn('text-2xs font-semibold uppercase', esHoy ? 'text-marca-azul-texto' : 'text-muted-foreground')}>{d.label}</span>
+                  <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-2xs font-medium tabular-nums', esHoy ? 'bg-utec-blue text-white' : 'text-muted-foreground')}>{d.fecha.getDate()}</span>
                 </div>
                 <div className="flex flex-1 flex-col gap-1">
                   {d.items.length === 0 ? (
-                    <span className="text-[10px] text-muted-foreground/50">—</span>
+                    <span className="text-2xs text-muted-foreground/50">—</span>
                   ) : (
                     d.items.map((t) => (
                       <button
@@ -105,7 +109,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
                         onClick={() => navigate(`/tutorias/${t.id}`)}
                         title={`${hora(t.inicio)} · ${t.materiaNombre} · ${t.docenteNombre}`}
                         className={cn(
-                          'flex items-center gap-1 rounded-md px-1.5 py-1 text-left text-[11px] font-medium transition-transform hover:scale-[1.02]',
+                          'flex items-center gap-1 rounded-md px-1.5 py-1 text-left text-2xs font-medium transition-transform hover:scale-[1.02]',
                           colorDeMateria(t.materiaNombre),
                           t.estado === 'CANCELADA' && 'line-through opacity-60',
                         )}
@@ -122,6 +126,6 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
           })}
         </div>
       )}
-    </div>
+    </Panel>
   );
 }

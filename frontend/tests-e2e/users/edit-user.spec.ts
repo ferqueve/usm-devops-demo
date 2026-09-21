@@ -17,7 +17,7 @@ test.describe('Usuarios: edición de perfil por el admin', () => {
 
     const fila = page.locator('tr', { hasText: 'externo@e2e.test' }).first();
     await expect(fila).toBeVisible({ timeout: 10_000 });
-    await fila.getByRole('button', { name: /^Editar$/i }).click();
+    await fila.getByRole('button', { name: /^Editar usuario$/i }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText(/Editar Usuario/i).first()).toBeVisible();

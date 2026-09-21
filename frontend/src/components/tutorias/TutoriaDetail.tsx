@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
@@ -13,11 +15,9 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Award, BookOpen, Building2, CalendarClock, CalendarPlus, Check, CheckCircle, ChevronRight, Clock, Download, Edit,
+  Award, BookOpen, Building2, CalendarClock, CalendarPlus, Check, ChevronRight, Clock, Download, Edit,
   GraduationCap, Hourglass, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Radio, Send,
-  Trash2, UserCheck, Users, Video, XCircle,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+  Trash2, UserCheck, Users, Video, } from 'lucide-react';
 import { toast } from 'sonner';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
@@ -38,21 +38,13 @@ import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
 import { tutoriaToAgendable } from '@/lib/agenda/types';
 import { CheckinScanner, ReservaQR } from './CheckinScanner';
 import { useAuth } from '@/hooks/useAuth';
+import { fechaHora, relativa } from '@/lib/utils/fechas';
+import { ESTADO_TUTORIA, EstadoBadge, estadoDe } from '@/components/common/estados';
+import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
 
 interface TutoriaDetailProps { tutoriaId: number }
 
-const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: LucideIcon }> = {
-  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  CERRADA: { label: 'Cerrada', color: 'bg-utec-dark text-white border-utec-dark', icon: Lock },
-  CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
-function formatFecha(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-UY', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
 function formatHora(iso?: string | null): string {
   if (!iso) return '';
   const d = new Date(iso);
@@ -65,28 +57,7 @@ function duracion(inicio: string, fin: string): string {
   const h = Math.floor(mins / 60); const m = mins % 60;
   return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}min` : (h > 0 ? '' : '0min')}`.trim();
 }
-function relativo(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
-  const dias = Math.round(diff / 86400000);
-  if (dias === 0) return 'Hoy';
-  if (dias === 1) return 'Mañana';
-  if (dias === -1) return 'Ayer';
-  if (dias > 1) return `En ${dias} días`;
-  return `Hace ${Math.abs(dias)} días`;
-}
 
-function Panel({ title, icon, accent, action, children }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode }>) {
-  return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
 function NotificarTutoriaDialog({ tutoriaId, open, onOpenChange }: Readonly<{ tutoriaId: number; open: boolean; onOpenChange: (v: boolean) => void }>) {
   const [asunto, setAsunto] = useState('Aviso de tutoría');
   const [mensaje, setMensaje] = useState('');
@@ -108,7 +79,7 @@ function NotificarTutoriaDialog({ tutoriaId, open, onOpenChange }: Readonly<{ tu
     <Dialog open={open} onOpenChange={(v) => (sending ? undefined : onOpenChange(v))}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-utec-green"><Mail className="h-4 w-4" /></span>Notificar a los agendados</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-marca-verde-texto"><Mail className="h-4 w-4" /></span>Notificar a los agendados</DialogTitle>
           <DialogDescription>Se enviará un email a los estudiantes anotados en esta tutoría.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
@@ -227,11 +198,19 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   const copyLink = () => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copiado')).catch(() => {});
 
   const exportCSV = () => {
-    const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const rows = agendados.map((a) => [esc(a.nombre ?? ''), esc(a.email ?? ''), esc(formatFecha(a.createdAt))].join(',')).join('\n');
-    const blob = new Blob([`\uFEFFEstudiante,Email,Agendado\n${rows}`], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `agendados-tutoria-${tutoriaId}.csv`; a.click(); URL.revokeObjectURL(url);
+    descargarCSV(
+      [
+        'Estudiante,Email,Agendado',
+        ...agendados.map((a) =>
+          [
+            csvEscape(a.nombre ?? ''),
+            csvEscape(a.email ?? ''),
+            csvEscape(fechaHora(a.createdAt, { diaSemana: true })),
+          ].join(',')
+        ),
+      ],
+      `agendados-tutoria-${tutoriaId}.csv`
+    );
   };
 
   const ocupacion = useMemo(() => {
@@ -257,8 +236,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
     );
   }
 
-  const badge = TUTORIA_BADGE[tutoria.estado];
-  const BadgeIcon = badge.icon;
+  const badge = estadoDe(ESTADO_TUTORIA, tutoria.estado);
   const ocupados = Math.max(0, tutoria.cupo - tutoria.plazasDisponibles);
   const enEspera = agendados.filter((a) => a.estado === 'ESPERA').length;
 
@@ -319,16 +297,16 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
 
       {/* Countdown con patrón animado (catálogo) */}
       {!cd.pasado && tutoria.estado === 'ABIERTA' && (
-        <div className="relative overflow-hidden rounded-2xl border bg-utec-dark text-white px-5 py-4">
+        <div className="relative overflow-hidden rounded-2xl border bg-chrome text-white px-5 py-4">
           <EventoPatternBg patron={tutoria.patron ?? 'nodos'} />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0e1320]/85 via-[#0e1320]/20 to-transparent" />
           <div className="relative flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><CalendarClock className="h-4 w-4 text-utec-blue" />Faltan para la tutoría</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><CalendarClock className="h-4 w-4 text-marca-azul-texto" />Faltan para la tutoría</div>
             <div className="flex items-center gap-2">
               {([['Días', cd.dias], ['Horas', cd.horas], ['Min', cd.minutos], ['Seg', cd.segundos]] as const).map(([l, v]) => (
                 <div key={l} className="text-center rounded-lg bg-[#1b2236] ring-1 ring-white/15 px-3 py-1.5 min-w-[60px]">
                   <div className="text-2xl font-bold tabular-nums leading-none">{String(v).padStart(2, '0')}</div>
-                  <div className="text-[10px] text-white/60 uppercase mt-0.5">{l}</div>
+                  <div className="text-2xs text-white/60 uppercase mt-0.5">{l}</div>
                 </div>
               ))}
               <PermissionGuard requiredPermission="tutoria:editar">
@@ -344,7 +322,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                         return (
                           <button key={p.id} type="button" onClick={() => cambiarPatron(p.id)} className={`relative h-14 overflow-hidden rounded-lg border text-left transition-shadow ${activo ? 'ring-2 ring-utec-blue' : 'hover:ring-1 hover:ring-utec-blue/50'}`}>
                             <EventoPatternBg patron={p.id} />
-                            <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/45 px-1.5 py-0.5 text-[10px] font-medium text-white">{p.nombre}{activo && <Check className="h-3 w-3" />}</span>
+                            <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/45 px-1.5 py-0.5 text-2xs font-medium text-white">{p.nombre}{activo && <Check className="h-3 w-3" />}</span>
                           </button>
                         );
                       })}
@@ -367,9 +345,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold leading-tight">{tutoria.materiaNombre}</h1>
-              <Badge className={`${badge.color} border font-medium text-xs`}>
-                <BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}
-              </Badge>
+              <EstadoBadge estado={badge} className="text-xs" />
             </div>
 
             <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -377,14 +353,14 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 <GraduationCap className="h-4 w-4" />{tutoria.docenteNombre}
               </span>
               <span className="flex items-center gap-1.5">
-                <CalendarClock className="h-4 w-4" />{formatFecha(tutoria.inicio)}
+                <CalendarClock className="h-4 w-4" />{fechaHora(tutoria.inicio, { diaSemana: true })}
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4" />
                 {formatHora(tutoria.inicio)}–{formatHora(tutoria.fin)} · {duracion(tutoria.inicio, tutoria.fin)}
               </span>
               {tutoria.modalidad === 'VIRTUAL' ? (
-                <span className="flex items-center gap-1.5 text-utec-cyan">
+                <span className="flex items-center gap-1.5 text-marca-cian-texto">
                   <Video className="h-4 w-4" />Virtual
                   {tutoria.enlace && (
                     <a href={tutoria.enlace} target="_blank" rel="noopener noreferrer" className="hover:underline">· unirse</a>
@@ -396,13 +372,13 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
             </p>
 
             <p className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-              <span className="font-medium">{relativo(tutoria.inicio)}</span>
+              <span className="font-medium">{relativa(tutoria.inicio)}</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">
                 {tutoria.tipo === 'INDIVIDUAL' ? 'Tutoría individual (1 a 1)' : 'Tutoría grupal'}
               </span>
               {tutoria.tags?.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">
+                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-marca-azul-texto px-2 py-0.5 text-xs font-medium">
                   {t.toLowerCase() === 'mate' ? '🧉 mate' : t}
                 </span>
               ))}
@@ -416,7 +392,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 <span className="text-2xl font-bold tabular-nums leading-none">{ocupados}</span>
                 <span className="text-muted-foreground"> de {tutoria.cupo} lugares</span>
               </p>
-              <span className={`text-sm font-semibold tabular-nums ${tutoria.plazasDisponibles > 0 ? 'text-utec-green' : 'text-utec-orange'}`}>
+              <span className={`text-sm font-semibold tabular-nums ${tutoria.plazasDisponibles > 0 ? 'text-marca-verde-texto' : 'text-marca-naranja-texto'}`}>
                 {tutoria.plazasDisponibles > 0
                   ? `${tutoria.plazasDisponibles} libre${tutoria.plazasDisponibles === 1 ? '' : 's'}`
                   : 'Completo'}
@@ -434,7 +410,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
               />
             </div>
             {enEspera > 0 && (
-              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-utec-orange">
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-marca-naranja-texto">
                 <Users className="h-3.5 w-3.5" />{enEspera} en lista de espera
               </p>
             )}
@@ -454,9 +430,9 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           )}
           <Panel
             title={`Agendados · ${agendados.filter((a) => a.estado !== 'ESPERA').length}`}
-            icon={<Users className="h-4 w-4 text-utec-blue" />}
-            accent="bg-utec-blue/10"
-            action={(
+            icon={<Users className="size-4" />}
+            accentColor={MARCA.azul}
+            acciones={(
               agendados.length > 0
                 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button>
                 : null
@@ -473,7 +449,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                   <li key={a.reservaId} className="rounded-lg border p-3">
                     <div className="flex items-center justify-between gap-3">
                       <span className="flex items-center gap-2 min-w-0">
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-utec-green' : 'bg-utec-blue/10 text-utec-blue'}`}>{a.nombre?.slice(0, 2).toUpperCase()}</span>
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-marca-verde-texto' : 'bg-utec-blue/10 text-marca-azul-texto'}`}>{a.nombre?.slice(0, 2).toUpperCase()}</span>
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-medium">{a.nombre}{a.confirmada && <span title="Confirmó asistencia"> ✓</span>}</span>
                           <span className="block truncate text-xs text-muted-foreground">{a.email}</span>
@@ -502,10 +478,10 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                         {espera.map((a) => (
                           <li key={a.reservaId} className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-3 opacity-80">
                             <span className="flex items-center gap-2 min-w-0">
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-utec-dark text-xs font-semibold">{a.nombre?.slice(0, 2).toUpperCase()}</span>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-marca-tinta text-xs font-semibold">{a.nombre?.slice(0, 2).toUpperCase()}</span>
                               <span className="block truncate text-sm font-medium">{a.nombre}</span>
                             </span>
-                            <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-[10px]">En espera</Badge>
+                            <Badge className="bg-utec-yellow text-marca-tinta border-utec-yellow text-2xs">En espera</Badge>
                           </li>
                         ))}
                       </ul>
@@ -520,19 +496,18 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           <TutoriaFeedbackPanel tutoriaId={tutoria.id} />
 
           {otras.length > 0 && (
-            <Panel title={`Otras tutorías de ${materia?.nombre ?? 'la materia'} · ${otras.length}`} icon={<CalendarClock className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10">
+            <Panel title={`Otras tutorías de ${materia?.nombre ?? 'la materia'} · ${otras.length}`} icon={<CalendarClock className="size-4" />} accentColor={MARCA.azul}>
               <ul className="space-y-2">
                 {otras.map((t) => {
-                  const b = TUTORIA_BADGE[t.estado];
-                  const BI = b.icon;
+                  const b = estadoDe(ESTADO_TUTORIA, t.estado);
                   return (
                     <li key={t.id}>
                       <button type="button" onClick={() => navigate(`/tutorias/${t.id}`)} className="w-full text-left rounded-lg border p-3 transition-colors hover:border-utec-blue/40">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-utec-blue" />{formatFecha(t.inicio)}</span>
-                          <Badge className={`${b.color} border font-medium text-[10px] shrink-0`}><BI className="h-3 w-3 mr-1" />{b.label}</Badge>
+                          <span className="text-sm font-medium flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5 text-marca-azul-texto" />{fechaHora(t.inicio, { diaSemana: true })}</span>
+                          <EstadoBadge estado={b} className="shrink-0 text-2xs" />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo} agendados · {relativo(t.inicio)}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{Math.max(0, t.cupo - t.plazasDisponibles)}/{t.cupo} agendados · {relativa(t.inicio)}</p>
                       </button>
                     </li>
                   );
@@ -545,7 +520,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           {/* La dona de ocupación vivía acá y repetía por quinta vez el mismo dato
               que ya cuenta la barra del encabezado. */}
           <PermissionGuard requiredPermission="tutoria:editar">
-            <Panel title="Estado" icon={<Lock className="h-4 w-4 text-utec-orange" />} accent="bg-utec-orange/10">
+            <Panel title="Estado" icon={<Lock className="size-4" />} accentColor={MARCA.naranja}>
               <Select value={tutoria.estado} onValueChange={(v) => cambiarEstado(v as TutoriaEstado)} disabled={savingEstado}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -561,13 +536,13 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           {materia && (
             <Panel
               title="Materia"
-              icon={<BookOpen className="h-4 w-4 text-utec-blue" />}
-              accent="bg-utec-blue/10"
-              action={<Button variant="ghost" size="sm" className="h-7" onClick={() => navigate(`/materias/${materia.id}`)}>Ver<ChevronRight className="h-3.5 w-3.5 ml-0.5" /></Button>}
+              icon={<BookOpen className="size-4" />}
+              accentColor={MARCA.azul}
+              acciones={<Button variant="ghost" size="sm" className="h-7" onClick={() => navigate(`/materias/${materia.id}`)}>Ver<ChevronRight className="h-3.5 w-3.5 ml-0.5" /></Button>}
             >
               <p className="font-medium">{materia.nombre}</p>
               {materia.carreraNombre && (
-                <Badge className="bg-utec-blue/10 text-utec-blue border-utec-blue/20 border text-xs font-medium mt-1">{materia.carreraNombre}</Badge>
+                <Badge className="bg-utec-blue/10 text-marca-azul-texto border-utec-blue/20 border text-xs font-medium mt-1">{materia.carreraNombre}</Badge>
               )}
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                 {materia.docenteNombre && <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" />{materia.docenteNombre}</span>}
@@ -578,7 +553,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
           )}
 
           {espacio && (
-            <Panel title="Espacio" icon={<MapPin className="h-4 w-4 text-utec-green" />} accent="bg-utec-green/10">
+            <Panel title="Espacio" icon={<MapPin className="size-4" />} accentColor={MARCA.verde}>
               <p className="font-medium">{espacio.nombre}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />Cap. {espacio.capacidad}</span>

@@ -5,11 +5,8 @@ import { Label } from '@/components/ui/label';
 import { CalendarClock, GraduationCap, Loader2, PartyPopper } from 'lucide-react';
 import { feriadoDe } from '@/lib/feriadosUy';
 import type { Tutoria } from '@/lib/types/tutorias';
+import { fechaHoraLarga } from '@/lib/utils/fechas';
 
-function fmt(iso?: string): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleString('es-UY', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-}
 
 interface Props {
   tutoria: Tutoria | null;
@@ -31,18 +28,18 @@ export function AgendarTutoriaDialog({ tutoria, open, loading, onOpenChange, onC
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue"><GraduationCap className="h-4 w-4" /></span>
+            <span className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto"><GraduationCap className="h-4 w-4" /></span>
             Agendar tutoría
           </DialogTitle>
           <DialogDescription>{tutoria?.materiaNombre} · {tutoria?.docenteNombre}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-1">
-          <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarClock className="h-4 w-4" />{fmt(tutoria?.inicio)}</p>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarClock className="h-4 w-4" />{fechaHoraLarga(tutoria?.inicio, '')}</p>
 
           {feriado && (
             <div className="flex items-center gap-2 rounded-lg border border-utec-yellow/40 bg-utec-yellow/10 px-3 py-2 text-sm">
-              <PartyPopper className="h-4 w-4 text-utec-orange shrink-0" />
+              <PartyPopper className="h-4 w-4 text-marca-naranja-texto shrink-0" />
               <span>Ojo: ese día es feriado en Uruguay (<b>{feriado}</b>). Confirmá que la tutoría se dicta igual.</span>
             </div>
           )}
@@ -60,7 +57,7 @@ export function AgendarTutoriaDialog({ tutoria, open, loading, onOpenChange, onC
               placeholder="Ej: integrales por partes, límites indeterminados…"
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
             />
-            <p className="text-[11px] text-muted-foreground">El docente ve estos temas para preparar mejor la tutoría.</p>
+            <p className="text-2xs text-muted-foreground">El docente ve estos temas para preparar mejor la tutoría.</p>
           </div>
         </div>
 

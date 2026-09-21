@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Creación completa de reserva por un docente: form con espacio, título,
@@ -38,17 +39,10 @@ test.describe('Reservas: docente crea una reserva desde el form', () => {
     // conflicto con la pendiente seedeada en Sala 101 a la misma hora.
     const futuro = new Date();
     futuro.setDate(futuro.getDate() + 3);
-    const dia = String(futuro.getDate());
     // El form inicializa fecha=hoy, así que el botón ya no dice
     // "Seleccionar fecha". Lo localizamos por el icono calendario.
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    // El popover usa [role=dialog]. Cada día es un <button> dentro de
-    // [role=gridcell] cuyo texto visible es el número del día.
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${dia}$`) })
-      .first()
-      .click();
+    await elegirDia(page, futuro);
 
     // Horas: 4 inputs con placeholder "00" (hora inicio, min inicio, hora fin, min fin).
     const horaInputs = page.locator('input[placeholder="00"]');

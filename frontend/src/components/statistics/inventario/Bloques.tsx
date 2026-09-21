@@ -39,7 +39,7 @@ export function TablaGrupos({ grupos, columna, conDetalle = false }: Readonly<{
   }
   return (
     <table className="w-full text-sm">
-      <thead className="sticky top-0 z-10 bg-card text-[11px] uppercase tracking-wide text-muted-foreground">
+      <thead className="sticky top-0 z-10 bg-card text-2xs uppercase tracking-wide text-muted-foreground">
         <tr className="border-b">
           <th className="px-3 py-2 text-left font-medium">{columna}</th>
           <th className="px-2 py-2 text-right font-medium">Items</th>
@@ -55,14 +55,14 @@ export function TablaGrupos({ grupos, columna, conDetalle = false }: Readonly<{
             <tr key={g.id} className="border-b border-border/60 last:border-0 hover:bg-muted/40">
               <td className="px-3 py-1.5">
                 <div className={g.items === 0 ? 'text-muted-foreground' : ''}>{g.nombre}</div>
-                {conDetalle && g.detalle && <div className="text-[11px] text-muted-foreground">{g.detalle}</div>}
+                {conDetalle && g.detalle && <div className="text-2xs text-muted-foreground">{g.detalle}</div>}
               </td>
               <td className="px-2 py-1.5 text-right tabular-nums">{g.items === 0 ? <span className="text-xs text-muted-foreground">vacío</span> : n(g.items)}</td>
               <td className="hidden px-2 py-1.5 text-right tabular-nums text-muted-foreground sm:table-cell">{g.items === 0 ? '' : n(g.unidades)}</td>
               <td className="px-3 py-1.5"><BarraEstados g={g} /></td>
               <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums">
                 {problemas > 0 ? (
-                  <span className="font-semibold text-utec-red">
+                  <span className="font-semibold text-marca-rojo-texto">
                     {problemas} <span className="text-xs font-normal text-muted-foreground">· {porcentaje(problemas, g.items)}%</span>
                   </span>
                 ) : (
@@ -82,7 +82,7 @@ export function Atencion({ items }: Readonly<{ items: EstadoInventario['atencion
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-10 text-center">
-        <CheckCircle2 className="h-8 w-8 text-utec-green" />
+        <CheckCircle2 className="h-8 w-8 text-marca-verde-texto" />
         <p className="text-sm font-medium">Todo el inventario está disponible</p>
         <p className="text-xs text-muted-foreground">No hay items en mantenimiento ni dañados con estos filtros.</p>
       </div>
@@ -94,7 +94,7 @@ export function Atencion({ items }: Readonly<{ items: EstadoInventario['atencion
         const danado = i.estado === 'DANADO';
         return (
           <li key={i.id} className="flex items-start gap-3 py-2">
-            <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${danado ? 'bg-utec-red/12 text-utec-red' : 'bg-utec-yellow/20 text-[#9a6b00] dark:text-utec-yellow'}`}>
+            <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${danado ? 'bg-utec-red/12 text-marca-rojo-texto' : 'bg-utec-yellow/20 text-[#9a6b00] dark:text-marca-amarillo-texto'}`}>
               {danado ? <AlertTriangle className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
             </span>
             <div className="min-w-0 flex-1">
@@ -108,7 +108,7 @@ export function Atencion({ items }: Readonly<{ items: EstadoInventario['atencion
                 </span>
               </div>
               <div className="truncate text-xs text-muted-foreground">
-                <span className={danado ? 'text-utec-red' : ''}>{danado ? 'Dañado' : 'En mantenimiento'}</span>
+                <span className={danado ? 'text-marca-rojo-texto' : ''}>{danado ? 'Dañado' : 'En mantenimiento'}</span>
                 {' · '}
                 {i.espacio ?? 'sin espacio asignado'}
                 {i.observaciones && ` · ${i.observaciones}`}
@@ -145,7 +145,7 @@ export function Matriz({ estado }: Readonly<{ estado: EstadoInventario }>) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full table-fixed border-separate border-spacing-[3px] text-[11px]" style={{ minWidth: 160 + tipos.length * 56 }}>
+      <table className="w-full table-fixed border-separate border-spacing-[3px] text-2xs" style={{ minWidth: 160 + tipos.length * 56 }}>
         <thead>
           <tr>
             <th className="sticky left-0 z-10 w-[160px] bg-card pr-2 text-left font-medium text-muted-foreground">Espacio</th>

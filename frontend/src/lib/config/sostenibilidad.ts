@@ -9,12 +9,9 @@
  * Fuente única: no repartir estos números por el TSX.
  */
 
-/** Meta anual de hojas evitadas por defecto (editable por el usuario, persistida en localStorage). */
-export const META_HOJAS_DEFAULT = 5000;
-export const META_HOJAS_STORAGE_KEY = 'sosten_meta_hojas';
-
-/** Tope de hojas usado para normalizar el índice de impacto (0..1). */
-export const IMPACTO_HOJAS_TOPE = META_HOJAS_DEFAULT;
+/** Meta anual de árboles salvados por defecto (editable, persistida en localStorage). */
+export const META_ARBOLES_DEFAULT = 250;
+export const META_ARBOLES_STORAGE_KEY = 'sosten_meta_arboles';
 
 /** Divisores para traducir el ahorro a equivalencias del día a día. */
 export const EQUIVALENCIAS = {
@@ -24,6 +21,6 @@ export const EQUIVALENCIAS = {
   co2GramosPorCargaCelular: 8.22,
   /** Metros recorridos por una vuelta a la cancha en auto. */
   metrosPorVueltaCancha: 105,
-  /** Litros de agua por taza. */
-  aguaLitrosPorTaza: 0.25,
+  /** Hojas por resma. */
+  hojasPorResma: 500,
 } as const;

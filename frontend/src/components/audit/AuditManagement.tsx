@@ -45,9 +45,10 @@ import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { PageHeader, HEADER_ACTION, HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
+import { MARCA } from '@/lib/design/paleta';
 
 const ACCION_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
-  CREATE: { label: 'Crear', badge: 'bg-utec-green text-white border-utec-green', dot: 'bg-utec-green' },
+  CREATE: { label: 'Crear', badge: 'bg-utec-green text-marca-tinta border-utec-green', dot: 'bg-utec-green' },
   UPDATE: { label: 'Actualizar', badge: 'bg-utec-blue text-white border-utec-blue', dot: 'bg-utec-blue' },
   DELETE: { label: 'Eliminar', badge: 'bg-utec-red text-white border-utec-red', dot: 'bg-utec-red' },
 };
@@ -181,7 +182,7 @@ export default function AuditManagement() {
         title="Auditoría"
         count={totalElements}
         description="Cambios realizados en el sistema, con su autor y su fecha."
-        accentColor="#DF2B31"
+        accentColor={MARCA.rojo}
         actions={
           <>
             <Tooltip>
@@ -224,7 +225,7 @@ export default function AuditManagement() {
       />
 
       {/* Tabla de logs con filtros embebidos */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+      <div className="border rounded-lg shadow-card overflow-hidden bg-card">
         <div className="px-4 pt-4 pb-3">
           <AuditFilters
             filters={filters}
@@ -247,15 +248,15 @@ export default function AuditManagement() {
             <div className="px-4 pt-4">
               <div className="overflow-x-auto border rounded-lg overflow-hidden">
             <Table>
-              <TableHeader className="bg-utec-dark">
-                <TableRow className="hover:bg-transparent border-b-0">
-                  <TableHead className="h-10 bg-utec-dark text-white/70 w-[90px]">ID</TableHead>
-                  <TableHead className="h-10 bg-utec-dark text-white/70 min-w-[140px]">Entidad</TableHead>
-                  <TableHead className="h-10 bg-utec-dark text-white/70 w-[100px]">ID Entidad</TableHead>
-                  <TableHead className="h-10 bg-utec-dark text-white/70 w-[130px]">Acción</TableHead>
-                  <TableHead className="h-10 bg-utec-dark text-white/70 min-w-[200px]">Usuario</TableHead>
-                  <TableHead className="h-10 bg-utec-dark text-white/70 min-w-[200px]">Fecha/Hora</TableHead>
-                  <TableHead className="h-10 bg-utec-dark text-white/70 text-right w-[80px]">Detalles</TableHead>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[90px]">ID</TableHead>
+                  <TableHead className="min-w-[140px]">Entidad</TableHead>
+                  <TableHead className="w-[100px]">ID Entidad</TableHead>
+                  <TableHead className="w-[130px]">Acción</TableHead>
+                  <TableHead className="min-w-[200px]">Usuario</TableHead>
+                  <TableHead className="min-w-[200px]">Fecha/Hora</TableHead>
+                  <TableHead className="text-right w-[80px]">Detalles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

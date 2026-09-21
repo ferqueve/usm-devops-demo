@@ -15,10 +15,10 @@ test.describe('Inventario: filtro "sin asignar"', () => {
 
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10_000 });
 
-    // Abrir el combobox de espacios y elegir "Sin asignar".
-    const espacioCombobox = page.getByRole('combobox').first();
-    await espacioCombobox.click();
-    await page.getByRole('option', { name: /^Sin asignar$/i }).click();
+    // Abrir el filtro de espacios y elegir "Sin asignar".
+    await page.getByRole('button', { name: /^Filtrar: todos los espacios$/i }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^Sin asignar$/i }).click();
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(700);
 
     // El ítem sin asignar aparece y los con espacio no.

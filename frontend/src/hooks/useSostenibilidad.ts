@@ -103,10 +103,3 @@ export function useSostenibilidad() {
   };
 }
 
-/**
- * Invalida el caché de sostenibilidad manualmente.
- */
-export function invalidateSostenibilidadCache() {
-  statsCache = null;
-  cacheTimestamp = 0;
-}

@@ -1,5 +1,11 @@
 # Ficha técnica · Sistema de Diseño UI
 
+> **Las reglas de trabajo viven en [`documentation/ui/README.md`](../ui/README.md)**
+> y el catálogo funcionando en `localhost:5173/ui`. Esta ficha describe la
+> arquitectura para el lector técnico; aquel documento dice cómo se usa y por
+> qué cada decisión es la que es. Si los dos dicen cosas distintas, manda el
+> otro.
+
 ## 1. Resumen ejecutivo
 
 UTEC Space Manager utiliza un sistema de diseño propio construido sobre **Tailwind CSS v4** y **shadcn/ui** (estilo "new-york"), con tokens corporativos UTEC integrados al tema. El objetivo es ofrecer una experiencia visual coherente, accesible y rápida de iterar: micro-interacciones suaves, tipografía propia, paleta corporativa y un set de componentes reutilizables que estandarizan la presentación de información (avatars, badges de estado, métricas, anillos de progreso, barras de filtros, estados vacíos).
@@ -44,31 +50,45 @@ Convenciones:
 
 ### 3.2 Tokens de tema (en `frontend/src/index.css`)
 
-El archivo `index.css` está organizado así:
+Tailwind v4 no usa `tailwind.config.*`: la configuración vive en la directiva
+`@theme` del CSS. El archivo está organizado en este orden:
 
-- **Líneas 1–13**: imports (`@import "tailwindcss"`, fuentes Gilroy + Poppins, `@import "tw-animate-css"`).
-- **Línea ~5**: `@font-face` para la fuente corporativa **UTEC**.
-- **Línea ~18**: bloque `@theme` con los tokens de Tailwind v4.
-- **Línea ~42**: `--radius: 0.625rem` (radio base para componentes shadcn).
-- **Líneas 41–108**: variables shadcn en formato OKLCH, con bloque `.dark { ... }` para modo oscuro.
-- **Línea ~121**: `html { font-size: 87.5% }` — reduce globalmente la jerarquía tipográfica para que los `rem` tengan una escala más compacta.
-- **Líneas 167–222**: bloques de utilidades inline.
-- **Líneas 225–454**: `@layer utilities` con todas las utilidades propias del proyecto (ver §3.5).
+1. Import de fuentes y `@font-face` de la fuente corporativa UTEC.
+2. `@theme inline` — todo lo que Tailwind expone como utilidad: colores,
+   escala tipográfica, radios, elevación. El `inline` es necesario para que el
+   modo oscuro funcione en cualquier parte del árbol y no sólo en el `<html>`.
+3. `:root` y `.dark` — los valores de cada token, en OKLCH.
+4. `@layer base` — escala tipográfica aplicada, foco visible, cifras tabulares.
+5. `@layer utilities` — utilidades propias del proyecto (ver §3.5).
+
+Los grupos de tokens son: superficies (`background`, `card`, `muted`,
+`secondary`, `accent`, `chrome`, `sidebar`), roles semánticos (`info`,
+`success`, `warning`, `danger`, `acento`, con cuatro piezas cada uno),
+tipografía (`--text-2xs` a `--text-3xl` con su altura de línea), radio y
+elevación.
+
+La escala tipográfica y la de elevación están **declaradas**, no heredadas de
+Tailwind. El detalle y el porqué, en la guía de la base visual.
 
 ### 3.3 Paleta corporativa UTEC
 
-Definida como utilidades de color (`text-utec-*`, `bg-utec-*`, `border-utec-*`):
+Los seis hex salen del Manual de Identidad Visual 2.1 (A.4), guardado en
+`documentation/marca/`. **Cinco de ellos nombran un departamento**; no son un
+semáforo ni una paleta decorativa:
 
-| Color | Hex | Uso típico |
+| Color | Hex | Qué nombra |
 |---|---|---|
-| Verde UTEC | `#86bb4c` | Éxito, estado activo. |
-| Amarillo UTEC | `#F6CA21` | Alerta no crítica. |
-| Naranja UTEC | `#DE7A27` | Advertencia. |
-| Rojo UTEC | `#DF2B31` | Error, estado crítico. |
-| Azul UTEC | `#184897` | Color primario corporativo. |
-| Cian UTEC | `#00c7ff` | Información. |
-| Púrpura UTEC | `#9333ea` | Categoría auxiliar. |
-| Gris oscuro | `#343a40` (`utec-dark`), `#4a5057`, `#3a4046` | Sidebar, header. |
+| Azul | `#184897` | Departamento de Tecnologías de la Información |
+| Verde | `#86bb4c` | Departamento de Sostenibilidad Ambiental |
+| Amarillo | `#F6CA21` | Departamento de Innovación y Emprendimientos |
+| Naranja | `#DE7A27` | Departamento de Alimentos |
+| Rojo | `#DF2B31` | Departamento de Mecatrónica, Logística y Biomédica |
+| Cian | `#00c7ff` | Color principal del sistema, centro del isotipo |
+| Gris oscuro | `#343a40` | Bandas y barra lateral (`--chrome`, `--sidebar`) |
+
+Todo lo demás se **deriva por cálculo** en `frontend/src/lib/design/paleta.ts`,
+que es la única fuente: variantes de gráfico por tema, escalas por categoría y
+medición de contraste. Ningún color se escribe a mano en un componente.
 
 ### 3.4 Componentes propios (`frontend/src/components/ui/`)
 
@@ -217,18 +237,74 @@ Dos decisiones de implementación quedan documentadas por ser no obvias:
 ### 5.1 Limitaciones
 
 - **Tailwind v4 sin `tailwind.config.ts`**: ofrece simpleza, pero limita lo que se puede configurar fuera de CSS (por ejemplo, plugins JS extensos). Si en el futuro se necesitan plugins más complejos, habrá que migrar parcialmente la configuración.
-- **`html { font-size: 87.5% }`** reduce globalmente la jerarquía tipográfica. Cualquier componente externo (third-party) que asuma 100% / 16px va a verse más chico de lo esperado y puede requerir overrides.
+- **La escala tipográfica arranca en 11 px** (`text-2xs`) y el cuerpo de la
+  interfaz es 14 px. Es una herramienta densa a propósito; un componente
+  externo que asuma 16 px de cuerpo va a verse más grande que el resto.
 - **Las animaciones genéricas (`fade-in`, `slide-up`, etc.) vienen de `tw-animate-css`**: si esa dependencia se actualiza con cambios incompatibles, hay que revisar el catálogo de clases usadas en el proyecto.
 
 ### 5.2 Deuda técnica
 
-- En el código frontend hay referencias a clases que **no están definidas** en `index.css` ni en `tw-animate-css` (por ejemplo `active-indicator`, `badge-pulse`, `hover-scale`, `animate-slide-up`). Hoy estos selectores no aplican ningún estilo. Hay dos vías para resolverlo:
-  1. Definirlas formalmente en `index.css` como utilidades propias.
-  2. Reemplazarlas por equivalentes existentes (`hover-lift`, `animate-fade-in-up`, etc.) y borrarlas del código.
+**Familias duplicadas.** Verlas juntas en `/ui` es lo que las hizo visibles.
+Los tokens las dejaron *consistentes*, pero siguen siendo varias
+implementaciones de lo mismo:
+
+| familia | copias | estado |
+|---|---|---|
+| Confirmación de borrado | 8 → 1 | hecho: `components/common/ConfirmarBorradoDialog` |
+| `EmptyState` | 3 → 1 | hecho: `components/ui/empty-state` con variante `linea` |
+| `Panel` | 6 → 2 | `components/common/Panel`; queda el de `RuntimeCards`, que tiene otra forma |
+| Hooks con caché de lista | 4 → 1 | `hooks/cacheDeLista.ts`, con test |
+| Estrellas de valoración | 4 → 1 | `components/common/Estrellas` |
+| `sumarDias` | 4 → 1 | `lib/utils/fechas` |
+| `API_BASE_URL` | 5 → 1 | `lib/config/api` |
+| Descarga de CSV | 6 → 1 | `descargarCSV` en `lib/utils/csv-helpers` |
+| `UTEC` (paleta en inglés) | 3 → 1 | `MARCA_EN` en `lib/design/paleta` |
+| Días de la semana | 6 → 2 | `lib/utils/fechas`, uno por cada orden |
+| Estado → color | 14 → 1 | `components/common/estados`, con los cinco dominios |
+| Formateo de fechas | 16 → 1 | `lib/utils/fechas.ts` |
+| Esqueletos de carga | 23 → 1 | la primitiva `ui/skeleton`, en `bg-muted` |
+| Globo de gráfico | 15 → 1 | `GloboGrafico` en `components/common/dataviz` |
+| Tiras de métricas | 9 → 2 | `components/common/StatStrip`; queda `SysStat`, que lleva barras y umbrales |
+| Tablas y vistas de fichas | 3 + 3 | **no se colapsan a propósito**: `ReservationTableView` no es una tabla, es media pantalla con filtros, paginación y pantalla completa. Serían 36 props. Lo que sí se unificó es el encabezado. |
+| Pistas de barra de progreso | 47 | **no se colapsan a propósito**: la clase se repite pero las implementaciones no compiten —el alto varía según dónde vive la barra— y tocar 47 lugares es riesgo sin beneficio. |
+
+**Código muerto: borrado.** 65 archivos y 5461 líneas. Eran tres capas:
+
+- La generación anterior del dashboard —`DashboardStats`, `DashboardCharts`,
+  `UpcomingReservations`, `QuickActions` y toda la carpeta `widgets/`—, que
+  las vistas por rol ya habían reemplazado con `StatStrip` y `Panel`. Estaba
+  escondida detrás de un barrel que tampoco importaba nadie.
+- 22 primitivas de shadcn que nunca se usaron, y con ellas 26 dependencias.
+- Restos sueltos: `components/rooms` (superado por `components/spaces`),
+  `InscriptosDialog` (superado por el panel de `MateriaDetail`),
+  `mock-data.ts`, `lib/config/timezone.ts` y 13 exports sin un solo uso.
+
+Lo encuentra `node scripts/muerto.mjs`.
 
 ### 5.3 TODOs
 
-- [ ] Resolver las clases CSS huérfanas listadas en §5.2 (definirlas o reemplazarlas).
-- [ ] Documentar la guía de contribución para componentes UI nuevos (cuándo extender shadcn vs crear componente propio en `components/ui/`).
-- [ ] Sumar un Storybook (o equivalente) para visualizar el catálogo de componentes propios.
-- [ ] Auditoría de accesibilidad (contraste, foco visible, navegación por teclado) y registrar resultados en esta ficha.
+- [x] Resolver las clases CSS huérfanas. `active-indicator`, `transition-smooth`
+      y `animate-slide-up` se borraron del markup; `hover-scale` y `badge-pulse`
+      se definieron, porque la intención estaba clara y no hacían nada.
+- [x] Documentar la guía de contribución. Está en
+      [`documentation/ui/README.md`](../ui/README.md).
+- [x] Sumar un catálogo de componentes. Es la ruta `/ui`, sólo en desarrollo,
+      con los 108 componentes que pueden montarse sin backend y los dos temas
+      lado a lado. La cobertura la calcula `scripts/inventario-ui.mjs`.
+- [x] Colapsar las ocho confirmaciones de borrado. Eran ~690 líneas repetidas;
+      hoy son ocho envoltorios sobre `ConfirmarBorradoDialog`, cada uno con su
+      firma original para no tocar a quien los llama. En el camino se
+      recuperaron tres `PermissionGuard` y se corrigió el género gramatical
+      ("el evento", no "la evento").
+- [ ] Terminar los estados de error. `components/common/EstadoCarga` ya
+      existe y lo usan los dos paneles de valoración y `StatsListWidget`.
+      Quedan 33 `catch` que se comen el error en 20 archivos; los que
+      envuelven una llamada de datos hay que pasarlos.
+- [ ] Terminar la pasada de contraste. `node scripts/contraste.mjs` bajó de
+      821 textos a 613, y lo peor pasó de 1,00:1 a 1,70:1. Lo que queda son
+      103 grupos, casi todos entre 3 y 4,5 —`text-muted-foreground` en
+      tamaños chicos—, que es una decisión de sistema y no colores sueltos.
+- [ ] Auditoría de accesibilidad. El contraste está medido y visible en
+      `/ui#paleta`, y el foco es visible en toda la aplicación. Falta la pasada
+      de navegación por teclado, orden de foco y etiquetas en los botones que
+      son sólo icono.

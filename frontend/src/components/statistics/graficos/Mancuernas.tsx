@@ -35,12 +35,12 @@ export function Mancuernas({ filas, nombreA, nombreB, colorA, colorB, textoSinA 
                 <span className="flex min-w-0 items-center gap-1.5">
                   <span className="truncate" title={f.nombre}>{f.nombre}</span>
                   {f.chip && (
-                    <span className="shrink-0 rounded bg-muted px-1.5 py-px text-[10px] font-semibold tracking-wide text-muted-foreground" title={f.chip.titulo}>
+                    <span className="shrink-0 rounded bg-muted px-1.5 py-px text-2xs font-semibold tracking-wide text-muted-foreground" title={f.chip.titulo}>
                       {f.chip.texto}
                     </span>
                   )}
                 </span>
-                {f.detalle && <span className="block truncate text-[11px] text-muted-foreground">{f.detalle}</span>}
+                {f.detalle && <span className="block truncate text-2xs text-muted-foreground">{f.detalle}</span>}
               </span>
               {/* En celular la barra va en su propio renglón, así el nombre no se corta. */}
               <div className="relative col-span-2 row-start-2 h-4 sm:col-span-1 sm:row-start-auto" title={f.sinA ? `${nombreB}: ${formatoNumero(f.b)} · ${textoSinA}` : `${nombreA}: ${formatoNumero(f.a)} · ${nombreB}: ${formatoNumero(f.b)}`}>

@@ -9,12 +9,18 @@
 # Uso:
 #   scripts/e2e.sh                   # corrida completa
 #   scripts/e2e.sh --keep-running    # deja servicios arriba al terminar (debug)
+#
+# Si 8080/5173 están ocupados por el entorno de desarrollo, se pueden mover:
+#   E2E_BACKEND_PORT=8081 E2E_FRONTEND_PORT=5174 scripts/e2e.sh
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="$ROOT/docker-compose.e2e.yml"
 LOG_DIR="$ROOT/.e2e-logs"
+BACKEND_PORT="${E2E_BACKEND_PORT:-8080}"
+FRONTEND_PORT="${E2E_FRONTEND_PORT:-5173}"
+FRONTEND_URL="http://localhost:$FRONTEND_PORT"
 mkdir -p "$LOG_DIR"
 
 KEEP_RUNNING=false
@@ -31,8 +37,8 @@ cleanup() {
   if [[ "$KEEP_RUNNING" == "true" && $exit_code -eq 0 ]]; then
     echo
     echo "=== Servicios siguen arriba (--keep-running) ==="
-    echo "  Backend  : http://localhost:8080  (PID $BACKEND_PID)"
-    echo "  Frontend : http://localhost:5173  (PID $FRONTEND_PID)"
+    echo "  Backend  : http://localhost:$BACKEND_PORT  (PID $BACKEND_PID)"
+    echo "  Frontend : $FRONTEND_URL  (PID $FRONTEND_PID)"
     echo "  DB       : postgres en :5433"
     echo "Para apagar: kill $BACKEND_PID $FRONTEND_PID && docker compose -f $COMPOSE_FILE down -v"
     exit 0
@@ -79,19 +85,21 @@ done
 echo "=== 2/4 · Arrancando backend (perfil e2e) ==="
 (
   cd "$ROOT/backend"
-  SPRING_PROFILES_ACTIVE=e2e mvn -q spring-boot:run -DskipTests
+  SPRING_PROFILES_ACTIVE=e2e SERVER_PORT="$BACKEND_PORT" \
+    CORS_ALLOWED_ORIGINS="$FRONTEND_URL" APP_FRONTEND_URL="$FRONTEND_URL" \
+    mvn -q spring-boot:run -DskipTests
 ) > "$LOG_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
-wait_port localhost 8080 "backend" 120
+wait_port localhost "$BACKEND_PORT" "backend" 120
 
 echo "=== 3/4 · Arrancando frontend (Vite) ==="
 (
   cd "$ROOT/frontend"
-  VITE_API_URL=http://localhost:8080/api/v1 npm run dev
+  VITE_API_URL="http://localhost:$BACKEND_PORT/api/v1" npm run dev -- --port "$FRONTEND_PORT" --strictPort
 ) > "$LOG_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
-wait_port localhost 5173 "frontend" 60
+wait_port localhost "$FRONTEND_PORT" "frontend" 60
 
 echo "=== 4/4 · Corriendo Playwright ==="
 cd "$ROOT/frontend"
-npx playwright test "$@"
+E2E_BASE_URL="$FRONTEND_URL" npx playwright test "$@"

@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { HEADER_ACTION, HEADER_ACTION_ICON, PAGE_ACTIONS_SLOT } from '@/components/layouts/PageHeader';
 import { TarjetasKpi, type Kpi } from '../graficos/TarjetasKpi';
 import type { DemandaInventario, EstadoInventario, FiltrosInventario as Filtros } from '@/lib/api/stats';
-import { csvEscape, downloadBlob } from '@/lib/utils/csv-helpers';
+import { descargarCSV, csvEscape } from '@/lib/utils/csv-helpers';
 import { fechaCorta, hoyEnElCampus, type Rango } from '../periodo';
 import { IndiceSecciones, NotaHastaAnoche, Seccion } from '../Seccion';
 import { PanelEstadistica } from '../PanelEstadistica';
@@ -19,6 +19,8 @@ import { EvolucionInventario } from './EvolucionInventario';
 import { FiltrosInventario } from './FiltrosInventario';
 import { useDemandaInventario, useEstadoInventario, useFiltrosInventario } from './useEstadoInventario';
 import { EmbudoEquipos, EspaciosConProblemas, PedidoVsDisponible } from './Demanda';
+import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const n = (v: number) => v.toLocaleString('es-UY');
 
@@ -72,28 +74,25 @@ function exportarCSV(estado: EstadoInventario, filtrosTexto: string, demanda: De
       : []),
   ];
   // BOM para que Excel lea los acentos.
-  downloadBlob(
-    new Blob([`\uFEFF${filas.join('\n')}`], { type: 'text/csv;charset=utf-8;' }),
-    `estadisticas_inventario_${hoyEnElCampus()}.csv`,
-  );
+  descargarCSV(filas, `estadisticas_inventario_${hoyEnElCampus()}.csv`);
 }
 
 const SECCIONES = [
-  { id: 'estado', titulo: 'Estado actual', icono: Boxes, color: '#F6CA21' },
+  { id: 'estado', titulo: 'Estado actual', icono: Boxes, color: MARCA.amarillo },
   { id: 'demanda', titulo: 'Demanda', icono: Package, color: '#9333ea' },
-  { id: 'evolucion', titulo: 'Evolución', icono: TrendingUp, color: '#184897' },
+  { id: 'evolucion', titulo: 'Evolución', icono: TrendingUp, color: MARCA.azul },
 ];
 
 function Esqueleto() {
   return (
     <div className="space-y-3" aria-busy>
-      <div className="h-[74px] animate-pulse rounded-xl bg-muted" />
+      <Skeleton className="h-[74px] rounded-xl" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
-        {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-[92px] animate-pulse rounded-xl bg-muted" />)}
+        {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
       </div>
       <div className="grid gap-3 lg:grid-cols-3">
-        <div className="h-[320px] animate-pulse rounded-xl bg-muted lg:col-span-2" />
-        <div className="h-[320px] animate-pulse rounded-xl bg-muted" />
+        <Skeleton className="h-[320px] rounded-xl lg:col-span-2" />
+        <Skeleton className="h-[320px] rounded-xl" />
       </div>
     </div>
   );
@@ -193,7 +192,7 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
       <Seccion
         id="estado"
         icono={Boxes}
-        color="#F6CA21"
+        color={MARCA.amarillo}
         titulo="Estado actual"
         descripcion="Cómo está el inventario ahora. Es una foto de hoy: el período elegido no la cambia."
         destacados={
@@ -219,13 +218,13 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
             <TarjetasKpi items={tarjetas} />
 
             <div className="grid gap-3 lg:grid-cols-3">
-              <PanelEstadistica title="Estado del parque" count={`${n(estado.totales.items)} items`} accentColor="#86bb4c" centrar explicacion={EXPLICACIONES.estadoParque}>
+              <PanelEstadistica title="Estado del parque" count={`${n(estado.totales.items)} items`} accentColor={MARCA.verde} centrar explicacion={EXPLICACIONES.estadoParque}>
                 {(grande) => <DonaEstados totales={estado.totales} tamano={grande ? 260 : 150} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Cobertura" count="espacios y asignación" accentColor="#00c7ff" centrar explicacion={EXPLICACIONES.cobertura}>
+              <PanelEstadistica title="Cobertura" count="espacios y asignación" accentColor={MARCA.cian} centrar explicacion={EXPLICACIONES.cobertura}>
                 {(grande) => <MedidoresCobertura estado={estado} grande={grande} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Antigüedad" count="cada cuadrado es 1% del parque" accentColor="#184897" centrar explicacion={EXPLICACIONES.antiguedad}>
+              <PanelEstadistica title="Antigüedad" count="cada cuadrado es 1% del parque" accentColor={MARCA.azul} centrar explicacion={EXPLICACIONES.antiguedad}>
                 <WaffleAntiguedad a={estado.antiguedad} />
               </PanelEstadistica>
             </div>
@@ -235,7 +234,7 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
               <PanelEstadistica
                 title="Requieren atención"
                 count={estado.atencion.length > 0 ? `${estado.atencion.length} items · el más estancado primero` : undefined}
-                accentColor="#DF2B31"
+                accentColor={MARCA.rojo}
                 action={{ label: 'inventario', to: '/inventory' }}
                 scroll
                 centrar={estado.atencion.length === 0}
@@ -247,7 +246,7 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
               <PanelEstadistica
                 title="Qué hay, por tipo"
                 count="tamaño = items · color = problemas"
-                accentColor="#DE7A27"
+                accentColor={MARCA.naranja}
                 className="lg:col-span-3"
                 explicacion={EXPLICACIONES.mapaTipos}
               >
@@ -256,15 +255,15 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
             </div>
 
             <div className="grid gap-3 xl:h-[460px] xl:grid-cols-2">
-              <PanelEstadistica title="Por tipo" count={`${estado.porTipo.length} tipos`} accentColor="#00c7ff" flush scroll explicacion={EXPLICACIONES.tablaTipos}>
+              <PanelEstadistica title="Por tipo" count={`${estado.porTipo.length} tipos`} accentColor={MARCA.cian} flush scroll explicacion={EXPLICACIONES.tablaTipos}>
                 <TablaGrupos grupos={estado.porTipo} columna="Tipo" />
               </PanelEstadistica>
-              <PanelEstadistica title="Por espacio" count={`${estado.porEspacio.length} espacios`} accentColor="#86bb4c" flush scroll explicacion={EXPLICACIONES.tablaEspacios}>
+              <PanelEstadistica title="Por espacio" count={`${estado.porEspacio.length} espacios`} accentColor={MARCA.verde} flush scroll explicacion={EXPLICACIONES.tablaEspacios}>
                 <TablaGrupos grupos={estado.porEspacio} columna="Espacio" conDetalle />
               </PanelEstadistica>
             </div>
 
-            <PanelEstadistica title="Qué hay en cada espacio" count="items por tipo" accentColor="#184897" explicacion={EXPLICACIONES.matriz}>
+            <PanelEstadistica title="Qué hay en cada espacio" count="items por tipo" accentColor={MARCA.azul} explicacion={EXPLICACIONES.matriz}>
               <Matriz estado={estado} />
             </PanelEstadistica>
           </div>
@@ -288,7 +287,7 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
         }
       >
         {!demanda && cargandoDemanda ? (
-          <div className="h-[500px] animate-pulse rounded-xl bg-muted" aria-busy />
+          <Skeleton className="h-[500px] rounded-xl" aria-busy />
         ) : !demanda ? (
           <p className="rounded-xl border border-dashed bg-card py-10 text-center text-sm text-muted-foreground">
             No se pudo cargar la demanda de equipos. Probá actualizar.
@@ -298,13 +297,13 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
             <PanelEstadistica title="Del pedido a la entrega" count={`${n(Number(demanda.totales.solicitudes))} pedidos`} accentColor="#9333ea" centrar explicacion={EXPLICACIONES.embudoEquipos}>
               {(grande) => <EmbudoEquipos totales={demanda.totales} grande={grande} />}
             </PanelEstadistica>
-            <PanelEstadistica title="¿Alcanza lo que hay?" count="pico diario contra disponibles" accentColor="#DF2B31" scroll explicacion={EXPLICACIONES.pedidoVsDisponible}>
+            <PanelEstadistica title="¿Alcanza lo que hay?" count="pico diario contra disponibles" accentColor={MARCA.rojo} scroll explicacion={EXPLICACIONES.pedidoVsDisponible}>
               {(grande) => <PedidoVsDisponible filas={demanda.porTipo} limite={grande ? undefined : 5} />}
             </PanelEstadistica>
             <PanelEstadistica
               title="Con problemas y reservados"
               count={`${demanda.espaciosConProblemas.length} espacios`}
-              accentColor="#DE7A27"
+              accentColor={MARCA.naranja}
               scroll
               centrar={demanda.espaciosConProblemas.length === 0}
               explicacion={EXPLICACIONES.espaciosProblemas}
@@ -318,7 +317,7 @@ export default function EstadisticasInventario({ rango }: Readonly<{ rango: Rang
       <Seccion
         id="evolucion"
         icono={TrendingUp}
-        color="#184897"
+        color={MARCA.azul}
         titulo="Evolución"
         descripcion="Cómo cambió el inventario dentro del período, a partir de la foto que se toma cada madrugada. No usa los filtros de arriba."
         nota={<NotaHastaAnoche />}

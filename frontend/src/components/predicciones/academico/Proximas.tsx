@@ -69,7 +69,7 @@ export function ListaProximas({ proximas, onAbrir }: Readonly<{ proximas: Tutori
               aria-checked={activo}
               onClick={() => setFiltro(f.id)}
               className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                activo ? 'bg-utec-dark text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
+                activo ? 'bg-chrome text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {color && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} aria-hidden />}
@@ -93,14 +93,14 @@ export function ListaProximas({ proximas, onAbrir }: Readonly<{ proximas: Tutori
                 className="group grid w-full grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none sm:grid-cols-[52px_minmax(0,1.2fr)_minmax(0,1fr)_auto]"
               >
                 <span className="flex flex-col items-center rounded-lg border bg-muted/30 py-1 leading-none">
-                  <span className="text-[10px] uppercase text-muted-foreground">{cuando.dia}</span>
+                  <span className="text-2xs uppercase text-muted-foreground">{cuando.dia}</span>
                   <span className="text-lg font-bold tabular-nums">{cuando.numero}</span>
-                  <span className="text-[10px] text-muted-foreground">{cuando.hora}</span>
+                  <span className="text-2xs text-muted-foreground">{cuando.hora}</span>
                 </span>
 
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold" title={t.materia}>{t.materia}</span>
-                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 text-2xs text-muted-foreground">
                     {t.docente && <span className="inline-flex min-w-0 items-center gap-0.5"><UserRound className="h-3 w-3 shrink-0" /><span className="truncate">{t.docente}</span></span>}
                     <span className="inline-flex items-center gap-0.5">
                       {virtual ? <Monitor className="h-3 w-3" /> : <MapPin className="h-3 w-3" />}
@@ -116,7 +116,7 @@ export function ListaProximas({ proximas, onAbrir }: Readonly<{ proximas: Tutori
 
                 <span className="hidden min-w-0 sm:block">
                   <BarraAsistencia t={t} color={estilo.color} />
-                  <span className="mt-0.5 block text-[11px] tabular-nums text-muted-foreground">
+                  <span className="mt-0.5 block text-2xs tabular-nums text-muted-foreground">
                     {t.esperados == null ? (
                       <><b className="text-foreground">{entero(t.inscriptos)}</b> inscriptos</>
                     ) : (

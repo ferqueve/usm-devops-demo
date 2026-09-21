@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Database, Recycle } from 'lucide-react';
 import type { MetricInfo } from '@/lib/types/actuator';
 import type { PoolMetrics } from '@/hooks/useSystemMetrics';
+import { MARCA } from '@/lib/design/paleta';
 
 interface RuntimeCardsProps {
   pool: PoolMetrics | null | undefined;
@@ -28,7 +29,7 @@ function Panel({
 }>) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-card">
-      <div className="flex items-center gap-2.5 border-b border-white/10 bg-utec-dark px-4 py-2.5 text-white">
+      <div className="flex items-center gap-2.5 border-b border-white/10 bg-chrome px-4 py-2.5 text-white">
         <span className="h-4 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accent }} aria-hidden />
         <Icon className="h-4 w-4 shrink-0 text-white/70" />
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
@@ -49,9 +50,9 @@ function Fila({
     <div className="flex items-baseline justify-between gap-3 px-4 py-2.5">
       <div className="min-w-0">
         <div className="text-sm">{label}</div>
-        {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
+        {hint && <div className="text-2xs text-muted-foreground">{hint}</div>}
       </div>
-      <div className={`shrink-0 text-sm font-semibold tabular-nums ${alerta ? 'text-utec-red' : ''}`}>
+      <div className={`shrink-0 text-sm font-semibold tabular-nums ${alerta ? 'text-marca-rojo-texto' : ''}`}>
         {value}
       </div>
     </div>
@@ -80,7 +81,7 @@ export const RuntimeCards = memo(function RuntimeCards({ pool, gcMetrics, uptime
       <Panel
         icon={Database}
         title="Pool de conexiones"
-        accent="#184897"
+        accent={MARCA.azul}
         aside={pool ? `${enUso} de ${pool.maximo}` : undefined}
       >
         {pool ? (
@@ -115,7 +116,7 @@ export const RuntimeCards = memo(function RuntimeCards({ pool, gcMetrics, uptime
       <Panel
         icon={Recycle}
         title="Recolección de basura"
-        accent="#86bb4c"
+        accent={MARCA.verde}
         aside={`${porcentajeEnGc.toFixed(2)}% del tiempo`}
       >
         <div className="divide-y">

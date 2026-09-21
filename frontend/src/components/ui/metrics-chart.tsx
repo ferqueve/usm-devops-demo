@@ -44,12 +44,12 @@ function MetricsChartHeader({
   onYAxisModeChange,
 }: Readonly<MetricsChartHeaderProps>) {
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
       <span className="w-1 h-4 rounded-sm shrink-0" style={{ backgroundColor: color }} aria-hidden />
       {Icon && <Icon className="h-3.5 w-3.5 text-white/70 shrink-0" />}
       <h3 className="text-sm font-semibold tracking-tight truncate flex-1">{title}</h3>
       <Select value={timeRange.toString()} onValueChange={(val) => onTimeRangeChange(Number(val))}>
-        <SelectTrigger className="w-[85px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+        <SelectTrigger className="w-[85px] h-7 text-2xs bg-white/10 border-white/20 text-white hover:bg-white/15">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -61,7 +61,7 @@ function MetricsChartHeader({
         </SelectContent>
       </Select>
       <Select value={yAxisMode} onValueChange={(val: 'auto' | 'fixed') => onYAxisModeChange(val)}>
-        <SelectTrigger className="w-[85px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+        <SelectTrigger className="w-[85px] h-7 text-2xs bg-white/10 border-white/20 text-white hover:bg-white/15">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -119,7 +119,7 @@ export const MetricsChart = memo(function MetricsChart({
       const payloadObj = first.payload as MetricsChartDataPoint | undefined;
       const ts = payloadObj?.timestamp;
       return (
-        <div className="bg-utec-dark border border-white/20 text-white rounded-md shadow-lg px-2.5 py-1.5 text-xs">
+        <div className="bg-chrome border border-white/20 text-white rounded-md shadow-lg px-2.5 py-1.5 text-xs">
           <p className="font-semibold tabular-nums">
             {numericValue.toFixed(2)}{unit}
           </p>
@@ -149,7 +149,7 @@ export const MetricsChart = memo(function MetricsChart({
   // Si está pausado, mostrar versión estática optimizada
   if (isPaused) {
     return (
-      <div className="rounded-xl border border-white/10 bg-utec-dark overflow-hidden">
+      <div className="rounded-xl border border-white/10 bg-chrome overflow-hidden">
         {header}
         <div className="p-4">
           <div className="flex items-center justify-center h-[180px] text-white/50">
@@ -164,7 +164,7 @@ export const MetricsChart = memo(function MetricsChart({
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-utec-dark overflow-hidden">
+    <div className="rounded-xl border border-white/10 bg-chrome overflow-hidden">
       {header}
       <div className="p-4">
         <ResponsiveContainer width="100%" height={height}>

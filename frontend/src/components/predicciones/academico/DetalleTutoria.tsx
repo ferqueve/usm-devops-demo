@@ -27,7 +27,7 @@ export function DetalleTutoria({ tutoria, onCerrar }: Readonly<{ tutoria: Tutori
       >
         {t && estilo && (
           <>
-            <div className="flex items-center gap-2.5 bg-utec-dark px-5 py-3 pr-12 text-white">
+            <div className="flex items-center gap-2.5 bg-chrome px-5 py-3 pr-12 text-white">
               <span className="h-5 w-1 shrink-0 rounded-sm" style={{ backgroundColor: estilo.color }} aria-hidden />
               <DialogTitle className="truncate text-base font-semibold text-white">{t.materia}</DialogTitle>
               {t.carrera && <span className="hidden truncate text-sm text-white/60 sm:inline">{t.carrera}</span>}
@@ -86,7 +86,7 @@ export function DetalleTutoria({ tutoria, onCerrar }: Readonly<{ tutoria: Tutori
                         <li key={`${i.estudiante}-${n}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_48px] items-center gap-3 text-sm">
                           <span className="min-w-0">
                             <span className="block truncate font-medium">{i.estudiante}</span>
-                            <span className="block text-[11px] text-muted-foreground">
+                            <span className="block text-2xs text-muted-foreground">
                               {i.inscripcionesPrevias === 0 ? 'primera tutoría' : `fue a ${i.asistenciasPrevias} de ${i.inscripcionesPrevias} anteriores`}
                             </span>
                           </span>

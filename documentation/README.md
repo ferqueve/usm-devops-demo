@@ -9,6 +9,9 @@ documentation/
 ├── README.md                          ← este archivo
 ├── devops.md                          ← integración continua y despliegue
 ├── saneamiento-pipeline-2026-09-02.md ← registro del saneamiento del pipeline
+├── ui/                                ← reglas vivas de la base visual
+│   └── README.md                      ← color, tipografía, densidad, el catálogo /ui
+├── marca/                             ← Manual de Identidad Visual UTEC 2.1
 ├── manuales/                          ← lectores: usuarios y TI
 │   ├── manual-de-usuario.md
 │   └── manual-de-instalacion.md

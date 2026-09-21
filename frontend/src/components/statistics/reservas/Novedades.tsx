@@ -84,9 +84,9 @@ export function Novedades({ novedades, contra, onFiltrar }: Readonly<Props>) {
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-utec-dark px-4 py-2.5 text-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-chrome px-4 py-2.5 text-white">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-utec-yellow text-utec-dark">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-utec-yellow text-marca-tinta">
             <Sparkles className="h-3.5 w-3.5" />
           </span>
           <h3 className="shrink-0 text-sm font-semibold">Novedades</h3>
@@ -95,7 +95,7 @@ export function Novedades({ novedades, contra, onFiltrar }: Readonly<Props>) {
       </div>
       {novedades.length === 0 ? (
         <div className="flex items-center justify-center gap-3 px-4 py-6 text-sm text-muted-foreground">
-          <Sparkles className="h-5 w-5 text-utec-green" />
+          <Sparkles className="h-5 w-5 text-marca-verde-texto" />
           Todo parecido: nada cambió lo suficiente como para destacarlo.
         </div>
       ) : (
@@ -123,7 +123,7 @@ export function Novedades({ novedades, contra, onFiltrar }: Readonly<Props>) {
                   <div className="flex items-baseline gap-1.5">
                     <span className="truncate text-sm font-semibold" title={titulo(n)}>{titulo(n)}</span>
                   </div>
-                  <div className="truncate text-[11px] uppercase tracking-wide text-muted-foreground">{metrica(n)}</div>
+                  <div className="truncate text-2xs uppercase tracking-wide text-muted-foreground">{metrica(n)}</div>
                   <div className="mt-0.5 flex items-center gap-1.5 text-sm tabular-nums">
                     <span className="text-muted-foreground">{valor(n, n.antes)}</span>
                     <span className="text-muted-foreground">→</span>

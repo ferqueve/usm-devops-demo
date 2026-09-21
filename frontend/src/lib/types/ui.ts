@@ -41,12 +41,3 @@ export interface SidebarMenuItem {
   isActive?: boolean;
 }
 
-export interface Statistic {
-  title?: string; // Hacer opcional para compatibilidad
-  value: string | number;
-  change?: string;
-  changeType?: 'positive' | 'negative' | 'neutral';
-  icon?: LucideIcon;
-  label?: string; // Para compatibilidad con código existente
-  trend?: string; // Para compatibilidad con código existente
-}

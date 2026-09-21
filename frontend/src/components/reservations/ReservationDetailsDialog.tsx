@@ -25,6 +25,7 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import type { Reserva } from '@/lib/types/spaces';
 import { useState } from 'react';
+import { getEstadoConfig } from './reservationUtils';
 
 interface ReservationDetailsDialogProps {
   reserva: Reserva;
@@ -33,30 +34,6 @@ interface ReservationDetailsDialogProps {
   onReservaUpdated?: () => void;
 }
 
-function getEstadoConfig(estado: Reserva['estado']) {
-  switch (estado) {
-    case 'APROBADO':
-      return {
-        label: 'Aprobada',
-        color: 'bg-green-50 text-green-700 border-green-200'
-      };
-    case 'PENDIENTE':
-      return {
-        label: 'Pendiente',
-        color: 'bg-amber-50 text-amber-700 border-amber-200'
-      };
-    case 'CANCELADO':
-      return {
-        label: 'Cancelada',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      };
-    default:
-      return {
-        label: estado,
-        color: 'bg-gray-50 text-gray-700 border-gray-200'
-      };
-  }
-}
 
 export default function ReservationDetailsDialog({
   reserva,
@@ -179,7 +156,7 @@ export default function ReservationDetailsDialog({
               <Badge variant="outline" className={estadoConfig.color}>
                 {estadoConfig.label}
               </Badge>
-              <span className="text-[11px] text-muted-foreground">#{reserva.id}</span>
+              <span className="text-2xs text-muted-foreground">#{reserva.id}</span>
             </div>
           </div>
           {reserva.esPublica && (
@@ -226,7 +203,7 @@ export default function ReservationDetailsDialog({
                   <dd className="mt-0.5 font-medium flex items-center gap-1.5">
                     <span className="truncate">{reserva.carreraNombre}</span>
                     {reserva.carreraCodigo && (
-                      <Badge variant="outline" className="text-[10px] py-0 h-4 px-1.5 flex-shrink-0">
+                      <Badge variant="outline" className="text-2xs py-0 h-4 px-1.5 flex-shrink-0">
                         {reserva.carreraCodigo}
                       </Badge>
                     )}
@@ -285,14 +262,14 @@ export default function ReservationDetailsDialog({
               <Button
                 variant="outline"
                 onClick={handleRechazarClick}
-                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="border-danger-borde text-danger-texto hover:bg-danger-suave hover:text-danger-texto"
               >
                 <XCircle className="h-4 w-4 mr-1.5" />
                 Rechazar
               </Button>
               <Button
                 onClick={handleAprobarClick}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-success hover:bg-success text-white"
               >
                 <CheckCircle2 className="h-4 w-4 mr-1.5" />
                 Aprobar
@@ -337,7 +314,7 @@ export default function ReservationDetailsDialog({
             <AlertDialogAction
               onClick={handleAprobarReserva}
               disabled={loading}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-success hover:bg-success"
             >
               {loading ? 'Aprobando...' : 'Aprobar Reserva'}
             </AlertDialogAction>
@@ -380,7 +357,7 @@ export default function ReservationDetailsDialog({
             <AlertDialogAction
               onClick={handleRechazarReserva}
               disabled={loading}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-danger hover:bg-danger"
             >
               {loading ? 'Rechazando...' : 'Rechazar Reserva'}
             </AlertDialogAction>

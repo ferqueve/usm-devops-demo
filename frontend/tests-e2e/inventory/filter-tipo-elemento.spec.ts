@@ -15,9 +15,9 @@ test.describe('Inventario: filtro por tipo de elemento', () => {
 
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10_000 });
 
-    // El segundo combobox de filtros es "Elemento" (el primero es Espacio).
-    await page.getByRole('combobox').nth(1).click();
-    await page.getByRole('option', { name: /^Notebook E2E$/i }).click();
+    await page.getByRole('button', { name: /^Filtrar: todos los tipos$/i }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^Notebook E2E$/i }).click();
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(700);
 
     await expect(page.locator('tbody tr').filter({ hasText: 'Notebook E2E' }).first())

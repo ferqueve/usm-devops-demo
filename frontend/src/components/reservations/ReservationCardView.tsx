@@ -89,7 +89,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm ${esPasada ? 'bg-gray-50/50 border-gray-200' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+      className={`group relative overflow-hidden rounded-2xl ${estadoConfig.borderColor} border-r border-t border-b transition-all hover:shadow-sm ${esPasada ? 'bg-muted/50 border-border' : 'border-border hover:border-border bg-card'}`}
     >
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${estadoConfig.stripeColor}`} />
       <div className="p-3">
@@ -102,8 +102,8 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 className={`w-12 h-12 rounded-xl object-cover ${esPasada ? 'opacity-60 grayscale' : ''}`}
               />
             ) : (
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${esPasada ? 'bg-gray-200 opacity-60' : 'bg-gray-100'}`}>
-                <MapPin className={`h-6 w-6 ${esPasada ? 'text-gray-400' : 'text-gray-500'}`} />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${esPasada ? 'bg-secondary opacity-60' : 'bg-muted'}`}>
+                <MapPin className={`h-6 w-6 ${esPasada ? 'text-muted-foreground' : 'text-muted-foreground'}`} />
               </div>
             )}
           </div>
@@ -155,7 +155,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onViewDetails(reserva)}
-                    className="p-1.5 rounded transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <Eye className="h-4 w-4" />
                   </button>
@@ -171,7 +171,7 @@ function ReservaCardItem({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onCancelReserva(reserva)}
-                      className="p-1.5 rounded transition-colors text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="p-1.5 rounded transition-colors text-danger-texto hover:text-danger-texto hover:bg-danger-suave"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -229,7 +229,7 @@ export default function ReservationCardView({
   return (
     <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
       <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
-        <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        <CardHeader className="shrink-0 pb-3">
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
               <ReservationFilters

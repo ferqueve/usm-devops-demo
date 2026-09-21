@@ -1,4 +1,13 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { StatStrip, type ColorUtec } from '@/components/common/StatStrip';
+
+/** Los nombres de color de esta pantalla, a los de la paleta. */
+const COLOR_KPI: Record<string, ColorUtec> = {
+  green: 'verde', cyan: 'cian', blue: 'azul',
+  // Decía `cyan`: el tile «Próximos» pedía naranja y salía cian.
+  orange: 'naranja', yellow: 'amarillo', dark: 'oscuro',
+};
 import { useNavigate } from 'react-router-dom';
 import {
   Area, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -21,8 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEventos } from '@/hooks/useEventos';
 import { eventosApi } from '@/lib/api/eventos';
 import type { Evento } from '@/lib/types/eventos';
-import { useCountUp } from '@/components/sostenibilidad/useCountUp';
-import { Gauge, Podio, Tendencia, type PodioEntry } from '@/components/common/dataviz';
+import { Gauge, Podio, type PodioEntry } from '@/components/common/dataviz';
 import { EventoFormDialog } from './EventoFormDialog';
 import { DeleteEventoDialog } from './DeleteEventoDialog';
 import { InscriptosEventoDialog } from './InscriptosEventoDialog';
@@ -34,25 +42,19 @@ import { EventosDescubrir } from './EventosDescubrir';
 import { EstadoBadge, parseTags } from './EventoCardDescubrir';
 import { EventoPatternBg } from '@/components/ui/backgrounds/eventPatterns';
 import { relativoInicio } from '@/lib/agenda/tiempo';
+import { MARCA } from '@/lib/design/paleta';
+import { fechaHora } from '@/lib/utils/fechas';
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 type VistaEventos = 'descubrir' | 'calendario' | 'todos' | 'metricas';
 
-function formatFecha(iso?: string): string {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-UY', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
-}
 
 // --- Colores de marca por tipo de evento (donut + podio en Métricas) ---
 const TIPO_COLOR: Record<string, string> = {
-  EVENTO: '#00c7ff', // utec-cyan
-  CURSO: '#184897', // utec-blue
+  EVENTO: MARCA.cian, // utec-cyan
+  CURSO: MARCA.azul, // utec-blue
 };
-const TIPO_FALLBACK = ['#9333ea', '#00c7ff', '#86bb4c', '#F6CA21', '#DF2B31'];
+const TIPO_FALLBACK = ['#9333ea', MARCA.cian, MARCA.verde, MARCA.amarillo, MARCA.rojo];
 
 function fmtNum(n: number, dec = 0): string {
   return n.toLocaleString('es-UY', { minimumFractionDigits: dec, maximumFractionDigits: dec });
@@ -71,45 +73,7 @@ function monthLabel(key: string): string {
 }
 
 // --- Panel con header (mismo patrón visual que Sostenibilidad) ---
-function Panel({ title, icon, accent, action, children, className }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode; className?: string }>) {
-  return (
-    <div className={`rounded-2xl border bg-card overflow-hidden ${className ?? ''}`}>
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
 
-// --- KPI tile con count-up + tendencia opcional ---
-const KPI_CLS: Record<string, string> = {
-  green: 'bg-utec-green text-white', cyan: 'bg-utec-cyan text-utec-dark',
-  blue: 'bg-utec-blue text-white', orange: 'bg-utec-cyan text-utec-dark',
-  yellow: 'bg-utec-yellow text-utec-dark', dark: 'bg-utec-dark text-white',
-};
-function KpiTile({ icon: Icon, label, value, hint, variant, delta }: Readonly<{ icon: LucideIcon; label: string; value: number; hint?: string; variant: string; delta?: number }>) {
-  const v = useCountUp(value);
-  return (
-    <div className={`relative overflow-hidden rounded-xl p-4 min-w-0 ${KPI_CLS[variant]}`}>
-      <Icon className="absolute -right-3 -bottom-3 h-16 w-16 opacity-15" />
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
-          <div className="text-2xl sm:text-3xl font-bold tabular-nums leading-none">{fmtNum(v)}</div>
-          {delta != null && (
-            <span className="rounded-full bg-black/15 px-1.5 py-0.5 dark:bg-white/15">
-              <Tendencia delta={delta} />
-            </span>
-          )}
-        </div>
-        <div className="text-xs font-medium opacity-80 mt-1.5 flex items-center gap-1"><Icon className="h-3.5 w-3.5" />{label}</div>
-        {hint && <div className="text-[11px] opacity-70 mt-0.5 truncate">{hint}</div>}
-      </div>
-    </div>
-  );
-}
 
 interface ToggleDef { v: VistaEventos; icon: LucideIcon; label: string; adminOnly?: boolean }
 /*
@@ -326,14 +290,19 @@ export default function EventosManagement() {
     if (vista === 'metricas' && isAdmin) {
       return (
         <div className="space-y-6">
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            {kpis.map((k) => (
-              <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} hint={k.hint} variant={k.variant} delta={k.delta} />
-            ))}
-          </div>
+          <StatStrip
+            items={kpis.map((k) => ({
+              label: k.label,
+              value: fmtNum(k.value),
+              hint: k.hint,
+              icon: k.icon,
+              color: COLOR_KPI[k.variant],
+              delta: k.delta,
+            }))}
+          />
 
           <div className="grid gap-4 lg:grid-cols-4">
-            <Panel title="Tipos de evento" icon={<Layers className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10">
+            <Panel title="Tipos de evento" icon={<Layers className="size-4" />} accentColor={MARCA.azul}>
               {tipoData.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Sin datos.</p>
               ) : (
@@ -359,7 +328,7 @@ export default function EventosManagement() {
               )}
             </Panel>
 
-            <Panel title="Ocupación global" icon={<Activity className="h-4 w-4 text-utec-cyan" />} accent="bg-utec-cyan/10">
+            <Panel title="Ocupación global" icon={<Activity className="size-4" />} accentColor={MARCA.cian}>
               <Gauge value={ocupacion.pct} suffix="%" />
               <p className="text-xs text-muted-foreground text-center mt-2">
                 {ocupacion.cap > 0
@@ -368,19 +337,19 @@ export default function EventosManagement() {
               </p>
             </Panel>
 
-            <Panel title="Actividad por mes" icon={<BarChart3 className="h-4 w-4 text-utec-green" />} accent="bg-utec-green/10" className="lg:col-span-2">
+            <Panel title="Actividad por mes" icon={<BarChart3 className="size-4" />} accentColor={MARCA.verde} className="lg:col-span-2">
               {serieData.length === 0 ? (
                 <p className="py-10 text-center text-sm text-muted-foreground">Aún no hay datos mensuales.</p>
               ) : (
                 <ResponsiveContainer width="100%" height={168}>
                   <ComposedChart data={serieData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <defs><linearGradient id="gEvInscriptos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00c7ff" stopOpacity={0.35} /><stop offset="100%" stopColor="#00c7ff" stopOpacity={0} /></linearGradient></defs>
+                    <defs><linearGradient id="gEvInscriptos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={MARCA.cian} stopOpacity={0.35} /><stop offset="100%" stopColor={MARCA.cian} stopOpacity={0} /></linearGradient></defs>
                     <CartesianGrid strokeDasharray="2 4" stroke="#e5e7eb" vertical={false} />
                     <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
                     <Tooltip />
-                    <Area type="monotone" dataKey="inscriptos" name="Inscriptos" stroke="#00c7ff" strokeWidth={2} fill="url(#gEvInscriptos)" />
-                    <Line type="monotone" dataKey="eventos" name="Eventos" stroke="#184897" strokeWidth={2} dot={false} />
+                    <Area type="monotone" dataKey="inscriptos" name="Inscriptos" stroke={MARCA.cian} strokeWidth={2} fill="url(#gEvInscriptos)" />
+                    <Line type="monotone" dataKey="eventos" name="Eventos" stroke={MARCA.azul} strokeWidth={2} dot={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               )}
@@ -388,7 +357,7 @@ export default function EventosManagement() {
           </div>
 
           {topEventos.length > 0 && (
-            <Panel title="Eventos más populares" icon={<Trophy className="h-4 w-4 text-utec-yellow" />} accent="bg-utec-yellow/10">
+            <Panel title="Eventos más populares" icon={<Trophy className="size-4" />} accentColor={MARCA.amarillo}>
               <div className="space-y-3">
                 <Podio
                   top={topEventos.slice(0, 3).map((e): PodioEntry => ({
@@ -429,17 +398,17 @@ export default function EventosManagement() {
             const conCupo = evento.cupo != null && evento.cupo > 0;
             return (
               <button key={evento.id} type="button" onClick={() => navigate(`/eventos/${evento.id}`)} className="group text-left rounded-2xl border overflow-hidden bg-card transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <div className="relative h-32 overflow-hidden bg-utec-dark p-4 flex flex-col justify-between text-white">
+                <div className="relative h-32 overflow-hidden bg-chrome p-4 flex flex-col justify-between text-white">
                   <EventoPatternBg patron={evento.patron} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
                   <div className="relative flex items-center justify-between">
-                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold">{evento.tipo}</span>
+                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-2xs font-semibold">{evento.tipo}</span>
                     <EstadoBadge estado={evento.estado} />
                   </div>
                   <h3 className="relative text-lg font-bold leading-tight line-clamp-2">{evento.titulo}</h3>
                 </div>
                 <div className="p-4 space-y-2 text-sm">
-                  <p className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4 text-utec-cyan" />{formatFecha(evento.inicio)} · <span className="font-medium text-foreground">{relativoInicio(evento.inicio, evento.fin)}</span></p>
+                  <p className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4 text-marca-cian-texto" />{fechaHora(evento.inicio, { vacio: '' })} · <span className="font-medium text-foreground">{relativoInicio(evento.inicio, evento.fin)}</span></p>
                   {evento.espacioNombre && <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />{evento.espacioNombre}</p>}
                   <p className="flex items-center gap-2 text-muted-foreground"><Users className="h-4 w-4" />{evento.inscriptosCount}{conCupo ? `/${evento.cupo}` : ''} inscriptos</p>
                 </div>
@@ -459,7 +428,7 @@ export default function EventosManagement() {
         title="Eventos"
         count={eventos.length}
         description="Descubrí y participá de la oferta abierta."
-        accentColor="#DE7A27"
+        accentColor={MARCA.naranja}
         actions={
           <PermissionGuard requiredPermission="evento:crear">
             <Button onClick={() => setCreateDialog(true)} className={HEADER_PRIMARY}>
@@ -515,7 +484,7 @@ export default function EventosManagement() {
           {/* Toggle de vista */}
           <div className="flex items-center rounded-md border p-0.5 h-9">
             {VISTAS.filter((t) => !t.adminOnly || isAdmin).map(({ v, icon: Icon, label }) => (
-              <button key={v} type="button" onClick={() => setVista(v)} title={label} className={`flex h-8 w-8 items-center justify-center rounded ${vista === v ? 'bg-utec-cyan text-utec-dark' : 'text-muted-foreground hover:text-foreground'}`}>
+              <button key={v} type="button" onClick={() => setVista(v)} title={label} className={`flex h-8 w-8 items-center justify-center rounded ${vista === v ? 'bg-utec-cyan text-marca-tinta' : 'text-muted-foreground hover:text-foreground'}`}>
                 <Icon className="h-4 w-4" />
               </button>
             ))}

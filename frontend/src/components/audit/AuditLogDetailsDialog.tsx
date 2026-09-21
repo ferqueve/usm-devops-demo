@@ -23,22 +23,22 @@ function getAccionConfig(accion: AuditLog['accion']) {
     case 'CREATE':
       return {
         label: 'Crear',
-        color: 'bg-green-50 text-green-700 border-green-200'
+        color: 'bg-success-suave text-success-texto border-success-borde'
       };
     case 'UPDATE':
       return {
         label: 'Actualizar',
-        color: 'bg-blue-50 text-blue-700 border-blue-200'
+        color: 'bg-info-suave text-info-texto border-info-borde'
       };
     case 'DELETE':
       return {
         label: 'Eliminar',
-        color: 'bg-red-50 text-red-700 border-red-200'
+        color: 'bg-danger-suave text-danger-texto border-danger-borde'
       };
     default:
       return {
         label: accion,
-        color: 'bg-gray-50 text-gray-700 border-gray-200'
+        color: 'bg-muted text-foreground/80 border-border'
       };
   }
 }
@@ -118,7 +118,7 @@ export default function AuditLogDetailsDialog({
 
             {/* Información de Request HTTP */}
             {(log.ipAddress || log.httpMethod || log.endpoint || log.userAgent) && (
-              <div className="border rounded-lg p-4 bg-slate-50">
+              <div className="border rounded-lg p-4 bg-muted">
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <Globe className="h-4 w-4" />
                   Información de Request HTTP
@@ -169,7 +169,7 @@ export default function AuditLogDetailsDialog({
                   <Eye className="h-4 w-4" />
                   Datos Previos
                 </h3>
-                <div className="bg-gray-50 border rounded-lg p-4">
+                <div className="bg-muted border rounded-lg p-4">
                   <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                     {formatJSON(log.datosPrevios)}
                   </pre>
@@ -184,7 +184,7 @@ export default function AuditLogDetailsDialog({
                   <FileText className="h-4 w-4" />
                   Datos Nuevos
                 </h3>
-                <div className="bg-gray-50 border rounded-lg p-4">
+                <div className="bg-muted border rounded-lg p-4">
                   <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                     {formatJSON(log.datosNuevos)}
                   </pre>
@@ -198,16 +198,16 @@ export default function AuditLogDetailsDialog({
                 <h3 className="text-sm font-semibold text-muted-foreground">Comparación</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-medium mb-2 text-red-600">Datos Previos</p>
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-xs font-medium mb-2 text-danger-texto">Datos Previos</p>
+                    <div className="bg-danger-suave border border-danger-borde rounded-lg p-3">
                       <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                         {formatJSON(log.datosPrevios)}
                       </pre>
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-medium mb-2 text-green-600">Datos Nuevos</p>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs font-medium mb-2 text-success-texto">Datos Nuevos</p>
+                    <div className="bg-success-suave border border-success-borde rounded-lg p-3">
                       <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                         {formatJSON(log.datosNuevos)}
                       </pre>

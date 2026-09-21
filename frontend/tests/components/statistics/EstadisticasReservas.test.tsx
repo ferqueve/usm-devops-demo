@@ -101,7 +101,7 @@ describe('EstadisticasReservas', () => {
   it('cambia contra qué compara y lo dice con fechas', async () => {
     montar();
     await screen.findByRole('heading', { name: 'Resumen' });
-    expect(screen.getAllByTitle(/contra el período anterior \(17 jul al 15 ago\)/)[0]).toHaveTextContent('+25%');
+    expect(screen.getAllByTitle(/contra el período anterior \(17 jul al 15 ago\)/)[0]).toHaveTextContent('↑ 25%');
     api.resumenReservas.mockResolvedValue({ data: { ...resumen, comparacion: 'anio', desdeAnterior: '2025-08-16', hastaAnterior: '2025-09-14' } });
     fireEvent.click(screen.getByRole('radio', { name: 'Año pasado' }));
     await waitFor(() => expect(api.resumenReservas).toHaveBeenLastCalledWith({ ...RANGO, ...SIN_FILTROS, comparar: 'anio' }));

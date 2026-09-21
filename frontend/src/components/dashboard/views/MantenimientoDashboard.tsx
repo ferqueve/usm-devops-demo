@@ -1,9 +1,9 @@
 import { Boxes, ClipboardList, Leaf, MapPin, Wrench } from 'lucide-react';
 import type { InventoryStats } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
-import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
-import { EmptyState } from './_components/EmptyState';
+import { StatStrip } from '@/components/common/StatStrip';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { EspacioFila, ItemFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, UTEC } from './_components/Graficos';
 import { Hero } from './_components/Hero';
@@ -63,7 +63,7 @@ export function MantenimientoDashboard({
     : Math.max(0, (esp?.totalEspacios ?? 0) - (esp?.disponibles ?? 0));
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       {masUrgente ? (
         <Hero
           etiqueta="LO MÁS URGENTE"
@@ -98,13 +98,13 @@ export function MantenimientoDashboard({
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
-          <Panel title="El parque" count={`${inv?.totalItems ?? 0} items`} accentColor="#184897" action={{ label: 'inventario', to: '/inventory' }}>
+          <Panel title="El parque" count={`${inv?.totalItems ?? 0} items`} accentColor={UTEC.azul} action={{ label: 'inventario', to: '/inventory' }}>
             <Anillo porciones={parque} leyendaCentro="items" alto={118} llenar />
           </Panel>
 
-          <Panel title="Los espacios" count={`${esp?.totalEspacios ?? 0} en total`} accentColor="#00c7ff" action={{ label: 'espacios', to: '/rooms' }} scroll>
+          <Panel title="Los espacios" count={`${esp?.totalEspacios ?? 0} en total`} accentColor={UTEC.cian} action={{ label: 'espacios', to: '/rooms' }} scroll>
             <BarrasHorizontales datos={barrasEspacios} multicolor />
           </Panel>
         </div>
@@ -121,7 +121,7 @@ export function MantenimientoDashboard({
               {items.map((i) => <ItemFila key={i.id} item={i} />)}
             </div>
           ) : (
-            <EmptyState title="Ningún item pide atención." />
+            <EmptyState variant="linea" title="Ningún item pide atención." />
           )}
         </Panel>
 
@@ -129,7 +129,7 @@ export function MantenimientoDashboard({
           <Panel
             title="Espacios fuera de servicio"
             count={espaciosCaidos.length || undefined}
-            accentColor="#e2001a"
+            accentColor={UTEC.rojo}
             action={{ label: 'espacios', to: '/rooms' }}
             scroll
           >
@@ -138,15 +138,15 @@ export function MantenimientoDashboard({
                 {espaciosCaidos.map((e) => <EspacioFila key={e.id} espacio={e} />)}
               </div>
             ) : (
-              <EmptyState title="Todos operativos." />
+              <EmptyState variant="linea" title="Todos operativos." />
             )}
           </Panel>
 
-          <Panel title="Impacto ambiental" accentColor="#86bb4c" action={{ label: 'ver más', to: '/sostenibilidad' }}>
+          <Panel title="Impacto ambiental" accentColor={UTEC.verde} action={{ label: 'ver más', to: '/sostenibilidad' }}>
             {verde ? (
               <div className="flex h-full flex-col justify-center gap-2 py-1">
                 <div className="flex items-baseline gap-2">
-                  <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
+                  <Leaf className="h-4 w-4 shrink-0 text-marca-verde-texto" />
                   <span className="text-2xl font-semibold tabular-nums">
                     {verde.hojasEvitadas.toLocaleString('es-UY')}
                   </span>
@@ -164,7 +164,7 @@ export function MantenimientoDashboard({
                 </div>
               </div>
             ) : (
-              <EmptyState title="Sin datos." />
+              <EmptyState variant="linea" title="Sin datos." />
             )}
           </Panel>
         </div>

@@ -1,3 +1,4 @@
+import { sumarDias } from '@/lib/utils/fechas';
 /**
  * Formatos de las tres vistas de Predicciones. Las fechas "YYYY-MM-DD" vienen
  * ya agrupadas en la hora de Montevideo, así que se muestran en UTC para que
@@ -7,20 +8,7 @@
 
 const ZONA_CAMPUS = 'America/Montevideo';
 
-export function fechaCorta(fecha: string): string {
-  return new Date(`${fecha.slice(0, 10)}T00:00:00Z`)
-    .toLocaleDateString('es-UY', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-    .replace('.', '');
-}
 
-export function fechaLarga(fecha: string): string {
-  return new Date(`${fecha.slice(0, 10)}T00:00:00Z`).toLocaleDateString('es-UY', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'UTC',
-  });
-}
 
 /** "mar 16 sep". */
 export function fechaConDia(fecha: string): string {
@@ -81,11 +69,6 @@ export function diaSemana(fecha: string): number {
   return (new Date(`${fecha.slice(0, 10)}T00:00:00Z`).getUTCDay() + 6) % 7;
 }
 
-export function sumarDias(fecha: string, dias: number): string {
-  const d = new Date(`${fecha.slice(0, 10)}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
-}
 
 /** Lunes de la semana de una fecha. */
 export function lunes(fecha: string): string {
@@ -94,3 +77,9 @@ export function lunes(fecha: string): string {
 
 /** Clase para los gráficos de recharts: index.css achica todos los svg a 14px (es para íconos). */
 export const SVG_LLENO = '[&_svg.recharts-surface]:!h-full [&_svg.recharts-surface]:!w-full';
+
+/* El formato de fecha vive en un solo lugar. Se reexporta para no tocar a
+   quien ya las importaba de este módulo. */
+export { fechaCorta, fechaLarga } from '@/lib/utils/fechas';
+
+export { sumarDias } from '@/lib/utils/fechas';

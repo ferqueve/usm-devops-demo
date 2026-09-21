@@ -8,6 +8,7 @@ import { SystemHeader } from './SystemHeader';
 import { HEADER_ACTION_ICON } from '@/components/layouts/PageHeader';
 import { buildAndDownloadCsv, csvEscape, downloadBlob, todayIsoDate } from '@/lib/utils/csv-helpers';
 import { lazy, Suspense, useEffect, useMemo } from 'react';
+import { MARCA } from '@/lib/design/paleta';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab').then(m => ({ default: m.OverviewTab })));
 const PerformanceTab = lazy(() => import('./tabs/PerformanceTab').then(m => ({ default: m.PerformanceTab })));
@@ -22,22 +23,22 @@ const ENCABEZADO: Record<VistaSistema, { titulo: string; bajada: string; acento:
   resumen: {
     titulo: 'Sistema',
     bajada: 'Estado del servidor: salud, memoria, CPU y quién está conectado.',
-    acento: '#00c7ff',
+    acento: MARCA.cian,
   },
   rendimiento: {
     titulo: 'Rendimiento',
     bajada: 'Memoria, CPU, hilos y recolección de basura a lo largo del tiempo.',
-    acento: '#86bb4c',
+    acento: MARCA.verde,
   },
   errores: {
     titulo: 'Errores',
     bajada: 'Las últimas peticiones HTTP que atendió el servidor, con su código y su demora.',
-    acento: '#DF2B31',
+    acento: MARCA.rojo,
   },
   datos: {
     titulo: 'Base de datos y logs',
     bajada: 'Migraciones aplicadas, niveles de log y el archivo de log del servidor.',
-    acento: '#F6CA21',
+    acento: MARCA.amarillo,
   },
 };
 

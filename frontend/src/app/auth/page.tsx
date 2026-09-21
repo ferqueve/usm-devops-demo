@@ -168,14 +168,14 @@ export default function AuthPage() {
         <div 
           className={`rounded-md p-4 mb-4 ${
             isOAuthError 
-              ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
+              ? 'bg-info-suave dark:bg-info/20 border border-info-borde dark:border-info' 
               : 'bg-destructive/10 border border-destructive/20'
           }`}
           style={{ display: 'block' }} // Forzar display para asegurar que se muestre
         >
           <p className={`text-sm mb-3 ${
             isOAuthError 
-              ? 'text-blue-900 dark:text-blue-100' 
+              ? 'text-info-texto dark:text-info-suave' 
               : 'text-destructive'
           }`}>
             {displayError || 'Error desconocido'}

@@ -3,28 +3,19 @@ import { Button } from '@/components/ui/Button';
 import { Loader2, MessageSquare, Send, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { tutoriasApi } from '@/lib/api/tutorias';
+import { Panel } from '@/components/common/Panel';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
+import { MARCA } from '@/lib/design/paleta';
 import type { TutoriaFeedbackResumen } from '@/lib/types/tutorias';
+import { soloFecha } from '@/lib/utils/fechas';
+import { Estrellas } from '@/components/common/Estrellas';
 
-function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | 'lg' }>) {
-  const cls = size === 'lg' ? 'h-5 w-5' : 'h-3.5 w-3.5';
-  return (
-    <span className="inline-flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} className={`${cls} ${n <= Math.round(value) ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/40'}`} />
-      ))}
-    </span>
-  );
-}
 
-function fmtFecha(iso?: string): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number }>) {
   const [resumen, setResumen] = useState<TutoriaFeedbackResumen | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comentario, setComentario] = useState('');
@@ -32,9 +23,10 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
 
   const cargar = useCallback(() => {
     setLoading(true);
+    setError(null);
     tutoriasApi.feedback(tutoriaId)
       .then((r) => { if (r.data) { setResumen(r.data); if (r.data.miRating) setRating(r.data.miRating); } })
-      .catch(() => { /* noop */ })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error de red.'))
       .finally(() => setLoading(false));
   }, [tutoriaId]);
 
@@ -51,30 +43,35 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
     } finally { setEnviando(false); }
   };
 
-  if (loading) {
-    return <div className="rounded-2xl border bg-card p-4 flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
-  }
-  if (!resumen) return null;
-
-  const { promedio, total, distribucion, miRating, puedeValorar, items } = resumen;
+  // Con `resumen` en null el cuerpo no se dibuja, pero JSX evalúa igual lo
+  // que tiene adentro: los valores por defecto evitan que reviente.
+  const {
+    promedio = 0, total = 0, distribucion = [], miRating, puedeValorar = false, items = [],
+  } = resumen ?? ({} as Partial<TutoriaFeedbackResumen>);
   const maxDist = Math.max(1, ...distribucion);
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Star className="h-4 w-4 text-utec-yellow" /></span>
-        <h3 className="text-sm font-semibold">Valoración del docente</h3>
-        {total > 0 && <span className="ml-auto text-xs text-muted-foreground">{total} {total === 1 ? 'valoración' : 'valoraciones'}</span>}
-      </div>
-
-      <div className="p-4 space-y-4">
+    <Panel
+      title="Valoración del docente"
+      icon={<Star />}
+      accentColor={MARCA.amarillo}
+      count={total > 0 ? `${total} ${total === 1 ? 'valoración' : 'valoraciones'}` : undefined}
+    >
+      <EstadoCarga
+        cargando={loading}
+        error={error}
+        alReintentar={cargar}
+        vacio={!resumen}
+        textoVacio="No hay datos de valoración de esta tutoría."
+      >
+      <div className="space-y-4">
         {total === 0 ? (
           <p className="text-sm text-muted-foreground py-1">Todavía no hay valoraciones de esta tutoría.</p>
         ) : (
           <div className="flex items-center gap-4">
             <div className="text-center shrink-0">
               <div className="text-3xl font-bold tabular-nums leading-none">{promedio.toFixed(1)}</div>
-              <div className="mt-1"><Stars value={promedio} /></div>
+              <div className="mt-1"><Estrellas valor={promedio} conNumero={false} /></div>
             </div>
             <div className="flex-1 space-y-1">
               {[5, 4, 3, 2, 1].map((n) => {
@@ -82,7 +79,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
                 return (
                   <div key={n} className="flex items-center gap-2 text-xs">
                     <span className="w-3 text-right text-muted-foreground">{n}</span>
-                    <Star className="h-3 w-3 fill-utec-yellow text-utec-yellow" />
+                    <Star className="h-3 w-3 fill-utec-yellow text-marca-amarillo-texto" />
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden"><div className="h-full bg-utec-yellow rounded-full" style={{ width: `${(count / maxDist) * 100}%` }} /></div>
                     <span className="w-5 text-muted-foreground tabular-nums">{count}</span>
                   </div>
@@ -98,7 +95,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
             <div className="flex items-center gap-1" onMouseLeave={() => setHover(0)}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <button key={n} type="button" onClick={() => setRating(n)} onMouseEnter={() => setHover(n)} className="p-0.5" aria-label={`${n} estrellas`}>
-                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/40'}`} />
+                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/40'}`} />
                 </button>
               ))}
             </div>
@@ -117,7 +114,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
               <li key={i.id} className="rounded-lg border p-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 min-w-0"><MessageSquare className="h-3.5 w-3.5 text-muted-foreground shrink-0" /><span className="truncate text-sm font-medium">{i.estudianteNombre ?? 'Anónimo'}</span></span>
-                  <span className="flex items-center gap-2 shrink-0"><Stars value={i.rating} /><span className="text-[11px] text-muted-foreground">{fmtFecha(i.createdAt)}</span></span>
+                  <span className="flex items-center gap-2 shrink-0"><Estrellas valor={i.rating} conNumero={false} /><span className="text-2xs text-muted-foreground">{soloFecha(i.createdAt, '')}</span></span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{i.comentario}</p>
               </li>
@@ -125,6 +122,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
           </ul>
         )}
       </div>
-    </div>
+      </EstadoCarga>
+    </Panel>
   );
 }

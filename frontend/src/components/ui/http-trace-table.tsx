@@ -66,8 +66,8 @@ function ListaHeaders({ titulo, headers }: Readonly<{ titulo: string; headers?: 
 
   return (
     <div className="mt-2">
-      <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</div>
-      <dl className="grid gap-x-3 gap-y-0.5 font-mono text-[11px] sm:grid-cols-[auto_1fr]">
+      <div className="mb-0.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</div>
+      <dl className="grid gap-x-3 gap-y-0.5 font-mono text-2xs sm:grid-cols-[auto_1fr]">
         {entradas.map(([nombre, valores]) => (
           <Fragment key={nombre}>
             <dt className="text-muted-foreground">{nombre}</dt>
@@ -166,32 +166,32 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
   // Badge de método
   const getMethodBadge = (method: string) => {
     const colors: Record<string, string> = {
-      GET: 'bg-blue-100 text-blue-800 border-blue-200',
-      POST: 'bg-green-100 text-green-800 border-green-200',
-      PUT: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      DELETE: 'bg-red-100 text-red-800 border-red-200',
-      PATCH: 'bg-purple-100 text-purple-800 border-purple-200',
+      GET: 'bg-info-suave text-info-texto border-info-borde',
+      POST: 'bg-success-suave text-success-texto border-success-borde',
+      PUT: 'bg-warning-suave text-warning-texto border-warning-borde',
+      DELETE: 'bg-danger-suave text-danger-texto border-danger-borde',
+      PATCH: 'bg-acento-suave text-acento-texto border-acento-borde',
     };
-    return colors[method] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[method] || 'bg-muted text-foreground border-border';
   };
 
   // Badge de status
   const getStatusBadge = (status: number) => {
-    if (status >= 200 && status < 300) return 'bg-green-100 text-green-800 border-green-200';
-    if (status >= 300 && status < 400) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    if (status >= 400) return 'bg-red-100 text-red-800 border-red-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (status >= 200 && status < 300) return 'bg-success-suave text-success-texto border-success-borde';
+    if (status >= 300 && status < 400) return 'bg-warning-suave text-warning-texto border-warning-borde';
+    if (status >= 400) return 'bg-danger-suave text-danger-texto border-danger-borde';
+    return 'bg-muted text-foreground border-border';
   };
 
   if (!traces.length) {
     return (
       <div className="border rounded-lg overflow-hidden shadow-card bg-card">
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
-          <Network className="h-4 w-4 text-utec-blue shrink-0" />
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
+          <Network className="h-4 w-4 text-marca-azul-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Actividad HTTP Reciente</h3>
         </div>
         <p className="text-muted-foreground text-center py-8 bg-card">
-          No hay datos de HTTP exchanges disponibles. Asegúrate de que el endpoint <code className="text-xs bg-gray-100 px-2 py-1 rounded">/actuator/httpexchanges</code> esté habilitado.
+          No hay datos de HTTP exchanges disponibles. Asegúrate de que el endpoint <code className="text-xs bg-muted px-2 py-1 rounded">/actuator/httpexchanges</code> esté habilitado.
         </p>
       </div>
     );
@@ -199,10 +199,10 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
-      <div className="bg-utec-dark text-white">
+      <div className="bg-chrome text-white">
         {/* Fila 1: título + Ocultar Actuator + Mostrar N */}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <Network className="h-4 w-4 text-utec-blue shrink-0" />
+          <Network className="h-4 w-4 text-marca-azul-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Actividad HTTP Reciente</h3>
           <div className="flex items-center gap-1.5">
             <Switch
@@ -210,12 +210,12 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
               checked={hideActuator}
               onCheckedChange={setHideActuator}
             />
-            <Label htmlFor="hide-actuator" className="text-[11px] cursor-pointer whitespace-nowrap text-white/80">
+            <Label htmlFor="hide-actuator" className="text-2xs cursor-pointer whitespace-nowrap text-white/80">
               Ocultar Actuator
             </Label>
           </div>
           <Select value={limit.toString()} onValueChange={(val) => setLimit(Number(val))}>
-            <SelectTrigger className="w-[110px] h-7 text-[11px] bg-white/10 border-white/20 text-white hover:bg-white/15">
+            <SelectTrigger className="w-[110px] h-7 text-2xs bg-white/10 border-white/20 text-white hover:bg-white/15">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -272,13 +272,13 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
       {/* Tabla */}
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-utec-dark">
+          <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-white/10">
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Timestamp</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Método</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">URI</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Status</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Tiempo</TableHead>
+              <TableHead>Timestamp</TableHead>
+              <TableHead>Método</TableHead>
+              <TableHead>URI</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Tiempo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -311,7 +311,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
                           {trace.response.status}
                         </span>
                       </TableCell>
-                      <TableCell className={`text-xs tabular-nums ${esLenta ? 'font-semibold text-utec-orange' : 'text-muted-foreground'}`}>
+                      <TableCell className={`text-xs tabular-nums ${esLenta ? 'font-semibold text-marca-naranja-texto' : 'text-muted-foreground'}`}>
                         {formatDuracion(trace.timeTaken ?? 0)}
                       </TableCell>
                     </TableRow>
@@ -339,7 +339,7 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
                               </p>
                               <ListaHeaders titulo="Headers de la respuesta" headers={trace.responseHeaders} />
                               {!trace.requestHeaders && !trace.responseHeaders && (
-                                <p className="mt-2 text-[11px] text-muted-foreground">
+                                <p className="mt-2 text-2xs text-muted-foreground">
                                   El backend no está publicando los headers. Se habilitan con
                                   <code className="mx-1 rounded bg-muted px-1 py-0.5">management.httpexchanges.recording.include</code>
                                 </p>
@@ -367,10 +367,10 @@ export const HttpTraceTable = memo(function HttpTraceTable({ data }: HttpTraceTa
         <span>
           Mostrando {filteredTraces.length} de {totalFiltered} filtradas · {resumen.total} en la ventana
         </span>
-        <span className={resumen.errores > 0 ? 'font-semibold text-utec-red' : ''}>
+        <span className={resumen.errores > 0 ? 'font-semibold text-marca-rojo-texto' : ''}>
           {resumen.errores} con error
         </span>
-        <span className={resumen.lentas > 0 ? 'font-semibold text-utec-orange' : ''}>
+        <span className={resumen.lentas > 0 ? 'font-semibold text-marca-naranja-texto' : ''}>
           {resumen.lentas} lentas
         </span>
         <span>demora media {formatDuracion(resumen.demoraMedia)}</span>

@@ -49,8 +49,8 @@ export function FiltrosReservas({ opciones, filtros, activos, onCambiar, onLimpi
         onChange={(espacioId) => onCambiar({ espacioId })}
         Icon={DoorOpen}
         tooltipNone={filtros.edificioId == null ? 'Todos los espacios' : 'Todos los espacios del edificio'}
-        activeBgClass="bg-emerald-100 text-emerald-900 shadow-md ring-1 ring-emerald-300"
-        activeTextColorClass="text-emerald-700"
+        activeBgClass="bg-success-suave text-success-texto shadow-md ring-1 ring-success-borde"
+        activeTextColorClass="text-success-texto"
       />
       <PopoverFilterSection<number>
         selectedId={filtros.tipoEspacioId ?? null}
@@ -58,8 +58,8 @@ export function FiltrosReservas({ opciones, filtros, activos, onCambiar, onLimpi
         onChange={(tipoEspacioId) => cambiarAcotando({ tipoEspacioId })}
         Icon={LayoutGrid}
         tooltipNone="Todos los tipos de espacio"
-        activeBgClass="bg-cyan-100 text-cyan-900 shadow-md ring-1 ring-cyan-300"
-        activeTextColorClass="text-cyan-700"
+        activeBgClass="bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde"
+        activeTextColorClass="text-info-texto"
       />
       {!sinRol && (
       <PopoverFilterSection<string>
@@ -68,8 +68,8 @@ export function FiltrosReservas({ opciones, filtros, activos, onCambiar, onLimpi
         onChange={(rol) => onCambiar({ rol })}
         Icon={UserRound}
         tooltipNone="Todos los roles"
-        activeBgClass="bg-orange-100 text-orange-900 shadow-md ring-1 ring-orange-300"
-        activeTextColorClass="text-orange-700"
+        activeBgClass="bg-warning-suave text-warning-texto shadow-md ring-1 ring-warning-borde"
+        activeTextColorClass="text-warning-texto"
       />
       )}
       <PopoverFilterSection<number>
@@ -78,8 +78,8 @@ export function FiltrosReservas({ opciones, filtros, activos, onCambiar, onLimpi
         onChange={(carreraId) => onCambiar({ carreraId })}
         Icon={GraduationCap}
         tooltipNone="Todas las carreras"
-        activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-        activeTextColorClass="text-purple-700"
+        activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+        activeTextColorClass="text-acento-texto"
       />
       <ClearFiltersButton visible={activos} onClear={onLimpiar} />
     </div>

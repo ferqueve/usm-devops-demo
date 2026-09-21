@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { MoonStar } from 'lucide-react';
+import { MARCA } from '@/lib/design/paleta';
 
 export interface Destacado {
   etiqueta: string;
@@ -44,7 +45,7 @@ function esOscuro(hex: string): boolean {
 export function Seccion({ id, titulo, descripcion, icono: Icono, color, destacados = [], nota, children }: Readonly<SeccionProps>) {
   // Tarjeta entera del color institucional de la sección. Sobre amarillo o
   // celeste el blanco no se lee, así que el texto pasa al gris oscuro.
-  const tinta = esClaro(color) ? '#343a40' : '#ffffff';
+  const tinta = esClaro(color) ? MARCA.oscuro : '#ffffff';
   const cabecera = (
     <div className="relative overflow-hidden rounded-xl px-5 py-4 shadow-sm" style={{ backgroundColor: color, color: tinta }}>
       <Icono className="pointer-events-none absolute -right-4 -top-6 h-32 w-32 opacity-10" aria-hidden />
@@ -61,7 +62,7 @@ export function Seccion({ id, titulo, descripcion, icono: Icono, color, destacad
         <div className="flex flex-wrap items-center gap-2">
           {destacados.map((d) => (
             <div key={d.etiqueta} className="rounded-lg bg-black/10 px-3 py-1.5 text-right ring-1 ring-black/5">
-              <div className="text-[10px] uppercase tracking-wide opacity-75">{d.etiqueta}</div>
+              <div className="text-2xs uppercase tracking-wide opacity-75">{d.etiqueta}</div>
               <div className="text-sm font-semibold">{d.valor}</div>
             </div>
           ))}
@@ -172,7 +173,7 @@ export function IndiceSecciones({
                 }}
                 aria-current={es ? 'true' : undefined}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                  es ? 'bg-utec-dark text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  es ? 'bg-chrome text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {/* Sobre el fondo oscuro, un acento oscuro (el azul) no se veía. */}
@@ -195,7 +196,7 @@ export function IndiceSecciones({
  */
 export function NotaHastaAnoche() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-2xs text-muted-foreground">
       <MoonStar className="h-3 w-3" />
       datos hasta anoche
     </span>

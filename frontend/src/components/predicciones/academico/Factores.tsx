@@ -20,7 +20,7 @@ export function GraficoFactores({ factores }: Readonly<{ factores: FactorAsisten
   const orden = [...factores].sort((a, b) => b.oddsRatio - a.oddsRatio);
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_56px] gap-3 text-[11px] text-muted-foreground">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_56px] gap-3 text-2xs text-muted-foreground">
         <span />
         <span className="flex justify-between">
           <span className="inline-flex items-center gap-0.5"><ArrowDownRight className="h-3 w-3" />baja las chances</span>
@@ -38,7 +38,7 @@ export function GraficoFactores({ factores }: Readonly<{ factores: FactorAsisten
           detalle: f.efecto === 'neutro' ? 'casi no cambia nada' : `las chances de ir se multiplican por ${decimal(f.oddsRatio, 2)}`,
         }))}
       />
-      <p className="text-center text-[11px] text-muted-foreground">
+      <p className="text-center text-2xs text-muted-foreground">
         Cuánto se multiplican las chances de ir cuando el factor sube un desvío estándar, con todo lo demás igual.
       </p>
     </div>

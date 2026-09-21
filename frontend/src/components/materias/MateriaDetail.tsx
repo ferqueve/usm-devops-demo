@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { StatStrip } from '@/components/common/StatStrip';
+import { MARCA } from '@/lib/design/paleta';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
@@ -10,7 +13,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Award, BookOpen, CalendarClock, CheckCircle, ChevronRight, Download, Edit, FolderOpen,
-  GraduationCap, Layers, Link2, Loader2, Lock, Mail, MapPin, Plus, RotateCcw, Search, Trash2, UserPlus, Users, XCircle,
+  GraduationCap, Layers, Link2, Loader2, Mail, MapPin, Plus, RotateCcw, Search, Trash2, UserPlus, Users, XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,7 +22,7 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { materiasApi } from '@/lib/api/materias';
 import type { Inscripcion, Materia } from '@/lib/types/materias';
-import type { Tutoria, TutoriaEstado } from '@/lib/types/tutorias';
+import type { Tutoria } from '@/lib/types/tutorias';
 import type { Recurso } from '@/lib/types/recursos';
 import { useTutorias } from '@/hooks/useTutorias';
 import { useRecursos } from '@/hooks/useRecursos';
@@ -30,54 +33,17 @@ import { TutoriaFormDialog } from '@/components/tutorias/TutoriaFormDialog';
 import { AddInscriptoDialog } from './AddInscriptoDialog';
 import { NotificarDialog } from './NotificarDialog';
 import { MateriaAsistente } from './MateriaAsistente';
+import { fechaHora } from '@/lib/utils/fechas';
+import { ESTADO_TUTORIA, EstadoBadge, estadoDe } from '@/components/common/estados';
+import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
 
 interface MateriaDetailProps { materiaId: number }
 
 const ADMIN_ROLES = ['ADMIN', 'ANALISTA'];
 
-function formatFecha(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-UY', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
 
-const TUTORIA_BADGE: Record<TutoriaEstado, { label: string; color: string; icon: typeof CheckCircle }> = {
-  ABIERTA: { label: 'Abierta', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  CERRADA: { label: 'Cerrada', color: 'bg-utec-dark text-white border-utec-dark', icon: Lock },
-  CANCELADA: { label: 'Cancelada', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
-type TileVariant = 'blue' | 'yellow' | 'cyan' | 'green' | 'purple';
-const TILE_CLS: Record<TileVariant, string> = {
-  blue: 'bg-utec-blue text-white', yellow: 'bg-utec-yellow text-utec-dark',
-  cyan: 'bg-utec-cyan text-utec-dark', green: 'bg-utec-green text-white',
-  purple: 'bg-utec-purple text-white',
-};
-function StatTile({ icon: Icon, label, value, variant }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode; variant: TileVariant }>) {
-  return (
-    <div className={`relative overflow-hidden rounded-2xl p-4 ${TILE_CLS[variant]}`}>
-      <Icon className="absolute -right-3 -bottom-3 h-16 w-16 opacity-15" />
-      <div className="relative">
-        <div className="text-3xl font-bold tabular-nums leading-none">{value}</div>
-        <div className="text-xs font-medium opacity-80 mt-1.5">{label}</div>
-      </div>
-    </div>
-  );
-}
 
-function Panel({ title, icon, accent, action, children }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode }>) {
-  return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
 
 function Donut({ value }: Readonly<{ value: number }>) {
   const r = 26;
@@ -95,19 +61,20 @@ function Donut({ value }: Readonly<{ value: number }>) {
 }
 
 function exportInscriptosCSV(materia: Materia, inscriptos: Inscripcion[]) {
-  const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-  const rows = inscriptos.map((i) => [esc(i.estudianteNombre), esc(i.estado), esc(formatFecha(i.createdAt))].join(',')).join('\n');
-  const blob = new Blob([`\uFEFFEstudiante,Estado,Fecha\n${rows}`], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `inscriptos-${materia.codigo ?? materia.id}.csv`; a.click();
-  URL.revokeObjectURL(url);
+  descargarCSV(
+    [
+      'Estudiante,Estado,Fecha',
+      ...inscriptos.map((i) =>
+        [csvEscape(i.estudianteNombre), csvEscape(i.estado), csvEscape(fechaHora(i.createdAt))].join(',')
+      ),
+    ],
+    `inscriptos-${materia.codigo ?? materia.id}.csv`
+  );
 }
 
 function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
   const navigate = useNavigate();
-  const badge = TUTORIA_BADGE[tutoria.estado];
-  const Icon = badge.icon;
+  const badge = estadoDe(ESTADO_TUTORIA, tutoria.estado);
   const ocupados = Math.max(0, tutoria.cupo - tutoria.plazasDisponibles);
   const pct = tutoria.cupo > 0 ? Math.round((ocupados / tutoria.cupo) * 100) : 0;
   const libre = tutoria.plazasDisponibles > 0;
@@ -119,17 +86,17 @@ function TutoriaRow({ tutoria }: Readonly<{ tutoria: Tutoria }>) {
         className="w-full rounded-lg border p-3 text-left text-sm transition-all hover:border-utec-purple/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-utec-purple/40"
       >
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="flex items-center gap-1.5 font-medium"><CalendarClock className="h-4 w-4 text-utec-purple shrink-0" />{formatFecha(tutoria.inicio)}</span>
-        <Badge className={`${badge.color} border font-medium text-xs shrink-0`}><Icon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
+        <span className="flex items-center gap-1.5 font-medium"><CalendarClock className="h-4 w-4 text-utec-purple shrink-0" />{fechaHora(tutoria.inicio)}</span>
+        <EstadoBadge estado={badge} className="shrink-0 text-xs" />
       </div>
       <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5">
         <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" />{tutoria.docenteNombre}</span>
         {tutoria.espacioNombre && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{tutoria.espacioNombre}</span>}
       </p>
       <div className="mt-2">
-        <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+        <div className="flex justify-between text-2xs text-muted-foreground mb-1">
           <span>Cupo</span>
-          <span className={`tabular-nums ${libre ? 'text-utec-green font-medium' : ''}`}>
+          <span className={`tabular-nums ${libre ? 'text-marca-verde-texto font-medium' : ''}`}>
             {ocupados}/{tutoria.cupo} · {tutoria.plazasDisponibles} libres
           </span>
         </div>
@@ -187,7 +154,7 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
   );
 
   return (
-    <Panel title={`Inscriptos · ${inscriptos.length}`} icon={<Users className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10" action={action}>
+    <Panel title={`Inscriptos · ${inscriptos.length}`} icon={<Users className="size-4" />} accentColor={MARCA.azul} acciones={action}>
       {(() => {
         if (loading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
         if (inscriptos.length === 0) {
@@ -202,7 +169,7 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
           <>
             <div className="flex -space-x-2 mb-3">
               {inscriptos.slice(0, 7).map((i) => (
-                <span key={i.id} title={i.estudianteNombre} className="flex h-8 w-8 items-center justify-center rounded-full bg-utec-blue/15 text-utec-blue text-xs font-semibold ring-2 ring-card">{i.estudianteNombre?.slice(0, 2).toUpperCase()}</span>
+                <span key={i.id} title={i.estudianteNombre} className="flex h-8 w-8 items-center justify-center rounded-full bg-utec-blue/15 text-marca-azul-texto text-xs font-semibold ring-2 ring-card">{i.estudianteNombre?.slice(0, 2).toUpperCase()}</span>
               ))}
               {inscriptos.length > 7 && <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-semibold ring-2 ring-card">+{inscriptos.length - 7}</span>}
             </div>
@@ -227,14 +194,14 @@ function InscriptosPanel({ materia, inscriptos, loading, onRefresh, canManage }:
                     <span className="truncate">{i.estudianteNombre}</span>
                     <span className="flex items-center gap-1 shrink-0">
                       {i.estado === 'APROBADA' ? (
-                        <Badge className="bg-utec-green/10 text-utec-green border-utec-green/20 border text-[10px] font-medium">
+                        <Badge className="bg-utec-green/10 text-marca-verde-texto border-utec-green/20 border text-2xs font-medium">
                           <CheckCircle className="h-3 w-3 mr-1" />Cursada
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px]">{i.estado}</Badge>
+                        <Badge variant="outline" className="text-2xs">{i.estado}</Badge>
                       )}
                       {canManage && i.estado === 'ACTIVA' && (
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] text-utec-green hover:text-utec-green" disabled={togglingId === i.id} onClick={() => cambiarEstado(i.id, 'APROBADA')} title="Marcar cursada">
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-2xs text-marca-verde-texto hover:text-marca-verde-texto" disabled={togglingId === i.id} onClick={() => cambiarEstado(i.id, 'APROBADA')} title="Marcar cursada">
                           {togglingId === i.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircle className="h-3.5 w-3.5 mr-1" />Cursada</>}
                         </Button>
                       )}
@@ -284,7 +251,7 @@ function TutoriasPanel({ materiaId, tutorias, loading, onRefresh }: Readonly<{ m
   );
 
   return (
-    <Panel title={`Tutorías · ${tutorias.length}`} icon={<CalendarClock className="h-4 w-4 text-utec-purple" />} accent="bg-utec-purple/10" action={action}>
+    <Panel title={`Tutorías · ${tutorias.length}`} icon={<CalendarClock className="size-4" />} accentColor={MARCA.cian} acciones={action}>
       {(() => {
         if (loading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
         if (tutorias.length === 0) {
@@ -328,14 +295,14 @@ interface Actividad { ts: number; label: string; icon: LucideIcon; color: string
 function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos: Recurso[]; inscriptos: Inscripcion[]; tutorias: Tutoria[] }>) {
   const eventos = useMemo<Actividad[]>(() => {
     const ev: Actividad[] = [];
-    for (const r of recursos) ev.push({ ts: Date.parse(r.createdAt ?? ''), label: `Recurso agregado: ${r.titulo}`, icon: FolderOpen, color: 'text-utec-cyan' });
-    for (const i of inscriptos) ev.push({ ts: Date.parse(i.createdAt ?? ''), label: `Se inscribió ${i.estudianteNombre}`, icon: UserPlus, color: 'text-utec-blue' });
-    for (const t of tutorias) ev.push({ ts: Date.parse(t.createdAt ?? ''), label: `Tutoría creada para el ${formatFecha(t.inicio)}`, icon: CalendarClock, color: 'text-utec-purple' });
+    for (const r of recursos) ev.push({ ts: Date.parse(r.createdAt ?? ''), label: `Recurso agregado: ${r.titulo}`, icon: FolderOpen, color: 'text-marca-cian-texto' });
+    for (const i of inscriptos) ev.push({ ts: Date.parse(i.createdAt ?? ''), label: `Se inscribió ${i.estudianteNombre}`, icon: UserPlus, color: 'text-marca-azul-texto' });
+    for (const t of tutorias) ev.push({ ts: Date.parse(t.createdAt ?? ''), label: `Tutoría creada para el ${fechaHora(t.inicio)}`, icon: CalendarClock, color: 'text-utec-purple' });
     return ev.filter((e) => !Number.isNaN(e.ts)).sort((a, b) => b.ts - a.ts).slice(0, 8);
   }, [recursos, inscriptos, tutorias]);
 
   return (
-    <Panel title="Actividad reciente" icon={<CalendarClock className="h-4 w-4 text-utec-orange" />} accent="bg-utec-orange/10">
+    <Panel title="Actividad reciente" icon={<CalendarClock className="size-4" />} accentColor={MARCA.naranja}>
       {eventos.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">Sin actividad registrada.</p>
       ) : (
@@ -348,7 +315,7 @@ function ActividadPanel({ recursos, inscriptos, tutorias }: Readonly<{ recursos:
                   <Icon className="h-2.5 w-2.5" />
                 </span>
                 <p className="text-sm leading-tight">{e.label}</p>
-                <p className="text-xs text-muted-foreground">{formatFecha(new Date(e.ts).toISOString())}</p>
+                <p className="text-xs text-muted-foreground">{fechaHora(new Date(e.ts).toISOString())}</p>
               </li>
             );
           })}
@@ -443,21 +410,26 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
       {/* Identidad + tiles */}
       <div className="grid gap-4 lg:grid-cols-3 items-stretch">
         <div className="rounded-2xl border bg-card p-5 flex flex-col">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-utec-blue/10 text-utec-blue mb-3"><BookOpen className="h-6 w-6" /></div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-utec-blue/10 text-marca-azul-texto mb-3"><BookOpen className="h-6 w-6" /></div>
           <h1 className="text-2xl font-bold leading-tight">{materia.nombre}</h1>
           <div className="flex flex-wrap gap-2 mt-2">
             {materia.codigo && <Badge variant="outline" className="text-xs">{materia.codigo}</Badge>}
-            {materia.carreraNombre && <Badge className="bg-utec-blue/10 text-utec-blue border-utec-blue/20 border text-xs font-medium">{materia.carreraNombre}</Badge>}
-            {!materia.docenteNombre && <Badge className="bg-utec-orange/10 text-utec-orange border-utec-orange/20 border text-xs font-medium">Sin docente</Badge>}
+            {materia.carreraNombre && <Badge className="bg-utec-blue/10 text-marca-azul-texto border-utec-blue/20 border text-xs font-medium">{materia.carreraNombre}</Badge>}
+            {!materia.docenteNombre && <Badge className="bg-utec-orange/10 text-marca-naranja-texto border-utec-orange/20 border text-xs font-medium">Sin docente</Badge>}
           </div>
           {materia.docenteNombre && <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><GraduationCap className="h-4 w-4" />{materia.docenteNombre}</p>}
           {materia.descripcion && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{materia.descripcion}</p>}
         </div>
-        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-          <StatTile icon={Users} label="Inscriptos" value={inscriptos.length} variant="blue" />
-          <StatTile icon={Award} label="Créditos" value={materia.creditos ?? '—'} variant="yellow" />
-          <StatTile icon={Layers} label="Semestre" value={materia.semestre ?? '—'} variant="cyan" />
-          <StatTile icon={CalendarClock} label="Tutorías" value={tutorias.length} variant="purple" />
+        <div className="lg:col-span-2">
+          <StatStrip
+            maxColumnas={2}
+            items={[
+              { label: 'Inscriptos', value: inscriptos.length, icon: Users, color: 'azul' },
+              { label: 'Créditos', value: materia.creditos ?? '—', icon: Award, color: 'amarillo' },
+              { label: 'Semestre', value: materia.semestre ?? '—', icon: Layers, color: 'cian' },
+              { label: 'Tutorías', value: tutorias.length, icon: CalendarClock, color: 'naranja' },
+            ]}
+          />
         </div>
       </div>
 

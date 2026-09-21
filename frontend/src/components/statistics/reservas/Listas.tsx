@@ -1,12 +1,10 @@
-import type { OcupacionEspacio, ResumenCarrera, ResumenEdificio, TopUsuario } from '@/lib/api/stats';
+import type { OcupacionEspacio, ResumenCarrera, TopUsuario } from '@/lib/api/stats';
 import { filtrable, HOVER_FILTRO } from '../graficos/filtrable';
 import { horas, nombreRol } from './formato';
+import { Vacio } from '@/components/statistics/Vacio';
 
 const n = (v: number) => Number(v).toLocaleString('es-UY');
 
-function Vacio({ texto = 'Sin datos en el período.' }: Readonly<{ texto?: string }>) {
-  return <p className="py-8 text-center text-sm text-muted-foreground">{texto}</p>;
-}
 
 function Barra({ porcentaje, clase }: Readonly<{ porcentaje: number; clase: string }>) {
   return (
@@ -45,7 +43,7 @@ export function OcupacionEspacios({ filas, onFiltrar }: Readonly<{ filas: Ocupac
                 {o.edificioNombre && <span className="text-xs text-muted-foreground"> · {o.edificioNombre}</span>}
               </span>
               {sinUso ? (
-                <span className="shrink-0 rounded bg-utec-orange/12 px-1.5 py-0.5 text-[11px] font-medium text-utec-orange">sin uso</span>
+                <span className="shrink-0 rounded bg-utec-orange/12 px-1.5 py-0.5 text-2xs font-medium text-marca-naranja-texto">sin uso</span>
               ) : (
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                   {n(o.reservas)} res. · {horas(Number(o.horasReservadas))} · <b className="text-foreground">{Math.round(pct)}%</b>
@@ -79,33 +77,9 @@ export function MenosUsados({ filas, cantidad = 5, onFiltrar }: Readonly<{ filas
               {o.espacioNombre}
               {o.edificioNombre && <span className="text-xs text-muted-foreground"> · {o.edificioNombre}</span>}
             </span>
-            <span className={`shrink-0 tabular-nums ${sinUso ? 'font-semibold text-utec-orange' : 'text-muted-foreground'}`}>
+            <span className={`shrink-0 tabular-nums ${sinUso ? 'font-semibold text-marca-naranja-texto' : 'text-muted-foreground'}`}>
               {sinUso ? 'sin uso' : `${Math.round(Number(o.porcentaje))}% · ${n(o.reservas)} res.`}
             </span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-export function PorEdificio({ filas }: Readonly<{ filas: ResumenEdificio[] }>) {
-  if (filas.length === 0) return <Vacio />;
-  const total = filas.reduce((a, e) => a + Number(e.cantReservas), 0);
-  const maximo = Math.max(...filas.map((e) => Number(e.cantReservas)));
-  return (
-    <ul className="space-y-2.5">
-      {filas.map((e) => {
-        const cant = Number(e.cantReservas);
-        return (
-          <li key={`${e.edificioId ?? 'sin'}`}>
-            <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
-              <span className="truncate">{e.edificioNombre}</span>
-              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                <b className="text-foreground">{n(cant)}</b> · {total > 0 ? Math.round((cant / total) * 100) : 0}%
-              </span>
-            </div>
-            <Barra porcentaje={maximo > 0 ? (cant / maximo) * 100 : 0} clase="bg-utec-blue" />
           </li>
         );
       })}
@@ -132,7 +106,7 @@ export function PorCarrera({ filas, onFiltrar }: Readonly<{ filas: ResumenCarrer
       {/* En celular la tabla scrollea de costado en vez de cortar la última columna. */}
       <div className="overflow-x-auto">
       <table className="w-full min-w-[440px] text-sm">
-        <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <thead className="text-2xs uppercase tracking-wide text-muted-foreground">
           <tr className="border-b">
             <th className="py-2 pr-2 text-left font-medium">Carrera</th>
             <th className="px-2 py-2 text-right font-medium">Aprobadas</th>
@@ -155,7 +129,7 @@ export function PorCarrera({ filas, onFiltrar }: Readonly<{ filas: ResumenCarrer
                 <td className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{n(c.canceladas)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{n(c.canceladasTarde)}</td>
                 <td className="py-1.5 pl-2 text-right tabular-nums">
-                  <span className={tasa > 15 ? 'rounded bg-utec-red/12 px-1.5 py-0.5 font-semibold text-utec-red' : ''}>{tasa.toFixed(1)}%</span>
+                  <span className={tasa > 15 ? 'rounded bg-utec-red/12 px-1.5 py-0.5 font-semibold text-marca-rojo-texto' : ''}>{tasa.toFixed(1)}%</span>
                 </td>
               </tr>
             );
@@ -174,7 +148,6 @@ export function PorCarrera({ filas, onFiltrar }: Readonly<{ filas: ResumenCarrer
   );
 }
 
-
 export function QuienesMasReservan({ filas, onFiltrarRol }: Readonly<{ filas: TopUsuario[]; onFiltrarRol?: (rol: string) => void }>) {
   if (filas.length === 0) return <Vacio />;
   const maximo = Math.max(...filas.map((u) => Number(u.cantReservas)));
@@ -191,14 +164,14 @@ export function QuienesMasReservan({ filas, onFiltrarRol }: Readonly<{ filas: To
                   <span className="font-medium">{u.nombre}</span>
                   <span
                     {...filtrable(nombreRol(u.rol), onFiltrarRol ? () => onFiltrarRol(u.rol) : null)}
-                    className={`ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground ${onFiltrarRol ? 'cursor-pointer hover:bg-utec-orange/15 hover:text-utec-orange' : ''}`}
+                    className={`ml-1.5 rounded bg-muted px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground ${onFiltrarRol ? 'cursor-pointer hover:bg-utec-orange/15 hover:text-marca-naranja-texto' : ''}`}
                   >
                     {nombreRol(u.rol)}
                   </span>
                 </span>
                 <span className="shrink-0 font-semibold tabular-nums">{n(total)}</span>
               </div>
-              <div className="mb-1 flex justify-between gap-2 text-[11px] text-muted-foreground">
+              <div className="mb-1 flex justify-between gap-2 text-2xs text-muted-foreground">
                 <span className="truncate">{u.email}</span>
                 <span className="shrink-0 tabular-nums">
                   {n(u.aprobadas)} aprobadas · {n(u.canceladas)} canceladas

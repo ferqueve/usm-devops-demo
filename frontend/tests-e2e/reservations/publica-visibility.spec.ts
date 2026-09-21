@@ -18,13 +18,13 @@ test.describe('Reservas: visibilidad pública vs privada en /calendar', () => {
     // Esperamos a que cargue el grid horario.
     await expect(page.getByText(/^\d{2}:00$/).first()).toBeVisible({ timeout: 10_000 });
 
-    // El aria-label de cada barra es `${espacioNombre} - HH:MM a HH:MM`.
+    // El aria-label de cada barra es `${espacioNombre} — hh:mm a. m. a hh:mm p. m.`.
     // La APROBADA pública sembrada es Sala 202 mañana 18:00-20:00.
-    await expect(page.getByRole('button', { name: /Sala 202 - 18:00 a 20:00/ }).first())
+    await expect(page.getByRole('button', { name: /Sala 202 — 06:00 p\. m\. a 08:00 p\. m\./ }).first())
       .toBeVisible({ timeout: 10_000 });
 
     // Las históricas privadas del docente (esPublica=false) están en
     // Sala 101 a las 09:00-10:00 — no deben aparecer para el externo.
-    expect(await page.getByRole('button', { name: /Sala 101 - 09:00 a 10:00/ }).count()).toBe(0);
+    expect(await page.getByRole('button', { name: /Sala 101 — 09:00 a\. m\. a 10:00 a\. m\./ }).count()).toBe(0);
   });
 });

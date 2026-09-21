@@ -20,9 +20,9 @@ interface ReservaRowProps {
 }
 
 const estadoDot: Record<string, string> = {
-  APROBADO: 'bg-emerald-500',
-  PENDIENTE: 'bg-amber-500',
-  CANCELADO: 'bg-red-500',
+  APROBADO: 'bg-success',
+  PENDIENTE: 'bg-warning',
+  CANCELADO: 'bg-danger',
 };
 
 const accentBorder: Record<NonNullable<ReservaRowProps['accent']>, string> = {
@@ -31,14 +31,14 @@ const accentBorder: Record<NonNullable<ReservaRowProps['accent']>, string> = {
 };
 
 const AVATAR_PALETTE = [
-  'bg-blue-100 text-blue-700',
-  'bg-emerald-100 text-emerald-700',
-  'bg-amber-100 text-amber-700',
-  'bg-purple-100 text-purple-700',
-  'bg-pink-100 text-pink-700',
-  'bg-cyan-100 text-cyan-700',
-  'bg-orange-100 text-orange-700',
-  'bg-teal-100 text-teal-700',
+  'bg-info-suave text-info-texto',
+  'bg-success-suave text-success-texto',
+  'bg-warning-suave text-warning-texto',
+  'bg-acento-suave text-acento-texto',
+  'bg-acento-suave text-acento-texto',
+  'bg-info-suave text-info-texto',
+  'bg-warning-suave text-warning-texto',
+  'bg-info-suave text-info-texto',
 ];
 
 function hashString(s: string): number {
@@ -112,7 +112,7 @@ export function ReservaRow({
       {/* Columna 1: hora */}
       <div className="text-xs tabular-nums leading-tight">
         <div className="font-medium">{format(inicio, 'HH:mm')}</div>
-        <div className="text-muted-foreground text-[11px]">{fechaCorta}</div>
+        <div className="text-muted-foreground text-2xs">{fechaCorta}</div>
       </div>
 
       {/* Columna 2: título + meta (espacio, dur) */}
@@ -128,17 +128,19 @@ export function ReservaRow({
           )}
           <span className="text-sm leading-tight truncate font-medium">{titleBase || reserva.espacioNombre}</span>
           {titleId && (
-            <span className="text-[10px] font-mono text-muted-foreground tracking-tight shrink-0">{titleId}</span>
+            <span className="text-2xs font-mono text-muted-foreground tracking-tight shrink-0">{titleId}</span>
           )}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 min-w-0">
-          <span className="truncate">{reserva.espacioNombre}</span>
+          {/* El nombre del espacio es lo que cede: la duración y la capacidad
+              se partían en dos renglones («30 / min») en una columna angosta. */}
+          <span className="min-w-0 truncate">{reserva.espacioNombre}</span>
           <span className="text-muted-foreground/60">·</span>
-          <span className="tabular-nums">{duracionLabel}</span>
+          <span className="shrink-0 whitespace-nowrap tabular-nums">{duracionLabel}</span>
           {reserva.capacidadEspacio && (
             <>
               <span className="text-muted-foreground/60">·</span>
-              <span className="tabular-nums">cap. {reserva.capacidadEspacio}</span>
+              <span className="shrink-0 whitespace-nowrap tabular-nums">cap. {reserva.capacidadEspacio}</span>
             </>
           )}
           {meta && (
@@ -154,7 +156,7 @@ export function ReservaRow({
       <div className="flex items-center gap-2 shrink-0">
         {showAvatar && (reserva.usuarioNombre || reserva.usuarioId) && (
           <div
-            className={`w-6 h-6 rounded-full text-[10px] font-semibold flex items-center justify-center shrink-0 ${avatarColor}`}
+            className={`w-6 h-6 rounded-full text-2xs font-semibold flex items-center justify-center shrink-0 ${avatarColor}`}
             title={reserva.usuarioNombre ?? undefined}
           >
             {iniciales(reserva.usuarioNombre)}

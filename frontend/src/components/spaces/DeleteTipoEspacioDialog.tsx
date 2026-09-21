@@ -1,101 +1,35 @@
-import { useState } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmarBorradoDialog } from '@/components/common/ConfirmarBorradoDialog';
 import { espaciosApi } from '@/lib/api/spaces';
 import type { TipoEspacio } from '@/lib/types/spaces';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
-import PermissionGuard from '@/components/auth/PermissionGuard';
 
-interface DeleteTipoEspacioDialogProps {
+interface Props {
   tipoEspacio: TipoEspacio | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function DeleteTipoEspacioDialog({ 
-  tipoEspacio, 
-  open, 
-  onOpenChange, 
-  onSuccess 
-}: Readonly<DeleteTipoEspacioDialogProps>) {
-  const [loading, setLoading] = useState(false);
-
-  const handleDelete = async () => {
-    if (!tipoEspacio) return;
-
-    try {
-      setLoading(true);
-      await espaciosApi.eliminarTipoEspacio(tipoEspacio.id);
-      
-      toast.success('Tipo de espacio desactivado', {
-        description: `${tipoEspacio.nombre} ha sido marcado como inactivo exitosamente`
-      });
-      
-      onSuccess();
-      onOpenChange(false);
-    } catch (error: unknown) {
-      console.error('Error al eliminar tipo de espacio:', error);
-      const description = error instanceof Error ? error.message : 'No se pudo desactivar el tipo de espacio';
-      toast.error('Error al desactivar tipo de espacio', { description });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    if (!loading) {
-      onOpenChange(false);
-    }
-  };
-
-  if (!tipoEspacio) return null;
-
+/**
+ * Envoltorio fino sobre `ConfirmarBorradoDialog`.
+ *
+ * Existe para no cambiar los llamadores: la firma `{ tipoEspacio, open, onOpenChange,
+ * onSuccess }` es la que ya usaban. Lo único propio son el nombre de la
+ * entidad, de dónde sale su nombre visible, qué llamada la borra y qué
+ * consecuencia tiene.
+ */
+export function DeleteTipoEspacioDialog({ tipoEspacio, open, onOpenChange, onSuccess }: Readonly<Props>) {
   return (
-    <AlertDialog open={open} onOpenChange={handleCancel}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
-            Desactivar Tipo de Espacio
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            ¿Estás seguro de que deseas desactivar el tipo de espacio <strong>"{tipoEspacio.nombre}"</strong>?
-            <br />
-            <br />
-            <strong>Atención:</strong> Esta acción marcará el tipo como inactivo. Los espacios asociados a este tipo seguirán existiendo, pero el tipo dejará de estar disponible para nuevas creaciones.
-            <br />
-            <br />
-            Esta acción se puede revertir más tarde si es necesario.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel} disabled={loading}>
-            Cancelar
-          </AlertDialogCancel>
-          <PermissionGuard requiredPermission="tipo:eliminar">
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={loading}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : null}
-              Desactivar
-            </AlertDialogAction>
-          </PermissionGuard>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmarBorradoDialog
+      item={tipoEspacio}
+      open={open}
+      onOpenChange={onOpenChange}
+      onSuccess={onSuccess}
+      entidad="tipo de espacio"
+      nombre={(x) => x.nombre}
+      eliminar={(x) => espaciosApi.eliminarTipoEspacio(x.id)}
+      consecuencia="Marca el tipo como inactivo. Los espacios de ese tipo siguen existiendo, pero el tipo deja de poder elegirse."
+      permiso="tipo:eliminar"
+
+    />
   );
 }

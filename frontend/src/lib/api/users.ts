@@ -1,5 +1,6 @@
 import { apiRequest, type ApiResponse } from './client';
 import type { User, UserRole, PagedUsers, UserFilters, UserStats, UpdateUserData, UpdateProfileData } from '../types/users';
+import { API_BASE_URL } from '@/lib/config/api';
 
 // API de usuarios
 export const usuariosApi = {
@@ -62,7 +63,6 @@ export const usuariosApi = {
     if (filters?.fechaHasta) params.append('fechaHasta', filters.fechaHasta);
 
     // Usar la misma configuración de API que las otras funciones
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
     const url = `${API_BASE_URL}/usuarios/export?${params.toString()}`;
     
     const token = localStorage.getItem('token');

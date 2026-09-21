@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * El filtro de rango de fechas en /reservations es un par de calendarios
@@ -21,28 +22,16 @@ test.describe('Reservas: filtro por rango de fechas', () => {
     // local como cota).
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
-    const diaInicio = String(manana.getDate());
     const pasado = new Date();
     pasado.setDate(pasado.getDate() + 2);
-    const diaFin = String(pasado.getDate());
 
     // Botón fecha inicio (CalendarArrowDown).
     await page.locator('button:has(svg.lucide-calendar-arrow-down)').first().click();
-    await page
-      .getByRole('dialog')
-      .locator('[role="gridcell"] button:not([disabled])')
-      .filter({ hasText: new RegExp(`^${diaInicio}$`) })
-      .first()
-      .click();
+    await elegirDia(page, manana);
 
     // Botón fecha fin (CalendarArrowUp).
     await page.locator('button:has(svg.lucide-calendar-arrow-up)').first().click();
-    await page
-      .getByRole('dialog')
-      .locator('[role="gridcell"] button:not([disabled])')
-      .filter({ hasText: new RegExp(`^${diaFin}$`) })
-      .first()
-      .click();
+    await elegirDia(page, pasado);
 
     await page.waitForTimeout(500);
 

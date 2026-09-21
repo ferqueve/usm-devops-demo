@@ -17,11 +17,19 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   )
 }
 
+/**
+ * La banda oscura de arriba.
+ *
+ * Estaba escrita a mano —`bg-chrome text-white/70` más `hover:bg-transparent
+ * border-b-0` en la fila— en doce de las catorce tablas del sistema. Las dos
+ * que no la tenían eran el catálogo y la pantalla de reservas, que es donde
+ * más tiempo se pasa mirando una tabla.
+ */
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn("bg-chrome [&_tr]:border-b-0 [&_tr]:hover:bg-transparent", className)}
       {...props}
     />
   )
@@ -68,7 +76,10 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        // h-11: la misma altura que una fila del cuerpo, así el encabezado
+        // no rompe el ritmo vertical. El color va acá y no en el thead para
+        // que una celda concreta pueda pedir otro con su propia clase.
+        "h-11 px-2 text-left align-middle font-medium whitespace-nowrap text-white/70 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}

@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { Agendable } from '@/lib/agenda/types';
+import { ESTADO, estadoDe, relleno } from '@/components/common/estados';
+import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 interface AgendaCalendarioProps {
   items: Agendable[];
@@ -10,24 +14,12 @@ interface AgendaCalendarioProps {
   maxPorDia?: number;
 }
 
-const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 /**
  * Color del chip según el estado crudo de la entidad. Cubre los estados de tutoría
  * y de evento en un solo mapa: no se pisan entre sí y así el calendario puede mostrar
  * los dos tipos juntos sin saber de cuál viene cada uno.
  */
-const ESTADO_COLOR: Record<string, string> = {
-  // Tutorías
-  ABIERTA: 'bg-utec-green text-white',
-  CERRADA: 'bg-utec-dark text-white',
-  CANCELADA: 'bg-utec-red text-white',
-  // Eventos
-  PUBLICADO: 'bg-utec-green text-white',
-  BORRADOR: 'bg-utec-yellow text-utec-dark',
-  FINALIZADO: 'bg-utec-dark text-white',
-  CANCELADO: 'bg-utec-red text-white',
-};
 
 /**
  * Calendario mensual de agendables. Sirve tanto a tutorías como a eventos —
@@ -80,29 +72,21 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
     });
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
-        <h3 className="text-sm font-semibold capitalize">{label}</h3>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => mover(-1)} aria-label="Mes anterior">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7"
-            onClick={() => { const d = new Date(); setCursor({ y: d.getFullYear(), m: d.getMonth() }); }}
-          >
-            Hoy
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => mover(1)} aria-label="Mes siguiente">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+    <Panel
+      title={label.charAt(0).toUpperCase() + label.slice(1)}
+      accentColor={MARCA.azul}
+      flush
+      acciones={
+        <>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => mover(-1)} aria-label="Mes anterior"><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/75 hover:bg-white/10 hover:text-white" onClick={() => { const d = new Date(); setCursor({ y: d.getFullYear(), m: d.getMonth() }); }}>Hoy</Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => mover(1)} aria-label="Mes siguiente"><ChevronRight className="size-4" /></Button>
+        </>
+      }
+    >
 
-      <div className="grid grid-cols-7 text-center text-[11px] font-medium text-muted-foreground border-b">
-        {DIAS.map((d) => <div key={d} className="py-1.5">{d}</div>)}
+      <div className="grid grid-cols-7 text-center text-2xs font-medium text-muted-foreground border-b">
+        {DIAS_DESDE_LUNES.map((d) => <div key={d} className="py-1.5">{d}</div>)}
       </div>
 
       <div className="grid grid-cols-7">
@@ -126,8 +110,8 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
                     key={`${item.fuente}-${item.id}`}
                     type="button"
                     onClick={() => navigate(item.href)}
-                    className={`block w-full truncate rounded px-1.5 py-0.5 text-left text-[10px] font-medium ${
-                      ESTADO_COLOR[item.estado] ?? 'bg-muted'
+                    className={`block w-full truncate rounded px-1.5 py-0.5 text-left text-2xs font-medium ${
+                      relleno(estadoDe(ESTADO, item.estado))
                     }`}
                     title={item.titulo}
                   >
@@ -135,7 +119,7 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
                   </button>
                 ))}
                 {delDia.length > maxPorDia && (
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     +{delDia.length - maxPorDia} más
                   </span>
                 )}
@@ -144,6 +128,6 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
           );
         })}
       </div>
-    </div>
+    </Panel>
   );
 }

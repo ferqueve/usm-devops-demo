@@ -13,8 +13,9 @@ test.describe('Espacios: filtro por capacidad mínima', () => {
     await page.goto('/rooms');
     await page.waitForURL('**/rooms');
 
-    await page.getByRole('button', { name: /^Filtros$/i }).click();
-    await page.locator('#capacidad-min-filter').fill('25');
+    // La capacidad vive en el panel "Avanzados".
+    await page.getByRole('button', { name: /^Avanzados$/i }).click();
+    await page.getByRole('spinbutton', { name: /Capacidad Mínima/i }).fill('25');
     await page.waitForTimeout(800);
 
     await expect(page.getByText('Sala 101', { exact: true }).first()).toBeVisible({ timeout: 10_000 });

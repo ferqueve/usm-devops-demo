@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { Brain, CalendarCheck, CalendarRange, Target, TrendingDown, TrendingUp, X } from 'lucide-react';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
-import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
+import { Panel } from '@/components/common/Panel';
+import { StatStrip } from '@/components/common/StatStrip';
 import { postAnalyzeForecast } from '@/lib/api/ai';
 import { AnalisisIA } from '../AnalisisIA';
 import { Aviso, ChipHero, Esqueleto, Hero, NoCargo, NotaModelo, SinModelo, type Entrenamiento } from '../comunes';
@@ -12,6 +12,7 @@ import { PronosticoPorTipo, TablaTipos } from './PorTipoEspacio';
 import { SemanaTipica } from './SemanaTipica';
 import { TablaDias } from './TablaDias';
 import { usePredicciones } from './usePredicciones';
+import { MARCA } from '@/lib/design/paleta';
 
 /**
  * Predicciones de reservas: la demanda de los próximos 30 días del campus (o
@@ -142,13 +143,13 @@ export default function PrediccionesReservas({ version, entrenamiento }: Readonl
         <Panel
           title="Demanda diaria"
           count={`${tipoElegido ? `${tipoElegido.nombre} · ` : ''}últimos ${historico.length} días y próximos ${dias.length}`}
-          accentColor="#DE7A27"
+          accentColor={MARCA.naranja}
           className="lg:col-span-2"
         >
           <GraficoDemanda historico={historico} dias={dias} alto={320} />
         </Panel>
 
-        <Panel title="¿Qué tan confiable es?" accentColor="#86bb4c">
+        <Panel title="¿Qué tan confiable es?" accentColor={MARCA.verde}>
           {precision && calidad?.validacion?.length ? (
             <Confiabilidad
               validacion={calidad.validacion}
@@ -167,17 +168,17 @@ export default function PrediccionesReservas({ version, entrenamiento }: Readonl
       </div>
 
       <div className="grid gap-3 lg:grid-cols-3">
-        <Panel title="Día por día" count={`${dias.length} días`} accentColor="#184897" flush scroll className="max-h-[440px] lg:col-span-2">
+        <Panel title="Día por día" count={`${dias.length} días`} accentColor={MARCA.azul} flush scroll className="max-h-[440px] lg:col-span-2">
           <TablaDias dias={dias} />
         </Panel>
 
         <div className="grid gap-3 lg:grid-rows-[auto_1fr]">
-          <Panel title="Semana típica" count="reservas por día" accentColor="#DE7A27">
+          <Panel title="Semana típica" count="reservas por día" accentColor={MARCA.naranja}>
             <div className="h-[150px]">
               <SemanaTipica semana={semana} />
             </div>
           </Panel>
-          <Panel title="Lectura con IA" accentColor="#00c7ff">
+          <Panel title="Lectura con IA" accentColor={MARCA.cian}>
             <AnalisisIA
               clave={`${tipoEspacioId ?? 'global'}-${forecast.modeloId}`}
               descripcion={`Resume la tendencia ${delAlcance}, los días de más demanda y cuáles ya tienen casi todo reservado, con una recomendación concreta.`}
@@ -205,13 +206,13 @@ export default function PrediccionesReservas({ version, entrenamiento }: Readonl
           <Panel
             title="Por tipo de espacio"
             count={tipoElegido ? `viendo ${tipoElegido.nombre} arriba · tocá otro o volvé al campus` : 'próximos 30 días · tocá uno para verlo arriba'}
-            accentColor="#184897"
+            accentColor={MARCA.azul}
           >
             <PronosticoPorTipo tipos={tipos} elegido={tipoEspacioId} onElegir={elegirTipo} />
           </Panel>
           {/* Sin ningún tipo entrenado la tabla sería una grilla de guiones: las tarjetas ya lo dicen. */}
           {tipos.some((t) => t.entrenado) && (
-            <Panel title="Comparación por tipo" count="esperado, cambio y error de cada uno" accentColor="#00c7ff" flush>
+            <Panel title="Comparación por tipo" count="esperado, cambio y error de cada uno" accentColor={MARCA.cian} flush>
               <div className="py-2">
                 <TablaTipos tipos={tipos} elegido={tipoEspacioId} onElegir={elegirTipo} />
               </div>

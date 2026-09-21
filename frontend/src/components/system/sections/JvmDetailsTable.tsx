@@ -47,11 +47,11 @@ export const JvmDetailsTable = memo(function JvmDetailsTable({
   return (
     <div className="border rounded-lg overflow-hidden bg-card">
       <Table>
-          <TableHeader className="bg-utec-dark">
-            <TableRow className="hover:bg-transparent border-b-0">
-              <TableHead className="h-10 text-white/80">Métrica</TableHead>
-              <TableHead className="h-10 text-white/80">Valor</TableHead>
-              <TableHead className="h-10 text-white/80 hidden md:table-cell">Descripción</TableHead>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Métrica</TableHead>
+              <TableHead>Valor</TableHead>
+              <TableHead className="hidden md:table-cell">Descripción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

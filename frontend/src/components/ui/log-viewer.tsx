@@ -113,7 +113,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
     const parts = text.split(new RegExp(`(${search})`, 'gi'));
     return parts.map((part, i) =>
       part.toLowerCase() === search.toLowerCase() ? (
-        <mark key={`${part}-${i}`} className="bg-yellow-200 text-gray-900">{part}</mark>
+        <mark key={`${part}-${i}`} className="bg-warning-suave text-foreground">{part}</mark>
       ) : part
     );
   };
@@ -214,14 +214,14 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
   // Obtener color para nivel de log
   const getLevelColor = (level: string) => {
     const colors: Record<string, string> = {
-      TRACE: 'bg-gray-100 text-gray-800 border-gray-200',
-      DEBUG: 'bg-blue-100 text-blue-800 border-blue-200',
-      INFO: 'bg-green-100 text-green-800 border-green-200',
-      WARN: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      ERROR: 'bg-red-100 text-red-800 border-red-200',
-      OFF: 'bg-gray-100 text-gray-800 border-gray-200',
+      TRACE: 'bg-muted text-foreground border-border',
+      DEBUG: 'bg-info-suave text-info-texto border-info-borde',
+      INFO: 'bg-success-suave text-success-texto border-success-borde',
+      WARN: 'bg-warning-suave text-warning-texto border-warning-borde',
+      ERROR: 'bg-danger-suave text-danger-texto border-danger-borde',
+      OFF: 'bg-muted text-foreground border-border',
     };
-    return colors[level] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[level] || 'bg-muted text-foreground border-border';
   };
 
   // Manejar cambio de nivel
@@ -277,12 +277,12 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
   if (!content) {
     return (
       <div className="border rounded-lg overflow-hidden shadow-card">
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
-          <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
+          <FileText className="h-4 w-4 text-marca-cian-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
         </div>
         <p className="text-muted-foreground text-center py-8 bg-card">
-          No hay logs disponibles. Asegúrate de que el endpoint <code className="text-xs bg-gray-100 px-2 py-1 rounded">/actuator/logfile</code> esté habilitado.
+          No hay logs disponibles. Asegúrate de que el endpoint <code className="text-xs bg-muted px-2 py-1 rounded">/actuator/logfile</code> esté habilitado.
         </p>
       </div>
     );
@@ -290,10 +290,10 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card">
-      <div className="bg-utec-dark text-white">
+      <div className="bg-chrome text-white">
         {/* Fila 1: título + count + botones de acción */}
         <div className="flex items-center gap-2 px-4 py-2.5">
-          <FileText className="h-4 w-4 text-utec-cyan shrink-0" />
+          <FileText className="h-4 w-4 text-marca-cian-texto shrink-0" />
           <h3 className="text-sm font-semibold flex-1">Visor de Logs</h3>
           <span className="text-xs text-white/70 tabular-nums mr-2">{filteredLines.length} líneas</span>
 
@@ -314,9 +314,9 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
             <button
               onClick={() => setSiguiendo(!siguiendo)}
               title={siguiendo ? 'Dejar de seguir el log' : 'Seguir el log en vivo'}
-              className={`flex items-center gap-1.5 h-7 rounded-md px-2 text-[11px] font-medium transition ${
+              className={`flex items-center gap-1.5 h-7 rounded-md px-2 text-2xs font-medium transition ${
                 siguiendo
-                  ? 'bg-utec-green/25 text-utec-green'
+                  ? 'bg-utec-green/25 text-marca-verde-texto'
                   : 'text-white/80 hover:bg-white/10'
               }`}
             >
@@ -330,7 +330,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
             title="Auto-scroll"
             className={`flex items-center justify-center h-7 w-7 rounded-md transition ${
               autoScroll
-                ? 'bg-utec-blue/30 text-utec-blue'
+                ? 'bg-utec-blue/30 text-marca-azul-texto'
                 : 'text-white/80 hover:bg-white/10'
             }`}
           >
@@ -348,7 +348,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
           <button
             onClick={handleDownload}
             title="Descargar"
-            className="flex items-center justify-center h-7 w-7 rounded-md text-utec-green hover:bg-white/10 transition"
+            className="flex items-center justify-center h-7 w-7 rounded-md text-marca-verde-texto hover:bg-white/10 transition"
           >
             <Download className="h-4 w-4" />
           </button>
@@ -371,7 +371,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 key={level}
                 onClick={() => setLevelFilter(level)}
                 disabled={conteoPorNivel[level] === 0}
-                className={`px-2.5 py-1 text-[11px] font-semibold rounded transition disabled:cursor-default disabled:opacity-40 ${
+                className={`px-2.5 py-1 text-2xs font-semibold rounded transition disabled:cursor-default disabled:opacity-40 ${
                   levelFilter === level
                     ? 'bg-white/15 text-white'
                     : 'text-white/60 hover:text-white'
@@ -386,7 +386,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
       </div>
 
       {/* Visor de logs */}
-      <div className="bg-gray-900">
+      <div className="bg-chrome">
         <ScrollArea className="h-[400px]" ref={scrollRef}>
           <div className="p-4">
             {filteredLines.map((line, index) => (
@@ -394,16 +394,16 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 key={`${index}-${line.slice(0, 32)}`}
                 className={`log-line py-0.5 px-2 rounded ${getLineClass(line)}`}
               >
-                <span className="text-gray-500 select-none inline-block w-12 text-right mr-3">
+                <span className="inline-block w-12 select-none text-right mr-3 opacity-45">
                   {index + 1}
                 </span>
-                <span className="text-gray-100 font-mono text-xs whitespace-pre-wrap break-all">
+                <span className="font-mono text-xs whitespace-pre-wrap break-all">
                   {highlightText(line, searchTerm)}
                 </span>
               </div>
             ))}
             {filteredLines.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 No se encontraron líneas que coincidan con los filtros
               </div>
             )}
@@ -433,7 +433,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                   </DialogDescription>
                 </div>
                 {hasChanges && (
-                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0">
+                  <Badge variant="outline" className="bg-warning-suave text-warning-texto border-warning-borde flex-shrink-0">
                     {Object.keys(changes).length} cambios pendientes
                   </Badge>
                 )}
@@ -492,7 +492,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                       type="checkbox"
                       checked={showOnlyModified}
                       onChange={(e) => setShowOnlyModified(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300"
+                      className="w-4 h-4 rounded border-border"
                     />
                     <span className="text-sm">Solo modificados</span>
                   </label>
@@ -519,7 +519,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                 )}
 
                 {hasChanges && (
-                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
+                  <div className="flex items-start gap-2 p-3 bg-warning-suave border border-warning-borde rounded-md text-xs text-warning-texto">
                     <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <p>
                       Los cambios son <strong>temporales</strong> y se perderán al reiniciar el servidor.
@@ -539,7 +539,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                         <div
                           key={logger.name}
                           className={`flex items-center gap-3 p-2.5 border rounded-md transition-colors ${
-                            hasChange ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-muted/30'
+                            hasChange ? 'bg-warning-suave border-warning-borde' : 'bg-card border-border hover:bg-muted/30'
                           }`}
                         >
                           <p
@@ -549,11 +549,11 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
                             {logger.name}
                           </p>
                           <span
-                            className={`inline-flex px-2 py-0.5 text-[11px] font-semibold rounded-md border whitespace-nowrap flex-shrink-0 ${getLevelColor(currentLevel)}`}
+                            className={`inline-flex px-2 py-0.5 text-2xs font-semibold rounded-md border whitespace-nowrap flex-shrink-0 ${getLevelColor(currentLevel)}`}
                           >
                             {currentLevel}
                           </span>
-                          {hasChange && <span className="text-amber-600 flex-shrink-0">→</span>}
+                          {hasChange && <span className="text-warning-texto flex-shrink-0">→</span>}
                           <Select
                             value={pendingLevel || currentLevel}
                             onValueChange={(value) => handleLevelChange(logger.name, value)}
@@ -592,7 +592,7 @@ export function LogViewer({ content, maxLines = 1000, loggers, onLoggerUpdate, o
               <Button
                 onClick={() => setShowConfirm(true)}
                 disabled={!hasChanges || saving}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-gray-200 disabled:text-muted-foreground"
+                className="bg-success hover:bg-success text-white disabled:bg-secondary disabled:text-muted-foreground"
               >
                 <Save className="h-4 w-4 mr-1.5" />
                 Guardar cambios

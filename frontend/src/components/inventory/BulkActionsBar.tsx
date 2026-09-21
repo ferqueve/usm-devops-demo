@@ -26,9 +26,9 @@ export default function BulkActionsBar({
   onClearSelection 
 }: Readonly<BulkActionsBarProps>) {
   return (
-    <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <div className="flex items-center justify-between p-4 bg-info-suave border border-info-borde rounded-lg">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-blue-900">
+        <span className="text-sm font-medium text-info-texto">
           {selectedCount} item{selectedCount === 1 ? '' : 's'} seleccionado{selectedCount === 1 ? '' : 's'}
         </span>
       </div>
@@ -77,15 +77,15 @@ export default function BulkActionsBar({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onBulkStateChange('DISPONIBLE')}>
-                <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
+                <CheckCircle2 className="mr-2 h-4 w-4 text-success-texto" />
                 Marcar como Disponible
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onBulkStateChange('MANTENIMIENTO')}>
-                <AlertCircle className="mr-2 h-4 w-4 text-yellow-600" />
+                <AlertCircle className="mr-2 h-4 w-4 text-warning-texto" />
                 Marcar como Mantenimiento
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onBulkStateChange('DANADO')}>
-                <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                <XCircle className="mr-2 h-4 w-4 text-danger-texto" />
                 Marcar como Dañado
               </DropdownMenuItem>
             </DropdownMenuContent>

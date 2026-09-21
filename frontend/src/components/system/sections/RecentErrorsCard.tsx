@@ -16,16 +16,16 @@ import { statsApi, type RecentError, type RecentErrorsResponse } from '@/lib/api
 
 function levelBadge(level: string) {
   if (level === 'ERROR') {
-    return <Badge variant="destructive" className="text-[10px]">ERROR</Badge>;
+    return <Badge variant="destructive" className="text-2xs">ERROR</Badge>;
   }
   if (level === 'WARN') {
     return (
-      <Badge variant="outline" className="text-[10px] border-utec-yellow text-utec-yellow">
+      <Badge variant="outline" className="text-2xs border-utec-yellow text-marca-amarillo-texto">
         WARN
       </Badge>
     );
   }
-  return <Badge variant="secondary" className="text-[10px]">{level}</Badge>;
+  return <Badge variant="secondary" className="text-2xs">{level}</Badge>;
 }
 
 /**
@@ -92,8 +92,8 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-card bg-card">
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-utec-dark text-white border-b border-white/10">
-        <AlertTriangle className="h-4 w-4 text-utec-red shrink-0" />
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-chrome text-white border-b border-white/10">
+        <AlertTriangle className="h-4 w-4 text-marca-rojo-texto shrink-0" />
         <h3 className="text-sm font-semibold flex-1">
           Top errores últimas {data?.windowHours ?? 24}h
         </h3>
@@ -104,7 +104,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
         )}
         <div className="flex items-center gap-1.5">
           <Switch id="ocultar-ruido" checked={ocultarRuido} onCheckedChange={setOcultarRuido} />
-          <Label htmlFor="ocultar-ruido" className="cursor-pointer whitespace-nowrap text-[11px] text-white/80">
+          <Label htmlFor="ocultar-ruido" className="cursor-pointer whitespace-nowrap text-2xs text-white/80">
             Ocultar ruido conocido
           </Label>
         </div>
@@ -128,13 +128,13 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
         </div>
       ) : (
           <Table className="table-fixed w-full">
-            <TableHeader className="bg-utec-dark">
+            <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-white/10">
-                <TableHead className="h-9 w-[70px] text-white/70 text-xs font-semibold uppercase tracking-wide">Nivel</TableHead>
-                <TableHead className="h-9 w-[60px] text-center text-white/70 text-xs font-semibold uppercase tracking-wide">Count</TableHead>
-                <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Mensaje</TableHead>
-                <TableHead className="h-9 w-[180px] hidden lg:table-cell text-white/70 text-xs font-semibold uppercase tracking-wide">Logger</TableHead>
-                <TableHead className="h-9 w-[90px] text-right text-white/70 text-xs font-semibold uppercase tracking-wide">Último</TableHead>
+                <TableHead className="w-[70px]">Nivel</TableHead>
+                <TableHead className="w-[60px] text-center">Count</TableHead>
+                <TableHead>Mensaje</TableHead>
+                <TableHead className="w-[180px] hidden lg:table-cell">Logger</TableHead>
+                <TableHead className="w-[90px] text-right">Último</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -154,7 +154,7 @@ export const RecentErrorsCard = memo(function RecentErrorsCard() {
                     {e.exception && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="text-[11px] text-utec-red break-words line-clamp-1 cursor-help">
+                          <div className="text-2xs text-marca-rojo-texto break-words line-clamp-1 cursor-help">
                             {e.exception}
                           </div>
                         </TooltipTrigger>

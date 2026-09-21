@@ -19,10 +19,10 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
   const [aiError, setAiError] = useState<string | null>(null);
 
   const getPuntajeColor = (puntaje: number) => {
-    if (puntaje >= 0.8) return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    if (puntaje >= 0.6) return "bg-blue-50 text-blue-700 border-blue-200";
-    if (puntaje >= 0.4) return "bg-amber-50 text-amber-700 border-amber-200";
-    return "bg-gray-50 text-gray-700 border-gray-200";
+    if (puntaje >= 0.8) return "bg-success-suave text-success-texto border-success-borde";
+    if (puntaje >= 0.6) return "bg-info-suave text-info-texto border-info-borde";
+    if (puntaje >= 0.4) return "bg-warning-suave text-warning-texto border-warning-borde";
+    return "bg-muted text-foreground/80 border-border";
   };
 
   const handleExplicar = async (e: React.MouseEvent) => {
@@ -79,21 +79,21 @@ export function RecomendacionCard({ recomendacion, onSelect, className }: Readon
         </div>
         {aiExplicacion && (
           <div className="rounded border border-utec-blue/30 bg-utec-blue/5 p-2 text-sm">
-            <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-utec-blue">
+            <div className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-marca-azul-texto">
               <Wand2 className="h-3 w-3" /> Explicación IA
             </div>
-            <p className="whitespace-pre-wrap leading-relaxed text-gray-800">{aiExplicacion}</p>
+            <p className="whitespace-pre-wrap leading-relaxed text-foreground">{aiExplicacion}</p>
           </div>
         )}
         {aiError && (
-          <p className="text-xs text-red-600">Error IA: {aiError}</p>
+          <p className="text-xs text-danger-texto">Error IA: {aiError}</p>
         )}
         <Button
           variant="ghost"
           size="sm"
           onClick={handleExplicar}
           disabled={aiLoading}
-          className="h-7 px-2 text-xs text-utec-blue hover:bg-utec-blue/10"
+          className="h-7 px-2 text-xs text-marca-azul-texto hover:bg-utec-blue/10"
         >
           {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
           <span className="ml-1">{aiExplicacion ? 'Regenerar explicación' : 'Explicar con IA'}</span>

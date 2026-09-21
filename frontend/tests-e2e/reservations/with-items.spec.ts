@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Crear reserva con un ítem solicitado: el docente agrega un Proyector E2E
@@ -39,13 +40,8 @@ test.describe('Reservas: creación con ítems solicitados', () => {
     // Fecha: 5 días vista (libres respecto a las semanales del test recurring).
     const inicio = new Date();
     inicio.setDate(inicio.getDate() + 5);
-    const dia = String(inicio.getDate());
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${dia}$`) })
-      .first()
-      .click();
+    await elegirDia(page, inicio);
 
     // Horas libres.
     const horas = page.locator('input[placeholder="00"]');

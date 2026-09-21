@@ -27,16 +27,25 @@ export function csvEscape(value: string | null | undefined): string {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
+/**
+ * Descarga las filas ya armadas como un CSV.
+ *
+ * El `\uFEFF` del principio es el BOM: sin él, Excel abre el archivo como
+ * latin-1 y los acentos salen rotos. Estaba escrito a mano en seis lugares
+ * —las tres pantallas de Estadísticas y las tres exportaciones de
+ * inscriptos—, y justamente `buildAndDownloadCsv`, que era el helper, no lo
+ * ponía: los CSV que pasaban por ahí salían mal.
+ */
+export function descargarCSV(filas: readonly string[], nombre: string): void {
+  const blob = new Blob([`\uFEFF${filas.join('\n')}`], { type: 'text/csv;charset=utf-8;' });
+  downloadBlob(blob, nombre);
+}
+
 /** Construye y dispara la descarga de un CSV a partir de encabezados y filas. */
 export function buildAndDownloadCsv(
   headers: readonly string[],
   rows: ReadonlyArray<ReadonlyArray<string | number>>,
   filename: string,
 ): void {
-  const csvContent = [
-    headers.join(','),
-    ...rows.map((row) => row.join(',')),
-  ].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  downloadBlob(blob, filename);
+  descargarCSV([headers.join(','), ...rows.map((row) => row.join(','))], filename);
 }

@@ -26,8 +26,8 @@ const SERVICES: ServiceMeta[] = [
 ];
 
 function statusColor(status: string | undefined): { dot: string; text: string } {
-  if (status === 'UP') return { dot: 'bg-utec-green', text: 'text-utec-green' };
-  if (status === 'DOWN' || status === 'OUT_OF_SERVICE') return { dot: 'bg-utec-red', text: 'text-utec-red' };
+  if (status === 'UP') return { dot: 'bg-utec-green', text: 'text-marca-verde-texto' };
+  if (status === 'DOWN' || status === 'OUT_OF_SERVICE') return { dot: 'bg-utec-red', text: 'text-marca-rojo-texto' };
   return { dot: 'bg-white/30', text: 'text-white/60' };
 }
 
@@ -42,7 +42,7 @@ export const ExternalServicesCard = memo(function ExternalServicesCard({ health 
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-utec-dark overflow-hidden">
+    <div className="rounded-xl border border-white/10 bg-chrome overflow-hidden">
       <div className="flex items-center gap-2.5 px-4 py-2.5 text-white">
         <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-green" aria-hidden />
         <Server className="h-3.5 w-3.5 text-white/70 shrink-0" />

@@ -30,8 +30,8 @@ interface TipoEspacio {
   color?: string;
 }
 
-const ACTIVE_BUTTON_CLASS = 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300';
-const INACTIVE_BUTTON_CLASS = 'text-gray-500 hover:text-gray-700';
+const ACTIVE_BUTTON_CLASS = 'bg-card text-foreground shadow-md ring-1 ring-border';
+const INACTIVE_BUTTON_CLASS = 'text-muted-foreground hover:text-foreground/80';
 
 function getFilterButtonClass(isActive: boolean): string {
   return `p-1.5 rounded transition-colors ${isActive ? ACTIVE_BUTTON_CLASS : INACTIVE_BUTTON_CLASS}`;
@@ -58,7 +58,7 @@ function DateRangeFilterSection({
 }: Readonly<DateRangeFilterProps>) {
   const allClass = getFilterButtonClass(fechaInicio === undefined && fechaFin === undefined);
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -81,7 +81,7 @@ function DateRangeFilterSection({
         tooltipFallback="Fecha inicio"
         onChange={onFechaInicioChange}
       />
-      <span className="mx-1 text-gray-400 text-xs">-</span>
+      <span className="mx-1 text-muted-foreground text-xs">-</span>
       <DateBoundButton
         value={fechaFin}
         otherBound={fechaInicio}
@@ -113,7 +113,7 @@ function DateBoundButton({
 }: Readonly<DateBoundButtonProps>) {
   const isUnset = value === undefined;
   const buttonClass = getFilterTriggerClass(!isUnset);
-  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-gray-500' : 'text-blue-600'}`;
+  const iconClass = `h-3.5 w-3.5 shrink-0 ${isUnset ? 'text-muted-foreground' : 'text-info-texto'}`;
   const disabledChecker = (date: Date) => {
     if (!otherBound) return false;
     const limit = new Date(otherBound);
@@ -162,7 +162,7 @@ interface TiempoFilterProps {
 
 function TiempoFilterSection({ tiempoFilter, onTiempoFilterChange }: Readonly<TiempoFilterProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onTiempoFilterChange('todas')} className={getFilterButtonClass(tiempoFilter === 'todas')}>
@@ -174,7 +174,7 @@ function TiempoFilterSection({ tiempoFilter, onTiempoFilterChange }: Readonly<Ti
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onTiempoFilterChange('futuras')} className={getFilterButtonClass(tiempoFilter === 'futuras')}>
-            <Calendar className={`h-3.5 w-3.5 ${tiempoFilter === 'futuras' ? 'text-blue-600' : 'text-blue-500'}`} />
+            <Calendar className={`h-3.5 w-3.5 ${tiempoFilter === 'futuras' ? 'text-info-texto' : 'text-info'}`} />
           </button>
         </TooltipTrigger>
         <TooltipContent>Reservas futuras</TooltipContent>
@@ -182,7 +182,7 @@ function TiempoFilterSection({ tiempoFilter, onTiempoFilterChange }: Readonly<Ti
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onTiempoFilterChange('pasadas')} className={getFilterButtonClass(tiempoFilter === 'pasadas')}>
-            <Clock className={`h-3.5 w-3.5 ${tiempoFilter === 'pasadas' ? 'text-gray-600' : 'text-gray-500'}`} />
+            <Clock className={`h-3.5 w-3.5 ${tiempoFilter === 'pasadas' ? 'text-muted-foreground' : 'text-muted-foreground'}`} />
           </button>
         </TooltipTrigger>
         <TooltipContent>Reservas pasadas</TooltipContent>
@@ -199,7 +199,7 @@ interface EstadoFilterProps {
 
 function EstadoFilterSection({ estadoFilter, showPendienteFilter, onEstadoFilterChange }: Readonly<EstadoFilterProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onEstadoFilterChange('todas')} className={getFilterButtonClass(estadoFilter === 'todas')}>
@@ -211,7 +211,7 @@ function EstadoFilterSection({ estadoFilter, showPendienteFilter, onEstadoFilter
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onEstadoFilterChange('APROBADO')} className={getFilterButtonClass(estadoFilter === 'APROBADO')}>
-            <CheckCircle2 className={`h-3.5 w-3.5 ${estadoFilter === 'APROBADO' ? 'text-green-600' : 'text-green-500'}`} />
+            <CheckCircle2 className={`h-3.5 w-3.5 ${estadoFilter === 'APROBADO' ? 'text-success-texto' : 'text-success'}`} />
           </button>
         </TooltipTrigger>
         <TooltipContent>Reservas aprobadas</TooltipContent>
@@ -220,7 +220,7 @@ function EstadoFilterSection({ estadoFilter, showPendienteFilter, onEstadoFilter
         <Tooltip>
           <TooltipTrigger asChild>
             <button onClick={() => onEstadoFilterChange('PENDIENTE')} className={getFilterButtonClass(estadoFilter === 'PENDIENTE')}>
-              <Hourglass className={`h-3.5 w-3.5 ${estadoFilter === 'PENDIENTE' ? 'text-amber-600' : 'text-amber-500'}`} />
+              <Hourglass className={`h-3.5 w-3.5 ${estadoFilter === 'PENDIENTE' ? 'text-warning-texto' : 'text-warning'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent>Reservas pendientes</TooltipContent>
@@ -229,7 +229,7 @@ function EstadoFilterSection({ estadoFilter, showPendienteFilter, onEstadoFilter
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onEstadoFilterChange('CANCELADO')} className={getFilterButtonClass(estadoFilter === 'CANCELADO')}>
-            <XCircle className={`h-3.5 w-3.5 ${estadoFilter === 'CANCELADO' ? 'text-red-600' : 'text-red-500'}`} />
+            <XCircle className={`h-3.5 w-3.5 ${estadoFilter === 'CANCELADO' ? 'text-danger-texto' : 'text-danger'}`} />
           </button>
         </TooltipTrigger>
         <TooltipContent>Reservas canceladas</TooltipContent>
@@ -263,10 +263,10 @@ function PopoverFilterSection({
   const triggerClass = `p-1.5 rounded transition-colors ${
     isAll ? INACTIVE_BUTTON_CLASS : activeBgClass
   }`;
-  const iconClass = `h-3.5 w-3.5 ${isAll ? 'text-gray-500' : activeTextColorClass}`;
+  const iconClass = `h-3.5 w-3.5 ${isAll ? 'text-muted-foreground' : activeTextColorClass}`;
   const selectedItem = items.find(item => item.id === selectedId);
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
           <button onClick={() => onChange(null)} className={allClass}>
@@ -296,8 +296,8 @@ function PopoverFilterSection({
                 onClick={() => onChange(item.id)}
                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
                   item.id === selectedId
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-muted text-foreground font-medium'
+                    : 'text-foreground/80 hover:bg-muted'
                 }`}
               >
                 {item.swatchColor && (
@@ -399,8 +399,8 @@ export default function ReservationFilters({
         onChange={onEspacioFilterChange}
         Icon={Building2}
         tooltipNone="Todos los espacios"
-        activeBgClass="bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
-        activeTextColorClass="text-blue-700"
+        activeBgClass="bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde"
+        activeTextColorClass="text-info-texto"
       />
       <PopoverFilterSection
         selectedId={tipoEspacioFilter}
@@ -408,8 +408,8 @@ export default function ReservationFilters({
         onChange={onTipoEspacioFilterChange}
         Icon={Tag}
         tooltipNone="Todos los tipos"
-        activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-        activeTextColorClass="text-purple-700"
+        activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+        activeTextColorClass="text-acento-texto"
       />
       <PopoverFilterSection
         selectedId={carreraFilter}
@@ -417,15 +417,15 @@ export default function ReservationFilters({
         onChange={onCarreraFilterChange}
         Icon={GraduationCap}
         tooltipNone="Todas las carreras"
-        activeBgClass="bg-indigo-100 text-indigo-900 shadow-md ring-1 ring-indigo-300"
-        activeTextColorClass="text-indigo-700"
+        activeBgClass="bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde"
+        activeTextColorClass="text-info-texto"
       />
       {hayFiltrosActivos && (
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={onClearFilters}
-              className="p-1.5 rounded transition-colors bg-red-500 text-white hover:bg-red-600"
+              className="p-1.5 rounded transition-colors bg-danger text-white hover:bg-danger"
             >
               <BrushCleaning className="h-3.5 w-3.5" />
             </button>

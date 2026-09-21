@@ -57,9 +57,9 @@ export function AuthCallbackSuccess() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error de Autenticación</h1>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-danger-texto mb-4">Error de Autenticación</h1>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <p className="text-sm text-muted-foreground">
             Serás redirigido al login en unos segundos...
           </p>
         </div>
@@ -70,11 +70,11 @@ export function AuthCallbackSuccess() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-info mx-auto mb-4"></div>
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           {isProcessing ? 'Procesando autenticación...' : 'Autenticación exitosa'}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           {isProcessing 
             ? 'Por favor espera mientras configuramos tu sesión' 
             : 'Redirigiendo al dashboard...'

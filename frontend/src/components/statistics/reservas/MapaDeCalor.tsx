@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import type { HeatmapCelda } from '@/lib/api/stats';
+import { DIAS_DESDE_DOMINGO } from '@/lib/utils/fechas';
 
 // 0 = domingo, como EXTRACT(DOW) en Postgres. Se muestra de lunes a domingo.
-const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const ORDEN_DIAS = [1, 2, 3, 4, 5, 6, 0];
 // Sin datos, el horario del campus; con datos, se ajusta a las horas usadas.
 const HORARIO_CAMPUS = { desde: 8, hasta: 21 };
@@ -50,7 +50,7 @@ export function MapaDeCalor({ celdas }: Readonly<{ celdas: HeatmapCelda[] }>) {
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-separate border-spacing-[3px] text-[11px]" style={{ minWidth: 90 + horas.length * 36 }}>
+        <table className="w-full table-fixed border-separate border-spacing-[3px] text-2xs" style={{ minWidth: 90 + horas.length * 36 }}>
           <thead>
             <tr>
               <th className="w-10" />
@@ -65,14 +65,14 @@ export function MapaDeCalor({ celdas }: Readonly<{ celdas: HeatmapCelda[] }>) {
           <tbody>
             {ORDEN_DIAS.map((dia) => (
               <tr key={dia}>
-                <td className="pr-2 text-right font-medium text-muted-foreground">{DIAS[dia]}</td>
+                <td className="pr-2 text-right font-medium text-muted-foreground">{DIAS_DESDE_DOMINGO[dia]}</td>
                 {horas.map((h) => {
                   const cant = matriz[dia][h] ?? 0;
                   const intensidad = cant / maximo;
                   return (
                     <td
                       key={h}
-                      title={`${DIAS[dia]} ${h}:00 · ${cant} reservas`}
+                      title={`${DIAS_DESDE_DOMINGO[dia]} ${h}:00 · ${cant} reservas`}
                       className={`h-8 rounded text-center align-middle tabular-nums ${cant === 0 ? 'bg-muted/60 text-transparent' : ''}`}
                       style={
                         cant === 0
@@ -96,7 +96,7 @@ export function MapaDeCalor({ celdas }: Readonly<{ celdas: HeatmapCelda[] }>) {
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-muted-foreground">
         {pico && (
           <span>
-            Pico: <b className="text-foreground">{DIAS[pico.diaSemana]} {pico.hora}:00</b> con {pico.cant} reservas
+            Pico: <b className="text-foreground">{DIAS_DESDE_DOMINGO[pico.diaSemana]} {pico.hora}:00</b> con {pico.cant} reservas
           </span>
         )}
         <span className="flex items-center gap-1.5">

@@ -12,9 +12,9 @@ test.describe('Espacios: filtro por tipo', () => {
     await page.goto('/rooms');
     await page.waitForURL('**/rooms');
 
-    await page.getByRole('button', { name: /^Filtros$/i }).click();
-    await page.locator('#tipo-filter').click();
-    await page.getByRole('option', { name: /^Laboratorio E2E$/i }).click();
+    await page.getByRole('button', { name: /^Filtrar: todos los tipos$/i }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^Laboratorio E2E$/i }).click();
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(700);
 
     await expect(page.getByText('Lab 303').first()).toBeVisible({ timeout: 10_000 });

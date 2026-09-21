@@ -112,7 +112,7 @@ export default function ReservationForm({
       </div>
 
       {/* Contenido del formulario */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg border shadow-sm">
+      <form onSubmit={handleSubmit} className="bg-card rounded-lg border shadow-sm">
         <div className="p-6 space-y-6">
           {/* Espacio */}
           <EspacioSelect
@@ -142,11 +142,11 @@ export default function ReservationForm({
             </div>
           )}
 
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-border my-4"></div>
 
           {/* Título */}
           <div className="flex items-center gap-4">
-            <Label htmlFor="titulo" className="text-sm font-semibold text-gray-700 min-w-[80px]">Título *</Label>
+            <Label htmlFor="titulo" className="text-sm font-semibold text-foreground/80 min-w-[80px]">Título *</Label>
             <div className="flex-1">
               <Input
                 id="titulo"
@@ -163,13 +163,13 @@ export default function ReservationForm({
             </div>
           </div>
 
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-border my-4"></div>
 
           {/* Motivo de solicitud */}
           {needsAnalystAssignment && (
             <>
               <div className="flex items-center gap-4">
-                <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-gray-700 min-w-[80px]">Motivo</Label>
+                <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-foreground/80 min-w-[80px]">Motivo</Label>
                 <div className="flex-1">
                   <Textarea
                     id="motivoSolicitud"
@@ -186,7 +186,7 @@ export default function ReservationForm({
                 </div>
               </div>
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
             </>
           )}
 
@@ -199,7 +199,7 @@ export default function ReservationForm({
             />
           )}
 
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-border my-4"></div>
 
           {/* Analista asignado */}
           {puedeElegirAnalista && (
@@ -220,7 +220,7 @@ export default function ReservationForm({
                   }
                 />
               )}
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
             </>
           )}
 
@@ -244,11 +244,11 @@ export default function ReservationForm({
             onActualizar={actualizarItemSolicitado}
           />
 
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-border my-4"></div>
 
           {/* Fecha */}
           <div className="flex items-center gap-4">
-            <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">Fecha *</Label>
+            <Label className="text-sm font-semibold text-foreground/80 min-w-[80px]">Fecha *</Label>
             <div className="flex-1">
               <DatePicker
                 value={fecha}
@@ -260,7 +260,7 @@ export default function ReservationForm({
             </div>
           </div>
 
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-border my-4"></div>
 
           {/* Horas de inicio y fin */}
           <HoraInicioFinSection
@@ -297,7 +297,7 @@ export default function ReservationForm({
             </div>
           )}
 
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-border my-4"></div>
 
           {/* Recurrencia */}
           <RecurrenciaSection
@@ -308,7 +308,7 @@ export default function ReservationForm({
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
+        <div className="border-t bg-muted px-6 py-4 flex justify-end gap-3">
           <Button
             type="button"
             variant="outline"
@@ -318,7 +318,7 @@ export default function ReservationForm({
             Cancelar
           </Button>
           <PermissionGuard requiredPermissions={['reserva:crear']}>
-            <Button type="submit" disabled={loading || !isFormValid} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" disabled={loading || !isFormValid} className="bg-info hover:bg-info">
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {needsAnalystAssignment ? 'Enviar Solicitud' : 'Crear Reserva'}
             </Button>

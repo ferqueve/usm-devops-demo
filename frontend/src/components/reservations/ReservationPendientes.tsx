@@ -191,7 +191,7 @@ export default function ReservationPendientes({
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <Hourglass className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 shrink-0" />
+              <Hourglass className="h-4 w-4 sm:h-5 sm:w-5 text-warning-texto shrink-0" />
               <CardTitle className="text-sm sm:text-base truncate">
                 Pendientes
                 {totalElements > 0 && (
@@ -219,9 +219,9 @@ export default function ReservationPendientes({
         {isCollapsed ? (
           <CardContent className="px-1.5 sm:px-2 pb-2">
             {!loading && (
-              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-lg hover:bg-muted transition-colors">
                 <div className="text-muted-foreground mb-0.5 sm:mb-1">
-                  <Hourglass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-600" />
+                  <Hourglass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-warning-texto" />
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-center leading-tight truncate w-full">
                   {totalElements}
@@ -252,7 +252,7 @@ export default function ReservationPendientes({
                     onClick={() => setOnlyUrgent((prev) => !prev)}
                     aria-label="Solo urgentes"
                     aria-pressed={onlyUrgent}
-                    className={`h-8 w-8 flex-shrink-0 ${onlyUrgent ? 'bg-red-600 hover:bg-red-700 text-white' : ''}`}
+                    className={`h-8 w-8 flex-shrink-0 ${onlyUrgent ? 'bg-danger hover:bg-danger text-white' : ''}`}
                   >
                     <Flame className="h-4 w-4" />
                   </Button>
@@ -265,7 +265,7 @@ export default function ReservationPendientes({
             if (loading) {
               return (
                 <div className="text-center py-6 sm:py-8">
-                  <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-yellow-600"></div>
+                  <div className="inline-block animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-warning"></div>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-2">Cargando solicitudes...</p>
                 </div>
               );
@@ -274,8 +274,8 @@ export default function ReservationPendientes({
               if (hayFiltrosActivos) {
                 return (
                   <div className="text-center py-6 px-2">
-                    <p className="text-xs sm:text-sm font-medium text-gray-700">Sin resultados</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">No hay pendientes con esos filtros</p>
+                    <p className="text-xs sm:text-sm font-medium text-foreground/80">Sin resultados</p>
+                    <p className="text-2xs sm:text-xs text-muted-foreground mt-1">No hay pendientes con esos filtros</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -291,10 +291,10 @@ export default function ReservationPendientes({
                 );
               }
               return (
-                <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg border border-gray-200 px-2">
-                  <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-2 sm:mb-3" />
-                  <p className="text-xs sm:text-sm font-medium text-gray-700">No hay solicitudes pendientes</p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Todas las reservas están procesadas</p>
+                <div className="text-center py-6 sm:py-8 bg-muted rounded-lg border border-border px-2">
+                  <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-success mx-auto mb-2 sm:mb-3" />
+                  <p className="text-xs sm:text-sm font-medium text-foreground/80">No hay solicitudes pendientes</p>
+                  <p className="text-2xs sm:text-xs text-muted-foreground mt-1">Todas las reservas están procesadas</p>
                 </div>
               );
             }
@@ -311,7 +311,7 @@ export default function ReservationPendientes({
                   <button
                     type="button"
                     key={reserva.id}
-                    className="group relative overflow-hidden rounded-md border border-gray-200 hover:border-gray-300 bg-white cursor-pointer text-left w-full transition-all hover:shadow-sm"
+                    className="group relative overflow-hidden rounded-md border border-border hover:border-border bg-card cursor-pointer text-left w-full transition-all hover:shadow-sm"
                     onClick={() => onViewDetails(reserva)}
                     aria-label={`Ver detalles de reserva ${reserva.titulo || reserva.espacioNombre}`}
                   >
@@ -327,10 +327,10 @@ export default function ReservationPendientes({
                         </h3>
                         {isPrioritaria && (
                           <span
-                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0 ${
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-2xs font-semibold flex-shrink-0 ${
                               isAltaUrgencia
-                                ? 'bg-red-50 text-red-700 border border-red-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                ? 'bg-danger-suave text-danger-texto border border-danger-borde'
+                                : 'bg-warning-suave text-warning-texto border border-warning-borde'
                             }`}
                           >
                             <AlertTriangle className="h-2.5 w-2.5" />
@@ -338,7 +338,7 @@ export default function ReservationPendientes({
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-2xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3 flex-shrink-0" />
                           {formatShortDate(reserva.inicio)}
@@ -352,7 +352,7 @@ export default function ReservationPendientes({
                           Cap. {reserva.capacidadEspacio}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-0">
+                      <div className="flex items-center gap-1 text-2xs text-muted-foreground min-w-0">
                         <User className="h-3 w-3 flex-shrink-0" />
                         <span className="truncate">{reserva.usuarioNombre}</span>
                       </div>

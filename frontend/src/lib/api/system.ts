@@ -1,11 +1,11 @@
 import { actuatorRequest } from './client';
+import { API_BASE_URL } from '@/lib/config/api';
 import type {
   ActuatorEndpoints, AppInfo, HealthInfo, HttpTraceInfo, LiquibaseInfo,
   LoggersInfo, MappingsInfo, MetricInfo,
 } from '@/lib/types/actuator';
 
 // Constante para la URL base de la API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
 // API de sistema/actuator
 export const actuatorApi = {

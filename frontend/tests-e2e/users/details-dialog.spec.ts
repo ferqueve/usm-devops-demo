@@ -15,7 +15,7 @@ test.describe('Usuarios: diálogo de detalles', () => {
 
     const fila = page.locator('tr', { hasText: 'docente@e2e.test' }).first();
     await expect(fila).toBeVisible({ timeout: 10_000 });
-    await fila.getByRole('button', { name: /^Ver$/i }).click();
+    await fila.getByRole('button', { name: /^Ver detalles$/i }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText(/Detalles del Usuario/i)).toBeVisible();
