@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/Button';
 import type { Evento } from '@/lib/types/eventos';
+import { MARCA } from '@/lib/design/paleta';
 
 interface AfichePosterProps {
   evento: Evento;
@@ -52,7 +53,7 @@ export function AfichePoster({ evento, open, onOpenChange }: Readonly<AfichePost
 
     // Fondo: gradiente UTEC
     const grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, '#184897');
+    grad.addColorStop(0, MARCA.azul);
     grad.addColorStop(1, '#0f2f63');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
@@ -75,7 +76,7 @@ export function AfichePoster({ evento, open, onOpenChange }: Readonly<AfichePost
     const tipo = evento.tipo === 'CURSO' ? 'CURSO' : 'EVENTO';
     ctx.font = 'bold 18px Poppins, sans-serif';
     const chipW = ctx.measureText(tipo).width + 36;
-    ctx.fillStyle = '#86bb4c';
+    ctx.fillStyle = MARCA.verde;
     ctx.beginPath(); ctx.roundRect(60, 180, chipW, 40, 20); ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.fillText(tipo, 78, 207);
@@ -94,7 +95,7 @@ export function AfichePoster({ evento, open, onOpenChange }: Readonly<AfichePost
 
     // Fecha + lugar
     let infoY = Math.max(afterTitle + 180, 560);
-    ctx.fillStyle = '#F6CA21';
+    ctx.fillStyle = MARCA.amarillo;
     ctx.font = 'bold 30px Poppins, sans-serif';
     ctx.fillText('🗓  ' + formatFechaLarga(evento.inicio), 60, infoY);
     if (evento.espacioNombre) {
@@ -153,7 +154,7 @@ export function AfichePoster({ evento, open, onOpenChange }: Readonly<AfichePost
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-cyan/10 text-utec-cyan"><ImageIcon className="h-4 w-4" /></span>Afiche del evento</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-cyan/10 text-marca-cian-texto"><ImageIcon className="h-4 w-4" /></span>Afiche del evento</DialogTitle>
           <DialogDescription>Generado con el branding UTEC y un QR a la página del evento.</DialogDescription>
         </DialogHeader>
         <div className="relative rounded-lg overflow-hidden border bg-muted">

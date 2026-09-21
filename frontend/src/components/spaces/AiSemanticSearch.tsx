@@ -40,10 +40,10 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="h-9 gap-1.5 border-utec-blue/40 text-utec-blue hover:bg-utec-blue/10"
+          className="h-9 gap-1.5 border-utec-blue/40 text-marca-azul-texto hover:bg-utec-blue/10"
           aria-label="Buscar con IA"
         >
-          <Sparkles className="h-4 w-4 text-utec-yellow" />
+          <Sparkles className="h-4 w-4 text-marca-amarillo-texto" />
           <span className="hidden md:inline">Buscar con IA</span>
         </Button>
       </PopoverTrigger>
@@ -51,7 +51,7 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
         <div className="space-y-3">
           <div>
             <h4 className="text-sm font-semibold flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-utec-blue" />
+              <Sparkles className="h-3.5 w-3.5 text-marca-azul-texto" />
               Búsqueda semántica
             </h4>
             <p className="text-xs text-muted-foreground">
@@ -70,7 +70,7 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
-          {error && <p className="text-xs text-red-600">Error: {error}</p>}
+          {error && <p className="text-xs text-danger-texto">Error: {error}</p>}
           {resultados && resultados.length === 0 && (
             <p className="text-xs text-muted-foreground">Sin coincidencias.</p>
           )}
@@ -84,11 +84,11 @@ export function AiSemanticSearch({ onSelectEspacio }: Readonly<AiSemanticSearchP
                       onSelectEspacio?.(r.espacio_id);
                       setOpen(false);
                     }}
-                    className="w-full rounded border bg-gray-50 p-2 text-left text-xs hover:border-utec-blue hover:bg-utec-blue/5"
+                    className="w-full rounded border bg-muted p-2 text-left text-xs hover:border-utec-blue hover:bg-utec-blue/5"
                   >
                     <div className="flex items-center justify-between font-semibold text-utec-dark">
                       <span>Espacio #{r.espacio_id}</span>
-                      <span className="font-mono text-[10px] text-muted-foreground">
+                      <span className="font-mono text-2xs text-muted-foreground">
                         {(r.similitud * 100).toFixed(1)}%
                       </span>
                     </div>

@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { HEADER_ACTION, HEADER_ACTION_ICON, PAGE_ACTIONS_SLOT } from '@/components/layouts/PageHeader';
 import type { Academico } from '@/lib/api/stats';
-import { csvEscape, downloadBlob } from '@/lib/utils/csv-helpers';
+import { descargarCSV, csvEscape } from '@/lib/utils/csv-helpers';
 import { fechaCorta, type Rango } from '../periodo';
 import { IndiceSecciones, Seccion } from '../Seccion';
 import { PanelEstadistica } from '../PanelEstadistica';
@@ -17,10 +17,12 @@ import { textoFiltros, useFiltrosReservas } from '../reservas/filtros';
 import { EventosLista, MateriasTutorias, ModalidadTutorias, SemanasTutorias, TutoriasKpis } from './Visuales';
 import { EventosPorOcupacion, EventosPorTipo, EventosResumen, MejorCalificados } from './Eventos';
 import { useEstadisticasAcademico } from './useEstadisticasAcademico';
+import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SECCIONES = [
-  { id: 'tutorias', titulo: 'Tutorías', icono: GraduationCap, color: '#F6CA21' },
-  { id: 'eventos', titulo: 'Eventos', icono: Presentation, color: '#86bb4c' },
+  { id: 'tutorias', titulo: 'Tutorías', icono: GraduationCap, color: MARCA.amarillo },
+  { id: 'eventos', titulo: 'Eventos', icono: Presentation, color: MARCA.verde },
 ];
 
 function exportarCSV(datos: Academico, periodoTexto: string, filtrosTexto: string, rango: Rango) {
@@ -51,16 +53,16 @@ function exportarCSV(datos: Academico, periodoTexto: string, filtrosTexto: strin
     'Evento,Tipo,Fecha,Espacio,Cupo,Inscriptos,Calificación',
     ...datos.eventosLista.map((v) => `${csvEscape(v.titulo)},${v.tipo},${v.fecha.slice(0, 10)},${csvEscape(v.espacioNombre ?? '')},${v.cupo ?? ''},${v.inscriptos},${v.ratingPromedio == null ? '' : v.ratingPromedio.toFixed(1)}`),
   ];
-  downloadBlob(new Blob([`\uFEFF${filas.join('\n')}`], { type: 'text/csv;charset=utf-8;' }), `estadisticas_academicas_${rango.desde}_${rango.hasta}.csv`);
+  descargarCSV(filas, `estadisticas_academicas_${rango.desde}_${rango.hasta}.csv`);
 }
 
 function Esqueleto() {
   return (
     <div className="space-y-3" aria-busy>
-      <div className="h-[74px] animate-pulse rounded-xl bg-muted" />
+      <Skeleton className="h-[74px] rounded-xl" />
       <div className="grid gap-3 lg:grid-cols-3">
-        <div className="h-[360px] animate-pulse rounded-xl bg-muted" />
-        <div className="h-[360px] animate-pulse rounded-xl bg-muted lg:col-span-2" />
+        <Skeleton className="h-[360px] rounded-xl" />
+        <Skeleton className="h-[360px] rounded-xl lg:col-span-2" />
       </div>
     </div>
   );
@@ -141,7 +143,7 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
           <Seccion
             id="tutorias"
             icono={GraduationCap}
-            color="#F6CA21"
+            color={MARCA.amarillo}
             titulo="Tutorías"
             descripcion="Cuánto se llenan las tutorías, cuántos de los inscriptos van y cómo las califican."
             destacados={[
@@ -152,18 +154,18 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
             ]}
           >
             <div className="grid gap-3 lg:h-[360px] lg:grid-cols-3">
-              <PanelEstadistica title="Asistencia y cupo" count={`${entero(t.total)} en el período`} accentColor="#F6CA21" centrar explicacion={EXPLICACIONES.tutorias}>
+              <PanelEstadistica title="Asistencia y cupo" count={`${entero(t.total)} en el período`} accentColor={MARCA.amarillo} centrar explicacion={EXPLICACIONES.tutorias}>
                 {(grande) => <TutoriasKpis t={t} grande={grande} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Semana a semana" count="agendadas contra asistencias" accentColor="#86bb4c" className="lg:col-span-2" centrar explicacion={EXPLICACIONES.semanasTutorias}>
+              <PanelEstadistica title="Semana a semana" count="agendadas contra asistencias" accentColor={MARCA.verde} className="lg:col-span-2" centrar explicacion={EXPLICACIONES.semanasTutorias}>
                 {(grande) => <SemanasTutorias semanas={datos.porSemana} alto={grande ? 440 : 250} desde={rango.desde} hasta={rango.hasta} />}
               </PanelEstadistica>
             </div>
             <div className="grid gap-3 lg:h-[460px] lg:grid-cols-3">
-              <PanelEstadistica title="Por materia" count="las 15 con más agendadas" accentColor="#184897" className="lg:col-span-2" scroll explicacion={EXPLICACIONES.materias}>
+              <PanelEstadistica title="Por materia" count="las 15 con más agendadas" accentColor={MARCA.azul} className="lg:col-span-2" scroll explicacion={EXPLICACIONES.materias}>
                 <MateriasTutorias filas={datos.porMateria} />
               </PanelEstadistica>
-              <PanelEstadistica title="Modalidad" count="presencial, virtual, grupal" accentColor="#00c7ff" centrar explicacion={EXPLICACIONES.modalidad}>
+              <PanelEstadistica title="Modalidad" count="presencial, virtual, grupal" accentColor={MARCA.cian} centrar explicacion={EXPLICACIONES.modalidad}>
                 {(grande) => <ModalidadTutorias t={t} grande={grande} />}
               </PanelEstadistica>
             </div>
@@ -172,7 +174,7 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
           <Seccion
             id="eventos"
             icono={Presentation}
-            color="#86bb4c"
+            color={MARCA.verde}
             titulo="Eventos"
             descripcion="Qué eventos se hicieron, cuánto se llenaron y cómo los calificaron."
             destacados={[
@@ -183,10 +185,10 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
             ]}
           >
             <div className="grid gap-3 lg:h-[380px] lg:grid-cols-3">
-              <PanelEstadistica title="Ocupación del cupo" count={`${entero(e.inscripciones)} inscripciones`} accentColor="#86bb4c" centrar explicacion={EXPLICACIONES.eventosResumen}>
+              <PanelEstadistica title="Ocupación del cupo" count={`${entero(e.inscripciones)} inscripciones`} accentColor={MARCA.verde} centrar explicacion={EXPLICACIONES.eventosResumen}>
                 {(grande) => <EventosResumen e={e} grande={grande} />}
               </PanelEstadistica>
-              <PanelEstadistica title="Qué tan llenos" count="eventos por tramo de ocupación" accentColor="#F6CA21" centrar explicacion={EXPLICACIONES.eventosTramos}>
+              <PanelEstadistica title="Qué tan llenos" count="eventos por tramo de ocupación" accentColor={MARCA.amarillo} centrar explicacion={EXPLICACIONES.eventosTramos}>
                 {(grande) => <EventosPorOcupacion eventos={datos.eventosLista} alto={grande ? 360 : 220} />}
               </PanelEstadistica>
               <PanelEstadistica title="Por tipo" count="cursos, talleres, eventos" accentColor="#9333ea" centrar explicacion={EXPLICACIONES.eventosTipo}>
@@ -197,14 +199,14 @@ export default function EstadisticasAcademico({ rango, periodoLabel }: Readonly<
               <PanelEstadistica
                 title="Todos los eventos"
                 count={`${entero(e.total)} · cupo ${entero(e.cupoTotal)}`}
-                accentColor="#86bb4c"
+                accentColor={MARCA.verde}
                 className="lg:col-span-2"
                 scroll
                 explicacion={EXPLICACIONES.eventos}
               >
                 <EventosLista eventos={datos.eventosLista} />
               </PanelEstadistica>
-              <PanelEstadistica title="Mejor calificados" count="promedio de opiniones" accentColor="#F6CA21" scroll explicacion={EXPLICACIONES.eventos}>
+              <PanelEstadistica title="Mejor calificados" count="promedio de opiniones" accentColor={MARCA.amarillo} scroll explicacion={EXPLICACIONES.eventos}>
                 <MejorCalificados eventos={datos.eventosLista} />
               </PanelEstadistica>
             </div>

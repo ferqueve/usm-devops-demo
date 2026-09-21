@@ -59,7 +59,7 @@ export function AddInscriptoDialog({ materiaId, open, onOpenChange, onSuccess }:
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue"><UserPlus className="h-4 w-4" /></span>
+            <span className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto"><UserPlus className="h-4 w-4" /></span>
             Inscribir estudiante
           </DialogTitle>
           <DialogDescription>Buscá un estudiante para inscribirlo en la materia.</DialogDescription>

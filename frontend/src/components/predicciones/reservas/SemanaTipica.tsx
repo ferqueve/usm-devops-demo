@@ -2,6 +2,7 @@ import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 
 import type { TooltipProps } from 'recharts';
 import { useColores } from '../colores';
 import { entero } from '../formato';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 interface Props {
   semana: Array<{ dia: string; valor: number }>;
@@ -10,9 +11,9 @@ interface Props {
 function Globo({ active, payload, label }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-1.5 text-xs text-white shadow-lg">
+    <GloboGrafico>
       {label}: <b className="tabular-nums">{entero(Number(payload[0].value))}</b> por día
-    </div>
+    </GloboGrafico>
   );
 }
 

@@ -12,11 +12,10 @@ test.describe('Usuarios: filtro por rol', () => {
     await page.goto('/users');
     await page.waitForURL('**/users');
 
-    // El panel de filtros arranca colapsado: abrirlo para acceder a
-    // #role-filter.
-    await page.getByRole('button', { name: /^Filtros$/i }).click();
-    await page.locator('#role-filter').click();
-    await page.getByRole('option', { name: /^Docente$/i }).click();
+    // Filtro compacto de rol: el ícono abre un popover con los roles.
+    await page.getByRole('button', { name: /^Filtrar: todos los roles$/i }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^Docente$/i }).click();
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(700);
 
     const main = page.locator('main');

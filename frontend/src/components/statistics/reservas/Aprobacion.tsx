@@ -30,12 +30,12 @@ export function RespuestaKpis({ datos, grande = false }: Readonly<{ datos: Aprob
       <div className="grid grid-cols-2 gap-2">
         {filas.map((f) => (
           <div key={f.etiqueta} className="rounded-lg border bg-muted/30 px-3 py-2">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
               <f.icono className="h-3.5 w-3.5" style={{ color: f.color }} />
               {f.etiqueta}
             </div>
             <div className="text-lg font-semibold tabular-nums" style={{ color: f.color }}>{f.valor}</div>
-            <div className="text-[10px] leading-tight text-muted-foreground">{f.detalle}</div>
+            <div className="text-2xs leading-tight text-muted-foreground">{f.detalle}</div>
           </div>
         ))}
       </div>
@@ -80,7 +80,7 @@ export function Analistas({ filas }: Readonly<{ filas: AnalistaAprobacion[] }>) 
   ] as const;
   return (
     <div>
-      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_52px_64px] gap-2 border-b pb-1.5 text-[10px] uppercase tracking-wide text-muted-foreground sm:grid-cols-[140px_minmax(0,1fr)_60px_72px]">
+      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_52px_64px] gap-2 border-b pb-1.5 text-2xs uppercase tracking-wide text-muted-foreground sm:grid-cols-[140px_minmax(0,1fr)_60px_72px]">
         <span>Analista</span>
         <span className="hidden sm:block">Carga</span>
         <span className="text-right">Vencidas</span>
@@ -95,7 +95,7 @@ export function Analistas({ filas }: Readonly<{ filas: AnalistaAprobacion[] }>) 
             <li key={a.usuarioId} className="grid grid-cols-[minmax(0,1fr)_52px_64px] items-center gap-2 text-sm sm:grid-cols-[140px_minmax(0,1fr)_60px_72px]">
               <div className="min-w-0">
                 <div className="truncate font-medium" title={a.nombre}>{a.nombre}</div>
-                <div className="text-[11px] tabular-nums text-muted-foreground">{entero(total)} asignadas</div>
+                <div className="text-2xs tabular-nums text-muted-foreground">{entero(total)} asignadas</div>
                 {/* En celular la barra va debajo del nombre. */}
                 <div className="mt-1 flex h-2 overflow-hidden rounded-full bg-muted sm:hidden" style={{ width: `${(total / maximo) * 100}%` }}>
                   {segmentos.map((s) => (
@@ -111,16 +111,16 @@ export function Analistas({ filas }: Readonly<{ filas: AnalistaAprobacion[] }>) 
                 >
                   {segmentos.map((s) => (Number(a[s.clave]) > 0 ? <div key={s.clave} style={{ flexGrow: Number(a[s.clave]), backgroundColor: s.color }} /> : null))}
                 </div>
-                <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{porcentaje(Number(a.aprobadas), Number(a.aprobadas) + Number(a.canceladas))}% ok</span>
+                <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">{porcentaje(Number(a.aprobadas), Number(a.aprobadas) + Number(a.canceladas))}% ok</span>
               </div>
               <span className="text-right tabular-nums">
                 {vencidas > 0 ? (
-                  <span className="inline-flex items-center gap-1 rounded bg-utec-red/12 px-1.5 py-0.5 text-xs font-semibold text-utec-red">
+                  <span className="inline-flex items-center gap-1 rounded bg-utec-red/12 px-1.5 py-0.5 text-xs font-semibold text-marca-rojo-texto">
                     <AlertTriangle className="h-3 w-3" />
                     {entero(vencidas)}
                   </span>
                 ) : (
-                  <CheckCircle2 className="ml-auto h-4 w-4 text-utec-green" aria-label="sin vencidas" />
+                  <CheckCircle2 className="ml-auto h-4 w-4 text-marca-verde-texto" aria-label="sin vencidas" />
                 )}
               </span>
               <span className="text-right">
@@ -171,7 +171,7 @@ export function PendientesAntiguedad({ tramos, alto = 200 }: Readonly<{ tramos: 
   if (total === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
-        <CheckCircle2 className="h-8 w-8 text-utec-green" />
+        <CheckCircle2 className="h-8 w-8 text-marca-verde-texto" />
         No quedan reservas pendientes del período.
       </div>
     );
@@ -192,11 +192,11 @@ export function PendientesAntiguedad({ tramos, alto = 200 }: Readonly<{ tramos: 
       />
       <p className="mt-2 text-center text-xs text-muted-foreground">
         {vencidas === total ? (
-          <>Las <b className="text-utec-red">{entero(total)}</b> ya vencieron: su fecha pasó sin respuesta.</>
+          <>Las <b className="text-marca-rojo-texto">{entero(total)}</b> ya vencieron: su fecha pasó sin respuesta.</>
         ) : vencidas === 0 ? (
           'Todas están a tiempo de resolverse.'
         ) : (
-          <><b className="text-utec-red">{entero(vencidas)}</b> de {entero(total)} ya vencieron; {entero(total - vencidas)} siguen a tiempo.</>
+          <><b className="text-marca-rojo-texto">{entero(vencidas)}</b> de {entero(total)} ya vencieron; {entero(total - vencidas)} siguen a tiempo.</>
         )}
       </p>
     </div>

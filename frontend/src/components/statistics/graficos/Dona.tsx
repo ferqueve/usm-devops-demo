@@ -3,6 +3,7 @@ import type { TooltipProps } from 'recharts';
 import { porcentaje } from '../reservas/formato';
 import { filtrable, HOVER_FILTRO } from './filtrable';
 import { formatoNumero, useTemaGraficos } from './tema';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 export interface PorcionDona {
   nombre: string;
@@ -25,9 +26,9 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PorcionDona & { total: number };
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-1.5 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <span style={{ color: p.color }}>●</span> {p.nombre}: <b>{formatoNumero(p.valor)}</b> · {porcentaje(p.valor, p.total)}%
-    </div>
+    </GloboGrafico>
   );
 }
 
@@ -67,7 +68,7 @@ export function Dona({ porciones, centro, leyendaCentro, tamano = 150 }: Readonl
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-2xl font-semibold leading-none">{centro ?? formatoNumero(total)}</span>
-          {leyendaCentro && <span className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{leyendaCentro}</span>}
+          {leyendaCentro && <span className="mt-1 text-2xs uppercase tracking-wide text-muted-foreground">{leyendaCentro}</span>}
         </div>
       </div>
       <ul className="min-w-[160px] flex-1 space-y-1.5">

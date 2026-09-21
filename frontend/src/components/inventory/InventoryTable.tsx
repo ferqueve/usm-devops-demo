@@ -62,9 +62,9 @@ export default function InventoryTable({
     <div className="border rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b-0">
+          <TableRow>
             {onToggleSelect && (
-              <TableHead className="h-10 bg-utec-dark text-white/70 w-[50px]">
+              <TableHead className="w-[50px]">
                 <Checkbox
                   checked={selectedItems?.size === items.length}
                   onCheckedChange={(checked) => {
@@ -78,7 +78,7 @@ export default function InventoryTable({
                 />
               </TableHead>
             )}
-            <TableHead className="h-10 bg-utec-dark text-white/70 w-[50px]">
+            <TableHead className="w-[50px]">
               <button
                 onClick={() => onSort && handleSort('id')}
                 className="flex items-center hover:text-white transition-colors"
@@ -86,7 +86,7 @@ export default function InventoryTable({
                 ID {sortConfig && getSortIcon('id')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('tipo')}
                 className="flex items-center hover:text-white transition-colors"
@@ -94,7 +94,7 @@ export default function InventoryTable({
                 Tipo {sortConfig && getSortIcon('tipo')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('cantidad')}
                 className="flex items-center hover:text-white transition-colors"
@@ -102,9 +102,9 @@ export default function InventoryTable({
                 Cantidad {sortConfig && getSortIcon('cantidad')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">Espacio</TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">Estado</TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70 text-right">Acciones</TableHead>
+            <TableHead>Espacio</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

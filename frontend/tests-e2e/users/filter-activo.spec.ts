@@ -13,17 +13,15 @@ test.describe('Usuarios: filtro por estado activo', () => {
     await page.goto('/users');
     await page.waitForURL('**/users');
 
-    await page.getByRole('button', { name: /^Filtros$/i }).click();
-    await page.locator('#active-filter').click();
-    await page.getByRole('option', { name: /^Inactivos$/i }).click();
+    const estado = page.getByRole('group', { name: /Estado de la cuenta/i });
+    await estado.getByRole('button', { name: /^Inactivos$/i }).click();
     await page.waitForTimeout(700);
 
     const main = page.locator('main');
     expect(await main.getByText(/@e2e\.test/i).count()).toBe(0);
 
     // "Activos" repuebla.
-    await page.locator('#active-filter').click();
-    await page.getByRole('option', { name: /^Activos$/i }).click();
+    await estado.getByRole('button', { name: /^Activos$/i }).click();
     await page.waitForTimeout(700);
     expect(await main.getByText(/@e2e\.test/i).count()).toBeGreaterThan(0);
   });

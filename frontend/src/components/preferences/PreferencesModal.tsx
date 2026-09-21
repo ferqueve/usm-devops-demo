@@ -570,11 +570,11 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                 
                 <CollapsibleContent className="space-y-4 pt-2">
                   {userProfile?.oauthProv && !hasPassword && (
-                    <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
-                      <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                    <div className="text-sm text-muted-foreground bg-info-suave dark:bg-info/20 p-3 rounded-md">
+                      <p className="font-medium text-info-texto dark:text-info-suave mb-1">
                         Cuenta vinculada con Google
                       </p>
-                      <p className="text-blue-700 dark:text-blue-300">
+                      <p className="text-info-texto dark:text-info-suave">
                         Establece una contraseña para poder iniciar sesión también con email y contraseña.
                       </p>
                     </div>
@@ -584,7 +584,7 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                     {hasPassword && (
                       <div className="space-y-2">
                         <Label htmlFor="currentPassword" className="text-sm">
-                          Contraseña actual <span className="text-red-500">*</span>
+                          Contraseña actual <span className="text-danger">*</span>
                         </Label>
                         <Input
                           id="currentPassword"
@@ -655,7 +655,7 @@ export default function PreferencesModal({ open, onOpenChange }: Readonly<Prefer
                     </div>
                     
                     {(password || confirmPassword) && password !== confirmPassword && (
-                      <p className="text-sm text-red-600 dark:text-red-400">
+                      <p className="text-sm text-danger-texto dark:text-danger">
                         Las contraseñas no coinciden
                       </p>
                     )}

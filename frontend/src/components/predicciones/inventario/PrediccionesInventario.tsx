@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { Boxes, CalendarRange, MousePointerClick, PackageX, Siren, Target } from 'lucide-react';
-import { Panel } from '@/components/dashboard/views/_components/Panel';
-import { StatStrip } from '@/components/dashboard/views/_components/StatStrip';
+import { Panel } from '@/components/common/Panel';
+import { StatStrip } from '@/components/common/StatStrip';
 import { Medidor } from '@/components/statistics/graficos/Medidor';
 import { useTemaGraficos } from '@/components/statistics/graficos/tema';
 import { postAnalyzeInventarioForecast } from '@/lib/api/ai';
@@ -14,6 +14,7 @@ import { ComoFunciona, ErrorPorTipo } from './ConfiabilidadInventario';
 import { GraficoPico, PatronSemanal, SelectorTipos, SemanasTipo, TiraRiesgo } from './Detalle';
 import { MatrizRiesgo, Semaforo, YaFalta } from './Riesgo';
 import { comprometidasMax, estiloRiesgo } from './estilos';
+import { MARCA } from '@/lib/design/paleta';
 
 /**
  * Predicciones de inventario: si el equipamiento va a alcanzar. Primero qué
@@ -136,10 +137,10 @@ export default function PrediccionesInventario({ version, entrenamiento }: Reado
       />
 
       <div className="grid gap-3 lg:h-[520px] lg:grid-cols-3">
-        <Panel title="Riesgo por tipo" count="de lo más urgente a lo más tranquilo · tocá uno" accentColor="#DF2B31" className="lg:col-span-2" scroll>
+        <Panel title="Riesgo por tipo" count="de lo más urgente a lo más tranquilo · tocá uno" accentColor={MARCA.rojo} className="lg:col-span-2" scroll>
           <Semaforo tipos={tipos} elegido={tipo?.tipoElementoId ?? null} onElegir={(id) => elegirTipo(id, true)} />
         </Panel>
-        <Panel title="Semana a semana" count="probabilidad máxima de faltante (%)" accentColor="#DE7A27" scroll>
+        <Panel title="Semana a semana" count="probabilidad máxima de faltante (%)" accentColor={MARCA.naranja} scroll>
           <MatrizRiesgo tipos={tipos} />
         </Panel>
       </div>
@@ -154,19 +155,19 @@ export default function PrediccionesInventario({ version, entrenamiento }: Reado
         ) : (
           <>
             <div className="grid gap-3 lg:h-[460px] lg:grid-cols-3">
-              <Panel title="Pico diario" count={`${tipo.nombre} · unidades pedidas a la vez`} accentColor="#DE7A27" className="lg:col-span-2">
+              <Panel title="Pico diario" count={`${tipo.nombre} · unidades pedidas a la vez`} accentColor={MARCA.naranja} className="lg:col-span-2">
                 <div className="space-y-3">
                   <GraficoPico tipo={tipo} alto={300} />
                   <TiraRiesgo serie={tipo.serie} />
                 </div>
               </Panel>
               <div className="grid gap-3 lg:grid-rows-2">
-                <Panel title="Semana típica" count="multiplicador por día" accentColor="#184897">
+                <Panel title="Semana típica" count="multiplicador por día" accentColor={MARCA.azul}>
                   <div className="flex h-full flex-col justify-center">
                     <PatronSemanal tipo={tipo} alto={96} />
                   </div>
                 </Panel>
-                <Panel title="Chance de que falte" count="el peor día" accentColor="#DF2B31">
+                <Panel title="Chance de que falte" count="el peor día" accentColor={MARCA.rojo}>
                   <div className="flex h-full items-center justify-center gap-4">
                     <div className="w-[150px]">
                       <Medidor valor={(tipo.probFaltanteMax ?? 0) * 100} etiqueta={estiloTipo?.etiqueta ?? 'Riesgo'} color={estiloTipo?.color} ancho={150} />
@@ -196,7 +197,7 @@ export default function PrediccionesInventario({ version, entrenamiento }: Reado
               </div>
             </div>
 
-            <Panel title="Semana por semana" count={`${tipo.nombre} · ${horizonte} días`} accentColor="#184897" flush>
+            <Panel title="Semana por semana" count={`${tipo.nombre} · ${horizonte} días`} accentColor={MARCA.azul} flush>
               <div className="py-1">
                 <SemanasTipo tipo={tipo} />
               </div>
@@ -212,15 +213,15 @@ export default function PrediccionesInventario({ version, entrenamiento }: Reado
       )}
 
       <div className="grid gap-3 lg:h-[440px] lg:grid-cols-3">
-        <Panel title="¿Qué tan confiable es?" count={`error por tipo · últimos ${modelo.holdoutDias ?? 28} días`} accentColor="#86bb4c" className="lg:col-span-2" scroll>
+        <Panel title="¿Qué tan confiable es?" count={`error por tipo · últimos ${modelo.holdoutDias ?? 28} días`} accentColor={MARCA.verde} className="lg:col-span-2" scroll>
           <ErrorPorTipo modelo={modelo} tipos={tipos} />
         </Panel>
-        <Panel title="Cómo funciona" count="binomial negativa" accentColor="#F6CA21" scroll>
+        <Panel title="Cómo funciona" count="binomial negativa" accentColor={MARCA.amarillo} scroll>
           <ComoFunciona modelo={modelo} />
         </Panel>
       </div>
 
-      <Panel title="Lectura con IA" accentColor="#00c7ff">
+      <Panel title="Lectura con IA" accentColor={MARCA.cian}>
         <AnalisisIA
           clave={modelo.entrenadoEn ?? ''}
           descripcion="Dice qué tipos van a faltar y cuándo, cuántas unidades conviene conseguir o cómo redistribuir, y si el error del modelo pide tomarlo con cuidado."

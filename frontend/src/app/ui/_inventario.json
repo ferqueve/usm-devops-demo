@@ -1,0 +1,3362 @@
+{
+ "generado": "2026-09-18",
+ "inventario": [
+  {
+   "archivo": "App.tsx",
+   "familia": "App.tsx",
+   "nombres": [
+    "App"
+   ],
+   "lineas": 365,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/asistente/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "AsistentePage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/audit/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "AuditPage"
+   ],
+   "lineas": 12,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/auth/callback-success.tsx",
+   "familia": "app",
+   "nombres": [
+    "AuthCallbackSuccess"
+   ],
+   "lineas": 88,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/auth/forgot-password/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "ForgotPasswordPage"
+   ],
+   "lineas": 115,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/auth/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "AuthPage"
+   ],
+   "lineas": 222,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/auth/reset-password/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "ResetPasswordPage"
+   ],
+   "lineas": 230,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/auth/verify/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "VerifyEmailPage"
+   ],
+   "lineas": 136,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/calendar/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "CalendarPage"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/configuracion/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "ConfiguracionPage"
+   ],
+   "lineas": 12,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/dashboard/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "DashboardPage"
+   ],
+   "lineas": 33,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/eventos/[id]/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "EventoDetailPage"
+   ],
+   "lineas": 25,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/eventos/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "EventosPage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/inventory/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "InventoryPage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/inventory/requests/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "InventoryRequestsPage"
+   ],
+   "lineas": 12,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/materias/[id]/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "MateriaDetailPage"
+   ],
+   "lineas": 25,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/materias/mapa/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "MateriasMapaPage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/materias/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "MateriasPage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/predicciones/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "PrediccionesPage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/reservations/create/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "CreateReservationPage"
+   ],
+   "lineas": 24,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/reservations/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "ReservationsPage"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/rooms/[id]/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "RoomDetailsPage"
+   ],
+   "lineas": 45,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/rooms/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "RoomsPage"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/sostenibilidad/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "SostenibilidadPage"
+   ],
+   "lineas": 11,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/statistics/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "StatisticsPage"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/system/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "SystemPage"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/tutorias/[id]/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "TutoriaDetailPage"
+   ],
+   "lineas": 25,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "app/users/page.tsx",
+   "familia": "app",
+   "nombres": [
+    "UsersPage"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Es una ruta, no una primitiva.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/agenda/AgendaCalendario.tsx",
+   "familia": "agenda",
+   "nombres": [
+    "AgendaCalendario"
+   ],
+   "lineas": 140,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ai/AiChatWidget.tsx",
+   "familia": "ai",
+   "nombres": [
+    "AiChatWidget"
+   ],
+   "lineas": 164,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/asistente/Atajos.tsx",
+   "familia": "asistente",
+   "nombres": [
+    "Atajos"
+   ],
+   "lineas": 41,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/asistente/ChatPanel.tsx",
+   "familia": "asistente",
+   "nombres": [
+    "ChatPanel"
+   ],
+   "lineas": 224,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/asistente/IaEnPantallas.tsx",
+   "familia": "asistente",
+   "nombres": [
+    "IaEnPantallas"
+   ],
+   "lineas": 35,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/asistente/index.tsx",
+   "familia": "asistente",
+   "nombres": [
+    "Asistente"
+   ],
+   "lineas": 57,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/asistente/Laboratorio.tsx",
+   "familia": "asistente",
+   "nombres": [
+    "Laboratorio"
+   ],
+   "lineas": 200,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/asistente/SemanticSearchPanel.tsx",
+   "familia": "asistente",
+   "nombres": [
+    "SemanticSearchPanel"
+   ],
+   "lineas": 127,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/audit/AuditFilters.tsx",
+   "familia": "audit",
+   "nombres": [
+    "AuditFilters"
+   ],
+   "lineas": 123,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/audit/AuditLogDetailsDialog.tsx",
+   "familia": "audit",
+   "nombres": [
+    "AuditLogDetailsDialog"
+   ],
+   "lineas": 233,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/audit/AuditManagement.tsx",
+   "familia": "audit",
+   "nombres": [
+    "AuditManagement"
+   ],
+   "lineas": 395,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/auth/PermissionGuard.tsx",
+   "familia": "auth",
+   "nombres": [
+    "PermissionGuard"
+   ],
+   "lineas": 77,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Guardas de ruta, sin interfaz propia.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/auth/RoleGuard.tsx",
+   "familia": "auth",
+   "nombres": [
+    "RoleGuard"
+   ],
+   "lineas": 49,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Guardas de ruta, sin interfaz propia.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/auth/RoleProtectedRoute.tsx",
+   "familia": "auth",
+   "nombres": [
+    "RoleProtectedRoute"
+   ],
+   "lineas": 46,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Guardas de ruta, sin interfaz propia.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/calendar/index.tsx",
+   "familia": "calendar",
+   "nombres": [
+    "Calendar"
+   ],
+   "lineas": 252,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/carreras/CarreraFormDialog.tsx",
+   "familia": "carreras",
+   "nombres": [
+    "CarreraFormDialog"
+   ],
+   "lineas": 129,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/carreras/CarrerasManagement.tsx",
+   "familia": "carreras",
+   "nombres": [
+    "CarrerasManagement"
+   ],
+   "lineas": 87,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/carreras/DeleteCarreraDialog.tsx",
+   "familia": "carreras",
+   "nombres": [
+    "DeleteCarreraDialog"
+   ],
+   "lineas": 34,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/CatalogoCrudShell.tsx",
+   "familia": "common",
+   "nombres": [
+    "CatalogoCrudShell"
+   ],
+   "lineas": 306,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/ConfirmarBorradoDialog.tsx",
+   "familia": "common",
+   "nombres": [
+    "ConfirmarBorradoDialog"
+   ],
+   "lineas": 187,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/dataviz.tsx",
+   "familia": "common",
+   "nombres": [
+    "Confetti",
+    "FlechaVariacion",
+    "Gauge",
+    "GloboGrafico",
+    "Podio"
+   ],
+   "lineas": 167,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/EstadoCarga.tsx",
+   "familia": "common",
+   "nombres": [
+    "EstadoCarga"
+   ],
+   "lineas": 71,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/estados.tsx",
+   "familia": "common",
+   "nombres": [
+    "ESTADO",
+    "ESTADO_ESPACIO",
+    "ESTADO_EVENTO",
+    "ESTADO_INVENTARIO",
+    "ESTADO_RESERVA",
+    "ESTADO_TUTORIA",
+    "EstadoBadge"
+   ],
+   "lineas": 181,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/Estrellas.tsx",
+   "familia": "common",
+   "nombres": [
+    "Estrellas"
+   ],
+   "lineas": 73,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/FiltersPanel.tsx",
+   "familia": "common",
+   "nombres": [
+    "FiltersPanel"
+   ],
+   "lineas": 83,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/Panel.tsx",
+   "familia": "common",
+   "nombres": [
+    "Panel"
+   ],
+   "lineas": 126,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/StatStrip.tsx",
+   "familia": "common",
+   "nombres": [
+    "StatStrip"
+   ],
+   "lineas": 263,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/common/TipoFormDialogShell.tsx",
+   "familia": "common",
+   "nombres": [
+    "TipoFormDialogShell"
+   ],
+   "lineas": 227,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/configuracion/ConfiguracionManagement.tsx",
+   "familia": "configuracion",
+   "nombres": [
+    "ConfiguracionManagement"
+   ],
+   "lineas": 43,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/dashboard/index.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "Dashboard"
+   ],
+   "lineas": 8,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/dashboard/UnifiedDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "UnifiedDashboard"
+   ],
+   "lineas": 171,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/dashboard/views/_components/Filas.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "ActividadFila",
+    "EspacioFila",
+    "EventoFila",
+    "ItemFila",
+    "MateriaFila",
+    "PresionFila",
+    "TutoriaFila"
+   ],
+   "lineas": 175,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/_components/Graficos.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "Anillo",
+    "BarrasHorizontales",
+    "Progreso",
+    "RitmoSemanal",
+    "Tendencia",
+    "UTEC"
+   ],
+   "lineas": 344,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/_components/Hero.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "Hero"
+   ],
+   "lineas": 96,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/_components/ReservaRow.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "ReservaRow"
+   ],
+   "lineas": 168,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/AdminDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "AdminDashboard"
+   ],
+   "lineas": 212,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/AnalistaDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "AnalistaDashboard"
+   ],
+   "lineas": 158,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/DocenteDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "DocenteDashboard"
+   ],
+   "lineas": 149,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/EstudianteDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "EstudianteDashboard"
+   ],
+   "lineas": 134,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/ExternoDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "ExternoDashboard"
+   ],
+   "lineas": 128,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/dashboard/views/MantenimientoDashboard.tsx",
+   "familia": "dashboard",
+   "nombres": [
+    "MantenimientoDashboard"
+   ],
+   "lineas": 175,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/eventos/AfichePoster.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "AfichePoster"
+   ],
+   "lineas": 172,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/CarteleraKiosko.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "CarteleraKiosko"
+   ],
+   "lineas": 80,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/DeleteEventoDialog.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "DeleteEventoDialog"
+   ],
+   "lineas": 34,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/eventos/EventoCardDescubrir.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "EstadoBadge",
+    "EventoCardDescubrir"
+   ],
+   "lineas": 133,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/eventos/EventoDetail.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "EventoDetail"
+   ],
+   "lineas": 537,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/EventoFormDialog.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "EventoFormDialog"
+   ],
+   "lineas": 383,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/EventosDescubrir.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "EventosDescubrir"
+   ],
+   "lineas": 170,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/eventos/EventosManagement.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "EventosManagement"
+   ],
+   "lineas": 506,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/FeedbackEventoPanel.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "FeedbackEventoPanel"
+   ],
+   "lineas": 174,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/InscriptosEventoDialog.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "InscriptosEventoDialog"
+   ],
+   "lineas": 106,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/eventos/ProximoEventoHero.tsx",
+   "familia": "eventos",
+   "nombres": [
+    "ProximoEventoHero"
+   ],
+   "lineas": 56,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/_shared/EspacioCell.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "EspacioCell"
+   ],
+   "lineas": 37,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/_shared/inventoryEstado.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "EstadoBadge"
+   ],
+   "lineas": 12,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/AssignSpaceDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "AssignSpaceDialog"
+   ],
+   "lineas": 257,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/inventory/BulkActionsBar.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "BulkActionsBar"
+   ],
+   "lineas": 107,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/DeleteInventoryDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "DeleteInventoryDialog"
+   ],
+   "lineas": 32,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/DeleteTipoElementoDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "DeleteTipoElementoDialog"
+   ],
+   "lineas": 34,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/ImportCSVDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "ImportCSVDialog"
+   ],
+   "lineas": 185,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/InventoryCardView.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryCardView"
+   ],
+   "lineas": 129,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/InventoryDetailsDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryDetailsDialog"
+   ],
+   "lineas": 103,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/InventoryFormDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryFormDialog"
+   ],
+   "lineas": 270,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/inventory/InventoryManagement.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryManagement"
+   ],
+   "lineas": 1027,
+   "dialog": true,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/inventory/InventoryRequestFilters.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryRequestFilters"
+   ],
+   "lineas": 537,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/InventoryRequestsCardView.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryRequestsCardView"
+   ],
+   "lineas": 212,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/InventoryRequestsManagement.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryRequestsManagement"
+   ],
+   "lineas": 916,
+   "dialog": true,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/inventory/InventoryStatsCards.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryStatsCards"
+   ],
+   "lineas": 34,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/InventoryTable.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "InventoryTable"
+   ],
+   "lineas": 204,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/TipoElementoFormDialog.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "TipoElementoFormDialog"
+   ],
+   "lineas": 57,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/inventory/TipoElementoManagement.tsx",
+   "familia": "inventory",
+   "nombres": [
+    "TipoElementoManagement"
+   ],
+   "lineas": 93,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/AuthLayout/AuthHeader.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "AuthHeader"
+   ],
+   "lineas": 19,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/AuthLayout/AuthLayout.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "AuthLayout"
+   ],
+   "lineas": 45,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/AuthLayout/AuthLoading.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "AuthLoading"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/AuthLayout/AuthSidePanel.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "AuthSidePanel"
+   ],
+   "lineas": 24,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/AuthLayout/NodeNetwork.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "NodeNetwork"
+   ],
+   "lineas": 137,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/DashboardLayout/DashboardHeader.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "DashboardHeader"
+   ],
+   "lineas": 63,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/DashboardLayout/DashboardLayout.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "DashboardLayout"
+   ],
+   "lineas": 114,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/DashboardLayout/DashboardSidebar.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "DashboardSidebar"
+   ],
+   "lineas": 320,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/DashboardLayout/HeaderNodeNetwork.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "HeaderNodeNetwork"
+   ],
+   "lineas": 188,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/layouts/PageHeader.tsx",
+   "familia": "layouts",
+   "nombres": [
+    "HEADER_ACTION",
+    "HEADER_ACTION_ICON",
+    "HEADER_PRIMARY",
+    "PAGE_ACTIONS_SLOT",
+    "PAGE_HEADER_SLOT",
+    "PageHeader"
+   ],
+   "lineas": 119,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Arma la pantalla; se ve en cualquier ruta.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/AddInscriptoDialog.tsx",
+   "familia": "materias",
+   "nombres": [
+    "AddInscriptoDialog"
+   ],
+   "lineas": 98,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/DeleteMateriaDialog.tsx",
+   "familia": "materias",
+   "nombres": [
+    "DeleteMateriaDialog"
+   ],
+   "lineas": 34,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/materias/MapaCorrelativas.tsx",
+   "familia": "materias",
+   "nombres": [
+    "MapaCorrelativas"
+   ],
+   "lineas": 746,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/MateriaAsistente.tsx",
+   "familia": "materias",
+   "nombres": [
+    "MateriaAsistente"
+   ],
+   "lineas": 72,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/MateriaDetail.tsx",
+   "familia": "materias",
+   "nombres": [
+    "MateriaDetail"
+   ],
+   "lineas": 457,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/MateriaFormDialog.tsx",
+   "familia": "materias",
+   "nombres": [
+    "MateriaFormDialog"
+   ],
+   "lineas": 315,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/MateriasManagement.tsx",
+   "familia": "materias",
+   "nombres": [
+    "MateriasManagement"
+   ],
+   "lineas": 880,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/materias/NotificarDialog.tsx",
+   "familia": "materias",
+   "nombres": [
+    "NotificarDialog"
+   ],
+   "lineas": 93,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/academico/ConfiabilidadAcademico.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "BrierContraBase",
+    "CurvaCalibracion",
+    "HistoricoSemanal",
+    "MedidorAuc"
+   ],
+   "lineas": 193,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/predicciones/academico/DetalleTutoria.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "DetalleTutoria"
+   ],
+   "lineas": 110,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/academico/Factores.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "FactoresEnPalabras",
+    "GraficoFactores"
+   ],
+   "lineas": 92,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/predicciones/academico/PrediccionesAcademico.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "PrediccionesAcademico"
+   ],
+   "lineas": 242,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/academico/Proximas.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "BarraAsistencia",
+    "DonaRiesgo",
+    "EsperadosPorSemana",
+    "ListaProximas"
+   ],
+   "lineas": 185,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/AnalisisIA.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "AnalisisIA"
+   ],
+   "lineas": 93,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/comunes.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "Anillo",
+    "Aviso",
+    "Chip",
+    "ChipHero",
+    "Dato",
+    "Esqueleto",
+    "Hero",
+    "NoCargo",
+    "NotaModelo",
+    "SinModelo"
+   ],
+   "lineas": 184,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/predicciones/index.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "Predicciones"
+   ],
+   "lineas": 199,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/inventario/ConfiabilidadInventario.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "ComoFunciona",
+    "ErrorPorTipo"
+   ],
+   "lineas": 97,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/inventario/Detalle.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "GraficoPico",
+    "PatronSemanal",
+    "SelectorTipos",
+    "SemanasTipo",
+    "TiraRiesgo"
+   ],
+   "lineas": 270,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/inventario/PrediccionesInventario.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "PrediccionesInventario"
+   ],
+   "lineas": 255,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/inventario/Riesgo.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "MatrizRiesgo",
+    "Semaforo",
+    "YaFalta"
+   ],
+   "lineas": 146,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/reservas/Confiabilidad.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "Confiabilidad"
+   ],
+   "lineas": 136,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/reservas/GraficoDemanda.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "GraficoDemanda"
+   ],
+   "lineas": 209,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/reservas/PorTipoEspacio.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "PronosticoPorTipo",
+    "TablaTipos"
+   ],
+   "lineas": 261,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/reservas/PrediccionesReservas.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "PrediccionesReservas"
+   ],
+   "lineas": 233,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/predicciones/reservas/SemanaTipica.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "SemanaTipica"
+   ],
+   "lineas": 62,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/predicciones/reservas/TablaDias.tsx",
+   "familia": "predicciones",
+   "nombres": [
+    "TablaDias"
+   ],
+   "lineas": 69,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/preferences/PreferencesModal.tsx",
+   "familia": "preferences",
+   "nombres": [
+    "PreferencesModal"
+   ],
+   "lineas": 696,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/public/auth/EmailVerificationMessage.tsx",
+   "familia": "public",
+   "nombres": [
+    "EmailVerificationMessage"
+   ],
+   "lineas": 55,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/public/auth/LoginForm.tsx",
+   "familia": "public",
+   "nombres": [
+    "LoginForm"
+   ],
+   "lineas": 103,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/public/auth/RegisterForm.tsx",
+   "familia": "public",
+   "nombres": [
+    "RegisterForm"
+   ],
+   "lineas": 331,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/public/auth/TermsAndPrivacyDialog.tsx",
+   "familia": "public",
+   "nombres": [
+    "TermsAndPrivacyDialog"
+   ],
+   "lineas": 185,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/public/auth/VerifyEmailForm.tsx",
+   "familia": "public",
+   "nombres": [
+    "VerifyEmailForm"
+   ],
+   "lineas": 168,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recomendaciones/AnalistaRecomendado.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "AnalistaRecomendado"
+   ],
+   "lineas": 128,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recomendaciones/EspaciosRecomendados.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "EspaciosRecomendados"
+   ],
+   "lineas": 140,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recomendaciones/HorariosRecomendados.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "HorariosRecomendados"
+   ],
+   "lineas": 141,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recomendaciones/ItemsRecomendados.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "ItemsRecomendados"
+   ],
+   "lineas": 115,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recomendaciones/MantenimientoRecomendaciones.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "MantenimientoRecomendaciones"
+   ],
+   "lineas": 142,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recomendaciones/RecomendacionCard.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "RecomendacionCard"
+   ],
+   "lineas": 106,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/recomendaciones/RecomendacionList.tsx",
+   "familia": "recomendaciones",
+   "nombres": [
+    "RecomendacionList"
+   ],
+   "lineas": 54,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/recursos/RecursosPanel.tsx",
+   "familia": "recursos",
+   "nombres": [
+    "RecursosPanel"
+   ],
+   "lineas": 265,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/recursos/RecursoUploadDialog.tsx",
+   "familia": "recursos",
+   "nombres": [
+    "RecursoUploadDialog"
+   ],
+   "lineas": 207,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/_shared/ReservationFormSections.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "AnalistaSelect",
+    "CarreraSelect",
+    "EspacioSelect",
+    "HoraInicioFinSection",
+    "ItemsSolicitadosSection",
+    "RecurrenciaSection"
+   ],
+   "lineas": 504,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/reservations/_shared/ReservationListChrome.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "FullScreenToggle",
+    "ReservationListPagination",
+    "ViewModeToggle"
+   ],
+   "lineas": 179,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/reservations/index.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "Reservations"
+   ],
+   "lineas": 8,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationCalendarView.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationCalendarView"
+   ],
+   "lineas": 1611,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationCardView.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationCardView"
+   ],
+   "lineas": 316,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/reservations/ReservationDetailsDialog.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationDetailsDialog"
+   ],
+   "lineas": 371,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationFilters.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationFilters"
+   ],
+   "lineas": 439,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/reservations/ReservationForm.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationForm"
+   ],
+   "lineas": 331,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationFormDialog.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationFormDialog"
+   ],
+   "lineas": 703,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationManagement.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationManagement"
+   ],
+   "lineas": 776,
+   "dialog": true,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationPendientes.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationPendientes"
+   ],
+   "lineas": 403,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationStats.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationStats"
+   ],
+   "lineas": 662,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/reservations/ReservationTableView.tsx",
+   "familia": "reservations",
+   "nombres": [
+    "ReservationTableView"
+   ],
+   "lineas": 334,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/sostenibilidad/ComoFuncionaDialog.tsx",
+   "familia": "sostenibilidad",
+   "nombres": [
+    "ComoFuncionaDialog"
+   ],
+   "lineas": 68,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/sostenibilidad/SostenibilidadDashboard.tsx",
+   "familia": "sostenibilidad",
+   "nombres": [
+    "SostenibilidadDashboard"
+   ],
+   "lineas": 460,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/AiSemanticSearch.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "AiSemanticSearch"
+   ],
+   "lineas": 106,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/DeleteInventarioDialog.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "DeleteInventarioDialog"
+   ],
+   "lineas": 36,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/DeleteSpaceDialog.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "DeleteSpaceDialog"
+   ],
+   "lineas": 34,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/DeleteTipoEspacioDialog.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "DeleteTipoEspacioDialog"
+   ],
+   "lineas": 36,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/InventarioFormDialog.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "InventarioFormDialog"
+   ],
+   "lineas": 239,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/Panorama360Viewer.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "Panorama360Viewer"
+   ],
+   "lineas": 40,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/SpaceCard.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpaceCard"
+   ],
+   "lineas": 176,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/SpaceCardSkeleton.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpaceCardSkeleton"
+   ],
+   "lineas": 35,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/SpaceDetails.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpaceDetails"
+   ],
+   "lineas": 664,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/SpaceFormDialog.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpaceFormDialog"
+   ],
+   "lineas": 431,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/SpaceImage.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpaceImage"
+   ],
+   "lineas": 102,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/SpacesManagement.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpacesManagement"
+   ],
+   "lineas": 985,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/spaces/SpaceTable.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "SpaceTable"
+   ],
+   "lineas": 211,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/TipoEspacioFormDialog.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "TipoEspacioFormDialog"
+   ],
+   "lineas": 97,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/spaces/TipoEspacioManagement.tsx",
+   "familia": "spaces",
+   "nombres": [
+    "TipoEspacioManagement"
+   ],
+   "lineas": 118,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/academico/EstadisticasAcademico.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EstadisticasAcademico"
+   ],
+   "lineas": 219,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/academico/Eventos.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EventosPorOcupacion",
+    "EventosPorTipo",
+    "EventosResumen",
+    "MejorCalificados"
+   ],
+   "lineas": 138,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/academico/Visuales.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EventosLista",
+    "MateriasTutorias",
+    "ModalidadTutorias",
+    "SemanasTutorias",
+    "TutoriasKpis"
+   ],
+   "lineas": 215,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/graficos/Apiladas100.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Apiladas100"
+   ],
+   "lineas": 60,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/BarrasDivergentes.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "BarrasDivergentes"
+   ],
+   "lineas": 57,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/BarrasTramos.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "BarrasTramos"
+   ],
+   "lineas": 85,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/Burbujas.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Burbujas"
+   ],
+   "lineas": 148,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/CalendarioCalor.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "CalendarioCalor"
+   ],
+   "lineas": 140,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/Dona.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Dona"
+   ],
+   "lineas": 90,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/Embudo.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Embudo"
+   ],
+   "lineas": 47,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/Mancuernas.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Mancuernas"
+   ],
+   "lineas": 81,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/MapaArbol.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "MapaArbol"
+   ],
+   "lineas": 83,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/MatrizCalor.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "MatrizCalor"
+   ],
+   "lineas": 98,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/Medidor.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Medidor"
+   ],
+   "lineas": 60,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/RadarSemana.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "RadarSemana"
+   ],
+   "lineas": 52,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/TarjetasKpi.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "TarjetasKpi"
+   ],
+   "lineas": 68,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/graficos/Waffle.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Waffle"
+   ],
+   "lineas": 53,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/index.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Statistics"
+   ],
+   "lineas": 101,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/inventario/Bloques.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Atencion",
+    "Matriz",
+    "TablaGrupos"
+   ],
+   "lineas": 193,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/inventario/Demanda.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EmbudoEquipos",
+    "EspaciosConProblemas",
+    "PedidoVsDisponible"
+   ],
+   "lineas": 187,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/inventario/EstadisticasInventario.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EstadisticasInventario"
+   ],
+   "lineas": 330,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/inventario/EvolucionInventario.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EvolucionInventario"
+   ],
+   "lineas": 265,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/inventario/FiltrosInventario.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "FiltrosInventario"
+   ],
+   "lineas": 67,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/inventario/VisualesInventario.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "DonaEstados",
+    "MapaTipos",
+    "MedidoresCobertura",
+    "WaffleAntiguedad"
+   ],
+   "lineas": 121,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/PanelEstadistica.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "PanelEstadistica"
+   ],
+   "lineas": 144,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/reservas/Aprobacion.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Analistas",
+    "Antelacion",
+    "HistogramaRespuesta",
+    "PendientesAntiguedad",
+    "RespuestaKpis"
+   ],
+   "lineas": 205,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/ComoTerminaron.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "ComoTerminaron"
+   ],
+   "lineas": 55,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/CompararContra.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "CompararContra"
+   ],
+   "lineas": 40,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/reservas/Espacios.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "CapacidadOcupacion",
+    "Saturacion",
+    "UsoDeCapacidad"
+   ],
+   "lineas": 214,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/EstadisticasReservas.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "EstadisticasReservas"
+   ],
+   "lineas": 605,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/Externos.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "OrganizadoresExternos",
+    "ResumenExternos"
+   ],
+   "lineas": 128,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/FiltrosReservas.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "ChipsFiltros",
+    "FiltrosReservas"
+   ],
+   "lineas": 121,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/Listas.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "MenosUsados",
+    "OcupacionEspacios",
+    "PorCarrera",
+    "QuienesMasReservan"
+   ],
+   "lineas": 188,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/MapaDeCalor.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "MapaDeCalor"
+   ],
+   "lineas": 113,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/statistics/reservas/Novedades.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Novedades"
+   ],
+   "lineas": 156,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/ResumenIA.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "ResumenIA"
+   ],
+   "lineas": 95,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/TendenciaReservas.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "TendenciaReservas"
+   ],
+   "lineas": 139,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/reservas/Visuales.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "BurbujasCarreras",
+    "DonaEdificios",
+    "DonaRoles",
+    "MapaOcupacion"
+   ],
+   "lineas": 142,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/Seccion.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "IndiceSecciones",
+    "NotaHastaAnoche",
+    "Seccion"
+   ],
+   "lineas": 205,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/statistics/Vacio.tsx",
+   "familia": "statistics",
+   "nombres": [
+    "Vacio"
+   ],
+   "lineas": 13,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/index.tsx",
+   "familia": "system",
+   "nombres": [
+    "System"
+   ],
+   "lineas": 281,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/system/sections/ActiveUsersCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "ActiveUsersCard"
+   ],
+   "lineas": 125,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/AppInfoCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "AppInfoCard"
+   ],
+   "lineas": 69,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/DatabaseSection.tsx",
+   "familia": "system",
+   "nombres": [
+    "DatabaseSection"
+   ],
+   "lineas": 18,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/ExternalServicesCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "ExternalServicesCard"
+   ],
+   "lineas": 73,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/HttpTraceSection.tsx",
+   "familia": "system",
+   "nombres": [
+    "HttpTraceSection"
+   ],
+   "lineas": 12,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/JvmCharts.tsx",
+   "familia": "system",
+   "nombres": [
+    "JvmCharts"
+   ],
+   "lineas": 61,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/JvmDetailsTable.tsx",
+   "familia": "system",
+   "nombres": [
+    "JvmDetailsTable"
+   ],
+   "lineas": 161,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/LogsSection.tsx",
+   "familia": "system",
+   "nombres": [
+    "LogsSection"
+   ],
+   "lineas": 27,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/MetricsCards.tsx",
+   "familia": "system",
+   "nombres": [
+    "MetricsCards"
+   ],
+   "lineas": 218,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/PoolCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "PoolCard"
+   ],
+   "lineas": 41,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/RecentErrorsCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "RecentErrorsCard"
+   ],
+   "lineas": 194,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/system/sections/RuntimeCards.tsx",
+   "familia": "system",
+   "nombres": [
+    "RuntimeCards"
+   ],
+   "lineas": 143,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/sections/SlowEndpointsCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "SlowEndpointsCard"
+   ],
+   "lineas": 130,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/system/sections/TrafficCard.tsx",
+   "familia": "system",
+   "nombres": [
+    "TrafficCard"
+   ],
+   "lineas": 96,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/SystemHeader.tsx",
+   "familia": "system",
+   "nombres": [
+    "SystemHeader"
+   ],
+   "lineas": 83,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/tabs/DatabaseLogsTab.tsx",
+   "familia": "system",
+   "nombres": [
+    "DatabaseLogsTab"
+   ],
+   "lineas": 52,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/system/tabs/ErrorsTab.tsx",
+   "familia": "system",
+   "nombres": [
+    "ErrorsTab"
+   ],
+   "lineas": 22,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/system/tabs/OverviewTab.tsx",
+   "familia": "system",
+   "nombres": [
+    "OverviewTab"
+   ],
+   "lineas": 68,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/system/tabs/PerformanceTab.tsx",
+   "familia": "system",
+   "nombres": [
+    "PerformanceTab"
+   ],
+   "lineas": 61,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/theme-provider.tsx",
+   "familia": "theme-provider.tsx",
+   "nombres": [
+    "ThemeProvider"
+   ],
+   "lineas": 12,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Provider de contexto, sin interfaz propia.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/AgendarTutoriaDialog.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "AgendarTutoriaDialog"
+   ],
+   "lineas": 75,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/CheckinScanner.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "CheckinScanner",
+    "ReservaQR"
+   ],
+   "lineas": 107,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/DisponibilidadSemanal.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "DisponibilidadSemanal"
+   ],
+   "lineas": 128,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/tutorias/ProximaTutoriaHero.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "ProximaTutoriaHero"
+   ],
+   "lineas": 62,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/tutorias/RachaBadges.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "RachaBadges"
+   ],
+   "lineas": 50,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/RankingTutores.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "RankingTutores"
+   ],
+   "lineas": 48,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/TemariosPanel.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TemariosPanel"
+   ],
+   "lineas": 194,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/TutoriaCard.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriaCard"
+   ],
+   "lineas": 269,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/tutorias/TutoriaDetail.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriaDetail"
+   ],
+   "lineas": 574,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/TutoriaFeedbackPanel.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriaFeedbackPanel"
+   ],
+   "lineas": 129,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/TutoriaFormDialog.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriaFormDialog"
+   ],
+   "lineas": 428,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/TutoriaRecursosPanel.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriaRecursosPanel"
+   ],
+   "lineas": 71,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/tutorias/TutoriasAgenda.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriasAgenda"
+   ],
+   "lineas": 71,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/tutorias/TutoriasManagement.tsx",
+   "familia": "tutorias",
+   "nombres": [
+    "TutoriasManagement"
+   ],
+   "lineas": 518,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/ui/avatar-initials.tsx",
+   "familia": "ui",
+   "nombres": [
+    "AvatarInitials"
+   ],
+   "lineas": 70,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/backgrounds/eventPatterns.tsx",
+   "familia": "ui",
+   "nombres": [
+    "EVENTO_PATRONES",
+    "EventoPatternBg"
+   ],
+   "lineas": 343,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/ui/backgrounds/UtecShapesBackground.tsx",
+   "familia": "ui",
+   "nombres": [
+    "UtecShapesBackground"
+   ],
+   "lineas": 159,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/ui/compact-filter.tsx",
+   "familia": "ui",
+   "nombres": [
+    "ClearFiltersButton",
+    "DateRangeFilterSection",
+    "EnumFilterSection",
+    "PopoverFilterSection"
+   ],
+   "lineas": 310,
+   "dialog": false,
+   "tipo": "shadcn",
+   "motivo": "Primitiva de shadcn sin cambios propios.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/ui/date-picker.tsx",
+   "familia": "ui",
+   "nombres": [
+    "DatePicker"
+   ],
+   "lineas": 84,
+   "dialog": false,
+   "tipo": "shadcn",
+   "motivo": "Primitiva de shadcn sin cambios propios.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/ui/empty-state.tsx",
+   "familia": "ui",
+   "nombres": [
+    "EmptyState"
+   ],
+   "lineas": 69,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/filter-bar.tsx",
+   "familia": "ui",
+   "nombres": [
+    "FilterBar"
+   ],
+   "lineas": 62,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/http-trace-table.tsx",
+   "familia": "ui",
+   "nombres": [
+    "HttpTraceTable"
+   ],
+   "lineas": 383,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/liquibase-timeline.tsx",
+   "familia": "ui",
+   "nombres": [
+    "LiquibaseTimeline"
+   ],
+   "lineas": 181,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/log-viewer.tsx",
+   "familia": "ui",
+   "nombres": [
+    "LogViewer"
+   ],
+   "lineas": 627,
+   "dialog": true,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/ui/metrics-chart.tsx",
+   "familia": "ui",
+   "nombres": [
+    "MetricsChart"
+   ],
+   "lineas": 235,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/status-badge.tsx",
+   "familia": "ui",
+   "nombres": [
+    "StatusBadge"
+   ],
+   "lineas": 74,
+   "dialog": false,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/ui/time-select.tsx",
+   "familia": "ui",
+   "nombres": [
+    "TimeSelect"
+   ],
+   "lineas": 192,
+   "dialog": false,
+   "tipo": "shadcn",
+   "motivo": "Primitiva de shadcn sin cambios propios.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/users/EditUserDialog.tsx",
+   "familia": "users",
+   "nombres": [
+    "EditUserDialog"
+   ],
+   "lineas": 184,
+   "dialog": true,
+   "tipo": "montable",
+   "motivo": "",
+   "cubierto": true
+  },
+  {
+   "archivo": "components/users/index.tsx",
+   "familia": "users",
+   "nombres": [
+    "Users"
+   ],
+   "lineas": 8,
+   "dialog": false,
+   "tipo": "pantalla",
+   "motivo": "Pantalla del módulo.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/users/UserManagement.tsx",
+   "familia": "users",
+   "nombres": [
+    "UserManagement"
+   ],
+   "lineas": 1042,
+   "dialog": true,
+   "tipo": "pantalla",
+   "motivo": "Pantalla de gestión completa.",
+   "cubierto": false
+  },
+  {
+   "archivo": "components/users/UserStatsCards.tsx",
+   "familia": "users",
+   "nombres": [
+    "UserStatsCards"
+   ],
+   "lineas": 178,
+   "dialog": false,
+   "tipo": "datos",
+   "motivo": "Pide datos al montarse, directo o por un hook propio.",
+   "cubierto": false
+  },
+  {
+   "archivo": "contexts/AuthProvider.tsx",
+   "familia": "contexts",
+   "nombres": [
+    "AuthProvider"
+   ],
+   "lineas": 278,
+   "dialog": false,
+   "tipo": "chrome",
+   "motivo": "Provider de contexto, sin interfaz propia.",
+   "cubierto": false
+  }
+ ]
+}

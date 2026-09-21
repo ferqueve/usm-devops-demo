@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { StatStrip, type StatItem } from '@/components/dashboard/views/_components/StatStrip';
+import { StatStrip, type StatItem } from '@/components/common/StatStrip';
 import {
   ArrowDown,
   ArrowUp,
@@ -165,10 +165,10 @@ interface Accent {
 }
 
 const ACCENTS: Accent[] = [
-  { icon: 'text-utec-blue',   soft: 'bg-utec-blue/10',   grad: 'from-utec-blue/10',   hoverBorder: 'hover:border-utec-blue/40',   bar: 'bg-utec-blue',   chip: 'bg-utec-blue/10 text-utec-blue' },
+  { icon: 'text-marca-azul-texto',   soft: 'bg-utec-blue/10',   grad: 'from-utec-blue/10',   hoverBorder: 'hover:border-utec-blue/40',   bar: 'bg-utec-blue',   chip: 'bg-utec-blue/10 text-marca-azul-texto' },
   { icon: 'text-utec-purple', soft: 'bg-utec-purple/10', grad: 'from-utec-purple/10', hoverBorder: 'hover:border-utec-purple/40', bar: 'bg-utec-purple', chip: 'bg-utec-purple/10 text-utec-purple' },
-  { icon: 'text-utec-green',  soft: 'bg-utec-green/10',  grad: 'from-utec-green/10',  hoverBorder: 'hover:border-utec-green/40',  bar: 'bg-utec-green',  chip: 'bg-utec-green/10 text-utec-green' },
-  { icon: 'text-utec-orange', soft: 'bg-utec-orange/10', grad: 'from-utec-orange/10', hoverBorder: 'hover:border-utec-orange/40', bar: 'bg-utec-orange', chip: 'bg-utec-orange/10 text-utec-orange' },
+  { icon: 'text-marca-verde-texto',  soft: 'bg-utec-green/10',  grad: 'from-utec-green/10',  hoverBorder: 'hover:border-utec-green/40',  bar: 'bg-utec-green',  chip: 'bg-utec-green/10 text-marca-verde-texto' },
+  { icon: 'text-marca-naranja-texto', soft: 'bg-utec-orange/10', grad: 'from-utec-orange/10', hoverBorder: 'hover:border-utec-orange/40', bar: 'bg-utec-orange', chip: 'bg-utec-orange/10 text-marca-naranja-texto' },
 ];
 
 // Materias de la misma carrera comparten acento; fallback a semestre / id.
@@ -184,7 +184,7 @@ function MiniStat({ icon: Icon, value, label }: Readonly<{ icon: LucideIcon; val
         <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         {value}
       </div>
-      <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -223,7 +223,7 @@ function MateriaCard({
           {statusBadge}
         </div>
         {materia.codigo && (
-          <span className={`mt-3 inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-[10px] font-semibold ${a.chip}`}>
+          <span className={`mt-3 inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-2xs font-semibold ${a.chip}`}>
             {materia.codigo}
           </span>
         )}
@@ -241,8 +241,8 @@ function MateriaCard({
           </>
         ) : (
           <>
-            <UserX className="h-3.5 w-3.5 shrink-0 text-utec-orange" />
-            <span className="text-utec-orange">Sin docente asignado</span>
+            <UserX className="h-3.5 w-3.5 shrink-0 text-marca-naranja-texto" />
+            <span className="text-marca-naranja-texto">Sin docente asignado</span>
           </>
         )}
       </div>
@@ -408,9 +408,9 @@ function AdminMateriasView() {
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
           <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
-          <BookOpen className="h-4 w-4 text-utec-blue" />
+          <BookOpen className="h-4 w-4 text-marca-azul-texto" />
           <span className="text-sm font-semibold">Materias</span>
           {!loading && <span className="ml-auto text-xs text-white/60 tabular-nums">{filtered.length} de {activas.length}</span>}
         </div>
@@ -466,21 +466,21 @@ function AdminMateriasView() {
                         <div className="min-w-0">
                           <div className="font-medium truncate">{materia.nombre}</div>
                           {materia.codigo && (
-                            <div className="font-mono text-[11px] text-muted-foreground">{materia.codigo}</div>
+                            <div className="font-mono text-2xs text-muted-foreground">{materia.codigo}</div>
                           )}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       {materia.carreraNombre
-                        ? <Badge className="bg-utec-blue/10 text-utec-blue border-utec-blue/20 border text-xs font-medium">{materia.carreraNombre}</Badge>
+                        ? <Badge className="bg-utec-blue/10 text-marca-azul-texto border-utec-blue/20 border text-xs font-medium">{materia.carreraNombre}</Badge>
                         : <span className="text-muted-foreground text-xs">—</span>}
                     </TableCell>
                     <TableCell>
                       {materia.docenteNombre
                         ? <span className="text-sm">{materia.docenteNombre}</span>
                         : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-utec-orange/10 px-2 py-0.5 text-xs font-medium text-utec-orange">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-utec-orange/10 px-2 py-0.5 text-xs font-medium text-marca-naranja-texto">
                             <UserX className="h-3 w-3" />Sin asignar
                           </span>
                         )}
@@ -492,11 +492,11 @@ function AdminMateriasView() {
                     </TableCell>
                     <TableCell className="text-center tabular-nums">
                       {materia.creditos != null
-                        ? <span className="inline-flex items-center gap-1 text-sm"><Award className="h-3.5 w-3.5 text-utec-yellow" />{materia.creditos}</span>
+                        ? <span className="inline-flex items-center gap-1 text-sm"><Award className="h-3.5 w-3.5 text-marca-amarillo-texto" />{materia.creditos}</span>
                         : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-utec-blue/10 px-2 py-0.5 text-xs font-semibold text-utec-blue tabular-nums">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-utec-blue/10 px-2 py-0.5 text-xs font-semibold text-marca-azul-texto tabular-nums">
                         <Users className="h-3 w-3" />{materia.totalInscriptos ?? 0}
                       </span>
                     </TableCell>
@@ -730,11 +730,11 @@ function EstudianteMateriasView() {
       onOpen={() => navigate(detailPath(materia.id))}
       statusBadge={
         inscripta ? (
-          <Badge className="bg-utec-green text-white border-utec-green text-[10px] gap-1 shrink-0">
+          <Badge className="bg-utec-green text-marca-tinta border-utec-green text-2xs gap-1 shrink-0">
             <CheckCircle className="h-3 w-3" />Inscripta
           </Badge>
         ) : (
-          <Badge variant="outline" className="text-[10px] shrink-0">Disponible</Badge>
+          <Badge variant="outline" className="text-2xs shrink-0">Disponible</Badge>
         )
       }
       footer={
@@ -778,7 +778,7 @@ function EstudianteMateriasView() {
       <section className="space-y-4">
         <div className="flex items-center gap-2.5">
           <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
-          <BookOpen className="h-4 w-4 text-utec-blue" />
+          <BookOpen className="h-4 w-4 text-marca-azul-texto" />
           <h2 className="text-lg font-medium tracking-tight">Inscriptas</h2>
           {misMaterias.length > 0 && <span className="text-xs text-muted-foreground tabular-nums">{misMaterias.length}</span>}
         </div>
@@ -821,7 +821,7 @@ function EstudianteMateriasView() {
         <section className="space-y-4">
           <div className="flex items-center gap-2.5">
             <span className="w-1 h-4 rounded-sm bg-utec-green shrink-0" />
-            <GraduationCap className="h-4 w-4 text-utec-green" />
+            <GraduationCap className="h-4 w-4 text-marca-verde-texto" />
             <h2 className="text-lg font-medium tracking-tight">Disponibles para inscribirse</h2>
             {disponibles.length > 0 && <span className="text-xs text-muted-foreground tabular-nums">{disponibles.length}</span>}
             {disponibles.length > POR_PAGINA && (

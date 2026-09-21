@@ -16,8 +16,10 @@ test.describe('Inventario: filtro por estado', () => {
     // Esperar a que cargue al menos una fila.
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10_000 });
 
-    await page.locator('#estado-filter').click();
-    await page.getByRole('option', { name: /^Mantenimiento$/i }).click();
+    await page
+      .getByRole('group', { name: /^Estado$/i })
+      .getByRole('button', { name: /^En mantenimiento$/i })
+      .click();
     await page.waitForTimeout(700);
 
     // La única fila visible debe ser Proyector E2E en Sala 202.

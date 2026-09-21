@@ -57,11 +57,11 @@ function TitleBar({
 }>) {
   const isUp = dbStatus === 'UP';
   return (
-    <div className="bg-utec-dark text-white border-b border-white/10">
+    <div className="bg-chrome text-white border-b border-white/10">
       <div className="flex items-center gap-2 px-4 py-2.5">
-        <Database className="h-4 w-4 text-utec-blue shrink-0" />
+        <Database className="h-4 w-4 text-marca-azul-texto shrink-0" />
         <h3 className="text-sm font-semibold flex-1">Base de Datos</h3>
-        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${isUp ? 'text-utec-green' : 'text-utec-red'}`}>
+        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${isUp ? 'text-marca-verde-texto' : 'text-marca-rojo-texto'}`}>
           {isUp ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
           {dbStatus}
         </span>
@@ -70,7 +70,7 @@ function TitleBar({
         )}
       </div>
       {dbDetails && Object.keys(dbDetails).length > 0 && (
-        <div className="px-4 py-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-white/60 border-t border-white/10">
+        <div className="px-4 py-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-2xs text-white/60 border-t border-white/10">
           {Object.entries(dbDetails).map(([key, value]) => (
             <div key={key} className="flex items-center gap-1.5">
               <span>{key.replaceAll(/([A-Z])/g, ' $1').trim()}:</span>
@@ -102,7 +102,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
             No hay información de migraciones Liquibase disponible.
           </p>
           <p className="text-xs text-muted-foreground">
-            Verifica que el endpoint <code className="bg-gray-100 px-2 py-1 rounded">actuator/liquibase</code> esté habilitado.
+            Verifica que el endpoint <code className="bg-muted px-2 py-1 rounded">actuator/liquibase</code> esté habilitado.
           </p>
         </div>
       </div>
@@ -112,18 +112,18 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
   return (
     <div className="border rounded-lg overflow-hidden shadow-card">
       <TitleBar dbStatus={dbStatus} dbDetails={dbDetails} count={changeSets.length} />
-      <p className="border-b bg-muted/30 px-4 py-1.5 text-[11px] text-muted-foreground">
+      <p className="border-b bg-muted/30 px-4 py-1.5 text-2xs text-muted-foreground">
         Las más recientes primero
       </p>
       <ScrollArea className={verTodas ? 'h-[400px]' : ''}>
         <Table>
-          <TableHeader className="bg-utec-dark">
+          <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-white/10">
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[60px]">#</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[120px]">ID</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide">Descripción</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[100px]">Autor</TableHead>
-              <TableHead className="h-9 text-white/70 text-xs font-semibold uppercase tracking-wide w-[150px]">Fecha</TableHead>
+              <TableHead className="w-[60px]">#</TableHead>
+              <TableHead className="w-[120px]">ID</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead className="w-[100px]">Autor</TableHead>
+              <TableHead className="w-[150px]">Fecha</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,7 +131,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
               <TableRow key={`${changeSet.id}-${index}`}>
                 <TableCell className="font-medium text-xs text-center">
                   <div className="flex items-center justify-center gap-1">
-                    <CheckCircle2 className="h-3 w-3 text-green-600" />
+                    <CheckCircle2 className="h-3 w-3 text-success-texto" />
                     {changeSet.orderExecuted || index + 1}
                   </div>
                 </TableCell>
@@ -140,7 +140,7 @@ export function LiquibaseTimeline({ data, health }: Readonly<LiquibaseTimelinePr
                   <div className="max-w-[300px]">
                     <p className="truncate">{changeSet.description || '-'}</p>
                     {changeSet.changeLog && (
-                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                      <p className="text-2xs text-muted-foreground truncate mt-0.5">
                         {changeSet.changeLog}
                       </p>
                     )}

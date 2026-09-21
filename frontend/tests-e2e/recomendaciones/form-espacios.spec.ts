@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * El sidebar del form de creación de reserva consulta
@@ -16,13 +17,8 @@ test.describe('Recomendaciones: espacios sugeridos en el form de reserva', () =>
     // Fecha: +6 días.
     const fecha = new Date();
     fecha.setDate(fecha.getDate() + 6);
-    const dia = String(fecha.getDate());
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${dia}$`) })
-      .first()
-      .click();
+    await elegirDia(page, fecha);
 
     // Horas: 10:00-11:00 (libres).
     const horas = page.locator('input[placeholder="00"]');

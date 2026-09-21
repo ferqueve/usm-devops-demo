@@ -1,10 +1,10 @@
 import { CalendarDays, Flame, GraduationCap, MapPin, Megaphone, Award } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
-import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
+import { StatStrip } from '@/components/common/StatStrip';
+import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
-import { EmptyState } from './_components/EmptyState';
+import { EmptyState } from '@/components/ui/empty-state';
 import { EventoFila, MateriaFila, TutoriaFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, UTEC } from './_components/Graficos';
 
@@ -33,7 +33,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
   const agendadas = stats?.tutorias ?? 0;
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       {proxima ? (
         <Hero
           etiqueta="TU PRÓXIMA TUTORÍA"
@@ -68,20 +68,20 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         {/* Columna de gráficos: dos paneles que se reparten el alto. */}
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Créditos por semestre"
             count={`${stats?.creditos ?? 0} en total`}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
             action={{ label: 'plan', to: '/materias?tab=mapa' }}
             scroll
           >
             <BarrasHorizontales datos={creditosPorSemestre} multicolor />
           </Panel>
 
-          <Panel title="Mis tutorías" count={`racha de ${stats?.racha ?? 0}`} accentColor="#86bb4c">
+          <Panel title="Mis tutorías" count={`racha de ${stats?.racha ?? 0}`} accentColor={UTEC.verde}>
             <Anillo
               porciones={[
                 { nombre: 'Asistidas', valor: asistidas, color: UTEC.verde },
@@ -98,7 +98,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
         <Panel
           title="Mis materias"
           count={stats?.materias || undefined}
-          accentColor="#00c7ff"
+          accentColor={UTEC.cian}
           action={{ label: 'ver todas', to: '/materias?tab=listado' }}
           scroll
         >
@@ -107,14 +107,14 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
               {materias.map((m) => <MateriaFila key={m.id} materia={m} />)}
             </div>
           ) : (
-            <EmptyState title="Todavía no te inscribiste a ninguna materia." />
+            <EmptyState variant="linea" title="Todavía no te inscribiste a ninguna materia." />
           )}
         </Panel>
 
         <Panel
           title="Lo que viene"
           count={`${tutorias.length} tutorías · ${eventos.length} eventos`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'agenda', to: '/materias?tab=tutorias' }}
           scroll
         >
@@ -124,7 +124,7 @@ export function EstudianteDashboard({ data, loading }: Readonly<EstudianteDashbo
               {eventos.map((e) => <EventoFila key={`e${e.id}`} evento={e} />)}
             </div>
           ) : (
-            <EmptyState title="Nada agendado por ahora." />
+            <EmptyState variant="linea" title="Nada agendado por ahora." />
           )}
         </Panel>
       </div>

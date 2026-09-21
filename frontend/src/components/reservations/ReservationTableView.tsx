@@ -92,7 +92,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
   const EstadoIcon = estadoConfig.icon;
 
   return (
-    <TableRow className={`hover:bg-gray-50/50 ${esPasada ? 'opacity-75' : ''}`}>
+    <TableRow className={`hover:bg-muted/50 ${esPasada ? 'opacity-75' : ''}`}>
       <TableCell className="py-2 relative">
         <div className={`absolute top-0 left-0 w-0 h-0 ${estadoConfig.cornerBorderColor} border-r-transparent border-r-[12px] border-t-[12px] pointer-events-none`} />
         <div className="min-w-0">
@@ -160,7 +160,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onViewDetails(reserva)}
-                  className="p-1.5 rounded transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <Eye className="h-4 w-4" />
                 </button>
@@ -176,7 +176,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onCancelReserva(reserva)}
-                    className="p-1.5 rounded transition-colors text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="p-1.5 rounded transition-colors text-danger-texto hover:text-danger-texto hover:bg-danger-suave"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -233,7 +233,7 @@ export default function ReservationTableView({
   return (
     <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
       <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
-        <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        <CardHeader className="shrink-0 pb-3">
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
               <ReservationFilters
@@ -293,12 +293,12 @@ export default function ReservationTableView({
               <UITable>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="h-9 py-2">Espacio</TableHead>
-                    <TableHead className="h-9 py-2 hidden md:table-cell">Fecha</TableHead>
-                    <TableHead className="h-9 py-2">Horario</TableHead>
-                    <TableHead className="h-9 py-2 hidden lg:table-cell">Capacidad</TableHead>
-                    <TableHead className="h-9 py-2">Estado</TableHead>
-                    <TableHead className="h-9 py-2 text-right">Acciones</TableHead>
+                    <TableHead>Espacio</TableHead>
+                    <TableHead className="hidden md:table-cell">Fecha</TableHead>
+                    <TableHead>Horario</TableHead>
+                    <TableHead className="hidden lg:table-cell">Capacidad</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

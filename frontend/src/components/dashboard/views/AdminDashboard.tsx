@@ -3,10 +3,10 @@ import { Activity, Building2, CalendarClock, ClipboardCheck, Inbox, Leaf, Users 
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
 import type { RecomendacionAnalista } from '@/lib/types/recomendaciones';
-import { StatStrip } from './_components/StatStrip';
-import { EmptyState } from './_components/EmptyState';
+import { StatStrip } from '@/components/common/StatStrip';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
-import { Panel } from './_components/Panel';
+import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
 import { ActividadFila } from './_components/Filas';
 import { Anillo, BarrasHorizontales, Tendencia, UTEC, variacion } from './_components/Graficos';
@@ -81,7 +81,7 @@ export function AdminDashboard({
   const masPresionado = presion[0];
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       <Hero
         etiqueta="LO QUE HAY QUE ATENDER"
         titulo={`${totalPendientes.toLocaleString('es-UY')} reservas por aprobar`}
@@ -99,27 +99,32 @@ export function AdminDashboard({
       <StatStrip
         loading={loading}
         items={[
-          { label: 'A aprobar', value: totalPendientes, hint: 'pendientes en cola', icon: Inbox, bg: 'yellow', to: '/reservations' },
-          { label: 'Hoy', value: reservasHoyCount, hint: 'reservas programadas', icon: CalendarClock, bg: 'blue', to: '/calendar' },
-          { label: 'Espacios', value: `${espaciosLibres}/${(stats?.totalEspacios ?? 0)}`, hint: enMantenimiento > 0 ? `${enMantenimiento} en mantenimiento` : 'todos disponibles', icon: Building2, bg: 'green', to: '/rooms' },
-          { label: 'Usuarios activos', value: usuariosActivos, hint: 'en este momento', icon: Users, bg: 'cyan', to: '/users' },
-          { label: 'Inventario', value: pendingInventoryRequests, hint: pendingInventoryRequests > 0 ? 'solicitudes pendientes' : 'al día', icon: ClipboardCheck, bg: 'red', to: '/inventory/requests' },
-          { label: 'Aprobación', value: `${tasaAprobacion}%`, hint: 'últimas reservas', icon: Activity, bg: 'dark', to: '/statistics' },
+          // `porMes` es la única serie que hoy manda el back: reservas por mes.
+          // Va sólo en las celdas que cuentan reservas, que es de lo que habla.
+          // Las otras cuatro esperan a que el back devuelva su propia serie;
+          // mientras tanto llevan la aclaración de texto y ninguna línea
+          // inventada.
+          { label: 'A aprobar', value: totalPendientes, serie: porMes, delta: cambio, icon: Inbox, color: 'amarillo', to: '/reservations' },
+          { label: 'Hoy', value: reservasHoyCount, serie: porMes, icon: CalendarClock, color: 'azul', to: '/calendar' },
+          { label: 'Espacios', value: `${espaciosLibres}/${(stats?.totalEspacios ?? 0)}`, hint: enMantenimiento > 0 ? `${enMantenimiento} en mantenimiento` : 'todos disponibles', icon: Building2, color: 'verde', to: '/rooms' },
+          { label: 'Usuarios activos', value: usuariosActivos, hint: 'en este momento', icon: Users, color: 'cian', to: '/users' },
+          { label: 'Inventario', value: pendingInventoryRequests, hint: pendingInventoryRequests > 0 ? 'solicitudes pendientes' : 'al día', icon: ClipboardCheck, color: 'rojo', to: '/inventory/requests' },
+          { label: 'Aprobación', value: `${tasaAprobacion}%`, hint: 'últimas reservas', icon: Activity, color: 'naranja', to: '/statistics' },
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Reservas por mes"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
             action={{ label: 'estadísticas', to: '/statistics' }}
           >
             <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
-          <Panel title="En qué estado están" accentColor="#86bb4c">
+          <Panel title="En qué estado están" accentColor={UTEC.verde}>
             <Anillo porciones={estados} leyendaCentro="reservas" alto={118} llenar />
           </Panel>
         </div>
@@ -127,7 +132,7 @@ export function AdminDashboard({
         <Panel
           title="Cola"
           count={`${totalPendientes} pendientes${loadingPrioritarias ? ' · calculando' : ''}`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'ver todas', to: '/reservations' }}
           scroll
         >
@@ -143,7 +148,7 @@ export function AdminDashboard({
               ))}
             </div>
           ) : (
-            <EmptyState title="Sin pendientes." />
+            <EmptyState variant="linea" title="Sin pendientes." />
           )}
         </Panel>
 
@@ -151,7 +156,7 @@ export function AdminDashboard({
           <Panel
             title="Estado del sistema"
             count={salud ? `${salud.componentes} componentes` : undefined}
-            accentColor={salud && salud.estado !== 'UP' ? '#e2001a' : '#86bb4c'}
+            accentColor={salud && salud.estado !== 'UP' ? UTEC.rojo : UTEC.verde}
             action={{ label: 'sistema', to: '/system' }}
             scroll
           >
@@ -168,14 +173,14 @@ export function AdminDashboard({
               </div>
               {verde && (
                 <div className="flex items-baseline gap-2 border-t pt-2 text-sm">
-                  <Leaf className="h-4 w-4 shrink-0 text-utec-green" />
+                  <Leaf className="h-4 w-4 shrink-0 text-marca-verde-texto" />
                   <b className="tabular-nums">{verde.hojasEvitadas.toLocaleString('es-UY')}</b>
                   <span className="text-muted-foreground">hojas evitadas</span>
                 </div>
               )}
               {barrasUsuarios.length > 0 && (
                 <div className="border-t pt-1">
-                  <p className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
+                  <p className="mb-1 text-2xs uppercase tracking-wider text-muted-foreground">Usuarios por rol</p>
                   <BarrasHorizontales datos={barrasUsuarios} multicolor />
                 </div>
               )}
@@ -185,7 +190,7 @@ export function AdminDashboard({
           <Panel
             title="Actividad reciente"
             count={actividad.length || undefined}
-            accentColor="#00c7ff"
+            accentColor={UTEC.cian}
             action={{ label: 'auditoría', to: '/audit' }}
             scroll
           >
@@ -196,7 +201,7 @@ export function AdminDashboard({
                 ))}
               </div>
             ) : (
-              <EmptyState title="Sin movimientos." />
+              <EmptyState variant="linea" title="Sin movimientos." />
             )}
           </Panel>
         </div>

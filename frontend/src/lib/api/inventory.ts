@@ -9,14 +9,6 @@ import type {
   InventarioFilters
 } from '../types/spaces';
 
-export interface InventorySummary {
-  totalItems: number;
-  disponibles: number;
-  enMantenimiento: number;
-  danados: number;
-  sinAsignar: number;
-}
-
 export interface CrearInventarioItemRequest {
   espacioId?: number | null;
   tipoElementoId: number;

@@ -35,7 +35,7 @@ export function ResumenExternos({ datos, grande = false }: Readonly<{ datos: Ext
           <div key={c.etiqueta} className="rounded-lg border bg-muted/30 px-2 py-2 text-center">
             <c.icono className="mx-auto mb-0.5 h-3.5 w-3.5 text-muted-foreground" />
             <div className="text-sm font-semibold tabular-nums">{c.valor}</div>
-            <div className="text-[10px] leading-tight text-muted-foreground">{c.etiqueta}</div>
+            <div className="text-2xs leading-tight text-muted-foreground">{c.etiqueta}</div>
           </div>
         ))}
       </div>
@@ -68,7 +68,7 @@ export function OrganizadoresExternos({ filas }: Readonly<{ filas: OrganizadorEx
   ];
   return (
     <div>
-      <div className="mb-2 hidden grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_70px_64px] gap-3 border-b pb-1.5 text-[10px] uppercase tracking-wide text-muted-foreground sm:grid">
+      <div className="mb-2 hidden grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_70px_64px] gap-3 border-b pb-1.5 text-2xs uppercase tracking-wide text-muted-foreground sm:grid">
         <span>Organizador</span>
         <span>Pedidos</span>
         <span className="text-right">Horas</span>
@@ -85,7 +85,7 @@ export function OrganizadoresExternos({ filas }: Readonly<{ filas: OrganizadorEx
             <li key={f.organizador} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_70px_64px]">
               <div className="flex min-w-0 items-center gap-2">
                 <span
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-2xs font-bold text-white"
                   style={{ backgroundColor: tema.categorias[i % tema.categorias.length] }}
                   aria-hidden
                 >

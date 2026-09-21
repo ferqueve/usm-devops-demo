@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -171,7 +172,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-utec-dark text-sidebar-foreground w-(--sidebar-width) p-2 [&>button]:hidden border-none"
+          className="bg-chrome text-sidebar-foreground w-(--sidebar-width) p-2 [&>button]:hidden border-none"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -183,7 +184,7 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col bg-utec-dark rounded-lg">{children}</div>
+          <div className="flex h-full w-full flex-col bg-chrome rounded-lg">{children}</div>
         </SheetContent>
       </Sheet>
     )

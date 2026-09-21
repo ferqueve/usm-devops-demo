@@ -26,7 +26,7 @@ export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps)
 
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
         <span className="w-1 h-4 rounded-sm shrink-0 bg-utec-blue" aria-hidden />
         <Server className="h-3.5 w-3.5 text-white/70 shrink-0" />
         <h3 className="text-sm font-semibold tracking-tight truncate">Información de la Aplicación</h3>
@@ -35,7 +35,7 @@ export const AppInfoCard = memo(function AppInfoCard({ info }: AppInfoCardProps)
         {app ? (
           <div className="space-y-0">
             <Row label="Nombre">
-              <span className="text-utec-blue">{app.name}</span>
+              <span className="text-marca-azul-texto">{app.name}</span>
             </Row>
             <Row label="Versión">
               <Badge variant="outline">{app.version}</Badge>

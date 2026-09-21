@@ -1,115 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
 import { materiasApi } from '@/lib/api/materias';
+import { useCallback, useEffect, useState } from 'react';
 import type { Materia } from '@/lib/types/materias';
-import { toast } from 'sonner';
-
-// Caché global compartido entre todos los componentes
-let materiasCache: Materia[] | null = null;
-let cacheTimestamp = 0;
-let pendingRequest: Promise<Materia[]> | null = null;
-
-// Duración del caché: 5 minutos
-const CACHE_DURATION = 5 * 60 * 1000;
+import { crearCacheDeLista, CACHE_CORTO } from './cacheDeLista';
 
 /**
- * Hook para obtener todas las materias activas.
+ * Todas las materias, pedidas una vez y compartidas entre componentes.
  *
- * Características:
- * - Caché global compartido entre componentes (5 minutos)
- * - Dedupe de peticiones concurrentes
- * - Función refresh() para invalidar caché
- *
- * @returns {object} { materias, loading, error, refresh }
+ * `useMisMaterias` es otra cosa: depende de quién mira, así que no se cachea
+ * en el módulo.
  */
+const cache = crearCacheDeLista<Materia>({
+  pedir: () => materiasApi.obtenerMaterias(),
+  nombre: 'las materias',
+  duracion: CACHE_CORTO,
+});
+
 export function useMaterias() {
-  const [materias, setMaterias] = useState<Materia[]>(materiasCache || []);
-  const [loading, setLoading] = useState<boolean>(!materiasCache);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchMaterias = useCallback(async (forceRefresh = false) => {
-    const now = Date.now();
-
-    if (!forceRefresh && materiasCache && now - cacheTimestamp < CACHE_DURATION) {
-      setMaterias(materiasCache);
-      setLoading(false);
-      return materiasCache;
-    }
-
-    if (pendingRequest) {
-      try {
-        const result = await pendingRequest;
-        setMaterias(result);
-        setLoading(false);
-        return result;
-      } catch (err) {
-        setError(err as Error);
-        setLoading(false);
-        throw err;
-      }
-    }
-
-    setLoading(true);
-    setError(null);
-
-    pendingRequest = (async () => {
-      try {
-        const response = await materiasApi.obtenerMaterias();
-
-        if (response.data) {
-          materiasCache = response.data;
-          cacheTimestamp = Date.now();
-
-          setMaterias(response.data);
-          return response.data;
-        }
-
-        throw new Error('No se recibieron datos');
-      } catch (err) {
-        const error = err as Error;
-        setError(error);
-        console.error('Error al cargar materias:', error);
-
-        if (forceRefresh) {
-          toast.error('Error al cargar materias');
-        }
-
-        throw error;
-      } finally {
-        setLoading(false);
-        pendingRequest = null;
-      }
-    })();
-
-    return pendingRequest;
-  }, []);
-
-  useEffect(() => {
-    fetchMaterias();
-  }, [fetchMaterias]);
-
-  const refresh = useCallback(async () => {
-    materiasCache = null;
-    cacheTimestamp = 0;
-    return fetchMaterias(true);
-  }, [fetchMaterias]);
-
-  return {
-    materias,
-    loading,
-    error,
-    refresh,
-  };
+  const { datos, loading, error, refresh } = cache.useLista();
+  return { materias: datos, loading, error, refresh };
 }
 
-/**
- * Hook para obtener las materias del usuario autenticado, según el vínculo pedido.
- *
- * Antes esto era un solo endpoint que el backend resolvía mirando el rol; ahora la
- * vista dice cuál quiere, porque ya lo sabe.
- *
- * @param vinculo 'dicto' (docente) o 'curso' (estudiante)
- * @returns {object} { materias, loading, error, refresh }
- */
+/** Vacía el caché sin pedir, para después de crear, editar o borrar. */
+export const invalidateMateriasCache = cache.invalidar;
+
 export function useMisMaterias(vinculo: 'dicto' | 'curso') {
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -148,10 +61,3 @@ export function useMisMaterias(vinculo: 'dicto' | 'curso') {
   };
 }
 
-/**
- * Invalida el caché de materias manualmente.
- */
-export function invalidateMateriasCache() {
-  materiasCache = null;
-  cacheTimestamp = 0;
-}

@@ -23,7 +23,7 @@ interface SectionProps {
 function SectionCard({ title, icon, accentClass, count, children }: Readonly<SectionProps>) {
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
         <span className={`w-1 h-4 rounded-sm shrink-0 ${accentClass}`} />
         {icon}
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
@@ -84,7 +84,7 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
     return (
       <SectionCard
         title="Recomendaciones de mantenimiento"
-        icon={<Sparkles className="h-4 w-4 text-utec-yellow" />}
+        icon={<Sparkles className="h-4 w-4 text-marca-amarillo-texto" />}
         accentClass="bg-utec-yellow"
         count={0}
       >
@@ -100,7 +100,7 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
       {itemsUrgentes.length > 0 && (
         <SectionCard
           title="Items que Requieren Mantenimiento Urgente"
-          icon={<Wrench className="h-4 w-4 text-utec-yellow" />}
+          icon={<Wrench className="h-4 w-4 text-marca-amarillo-texto" />}
           accentClass="bg-utec-yellow"
           count={itemsUrgentes.length}
         >
@@ -120,7 +120,7 @@ export function MantenimientoRecomendaciones({ className }: Readonly<Mantenimien
       {espaciosAtencion.length > 0 && (
         <SectionCard
           title="Espacios que Requieren Atención"
-          icon={<AlertTriangle className="h-4 w-4 text-utec-red" />}
+          icon={<AlertTriangle className="h-4 w-4 text-marca-rojo-texto" />}
           accentClass="bg-utec-red"
           count={espaciosAtencion.length}
         >

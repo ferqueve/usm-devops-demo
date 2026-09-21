@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Round-trip del campo "Motivo de la solicitud". El docente lo completa al
@@ -34,13 +35,8 @@ test.describe('Reservas: motivo de solicitud round-trip', () => {
     // Fecha: 8 días desde hoy (lejos de fechas seedeadas).
     const futuro = new Date();
     futuro.setDate(futuro.getDate() + 8);
-    const dia = String(futuro.getDate());
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${dia}$`) })
-      .first()
-      .click();
+    await elegirDia(page, futuro);
 
     const horas = page.locator('input[placeholder="00"]');
     await horas.nth(0).fill('15');

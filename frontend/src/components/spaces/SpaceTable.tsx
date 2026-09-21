@@ -16,10 +16,7 @@ import {
   ArrowUp, 
   ArrowDown,
   Building2,
-  Users,
-  CheckCircle,
-  Wrench,
-  XCircle
+  Users
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { Espacio } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { ESTADO_ESPACIO, EstadoBadge, estadoDe } from '@/components/common/estados';
 
 interface SpaceTableProps {
   espacios: Espacio[];
@@ -64,8 +62,8 @@ export function SpaceTable({
     <div className="border rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b-0">
-            <TableHead className="h-10 bg-utec-dark text-white/70 w-[80px]">
+          <TableRow>
+            <TableHead className="w-[80px]">
               <button
                 onClick={() => onSort && handleSort('id')}
                 className="flex items-center hover:text-white transition-colors"
@@ -73,7 +71,7 @@ export function SpaceTable({
                 ID {onSort && getSortIcon('id')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('nombre')}
                 className="flex items-center hover:text-white transition-colors"
@@ -81,7 +79,7 @@ export function SpaceTable({
                 Nombre {onSort && getSortIcon('nombre')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('tipo')}
                 className="flex items-center hover:text-white transition-colors"
@@ -89,10 +87,10 @@ export function SpaceTable({
                 Tipo de Espacio {onSort && getSortIcon('tipo')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               Edificio
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               <button
                 onClick={() => onSort && handleSort('capacidad')}
                 className="flex items-center hover:text-white transition-colors"
@@ -100,19 +98,19 @@ export function SpaceTable({
                 Capacidad {onSort && getSortIcon('capacidad')}
               </button>
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70">
+            <TableHead>
               Estado
             </TableHead>
-            <TableHead className="h-10 bg-utec-dark text-white/70 text-right">Acciones</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {espacios.map((espacio) => (
-            <TableRow key={espacio.id} className="hover:bg-gray-50">
+            <TableRow key={espacio.id} className="hover:bg-muted">
               <TableCell className="font-medium">#{espacio.id}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-gray-500" />
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{espacio.nombre}</span>
                 </div>
               </TableCell>
@@ -132,56 +130,19 @@ export function SpaceTable({
               </TableCell>
               <TableCell>
                 {espacio.edificioNombre ? (
-                  <span className="text-sm text-gray-700">{espacio.edificioNombre}</span>
+                  <span className="text-sm text-foreground/80">{espacio.edificioNombre}</span>
                 ) : (
-                  <span className="text-sm text-gray-400">Sin edificio</span>
+                  <span className="text-sm text-muted-foreground">Sin edificio</span>
                 )}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-4 w-4 text-gray-500" />
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   <span>{espacio.capacidad} personas</span>
                 </div>
               </TableCell>
               <TableCell>
-                {(() => {
-                  const getEstadoConfig = (estado: string) => {
-                    switch (estado) {
-                      case 'DISPONIBLE':
-                        return {
-                          label: 'Disponible',
-                          color: 'bg-utec-green text-white border-utec-green',
-                          icon: CheckCircle
-                        };
-                      case 'MANTENIMIENTO':
-                        return {
-                          label: 'En Mantenimiento',
-                          color: 'bg-utec-yellow text-utec-dark border-utec-yellow',
-                          icon: Wrench
-                        };
-                      case 'NO_DISPONIBLE':
-                        return {
-                          label: 'No Disponible',
-                          color: 'bg-utec-red text-white border-utec-red',
-                          icon: XCircle
-                        };
-                      default:
-                        return {
-                          label: estado,
-                          color: 'bg-gray-200 text-utec-dark border-gray-300',
-                          icon: CheckCircle
-                        };
-                    }
-                  };
-                  const estadoConfig = getEstadoConfig(espacio.estado);
-                  const EstadoIcon = estadoConfig.icon;
-                  return (
-                    <Badge className={`${estadoConfig.color} border font-medium text-xs`}>
-                      <EstadoIcon className="h-3 w-3 mr-1" />
-                      {estadoConfig.label}
-                    </Badge>
-                  );
-                })()}
+                <EstadoBadge estado={estadoDe(ESTADO_ESPACIO, espacio.estado)} className="text-xs" />
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">

@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { formatBytes, formatUptime } from '@/lib/utils/formatters';
 import type { HealthInfo, MetricInfo, MetricMeasurement } from '@/lib/types/actuator';
 import type { MetricsChartDataPoint } from '@/components/ui/metrics-chart';
+import { MARCA } from '@/lib/design/paleta';
 
 interface MetricsCardsProps {
   health: HealthInfo | null | undefined;
@@ -80,7 +81,7 @@ function SysStat({
   progress,
   umbral,
   serie,
-  serieColor = '#00c7ff',
+  serieColor = MARCA.cian,
   onClick,
   tono = 'normal',
 }: Readonly<SysStatProps>) {
@@ -90,10 +91,10 @@ function SysStat({
         <Icon className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{label}</span>
       </div>
-      <div className={`text-2xl font-semibold tabular-nums ${tono === 'alerta' ? 'text-utec-red' : 'text-white'}`}>
+      <div className={`text-2xl font-semibold tabular-nums ${tono === 'alerta' ? 'text-marca-rojo-texto' : 'text-white'}`}>
         {value}
       </div>
-      {hint && <div className="text-[11px] mt-0.5 truncate text-white/60">{hint}</div>}
+      {hint && <div className="text-2xs mt-0.5 truncate text-white/60">{hint}</div>}
       {progress !== undefined && (
         <div className="h-1.5 mt-2 rounded-full bg-white/15 overflow-hidden">
           <div
@@ -111,14 +112,14 @@ function SysStat({
       <button
         type="button"
         onClick={onClick}
-        className="rounded-xl bg-utec-dark p-4 min-w-0 text-left transition-colors hover:bg-utec-dark-lighter"
+        className="rounded-xl bg-chrome p-4 min-w-0 text-left transition-colors hover:bg-utec-dark-lighter"
       >
         {contenido}
       </button>
     );
   }
 
-  return <div className="rounded-xl p-4 min-w-0 bg-utec-dark">{contenido}</div>;
+  return <div className="rounded-xl p-4 min-w-0 bg-chrome">{contenido}</div>;
 }
 
 function desdeHace(desde: Date | null | undefined): string | null {
@@ -193,7 +194,7 @@ export const MetricsCards = memo(function MetricsCards({
         progress={memoryUsagePercent}
         umbral
         serie={serieMemoria}
-        serieColor="#00c7ff"
+        serieColor={MARCA.cian}
       />
       <SysStat
         label="Uso de CPU"
@@ -203,7 +204,7 @@ export const MetricsCards = memo(function MetricsCards({
         progress={cpuUsage * 100}
         umbral
         serie={serieCpu}
-        serieColor="#86bb4c"
+        serieColor={MARCA.verde}
       />
       <SysStat
         label="Tiempo activo"

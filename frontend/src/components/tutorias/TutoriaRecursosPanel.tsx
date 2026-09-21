@@ -5,6 +5,8 @@ import { ExternalLink, FileText, Link2, Loader2, Plus, Trash2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { tutoriasApi } from '@/lib/api/tutorias';
 import type { TutoriaRecurso } from '@/lib/types/tutorias';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaId: number; canEdit: boolean }>) {
   const [recursos, setRecursos] = useState<TutoriaRecurso[]>([]);
@@ -37,19 +39,15 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
   if (!canEdit && recursos.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10"><FileText className="h-4 w-4 text-utec-blue" /></span>
-        <h3 className="text-sm font-semibold">Material de la tutoría</h3>
-      </div>
-      <div className="p-4 space-y-3">
+    <Panel title="Material de la tutoría" icon={<FileText />} accentColor={MARCA.azul}>
+      <div className="space-y-3">
         {recursos.length === 0 ? (
           <p className="text-sm text-muted-foreground">Todavía no hay material adjunto.</p>
         ) : (
           <ul className="space-y-2">
             {recursos.map((r) => (
               <li key={r.id} className="flex items-center justify-between gap-2 rounded-lg border p-2.5">
-                <a href={r.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-sm text-utec-blue hover:underline">
+                <a href={r.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-sm text-marca-azul-texto hover:underline">
                   <Link2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{r.titulo}</span><ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
                 </a>
                 {canEdit && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => eliminar(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
@@ -65,6 +63,6 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
           </div>
         )}
       </div>
-    </div>
+    </Panel>
   );
 }

@@ -43,7 +43,7 @@ export function BarrasTramos({ tramos, alto = 200, unidad = '', leyenda }: Reado
           return (
             <div key={t.etiqueta} className="flex min-w-0 flex-1 flex-col items-center justify-end">
               <span className="mb-1 text-sm font-semibold tabular-nums">{formatoNumero(totales[i])}</span>
-              <span className="mb-1 text-[10px] text-muted-foreground tabular-nums">{pct}%</span>
+              <span className="mb-1 text-2xs text-muted-foreground tabular-nums">{pct}%</span>
               {totales[i] === 0 && <div className="h-[3px] w-full max-w-[64px] rounded-full bg-muted-foreground/30" aria-hidden />}
               <div
                 className="flex w-full max-w-[64px] flex-col-reverse gap-[2px] overflow-hidden rounded-t-md"
@@ -64,8 +64,8 @@ export function BarrasTramos({ tramos, alto = 200, unidad = '', leyenda }: Reado
       <div className="mt-1.5 flex gap-2 border-t pt-1.5 sm:gap-3">
         {tramos.map((t) => (
           <div key={t.etiqueta} className="min-w-0 flex-1 text-center">
-            <div className="truncate text-[11px] font-medium text-muted-foreground" title={t.etiqueta}>{t.etiqueta}</div>
-            {t.nota && <div className="truncate text-[10px] text-muted-foreground">{t.nota}</div>}
+            <div className="truncate text-2xs font-medium text-muted-foreground" title={t.etiqueta}>{t.etiqueta}</div>
+            {t.nota && <div className="truncate text-2xs text-muted-foreground">{t.nota}</div>}
           </div>
         ))}
       </div>

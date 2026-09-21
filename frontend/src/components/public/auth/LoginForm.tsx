@@ -45,6 +45,7 @@ export function LoginForm({
           <Input 
             id="email" 
             type="email" 
+            autoComplete="username"
             placeholder="usuario@utec.edu.uy" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -64,6 +65,7 @@ export function LoginForm({
           <Input 
             id="password" 
             type="password" 
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required 

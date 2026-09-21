@@ -5,6 +5,7 @@ import EstadisticasAcademico from './academico/EstadisticasAcademico';
 import EstadisticasInventario from './inventario/EstadisticasInventario';
 import EstadisticasReservas from './reservas/EstadisticasReservas';
 import { PERIODOS, fechaCorta, usePeriodo } from './periodo';
+import { MARCA } from '@/lib/design/paleta';
 
 /**
  * Estadísticas: tres vistas, reservas, inventario y académico, con un único período en
@@ -60,7 +61,7 @@ export default function Statistics() {
               ? 'Académico: tutorías y eventos del período, cuánto se llenan y cómo se califican.'
               : 'Reservas del período: cuántas, cuándo, dónde y de quién.'
         }
-        accentColor={vista === 'inventario' ? '#F6CA21' : vista === 'academico' ? '#86bb4c' : '#184897'}
+        accentColor={vista === 'inventario' ? MARCA.amarillo : vista === 'academico' ? MARCA.verde : MARCA.azul}
         actions={
           <div className="mr-1 flex items-center rounded-md bg-white/10 p-0.5" role="radiogroup" aria-label="Período">
             {PERIODOS.map((p) => {
@@ -75,7 +76,7 @@ export default function Statistics() {
                   title={p.label}
                   aria-label={p.label}
                   className={`h-7 whitespace-nowrap rounded px-2 text-xs font-medium transition-colors sm:px-2.5 ${
-                    activo ? 'bg-[#ffffff] text-[#343a40]' : 'text-white/75 hover:bg-white/10 hover:text-white'
+                    activo ? 'bg-white text-chrome' : 'text-white/75 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span className="sm:hidden">{p.minimo}</span>

@@ -74,8 +74,8 @@ export default function AuditFilters({
           onChange={(v) => handleFilterChange('entidad', v ?? undefined)}
           Icon={Box}
           tooltipNone="Todas las entidades"
-          activeBgClass="bg-blue-100 text-blue-900 shadow-md ring-1 ring-blue-300"
-          activeTextColorClass="text-blue-700"
+          activeBgClass="bg-info-suave text-info-texto shadow-md ring-1 ring-info-borde"
+          activeTextColorClass="text-info-texto"
         />
         <PopoverFilterSection<string>
           selectedId={filters.accion ?? null}
@@ -85,11 +85,11 @@ export default function AuditFilters({
           }
           Icon={Activity}
           tooltipNone="Todas las acciones"
-          activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-          activeTextColorClass="text-purple-700"
+          activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+          activeTextColorClass="text-acento-texto"
         />
-        <div className="flex items-center border rounded-lg p-0.5 bg-gray-50 h-9">
-          <div className="px-2 text-gray-500">
+        <div className="flex items-center border rounded-lg p-0.5 bg-muted h-9">
+          <div className="px-2 text-muted-foreground">
             <Hash className="h-3.5 w-3.5" />
           </div>
           <Input

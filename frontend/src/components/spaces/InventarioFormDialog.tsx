@@ -214,7 +214,7 @@ export function InventarioFormDialog({
         </div>
 
         {/* Botones */}
-        <div className="flex-shrink-0 bg-gray-50 px-6 py-4 border-t flex justify-end gap-2">
+        <div className="flex-shrink-0 bg-muted px-6 py-4 border-t flex justify-end gap-2">
           <Button
             type="button"
             variant="outline"

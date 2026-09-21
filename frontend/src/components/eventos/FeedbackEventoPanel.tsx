@@ -3,28 +3,19 @@ import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight, Loader2, MessageSquare, Send, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { eventosApi } from '@/lib/api/eventos';
+import { Panel } from '@/components/common/Panel';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
+import { MARCA } from '@/lib/design/paleta';
 import type { EventoFeedbackResumen } from '@/lib/types/eventos';
+import { soloFecha } from '@/lib/utils/fechas';
+import { Estrellas } from '@/components/common/Estrellas';
 
-function Stars({ value, size = 'sm' }: Readonly<{ value: number; size?: 'sm' | 'lg' }>) {
-  const cls = size === 'lg' ? 'h-5 w-5' : 'h-3.5 w-3.5';
-  return (
-    <span className="inline-flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} className={`${cls} ${n <= Math.round(value) ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/40'}`} />
-      ))}
-    </span>
-  );
-}
 
-function fmtFecha(iso?: string): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>) {
   const [resumen, setResumen] = useState<EventoFeedbackResumen | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comentario, setComentario] = useState('');
@@ -33,6 +24,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
 
   const cargar = useCallback(() => {
     setLoading(true);
+    setError(null);
     eventosApi.feedback(eventoId)
       .then((r) => {
         if (r.data) {
@@ -40,7 +32,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
           if (r.data.miRating) setRating(r.data.miRating);
         }
       })
-      .catch(() => { /* noop */ })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error de red.'))
       .finally(() => setLoading(false));
   }, [eventoId]);
 
@@ -63,36 +55,36 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
     }
   };
 
-  if (loading) {
-    return (
-      <div className="h-full rounded-2xl border bg-card p-4 flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-  if (!resumen) return null;
-
-  const { promedio, total, distribucion, miRating, puedeValorar, items } = resumen;
+  // Con `resumen` en null el cuerpo no se dibuja, pero JSX evalúa igual lo
+  // que tiene adentro: los valores por defecto evitan que reviente.
+  const {
+    promedio = 0, total = 0, distribucion = [], miRating, puedeValorar = false, items = [],
+  } = resumen ?? ({} as Partial<EventoFeedbackResumen>);
   const maxDist = Math.max(1, ...distribucion);
 
   return (
-    <div className="h-full flex flex-col rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b shrink-0">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20">
-          <Star className="h-4 w-4 text-utec-yellow" />
-        </span>
-        <h3 className="text-sm font-semibold">Satisfacción</h3>
-        {total > 0 && <span className="ml-auto text-xs text-muted-foreground">{total} {total === 1 ? 'valoración' : 'valoraciones'}</span>}
-      </div>
-
-      <div className="p-4 flex-1 flex flex-col gap-4">
+    <Panel
+      title="Satisfacción"
+      icon={<Star />}
+      accentColor={MARCA.amarillo}
+      count={total > 0 ? `${total} ${total === 1 ? 'valoración' : 'valoraciones'}` : undefined}
+      altoCompleto
+    >
+      <EstadoCarga
+        cargando={loading}
+        error={error}
+        alReintentar={cargar}
+        vacio={!resumen}
+        textoVacio="No hay datos de satisfacción de este evento."
+      >
+      <div className="flex flex-1 flex-col gap-4">
         {total === 0 ? (
           <p className="text-sm text-muted-foreground py-1">Todavía no hay valoraciones de este evento.</p>
         ) : (
           <div className="flex items-center gap-4">
             <div className="text-center shrink-0">
               <div className="text-3xl font-bold tabular-nums leading-none">{promedio.toFixed(1)}</div>
-              <div className="mt-1"><Stars value={promedio} /></div>
+              <div className="mt-1"><Estrellas valor={promedio} conNumero={false} /></div>
             </div>
             <div className="flex-1 space-y-1">
               {[5, 4, 3, 2, 1].map((n) => {
@@ -100,7 +92,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
                 return (
                   <div key={n} className="flex items-center gap-2 text-xs">
                     <span className="w-3 text-right text-muted-foreground">{n}</span>
-                    <Star className="h-3 w-3 fill-utec-yellow text-utec-yellow" />
+                    <Star className="h-3 w-3 fill-utec-yellow text-marca-amarillo-texto" />
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                       <div className="h-full bg-utec-yellow rounded-full" style={{ width: `${(count / maxDist) * 100}%` }} />
                     </div>
@@ -119,7 +111,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
             <div className="flex items-center gap-1" onMouseLeave={() => setHover(0)}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <button key={n} type="button" onClick={() => setRating(n)} onMouseEnter={() => setHover(n)} className="p-0.5" aria-label={`${n} estrellas`}>
-                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-utec-yellow' : 'text-muted-foreground/40'}`} />
+                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/40'}`} />
                 </button>
               ))}
             </div>
@@ -156,8 +148,8 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
                     <span className="truncate text-sm font-medium">{i.usuarioNombre ?? 'Anónimo'}</span>
                   </span>
                   <span className="flex items-center gap-2 shrink-0">
-                    <Stars value={i.rating} />
-                    <span className="text-[11px] text-muted-foreground">{fmtFecha(i.createdAt)}</span>
+                    <Estrellas valor={i.rating} conNumero={false} />
+                    <span className="text-2xs text-muted-foreground">{soloFecha(i.createdAt, '')}</span>
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{i.comentario}</p>
@@ -175,6 +167,7 @@ export function FeedbackEventoPanel({ eventoId }: Readonly<{ eventoId: number }>
           );
         })()}
       </div>
-    </div>
+      </EstadoCarga>
+    </Panel>
   );
 }

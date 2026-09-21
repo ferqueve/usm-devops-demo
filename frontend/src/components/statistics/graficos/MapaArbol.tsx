@@ -1,5 +1,7 @@
 import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
 import type { TooltipProps } from 'recharts';
+import { MARCA, tintaSobre } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 export interface NodoArbol {
   nombre: string;
@@ -33,12 +35,12 @@ function Celda({ x = 0, y = 0, width = 0, height = 0, nombre, detalle, color, te
     <g onClick={alClic} style={alClic ? { cursor: 'pointer' } : undefined}>
       <rect x={x} y={y} width={width} height={height} rx={4} fill={color} stroke="var(--card)" strokeWidth={2} />
       {cabe && (
-        <text x={x + 8} y={y + 18} fill={texto ?? '#fff'} style={{ fontSize: 12, fontWeight: 600 }}>
+        <text x={x + 8} y={y + 18} fill={texto ?? tintaSobre(color ?? MARCA.azul)} style={{ fontSize: 12, fontWeight: 600 }}>
           {nombre && nombre.length * 7 > width - 12 ? `${nombre.slice(0, Math.max(3, Math.floor((width - 16) / 7)))}…` : nombre}
         </text>
       )}
       {cabeDetalle && detalle && (
-        <text x={x + 8} y={y + 34} fill={texto ?? '#fff'} fillOpacity={0.85} style={{ fontSize: 11 }}>
+        <text x={x + 8} y={y + 34} fill={texto ?? tintaSobre(color ?? MARCA.azul)} fillOpacity={0.85} style={{ fontSize: 11 }}>
           {detalle.length * 6 > width - 12 ? `${detalle.slice(0, Math.max(3, Math.floor((width - 16) / 6)))}…` : detalle}
         </text>
       )}
@@ -50,11 +52,11 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as NodoArbol;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-1.5 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <b>{p.nombre}</b>
       {p.detalle && <div className="text-white/75">{p.detalle}</div>}
-      {p.alClic && <div className="mt-0.5 text-[10px] text-white/60">Clic para filtrar por este espacio</div>}
-    </div>
+      {p.alClic && <div className="mt-0.5 text-2xs text-white/60">Clic para filtrar por este espacio</div>}
+    </GloboGrafico>
   );
 }
 

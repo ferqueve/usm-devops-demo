@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/layouts/PageHeader';
 import { CarrerasManagement } from '@/components/carreras/CarrerasManagement';
 import { TipoElementoManagement } from '@/components/inventory/TipoElementoManagement';
 import { TipoEspacioManagement } from '@/components/spaces/TipoEspacioManagement';
+import { MARCA } from '@/lib/design/paleta';
 
 /**
  * Configuración: los catálogos que alimentan al resto del sistema. Cada sección
@@ -16,7 +17,7 @@ export default function ConfiguracionManagement() {
       <PageHeader
         title="Configuración"
         description="Catálogos que definen las opciones disponibles en el resto del sistema."
-        accentColor="#00c7ff"
+        accentColor={MARCA.cian}
       />
 
       {/* Los dos catálogos de tipos van a la par: son listas cortas de nombres

@@ -18,6 +18,8 @@ import { mezclar, useTemaGraficos } from '@/components/statistics/graficos/tema'
 import { useColores } from '../colores';
 import { decimal, entero, fechaConDia, fechaCorta, fechaLarga, porcentaje01, SVG_LLENO } from '../formato';
 import { estiloRiesgo } from './estilos';
+import { MARCA } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 /** Chips para elegir el tipo; el punto de color es su riesgo. */
 export function SelectorTipos({ tipos, elegido, onElegir }: Readonly<{
@@ -40,7 +42,7 @@ export function SelectorTipos({ tipos, elegido, onElegir }: Readonly<{
             onClick={() => onElegir(t.tipoElementoId)}
             title={estilo.etiqueta}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              activo ? 'bg-utec-dark text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              activo ? 'bg-chrome text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             } ${t.status === 'omitido' ? 'italic' : ''}`}
           >
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: estilo.color }} aria-hidden />
@@ -64,12 +66,12 @@ function Globo({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Punto;
   return (
-    <div className="min-w-[190px] rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico className="min-w-[190px]">
       <p className="mb-1.5 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <Renglon color={colores.prediccion} etiqueta="Pico esperado" valor={decimal(p.prediccion)} extra={p.bandaInferior != null && p.bandaSuperior != null ? `${entero(p.bandaInferior)}–${entero(p.bandaSuperior)}` : undefined} />
       <Renglon color={colores.reservadas} etiqueta="Ya pedidas" valor={entero(p.comprometidas)} />
-      <Renglon color="#DF2B31" etiqueta="Prob. de faltante" valor={porcentaje01(p.probFaltante)} />
-    </div>
+      <Renglon color={MARCA.rojo} etiqueta="Prob. de faltante" valor={porcentaje01(p.probFaltante)} />
+    </GloboGrafico>
   );
 }
 
@@ -110,7 +112,7 @@ export function GraficoPico({ tipo, alto = 300 }: Readonly<{ tipo: TipoInventari
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={datos} margin={{ top: 20, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid stroke={colores.grilla} vertical={false} />
-            <XAxis dataKey="fecha" tickFormatter={fechaCorta} tick={{ fontSize: 11, fill: colores.eje }} axisLine={{ stroke: colores.grilla }} tickLine={false} minTickGap={24} />
+            <XAxis dataKey="fecha" tickFormatter={(v) => fechaCorta(v)} tick={{ fontSize: 11, fill: colores.eje }} axisLine={{ stroke: colores.grilla }} tickLine={false} minTickGap={24} />
             <YAxis
               tick={{ fontSize: 11, fill: colores.eje }}
               axisLine={false}
@@ -155,7 +157,7 @@ export function TiraRiesgo({ serie }: Readonly<{ serie: DiaInventarioML[] }>) {
   if (serie.length === 0) return null;
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
+      <div className="mb-1 flex items-center justify-between text-2xs text-muted-foreground">
         <span>Probabilidad de faltante, día por día</span>
         <span className="flex items-center gap-1">
           0%
@@ -173,7 +175,7 @@ export function TiraRiesgo({ serie }: Readonly<{ serie: DiaInventarioML[] }>) {
           />
         ))}
       </div>
-      <div className="mt-0.5 flex justify-between text-[10px] text-muted-foreground">
+      <div className="mt-0.5 flex justify-between text-2xs text-muted-foreground">
         <span>{fechaCorta(serie[0].fecha)}</span>
         <span>{fechaCorta(serie.at(-1)!.fecha)}</span>
       </div>
@@ -199,7 +201,7 @@ export function PatronSemanal({ tipo, alto = 120 }: Readonly<{ tipo: TipoInventa
         <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-muted-foreground/50" style={{ bottom: `${(1 / tope) * 100}%` }} />
         {dias.map((d) => (
           <div key={d.dia} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end" title={`${d.dia}: ×${decimal(d.multiplicador, 2)}`}>
-            <span className="mb-0.5 text-[10px] font-semibold tabular-nums">×{decimal(d.multiplicador)}</span>
+            <span className="mb-0.5 text-2xs font-semibold tabular-nums">×{decimal(d.multiplicador)}</span>
             <div
               className="w-full max-w-[28px] rounded-t-[4px]"
               style={{ height: `${(d.multiplicador / tope) * 100}%`, backgroundColor: colores.prediccion, opacity: d.multiplicador >= 1 ? 1 : 0.4 }}
@@ -208,7 +210,7 @@ export function PatronSemanal({ tipo, alto = 120 }: Readonly<{ tipo: TipoInventa
         ))}
       </div>
       <div className="flex gap-1.5 border-t pt-1">
-        {dias.map((d) => <span key={d.dia} className="min-w-0 flex-1 text-center text-[11px] text-muted-foreground">{d.dia}</span>)}
+        {dias.map((d) => <span key={d.dia} className="min-w-0 flex-1 text-center text-2xs text-muted-foreground">{d.dia}</span>)}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
@@ -230,7 +232,7 @@ export function SemanasTipo({ tipo }: Readonly<{ tipo: TipoInventarioML }>) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[460px] text-sm">
-        <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <thead className="text-2xs uppercase tracking-wide text-muted-foreground">
           <tr className="border-b">
             <th className="px-3 py-2 text-left font-medium">Semana</th>
             <th className="px-3 py-2 text-right font-medium">Pico esperado</th>
@@ -248,7 +250,7 @@ export function SemanasTipo({ tipo }: Readonly<{ tipo: TipoInventarioML }>) {
                 <td className="px-3 py-2 text-right tabular-nums">
                   <b>{decimal(s.picoEsperado)}</b> <span className="text-xs text-muted-foreground">/ {entero(stock)}</span>
                 </td>
-                <td className={`px-3 py-2 text-right tabular-nums ${supera ? 'font-semibold text-utec-red' : ''}`}>{entero(s.comprometidasMax)}</td>
+                <td className={`px-3 py-2 text-right tabular-nums ${supera ? 'font-semibold text-marca-rojo-texto' : ''}`}>{entero(s.comprometidasMax)}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-full max-w-[140px] overflow-hidden rounded-full bg-muted">

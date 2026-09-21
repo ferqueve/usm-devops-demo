@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Recurrencia con conflicto parcial. El backend
@@ -26,13 +27,8 @@ test.describe('Reservas: recurrencia con conflicto parcial', () => {
     // Fecha inicio: +4 días (sin reserva existente).
     const inicio = new Date();
     inicio.setDate(inicio.getDate() + 4);
-    const diaInicio = String(inicio.getDate());
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${diaInicio}$`) })
-      .first()
-      .click();
+    await elegirDia(page, inicio);
 
     const horas = page.locator('input[placeholder="00"]');
     await horas.nth(0).fill('14');
@@ -49,13 +45,8 @@ test.describe('Reservas: recurrencia con conflicto parcial', () => {
     // Fecha fin recurrencia: +6 días (3 instancias generadas: +4, +5, +6).
     const finRec = new Date();
     finRec.setDate(finRec.getDate() + 6);
-    const diaFinRec = String(finRec.getDate());
     await page.locator('button:has(svg.lucide-calendar)').nth(1).click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${diaFinRec}$`) })
-      .first()
-      .click();
+    await elegirDia(page, finRec);
 
     await page.getByRole('button', { name: /Crear Reserva/i }).click();
     await page.waitForURL('**/reservations');

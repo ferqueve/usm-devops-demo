@@ -38,13 +38,6 @@ export interface MetricInfo {
   availableTags?: Array<{ tag: string; values: string[] }>;
 }
 
-export interface JvmInfo {
-  memoria: MetricInfo | null;
-  cpu: MetricInfo | null;
-  threads: MetricInfo | null;
-  uptime: MetricInfo | null;
-}
-
 export interface ActuatorEndpoints {
   _links?: Record<string, { href: string; templated?: boolean } | undefined>;
 }

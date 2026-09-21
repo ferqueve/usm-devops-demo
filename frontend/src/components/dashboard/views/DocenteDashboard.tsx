@@ -1,10 +1,10 @@
 import { CalendarClock, CheckCircle2, Clock, GraduationCap, ListChecks, Users } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
-import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
+import { StatStrip } from '@/components/common/StatStrip';
+import { Panel } from '@/components/common/Panel';
 import { Hero } from './_components/Hero';
-import { EmptyState } from './_components/EmptyState';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila, MateriaFila } from './_components/Filas';
 import { BarrasHorizontales, Progreso, UTEC } from './_components/Graficos';
@@ -37,7 +37,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
   const proxima = tutorias[0];
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       {proxima ? (
         <Hero
           etiqueta="TU PRÓXIMA TUTORÍA A DAR"
@@ -72,19 +72,19 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Inscriptos por materia"
             count={`${stats?.inscriptos ?? 0} en total`}
-            accentColor="#86bb4c"
+            accentColor={UTEC.verde}
             action={{ label: 'materias', to: '/materias?tab=listado' }}
             scroll
           >
             <BarrasHorizontales datos={inscriptosPorMateria} color={UTEC.verde} />
           </Panel>
 
-          <Panel title="Ocupación de mis tutorías" accentColor="#00c7ff" scroll>
+          <Panel title="Ocupación de mis tutorías" accentColor={UTEC.cian} scroll>
             {tutorias.length > 0 ? (
               <div className="space-y-2.5 py-1">
                 {tutorias.map((t) => (
@@ -98,7 +98,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
                 ))}
               </div>
             ) : (
-              <EmptyState title="Sin franjas próximas." />
+              <EmptyState variant="linea" title="Sin franjas próximas." />
             )}
           </Panel>
         </div>
@@ -106,7 +106,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Mis materias"
           count={stats?.materias || undefined}
-          accentColor="#184897"
+          accentColor={UTEC.azul}
           action={{ label: 'ver todas', to: '/materias?tab=listado' }}
           scroll
         >
@@ -115,21 +115,21 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
               {materias.map((m) => <MateriaFila key={m.id} materia={m} />)}
             </div>
           ) : (
-            <EmptyState title="No dictás ninguna materia." />
+            <EmptyState variant="linea" title="No dictás ninguna materia." />
           )}
         </Panel>
 
         <Panel
           title="Mis reservas"
           count={proximasMias.length > 0 ? `${proximasMias.length} próximas` : `${totalPendientes} pendientes`}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'nueva reserva', to: '/reservations?new=true' }}
           scroll
         >
           {(() => {
             const filas = proximasMias.length > 0 ? proximasMias : misPendientes;
             if (filas.length === 0 && eventos.length === 0) {
-              return <EmptyState title="Sin reservas próximas ni pendientes." />;
+              return <EmptyState variant="linea" title="Sin reservas próximas ni pendientes." />;
             }
             return (
               <div className="divide-y divide-border/60">

@@ -1,9 +1,9 @@
 import { CheckCircle2, Clock, Megaphone, XCircle } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 import type { DashboardData } from '@/lib/api/dashboard';
-import { StatStrip } from './_components/StatStrip';
-import { Panel } from './_components/Panel';
-import { EmptyState } from './_components/EmptyState';
+import { StatStrip } from '@/components/common/StatStrip';
+import { Panel } from '@/components/common/Panel';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ReservaRow } from './_components/ReservaRow';
 import { EventoFila } from './_components/Filas';
 import { Anillo, Tendencia, UTEC, variacion } from './_components/Graficos';
@@ -38,7 +38,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
   const proximoEvento = eventos[0];
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       {proximoEvento ? (
         <Hero
           etiqueta="PRÓXIMO EVENTO ABIERTO"
@@ -73,17 +73,17 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Cómo vienen mis pedidos"
             count={cambio !== null ? `${cambio > 0 ? '+' : ''}${cambio}%` : undefined}
-            accentColor="#184897"
+            accentColor={UTEC.azul}
           >
             <Tendencia datos={porMes} alto={128} llenar />
           </Panel>
 
-          <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor="#86bb4c">
+          <Panel title="En qué quedaron" count={`${totalSolicitudes} en total`} accentColor={UTEC.verde}>
             <Anillo porciones={estados} leyendaCentro="pedidos" alto={118} llenar />
           </Panel>
         </div>
@@ -91,7 +91,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
         <Panel
           title="Mis solicitudes"
           count={totalSolicitudes > 0 ? totalSolicitudes : undefined}
-          accentColor="#F6CA21"
+          accentColor={UTEC.amarillo}
           action={{ label: 'nueva', to: '/reservations?new=true' }}
           scroll
         >
@@ -102,14 +102,14 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
               ))}
             </div>
           ) : (
-            <EmptyState title="Sin solicitudes enviadas." />
+            <EmptyState variant="linea" title="Sin solicitudes enviadas." />
           )}
         </Panel>
 
         <Panel
           title="Eventos abiertos"
           count={eventos.length || undefined}
-          accentColor="#00c7ff"
+          accentColor={UTEC.cian}
           action={{ label: 'ver todos', to: '/eventos' }}
           scroll
         >
@@ -118,7 +118,7 @@ export function ExternoDashboard({ data, loading, misReservas, onViewDetails }: 
               {eventos.map((e) => <EventoFila key={e.id} evento={e} />)}
             </div>
           ) : (
-            <EmptyState title="Sin eventos próximos." />
+            <EmptyState variant="linea" title="Sin eventos próximos." />
           )}
         </Panel>
       </div>

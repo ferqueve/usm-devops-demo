@@ -55,6 +55,8 @@ import PermissionGuard from '@/components/auth/PermissionGuard';
 import { PageHeader, HEADER_ACTION_ICON, HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { usePreferences } from '@/hooks/usePreferences';
+import { MARCA } from '@/lib/design/paleta';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Describe el rango de cantidad para el resumen de un filtro de inventario
 function describirCantidadFiltro(min?: number, max?: number): string {
@@ -558,7 +560,7 @@ export default function SpacesManagement() {
         title="Espacios"
         count={totalElements}
         description="Aulas, laboratorios y salas disponibles para reservar."
-        accentColor="#184897"
+        accentColor={MARCA.azul}
         actions={
           <>
             <Tooltip>
@@ -605,7 +607,7 @@ export default function SpacesManagement() {
       />
 
       {/* Espacios con filtros embebidos */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+      <div className="border rounded-lg shadow-card overflow-hidden bg-card">
         <div className="px-4 pt-4 pb-3">
           <div className="space-y-2">
             <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
@@ -637,8 +639,8 @@ export default function SpacesManagement() {
                   onChange={(v) => handleTipoEspacioFilter(v === null ? 'all' : String(v))}
                   Icon={Tag}
                   tooltipNone="Todos los tipos"
-                  activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-                  activeTextColorClass="text-purple-700"
+                  activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+                  activeTextColorClass="text-acento-texto"
                 />
                 <PopoverFilterSection<number>
                   selectedId={filters.edificioId ?? null}
@@ -655,25 +657,26 @@ export default function SpacesManagement() {
                       value: 'DISPONIBLE',
                       tooltip: 'Disponible',
                       Icon: CheckCircle2,
-                      activeColorClass: 'text-green-600',
-                      inactiveColorClass: 'text-green-500',
+                      activeColorClass: 'text-success-texto',
+                      inactiveColorClass: 'text-success',
                     },
                     {
                       value: 'MANTENIMIENTO',
                       tooltip: 'En mantenimiento',
                       Icon: Wrench,
-                      activeColorClass: 'text-amber-600',
-                      inactiveColorClass: 'text-amber-500',
+                      activeColorClass: 'text-warning-texto',
+                      inactiveColorClass: 'text-warning',
                     },
                     {
                       value: 'NO_DISPONIBLE',
                       tooltip: 'No disponible',
                       Icon: XCircle,
-                      activeColorClass: 'text-red-600',
-                      inactiveColorClass: 'text-red-500',
+                      activeColorClass: 'text-danger-texto',
+                      inactiveColorClass: 'text-danger',
                     },
                   ]}
                   onChange={(v) => handleEstadoFilter(v ?? 'all')}
+                  label="Estado"
                 />
                 <ClearFiltersButton
                   visible={activeFilters.length > 0}
@@ -686,7 +689,7 @@ export default function SpacesManagement() {
                   size="sm"
                   onClick={() => setShowFilters(!showFilters)}
                   className={`h-9 ${
-                    showFilters ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' : ''
+                    showFilters ? 'bg-info-suave border-info-borde text-info-texto hover:bg-info-suave' : ''
                   }`}
                   title="Filtros avanzados (capacidad e inventario)"
                 >
@@ -694,7 +697,7 @@ export default function SpacesManagement() {
                   Avanzados
                 </Button>
                 {/* Switch de vista (cards / tabla) */}
-                <div className="flex items-center border rounded-md bg-white h-9 p-0.5 ml-auto flex-shrink-0">
+                <div className="flex items-center border rounded-md bg-card h-9 p-0.5 ml-auto flex-shrink-0">
                   <Button
                     variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
                     size="sm"
@@ -743,7 +746,7 @@ export default function SpacesManagement() {
                 <>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-medium text-gray-900">Filtros por Inventario</h4>
+                      <h4 className="text-sm font-medium text-foreground">Filtros por Inventario</h4>
                       {filtrosInventario.length === 0 && (
                         <span className="text-xs text-muted-foreground">Sin filtros</span>
                       )}
@@ -771,7 +774,7 @@ export default function SpacesManagement() {
                               variant="ghost"
                               size="sm"
                               onClick={() => eliminarFiltroInventario(index)}
-                              className="h-5 w-5 p-0 text-red-500 hover:text-red-700"
+                              className="h-5 w-5 p-0 text-danger hover:text-danger-texto"
                             >
                               <X className="h-3 w-3" />
                             </Button>
@@ -828,7 +831,7 @@ export default function SpacesManagement() {
 
                           {/* Resumen del filtro */}
                           {filtro.tipoElementoId > 0 && (
-                            <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                            <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
                               <strong>Filtro:</strong> Espacios que tengan{' '}
                               {describirCantidadFiltro(filtro.cantidadMin, filtro.cantidadMax)}{' '}
                               <strong>{obtenerNombreTipoElemento(filtro.tipoElementoId)}</strong>
@@ -854,7 +857,7 @@ export default function SpacesManagement() {
             <FilterBar
               filters={activeFilters}
               onClearAll={clearFilters}
-              className="mt-3 animate-slide-up"
+              className="mt-3"
             />
           )}
         </div>
@@ -875,7 +878,7 @@ export default function SpacesManagement() {
             <div className="border rounded-lg shadow-card p-8">
               <div className="space-y-3">
                 {Array.from({ length: 5 }, (_, index) => `row-skeleton-${index}`).map((skeletonKey) => (
-                  <div key={skeletonKey} className="h-16 bg-gray-100 animate-pulse rounded" />
+                  <Skeleton key={skeletonKey} className="h-16 rounded" />
                 ))}
               </div>
             </div>

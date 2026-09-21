@@ -52,8 +52,8 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
 
   // Disponibilidad en este momento (solo aplica si el espacio está DISPONIBLE)
   const ocupadoBadge = enCurso
-    ? { label: 'Ocupado', className: 'bg-utec-orange text-white' }
-    : { label: 'Libre', className: 'bg-utec-green text-white' };
+    ? { label: 'Ocupado', className: 'bg-utec-orange text-marca-tinta' }
+    : { label: 'Libre', className: 'bg-utec-green text-marca-tinta' };
 
   const cardBody = (
     <Card
@@ -64,7 +64,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
       onClick={handleViewDetails}
     >
       {/* Banner superior uniforme */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-utec-dark">
+      <div className="relative aspect-[16/10] overflow-hidden bg-chrome">
         {hasImagen ? (
           <img
             // La tarjeta muestra 279 px: la original son 4096 y casi 2 MB.
@@ -75,7 +75,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-utec-dark">
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-chrome">
             <Building2 className="h-10 w-10 text-white/40" />
             <span className="text-xs uppercase tracking-wider text-white/70 font-medium">
               {espacio.tipoEspacioNombre || 'Sin tipo'}
@@ -85,7 +85,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
 
         {/* Badge en overlay: estado fuera de servicio, o disponibilidad ahora */}
         {fueraDeServicio ? (
-          <Badge className="bg-gray-700 text-white font-medium text-xs absolute top-2 right-2 shadow-sm border-0">
+          <Badge className="bg-chrome text-white font-medium text-xs absolute top-2 right-2 shadow-sm border-0">
             <EstadoFueraIcon className="h-3 w-3 mr-1" />
             {getEstadoLabel(espacio.estado)}
           </Badge>
@@ -111,7 +111,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
               {espacio.tipoEspacioNombre}
             </span>
           ) : (
-            <Badge className="bg-gray-100 text-gray-800 text-xs px-2 py-1 flex-shrink-0">
+            <Badge className="bg-muted text-foreground text-xs px-2 py-1 flex-shrink-0">
               {espacio.tipoEspacioNombre || 'Sin tipo'}
             </Badge>
           )}
@@ -138,7 +138,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 h-8 text-sm hover:bg-utec-dark hover:text-white hover:border-utec-dark transition-colors"
+            className="flex-1 h-8 text-sm hover:bg-chrome hover:text-white hover:border-utec-dark transition-colors"
             onClick={handleViewDetails}
           >
             <Eye className="h-4 w-4 mr-1.5" />
@@ -148,7 +148,7 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 h-8 text-sm hover:bg-utec-dark hover:text-white hover:border-utec-dark transition-colors"
+              className="flex-1 h-8 text-sm hover:bg-chrome hover:text-white hover:border-utec-dark transition-colors"
               onClick={handleEdit}
             >
               <Edit className="h-4 w-4 mr-1.5" />

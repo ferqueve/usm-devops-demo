@@ -1,66 +1,54 @@
-import { CheckCircle2, XCircle, Hourglass } from 'lucide-react';
 import type { Reserva } from '@/lib/types/spaces';
 
+import {
+  ESTADO_RESERVA,
+  bordeIzquierdo,
+  bordeSuperior,
+  estadoDe,
+  solido,
+  suave,
+  tinta,
+} from '@/components/common/estados';
+
+/**
+ * Cómo se pinta el estado de una reserva.
+ *
+ * Los colores salían de la paleta cruda de Tailwind —`bg-green-50`,
+ * `text-amber-700`, `border-red-200`—, que es justo lo que las reglas
+ * prohíben, y lo usaban la tabla y las fichas de reservas: las dos pantallas
+ * donde más tiempo se pasa. Al lado, el mismo estado se pintaba con los
+ * tokens de rol en el diálogo de detalle. Dos looks para lo mismo.
+ *
+ * Ahora sale de `components/common/estados`, igual que eventos, tutorías e
+ * inventario. Los nombres de los campos quedan como estaban para no tocar a
+ * quien ya los usaba.
+ */
 export function getEstadoConfig(estado: Reserva['estado']) {
-  switch (estado) {
-    case 'APROBADO':
-      return {
-        label: 'Aprobada',
-        color: 'bg-green-50 text-green-700 border-green-200',
-        iconColor: 'text-green-600',
-        stripeColor: 'bg-green-700',
-        borderColor: 'border-l-green-700',
-        cornerBorderColor: 'border-t-green-700',
-        icon: CheckCircle2
-      };
-    case 'PENDIENTE':
-      return {
-        label: 'Pendiente',
-        color: 'bg-amber-50 text-amber-700 border-amber-200',
-        iconColor: 'text-amber-600',
-        stripeColor: 'bg-amber-600',
-        borderColor: 'border-l-amber-600',
-        cornerBorderColor: 'border-t-amber-600',
-        icon: Hourglass
-      };
-    case 'CANCELADO':
-      return {
-        label: 'Cancelada',
-        color: 'bg-red-50 text-red-700 border-red-200',
-        iconColor: 'text-red-600',
-        stripeColor: 'bg-red-700',
-        borderColor: 'border-l-red-700',
-        cornerBorderColor: 'border-t-red-700',
-        icon: XCircle
-      };
-    default:
-      return {
-        label: estado,
-        color: 'bg-gray-50 text-gray-700 border-gray-200',
-        iconColor: 'text-gray-600',
-        stripeColor: 'bg-gray-700',
-        borderColor: 'border-l-gray-700',
-        cornerBorderColor: 'border-t-gray-700',
-        icon: null
-      };
-  }
+  const e = estadoDe(ESTADO_RESERVA, estado);
+  return {
+    label: e.label,
+    color: suave(e),
+    iconColor: tinta(e),
+    stripeColor: solido(e),
+    borderColor: bordeIzquierdo(e),
+    cornerBorderColor: bordeSuperior(e),
+    icon: e.icon,
+  };
 }
 
+/** «14:30». */
 export function formatTime(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('es-ES', {
+  return new Date(dateString).toLocaleTimeString('es-UY', {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 }
 
+/** «18 set 2026». Decía `es-ES` mientras el resto de la aplicación usa `es-UY`. */
 export function formatShortDate(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
+  return new Date(dateString).toLocaleDateString('es-UY', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   });
 }
-
-

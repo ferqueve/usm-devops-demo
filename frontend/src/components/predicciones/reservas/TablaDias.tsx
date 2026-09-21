@@ -21,7 +21,7 @@ export function TablaDias({ dias }: Readonly<{ dias: Dia[] }>) {
 
   return (
     <table className="w-full text-sm">
-      <thead className="sticky top-0 z-10 bg-card text-[11px] uppercase tracking-wide text-muted-foreground">
+      <thead className="sticky top-0 z-10 bg-card text-2xs uppercase tracking-wide text-muted-foreground">
         <tr className="border-b">
           <th className="px-3 py-2 text-left font-medium">Día</th>
           <th className="px-3 py-2 text-right font-medium">Esperadas</th>

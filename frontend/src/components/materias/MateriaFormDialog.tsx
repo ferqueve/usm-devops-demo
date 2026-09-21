@@ -143,7 +143,7 @@ export function MateriaFormDialog({
       <DialogContent className="sm:max-w-[560px] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue">
+            <div className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto">
               <BookOpen className="h-4 w-4" />
             </div>
             {isEditing ? 'Editar Materia' : 'Crear Nueva Materia'}

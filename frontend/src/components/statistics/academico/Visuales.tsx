@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { TooltipProps } from 'recharts';
-import { CalendarDays, Star } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import type { Academico } from '@/lib/api/stats';
 import { Mancuernas } from '../graficos/Mancuernas';
 import { Medidor } from '../graficos/Medidor';
@@ -8,26 +8,12 @@ import { Waffle } from '../graficos/Waffle';
 import { formatoNumero, useTemaGraficos } from '../graficos/tema';
 import { fechaCorta } from '../periodo';
 import { Vacio } from '../Vacio';
-import { entero, porcentaje, rating } from '../reservas/formato';
+import { entero, porcentaje } from '../reservas/formato';
+import { GloboGrafico } from '@/components/common/dataviz';
+import { Estrellas } from '@/components/common/Estrellas';
+import { sumarDias } from '@/lib/utils/fechas';
 
 /** Estrellas de 1 a 5 con medias, y el número al lado. */
-export function Estrellas({ valor, chico = false }: Readonly<{ valor: number | null | undefined; chico?: boolean }>) {
-  if (valor == null) return <span className="text-xs text-muted-foreground">sin calificar</span>;
-  const tam = chico ? 'h-3 w-3' : 'h-4 w-4';
-  return (
-    <span className="inline-flex items-center gap-1" title={`${rating(valor)} de 5`}>
-      <span className="relative inline-flex">
-        <span className="flex text-muted-foreground/30">
-          {[0, 1, 2, 3, 4].map((i) => <Star key={i} className={`${tam} fill-current`} />)}
-        </span>
-        <span className="absolute inset-0 flex overflow-hidden text-utec-yellow" style={{ width: `${(Math.max(0, Math.min(5, valor)) / 5) * 100}%` }}>
-          {[0, 1, 2, 3, 4].map((i) => <Star key={i} className={`${tam} shrink-0 fill-current`} />)}
-        </span>
-      </span>
-      <b className={`tabular-nums ${chico ? 'text-xs' : 'text-sm'}`}>{rating(valor)}</b>
-    </span>
-  );
-}
 
 /** Asistencia y ocupación del cupo con medidores, y la calificación. */
 export function TutoriasKpis({ t, grande = false }: Readonly<{ t: Academico['tutorias']; grande?: boolean }>) {
@@ -90,22 +76,17 @@ export function ModalidadTutorias({ t, grande = false }: Readonly<{ t: Academico
 
 type Semana = Academico['porSemana'][number] & { incompleta: boolean };
 
-function sumarDias(fecha: string, dias: number): string {
-  const d = new Date(`${fecha}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
-}
 
 function GloboSemana({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Semana;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium">Semana del {fechaCorta(p.semana)}{p.incompleta ? ' (incompleta)' : ''}</p>
       <p>{formatoNumero(p.tutorias)} tutorías</p>
       <p>Agendadas: <b>{formatoNumero(p.agendadas)}</b></p>
       <p>Asistieron: <b>{formatoNumero(p.asistieron)}</b> ({porcentaje(p.asistieron, p.agendadas)}%)</p>
-    </div>
+    </GloboGrafico>
   );
 }
 
@@ -182,7 +163,7 @@ export function MateriasTutorias({ filas, limite }: Readonly<{ filas: Academico[
         a: Number(m.asistieron),
         b: Number(m.agendadas),
         sinA: Number(m.asistieron) === 0 && m.ratingPromedio == null,
-        extra: Number(m.asistieron) === 0 && m.ratingPromedio == null ? undefined : <span className="hidden min-w-[64px] justify-end sm:inline-flex"><Estrellas valor={m.ratingPromedio} chico /></span>,
+        extra: Number(m.asistieron) === 0 && m.ratingPromedio == null ? undefined : <span className="hidden min-w-[64px] justify-end sm:inline-flex"><Estrellas valor={m.ratingPromedio} tamano="chico" /></span>,
       }))}
     />
   );
@@ -204,7 +185,7 @@ export function EventosLista({ eventos, limite }: Readonly<{ eventos: Academico[
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium" title={e.titulo}>{e.titulo}</div>
-                <div className="flex min-w-0 items-center gap-1 text-[11px] text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-1 text-2xs text-muted-foreground">
                   <CalendarDays className="h-3 w-3 shrink-0" />
                   <span className="truncate">
                     {fechaCorta(e.fecha.slice(0, 10))}
@@ -213,14 +194,14 @@ export function EventosLista({ eventos, limite }: Readonly<{ eventos: Academico[
                 </div>
               </div>
               <div className="shrink-0 text-right">
-                <Estrellas valor={e.ratingPromedio} chico />
+                <Estrellas valor={e.ratingPromedio} tamano="chico" />
               </div>
             </div>
             <div className="mt-1 flex items-center gap-2">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                 <div className="h-full rounded-full" style={{ width: `${Math.min(100, pct ?? 100)}%`, backgroundColor: color, opacity: pct == null ? 0.35 : 1 }} />
               </div>
-              <span className="w-24 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
+              <span className="w-24 shrink-0 text-right text-2xs tabular-nums text-muted-foreground">
                 <b className="text-foreground">{entero(inscriptos)}</b>
                 {cupo != null ? ` / ${entero(cupo)} · ${Math.round(pct ?? 0)}%` : ' inscriptos'}
               </span>

@@ -14,10 +14,22 @@ import {
 } from '@/lib/api/stats';
 import { fechaCorta, type Rango } from '../periodo';
 import { BarrasDivergentes } from '../graficos/BarrasDivergentes';
+import { NEUTRO, SERIE_CLARO, SERIE_OSCURO } from '@/lib/design/paleta';
+import { MARCA } from '@/lib/design/paleta';
+import { GloboGrafico } from '@/components/common/dataviz';
+import { EmptyState } from '@/components/ui/empty-state';
 
+/* Misma historia que en statistics/reservas/TendenciaReservas: este archivo también
+   tenía su copia de la escala vieja. Ahora sale de lib/design/paleta. */
 const TEMAS = {
-  claro: { disponibles: '#5f9433', mantenimiento: '#c98a00', danados: '#c9372c', parque: '#1f55ab', grilla: '#eceef1', eje: '#6b7280' },
-  oscuro: { disponibles: '#6fa23e', mantenimiento: '#d49b1c', danados: '#e0564a', parque: '#4f80d6', grilla: '#2f3237', eje: '#a1a1aa' },
+  claro: {
+    disponibles: SERIE_CLARO.verde, mantenimiento: SERIE_CLARO.amarillo, danados: SERIE_CLARO.rojo,
+    parque: SERIE_CLARO.azul, grilla: NEUTRO.claro.grilla, eje: NEUTRO.claro.eje,
+  },
+  oscuro: {
+    disponibles: SERIE_OSCURO.verde, mantenimiento: SERIE_OSCURO.amarillo, danados: SERIE_OSCURO.rojo,
+    parque: SERIE_OSCURO.azul, grilla: NEUTRO.oscuro.grilla, eje: NEUTRO.oscuro.eje,
+  },
 };
 
 const ESTADOS = [
@@ -29,7 +41,7 @@ const ESTADOS = [
 function Globo({ active, payload, label }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium text-white/70">{fechaCorta(String(label))}</p>
       {payload.map((p) => (
         <div key={String(p.dataKey)} className="flex items-center gap-2 py-0.5">
@@ -38,7 +50,7 @@ function Globo({ active, payload, label }: TooltipProps<number, string>) {
           <span className="font-semibold tabular-nums">{Number(p.value).toLocaleString('es-UY')}</span>
         </div>
       ))}
-    </div>
+    </GloboGrafico>
   );
 }
 
@@ -57,9 +69,6 @@ function Resumen({ etiqueta, valor, detalle }: Readonly<{ etiqueta: string; valo
   );
 }
 
-function Vacio() {
-  return <p className="py-12 text-center text-sm text-muted-foreground">No hay fotos del inventario en el período.</p>;
-}
 
 /**
  * Cómo cambió el inventario dentro del período, a partir de la foto diaria
@@ -151,20 +160,20 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
         <PanelEstadistica
           title="Estado del parque"
           count={ultimo ? `items por estado · última foto del ${fechaCorta(ultimo.fecha)}` : 'items por estado'}
-          accentColor="#86bb4c"
+          accentColor={MARCA.verde}
           explicacion={EXPLICACIONES.evolucionEstado}
         >
           {(grande) => (
             <>
           {estado.length === 0 ? (
-            <Vacio />
+            <EmptyState variant="linea" title="No hay fotos del inventario en el período." />
           ) : (
             <>
               {/* Apilado: la altura total es el parque y cada franja su estado; se ve cuánto pesa cada uno, no sólo si sube o baja. */}
               <ResponsiveContainer width="100%" height={grande ? 460 : 240}>
                 <AreaChart data={estado} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
                   <CartesianGrid stroke={c.grilla} vertical={false} />
-                  <XAxis dataKey="fecha" tickFormatter={fechaCorta} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
+                  <XAxis dataKey="fecha" tickFormatter={(v) => fechaCorta(v)} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
                   <YAxis width={34} allowDecimals={false} {...eje} />
                   <Tooltip content={<Globo />} cursor={{ stroke: c.eje, strokeWidth: 1 }} />
                   {ESTADOS.map((e) => (
@@ -200,19 +209,19 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
         <PanelEstadistica
           title="Tamaño del parque"
           count={primero && ultimo ? `${primero.items} → ${ultimo.items} items · ${ultimo.unidades.toLocaleString('es-UY')} unidades` : undefined}
-          accentColor="#184897"
+          accentColor={MARCA.azul}
           explicacion={EXPLICACIONES.tamanoParque}
         >
           {(grande) => (
             <>
           {parque.length === 0 ? (
-            <Vacio />
+            <EmptyState variant="linea" title="No hay fotos del inventario en el período." />
           ) : (
             // Solo items: unidades va en otra escala y en el mismo eje aplastaba la línea.
             <ResponsiveContainer width="100%" height={grande ? 460 : 240}>
               <AreaChart data={parque} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
                 <CartesianGrid stroke={c.grilla} vertical={false} />
-                <XAxis dataKey="fecha" tickFormatter={fechaCorta} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
+                <XAxis dataKey="fecha" tickFormatter={(v) => fechaCorta(v)} minTickGap={24} {...eje} axisLine={{ stroke: c.grilla }} />
                 <YAxis width={34} allowDecimals={false} domain={['dataMin - 2', 'dataMax + 2']} {...eje} />
                 <Tooltip content={<Globo />} cursor={{ stroke: c.eje, strokeWidth: 1 }} />
                 <Area dataKey="items" name="Items" stroke={c.parque} strokeWidth={2} fill={c.parque} fillOpacity={0.12} isAnimationActive={false} />
@@ -233,7 +242,7 @@ export function EvolucionInventario({ rango }: Readonly<{ rango: Rango }>) {
       <PanelEstadistica
         title="Qué cambió"
         count={delta ? `entre el ${fechaCorta(delta.fechaInicio)} y el ${fechaCorta(delta.fechaFin)}` : undefined}
-        accentColor="#DE7A27"
+        accentColor={MARCA.naranja}
         scroll
         className="max-h-[360px]"
         explicacion={EXPLICACIONES.cambios}

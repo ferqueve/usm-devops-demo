@@ -38,9 +38,9 @@ interface TipoEspacio {
 }
 
 function getIntervalBorderClass(esHoraCompleta: boolean, esMediaHora: boolean): string {
-  if (esHoraCompleta) return 'border-t border-gray-400';
-  if (esMediaHora) return 'border-t border-gray-300';
-  return 'border-t border-gray-200';
+  if (esHoraCompleta) return 'border-t border-border';
+  if (esMediaHora) return 'border-t border-border';
+  return 'border-t border-border';
 }
 
 interface PosicionVertical {
@@ -228,22 +228,22 @@ interface ColorConfig { bg: string; border: string; hoverBg: string; hoverBorder
 
 const PALETAS_RESERVA: Record<string, ColorConfig[]> = {
   CANCELADO: [
-    { bg: 'bg-red-600', border: 'border-red-700', hoverBg: 'hover:bg-red-700', hoverBorder: 'hover:border-red-800' },
-    { bg: 'bg-red-500', border: 'border-red-600', hoverBg: 'hover:bg-red-600', hoverBorder: 'hover:border-red-700' },
-    { bg: 'bg-red-400', border: 'border-red-500', hoverBg: 'hover:bg-red-500', hoverBorder: 'hover:border-red-600' },
-    { bg: 'bg-red-300', border: 'border-red-400', hoverBg: 'hover:bg-red-400', hoverBorder: 'hover:border-red-500' },
+    { bg: 'bg-danger', border: 'border-danger', hoverBg: 'hover:bg-danger', hoverBorder: 'hover:border-danger' },
+    { bg: 'bg-danger', border: 'border-danger', hoverBg: 'hover:bg-danger', hoverBorder: 'hover:border-danger' },
+    { bg: 'bg-danger', border: 'border-danger', hoverBg: 'hover:bg-danger', hoverBorder: 'hover:border-danger' },
+    { bg: 'bg-danger', border: 'border-danger', hoverBg: 'hover:bg-danger', hoverBorder: 'hover:border-danger' },
   ],
   PENDIENTE: [
-    { bg: 'bg-amber-500', border: 'border-amber-600', hoverBg: 'hover:bg-amber-600', hoverBorder: 'hover:border-amber-700' },
-    { bg: 'bg-amber-400', border: 'border-amber-500', hoverBg: 'hover:bg-amber-500', hoverBorder: 'hover:border-amber-600' },
-    { bg: 'bg-orange-400', border: 'border-orange-500', hoverBg: 'hover:bg-orange-500', hoverBorder: 'hover:border-orange-600' },
-    { bg: 'bg-orange-300', border: 'border-orange-400', hoverBg: 'hover:bg-orange-400', hoverBorder: 'hover:border-orange-500' },
+    { bg: 'bg-warning', border: 'border-warning', hoverBg: 'hover:bg-warning', hoverBorder: 'hover:border-warning' },
+    { bg: 'bg-warning', border: 'border-warning', hoverBg: 'hover:bg-warning', hoverBorder: 'hover:border-warning' },
+    { bg: 'bg-warning', border: 'border-warning', hoverBg: 'hover:bg-warning', hoverBorder: 'hover:border-warning' },
+    { bg: 'bg-warning', border: 'border-warning', hoverBg: 'hover:bg-warning', hoverBorder: 'hover:border-warning' },
   ],
   APROBADO: [
-    { bg: 'bg-blue-600', border: 'border-blue-700', hoverBg: 'hover:bg-blue-700', hoverBorder: 'hover:border-blue-800' },
-    { bg: 'bg-blue-500', border: 'border-blue-600', hoverBg: 'hover:bg-blue-600', hoverBorder: 'hover:border-blue-700' },
-    { bg: 'bg-blue-400', border: 'border-blue-500', hoverBg: 'hover:bg-blue-500', hoverBorder: 'hover:border-blue-600' },
-    { bg: 'bg-blue-300', border: 'border-blue-400', hoverBg: 'hover:bg-blue-400', hoverBorder: 'hover:border-blue-500' },
+    { bg: 'bg-info', border: 'border-info', hoverBg: 'hover:bg-info', hoverBorder: 'hover:border-info' },
+    { bg: 'bg-info', border: 'border-info', hoverBg: 'hover:bg-info', hoverBorder: 'hover:border-info' },
+    { bg: 'bg-info', border: 'border-info', hoverBg: 'hover:bg-info', hoverBorder: 'hover:border-info' },
+    { bg: 'bg-info', border: 'border-info', hoverBg: 'hover:bg-info', hoverBorder: 'hover:border-info' },
   ],
 };
 
@@ -413,7 +413,7 @@ function OverflowChip({ top, leftPercent, widthPercent, altura, reservas, onView
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="absolute cursor-pointer bg-gray-700 hover:bg-gray-800 text-white border border-gray-800 rounded-sm overflow-hidden transition-colors p-0"
+          className="absolute cursor-pointer bg-chrome hover:bg-chrome text-white border border-border rounded-sm overflow-hidden transition-colors p-0"
           style={{
             top: `${top + 1}px`,
             left: `calc(${leftPercent}% + 3px)`,
@@ -424,12 +424,12 @@ function OverflowChip({ top, leftPercent, widthPercent, altura, reservas, onView
           aria-label={`${cuenta} reservas adicionales — abrir lista`}
         >
           {apilado ? (
-            <span className="absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold leading-none">
+            <span className="absolute inset-0 flex flex-col items-center justify-center text-2xs font-bold leading-none">
               <span>+</span>
               <span>{cuenta}</span>
             </span>
           ) : (
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none">
+            <span className="absolute inset-0 flex items-center justify-center text-2xs font-bold leading-none">
               +{cuenta}
             </span>
           )}
@@ -553,7 +553,7 @@ function ReservationBar({
 
   const usarColorTipo = !!bgColorOverride;
   const colorTextoClase = usarColorTipo
-    ? (textoSobreFondo(bgColorOverride) === 'dark' ? 'text-gray-900' : 'text-white')
+    ? (textoSobreFondo(bgColorOverride) === 'dark' ? 'text-foreground' : 'text-white')
     : 'text-white';
   // Indicador de agrupación: solo si la barra es lo suficientemente alta como para
   // que el contador no encime visualmente al cuerpo de la barra.
@@ -604,14 +604,14 @@ function ReservationBar({
         {mostrarContador && (
           contadorApilado ? (
             <span
-              className={`absolute inset-0 flex flex-col items-center justify-center text-[10px] font-bold leading-none pointer-events-none ${colorTextoClase}`}
+              className={`absolute inset-0 flex flex-col items-center justify-center text-2xs font-bold leading-none pointer-events-none ${colorTextoClase}`}
             >
               <span>×</span>
               <span>{cantidadAgrupada}</span>
             </span>
           ) : (
             <span
-              className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none pointer-events-none ${colorTextoClase}`}
+              className={`absolute inset-0 flex items-center justify-center text-2xs font-bold leading-none pointer-events-none ${colorTextoClase}`}
             >
               ×{cantidadAgrupada}
             </span>
@@ -870,13 +870,13 @@ export default function ReservationCalendarView({
 
            return (
         <div className="space-y-4">
-          <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="border rounded-lg overflow-hidden bg-card">
              <div className="flex">
                {/* Columna de horas - fija a la izquierda */}
-               <div className={`w-28 flex-shrink-0 border-r bg-gray-50/50 relative`} style={{ minHeight: `${alturaMinima}px` }}>
+               <div className={`w-28 flex-shrink-0 border-r bg-muted/50 relative`} style={{ minHeight: `${alturaMinima}px` }}>
                  {/* Sección colapsada antes */}
                  {mostrarColapsadoAntes && (
-                   <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-b border-gray-300">
+                   <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-b border-border">
                      <span className="text-xs text-muted-foreground">...</span>
                    </div>
                  )}
@@ -917,17 +917,17 @@ export default function ReservationCalendarView({
                  
                  {/* Sección colapsada después */}
                  {mostrarColapsadoDespues && (
-                   <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-t border-gray-300">
+                   <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-end pr-3 border-t border-border">
                      <span className="text-xs text-muted-foreground">...</span>
                    </div>
                  )}
                </div>
 
                                {/* Área de timeline - scrollable */}
-                <div className={`flex-1 relative bg-white ${isFullScreen ? '' : 'overflow-y-auto'}`} style={{ minHeight: `${alturaMinima}px`, backgroundColor: 'var(--background)' }}>
+                <div className={`flex-1 relative bg-card ${isFullScreen ? '' : 'overflow-y-auto'}`} style={{ minHeight: `${alturaMinima}px`, backgroundColor: 'var(--background)' }}>
                   {/* Sección colapsada antes */}
                   {mostrarColapsadoAntes && (
-                    <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center border-b border-gray-300 bg-gray-50/30">
+                    <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center border-b border-border bg-muted/30">
                       <span className="text-xs text-muted-foreground">...</span>
                     </div>
                   )}
@@ -1011,14 +1011,14 @@ export default function ReservationCalendarView({
                             >
                               {reserva.titulo || reserva.espacioNombre}
                             </h4>
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                            <div className="flex items-center gap-1 text-2xs text-muted-foreground leading-tight">
                               <Clock className="h-2.5 w-2.5 flex-shrink-0" />
                               <span className="truncate">
                                 {formatTime(reserva.inicio)}–{formatTime(reserva.fin)}
                               </span>
                             </div>
                             {mostrarCapacidad && (
-                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-tight">
+                              <div className="flex items-center gap-1 text-2xs text-muted-foreground leading-tight">
                                 <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                                 <span className="truncate">Cap. {reserva.capacidadEspacio}</span>
                               </div>
@@ -1050,8 +1050,8 @@ export default function ReservationCalendarView({
                         }}
                       >
                         <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 -mt-1"></div>
-                          <div className="flex-1 h-0.5 bg-red-500"></div>
+                          <div className="w-2 h-2 rounded-full bg-danger -ml-1 -mt-1"></div>
+                          <div className="flex-1 h-0.5 bg-danger"></div>
                         </div>
                       </div>
                     );
@@ -1059,7 +1059,7 @@ export default function ReservationCalendarView({
                   
                   {/* Sección colapsada después */}
                   {mostrarColapsadoDespues && (
-                    <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-center border-t border-gray-300 bg-gray-50/30">
+                    <div className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-center border-t border-border bg-muted/30">
                       <span className="text-xs text-muted-foreground">...</span>
                     </div>
                   )}
@@ -1134,8 +1134,8 @@ export default function ReservationCalendarView({
 
     return (
       <div className="space-y-4">
-        <div className="border rounded-lg overflow-hidden bg-white">
-          <div className="grid grid-cols-8 gap-x-2 border-b bg-gray-50">
+        <div className="border rounded-lg overflow-hidden bg-card">
+          <div className="grid grid-cols-8 gap-x-2 border-b bg-muted">
             {/* Celda vacía para el header de horas */}
             <div className="p-2 border-r"></div>
             {/* Headers de días */}
@@ -1144,12 +1144,12 @@ export default function ReservationCalendarView({
               return (
                 <div
                   key={`header-${day.toISOString()}`}
-                  className={`p-2 text-center border-r last:border-r-0 ${esHoy ? 'bg-blue-50' : ''}`}
+                  className={`p-2 text-center border-r last:border-r-0 ${esHoy ? 'bg-info-suave' : ''}`}
                 >
-                  <div className={`text-xs font-semibold ${esHoy ? 'text-blue-700' : 'text-muted-foreground'}`}>
+                  <div className={`text-xs font-semibold ${esHoy ? 'text-info-texto' : 'text-muted-foreground'}`}>
                     {format(day, 'EEE', { locale: es })}
                   </div>
-                  <div className={`text-xs ${esHoy ? 'text-blue-600 font-medium' : 'text-muted-foreground'}`}>
+                  <div className={`text-xs ${esHoy ? 'text-info-texto font-medium' : 'text-muted-foreground'}`}>
                     {format(day, 'd', { locale: es })}
                   </div>
                 </div>
@@ -1161,11 +1161,11 @@ export default function ReservationCalendarView({
           <div className="overflow-visible">
             <div className="grid grid-cols-8 gap-x-2">
               {/* Columna de horas */}
-              <div className="border-r bg-gray-50/50">
+              <div className="border-r bg-muted/50">
                 {horas.map((hora) => (
                   <div
                     key={hora}
-                    className="border-b border-gray-200 px-2 py-1 text-xs text-muted-foreground text-right"
+                    className="border-b border-border px-2 py-1 text-xs text-muted-foreground text-right"
                     style={{ minHeight: `${alturaPorHora}px` }}
                   >
                     {hora.toString().padStart(2, '0')}:00
@@ -1199,14 +1199,14 @@ export default function ReservationCalendarView({
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`border-r last:border-r-0 relative ${esHoy ? 'bg-blue-50/30' : 'bg-white'}`}
+                    className={`border-r last:border-r-0 relative ${esHoy ? 'bg-info-suave/30' : 'bg-card'}`}
                     style={{ minHeight: `${alturaTotal}px` }}
                   >
                     {/* Líneas de horas */}
                     {horas.map((hora) => (
                       <div
                         key={`line-${day.toISOString()}-${hora}`}
-                        className="absolute left-0 right-0 border-b border-gray-200"
+                        className="absolute left-0 right-0 border-b border-border"
                         style={{ top: `${(hora - horaInicioVisible) * alturaPorHora}px` }}
                       />
                     ))}
@@ -1346,11 +1346,11 @@ export default function ReservationCalendarView({
     // Heatmap en escala azul, alineada con el resto de las vistas del calendario.
     const getHeatmapBgClass = (densidad: number): string => {
       if (densidad === 0) return '';
-      if (densidad < 0.2) return 'bg-blue-50';
-      if (densidad < 0.4) return 'bg-blue-100';
-      if (densidad < 0.6) return 'bg-blue-200';
-      if (densidad < 0.8) return 'bg-blue-300';
-      return 'bg-blue-400';
+      if (densidad < 0.2) return 'bg-info-suave';
+      if (densidad < 0.4) return 'bg-info-suave';
+      if (densidad < 0.6) return 'bg-info-suave';
+      if (densidad < 0.8) return 'bg-info';
+      return 'bg-info';
     };
 
     // Top tipos de espacio del día con su color y cantidad.
@@ -1397,11 +1397,11 @@ export default function ReservationCalendarView({
               'min-h-[100px] rounded-lg p-1.5 cursor-pointer transition-all hover:shadow-md text-left w-full flex flex-col gap-1.5 border',
               // Hoy: anillo azul exterior para que destaque incluso encima del heatmap.
               esHoy
-                ? 'border-blue-600 ring-2 ring-blue-500 ring-offset-1'
-                : esDelMes ? 'border-gray-200' : 'border-gray-100',
+                ? 'border-info ring-2 ring-info ring-offset-1'
+                : esDelMes ? 'border-border' : 'border-border',
               !esDelMes ? 'opacity-50' : '',
               esPasado && esDelMes ? 'opacity-70' : '',
-              heatmapBg || (esDelMes ? 'bg-white' : 'bg-gray-50'),
+              heatmapBg || (esDelMes ? 'bg-card' : 'bg-muted'),
             ].filter(Boolean).join(' ');
 
             return (
@@ -1419,14 +1419,14 @@ export default function ReservationCalendarView({
                   <span
                     className={
                       esHoy
-                        ? 'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold'
+                        ? 'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-info text-white text-xs font-semibold'
                         : `text-xs font-medium ${esDelMes ? 'text-foreground' : 'text-muted-foreground'}`
                     }
                   >
                     {format(day, 'd')}
                   </span>
                   {cantidad > 0 && (
-                    <span className="text-[10px] text-muted-foreground font-medium tabular-nums">
+                    <span className="text-2xs text-muted-foreground font-medium tabular-nums">
                       {cantidad}
                     </span>
                   )}
@@ -1438,7 +1438,7 @@ export default function ReservationCalendarView({
                     {tiposDelDia.map(tipo => (
                       <span
                         key={tipo.nombre}
-                        className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-700"
+                        className="inline-flex items-center gap-1 text-2xs font-medium text-foreground/80"
                         title={`${tipo.cantidad} ${tipo.nombre}`}
                       >
                         <span
@@ -1461,7 +1461,7 @@ export default function ReservationCalendarView({
   return (
     <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
       <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
-        <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        <CardHeader className="shrink-0 pb-3">
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
               <ReservationFilters
@@ -1505,8 +1505,11 @@ export default function ReservationCalendarView({
             </div>
           </div>
         )}
-        {/* Controles de navegación y vista */}
-        <div className={`flex flex-col gap-2 mb-4 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        {/* Controles de navegación y vista.
+            shrink-0 siempre, no sólo en pantalla completa: cuando los filtros
+            de arriba ocupan dos renglones, el bloque se achicaba y la fecha
+            quedaba debajo de los botones de navegación. */}
+        <div className="mb-4 flex shrink-0 flex-col gap-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
               <Button
@@ -1539,18 +1542,18 @@ export default function ReservationCalendarView({
             <div className="flex items-center gap-2">
               {/* Botón toggle para ocultar horas nocturnas - visible en vista día y semana */}
               {(calendarViewMode === 'day' || calendarViewMode === 'week') && (
-                <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+                <div className="flex items-center border rounded-lg p-0.5 bg-muted">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => setHideNightHours(!hideNightHours)}
                         className={`p-1.5 rounded transition-colors ${
                           hideNightHours
-                            ? 'bg-white text-gray-900 shadow-md ring-1 ring-gray-300'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-card text-foreground shadow-md ring-1 ring-border'
+                            : 'text-muted-foreground hover:text-foreground/80'
                         }`}
                       >
-                        <Moon className={`h-3.5 w-3.5 ${hideNightHours ? 'text-blue-600' : 'text-gray-500'}`} />
+                        <Moon className={`h-3.5 w-3.5 ${hideNightHours ? 'text-info-texto' : 'text-muted-foreground'}`} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -1559,12 +1562,12 @@ export default function ReservationCalendarView({
                   </Tooltip>
                 </div>
               )}
-              <div className="flex items-center border rounded-lg p-0.5 bg-gray-50">
+              <div className="flex items-center border rounded-lg p-0.5 bg-muted">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setCalendarViewMode('day')}
-                  className={`h-7 px-2 text-xs ${calendarViewMode === 'day' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-7 px-2 text-xs ${calendarViewMode === 'day' ? 'bg-card shadow-sm' : ''}`}
                 >
                   Día
                 </Button>
@@ -1572,7 +1575,7 @@ export default function ReservationCalendarView({
                   variant="ghost"
                   size="sm"
                   onClick={() => setCalendarViewMode('week')}
-                  className={`h-7 px-2 text-xs ${calendarViewMode === 'week' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-7 px-2 text-xs ${calendarViewMode === 'week' ? 'bg-card shadow-sm' : ''}`}
                 >
                   Semana
                 </Button>
@@ -1580,7 +1583,7 @@ export default function ReservationCalendarView({
                   variant="ghost"
                   size="sm"
                   onClick={() => setCalendarViewMode('month')}
-                  className={`h-7 px-2 text-xs ${calendarViewMode === 'month' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-7 px-2 text-xs ${calendarViewMode === 'month' ? 'bg-card shadow-sm' : ''}`}
                 >
                   Mes
                 </Button>

@@ -4,6 +4,7 @@ import type { TooltipProps } from 'recharts';
 import type { ValidacionPunto } from '@/lib/api/stats';
 import { useColores, type Colores } from '../colores';
 import { entero, fechaCorta, fechaLarga } from '../formato';
+import { GloboGrafico } from '@/components/common/dataviz';
 
 interface Props {
   validacion: ValidacionPunto[];
@@ -19,7 +20,7 @@ function Globo({ active, payload, colores }: TooltipProps<number, string> & { co
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as ValidacionPunto;
   return (
-    <div className="rounded-lg bg-utec-dark px-3 py-2 text-xs text-white shadow-lg">
+    <GloboGrafico>
       <p className="mb-1 font-medium capitalize text-white/70">{fechaLarga(p.fecha)}</p>
       <p className="tabular-nums">
         <span style={{ color: colores.real }}>●</span> Hubo <b>{p.real}</b>
@@ -27,7 +28,7 @@ function Globo({ active, payload, colores }: TooltipProps<number, string> & { co
       <p className="tabular-nums">
         <span style={{ color: colores.prediccion }}>●</span> Predijo <b>{entero(p.prediccion)}</b>
       </p>
-    </div>
+    </GloboGrafico>
   );
 }
 
@@ -77,7 +78,7 @@ export function Confiabilidad({ validacion, modelo, referencia, mejora, mae, alt
             <CartesianGrid stroke={colores.grilla} vertical={false} />
             <XAxis
               dataKey="fecha"
-              tickFormatter={fechaCorta}
+              tickFormatter={(v) => fechaCorta(v)}
               tick={{ fontSize: 10, fill: colores.eje }}
               axisLine={{ stroke: colores.grilla }}
               tickLine={false}
@@ -117,9 +118,9 @@ export function Confiabilidad({ validacion, modelo, referencia, mejora, mae, alt
           }`}
         >
           {gana ? (
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-utec-green" />
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marca-verde-texto" />
           ) : (
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-utec-orange" />
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marca-naranja-texto" />
           )}
           <span>
             {gana

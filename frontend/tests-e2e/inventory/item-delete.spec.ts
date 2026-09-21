@@ -19,10 +19,10 @@ test.describe('Inventario: borrado de ítem', () => {
     await fila.locator('button:has(svg.lucide-trash-2)').first().click();
 
     const confirm = page.getByRole('alertdialog');
-    await expect(confirm.getByText(/¿Estás seguro/i)).toBeVisible();
+    await expect(confirm.getByText(/¿Seguro que querés eliminar/i)).toBeVisible();
     await confirm.getByRole('button', { name: /^Eliminar$/i }).click();
 
-    await expect(page.getByText(/eliminado.*éxito|eliminado.*exitosamente/i).first())
+    await expect(page.getByText(/Item de inventario eliminado/i).first())
       .toBeVisible({ timeout: 10_000 });
     // La fila Notebook E2E en Sala 101 ya no aparece.
     await expect(

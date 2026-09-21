@@ -9,7 +9,7 @@ import { variabilidad } from './estilos';
 function Barras({ modelo, referencia, maximo, fuerte }: Readonly<{ modelo: number | null; referencia: number | null; maximo: number; fuerte?: boolean }>) {
   const colores = useColores();
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-x-2 gap-y-1 text-[11px] tabular-nums">
+    <div className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-x-2 gap-y-1 text-2xs tabular-nums">
       <div className={`${fuerte ? 'h-2.5' : 'h-2'} overflow-hidden rounded-full bg-muted`}>
         <div className="h-full rounded-full" style={{ width: `${((modelo ?? 0) / maximo) * 100}%`, backgroundColor: colores.prediccion }} />
       </div>
@@ -47,7 +47,7 @@ export function ErrorPorTipo({ modelo, tipos }: Readonly<{ modelo: PrediccionInv
             <li key={t.tipoElementoId} className="grid grid-cols-[minmax(0,110px)_minmax(0,1fr)_18px] items-center gap-3">
               <span className="min-w-0">
                 <span className="block truncate text-sm" title={t.nombre}>{t.nombre}</span>
-                <span className="block text-[10px] text-muted-foreground">variabilidad {variabilidad(t.alpha)}</span>
+                <span className="block text-2xs text-muted-foreground">variabilidad {variabilidad(t.alpha)}</span>
               </span>
               <Barras modelo={t.wape} referencia={t.wapeIngenuo} maximo={maximo} />
               {gana ? <CheckCircle2 className="h-4 w-4" style={{ color: colores.reservadas }} aria-label="le gana a la referencia" /> : <span />}

@@ -17,9 +17,12 @@ interface StatusBadgeProps {
  */
 export function StatusBadge({ status, label, icon = true, pulse = false, className }: Readonly<StatusBadgeProps>) {
   const statusConfig = {
+    // Tinta oscura y no blanca: blanco sobre el verde de marca da 2,28:1 y no
+    // llega ni a 3:1. Medido sobre el hex exacto del manual, igual que en la
+    // tira de métricas del dashboard.
     success: {
       variant: 'default' as const,
-      className: 'bg-utec-green hover:bg-utec-green/90 text-white',
+      className: 'bg-utec-green hover:bg-utec-green/90 text-marca-tinta',
       icon: CheckCircle2,
     },
     error: {
@@ -29,7 +32,9 @@ export function StatusBadge({ status, label, icon = true, pulse = false, classNa
     },
     warning: {
       variant: 'default' as const,
-      className: 'bg-utec-yellow hover:bg-utec-yellow/90 text-gray-900',
+      // Decía `text-foreground`, que sigue al tema mientras el amarillo no:
+      // en oscuro la pastilla quedaba casi blanca sobre amarillo, 1,57:1.
+      className: 'bg-utec-yellow hover:bg-utec-yellow/90 text-marca-tinta',
       icon: AlertCircle,
     },
     info: {
@@ -37,9 +42,12 @@ export function StatusBadge({ status, label, icon = true, pulse = false, classNa
       className: 'bg-utec-blue hover:bg-utec-blue/90 text-white',
       icon: Clock,
     },
+    // Con className vacío quedaba a merced del fondo de `secondary`, que era
+    // el mismo valor que el de la página: la pastilla desaparecía y "Vencida"
+    // se leía como texto suelto al lado de cuatro pastillas.
     neutral: {
       variant: 'secondary' as const,
-      className: '',
+      className: 'bg-secondary text-secondary-foreground border border-border',
       icon: Minus,
     },
   };

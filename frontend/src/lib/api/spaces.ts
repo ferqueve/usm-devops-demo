@@ -1,4 +1,5 @@
 import { apiRequest, type ApiResponse } from './client';
+import { API_BASE_URL } from '@/lib/config/api';
 import type {
   Espacio,
   TipoEspacio,
@@ -151,7 +152,6 @@ export const espaciosApi = {
     formData.append('file', file);
 
     const token = localStorage.getItem('token');
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
     const url = `${API_BASE_URL}/espacios/${espacioId}/imagen`;
 
     const response = await fetch(url, {

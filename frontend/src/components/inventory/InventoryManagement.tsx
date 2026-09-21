@@ -80,6 +80,7 @@ import type { RecomendacionInventario } from '@/lib/types/recomendaciones';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { useEspacios } from '@/hooks/useEspacios';
 import { useTiposElemento } from '@/hooks/useTiposElemento';
+import { MARCA } from '@/lib/design/paleta';
 
 type ViewMode = 'table' | 'cards';
 
@@ -589,7 +590,7 @@ export default function InventoryManagement() {
         title="Inventario"
         count={totalElements}
         description="Administra el inventario del sistema: items, asignaciones y solicitudes."
-        accentColor="#F6CA21"
+        accentColor={MARCA.amarillo}
         actions={
           <>
             <Tooltip>
@@ -664,9 +665,9 @@ export default function InventoryManagement() {
       {/* Recomendaciones de Reasignación (solo para usuarios con permiso inventario:editar) */}
       {canManageInventory && reasignaciones.length > 0 && (
         <div className="rounded-xl border bg-card overflow-hidden">
-          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-utec-dark text-white">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-chrome text-white">
             <span className="w-1 h-4 rounded-sm bg-utec-blue shrink-0" />
-            <ArrowRightLeft className="h-4 w-4 text-utec-blue" />
+            <ArrowRightLeft className="h-4 w-4 text-marca-azul-texto" />
             <h3 className="text-sm font-semibold tracking-tight">Reasignaciones recomendadas</h3>
             <span className="text-xs text-white/60 ml-auto">{reasignaciones.length} recomendaciones</span>
           </div>
@@ -700,7 +701,7 @@ export default function InventoryManagement() {
                     ) : null;
                   })()}
                 </div>
-                <span className="text-xs font-semibold text-utec-blue ml-2 tabular-nums">
+                <span className="text-xs font-semibold text-marca-azul-texto ml-2 tabular-nums">
                   {(rec.puntaje * 100).toFixed(0)}%
                 </span>
               </button>
@@ -713,7 +714,7 @@ export default function InventoryManagement() {
       <InventoryStatsCards statistics={statistics} />
 
       {/* Inventario con filtros embebidos */}
-      <div className="border rounded-lg shadow-card overflow-hidden bg-white">
+      <div className="border rounded-lg shadow-card overflow-hidden bg-card">
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-center gap-2 flex-wrap">
         <PopoverFilterSection<number>
@@ -744,8 +745,8 @@ export default function InventoryManagement() {
           }
           Icon={Tag}
           tooltipNone="Todos los tipos"
-          activeBgClass="bg-purple-100 text-purple-900 shadow-md ring-1 ring-purple-300"
-          activeTextColorClass="text-purple-700"
+          activeBgClass="bg-acento-suave text-acento-texto shadow-md ring-1 ring-acento-borde"
+          activeTextColorClass="text-acento-texto"
         />
         <EnumFilterSection
           value={filters.estado ?? null}
@@ -755,27 +756,28 @@ export default function InventoryManagement() {
               value: 'DISPONIBLE',
               tooltip: 'Disponible',
               Icon: CheckCircle2,
-              activeColorClass: 'text-green-600',
-              inactiveColorClass: 'text-green-500',
+              activeColorClass: 'text-success-texto',
+              inactiveColorClass: 'text-success',
             },
             {
               value: 'MANTENIMIENTO',
               tooltip: 'En mantenimiento',
               Icon: Wrench,
-              activeColorClass: 'text-amber-600',
-              inactiveColorClass: 'text-amber-500',
+              activeColorClass: 'text-warning-texto',
+              inactiveColorClass: 'text-warning',
             },
             {
               value: 'DANADO',
               tooltip: 'Dañado',
               Icon: XCircle,
-              activeColorClass: 'text-red-600',
-              inactiveColorClass: 'text-red-500',
+              activeColorClass: 'text-danger-texto',
+              inactiveColorClass: 'text-danger',
             },
           ]}
           onChange={(value) =>
             handleFilterChange('estado', value ?? undefined)
           }
+          label="Estado"
         />
         <Button
           type="button"
@@ -791,7 +793,7 @@ export default function InventoryManagement() {
             <FilterBar
               filters={activeFilters}
               onClearAll={clearFilters}
-              className="mt-3 animate-slide-up"
+              className="mt-3"
             />
           )}
           {selectedItems.size > 0 && (

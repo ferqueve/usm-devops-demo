@@ -29,10 +29,10 @@ test.describe('Auth: refresh exitoso tras 401', () => {
 
     await page.goto('/reservations');
 
-    // Tras refresh + retry el listado vuelve a renderizar; el header propio
-    // de la página de docente confirma que seguimos autenticados.
-    await expect(page.getByRole('heading', { name: /Mis Solicitudes/i }).first())
-      .toBeVisible({ timeout: 15_000 });
+    // Tras refresh + retry la página vuelve a renderizar; el título y el
+    // botón propio del docente confirman que seguimos autenticados.
+    await expect(page.getByRole('heading', { name: /^Reservas$/i, level: 1 })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('button', { name: /^Nueva solicitud$/i })).toBeVisible();
     expect(page.url()).toContain('/reservations');
   });
 });

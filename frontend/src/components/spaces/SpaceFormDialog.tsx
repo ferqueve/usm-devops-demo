@@ -299,7 +299,7 @@ export function SpaceFormDialog({
 
               {/* Preview de imagen */}
               {imagePreview && (
-                <div className="relative w-full h-48 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                <div className="relative w-full h-48 rounded-lg border border-border overflow-hidden bg-muted">
                   <img
                     src={imagePreview}
                     alt="Preview"
@@ -323,14 +323,14 @@ export function SpaceFormDialog({
                 <div className="flex items-center justify-center w-full">
                   <label
                     htmlFor="imagen"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted transition-colors"
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500">
+                      <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                      <p className="mb-2 text-sm text-muted-foreground">
                         <span className="font-semibold">Click para subir</span> o arrastra y suelta
                       </p>
-                      <p className="text-xs text-gray-500">JPG, PNG, WebP o GIF (máx. 50MB)</p>
+                      <p className="text-xs text-muted-foreground">JPG, PNG, WebP o GIF (máx. 50MB)</p>
                     </div>
                     <input
                       id="imagen"

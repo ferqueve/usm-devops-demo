@@ -125,14 +125,6 @@ export interface ReservaItemSolicitado {
   updatedAt: string;
 }
 
-export interface ReservaItemSolicitadoFilters {
-  estados?: ReservaItemSolicitadoEstado[];
-  espacioId?: number;
-  fechaDesde?: string;
-  fechaHasta?: string;
-  search?: string;
-}
-
 export interface Reserva {
   analistaId?: number | null;
   analistaNombre?: string | null;
@@ -161,12 +153,6 @@ export interface Reserva {
   itemsSolicitados?: ReservaItemSolicitado[];
   createdAt: string;
   updatedAt: string;
-}
-
-export interface ReservaFilters {
-  estado?: 'PENDIENTE' | 'APROBADO' | 'CANCELADO';
-  espacioId?: number;
-  search?: string;
 }
 
 export interface ReservaStats {

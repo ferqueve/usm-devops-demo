@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
@@ -13,9 +15,8 @@ import {
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Award, Building2, CalendarClock, CalendarDays, CalendarPlus, Check, CheckCircle, ChevronLeft, ChevronRight, Clock, Copy, Download, Edit, FileText,
-  Globe, Hourglass, Image as ImageIcon, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Send, Trash2, User, UserCheck, Users, XCircle,
-} from 'lucide-react';
+  Award, Building2, CalendarClock, CalendarDays, CalendarPlus, Check, ChevronLeft, ChevronRight, Copy, Download, Edit, FileText,
+  Globe, Hourglass, Image as ImageIcon, Link2, Loader2, Lock, Mail, MapPin, Palette, QrCode, Send, Trash2, User, UserCheck, Users, } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
@@ -34,53 +35,22 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { downloadICS, googleCalUrl } from '@/lib/agenda/ics';
 import { useCountdown } from '@/lib/agenda/tiempo';
 import { eventoToAgendable } from '@/lib/agenda/types';
+import { fechaHora, relativa } from '@/lib/utils/fechas';
+import { ESTADO_EVENTO, EstadoBadge, estadoDe } from '@/components/common/estados';
+import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
 
 interface EventoDetailProps { eventoId: number }
 
-const ESTADO_BADGE: Record<EventoEstado, { label: string; color: string; icon: LucideIcon }> = {
-  PUBLICADO: { label: 'Publicado', color: 'bg-utec-green text-white border-utec-green', icon: CheckCircle },
-  BORRADOR: { label: 'Borrador', color: 'bg-utec-yellow text-utec-dark border-utec-yellow', icon: FileText },
-  FINALIZADO: { label: 'Finalizado', color: 'bg-utec-dark text-white border-utec-dark', icon: Clock },
-  CANCELADO: { label: 'Cancelado', color: 'bg-utec-red text-white border-utec-red', icon: XCircle },
-};
 
-function formatFecha(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-UY', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-function relativo(iso?: string): string {
-  if (!iso) return '';
-  const diff = new Date(iso).getTime() - Date.now();
-  if (Number.isNaN(diff)) return '';
-  const dias = Math.round(diff / 86400000);
-  if (dias === 0) return 'Hoy';
-  if (dias === 1) return 'Mañana';
-  if (dias === -1) return 'Ayer';
-  return dias > 1 ? `En ${dias} días` : `Hace ${Math.abs(dias)} días`;
-}
 
 function MetaItem({ icon: Icon, label, value }: Readonly<{ icon: LucideIcon; label: string; value: ReactNode }>) {
   return (
     <div className="flex items-start gap-2.5 rounded-xl border bg-muted/30 p-3">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-cyan/10 text-utec-cyan"><Icon className="h-4 w-4" /></span>
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-utec-cyan/10 text-marca-cian-texto"><Icon className="h-4 w-4" /></span>
       <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground leading-none">{label}</p>
+        <p className="text-2xs uppercase tracking-wide text-muted-foreground leading-none">{label}</p>
         <p className="text-sm font-medium truncate mt-1">{value}</p>
       </div>
-    </div>
-  );
-}
-function Panel({ title, icon, accent, action, children, className }: Readonly<{ title: string; icon: ReactNode; accent: string; action?: ReactNode; children: ReactNode; className?: string }>) {
-  return (
-    <div className={`rounded-2xl border bg-card overflow-hidden flex flex-col ${className ?? ''}`}>
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b shrink-0">
-        <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${accent}`}>{icon}</span>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {action && <div className="ml-auto">{action}</div>}
-      </div>
-      <div className="p-4 flex-1">{children}</div>
     </div>
   );
 }
@@ -105,7 +75,7 @@ function NotificarEventoDialog({ eventoId, open, onOpenChange }: Readonly<{ even
     <Dialog open={open} onOpenChange={(v) => (sending ? undefined : onOpenChange(v))}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-utec-green"><Mail className="h-4 w-4" /></span>Notificar a los inscriptos</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><span className="p-1.5 rounded-md bg-utec-green/10 text-marca-verde-texto"><Mail className="h-4 w-4" /></span>Notificar a los inscriptos</DialogTitle>
           <DialogDescription>Se enviará un email a los anotados en este evento.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
@@ -218,11 +188,19 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   };
   const copyLink = () => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copiado')).catch(() => {});
   const exportCSV = () => {
-    const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const rows = inscriptos.map((i) => [esc(i.nombre ?? ''), esc(i.email ?? ''), esc(formatFecha(i.createdAt))].join(',')).join('\n');
-    const blob = new Blob([`\uFEFFNombre,Email,Inscripto\n${rows}`], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `inscriptos-evento-${eventoId}.csv`; a.click(); URL.revokeObjectURL(url);
+    descargarCSV(
+      [
+        'Nombre,Email,Inscripto',
+        ...inscriptos.map((i) =>
+          [
+            csvEscape(i.nombre ?? ''),
+            csvEscape(i.email ?? ''),
+            csvEscape(fechaHora(i.createdAt, { diaSemana: true })),
+          ].join(',')
+        ),
+      ],
+      `inscriptos-evento-${eventoId}.csv`
+    );
   };
 
   const ocupacion = useMemo(() => {
@@ -249,8 +227,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
     );
   }
 
-  const badge = ESTADO_BADGE[evento.estado];
-  const BadgeIcon = badge.icon;
+  const badge = estadoDe(ESTADO_EVENTO, evento.estado);
   const conCupo = evento.cupo != null && evento.cupo > 0;
 
   return (
@@ -293,14 +270,14 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
       <div className="grid gap-4 lg:grid-cols-4 items-stretch">
         <div className="lg:col-span-3 rounded-2xl border bg-card overflow-hidden flex flex-col">
           {/* Banner con el patrón del evento */}
-          <div className="relative min-h-[9rem] overflow-hidden bg-utec-dark p-4 text-white flex flex-col justify-between gap-3">
+          <div className="relative min-h-[9rem] overflow-hidden bg-chrome p-4 text-white flex flex-col justify-between gap-3">
             <EventoPatternBg patron={evento.patron} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
             {/* Arriba: tipo (izq) · estado + tema (der) */}
             <div className="relative flex items-start justify-between gap-2">
-              <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{evento.tipo}</span>
+              <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wide">{evento.tipo}</span>
               <div className="flex items-center gap-1.5">
-                <Badge className={`${badge.color} border font-medium text-xs`}><BadgeIcon className="h-3.5 w-3.5 mr-1.5" />{badge.label}</Badge>
+                <EstadoBadge estado={badge} className="text-xs" />
                 <PermissionGuard requiredPermission="evento:editar">
                   <Popover>
                     <PopoverTrigger asChild>
@@ -321,7 +298,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                               className={`relative h-14 overflow-hidden rounded-lg border text-left transition-shadow ${activo ? 'ring-2 ring-utec-cyan' : 'hover:ring-1 hover:ring-utec-cyan/50'}`}
                             >
                               <EventoPatternBg patron={p.id} />
-                              <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/45 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                              <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/45 px-1.5 py-0.5 text-2xs font-medium text-white">
                                 {p.nombre}{activo && <Check className="h-3 w-3" />}
                               </span>
                             </button>
@@ -341,7 +318,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   {([['D', countdown.dias], ['H', countdown.horas], ['M', countdown.minutos], ['S', countdown.segundos]] as const).map(([l, v]) => (
                     <div key={l} className="text-center rounded-md bg-white/15 ring-1 ring-white/15 px-2.5 py-1 min-w-[42px]">
                       <div className="text-base font-bold tabular-nums leading-none">{String(v).padStart(2, '0')}</div>
-                      <div className="text-[9px] text-white/60 uppercase">{l}</div>
+                      <div className="text-2xs text-white/60 uppercase">{l}</div>
                     </div>
                   ))}
                 </div>
@@ -353,12 +330,12 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="outline" className="text-xs flex items-center gap-1">{evento.esPublico ? <><Globe className="h-3 w-3" />Público</> : <><Lock className="h-3 w-3" />Interno</>}</Badge>
               {evento.tags && evento.tags.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">{t}</span>
+                <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-marca-azul-texto px-2 py-0.5 text-xs font-medium">{t}</span>
               ))}
             </div>
             {evento.descripcion && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{evento.descripcion}</p>}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <MetaItem icon={CalendarClock} label="Cuándo" value={<>{formatFecha(evento.inicio)} · <span className="text-muted-foreground">{relativo(evento.inicio)}</span></>} />
+              <MetaItem icon={CalendarClock} label="Cuándo" value={<>{fechaHora(evento.inicio, { diaSemana: true })} · <span className="text-muted-foreground">{relativa(evento.inicio)}</span></>} />
               {evento.espacioNombre && <MetaItem icon={MapPin} label="Lugar" value={evento.espacioNombre} />}
               {evento.organizadorNombre && <MetaItem icon={User} label="Organiza" value={evento.organizadorNombre} />}
             </div>
@@ -376,7 +353,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   <span className="text-muted-foreground"> {conCupo ? `de ${evento.cupo} inscriptos` : 'inscriptos · sin cupo'}</span>
                 </p>
                 {conCupo && (
-                  <span className={`text-sm font-semibold tabular-nums ${(evento.plazasDisponibles ?? 0) > 0 ? 'text-utec-green' : 'text-utec-orange'}`}>
+                  <span className={`text-sm font-semibold tabular-nums ${(evento.plazasDisponibles ?? 0) > 0 ? 'text-marca-verde-texto' : 'text-marca-naranja-texto'}`}>
                     {(evento.plazasDisponibles ?? 0) > 0
                       ? `${evento.plazasDisponibles} libre${evento.plazasDisponibles === 1 ? '' : 's'}`
                       : 'Completo'}
@@ -400,7 +377,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
           </div>
         </div>
         <div className="lg:col-span-1">
-          <Panel title="Difundir" icon={<QrCode className="h-4 w-4 text-utec-blue" />} accent="bg-utec-blue/10" className="h-full">
+          <Panel title="Difundir" icon={<QrCode className="size-4" />} accentColor={MARCA.azul} altoCompleto>
             <div className="flex h-full flex-col">
               <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
                 {qrUrl
@@ -410,15 +387,15 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
               </div>
               <div className="mt-4 flex flex-col gap-2 border-t pt-4">
                 <Button variant="outline" size="sm" className="justify-start" onClick={() => setAficheOpen(true)}>
-                  <ImageIcon className="h-4 w-4 mr-2" />Generar afiche
+                  <ImageIcon className="h-4 w-4 mr-2 shrink-0" /><span className="truncate">Generar afiche</span>
                 </Button>
                 <Button variant="outline" size="sm" className="justify-start" asChild>
                   <a href={googleCalUrl(eventoToAgendable(evento))} target="_blank" rel="noopener noreferrer">
-                    <CalendarPlus className="h-4 w-4 mr-2" />Agregar a Google Calendar
+                    <CalendarPlus className="h-4 w-4 mr-2 shrink-0" /><span className="truncate" title="Agregar a Google Calendar">Google Calendar</span>
                   </a>
                 </Button>
                 <Button variant="outline" size="sm" className="justify-start" onClick={() => downloadICS(eventoToAgendable(evento))}>
-                  <Download className="h-4 w-4 mr-2" />Descargar .ics
+                  <Download className="h-4 w-4 mr-2 shrink-0" /><span className="truncate">Descargar .ics</span>
                 </Button>
               </div>
             </div>
@@ -431,10 +408,10 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
         <div className="lg:col-span-2">
           <Panel
             title={`Inscriptos · ${inscriptos.filter((i) => i.estado !== 'ESPERA').length}`}
-            icon={<Users className="h-4 w-4 text-utec-blue" />}
-            accent="bg-utec-blue/10"
-            className="h-full"
-            action={inscriptos.length > 0 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button> : undefined}
+            icon={<Users className="size-4" />}
+            accentColor={MARCA.azul}
+            altoCompleto
+            acciones={inscriptos.length > 0 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button> : undefined}
           >
             {(() => {
               if (inscriptos.length === 0) return <p className="text-sm text-muted-foreground py-2">Nadie se inscribió todavía.</p>;
@@ -450,7 +427,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                 return (
                   <li key={i.inscripcionId} className="flex items-center justify-between gap-3 rounded-lg border p-3">
                     <span className="flex items-center gap-2 min-w-0">
-                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-utec-green' : 'bg-utec-blue/10 text-utec-blue'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${presente ? 'bg-utec-green/15 text-marca-verde-texto' : 'bg-utec-blue/10 text-marca-azul-texto'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-medium">{i.nombre}</span>
                         <span className="block truncate text-xs text-muted-foreground">{i.email}</span>
@@ -458,7 +435,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                     </span>
                     <span className="flex items-center gap-1 shrink-0">
                       {presente && evento.tipo === 'CURSO' && i.nombre && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Certificado" onClick={() => descargarCertificado(i.nombre as string)}><Award className="h-3.5 w-3.5 text-utec-green" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Certificado" onClick={() => descargarCertificado(i.nombre as string)}><Award className="h-3.5 w-3.5 text-marca-verde-texto" /></Button>
                       )}
                       <PermissionGuard requiredPermission="evento:ver_inscriptos">
                         <Button variant={presente ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => toggleAsistencia(i)} title="Marcar asistencia">
@@ -475,7 +452,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
                       {confirmados.slice(0, 6).map((i) => (
-                        <span key={i.inscripcionId} className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-xs font-semibold ${i.estado === 'ASISTIO' ? 'bg-utec-green/15 text-utec-green' : 'bg-utec-blue/10 text-utec-blue'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
+                        <span key={i.inscripcionId} className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-xs font-semibold ${i.estado === 'ASISTIO' ? 'bg-utec-green/15 text-marca-verde-texto' : 'bg-utec-blue/10 text-marca-azul-texto'}`}>{i.nombre?.slice(0, 2).toUpperCase()}</span>
                       ))}
                       {confirmados.length > 6 && <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-semibold text-muted-foreground">+{confirmados.length - 6}</span>}
                     </div>
@@ -485,7 +462,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                   {/* Barra de asistencia */}
                   {confirmados.length > 0 && (
                     <div className="flex items-center gap-3 text-sm">
-                      <span className="flex shrink-0 items-center gap-1.5"><UserCheck className="h-4 w-4 text-utec-green" /><b>{asistieron}</b>/{confirmados.length} asistieron</span>
+                      <span className="flex shrink-0 items-center gap-1.5"><UserCheck className="h-4 w-4 text-marca-verde-texto" /><b>{asistieron}</b>/{confirmados.length} asistieron</span>
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-utec-green transition-all" style={{ width: `${tasa}%` }} /></div>
                       <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{tasa}%</span>
                     </div>
@@ -498,10 +475,10 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
                         {espera.map((i) => (
                           <li key={i.inscripcionId} className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-3 opacity-80">
                             <span className="flex items-center gap-2 min-w-0">
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-utec-dark text-xs font-semibold">{i.nombre?.slice(0, 2).toUpperCase()}</span>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-utec-yellow/20 text-marca-tinta text-xs font-semibold">{i.nombre?.slice(0, 2).toUpperCase()}</span>
                               <span className="block truncate text-sm font-medium">{i.nombre}</span>
                             </span>
-                            <Badge className="bg-utec-yellow text-utec-dark border-utec-yellow text-[10px]">En espera</Badge>
+                            <Badge className="bg-utec-yellow text-marca-tinta border-utec-yellow text-2xs">En espera</Badge>
                           </li>
                         ))}
                       </ul>
@@ -524,7 +501,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
         </div>
         <div className="lg:col-span-1 flex flex-col gap-4">
           <PermissionGuard requiredPermission="evento:editar">
-            <Panel title="Estado" icon={<FileText className="h-4 w-4 text-utec-cyan" />} accent="bg-utec-cyan/10">
+            <Panel title="Estado" icon={<FileText className="size-4" />} accentColor={MARCA.cian}>
               <Select value={evento.estado} onValueChange={(v) => cambiarEstado(v as EventoEstado)} disabled={savingEstado}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -538,7 +515,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             </Panel>
           </PermissionGuard>
           {espacio && (
-            <Panel title="Espacio" icon={<MapPin className="h-4 w-4 text-utec-green" />} accent="bg-utec-green/10">
+            <Panel title="Espacio" icon={<MapPin className="size-4" />} accentColor={MARCA.verde}>
               <p className="font-medium">{espacio.nombre}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />Cap. {espacio.capacidad}</span>

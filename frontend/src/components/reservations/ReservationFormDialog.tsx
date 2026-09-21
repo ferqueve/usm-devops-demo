@@ -38,9 +38,9 @@ import {
 } from './_shared/ReservationFormSections';
 
 function getPuntajeBadgeClass(puntaje: number): string {
-  if (puntaje >= 0.8) return 'bg-emerald-100 text-emerald-700';
-  if (puntaje >= 0.6) return 'bg-blue-100 text-blue-700';
-  return 'bg-amber-100 text-amber-700';
+  if (puntaje >= 0.8) return 'bg-success-suave text-success-texto';
+  if (puntaje >= 0.6) return 'bg-info-suave text-info-texto';
+  return 'bg-warning-suave text-warning-texto';
 }
 
 // Carga espacios disponibles y los convierte a recomendaciones; null si no hay
@@ -99,7 +99,7 @@ function RecomendacionEspacioCard({ rec, onSelect }: Readonly<RecomendacionEspac
               {rec.tipoEspacioNombre && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] px-1.5 py-0.5 h-5"
+                  className="text-2xs px-1.5 py-0.5 h-5"
                   style={{
                     borderColor: rec.tipoEspacioColor,
                     color: rec.tipoEspacioColor,
@@ -113,7 +113,7 @@ function RecomendacionEspacioCard({ rec, onSelect }: Readonly<RecomendacionEspac
                 <span>{rec.capacidad}</span>
               </div>
               {rec.disponible && (
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0.5 h-5">
+                <Badge variant="outline" className="bg-success-suave text-success-texto border-success-borde text-2xs px-1.5 py-0.5 h-5">
                   Disponible
                 </Badge>
               )}
@@ -170,8 +170,8 @@ function RecomendacionesGeneralesPanel({
     );
   }
   return (
-    <div className="text-center py-8 text-sm text-gray-500">
-      <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+    <div className="text-center py-8 text-sm text-muted-foreground">
+      <Sparkles className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
       <p>Completa el formulario para ver recomendaciones</p>
     </div>
   );
@@ -432,7 +432,7 @@ export default function ReservationFormDialog({
       <DialogContent className="!grid-cols-1 w-[95vw] max-w-[1400px] lg:max-w-[1400px] !p-0 !gap-0 max-h-[90vh] !flex !flex-col overflow-hidden">
         <form onSubmit={onFormSubmit} className="flex flex-col h-full min-h-0">
           {/* Header compacto */}
-          <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 px-4 sm:px-6 pt-4 pb-3 flex-shrink-0">
+          <div className="relative bg-gradient-to-br from-info to-info px-4 sm:px-6 pt-4 pb-3 flex-shrink-0">
             <div className="flex items-center gap-3 mb-2">
               <p className="text-xs font-medium text-white/90">NUEVA RESERVA</p>
               <div className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
@@ -443,17 +443,17 @@ export default function ReservationFormDialog({
               {needsAnalystAssignment ? 'Nueva Solicitud de Reserva' : 'Nueva Reserva'}
             </DialogTitle>
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4">
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
-              <div className="w-3 h-3 bg-white rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-card rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-card rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-card rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-card rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-card rounded-full -mb-1.5"></div>
+              <div className="w-3 h-3 bg-card rounded-full -mb-1.5"></div>
             </div>
           </div>
 
           <div className="relative flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
-            <div ref={formContainerRef} className={`bg-white min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6 ${canViewRecommendations ? 'lg:w-[calc(100%-400px)]' : 'lg:w-full'}`}>
+            <div ref={formContainerRef} className={`bg-card min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-6 ${canViewRecommendations ? 'lg:w-[calc(100%-400px)]' : 'lg:w-full'}`}>
               {/* Espacio */}
               <EspacioSelect
                 value={formData.espacioId}
@@ -461,7 +461,7 @@ export default function ReservationFormDialog({
                 onChange={(value) => setFormData(prev => ({ ...prev, espacioId: value }))}
               />
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
 
               {/* Carrera */}
               {canViewRecommendations && (
@@ -472,11 +472,11 @@ export default function ReservationFormDialog({
                 />
               )}
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
 
               {/* Título */}
               <div className="space-y-2">
-                <Label htmlFor="titulo" className="text-sm font-semibold text-gray-700">Título *</Label>
+                <Label htmlFor="titulo" className="text-sm font-semibold text-foreground/80">Título *</Label>
                 <Input
                   id="titulo"
                   value={formData.titulo}
@@ -485,16 +485,16 @@ export default function ReservationFormDialog({
                   className="h-10"
                   maxLength={200}
                 />
-                <p className="text-xs text-gray-500">{formData.titulo.length}/200 caracteres</p>
+                <p className="text-xs text-muted-foreground">{formData.titulo.length}/200 caracteres</p>
               </div>
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
 
               {/* Motivo de solicitud */}
               {needsAnalystAssignment && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-gray-700">Motivo de la solicitud</Label>
+                    <Label htmlFor="motivoSolicitud" className="text-sm font-semibold text-foreground/80">Motivo de la solicitud</Label>
                     <Textarea
                       id="motivoSolicitud"
                       value={formData.motivoSolicitud}
@@ -504,22 +504,22 @@ export default function ReservationFormDialog({
                     />
                   </div>
 
-                  <div className="border-t border-dashed border-gray-300 my-4"></div>
+                  <div className="border-t border-dashed border-border my-4"></div>
                 </>
               )}
 
               {/* Indicador de reserva pública - solo para externos */}
               {!canViewRecommendations && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="bg-info-suave border border-info-borde rounded-lg p-3 mb-4">
                   <div className="flex items-start gap-2">
-                    <div className="text-blue-600 mt-0.5">
+                    <div className="text-info-texto mt-0.5">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-blue-900">Reserva Pública</p>
-                      <p className="text-xs text-blue-700 mt-1">
+                      <p className="text-sm font-medium text-info-texto">Reserva Pública</p>
+                      <p className="text-xs text-info-texto mt-1">
                         Tu solicitud de reserva será pública y visible para todos los usuarios del sistema.
                         Un analista revisará y aprobará tu solicitud.
                       </p>
@@ -547,7 +547,7 @@ export default function ReservationFormDialog({
                       }
                     />
                   )}
-                  <div className="border-t border-dashed border-gray-300 my-4"></div>
+                  <div className="border-t border-dashed border-border my-4"></div>
                 </>
               )}
 
@@ -560,11 +560,11 @@ export default function ReservationFormDialog({
                 onActualizar={actualizarItemSolicitado}
               />
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
 
               {/* Fecha */}
               <div className="flex items-center gap-4">
-                <Label className="text-sm font-semibold text-gray-700 min-w-[80px]">Fecha *</Label>
+                <Label className="text-sm font-semibold text-foreground/80 min-w-[80px]">Fecha *</Label>
                 <div className="flex-1">
                   <DatePicker
                     value={fecha}
@@ -576,7 +576,7 @@ export default function ReservationFormDialog({
                 </div>
               </div>
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
 
               {/* Horas de inicio y fin */}
               <HoraInicioFinSection
@@ -592,7 +592,7 @@ export default function ReservationFormDialog({
                 <p className="text-sm text-destructive font-medium">{horaError}</p>
               )}
 
-              <div className="border-t border-dashed border-gray-300 my-4"></div>
+              <div className="border-t border-dashed border-border my-4"></div>
 
               {/* Recurrencia */}
               <RecurrenciaSection
@@ -605,15 +605,15 @@ export default function ReservationFormDialog({
             {/* Panel de Recomendaciones - Lado derecho */}
             {canViewRecommendations && (
               <div
-                className="hidden lg:flex lg:absolute lg:right-0 lg:top-0 w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 flex-col overflow-hidden"
+                className="hidden lg:flex lg:absolute lg:right-0 lg:top-0 w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-border bg-muted flex-col overflow-hidden"
                 style={{ height: formHeight ? `${formHeight}px` : '100%' }}
               >
-                <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
-                  <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <div className="bg-card border-b border-border px-4 py-3 flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
                     Recomendaciones del Sistema
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">Sugerencias opcionales basadas en tus preferencias</p>
+                  <p className="text-xs text-muted-foreground mt-1">Sugerencias opcionales basadas en tus preferencias</p>
                 </div>
                 <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
                   <RecomendacionesPanelContent
@@ -633,20 +633,20 @@ export default function ReservationFormDialog({
 
           {/* Panel de Recomendaciones - Móvil */}
           {canViewRecommendations && (
-            <div className="w-full lg:hidden border-t border-gray-200 bg-gray-50 flex-shrink-0">
+            <div className="w-full lg:hidden border-t border-border bg-muted flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setShowRecomendacionesMobile(!showRecomendacionesMobile)}
-                className="w-full bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                className="w-full bg-card border-b border-border px-4 py-3 flex items-center justify-between hover:bg-muted transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <h3 className="text-sm font-semibold text-gray-700">Recomendaciones del Sistema</h3>
+                  <h3 className="text-sm font-semibold text-foreground/80">Recomendaciones del Sistema</h3>
                 </div>
                 {showRecomendacionesMobile ? (
-                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 )}
               </button>
               {showRecomendacionesMobile && (
@@ -668,14 +668,14 @@ export default function ReservationFormDialog({
           )}
 
           {/* Footer tipo ticket */}
-          <div className="relative bg-gray-50 px-5 py-3 border-t border-dashed border-gray-300 flex-shrink-0">
+          <div className="relative bg-muted px-5 py-3 border-t border-dashed border-border flex-shrink-0">
             <div className="absolute top-0 left-0 right-0 flex justify-between px-4 -mt-1.5">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="w-3 h-3 bg-card rounded-full"></div>
+              <div className="w-3 h-3 bg-card rounded-full"></div>
+              <div className="w-3 h-3 bg-card rounded-full"></div>
+              <div className="w-3 h-3 bg-card rounded-full"></div>
+              <div className="w-3 h-3 bg-card rounded-full"></div>
+              <div className="w-3 h-3 bg-card rounded-full"></div>
             </div>
             <DialogFooter className="mt-0 gap-2">
               <Button
@@ -688,7 +688,7 @@ export default function ReservationFormDialog({
                 Cancelar
               </Button>
               <PermissionGuard requiredPermissions={['reserva:crear']}>
-                <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                <Button type="submit" disabled={loading || !isFormValid} className="flex-1 bg-info hover:bg-info">
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {submitLabel}
                 </Button>

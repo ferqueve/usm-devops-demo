@@ -1,3 +1,6 @@
+
+import { API_BASE_URL } from '@/lib/config/api';
+
 // ============================================================================
 // Tipos para la API de autenticación
 // ============================================================================
@@ -47,7 +50,8 @@ export interface ApiResponse<T> {
 // Configuración de la API
 // ============================================================================
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+// La URL vive en `lib/config/api`: la usan cinco módulos y los tests mockean
+// este cliente entero.
 
 // ============================================================================
 // Dedupe de GET requests
@@ -63,6 +67,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/
 const DEDUPE_TTL_MS = 1000;
 const inflightGets = new Map<string, Promise<unknown>>();
 const recentGets = new Map<string, { ts: number; value: unknown }>();
+// Sube con cada escritura. Un GET que salió antes no se guarda ni se comparte
+// después: traería los datos de antes de la escritura.
+let generacion = 0;
 
 function dedupeKey(url: string, method: string, body: BodyInit | null | undefined): string {
   return `${method.toUpperCase()} ${url} ${typeof body === 'string' ? body : ''}`;
@@ -80,13 +87,15 @@ async function withDedupe<T>(key: string, exec: () => Promise<T>): Promise<T> {
   const inflight = inflightGets.get(key);
   if (inflight) return inflight as Promise<T>;
 
+  const nacida = generacion;
   const promise = (async () => {
     try {
       const value = await exec();
-      recentGets.set(key, { ts: Date.now(), value });
+      if (nacida === generacion) recentGets.set(key, { ts: Date.now(), value });
       return value;
     } finally {
-      inflightGets.delete(key);
+      // Si hubo una escritura, el mapa ya se vació y la entrada es de otro.
+      if (nacida === generacion) inflightGets.delete(key);
     }
   })();
   inflightGets.set(key, promise as Promise<unknown>);
@@ -212,7 +221,15 @@ export async function apiRequest<T>(
     );
   }
 
-  return executeApiRequest<T>(endpoint, options, url, config, token, isRetry);
+  // Una escritura deja viejo lo leído en el último segundo y lo que está en
+  // vuelo: sin esto, el refresh que sigue a un alta devolvía la lista de antes.
+  // Se limpia también al terminar, por los GET que salieron mientras tanto.
+  clearApiCache();
+  try {
+    return await executeApiRequest<T>(endpoint, options, url, config, token, isRetry);
+  } finally {
+    clearApiCache();
+  }
 }
 
 async function executeApiRequest<T>(
@@ -360,7 +377,9 @@ async function executeActuatorRequest(endpoint: string, url: string, isRetry: bo
 // Invalida toda la cache de dedupe. Llamar después de una mutación que cambie
 // datos que algún componente pueda haber leído recientemente.
 export function clearApiCache(): void {
+  generacion++;
   recentGets.clear();
+  inflightGets.clear();
 }
 
 // ============================================================================

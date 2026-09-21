@@ -31,10 +31,10 @@ function Fecha({ valor }: Readonly<{ valor: string }>) {
 export function MateriaFila({ materia }: Readonly<{ materia: MateriaBreve }>) {
   return (
     <Link to={`/materias/${materia.id}`} className={`${FILA} -mx-2 rounded-sm px-2 hover:bg-muted/40`}>
-      <BookOpen className="h-4 w-4 shrink-0 text-utec-blue" />
+      <BookOpen className="h-4 w-4 shrink-0 text-marca-azul-texto" />
       <span className="min-w-0 flex-1 truncate font-medium">{materia.nombre}</span>
       {materia.codigo && (
-        <span className="hidden shrink-0 text-[11px] text-muted-foreground sm:inline">{materia.codigo}</span>
+        <span className="hidden shrink-0 text-2xs text-muted-foreground sm:inline">{materia.codigo}</span>
       )}
       {materia.creditos != null && (
         <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{materia.creditos} cr.</span>
@@ -78,7 +78,7 @@ export function EventoFila({ evento }: Readonly<{ evento: EventoBreve }>) {
         )}
       </span>
       {evento.inscrito ? (
-        <span className="shrink-0 rounded-full bg-utec-green/15 px-2 py-0.5 text-[11px] font-medium text-utec-green">
+        <span className="shrink-0 rounded-full bg-utec-green/15 px-2 py-0.5 text-2xs font-medium text-marca-verde-texto">
           Anotado
         </span>
       ) : (
@@ -110,12 +110,12 @@ export function ItemFila({ item }: Readonly<{ item: ItemAtencion }>) {
 export function EspacioFila({ espacio }: Readonly<{ espacio: EspacioBreve }>) {
   return (
     <Link to={`/rooms/${espacio.id}`} className={`${FILA} -mx-2 rounded-sm px-2 hover:bg-muted/40`}>
-      <MapPin className="h-4 w-4 shrink-0 text-utec-orange" />
+      <MapPin className="h-4 w-4 shrink-0 text-marca-naranja-texto" />
       <span className="min-w-0 flex-1 truncate font-medium">{espacio.nombre}</span>
       {espacio.edificio && (
         <span className="hidden shrink-0 truncate text-xs text-muted-foreground sm:inline">{espacio.edificio}</span>
       )}
-      <span className="shrink-0 text-[11px] uppercase tracking-wide text-muted-foreground">
+      <span className="shrink-0 text-2xs uppercase tracking-wide text-muted-foreground">
         {espacio.estado.toLowerCase()}
       </span>
     </Link>

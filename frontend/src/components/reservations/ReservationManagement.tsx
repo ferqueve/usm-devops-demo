@@ -20,6 +20,7 @@ import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { useAuth } from '@/hooks/useAuth';
 import { usePreferences } from '@/hooks/usePreferences';
 import { useSearchParams } from 'react-router-dom';
+import { MARCA } from '@/lib/design/paleta';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -628,7 +629,7 @@ export default function ReservationManagement() {
               ? 'Tus solicitudes de reserva de espacios.'
               : 'Todas las reservas y solicitudes del sistema.'
           }
-          accentColor="#184897"
+          accentColor={MARCA.azul}
           actions={
             <PermissionGuard requiredPermissions={['reserva:crear']}>
               <Button onClick={() => setIsFormDialogOpen(true)} className={HEADER_PRIMARY}>
@@ -762,7 +763,7 @@ export default function ReservationManagement() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmCancelReserva}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-danger hover:bg-danger"
             >
               Sí, cancelar reserva
             </AlertDialogAction>

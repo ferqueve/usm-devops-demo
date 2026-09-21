@@ -230,7 +230,7 @@ export function TutoriaFormDialog({
       <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-utec-blue/10 text-utec-blue">
+            <span className="p-1.5 rounded-md bg-utec-blue/10 text-marca-azul-texto">
               <GraduationCap className="h-4 w-4" />
             </span>
             {isEditing ? 'Editar tutoría' : 'Nueva tutoría'}
@@ -247,7 +247,7 @@ export function TutoriaFormDialog({
             <Label>Materia</Label>
             {lockedMateria ? (
               <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
-                <BookOpen className="h-4 w-4 text-utec-blue shrink-0" />
+                <BookOpen className="h-4 w-4 text-marca-azul-texto shrink-0" />
                 <span className="font-medium truncate">{selectedMateria?.nombre ?? 'Materia seleccionada'}</span>
               </div>
             ) : materias.length === 0 ? (
@@ -303,7 +303,7 @@ export function TutoriaFormDialog({
 
           {!isEditing && sugerencia && (
             <div className="flex items-center gap-2 rounded-lg border border-utec-yellow/40 bg-utec-yellow/5 px-3 py-2 text-sm -mt-1">
-              <Lightbulb className="h-4 w-4 text-utec-yellow shrink-0" />
+              <Lightbulb className="h-4 w-4 text-marca-amarillo-texto shrink-0" />
               <span className="flex-1">Los <b>{sugerencia.label}</b> suelen tener más demanda.</span>
               <Button type="button" variant="outline" size="sm" className="h-7 text-xs shrink-0" onClick={aplicarSugerencia} disabled={loading}>Usar</Button>
             </div>
@@ -377,7 +377,7 @@ export function TutoriaFormDialog({
             {tags.trim() && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {tags.split(',').map((t) => t.trim()).filter(Boolean).map((t) => (
-                  <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-utec-blue px-2 py-0.5 text-xs font-medium">
+                  <span key={t} className="inline-flex items-center rounded-full bg-utec-blue/10 text-marca-azul-texto px-2 py-0.5 text-xs font-medium">
                     {t.toLowerCase() === 'mate' ? '🧉 mate' : t}
                   </span>
                 ))}

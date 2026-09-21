@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Reserva recurrente: docente crea una reserva semanal con fecha fin a 3
@@ -28,14 +29,9 @@ test.describe('Reservas: creación recurrente', () => {
     // Fecha inicio: en 4 días (no choca con seeded de mañana).
     const inicio = new Date();
     inicio.setDate(inicio.getDate() + 4);
-    const diaInicio = String(inicio.getDate());
     // Datepicker de fecha inicio: primer botón con el icono calendar.
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${diaInicio}$`) })
-      .first()
-      .click();
+    await elegirDia(page, inicio);
 
     // Horas: 08:00–09:00 (libres).
     const horas = page.locator('input[placeholder="00"]');
@@ -53,18 +49,12 @@ test.describe('Reservas: creación recurrente', () => {
     await page.getByRole('option', { name: /Semanal/i }).click();
 
     // Fecha fin de recurrencia: 1 semana después (genera 2 instancias).
-    // Mantenemos ambas fechas dentro del mismo mes para que el calendario
-    // visible no tenga que navegar entre meses.
+    // Puede caer en el mes siguiente; `elegirDia` navega si hace falta.
     const finRec = new Date(inicio);
     finRec.setDate(finRec.getDate() + 7);
-    const diaFin = String(finRec.getDate());
     // El segundo datepicker de la página es el de fecha fin.
     await page.locator('button:has(svg.lucide-calendar)').nth(1).click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${diaFin}$`) })
-      .first()
-      .click();
+    await elegirDia(page, finRec);
 
     // Submit.
     await page.getByRole('button', { name: /Enviar Solicitud/i }).click();

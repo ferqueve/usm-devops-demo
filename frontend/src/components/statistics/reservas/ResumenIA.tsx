@@ -3,6 +3,7 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { postStatsSummary } from '@/lib/api/ai';
 import type { ResumenCarrera, ResumenReservas } from '@/lib/api/stats';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   resumen: ResumenReservas;
@@ -73,7 +74,7 @@ export function ResumenIA({ resumen, periodoTexto, espacioMasOcupado, carreras }
       ) : cargando ? (
         <div className="w-full flex-1 space-y-2">
           {[95, 100, 88, 72, 60].map((w) => (
-            <div key={w} className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
+            <Skeleton key={w} className="h-3 rounded" style={{ width: `${w}%` }} />
           ))}
         </div>
       ) : (

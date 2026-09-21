@@ -34,7 +34,7 @@ export function MatrizCalor({ filas, columnas, celdas, etiquetaColumna = String,
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-separate border-spacing-[3px] text-[11px]" style={{ minWidth: 130 + columnas.length * 34 }}>
+        <table className="w-full table-fixed border-separate border-spacing-[3px] text-2xs" style={{ minWidth: 130 + columnas.length * 34 }}>
           <thead>
             <tr>
               <th className="w-[120px]" />
@@ -48,7 +48,7 @@ export function MatrizCalor({ filas, columnas, celdas, etiquetaColumna = String,
               <tr key={f}>
                 <td className="truncate pr-2 text-right font-medium" title={f}>
                   {f}
-                  {notaFila?.(f) && <span className="block text-[10px] font-normal text-muted-foreground">{notaFila(f)}</span>}
+                  {notaFila?.(f) && <span className="block text-2xs font-normal text-muted-foreground">{notaFila(f)}</span>}
                 </td>
                 {columnas.map((c) => {
                   const celda = mapa.get(`${f}|${c}`);

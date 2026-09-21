@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { CloudOff, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { ApiResponse } from '@/lib/api/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   /** Qué va a contar el análisis, antes de pedirlo. */
@@ -57,14 +58,14 @@ export function AnalisisIA({ descripcion, pedir, clave }: Readonly<Props>) {
 
   return (
     <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-      <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-utec-cyan/15 text-utec-cyan sm:flex" aria-hidden>
+      <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-utec-cyan/15 text-marca-cian-texto sm:flex" aria-hidden>
         <Sparkles className="h-5 w-5" />
       </span>
       <div className="w-full min-w-0 flex-1 space-y-2">
         {cargando && !texto ? (
           <div className="space-y-2" aria-label="Analizando">
             {[95, 100, 88, 72].map((w) => (
-              <div key={w} className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
+              <Skeleton key={w} className="h-3 rounded" style={{ width: `${w}%` }} />
             ))}
           </div>
         ) : texto ? (
@@ -75,7 +76,7 @@ export function AnalisisIA({ descripcion, pedir, clave }: Readonly<Props>) {
         {/* Debajo del texto y no en lugar de él: si falla un "volver a analizar", la lectura anterior sigue sirviendo. */}
         {error && !cargando && (
           <p role="status" title={error} className="flex items-start gap-1.5 rounded-lg bg-utec-orange/10 px-2.5 py-1.5 text-xs text-foreground">
-            <CloudOff className="mt-0.5 h-3.5 w-3.5 shrink-0 text-utec-orange" />
+            <CloudOff className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marca-naranja-texto" />
             {IA_NO_DISPONIBLE}
           </p>
         )}

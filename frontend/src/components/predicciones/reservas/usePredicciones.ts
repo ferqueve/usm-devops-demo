@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { statsApi, type CalidadModelo, type ForecastDemanda, type TiposEspacioML } from '@/lib/api/stats';
 import { diaSemana } from '../formato';
 import { useDatosML } from '../useDatosML';
+import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
 
 /** Días de histórico que se ven antes del pronóstico. */
 export const DIAS_CONTEXTO = 60;
@@ -14,7 +15,6 @@ export interface Dia {
   confirmadas: number;
 }
 
-const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 function sumar(valores: number[]): number {
   return valores.reduce((a, v) => a + v, 0);
@@ -72,7 +72,7 @@ export function usePredicciones(tipoEspacioId: number | null, version: number) {
     // Ancho medio de la banda: "más o menos cuánto" en una sola cifra.
     const margen = sumar(dias.map((d) => (d.maximo - d.minimo) / 2)) / dias.length;
 
-    const semana = DIAS_SEMANA.map((nombre, i) => {
+    const semana = DIAS_DESDE_LUNES.map((nombre, i) => {
       const delDia = dias.filter((d) => diaSemana(d.fecha) === i);
       return { dia: nombre, valor: delDia.length ? sumar(delDia.map((d) => d.esperadas)) / delDia.length : 0 };
     });

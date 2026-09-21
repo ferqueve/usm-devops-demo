@@ -143,7 +143,7 @@ export function RegisterForm({
         />
         {resendMessage && resendCooldown === 0 && (
           <div className="mt-3 p-2 text-center text-sm">
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               {resendMessage}
             </p>
           </div>
@@ -269,7 +269,7 @@ export function RegisterForm({
                 >
                   Términos y Condiciones
                 </button>
-                <span className="text-red-500">*</span>
+                <span className="text-danger">*</span>
               </Label>
             </div>
           </div>
@@ -294,7 +294,7 @@ export function RegisterForm({
                 >
                   Política de Privacidad
                 </button>
-                <span className="text-red-500">*</span>
+                <span className="text-danger">*</span>
               </Label>
             </div>
           </div>
