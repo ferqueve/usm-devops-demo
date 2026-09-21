@@ -37,7 +37,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
   const proxima = tutorias[0];
 
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-3 lg:h-full lg:shrink lg:overflow-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-3 pantalla-alta:h-full pantalla-alta:shrink pantalla-alta:overflow-hidden">
       {proxima ? (
         <Hero
           etiqueta="TU PRÓXIMA TUTORÍA A DAR"
@@ -72,7 +72,7 @@ export function DocenteDashboard({ data, loading, misReservas, onViewDetails }: 
         ]}
       />
 
-      <div className="grid min-h-0 gap-3 lg:flex-1 lg:grid-cols-3 lg:grid-rows-1">
+      <div className="grid min-h-0 gap-3 lg:h-[36rem] pantalla-alta:h-auto pantalla-alta:flex-1 lg:grid-cols-3 lg:grid-rows-1">
         <div className="grid min-h-0 gap-3 lg:grid-rows-2">
           <Panel
             title="Inscriptos por materia"

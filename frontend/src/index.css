@@ -29,6 +29,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Pantalla con lugar para que un dashboard entre entero sin scroll.
+   Antes se decidía sólo por el ancho (`lg:`), así que a 1280×720 el
+   dashboard se forzaba a caber en 720 px de alto y los paneles quedaban
+   aplastados: «Estado del sistema» casi vacío, la cola con el texto partido.
+   Con menos alto que esto, la página scrollea y cada panel mide lo suyo. */
+@custom-variant pantalla-alta (@media (min-width: 64rem) and (min-height: 52rem));
+
 /*
  * `inline` es lo que hace que el modo oscuro funcione en cualquier parte del
  * árbol y no sólo cuando `.dark` está en el <html>.

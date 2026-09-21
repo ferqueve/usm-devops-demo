@@ -97,8 +97,13 @@ export const DashboardLayout = memo(function DashboardLayout({ children, title, 
       <SidebarInset>
         <div className="flex flex-col h-full max-w-full overflow-hidden">
           <DashboardHeader title={pageTitle} hideTitle={hideTitle} />
-          {/* Con el alto anclado, el scroll de cada pagina vive aca adentro. */}
-          <main className="flex-1 min-h-0 overflow-y-auto p-2 md:p-3 lg:p-4 bg-background page-dots flex flex-col">
+          {/* Con el alto anclado, el scroll de cada pagina vive aca adentro.
+              El pb-20 es el lugar del botón flotante del asistente: sin él tapaba
+              lo último de cada pantalla —las acciones de la última fila de una
+              tabla, el «Editar» de la última ficha—. En /asistente no hay botón. */}
+          <main className={`flex-1 min-h-0 overflow-y-auto p-2 md:p-3 lg:p-4 bg-background page-dots flex flex-col ${
+            location.pathname === '/asistente' ? '' : 'pb-20 md:pb-20 lg:pb-20'
+          }`}>
             <div className="mx-auto max-w-[1920px] min-w-0 w-full px-0 flex-1 flex flex-col min-h-full">
               {children}
             </div>

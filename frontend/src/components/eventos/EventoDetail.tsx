@@ -387,15 +387,15 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
               </div>
               <div className="mt-4 flex flex-col gap-2 border-t pt-4">
                 <Button variant="outline" size="sm" className="justify-start" onClick={() => setAficheOpen(true)}>
-                  <ImageIcon className="h-4 w-4 mr-2" />Generar afiche
+                  <ImageIcon className="h-4 w-4 mr-2 shrink-0" /><span className="truncate">Generar afiche</span>
                 </Button>
                 <Button variant="outline" size="sm" className="justify-start" asChild>
                   <a href={googleCalUrl(eventoToAgendable(evento))} target="_blank" rel="noopener noreferrer">
-                    <CalendarPlus className="h-4 w-4 mr-2" />Agregar a Google Calendar
+                    <CalendarPlus className="h-4 w-4 mr-2 shrink-0" /><span className="truncate" title="Agregar a Google Calendar">Google Calendar</span>
                   </a>
                 </Button>
                 <Button variant="outline" size="sm" className="justify-start" onClick={() => downloadICS(eventoToAgendable(evento))}>
-                  <Download className="h-4 w-4 mr-2" />Descargar .ics
+                  <Download className="h-4 w-4 mr-2 shrink-0" /><span className="truncate">Descargar .ics</span>
                 </Button>
               </div>
             </div>

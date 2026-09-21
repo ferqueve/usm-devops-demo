@@ -132,13 +132,15 @@ export function ReservaRow({
           )}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 min-w-0">
-          <span className="truncate">{reserva.espacioNombre}</span>
+          {/* El nombre del espacio es lo que cede: la duración y la capacidad
+              se partían en dos renglones («30 / min») en una columna angosta. */}
+          <span className="min-w-0 truncate">{reserva.espacioNombre}</span>
           <span className="text-muted-foreground/60">·</span>
-          <span className="tabular-nums">{duracionLabel}</span>
+          <span className="shrink-0 whitespace-nowrap tabular-nums">{duracionLabel}</span>
           {reserva.capacidadEspacio && (
             <>
               <span className="text-muted-foreground/60">·</span>
-              <span className="tabular-nums">cap. {reserva.capacidadEspacio}</span>
+              <span className="shrink-0 whitespace-nowrap tabular-nums">cap. {reserva.capacidadEspacio}</span>
             </>
           )}
           {meta && (

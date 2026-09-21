@@ -84,9 +84,12 @@ export function Panel({
             aria-hidden
           />
           {icon && <span className="shrink-0 [&>svg]:size-4" aria-hidden>{icon}</span>}
-          <h2 className="shrink-0 text-sm font-semibold tracking-tight">{title}</h2>
+          {/* El título puede acortarse; antes era shrink-0 y en una columna angosta
+              se montaba encima de las acciones («Inscriptos · 15» pisado por
+              «CSV»). El conteo cede primero. */}
+          <h2 className="min-w-0 truncate text-sm font-semibold tracking-tight">{title}</h2>
           {count !== undefined && count !== '' && (
-            <span className="truncate text-xs tabular-nums text-white/60">{count}</span>
+            <span className="min-w-0 shrink-[3] truncate text-xs tabular-nums text-white/60">{count}</span>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">

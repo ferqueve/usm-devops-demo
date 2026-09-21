@@ -1461,7 +1461,7 @@ export default function ReservationCalendarView({
   return (
     <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
       <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
-        <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        <CardHeader className="shrink-0 pb-3">
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
               <ReservationFilters
@@ -1505,8 +1505,11 @@ export default function ReservationCalendarView({
             </div>
           </div>
         )}
-        {/* Controles de navegación y vista */}
-        <div className={`flex flex-col gap-2 mb-4 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        {/* Controles de navegación y vista.
+            shrink-0 siempre, no sólo en pantalla completa: cuando los filtros
+            de arriba ocupan dos renglones, el bloque se achicaba y la fecha
+            quedaba debajo de los botones de navegación. */}
+        <div className="mb-4 flex shrink-0 flex-col gap-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
               <Button

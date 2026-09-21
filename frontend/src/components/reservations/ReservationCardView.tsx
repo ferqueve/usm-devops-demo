@@ -229,7 +229,7 @@ export default function ReservationCardView({
   return (
     <div className={isFullScreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-full flex flex-col'}>
       <Card className={isFullScreen ? 'min-h-full flex flex-col' : 'h-full flex flex-col'}>
-        <CardHeader className={`pb-3 ${isFullScreen ? 'flex-shrink-0' : ''}`}>
+        <CardHeader className="shrink-0 pb-3">
           <div className="flex items-start gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1">
               <ReservationFilters
