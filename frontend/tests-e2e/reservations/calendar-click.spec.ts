@@ -14,9 +14,9 @@ test.describe('Reservas: clic en evento del calendario abre detalle', () => {
     await page.goto('/calendar');
     await page.waitForURL('**/calendar');
 
-    // El aria-label de cada barra es `${espacioNombre} - HH:MM a HH:MM`.
+    // El aria-label de cada barra es `${espacioNombre} — hh:mm a. m. a hh:mm p. m.`.
     // La APROBADA sembrada es Sala 202 mañana 18:00-20:00.
-    const evento = page.getByRole('button', { name: /Sala 202 - 18:00 a 20:00/ }).first();
+    const evento = page.getByRole('button', { name: /Sala 202 — 06:00 p\. m\. a 08:00 p\. m\./ }).first();
     await expect(evento).toBeVisible({ timeout: 10_000 });
     await evento.click();
 

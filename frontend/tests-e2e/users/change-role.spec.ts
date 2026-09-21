@@ -15,11 +15,11 @@ test.describe('Usuarios: cambio de rol', () => {
 
     const fila = page.locator('tr', { hasText: 'externo@e2e.test' }).first();
     await expect(fila).toBeVisible({ timeout: 10_000 });
-    await fila.getByRole('button', { name: /^Rol$/i }).click();
+    await fila.getByRole('button', { name: /^Cambiar rol$/i }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText(/Cambiar rol de usuario/i)).toBeVisible();
-    await dialog.locator('#new-role').click();
+    await dialog.getByRole('combobox', { name: /Nuevo rol/i }).click();
     await page.getByRole('option', { name: /^Mantenimiento$/i }).click();
     await dialog.getByRole('button', { name: /Guardar cambios/i }).click();
 

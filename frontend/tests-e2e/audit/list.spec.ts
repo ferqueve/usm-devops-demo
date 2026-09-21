@@ -5,7 +5,7 @@ import { loginAs } from '../fixtures/login';
  * El admin entra a `/audit` y ve la tabla de auditoría. Como por cada
  * entidad creada por el seeder (usuarios, espacios, reservas, ítems,
  * carreras) se persiste un log CREATE, al menos una fila debe estar
- * presente en la primera página. Validamos el heading y la presencia de
+ * presente en la primera página. Validamos el título y la presencia de
  * al menos una badge de acción (CREATE / UPDATE / DELETE).
  */
 test.describe('Auditoría: listado', () => {
@@ -14,7 +14,7 @@ test.describe('Auditoría: listado', () => {
     await page.goto('/audit');
     await page.waitForURL('**/audit');
 
-    await expect(page.getByRole('heading', { name: /Auditoría del Sistema/i }))
+    await expect(page.getByRole('heading', { name: /^Auditoría$/i, level: 1 }))
       .toBeVisible({ timeout: 15_000 });
 
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10_000 });

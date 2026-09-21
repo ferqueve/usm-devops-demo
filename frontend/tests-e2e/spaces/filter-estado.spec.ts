@@ -12,9 +12,10 @@ test.describe('Espacios: filtro por estado', () => {
     await page.goto('/rooms');
     await page.waitForURL('**/rooms');
 
-    await page.getByRole('button', { name: /^Filtros$/i }).click();
-    await page.locator('#estado-filter').click();
-    await page.getByRole('option', { name: /En Mantenimiento/i }).click();
+    await page
+      .getByRole('group', { name: /^Estado$/i })
+      .getByRole('button', { name: /^En mantenimiento$/i })
+      .click();
     await page.waitForTimeout(700);
 
     await expect(page.getByText('Lab 303').first()).toBeVisible({ timeout: 10_000 });

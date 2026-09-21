@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Las cards de recomendaciones del formulario son interactivas: al
@@ -18,13 +19,8 @@ test.describe('Recomendaciones: click en una sugerencia actualiza el form', () =
     // Fecha (+7 días) + horas libres → dispara Espacios Recomendados.
     const fecha = new Date();
     fecha.setDate(fecha.getDate() + 7);
-    const dia = String(fecha.getDate());
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${dia}$`) })
-      .first()
-      .click();
+    await elegirDia(page, fecha);
 
     const horas = page.locator('input[placeholder="00"]');
     await horas.nth(0).fill('09');

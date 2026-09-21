@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from '../fixtures/login';
+import { elegirDia } from '../fixtures/datepicker';
 
 /**
  * Validación de conflictos de horario en el frontend.
@@ -28,13 +29,8 @@ test.describe('Reservas: prevención de conflicto horario en el form', () => {
 
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
-    const dia = String(manana.getDate());
     await page.locator('button:has(svg.lucide-calendar)').first().click();
-    await page
-      .locator('[role="dialog"] [role="gridcell"] button')
-      .filter({ hasText: new RegExp(`^${dia}$`) })
-      .first()
-      .click();
+    await elegirDia(page, manana);
 
     // Tipeamos "18" (hora bloqueada). TimeSelect debe promover a la
     // siguiente disponible (>=20 fuera del rango ocupado).

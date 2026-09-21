@@ -13,17 +13,15 @@ test.describe('Usuarios: filtro por verificación', () => {
     await page.goto('/users');
     await page.waitForURL('**/users');
 
-    await page.getByRole('button', { name: /^Filtros$/i }).click();
-    await page.locator('#verified-filter').click();
-    await page.getByRole('option', { name: /^Sin verificar$/i }).click();
+    const verificacion = page.getByRole('group', { name: /Verificación/i });
+    await verificacion.getByRole('button', { name: /^Sin verificar$/i }).click();
     await page.waitForTimeout(700);
 
     const main = page.locator('main');
     expect(await main.getByText(/@e2e\.test/i).count()).toBe(0);
 
     // Volvemos a filtrar por "Verificados" — vuelven a aparecer los seedeados.
-    await page.locator('#verified-filter').click();
-    await page.getByRole('option', { name: /^Verificados$/i }).click();
+    await verificacion.getByRole('button', { name: /^Verificados$/i }).click();
     await page.waitForTimeout(700);
     expect(await main.getByText(/@e2e\.test/i).count()).toBeGreaterThan(0);
   });

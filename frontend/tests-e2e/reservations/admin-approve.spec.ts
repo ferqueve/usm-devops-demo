@@ -21,13 +21,12 @@ test.describe('Aprobación de reserva pendiente por el admin', () => {
     await expect(tituloLocator).toBeVisible({ timeout: 15_000 });
     await tituloLocator.click();
 
-    // Diálogo de detalle: botón "Aprobar Reserva".
-    const aprobar = page.getByRole('button', { name: /^Aprobar Reserva$/i }).first();
+    // Diálogo de detalle: botón "Aprobar".
+    const aprobar = page.getByRole('dialog').getByRole('button', { name: /^Aprobar$/i });
     await expect(aprobar).toBeVisible();
     await aprobar.click();
 
-    // AlertDialog de confirmación: el segundo botón "Aprobar Reserva" lo está
-    // dentro del role=alertdialog.
+    // AlertDialog de confirmación con su botón "Aprobar Reserva".
     const confirmar = page.getByRole('alertdialog').getByRole('button', { name: /^Aprobar Reserva$/i });
     await expect(confirmar).toBeVisible();
     await confirmar.click();
