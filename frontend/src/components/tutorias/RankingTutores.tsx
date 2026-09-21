@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Loader2, Star, Trophy, Users } from 'lucide-react';
 import { tutoriasApi } from '@/lib/api/tutorias';
 import type { TutorRanking } from '@/lib/types/tutorias';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 const MEDALLAS = ['🥇', '🥈', '🥉'];
 
@@ -20,11 +22,7 @@ export function RankingTutores() {
   if (ranking.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-yellow/20"><Trophy className="h-4 w-4 text-marca-amarillo-texto" /></span>
-        <h3 className="text-sm font-semibold">Ranking de tutores</h3>
-      </div>
+    <Panel title="Ranking de tutores" icon={<Trophy />} accentColor={MARCA.amarillo} flush>
       <ul className="divide-y">
         {ranking.slice(0, 8).map((t, i) => (
           <li key={t.docenteId} className="flex items-center gap-3 px-4 py-2.5">
@@ -42,6 +40,6 @@ export function RankingTutores() {
           </li>
         ))}
       </ul>
-    </div>
+    </Panel>
   );
 }

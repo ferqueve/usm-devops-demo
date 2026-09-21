@@ -76,7 +76,7 @@ export default function Statistics() {
                   title={p.label}
                   aria-label={p.label}
                   className={`h-7 whitespace-nowrap rounded px-2 text-xs font-medium transition-colors sm:px-2.5 ${
-                    activo ? 'bg-card text-chrome' : 'text-white/75 hover:bg-white/10 hover:text-white'
+                    activo ? 'bg-white text-chrome' : 'text-white/75 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span className="sm:hidden">{p.minimo}</span>

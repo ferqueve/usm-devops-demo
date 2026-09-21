@@ -6,14 +6,15 @@ import { MARCA } from '@/lib/design/paleta';
  * Clases de las acciones que van en la barra oscura. Se exportan para que todas
  * las pantallas usen las mismas y no cada una su interpretacion.
  *
- * El primario usa bg-card y no bg-card a proposito: index.css remapea
- * `.dark .bg-card` al color de card, asi que en tema oscuro el boton blanco se
- * volvia una plancha gris con el texto oscuro encima.
+ * El primario va en blanco fijo, no en `bg-card`. La barra es `chrome`, oscura
+ * en los dos temas; `bg-card` sigue al tema, así que en oscuro el botón se
+ * volvía una plancha gris con el texto oscuro encima y desaparecía. Pasó dos
+ * veces: el comentario ya lo advertía y aun así volvió a `bg-card`.
  */
 export const HEADER_ACTION = 'h-8 px-2.5 text-xs font-medium text-white/75 hover:bg-white/10 hover:text-white';
 export const HEADER_ACTION_ICON = 'h-8 w-8 text-white/75 hover:bg-white/10 hover:text-white';
 export const HEADER_PRIMARY =
-  'ml-1 h-8 bg-card px-3 text-xs font-semibold text-chrome shadow-none hover:bg-[#e9eaec]';
+  'ml-1 h-8 bg-white px-3 text-xs font-semibold text-chrome shadow-none hover:bg-white/85';
 
 /** Ids de los huecos que expone DashboardHeader en la barra superior. */
 export const PAGE_HEADER_SLOT = 'page-header-slot';

@@ -5,6 +5,8 @@ import { ExternalLink, FileText, Link2, Loader2, Plus, Trash2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { tutoriasApi } from '@/lib/api/tutorias';
 import type { TutoriaRecurso } from '@/lib/types/tutorias';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaId: number; canEdit: boolean }>) {
   const [recursos, setRecursos] = useState<TutoriaRecurso[]>([]);
@@ -37,12 +39,8 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
   if (!canEdit && recursos.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10"><FileText className="h-4 w-4 text-marca-azul-texto" /></span>
-        <h3 className="text-sm font-semibold">Material de la tutoría</h3>
-      </div>
-      <div className="p-4 space-y-3">
+    <Panel title="Material de la tutoría" icon={<FileText />} accentColor={MARCA.azul}>
+      <div className="space-y-3">
         {recursos.length === 0 ? (
           <p className="text-sm text-muted-foreground">Todavía no hay material adjunto.</p>
         ) : (
@@ -65,6 +63,6 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
           </div>
         )}
       </div>
-    </div>
+    </Panel>
   );
 }

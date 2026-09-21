@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils/helpers';
 import type { Tutoria } from '@/lib/types/tutorias';
 import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 
 // Paleta cálida-fría para diferenciar materias (tinte suave + texto legible en claro/oscuro).
@@ -70,17 +72,19 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
   const totalSemana = dias.reduce((a, d) => a + d.items.length, 0);
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-blue/10 text-marca-azul-texto"><CalendarRange className="h-4 w-4" /></span>
-        <h3 className="text-sm font-semibold">Disponibilidad de la semana</h3>
-        <span className="ml-2 text-xs text-muted-foreground capitalize">{rangoLabel}</span>
-        <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemanaOffset((o) => o - 1)} title="Semana anterior"><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="sm" className="h-7" onClick={() => setSemanaOffset(0)} disabled={semanaOffset === 0}>Hoy</Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemanaOffset((o) => o + 1)} title="Semana siguiente"><ChevronRight className="h-4 w-4" /></Button>
-        </div>
-      </div>
+    <Panel
+      title="Disponibilidad de la semana"
+      icon={<CalendarRange />}
+      accentColor={MARCA.azul}
+      count={rangoLabel}
+      acciones={
+        <>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => setSemanaOffset((o) => o - 1)} title="Semana anterior"><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/75 hover:bg-white/10 hover:text-white" onClick={() => setSemanaOffset(0)} disabled={semanaOffset === 0}>Hoy</Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => setSemanaOffset((o) => o + 1)} title="Semana siguiente"><ChevronRight className="size-4" /></Button>
+        </>
+      }
+    >
 
       {totalSemana === 0 ? (
         <div className="px-4 py-10 text-center text-sm text-muted-foreground">No hay tutorías en esta semana.</div>
@@ -122,6 +126,6 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
           })}
         </div>
       )}
-    </div>
+    </Panel>
   );
 }

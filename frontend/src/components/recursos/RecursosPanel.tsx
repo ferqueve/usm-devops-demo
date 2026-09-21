@@ -27,6 +27,9 @@ import { useRecursos } from '@/hooks/useRecursos';
 import { recursosApi } from '@/lib/api/recursos';
 import type { Recurso } from '@/lib/types/recursos';
 import { RecursoUploadDialog } from './RecursoUploadDialog';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
+import { HEADER_PRIMARY } from '@/components/layouts/PageHeader';
 
 interface RecursosPanelProps {
   materiaId: number;
@@ -109,31 +112,23 @@ export function RecursosPanel({ materiaId }: Readonly<RecursosPanelProps>) {
   };
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-cyan/10 text-marca-cian-texto">
-          <FolderOpen className="h-4 w-4" />
-        </span>
-        <h3 className="text-sm font-semibold">Recursos académicos</h3>
-        {recursos.length > 0 && (
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {archivos} archivo{archivos === 1 ? '' : 's'} · {enlaces} enlace{enlaces === 1 ? '' : 's'}
-          </span>
-        )}
+    <Panel
+      title="Recursos académicos"
+      icon={<FolderOpen />}
+      accentColor={MARCA.cian}
+      count={recursos.length > 0
+        ? `${archivos} archivo${archivos === 1 ? '' : 's'} · ${enlaces} enlace${enlaces === 1 ? '' : 's'}`
+        : undefined}
+      acciones={
         <PermissionGuard requiredPermission="recurso:crear">
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setDialogOpen(true)}
-            className="ml-auto"
-          >
-            <Plus className="h-4 w-4 mr-1" />
+          <Button type="button" size="sm" onClick={() => setDialogOpen(true)} className={HEADER_PRIMARY}>
+            <Plus className="size-3.5" />
             Agregar recurso
           </Button>
         </PermissionGuard>
-      </div>
-
-      <div className="space-y-4 p-4">
+      }
+    >
+      <div className="space-y-4">
       {loading && (
         <div className="flex items-center justify-center py-8 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -259,6 +254,6 @@ export function RecursosPanel({ materiaId }: Readonly<RecursosPanelProps>) {
         onSuccess={refresh}
       />
       </div>
-    </div>
+    </Panel>
   );
 }

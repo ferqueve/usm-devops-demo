@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import type { Agendable } from '@/lib/agenda/types';
 import { ESTADO, estadoDe, relleno } from '@/components/common/estados';
 import { DIAS_DESDE_LUNES } from '@/lib/utils/fechas';
+import { Panel } from '@/components/common/Panel';
+import { MARCA } from '@/lib/design/paleta';
 
 interface AgendaCalendarioProps {
   items: Agendable[];
@@ -70,26 +72,18 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
     });
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
-        <h3 className="text-sm font-semibold capitalize">{label}</h3>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => mover(-1)} aria-label="Mes anterior">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7"
-            onClick={() => { const d = new Date(); setCursor({ y: d.getFullYear(), m: d.getMonth() }); }}
-          >
-            Hoy
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => mover(1)} aria-label="Mes siguiente">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+    <Panel
+      title={label.charAt(0).toUpperCase() + label.slice(1)}
+      accentColor={MARCA.azul}
+      flush
+      acciones={
+        <>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => mover(-1)} aria-label="Mes anterior"><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/75 hover:bg-white/10 hover:text-white" onClick={() => { const d = new Date(); setCursor({ y: d.getFullYear(), m: d.getMonth() }); }}>Hoy</Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-white/75 hover:bg-white/10 hover:text-white" onClick={() => mover(1)} aria-label="Mes siguiente"><ChevronRight className="size-4" /></Button>
+        </>
+      }
+    >
 
       <div className="grid grid-cols-7 text-center text-2xs font-medium text-muted-foreground border-b">
         {DIAS_DESDE_LUNES.map((d) => <div key={d} className="py-1.5">{d}</div>)}
@@ -134,6 +128,6 @@ export function AgendaCalendario({ items, maxPorDia = 3 }: Readonly<AgendaCalend
           );
         })}
       </div>
-    </div>
+    </Panel>
   );
 }

@@ -34,7 +34,7 @@ export function SinModelo({ titulo, detalle, entrenamiento, textoBoton }: Readon
         <h2 className="text-xl font-semibold">{titulo}</h2>
         <p className="mt-2 text-sm text-white/70">{esAdmin ? detalle : 'Un administrador tiene que entrenarlo primero.'}</p>
         {esAdmin && (
-          <Button onClick={entrenar} disabled={reentrenando} className="mt-5 h-9 bg-card px-4 text-sm font-semibold text-chrome hover:bg-[#e9eaec]">
+          <Button onClick={entrenar} disabled={reentrenando} className="mt-5 h-9 bg-white px-4 text-sm font-semibold text-chrome hover:bg-white/85">
             {reentrenando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             <span className="ml-2">{reentrenando ? 'Entrenando…' : textoBoton}</span>
           </Button>

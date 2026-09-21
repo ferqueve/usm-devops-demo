@@ -6,6 +6,7 @@ import { postChat } from '@/lib/api/ai';
 import { useAuth } from '@/hooks/useAuth';
 import type { Materia } from '@/lib/types/materias';
 import type { Recurso } from '@/lib/types/recursos';
+import { Panel } from '@/components/common/Panel';
 
 interface MateriaAsistenteProps {
   materia: Materia;
@@ -43,12 +44,10 @@ export function MateriaAsistente({ materia, recursos }: Readonly<MateriaAsistent
   };
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-utec-purple/10 text-utec-purple"><Sparkles className="h-4 w-4" /></span>
-        <h3 className="text-sm font-semibold">Asistente IA</h3>
-      </div>
-      <div className="p-4 space-y-3">
+    // El violeta es el acento de las funciones de IA en toda la aplicación.
+    // No es de la marca; queda así hasta decidirlo.
+    <Panel title="Asistente IA" icon={<Sparkles />} accentColor="#9333ea">
+      <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" disabled={loading} onClick={() => preguntar('Resumí brevemente de qué tratan los recursos de esta materia.')}>
             Resumir recursos
@@ -66,6 +65,6 @@ export function MateriaAsistente({ materia, recursos }: Readonly<MateriaAsistent
           <div className="rounded-lg bg-muted/50 p-3 text-sm whitespace-pre-wrap leading-relaxed">{respuesta}</div>
         )}
       </div>
-    </div>
+    </Panel>
   );
 }
