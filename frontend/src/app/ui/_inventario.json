@@ -905,7 +905,7 @@
    "nombres": [
     "EventoDetail"
    ],
-   "lineas": 528,
+   "lineas": 537,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -1378,7 +1378,7 @@
    "nombres": [
     "MateriaDetail"
    ],
-   "lineas": 454,
+   "lineas": 457,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2464,7 +2464,7 @@
    "nombres": [
     "EstadisticasInventario"
    ],
-   "lineas": 333,
+   "lineas": 330,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -2581,7 +2581,7 @@
    "nombres": [
     "EstadisticasReservas"
    ],
-   "lineas": 608,
+   "lineas": 605,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3072,7 +3072,7 @@
    "nombres": [
     "TutoriaDetail"
    ],
-   "lineas": 565,
+   "lineas": 574,
    "dialog": true,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3157,7 +3157,7 @@
     "EVENTO_PATRONES",
     "EventoPatternBg"
    ],
-   "lineas": 353,
+   "lineas": 343,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",
@@ -3169,7 +3169,7 @@
    "nombres": [
     "UtecShapesBackground"
    ],
-   "lineas": 169,
+   "lineas": 159,
    "dialog": false,
    "tipo": "datos",
    "motivo": "Pide datos al montarse, directo o por un hook propio.",

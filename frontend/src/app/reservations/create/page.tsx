@@ -15,7 +15,9 @@ export default function CreateReservationPage() {
   };
 
   return (
-    <DashboardLayout>
+    // El formulario trae su propio encabezado ("Nueva Solicitud de Reserva");
+    // sin hideTitle el layout sumaba otro armado desde la URL: "Reservations/create".
+    <DashboardLayout hideTitle>
       <ReservationForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </DashboardLayout>
   );

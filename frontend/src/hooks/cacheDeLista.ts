@@ -49,10 +49,14 @@ export function crearCacheDeLista<T>({ pedir, nombre, duracion = CACHE_CORTO }: 
   let cache: T[] | null = null;
   let sello = 0;
   let enCurso: Promise<T[]> | null = null;
+  // Sube al invalidar. Un pedido que salió antes no pisa el caché al volver.
+  let version = 0;
 
   const invalidar = () => {
     cache = null;
     sello = 0;
+    enCurso = null;
+    version++;
   };
 
   // En inglés porque la regla `react-hooks/rules-of-hooks` de eslint mira el
@@ -86,10 +90,12 @@ export function crearCacheDeLista<T>({ pedir, nombre, duracion = CACHE_CORTO }: 
       setLoading(true);
       setError(null);
 
-      enCurso = (async () => {
+      const nacido = version;
+      const pedido = (async () => {
         try {
           const respuesta = await pedir();
           if (!respuesta.data) throw new Error('No se recibieron datos');
+          if (nacido !== version) return respuesta.data;
           cache = respuesta.data;
           sello = Date.now();
           setDatos(respuesta.data);
@@ -104,11 +110,13 @@ export function crearCacheDeLista<T>({ pedir, nombre, duracion = CACHE_CORTO }: 
           throw err;
         } finally {
           setLoading(false);
-          enCurso = null;
+          // Si se invalidó mientras tanto, `enCurso` ya es de otro pedido.
+          if (nacido === version) enCurso = null;
         }
       })();
+      enCurso = pedido;
 
-      return enCurso;
+      return pedido;
     }, []);
 
     useEffect(() => {

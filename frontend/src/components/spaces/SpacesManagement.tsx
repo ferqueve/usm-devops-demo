@@ -676,6 +676,7 @@ export default function SpacesManagement() {
                     },
                   ]}
                   onChange={(v) => handleEstadoFilter(v ?? 'all')}
+                  label="Estado"
                 />
                 <ClearFiltersButton
                   visible={activeFilters.length > 0}

@@ -74,7 +74,7 @@ export function PopoverFilterSection<T extends number | string>({
     <div className="flex items-center border rounded-lg p-0.5 bg-muted">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button onClick={() => onChange(null)} className={allClass}>
+          <button onClick={() => onChange(null)} aria-label={tooltipNone} className={allClass}>
             <Filter className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -84,7 +84,10 @@ export function PopoverFilterSection<T extends number | string>({
         <Tooltip>
           <PopoverTrigger asChild>
             <TooltipTrigger asChild>
-              <button className={triggerClass}>
+              <button
+                aria-label={`Filtrar: ${selectedItem ? selectedItem.primary : tooltipNone.toLowerCase()}`}
+                className={triggerClass}
+              >
                 <Icon className={iconClass} />
               </button>
             </TooltipTrigger>
@@ -141,15 +144,17 @@ interface EnumFilterSectionProps {
   value: string | null;
   options: EnumFilterOption[];
   onChange: (value: string | null) => void;
+  /** Nombre accesible del grupo; distingue dos grupos con las mismas opciones ("Todos"). */
+  label?: string;
 }
 
 /**
  * Filtro de enum con una opción por ícono. Pensado para sets pequeños
  * (estados, modos, recurrencia, etc.).
  */
-export function EnumFilterSection({ value, options, onChange }: Readonly<EnumFilterSectionProps>) {
+export function EnumFilterSection({ value, options, onChange, label }: Readonly<EnumFilterSectionProps>) {
   return (
-    <div className="flex items-center border rounded-lg p-0.5 bg-muted">
+    <div role="group" aria-label={label} className="flex items-center border rounded-lg p-0.5 bg-muted">
       {options.map((opt) => {
         const isActive = opt.value === value;
         const colorClass = isActive
@@ -160,6 +165,8 @@ export function EnumFilterSection({ value, options, onChange }: Readonly<EnumFil
             <TooltipTrigger asChild>
               <button
                 onClick={() => onChange(opt.value)}
+                aria-label={opt.tooltip}
+                aria-pressed={isActive}
                 className={compactFilterButtonClass(isActive)}
               >
                 <opt.Icon className={`h-3.5 w-3.5 ${colorClass}`} />
@@ -196,6 +203,7 @@ export function DateRangeFilterSection({
               onFechaInicioChange(undefined);
               onFechaFinChange(undefined);
             }}
+            aria-label="Todas las fechas"
             className={allClass}
           >
             <Filter className="h-3.5 w-3.5" />
@@ -259,7 +267,7 @@ function DateBoundButton({
       <Tooltip>
         <PopoverTrigger asChild>
           <TooltipTrigger asChild>
-            <button type="button" className={buttonClass}>
+            <button type="button" aria-label={tooltipFallback} className={buttonClass}>
               <Icon className={iconClass} />
               {value && (
                 <span className="text-xs whitespace-nowrap">

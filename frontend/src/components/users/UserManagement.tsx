@@ -534,6 +534,7 @@ export default function UserManagement() {
                   },
                 ]}
                 onChange={(v) => handleVerificadoFilter(v ?? '')}
+                label="Verificación"
               />
               <EnumFilterSection
                 value={filters.activo === undefined ? null : (filters.activo ? 'true' : 'false')}
@@ -555,6 +556,7 @@ export default function UserManagement() {
                   },
                 ]}
                 onChange={(v) => handleActivoFilter(v ?? '')}
+                label="Estado de la cuenta"
               />
               <DateRangeFilterSection
                 fechaInicio={filters.fechaDesde ? new Date(filters.fechaDesde) : undefined}

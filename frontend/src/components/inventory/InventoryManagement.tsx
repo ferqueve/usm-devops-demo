@@ -777,6 +777,7 @@ export default function InventoryManagement() {
           onChange={(value) =>
             handleFilterChange('estado', value ?? undefined)
           }
+          label="Estado"
         />
         <Button
           type="button"
