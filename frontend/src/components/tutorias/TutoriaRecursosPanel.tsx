@@ -7,17 +7,20 @@ import { tutoriasApi } from '@/lib/api/tutorias';
 import type { TutoriaRecurso } from '@/lib/types/tutorias';
 import { Panel } from '@/components/common/Panel';
 import { MARCA } from '@/lib/design/paleta';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 
 export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaId: number; canEdit: boolean }>) {
   const [recursos, setRecursos] = useState<TutoriaRecurso[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [titulo, setTitulo] = useState('');
   const [url, setUrl] = useState('');
   const [guardando, setGuardando] = useState(false);
 
   const cargar = useCallback(() => {
     setLoading(true);
-    tutoriasApi.recursos(tutoriaId).then((r) => setRecursos(r.data ?? [])).catch(() => { /* noop */ }).finally(() => setLoading(false));
+    setError(null);
+    tutoriasApi.recursos(tutoriaId).then((r) => setRecursos(r.data ?? [])).catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error de red.')).finally(() => setLoading(false));
   }, [tutoriaId]);
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -40,6 +43,7 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
 
   return (
     <Panel title="Material de la tutoría" icon={<FileText />} accentColor={MARCA.azul}>
+      <EstadoCarga cargando={loading} error={error} alReintentar={cargar}>
       <div className="space-y-3">
         {recursos.length === 0 ? (
           <p className="text-sm text-muted-foreground">Todavía no hay material adjunto.</p>
@@ -63,6 +67,7 @@ export function TutoriaRecursosPanel({ tutoriaId, canEdit }: Readonly<{ tutoriaI
           </div>
         )}
       </div>
+      </EstadoCarga>
     </Panel>
   );
 }

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import type { Espacio } from "@/lib/types/spaces";
 import PermissionGuard from '@/components/auth/PermissionGuard';
+import { tintaSobre } from '@/lib/design/paleta';
 import { cn } from "@/lib/utils/helpers";
 
 interface SpaceCardProps {
@@ -105,8 +106,8 @@ export function SpaceCard({ espacio, onEdit, enCurso = false }: Readonly<SpaceCa
           </CardTitle>
           {tipoColor ? (
             <span
-              className="px-2 py-0.5 rounded text-white text-xs font-medium flex-shrink-0"
-              style={{ backgroundColor: tipoColor }}
+              className="px-2 py-0.5 rounded text-xs font-medium flex-shrink-0"
+              style={{ backgroundColor: tipoColor, color: tintaSobre(tipoColor) }}
             >
               {espacio.tipoEspacioNombre}
             </span>

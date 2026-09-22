@@ -18,7 +18,7 @@ export const PoolCard = memo(function PoolCard({ pool }: Readonly<{ pool: PoolMe
         <span className="h-4 w-1 shrink-0 rounded-sm bg-utec-blue" aria-hidden />
         <Database className="h-4 w-4 shrink-0 text-white/70" />
         <h3 className="text-sm font-semibold tracking-tight">Pool de conexiones</h3>
-        <span className={`ml-auto text-xs tabular-nums ${saturado ? 'font-semibold text-marca-rojo-texto' : 'text-white/60'}`}>
+        <span className={`ml-auto text-xs tabular-nums ${saturado ? 'font-semibold text-alerta-en-oscuro' : 'text-white/60'}`}>
           {pool.activas} en uso · {pool.libres} libres · máx {pool.maximo}
         </span>
       </div>

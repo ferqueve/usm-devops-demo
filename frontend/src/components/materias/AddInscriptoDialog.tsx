@@ -25,16 +25,20 @@ export function AddInscriptoDialog({ materiaId, open, onOpenChange, onSuccess }:
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!open) { setSearch(''); setUsers([]); return; }
     let active = true;
     setLoading(true);
+    setError(null);
     const t = setTimeout(() => {
       usuariosApi.listarUsuarios(0, 8, { search: search || undefined, rol: 'ESTUDIANTE' })
         .then((r) => { if (active) setUsers(r.data?.content ?? []); })
-        .catch(() => { /* silencioso */ })
+        // Se busca mientras se escribe: un toast por tecleo sería peor que
+        // el silencio, así que se cuenta en el lugar de la lista.
+        .catch(() => { if (active) setError('No se pudo buscar. Probá de nuevo.'); })
         .finally(() => { if (active) setLoading(false); });
     }, 300);
     return () => { active = false; clearTimeout(t); };
@@ -73,6 +77,8 @@ export function AddInscriptoDialog({ materiaId, open, onOpenChange, onSuccess }:
         <div className="min-h-[180px]">
           {loading ? (
             <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : error ? (
+            <p className="py-10 text-center text-sm text-danger-texto">{error}</p>
           ) : users.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-10">Sin estudiantes para mostrar.</p>
           ) : (

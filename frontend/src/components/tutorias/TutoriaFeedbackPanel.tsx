@@ -95,7 +95,7 @@ export function TutoriaFeedbackPanel({ tutoriaId }: Readonly<{ tutoriaId: number
             <div className="flex items-center gap-1" onMouseLeave={() => setHover(0)}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <button key={n} type="button" onClick={() => setRating(n)} onMouseEnter={() => setHover(n)} className="p-0.5" aria-label={`${n} estrellas`}>
-                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground/40'}`} />
+                  <Star className={`h-7 w-7 transition-colors ${n <= (hover || rating) ? 'fill-utec-yellow text-marca-amarillo-texto' : 'text-muted-foreground'}`} />
                 </button>
               ))}
             </div>

@@ -1516,6 +1516,7 @@ export default function ReservationCalendarView({
                 variant="outline"
                 size="sm"
                 onClick={handlePrevious}
+                aria-label="Período anterior"
                 className="h-8 w-8 p-0"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -1532,6 +1533,7 @@ export default function ReservationCalendarView({
                 variant="outline"
                 size="sm"
                 onClick={handleNext}
+                aria-label="Período siguiente"
                 className="h-8 w-8 p-0"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -1547,6 +1549,8 @@ export default function ReservationCalendarView({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => setHideNightHours(!hideNightHours)}
+                        aria-label={hideNightHours ? 'Mostrar horas nocturnas' : 'Ocultar horas nocturnas'}
+                        aria-pressed={hideNightHours}
                         className={`p-1.5 rounded transition-colors ${
                           hideNightHours
                             ? 'bg-card text-foreground shadow-md ring-1 ring-border'

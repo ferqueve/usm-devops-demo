@@ -174,7 +174,7 @@ export function TutoriaCard({
         {/* Docente + rating */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-muted-foreground">{tutoria.docenteNombre}</span>
-          <span className="text-muted-foreground/40">·</span>
+          <span className="text-muted-foreground">·</span>
           <Estrellas valor={tutoria.ratingPromedio} total={tutoria.ratingTotal} sinDatos="Docente nuevo · sin valoraciones aún" tamano="chico" />
         </div>
 

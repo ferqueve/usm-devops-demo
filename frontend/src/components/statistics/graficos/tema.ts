@@ -7,6 +7,7 @@ import {
   SERIE_CLARO,
   SERIE_OSCURO,
   mezclar,
+  tintaSobre,
 } from '@/lib/design/paleta';
 
 export { mezclar };
@@ -38,8 +39,14 @@ function construir(s: typeof SERIE_CLARO, n: typeof NEUTRO.claro, oscuro: boolea
     categorias: ORDEN_CATEGORIAS.map((k) => s[k]),
     secuencial: (t: number): string =>
       mezclar(oscuro ? n.vacio : '#e3ebf7', oscuro ? s.azul : MARCA.azul, t),
+    // Se mide contra el color que le toca a la celda. Con un umbral fijo en
+    // la mitad de la escala, los tonos del medio quedaban en 2,9:1.
     secuencialTexto: (t: number): string =>
-      t > (oscuro ? 0.55 : 0.5) ? (oscuro ? n.superficie : '#ffffff') : n.texto,
+      tintaSobre(
+        mezclar(oscuro ? n.vacio : '#e3ebf7', oscuro ? s.azul : MARCA.azul, t),
+        oscuro ? n.superficie : '#ffffff',
+        n.texto
+      ),
     positivo: s.verde,
     negativo: s.rojo,
     grilla: n.grilla,

@@ -296,7 +296,11 @@ Lo encuentra `node scripts/muerto.mjs`.
       firma original para no tocar a quien los llama. En el camino se
       recuperaron tres `PermissionGuard` y se corrigió el género gramatical
       ("el evento", no "la evento").
-- [ ] Terminar los estados de error. `components/common/EstadoCarga` ya
+- [x] Terminar los estados de error. De 21 cargas que se comían el error
+      quedan 4, todas legítimas: dos son el prefetch del dashboard —la
+      petición que cuenta la hace el componente y ésa sí lo muestra— y dos
+      son datos opcionales.
+- [ ] (hecho) Terminar los estados de error. `components/common/EstadoCarga` ya
       existe y lo usan los dos paneles de valoración y `StatsListWidget`.
       Quedan 33 `catch` que se comen el error en 20 archivos; los que
       envuelven una llamada de datos hay que pasarlos.
@@ -304,6 +308,10 @@ Lo encuentra `node scripts/muerto.mjs`.
       821 textos a 613, y lo peor pasó de 1,00:1 a 1,70:1. Lo que queda son
       103 grupos, casi todos entre 3 y 4,5 —`text-muted-foreground` en
       tamaños chicos—, que es una decisión de sistema y no colores sueltos.
+- [x] Auditoría de accesibilidad: teclado y foco. Recorridas catorce
+      pantallas con Tab: todo lo que se enfoca tiene nombre accesible y
+      anillo de foco visible. Los diálogos atrapan el foco y cierran con
+      Escape, y ahora devuelven el foco al botón que los abrió.
 - [ ] Auditoría de accesibilidad. El contraste está medido y visible en
       `/ui#paleta`, y el foco es visible en toda la aplicación. Falta la pasada
       de navegación por teclado, orden de foco y etiquetas en los botones que

@@ -113,7 +113,7 @@ export function Inventario() {
                     <span
                       className={
                         i.tipo !== 'montable'
-                          ? 'text-muted-foreground/50'
+                          ? 'text-muted-foreground'
                           : i.cubierto
                             ? 'text-marca-verde-texto'
                             : 'text-marca-naranja-texto'
@@ -132,7 +132,7 @@ export function Inventario() {
                       </span>
                     )}
                     {i.tipo !== 'montable' && (
-                      <span className="shrink-0 text-2xs text-muted-foreground/70">
+                      <span className="shrink-0 text-2xs text-muted-foreground">
                         {ETIQUETA[i.tipo]?.nombre}
                       </span>
                     )}

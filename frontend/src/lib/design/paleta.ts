@@ -133,7 +133,7 @@ export function contraste(a: string, b: string): number {
 }
 
 /** El de los dos que se lea mejor sobre ese fondo. */
-export function tintaSobre(fondo: string, claro = '#ffffff', oscuro = MARCA.tinta): string {
+export function tintaSobre(fondo: string, claro: string = '#ffffff', oscuro: string = MARCA.tinta): string {
   return contraste(fondo, claro) >= contraste(fondo, oscuro) ? claro : oscuro;
 }
 
