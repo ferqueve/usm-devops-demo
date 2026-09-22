@@ -41,6 +41,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { fechaHora, relativa } from '@/lib/utils/fechas';
 import { ESTADO_TUTORIA, EstadoBadge, estadoDe } from '@/components/common/estados';
 import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 
 interface TutoriaDetailProps { tutoriaId: number }
 
@@ -104,6 +105,7 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   const { user } = useAuth();
   const puedeGestionar = ['DOCENTE', 'ADMIN', 'ANALISTA'].includes(user?.rol ?? '');
   const [tutoria, setTutoria] = useState<Tutoria | null>(null);
+  const [errorAgendados, setErrorAgendados] = useState<string | null>(null);
   const [agendados, setAgendados] = useState<TutoriaAgendado[]>([]);
   const [materia, setMateria] = useState<Materia | null>(null);
   const [otras, setOtras] = useState<Tutoria[]>([]);
@@ -128,7 +130,10 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   // detalle se comía un 403.
   const fetchAgendados = useCallback(() => {
     if (!puedeVerAgendados) return;
-    tutoriasApi.agendados(tutoriaId).then((r) => setAgendados(r.data ?? [])).catch(() => { /* noop */ });
+    setErrorAgendados(null);
+    tutoriasApi.agendados(tutoriaId)
+      .then((r) => setAgendados(r.data ?? []))
+      .catch((e: unknown) => setErrorAgendados(e instanceof Error ? e.message : 'Error de red.'));
   }, [tutoriaId, puedeVerAgendados]);
 
   useEffect(() => { fetchTutoria(); fetchAgendados(); }, [fetchTutoria, fetchAgendados]);
@@ -137,12 +142,12 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
   useEffect(() => {
     if (!tutoria) return;
     let active = true;
-    materiasApi.obtenerMateria(tutoria.materiaId).then((r) => { if (active) setMateria(r.data ?? null); }).catch(() => { /* noop */ });
+    materiasApi.obtenerMateria(tutoria.materiaId).then((r) => { if (active) setMateria(r.data ?? null); }).catch(() => { if (active) toast.error('No se pudo cargar la materia'); });
     tutoriasApi.listar(tutoria.materiaId).then((r) => {
       if (active) setOtras((r.data ?? []).filter((t) => t.id !== tutoria.id).sort((a, b) => a.inicio.localeCompare(b.inicio)));
-    }).catch(() => { /* noop */ });
+    }).catch(() => { if (active) toast.error('No se pudo cargar las otras franjas'); });
     if (tutoria.espacioId != null) {
-      espaciosApi.obtenerEspacio(tutoria.espacioId).then((r) => { if (active) setEspacio(r.data ?? null); }).catch(() => { /* noop */ });
+      espaciosApi.obtenerEspacio(tutoria.espacioId).then((r) => { if (active) setEspacio(r.data ?? null); }).catch(() => { if (active) toast.error('No se pudo cargar el espacio'); });
     } else {
       setEspacio(null);
     }
@@ -438,7 +443,11 @@ export function TutoriaDetail({ tutoriaId }: Readonly<TutoriaDetailProps>) {
                 : null
             )}
           >
-            {agendados.length === 0 ? (
+            {errorAgendados ? (
+              <EstadoCarga cargando={false} error={errorAgendados} alReintentar={fetchAgendados}>
+                {null}
+              </EstadoCarga>
+            ) : agendados.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">Nadie se agendó todavía.</p>
             ) : (() => {
               const confirmados = agendados.filter((a) => a.estado !== 'ESPERA');

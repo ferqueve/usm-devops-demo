@@ -263,7 +263,9 @@ function Recursos({ stats }: Readonly<{ stats: SostenibilidadStats }>) {
     { nombre: 'Enlaces', valor: stats.recursosEnlace, color: VERDE[200] },
   ];
   return (
-    <div className="flex h-full items-center gap-4 p-4">
+    // Se envuelve: en una columna angosta —1280×720— la leyenda no entraba
+    // al lado de la dona y los números se partían.
+    <div className="flex h-full flex-wrap items-center justify-center gap-4 p-4">
       <div className="relative h-[124px] w-[124px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -277,7 +279,7 @@ function Recursos({ stats }: Readonly<{ stats: SostenibilidadStats }>) {
           <span className="text-2xs uppercase tracking-wider text-muted-foreground">recursos</span>
         </div>
       </div>
-      <div className="min-w-0 flex-1 space-y-1.5 text-sm">
+      <div className="min-w-[150px] flex-1 space-y-1.5 text-sm">
         {porciones.map((p) => (
           <div key={p.nombre} className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: p.color }} />{p.nombre}</span>
@@ -343,7 +345,9 @@ export default function SostenibilidadDashboard() {
   const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
-    sostenibilidadApi.obtenerRanking().then((r) => setRanking(r.data ?? null)).catch(() => { /* noop */ });
+    sostenibilidadApi.obtenerRanking()
+      .then((r) => setRanking(r.data ?? null))
+      .catch(() => toast.error('No se pudo cargar el ranking de carreras'));
   }, []);
 
   if (loading && !stats) {

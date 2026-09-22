@@ -1,4 +1,5 @@
 import type { InventarioItem } from '@/lib/types/spaces';
+import { tintaSobre } from '@/lib/design/paleta';
 
 interface EspacioCellProps {
   item: Pick<InventarioItem, 'espacioId' | 'espacioNombre' | 'espacioColor'>;
@@ -21,8 +22,8 @@ export function EspacioCell({ item, variant = 'table' }: Readonly<EspacioCellPro
   if (item.espacioColor) {
     return (
       <span
-        className="inline-block px-2 py-0.5 rounded text-white text-xs font-medium"
-        style={{ backgroundColor: item.espacioColor }}
+        className="inline-block px-2 py-0.5 rounded text-xs font-medium"
+        style={{ backgroundColor: item.espacioColor, color: tintaSobre(item.espacioColor) }}
       >
         {item.espacioNombre}
       </span>

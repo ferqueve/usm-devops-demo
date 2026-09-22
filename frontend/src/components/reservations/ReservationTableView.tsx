@@ -160,6 +160,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onViewDetails(reserva)}
+                  aria-label="Ver detalles"
                   className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <Eye className="h-4 w-4" />
@@ -176,6 +177,7 @@ function ReservaTableRow({ reserva, onViewDetails, onCancelReserva }: Readonly<R
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onCancelReserva(reserva)}
+                    aria-label="Cancelar reserva"
                     className="p-1.5 rounded transition-colors text-danger-texto hover:text-danger-texto hover:bg-danger-suave"
                   >
                     <X className="h-4 w-4" />

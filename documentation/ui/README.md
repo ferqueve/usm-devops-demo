@@ -96,6 +96,21 @@ de página, medido. No se eligieron a ojo.
 Y `text-marca-tinta` es la tinta que se lee **encima** de un relleno de marca.
 No cambia con el tema, porque el relleno tampoco.
 
+Sobre una superficie que es oscura en los dos temas —`chrome`, el visor de
+logs, la tarjeta de servicios— tampoco sirven `marca-*-texto`: en tema claro
+son los tonos oscuros y ahí dan 2,2:1. Para eso están `text-alerta-en-oscuro`
+y `text-ok-en-oscuro`.
+
+### La opacidad no es una forma de bajar el tono
+
+`text-muted-foreground/50` a 11 px da 2,09:1. El token ya es el tono bajo; la
+opacidad encima lo saca del mínimo. Eran 500 de los 591 textos que no
+llegaban.
+
+En una celda de color pasa lo mismo: el pie de un tile en blanco al 75% sobre
+rojo da 2,89:1, y ni al 90% llega. La jerarquía la dan el tamaño y el peso
+—28 px semibold contra 13 px normal—, que ya son bien distintos.
+
 No usar los roles —`text-success-texto`, `text-danger-texto`— para esto: esos
 significan algo. El color de marca acá es la paleta de la casa, no un estado.
 

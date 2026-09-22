@@ -129,7 +129,10 @@ export function TutoriaFormDialog({
           try {
             const r = await materiasApi.obtenerMateria(defaultMateriaId);
             if (r.data) list = [r.data, ...list];
-          } catch { /* ignore */ }
+          } catch {
+            // La materia por defecto puede no existir o no ser visible para
+            // quien mira: la lista sirve igual sin ella.
+          }
         }
         if (active) setMaterias(list);
       })

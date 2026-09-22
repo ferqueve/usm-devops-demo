@@ -91,7 +91,7 @@ function SysStat({
         <Icon className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{label}</span>
       </div>
-      <div className={`text-2xl font-semibold tabular-nums ${tono === 'alerta' ? 'text-marca-rojo-texto' : 'text-white'}`}>
+      <div className={`text-2xl font-semibold tabular-nums ${tono === 'alerta' ? 'text-alerta-en-oscuro' : 'text-white'}`}>
         {value}
       </div>
       {hint && <div className="text-2xs mt-0.5 truncate text-white/60">{hint}</div>}

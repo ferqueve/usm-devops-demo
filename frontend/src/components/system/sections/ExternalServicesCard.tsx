@@ -25,9 +25,12 @@ const SERVICES: ServiceMeta[] = [
   { key: 'diskSpace', label: 'Disk space', icon: HardDrive },
 ];
 
+// La tarjeta es oscura en los dos temas, así que el texto no puede usar los
+// tokens `marca-*-texto`, que sí cambian: en claro son los tonos oscuros y
+// sobre este fondo daban 2,2:1.
 function statusColor(status: string | undefined): { dot: string; text: string } {
-  if (status === 'UP') return { dot: 'bg-utec-green', text: 'text-marca-verde-texto' };
-  if (status === 'DOWN' || status === 'OUT_OF_SERVICE') return { dot: 'bg-utec-red', text: 'text-marca-rojo-texto' };
+  if (status === 'UP') return { dot: 'bg-utec-green', text: 'text-ok-en-oscuro' };
+  if (status === 'DOWN' || status === 'OUT_OF_SERVICE') return { dot: 'bg-utec-red', text: 'text-alerta-en-oscuro' };
   return { dot: 'bg-white/30', text: 'text-white/60' };
 }
 

@@ -90,7 +90,7 @@ export default function InventoryCardView({
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="px-2">
+                    <Button variant="outline" size="sm" aria-label="Más acciones" className="px-2">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

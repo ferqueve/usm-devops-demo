@@ -38,6 +38,7 @@ import { eventoToAgendable } from '@/lib/agenda/types';
 import { fechaHora, relativa } from '@/lib/utils/fechas';
 import { ESTADO_EVENTO, EstadoBadge, estadoDe } from '@/components/common/estados';
 import { csvEscape, descargarCSV } from '@/lib/utils/csv-helpers';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 
 interface EventoDetailProps { eventoId: number }
 
@@ -98,6 +99,7 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   const { hasPermission } = useRolePermissions();
   const puedeVerInscriptos = hasPermission('evento:ver_inscriptos');
   const [evento, setEvento] = useState<Evento | null>(null);
+  const [errorInscriptos, setErrorInscriptos] = useState<string | null>(null);
   const [inscriptos, setInscriptos] = useState<EventoInscripto[]>([]);
   const [inscPage, setInscPage] = useState(0);
   const [espacio, setEspacio] = useState<Espacio | null>(null);
@@ -140,14 +142,20 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
   // que respetarlo. Sin esto un DOCENTE abría el evento y se comía un 403.
   const fetchInscriptos = useCallback(() => {
     if (!puedeVerInscriptos) return;
-    eventosApi.inscriptos(eventoId).then((r) => setInscriptos(r.data ?? [])).catch(() => { /* noop */ });
+    setErrorInscriptos(null);
+    eventosApi.inscriptos(eventoId)
+      .then((r) => setInscriptos(r.data ?? []))
+      .catch((e: unknown) => setErrorInscriptos(e instanceof Error ? e.message : 'Error de red.'));
   }, [eventoId, puedeVerInscriptos]);
 
   useEffect(() => { fetchEvento(); fetchInscriptos(); }, [fetchEvento, fetchInscriptos]);
   useEffect(() => {
     if (evento?.espacioId != null) {
       let active = true;
-      espaciosApi.obtenerEspacio(evento.espacioId).then((r) => { if (active) setEspacio(r.data ?? null); }).catch(() => { /* noop */ });
+      espaciosApi.obtenerEspacio(evento.espacioId)
+        .then((r) => { if (active) setEspacio(r.data ?? null); })
+        // Es contexto al costado, no el evento: alcanza con avisarlo.
+        .catch(() => { if (active) toast.error('No se pudo cargar el espacio del evento'); });
       return () => { active = false; };
     }
     setEspacio(null);
@@ -413,7 +421,11 @@ export function EventoDetail({ eventoId }: Readonly<EventoDetailProps>) {
             altoCompleto
             acciones={inscriptos.length > 0 ? <Button variant="ghost" size="sm" className="h-7" onClick={exportCSV}><Download className="h-3.5 w-3.5 mr-1.5" />CSV</Button> : undefined}
           >
-            {(() => {
+            {errorInscriptos ? (
+              <EstadoCarga cargando={false} error={errorInscriptos} alReintentar={fetchInscriptos}>
+                {null}
+              </EstadoCarga>
+            ) : (() => {
               if (inscriptos.length === 0) return <p className="text-sm text-muted-foreground py-2">Nadie se inscribió todavía.</p>;
               const confirmados = inscriptos.filter((i) => i.estado !== 'ESPERA');
               const espera = inscriptos.filter((i) => i.estado === 'ESPERA');

@@ -46,6 +46,12 @@ export function EstadoCarga({
     );
   }
 
+  // «Failed to fetch» es lo que dice el navegador cuando no llega al
+  // servidor. Mostrado tal cual no le dice nada a nadie.
+  const detalle = /failed to fetch|networkerror|load failed/i.test(error ?? '')
+    ? 'No hay conexión con el servidor.'
+    : error;
+
   if (error) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
@@ -53,7 +59,7 @@ export function EstadoCarga({
         <p className="text-sm text-foreground">No se pudo cargar.</p>
         {/* El detalle va debajo y más chico: sirve para reportar el problema,
             pero no es lo que hay que leer primero. */}
-        <p className="max-w-sm text-xs text-muted-foreground">{error}</p>
+        <p className="max-w-sm text-xs text-muted-foreground">{detalle}</p>
         {alReintentar && (
           <Button variant="outline" size="sm" onClick={alReintentar} className="mt-1">
             <RotateCw className="size-3.5" />

@@ -353,7 +353,7 @@ export function MateriaDetail({ materiaId }: Readonly<MateriaDetailProps>) {
     setLoadingInsc(true);
     materiasApi.obtenerInscriptos(materiaId)
       .then((r) => setInscriptos(r.data ?? []))
-      .catch(() => { /* noop */ })
+      .catch(() => toast.error('No se pudieron cargar los inscriptos'))
       .finally(() => setLoadingInsc(false));
   }, [materiaId, puedeVerInscriptos]);
 

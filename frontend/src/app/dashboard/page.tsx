@@ -14,6 +14,8 @@ import { ROLES } from '@/lib/config/constants';
     const rol = (JSON.parse(userJson) as { rol?: string })?.rol;
     if (!rol) return;
 
+    // El error se traga a propósito: esto sólo adelanta la petición. La que
+    // cuenta la hace el componente, y ésa sí muestra el error en pantalla.
     dashboardApi.obtenerDatosDashboard().catch(() => {});
 
     if (rol === ROLES.ADMIN || rol === ROLES.ANALISTA) {

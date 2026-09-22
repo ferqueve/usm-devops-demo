@@ -120,7 +120,7 @@ export default function PrediccionesAcademico({ version, entrenamiento }: Readon
 
       {proximas.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed bg-card px-6 py-12 text-center">
-          <CalendarX2 className="h-10 w-10 text-muted-foreground/60" />
+          <CalendarX2 className="h-10 w-10 text-muted-foreground" />
           <h3 className="text-base font-semibold">No hay tutorías próximas</h3>
           <p className="max-w-md text-sm text-muted-foreground">Mientras tanto, abajo está lo que aprendió el modelo y cuánto creerle.</p>
         </div>
