@@ -116,7 +116,7 @@ export function CatalogoCrudShell<T extends CatalogoItem>({
     if (items.length === 0) {
       return (
         <div className="px-4 py-10 text-center">
-          <Icon className="h-8 w-8 mx-auto text-muted-foreground/50 mb-3" />
+          <Icon className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm text-muted-foreground">{emptyLabel}</p>
         </div>
       );

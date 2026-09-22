@@ -39,7 +39,7 @@ export function GloboGrafico({ className, children }: Readonly<{ className?: str
 export function FlechaVariacion({ delta }: Readonly<{ delta?: number }>) {
   if (delta == null || Math.abs(delta) < 1) {
     return (
-      <span className="inline-flex items-center text-2xs text-muted-foreground/60" title="Sin cambios">
+      <span className="inline-flex items-center text-2xs text-muted-foreground" title="Sin cambios">
         <Minus className="h-3 w-3" />
       </span>
     );
@@ -119,10 +119,12 @@ export interface PodioEntry {
   onClick?: () => void;
 }
 
-const PODIO_META: Record<number, { medal: string; alto: string; ped: string; ring: string }> = {
-  1: { medal: '🥇', alto: 'h-24', ped: 'bg-utec-yellow', ring: 'ring-utec-yellow' },
-  2: { medal: '🥈', alto: 'h-16', ped: 'bg-muted-foreground', ring: 'ring-border' },
-  3: { medal: '🥉', alto: 'h-12', ped: 'bg-warning', ring: 'ring-warning' },
+/** `tinta` es el color del número sobre el escalón: el 1 iba blanco sobre
+    amarillo y daba 1,5:1. */
+const PODIO_META: Record<number, { medal: string; alto: string; ped: string; ring: string; tinta: string }> = {
+  1: { medal: '🥇', alto: 'h-24', ped: 'bg-utec-yellow', ring: 'ring-utec-yellow', tinta: 'text-marca-tinta' },
+  2: { medal: '🥈', alto: 'h-16', ped: 'bg-muted-foreground', ring: 'ring-border', tinta: 'text-background' },
+  3: { medal: '🥉', alto: 'h-12', ped: 'bg-warning', ring: 'ring-warning', tinta: 'text-marca-tinta' },
 };
 
 // Podio literal: 2º a la izquierda, 1º al centro (más alto, con corona), 3º a la derecha.
@@ -155,7 +157,7 @@ export function Podio({ top }: Readonly<{ top: PodioEntry[] }>) {
               <span className="text-2xs font-bold tabular-nums">{it.valor}</span>
               <FlechaVariacion delta={it.deltaPct} />
               <div className={`mt-2 flex w-full ${m.alto} items-start justify-center rounded-t-lg ${m.ped} shadow-inner`}>
-                <span className="mt-1 text-xl font-black text-white/90 drop-shadow">{pos}</span>
+                <span className={`mt-1 text-xl font-black ${m.tinta}`}>{pos}</span>
               </div>
             </Tag>
           );

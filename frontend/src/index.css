@@ -181,6 +181,14 @@
      3:1. Estaba escrito así en 32 lugares. */
   --color-marca-tinta: #212529;
 
+  /* El rojo de alerta sobre una superficie oscura fija: la celda de Sistema,
+     el visor de logs. No puede ser `--marca-rojo-texto`, que sigue al tema:
+     en claro es el rojo oscuro y sobre `chrome` da 2,16:1. Medido sobre
+     #343a40: 4,66:1. */
+  --color-alerta-en-oscuro: #ff7e76;
+  /* Su par en verde, para el «UP» de la misma tarjeta. Medido: 5,29:1. */
+  --color-ok-en-oscuro: #7cc300;
+
   /* Los seis de marca, en la luz donde se leen como TEXTO.
 
      `--color-utec-*` son los hexes exactos del manual y sirven para
@@ -771,7 +779,7 @@
   }
 
   .log-error {
-    color: #ff7e76;
+    color: var(--color-alerta-en-oscuro);
     background-color: rgb(255 126 118 / 0.12);
   }
 

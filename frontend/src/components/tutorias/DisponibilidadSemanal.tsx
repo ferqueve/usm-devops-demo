@@ -100,7 +100,7 @@ export function DisponibilidadSemanal({ tutorias }: Readonly<{ tutorias: Tutoria
                 </div>
                 <div className="flex flex-1 flex-col gap-1">
                   {d.items.length === 0 ? (
-                    <span className="text-2xs text-muted-foreground/50">—</span>
+                    <span className="text-2xs text-muted-foreground">—</span>
                   ) : (
                     d.items.map((t) => (
                       <button

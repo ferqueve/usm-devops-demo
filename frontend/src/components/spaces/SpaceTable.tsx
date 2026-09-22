@@ -27,6 +27,7 @@ import {
 import type { Espacio } from '@/lib/types/spaces';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import { ESTADO_ESPACIO, EstadoBadge, estadoDe } from '@/components/common/estados';
+import { tintaSobre } from '@/lib/design/paleta';
 
 interface SpaceTableProps {
   espacios: Espacio[];
@@ -117,8 +118,8 @@ export function SpaceTable({
               <TableCell>
                 {espacio.tipoEspacioColor ? (
                   <span 
-                    className="inline-flex items-center px-2 py-1 rounded text-white text-xs font-medium"
-                    style={{ backgroundColor: espacio.tipoEspacioColor }}
+                    className="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                    style={{ backgroundColor: espacio.tipoEspacioColor, color: tintaSobre(espacio.tipoEspacioColor) }}
                   >
                     {espacio.tipoEspacioNombre || 'Sin tipo'}
                   </span>

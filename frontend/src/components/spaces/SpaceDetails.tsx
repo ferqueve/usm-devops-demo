@@ -43,6 +43,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ESTADO_ESPACIO, ESTADO_INVENTARIO, estadoDe, relleno } from '@/components/common/estados';
+import { tintaSobre } from '@/lib/design/paleta';
 
 interface SpaceDetailsProps {
   espacioId: number;
@@ -300,8 +301,8 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
               {espacio.tipoEspacioNombre && espacio.tipoEspacioNombre !== espacio.nombre && (
                 espacio.tipoEspacioColor ? (
                   <span
-                    className="px-2 py-0.5 rounded text-white text-xs font-medium"
-                    style={{ backgroundColor: espacio.tipoEspacioColor }}
+                    className="px-2 py-0.5 rounded text-xs font-medium"
+                    style={{ backgroundColor: espacio.tipoEspacioColor, color: tintaSobre(espacio.tipoEspacioColor) }}
                   >
                     {espacio.tipoEspacioNombre}
                   </span>
@@ -400,8 +401,8 @@ export function SpaceDetails({ espacioId }: Readonly<SpaceDetailsProps>) {
                 <dd>
                   {espacio.tipoEspacioColor ? (
                     <span
-                      className="px-2 py-0.5 rounded text-white text-xs font-medium"
-                      style={{ backgroundColor: espacio.tipoEspacioColor }}
+                      className="px-2 py-0.5 rounded text-xs font-medium"
+                      style={{ backgroundColor: espacio.tipoEspacioColor, color: tintaSobre(espacio.tipoEspacioColor) }}
                     >
                       {espacio.tipoEspacioNombre}
                     </span>

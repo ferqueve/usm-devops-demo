@@ -43,7 +43,7 @@ export function RachaBadges() {
             <span
               key={b.id}
               title={b.nombre}
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${b.desbloqueado ? 'bg-utec-yellow/20 text-marca-tinta' : 'bg-muted text-muted-foreground/50 grayscale'}`}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${b.desbloqueado ? 'bg-utec-yellow/20 text-marca-tinta' : 'bg-muted text-muted-foreground grayscale'}`}
             >
               <span className={b.desbloqueado ? '' : 'opacity-50'}>{b.emoji}</span>{b.nombre}
             </span>

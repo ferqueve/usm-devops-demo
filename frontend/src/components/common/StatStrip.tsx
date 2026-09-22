@@ -187,7 +187,10 @@ export function StatStrip({
         const claro = texto === 'claro';
 
         const principal = claro ? 'text-white' : 'text-marca-tinta';
-        const suave = claro ? 'text-white/75' : 'text-marca-tinta/70';
+        // Sin opacidad: a 11 y 13 px, el pie sobre rojo se quedaba en 2,89:1
+        // y ni al 90% llegaba a 4,5. La jerarquía la dan el tamaño y el peso,
+        // que ya son bien distintos: 28 px semibold contra 13 px normal.
+        const suave = claro ? 'text-white' : 'text-marca-tinta';
 
         const inner = (
           <>
