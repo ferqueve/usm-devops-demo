@@ -343,7 +343,9 @@ export default function SostenibilidadDashboard() {
   const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
-    sostenibilidadApi.obtenerRanking().then((r) => setRanking(r.data ?? null)).catch(() => { /* noop */ });
+    sostenibilidadApi.obtenerRanking()
+      .then((r) => setRanking(r.data ?? null))
+      .catch(() => toast.error('No se pudo cargar el ranking de carreras'));
   }, []);
 
   if (loading && !stats) {

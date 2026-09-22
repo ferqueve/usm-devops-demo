@@ -296,7 +296,11 @@ Lo encuentra `node scripts/muerto.mjs`.
       firma original para no tocar a quien los llama. En el camino se
       recuperaron tres `PermissionGuard` y se corrigió el género gramatical
       ("el evento", no "la evento").
-- [ ] Terminar los estados de error. `components/common/EstadoCarga` ya
+- [x] Terminar los estados de error. De 21 cargas que se comían el error
+      quedan 4, todas legítimas: dos son el prefetch del dashboard —la
+      petición que cuenta la hace el componente y ésa sí lo muestra— y dos
+      son datos opcionales.
+- [ ] (hecho) Terminar los estados de error. `components/common/EstadoCarga` ya
       existe y lo usan los dos paneles de valoración y `StatsListWidget`.
       Quedan 33 `catch` que se comen el error en 20 archivos; los que
       envuelven una llamada de datos hay que pasarlos.

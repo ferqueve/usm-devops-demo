@@ -1,24 +1,32 @@
-import { useEffect, useState } from 'react';
-import { Flame, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Flame } from 'lucide-react';
 import { tutoriasApi } from '@/lib/api/tutorias';
 import type { Racha } from '@/lib/types/tutorias';
 import { Panel } from '@/components/common/Panel';
 import { MARCA } from '@/lib/design/paleta';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 
 export function RachaBadges() {
   const [racha, setRacha] = useState<Racha | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    tutoriasApi.racha().then((r) => setRacha(r.data ?? null)).catch(() => { /* noop */ }).finally(() => setLoading(false));
+  const cargar = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    tutoriasApi.racha().then((r) => setRacha(r.data ?? null)).catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error de red.')).finally(() => setLoading(false));
   }, []);
+  useEffect(() => { cargar(); }, [cargar]);
 
-  if (loading) return <div className="rounded-2xl border bg-card p-4 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
-  if (!racha || (racha.asistidas === 0 && racha.agendadas === 0)) return null;
+  // Sin datos y sin error el panel no va: no hay progreso que mostrar
+  // todavía. Con error sí, para que no desaparezca en silencio.
+  if (!loading && !error && (!racha || (racha.asistidas === 0 && racha.agendadas === 0))) return null;
 
   return (
     <Panel title="Tu progreso" icon={<Flame />} accentColor={MARCA.naranja}
-      count={racha.rachaActual > 0 ? `racha x${racha.rachaActual}` : undefined}>
+      count={racha && racha.rachaActual > 0 ? `racha x${racha.rachaActual}` : undefined}>
+      <EstadoCarga cargando={loading} error={error} alReintentar={cargar} vacio={!racha}>
+      {racha && (
       <div className="space-y-3">
         <div className="flex gap-3">
           <div className="flex-1 rounded-xl bg-utec-green/10 p-3 text-center">
@@ -42,6 +50,8 @@ export function RachaBadges() {
           ))}
         </div>
       </div>
+      )}
+      </EstadoCarga>
     </Panel>
   );
 }

@@ -1,28 +1,34 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Star, Trophy, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Star, Trophy, Users } from 'lucide-react';
 import { tutoriasApi } from '@/lib/api/tutorias';
 import type { TutorRanking } from '@/lib/types/tutorias';
 import { Panel } from '@/components/common/Panel';
 import { MARCA } from '@/lib/design/paleta';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 
 const MEDALLAS = ['🥇', '🥈', '🥉'];
 
 export function RankingTutores() {
   const [ranking, setRanking] = useState<TutorRanking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const cargar = useCallback(() => {
+    setLoading(true);
+    setError(null);
     tutoriasApi.ranking()
       .then((r) => setRanking((r.data ?? []).filter((t) => t.totalValoraciones > 0 || t.totalTutorias > 0)))
-      .catch(() => { /* noop */ })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error de red.'))
       .finally(() => setLoading(false));
   }, []);
+  useEffect(() => { cargar(); }, [cargar]);
 
-  if (loading) return <div className="rounded-2xl border bg-card p-6 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
-  if (ranking.length === 0) return null;
+  // Un ranking vacío no se muestra; uno que falló, sí.
+  if (!loading && !error && ranking.length === 0) return null;
 
   return (
     <Panel title="Ranking de tutores" icon={<Trophy />} accentColor={MARCA.amarillo} flush>
+      <EstadoCarga cargando={loading} error={error} alReintentar={cargar}>
       <ul className="divide-y">
         {ranking.slice(0, 8).map((t, i) => (
           <li key={t.docenteId} className="flex items-center gap-3 px-4 py-2.5">
@@ -40,6 +46,7 @@ export function RankingTutores() {
           </li>
         ))}
       </ul>
+      </EstadoCarga>
     </Panel>
   );
 }

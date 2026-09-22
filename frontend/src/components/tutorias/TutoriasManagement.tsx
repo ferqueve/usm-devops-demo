@@ -43,6 +43,7 @@ import { TutoriasAgenda } from './TutoriasAgenda';
 import { TutoriaCard } from './TutoriaCard';
 import { DisponibilidadSemanal } from './DisponibilidadSemanal';
 import { CheckinScanner } from './CheckinScanner';
+import { EstadoCarga } from '@/components/common/EstadoCarga';
 
 const DOCENTE_ROLES = ['DOCENTE', 'ADMIN', 'ANALISTA'];
 
@@ -80,7 +81,7 @@ function SectionHeader({
 
 // ----- Vista DOCENTE / ADMIN: gestiona franjas de tutoría -----
 function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas' | 'todas'; adminView: boolean; embedded?: boolean }>) {
-  const { tutorias, loading, refresh } = useTutorias({ scope });
+  const { tutorias, loading, error, refresh } = useTutorias({ scope });
   const [createDialog, setCreateDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
   const [selected, setSelected] = useState<Tutoria | null>(null);
@@ -248,6 +249,14 @@ function DocenteView({ scope, adminView, embedded }: Readonly<{ scope: 'dictadas
       )}
 
       {(() => {
+        // Sin esto, una carga fallida se leía igual que «no hay ninguna».
+        if (error) {
+          return (
+            <EstadoCarga cargando={false} error={error.message} alReintentar={refresh}>
+              {null}
+            </EstadoCarga>
+          );
+        }
         if (tutorias.length === 0) {
           return (
             <div className="text-center py-16">
