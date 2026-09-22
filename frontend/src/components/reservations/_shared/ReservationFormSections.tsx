@@ -196,6 +196,7 @@ function ItemSolicitadoCard({
               type="button"
               variant="ghost"
               size="sm"
+              aria-label="Editar la repetición"
               className="h-8 w-8 p-0 text-info hover:text-info-texto hover:bg-info-suave"
             >
               <Pencil className="h-4 w-4" />

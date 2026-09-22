@@ -172,7 +172,7 @@ function DateRangeButton({ date, otherDate, isStart, onChange, Icon, tooltipFall
       <Tooltip>
         <PopoverTrigger asChild>
           <TooltipTrigger asChild>
-            <button type="button" className={buttonClass}>
+            <button type="button" aria-label={tooltipFallback} className={buttonClass}>
               <Icon className={iconClass} />
               {date && <span className="text-2xs">{formatShortDate(date)}</span>}
             </button>
@@ -217,7 +217,7 @@ function DateRangeFilter({
     <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" onClick={onResetFechas} className={resetClass}>
+          <button type="button" onClick={onResetFechas} aria-label="Todas las fechas" className={resetClass}>
             <Filter className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -262,7 +262,7 @@ function EstadoFilter({ selectedEstados, onToggleEstado, onClearEstados }: Reado
     <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" onClick={onClearEstados} className={clearClass}>
+          <button type="button" onClick={onClearEstados} aria-label="Todos los estados" className={clearClass}>
             <Filter className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -279,7 +279,7 @@ function EstadoFilter({ selectedEstados, onToggleEstado, onClearEstados }: Reado
         return (
           <Tooltip key={estado}>
             <TooltipTrigger asChild>
-              <button type="button" onClick={() => onToggleEstado(estado)} className={buttonClass}>
+              <button type="button" onClick={() => onToggleEstado(estado)} aria-label={config.label} aria-pressed={active} className={buttonClass}>
                 <Icon className={iconClass} />
               </button>
             </TooltipTrigger>
@@ -316,7 +316,7 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
     <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" onClick={() => onEspacioChange(null)} className={allClass}>
+          <button type="button" onClick={() => onEspacioChange(null)} aria-label="Todos los espacios" className={allClass}>
             <Filter className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -326,7 +326,7 @@ function EspacioFilter({ espacios, selectedEspacio, onEspacioChange }: Readonly<
         <Tooltip>
           <PopoverTrigger asChild>
             <TooltipTrigger asChild>
-              <button type="button" className={triggerClass}>
+              <button type="button" aria-label={tooltipText} className={triggerClass}>
                 <Building2 className={iconClass} />
                 {selectedNombre && (
                   <span className="max-w-[140px] truncate text-2xs">{selectedNombre}</span>
@@ -387,7 +387,7 @@ function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewModeToggleP
     <div className="flex items-center rounded-lg border bg-muted p-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" onClick={() => onViewModeChange('cards')} className={cardsClass}>
+          <button type="button" onClick={() => onViewModeChange('cards')} aria-label="Vista de tarjetas" aria-pressed={viewMode === 'cards'} className={cardsClass}>
             <LayoutGrid className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -395,7 +395,7 @@ function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewModeToggleP
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" onClick={() => onViewModeChange('table')} className={tableClass}>
+          <button type="button" onClick={() => onViewModeChange('table')} aria-label="Vista de tabla" aria-pressed={viewMode === 'table'} className={tableClass}>
             <TableIcon className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -429,7 +429,7 @@ function PageSizeSelector({ pageSize, onPageSizeChange }: Readonly<PageSizeSelec
         <Tooltip>
           <PopoverTrigger asChild>
             <TooltipTrigger asChild>
-              <button type="button" className={triggerClass}>
+              <button type="button" aria-label="Seleccionar tamaño de página" className={triggerClass}>
                 <ListFilter className="h-3.5 w-3.5 text-info-texto" />
                 <span className="text-2xs">{pageSize}</span>
               </button>
@@ -490,6 +490,7 @@ export function InventoryRequestFilters({
             <button
               type="button"
               onClick={onClearFilters}
+              aria-label="Limpiar filtros"
               className="p-1.5 rounded bg-danger text-white transition-colors hover:bg-danger"
             >
               <BrushCleaning className="h-3.5 w-3.5" />

@@ -32,7 +32,7 @@ export function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewMode
     <div className="flex items-center border rounded-lg p-0.5 bg-muted flex-shrink-0 self-start">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button onClick={() => onViewModeChange('cards')} className={buttonClass(viewMode === 'cards')}>
+          <button onClick={() => onViewModeChange('cards')} aria-label="Vista de tarjetas" aria-pressed={viewMode === 'cards'} className={buttonClass(viewMode === 'cards')}>
             <LayoutGrid className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -40,7 +40,7 @@ export function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewMode
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button onClick={() => onViewModeChange('table')} className={buttonClass(viewMode === 'table')}>
+          <button onClick={() => onViewModeChange('table')} aria-label="Vista de tabla" aria-pressed={viewMode === 'table'} className={buttonClass(viewMode === 'table')}>
             <TableIcon className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -48,7 +48,7 @@ export function ViewModeToggle({ viewMode, onViewModeChange }: Readonly<ViewMode
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button onClick={() => onViewModeChange('calendar')} className={buttonClass(viewMode === 'calendar')}>
+          <button onClick={() => onViewModeChange('calendar')} aria-label="Vista de calendario" aria-pressed={viewMode === 'calendar'} className={buttonClass(viewMode === 'calendar')}>
             <CalendarDays className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
@@ -71,6 +71,7 @@ export function FullScreenToggle({ isFullScreen, onToggle }: Readonly<FullScreen
         <TooltipTrigger asChild>
           <button
             onClick={onToggle}
+            aria-label={isFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
             className={`p-1.5 rounded transition-colors ${isFullScreen
               ? 'bg-card text-foreground shadow-md ring-1 ring-border'
               : 'text-muted-foreground hover:text-foreground/80'}`}

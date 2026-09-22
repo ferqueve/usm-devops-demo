@@ -309,6 +309,7 @@ export function SpaceFormDialog({
                     type="button"
                     variant="destructive"
                     size="sm"
+                    aria-label="Quitar la imagen"
                     className="absolute top-2 right-2"
                     onClick={handleRemoveImage}
                     disabled={loading || uploadingImage}
