@@ -1,0 +1,220 @@
+*   [33m11927ed[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Merge branch 'dev': accesibilidad, estados de error y contraste
+[31m|[m[32m\[m  
+[31m|[m *   [33mf676708[m Merge branch 'feat/ui-design-system': accesibilidad, estados de error y contraste
+[31m|[m [33m|[m[34m\[m  
+[31m|[m [33m|[m * [33m59d76cd[m Que la dona de recursos entre en una columna angosta
+[31m|[m [33m|[m * [33m6324ff0[m Bajar de 591 textos ilegibles a 60
+[31m|[m [33m|[m * [33m4536076[m Que una carga que falla se note
+[31m|[m [33m|[m * [33m8260319[m Que se pueda usar con el teclado
+[31m|[m [33m|[m[33m/[m  
+* [33m|[m [33mdc40504[m Merge branch 'dev': base visual unificada
+[35m|[m[33m\[m[33m|[m 
+[35m|[m * [33m31ae002[m Merge branch 'feat/ui-design-system': base visual unificada
+[35m|[m[35m/[m[1;32m|[m 
+[35m|[m * [33ma5287ca[m Relevar los requerimientos funcionales agregados en 2026
+[35m|[m * [33me64eb15[m Poner los E2E al día con el rediseño
+[35m|[m * [33mf8cf7d7[m Que la lista se vea al día después de editar
+[35m|[m * [33mf490181[m Que las pantallas entren bien a 1280×720
+[35m|[m * [33m075afb7[m Lo que apareció recorriendo las pantallas reales
+[35m|[m * [33me74992e[m El BOM de los CSV, la paleta de los fondos y los días largos
+[35m|[m * [33m1d6cae2[m Poner dataviz en el catálogo, que nunca había estado
+[35m|[m * [33m1503c32[m Lo que quedaba suelto: sumarDias, la URL de la api y tres Tendencia
+[35m|[m * [33mfacb81d[m Sacar la paleta cruda de Tailwind de las reservas
+[35m|[m * [33m4d69e92[m Las piezas chicas que estaban cuatro y seis veces
+[35m|[m * [33mc4445c7[m Que un estado no sea verde en una pantalla y gris en otra
+[35m|[m * [33md564ede[m Que una fecha se lea igual en todas las pantallas
+[35m|[m * [33m13c5045[m Un solo hueco de carga
+[35m|[m * [33ma18a31f[m Un solo globo para todos los gráficos
+[35m|[m * [33m4829484[m Borrar el código muerto
+[35m|[m * [33m0b319d7[m Que un bloque que falla lo diga en vez de desaparecer
+[35m|[m * [33mf81809c[m Medir el contraste en vez de confiar en la clase
+[35m|[m * [33m98c6c25[m La banda oscura de las tablas, una sola vez
+[35m|[m * [33m3b2f123[m Que las pantallas de detalle se vean como el resto
+[35m|[m * [33m4cea7ac[m Una sola celda de métrica, y la tinta que se lee encima
+[35m|[m * [33me0f18d9[m Dejar un solo Panel y un solo EmptyState
+[35m|[m * [33mdb2bedb[m Dejar una sola confirmación de borrado
+[35m|[m * [33m81ccf2e[m Escribir las reglas de la base visual y resolver las clases huérfanas
+[35m|[m * [33mbc3a4e2[m Subir el piso tipográfico
+[35m|[m * [33m9376533[m Volver a poner los dos temas lado a lado en dashboards y Sistema
+[35m|[m * [33ma9ff542[m Dejar que los dashboards se vean como son en el catálogo
+[35m|[m * [33m2059cb6[m Unificar el alto de los controles y darle aire a las tablas
+[35m|[m * [33m579cd71[m Liberar el ancho de /ui y hacer que la grilla siga al panel
+[35m|[m * [33m159b659[m Unificar todos los colores del sistema en el tema
+[35m|[m * [33m672ad8f[m Sacar la opacidad del destructivo en modo oscuro
+[35m|[m * [33mb1669e3[m Anclar los rojos sueltos que quedaban fuera de la paleta
+[35m|[m * [33m8839151[m Levantar las superficies oscuras y darle token a la banda oscura
+[35m|[m * [33mb071fe0[m Devolverle saturación a los colores del modo oscuro
+[35m|[m * [33m5e72449[m Repasar la base: superficies que se pisaban y elevación sin definir
+[35m|[m * [33m32b1ff8[m Cerrar el inventario: 124 de 124 componentes montables en /ui
+[35m|[m * [33meaa4198[m Sumar los seis dashboards por rol y sus catorce bloques
+[35m|[m * [33ma3a7a52[m Sumar piezas de Estadísticas y Predicciones al catálogo
+[35m|[m * [33m0b777cb[m Sumar la pantalla de Sistema completa al catálogo
+[35m|[m * [33mbc1299b[m Sumar al catálogo las tarjetas y controles de lista
+[35m|[m * [33m1266335[m Inventariar todo el sistema en /ui y sumar los diálogos
+[35m|[m * [33m97a56e2[m Completar el catálogo: los 19 gráficos, dominio y sistema
+[35m|[m * [33m02fa6e8[m Agregar /ui: catálogo de la base visual, sólo en desarrollo
+[35m|[m * [33m6d8d38a[m Unificar la paleta en una fuente y migrar los grises a tokens
+[35m|[m * [33m37eade6[m Asentar la base visual sobre el manual de marca UTEC
+[35m|[m[35m/[m  
+* [33m78f7931[m Rehacer Estadísticas y Predicciones por área
+* [33m7ea60d5[m Anclar el alto del layout para que el dashboard no empuje la pagina
+* [33m587bf8e[m Llenar el alto del dashboard en pantallas grandes
+* [33m741d0fc[m Repartir el alto de la columna con filas de grilla, no con flex
+* [33m463ba0c[m Meter cada dashboard en una sola pantalla, con algo destacado arriba
+* [33m74d3730[m Sacar del repo las capturas de pantalla
+* [33m7045a72[m Graficar sobre todas las materias, no sobre las seis del panel
+* [33m5f0e0d7[m Que los ejes se lean y no falte ninguna etiqueta
+* [33m5be76a4[m Graficar lo que el dashboard ya traia y nadie dibujaba
+* [33mcedd90f[m Respetar el cupo al sembrar inscripciones a eventos
+* [33mbc2232a[m Contar los espacios caidos igual en los tres lugares, y leer bien la auditoria
+* [33m59cfcff[m Contar el total, no lo que entra en el panel
+* [33m3481870[m Darle a cada dashboard lo que su rol hace
+* [33m3583221[m Cerrar sesion ante cualquier 401, diga lo que diga el mensaje
+* [33mfa58047[m Paginar tambien las materias inscriptas del estudiante
+* [33m9af18a5[m Traer el calendario de un mes en una consulta, no en mil seiscientas
+* [33m3e17f76[m Mostrar la miniatura tambien en el detalle del espacio
+* [33m85e9df5[m Frenar la fuerza bruta contra el login
+* [33me6a54d8[m Cerrar dos filtraciones de datos de otros usuarios
+* [33mbfa10f5[m Contar los inscriptos de todas las materias de una
+* [33m58a37d5[m No pedir lo que el rol no puede ver
+* [33m5969c6e[m Paginar la grilla de tutorias y sobrevivir a un deploy con la pestaña abierta
+* [33mf509c0c[m Mostrar de Estadisticas solo la vista que el rol puede abrir
+* [33m8a5f560[m Dejar que un EXTERNO pueda pedir una reserva
+* [33mff221ae[m Llenar los dos datos que el panel de mantenimiento mostraba en cero
+* [33m33d8914[m Dar a inventario y mantenimiento los permisos de sus propias pantallas
+* [33m9a18c69[m Registrar el parche del scroll de Radix cuando ya hay body
+* [33m4844118[m Dejar que cada estadistica decida quien la ve
+* [33mf150d62[m Escuchar en IPv6 en los servicios Python
+* [33m065ca41[m Contar las reservas del usuario con el agregado, no con la lista
+* [33mf4b92fa[m Darle a cada rol las pantallas que su dashboard enlaza
+*   [33m3e2404d[m Merge branch 'dev'
+[1;33m|[m[1;34m\[m  
+[1;33m|[m * [33m1b02bec[m Dejar de revalidar la sesion en cada carga
+[1;33m|[m * [33m11c5bc4[m Armar el dashboard en una sola llamada
+[1;33m|[m * [33m166729d[m Comprimir las respuestas de la API
+[1;33m|[m * [33m6177f9f[m Contar el inventario en la base
+[1;33m|[m * [33m4e5510f[m Resolver el rol mirando la autoridad que lo lleva
+* [1;34m|[m [33mef190d8[m Merge branch 'dev': estadisticas agregadas en SQL
+[1;35m|[m[1;34m\[m[1;34m|[m 
+[1;35m|[m * [33m684e8be[m Calcular las estadisticas de reservas en la base
+* [1;36m|[m [33mc88612f[m Merge branch 'dev': dashboards acotados por rol
+[31m|[m[1;36m\[m[1;36m|[m 
+[31m|[m * [33m366bce4[m Revertir el JOIN FETCH de las reservas del usuario
+[31m|[m * [33m9759af8[m Acotar lo que pide cada dashboard segun el rol
+* [32m|[m [33m269571d[m Merge branch 'dev': N+1 de reasignaciones y fetch join de reservas
+[33m|[m[32m\[m[32m|[m 
+[33m|[m * [33mc901a7d[m Traer el espacio junto con las reservas del usuario
+[33m|[m * [33m31a3980[m Sacar el N+1 de las reasignaciones recomendadas
+* [34m|[m [33mc5d3b20[m Merge branch 'dev': CSV sin jsPDF, ventana en /reservas/todas
+[35m|[m[34m\[m[34m|[m 
+[35m|[m * [33m519ad5e[m Acotar la ventana de /reservas/todas
+[35m|[m * [33m4c3098d[m Separar los helpers de CSV de los de PDF
+* [36m|[m [33md24a416[m Merge branch 'dev': miniaturas resolviendo la clave del objeto
+[1;31m|[m[36m\[m[36m|[m 
+[1;31m|[m * [33m4d3e44a[m Resolver el nombre del objeto cuando la imagen se guardo como URL
+* [1;32m|[m [33mc86b9f6[m Merge branch 'dev': vendors sin precargar PDF ni graficos
+[1;33m|[m[1;32m\[m[1;32m|[m 
+[1;33m|[m * [33m2ab25b7[m Sacar recharts y jsPDF de los chunks con nombre
+* [1;34m|[m [33mc3363a4[m Merge branch 'dev': miniaturas de espacios
+[1;35m|[m[1;34m\[m[1;34m|[m 
+[1;35m|[m * [33mb308cb2[m Servir miniaturas de los espacios en el listado
+* [1;36m|[m [33m438c7d7[m Merge branch 'dev': paginado de materias y chunks por libreria
+[31m|[m[1;36m\[m[1;36m|[m 
+[31m|[m * [33m2abf3f5[m Agrupar los chunks por ruta y no por nombre de paquete
+[31m|[m * [33mcc8965e[m Paginar el catalogo de materias
+* [32m|[m [33meaf272a[m Merge branch 'dev': chunks agrupados por libreria
+[33m|[m[32m\[m[32m|[m 
+[33m|[m * [33mc87a10e[m Agrupar las dependencias en chunks por libreria
+* [34m|[m [33m0e505d6[m Merge branch 'dev': carga por demanda de las pantallas
+[35m|[m[34m\[m[34m|[m 
+[35m|[m * [33m54a0dd6[m Cargar cada pantalla por demanda
+* [36m|[m [33m6b6f59e[m Merge branch 'dev': refactor de headers, sidebar y vistas de Sistema
+[1;31m|[m[36m\[m[36m|[m 
+[1;31m|[m * [33m39ebbf8[m Llenar las cuatro vistas de Sistema
+[1;31m|[m * [33m6e187c2[m Sacar al sidebar las vistas de Estadisticas y de Sistema
+[1;31m|[m * [33m4de0344[m Que Materias solo abra sus vistas y acomodar la lista
+[1;31m|[m * [33m6fd04c6[m Sacar las vistas de Materias al sidebar
+[1;31m|[m * [33mfc75820[m Arreglar Solicitudes y Auditoria, que reventaban al entrar
+[1;31m|[m * [33mc28a6af[m Aplicar el PageHeader en el resto de las pantallas
+[1;31m|[m * [33m6ed8af3[m Rehacer el chrome del sidebar y la barra
+[1;31m|[m * [33m0d3d1d1[m Ajustar el texto del header de pantalla
+[1;31m|[m * [33m1beb7be[m Meter el PageHeader adentro de la barra superior (opcion A)
+[1;31m|[m * [33m55b0d44[m Estrenar el PageHeader en Inventario
+[1;31m|[m * [33m226c7d9[m Equilibrar el espacio vertical del header del catalogo
+[1;31m|[m * [33m6c7a4ce[m Mostrar siempre el buscador del catalogo
+[1;31m|[m * [33me22540b[m Fijar el header del catalogo en dos lineas
+[1;31m|[m * [33m74caab2[m Alinear la segunda linea del header bajo el titulo
+[1;31m|[m * [33ma9358e2[m Envolver el header del catalogo en vez de cortar la descripcion
+[1;31m|[m * [33mf9e9dbc[m Devolver la descripcion al header del catalogo
+[1;31m|[m * [33m870dc11[m Usar el header oscuro del dashboard en los catalogos
+[1;31m|[m * [33m36e79a6[m Igualar el alto de las tarjetas de Configuracion
+[1;31m|[m * [33m200a2b6[m Acomodar Configuracion en dos columnas y sacar el gradiente
+[1;31m|[m * [33m5533cae[m Rediseñar las listas de catalogos en Configuracion
+[1;31m|[m * [33m83c16f3[m Mover Tipos de inventario a Configuracion
+[1;31m|[m * [33m8db97c1[m Mover Gestionar Carreras a Configuracion
+[1;31m|[m * [33mfd29ef3[m Mover Tipos de espacio a una pantalla de Configuracion
+[1;31m|[m * [33md6af83f[m Sacar de Espacios los atajos a Inventario y Solicitudes
+[1;31m|[m * [33m6a16994[m Sacar Inventario y Solicitudes al sidebar
+[1;31m|[m * [33m4fe542b[m Agrupar los items del sidebar en secciones
+[1;31m|[m * [33mf1ba6ec[m Etiquetar las imagenes con su repositorio de origen
+* [1;32m|[m [33m92cd4ce[m Merge pull request #33 from MathiasPena/dev
+[1;33m|[m[1;32m\[m[1;32m|[m 
+[1;33m|[m * [33m22e6d57[m Construir las imagenes en CI y publicarlas en GHCR
+[1;33m|[m * [33medbbd61[m Documentar el puerto destino del dominio
+* [1;34m|[m [33maa886e6[m Merge pull request #24 from MathiasPena/dev
+[1;35m|[m[1;34m\[m[1;34m|[m 
+[1;35m|[m * [33ma4ad403[m Conceder en deploy.yml los permisos que pide ci.yml
+* [1;36m|[m [33m835b3ee[m Merge pull request #2 from MathiasPena/dev
+[31m|[m[1;36m\[m[1;36m|[m 
+[31m|[m * [33m7956dd8[m Dar a gitleaks permiso para leer los commits del PR
+[31m|[m * [33m0dcf7a0[m Hacer publica la sonda de vida y configurar healthchecks en Railway
+[31m|[m * [33mbe8d8f4[m Dejar el reporte del saneamiento en la documentacion
+[31m|[m * [33m8a7e4d4[m Dejar el backend en cero hallazgos de SonarQube
+[31m|[m * [33m75036c2[m Analizar solo el backend en SonarQube
+[31m|[m * [33m535ba7b[m Capturar el rechazo de SlowEndpointsCard y aislar su test de la red
+[31m|[m * [33m0d34d62[m Apuntar pnpm/action-setup al package.json del frontend
+[31m|[m * [33m534f9ee[m Rehacer el pipeline: puertas que bloquean y Sonar fuera de Railway
+[31m|[m * [33m85f6a28[m Bajar la memoria del backend: JRE y tope de heap explicito
+[31m|[m * [33m7ab43d3[m Poner ml y ai bajo lint y dentro del analisis de Sonar
+[31m|[m * [33me5ba818[m Arreglar los 52 tests que estaban rotos y ocultos
+[31m|[m * [33m9a8256c[m Servir el frontend compilado con nginx en vez del dev server de Vite
+[31m|[m * [33maa8b00d[m Unificar el frontend en pnpm
+[31m|[m * [33m5cdcb39[m Leer los hosts extra del dev server desde .env.local
+[31m|[m *   [33m4f68927[m Merge feat/capa-academica: refactor y rediseño de materias, tutorías y eventos
+[31m|[m [33m|[m[34m\[m  
+[31m|[m [33m|[m * [33md8f6c4c[m Documentar la pasada de rediseño visual y cerrar el plan
+[31m|[m [33m|[m * [33maf84db6[m Propagar el guard de IA a los 8 endpoints y etiquetar las barras de acciones
+[31m|[m [33m|[m * [33m2209035[m Dar a cada pestana de Materias su propio titulo y sacar tiles repetidos
+[31m|[m [33m|[m * [33m5ee9fd3[m Sacar el calendario de la portada de Eventos y arreglar las tarjetas escondidas
+[31m|[m [33m|[m * [33m02eb6a0[m Rehacer el encabezado del detalle de evento y subir la difusion
+[31m|[m [33m|[m * [33mdf332ac[m Rehacer el encabezado del detalle de tutoria y agrupar los temarios
+[31m|[m [33m|[m * [33m359da43[m Agregar script de re-seed de la capa academica
+[31m|[m [33m|[m * [33m5ea8d85[m Compartir el calculo de valoraciones y hacer el seeder consciente de la agenda
+[31m|[m [33m|[m * [33m4c6d3b4[m Dejar el front en cero errores de tipos y arreglar 4 bugs que eso destapo
+[31m|[m [33m|[m * [33m3c9ed8a[m Mover tutorias dentro de Materias y sacarlas del sidebar
+[31m|[m [33m|[m * [33mbf8b63e[m Partir los endpoints /mias por rol y emparejar las rutas de inscripcion
+[31m|[m [33m|[m * [33m7e6490e[m Unificar la tripa compartida entre tutorias y eventos
+[31m|[m [33m|[m * [33m8e0b88a[m Devolver el status HTTP correcto en la capa academica
+[31m|[m [33m|[m * [33m596d0a6[m Validar ocupacion de espacio al crear y editar tutorias y eventos
+[31m|[m * [34m|[m [33m102ab4c[m Merge feat/capa-academica into dev
+[31m|[m[31m/[m[34m|[m [34m|[m 
+[31m|[m [34m|[m[34m/[m  
+[31m|[m * [33m67a0101[m Extend academic layer: feedback, recordatorios, rankings and mapa de carrera
+[31m|[m * [33ma46df70[m Add academic layer: materias, recursos, tutorias, eventos and sustainability dashboard with per-role views
+[31m|[m[31m/[m  
+* [33mc0d3ea6[m Keep Sonar DB always on; start/stop only SonarQube
+* [33m3aeebd4[m Bump ES heap, warm up SonarQube and retry scan on failure
+* [33m1d60b20[m Add grace delay before SonarQube readiness polling
+* [33m61a6e06[m Harden SonarQube readiness check before scan
+* [33mc479050[m Auto start/stop SonarQube around CI scan to cut Railway cost
+* [33m21c9512[m Switch CI/CD to railway up (private source, no registry)
+*   [33m74580e3[m Merge dev into main: GHCR migration
+[1;31m|[m[1;32m\[m  
+[1;31m|[m * [33m07e9c86[m Migrate image builds to GHCR and auto-redeploy on Railway
+[1;31m|[m * [33m5abb7c4[m Add login rework and improve UI
+[1;31m|[m * [33me1714e2[m Use pgvector image for e2e database
+[1;31m|[m * [33m6ed51f6[m Document mobile client, web dark mode and 360 viewer
+[1;31m|[m * [33m9889286[m Add 360 panorama viewer for space images
+[1;31m|[m * [33mfa42125[m Redesign login side panel with animated node network
+[1;31m|[m * [33mfd44587[m Add web dark mode with theme toggle
+[1;31m|[m * [33mfadbe75[m Ign
