@@ -8,14 +8,14 @@
 # Producción usa `runtime`, que es el target por defecto (la última etapa).
 
 # ---------- dependencias ----------
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ---------- desarrollo (docker-compose) ----------
-FROM node:22-alpine AS dev
+FROM node:26-alpine AS dev
 RUN corepack enable && apk add --no-cache libc6-compat
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -24,7 +24,7 @@ EXPOSE 5173
 CMD ["pnpm", "dev:network"]
 
 # ---------- build ----------
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 RUN corepack enable
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
