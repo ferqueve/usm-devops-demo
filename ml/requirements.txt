@@ -2,7 +2,7 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pandas==2.2.3
 sqlalchemy==2.0.35
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.13
 prophet==1.1.6
 # Prophet 1.1.6 no soporta el API nuevo de cmdstanpy ≥1.3 ('stan_backend' missing).
 cmdstanpy<1.3
