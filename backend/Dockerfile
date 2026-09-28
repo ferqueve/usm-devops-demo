@@ -28,7 +28,7 @@ RUN mvn clean package -DskipTests
 # Etapa de runtime
 # JRE, no JDK: para ejecutar un jar no hace falta el compilador ni las
 # herramientas de desarrollo, y la imagen baja varios cientos de MB.
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:24-jre AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/target/*.jar app.jar
