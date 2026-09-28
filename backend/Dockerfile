@@ -1,5 +1,5 @@
 # Etapa de dependencias - Solo para cache
-FROM maven:3.9.6-eclipse-temurin-21 AS dependencies
+FROM maven:3.9.15-eclipse-temurin-26 AS dependencies
 WORKDIR /app
 COPY pom.xml .
 COPY mvnw .
@@ -8,7 +8,7 @@ COPY .mvn .mvn
 RUN mvn dependency:go-offline -B
 
 # Etapa de build
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+FROM maven:3.9.15-eclipse-temurin-26 AS build
 WORKDIR /app
 
 # Copiar solo pom.xml primero para cachear dependencias
