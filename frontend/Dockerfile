@@ -48,7 +48,7 @@ RUN test -n "$VITE_API_URL" || { \
 RUN pnpm build
 
 # ---------- runtime ----------
-FROM nginx:1.29-alpine AS runtime
+FROM nginx:1.31-alpine AS runtime
 
 # nginx sustituye ${PORT} en el template al arrancar (docker-entrypoint.d).
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
